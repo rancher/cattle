@@ -171,12 +171,16 @@ public abstract class LDAPIdentityProvider implements IdentityProvider{
             return attributesToIdentity(object);
         }
         catch (NamingException e) {
-            getLogger().info("Failed to get object: {} : {}", distinguishedName, e.getExplanation());
+            getLogger().error("Failed to get object: {} : {}", distinguishedName, e.getExplanation());
+            if(!LDAPUtils.isRecoverable(e)) {
+                invalidateServiceContext(context);
+                context = null;
+            }
             return null;
         }
         finally {
             if (context != null) {
-                getContextPool().returnObject(context);
+                returnServiceContext(context);
             }
         }
     }
@@ -215,10 +219,15 @@ public abstract class LDAPIdentityProvider implements IdentityProvider{
             }
             return new Identity(externalIdType, externalId, accountName, null, null, login);
         } catch (NamingException e) {
+            getLogger().error("Failed to get attributes: {} : {}", dn, e.getExplanation());
+            if(!LDAPUtils.isRecoverable(e)) {
+                invalidateServiceContext(context);
+                context = null;
+            }
             return null;
         } finally {
             if (context != null) {
-                getContextPool().returnObject(context);
+                returnServiceContext(context);
             }
         }
     }
@@ -254,11 +263,15 @@ public abstract class LDAPIdentityProvider implements IdentityProvider{
             }
         } catch (NamingException e) {
             getLogger().error("When searching ldap from /v1/identity Failed to search: " + query + " scope:" + getConstantsConfig().getDomain(), e);
+            if(!LDAPUtils.isRecoverable(e)) {
+                invalidateServiceContext(context);
+                context = null;
+            }
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, getConstantsConfig().getConfig(),
-                    "Organizational Unit not found.", null);
+                    "Could not lookup Organizational Unit", null);
         } finally {
             if (context != null){
-                getContextPool().returnObject(context);
+                returnServiceContext(context);
             }
         }
         return results;
@@ -347,13 +360,29 @@ public abstract class LDAPIdentityProvider implements IdentityProvider{
         }
     }
 
+    protected void returnServiceContext(LdapContext context) {
+        try {
+            getContextPool().returnObject(context);
+        } catch (Exception e) {
+            getLogger().info("Failed to return service context for ldap.", e);
+        }
+    }
+
+    protected void invalidateServiceContext(LdapContext context) {
+        try {
+            getContextPool().invalidateObject(context);
+        } catch (Exception e) {
+            getLogger().info("Failed to invalidate service context for ldap.", e);
+        }
+    }
+
 
     @PostConstruct
     public void init() {
         if (getContextPool() == null) {
             GenericObjectPoolConfig config = new GenericObjectPoolConfig();
-            config.setTestOnBorrow(true);
             PoolConfig.setConfig(config, "ldap.context.pool", "ldap.context.pool.", "global.pool.");
+            config.setTestOnBorrow(true);
             LdapServiceContextPoolFactory serviceContextPoolFactory = new LdapServiceContextPoolFactory(getConstantsConfig());
             setContextPool(new GenericObjectPool<>(serviceContextPoolFactory, config));
             AbandonedConfig abandonedConfig = new AbandonedConfig();
