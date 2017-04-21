@@ -526,7 +526,17 @@ def test_container_labels(client, context):
                                          labels=labels)
     container = client.wait_success(container)
     assert container.state == 'running'
-    assert container.labels == labels
+    assert container.labels['affinity'] == 'container==B'
+    assert container.labels['!affinity'] == 'container==C'
+
+
+def test_container_env_labels(client, context):
+    labels = {'foo': 'bar'}
+    container = context.create_container(name="test" + random_str(),
+                                         labels=labels)
+    container = client.wait_success(container)
+    key = 'io.rancher.environment.name'
+    assert container.labels[key] == context.project.name
 
 
 def _get_jwt(token):
