@@ -1953,6 +1953,7 @@ def test_export_config(client, context):
                      "uts": "host",
                      "ipcMode": "host",
                      "stopSignal": "SIGTERM",
+                     "stopTimeout": 10,
                      "groupAdd": "root",
                      "cgroupParent": "parent",
                      "extraHosts": ["host1", "host2"],
@@ -2017,6 +2018,7 @@ def test_export_config(client, context):
     assert svc["uts"] == "host"
     assert svc["ipc"] == "host"
     assert svc["stop_signal"] == "SIGTERM"
+    assert svc["stop_grace_period"] == 10
     assert svc["group_add"] == ["root"]
     assert svc["cgroup_parent"] == "parent"
     assert svc["extra_hosts"] == ["host1", "host2"]

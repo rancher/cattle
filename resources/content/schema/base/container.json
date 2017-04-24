@@ -338,6 +338,10 @@
          	"type" : "string",
             "nullable" : true
         },
+         "stopTimeout" : {
+            "type" : "int",
+            "nullable": true
+        },
          "sysctls" : {
          	"type" : "map[string]",
             "nullable" : true

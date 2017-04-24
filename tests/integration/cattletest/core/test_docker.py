@@ -629,6 +629,7 @@ def test_docker_newfields(docker_client, super_client):
     uts = "host"
     ipcMode = "host"
     stopSignal = "SIGTERM"
+    stopTimeout = 10
     ulimits = [{"name": "cpu", "hard": 100000, "soft": 100000}]
     c = docker_client.create_container(name=test_name,
                                        imageUuid=image_uuid,
@@ -647,6 +648,7 @@ def test_docker_newfields(docker_client, super_client):
                                        uts=uts,
                                        ipcMode=ipcMode,
                                        stopSignal=stopSignal,
+                                       stopTimeout=stopTimeout,
                                        networkMode='bridge',
                                        ulimits=ulimits)
     c = super_client.wait_success(c)
@@ -672,6 +674,7 @@ def test_docker_newfields(docker_client, super_client):
     host_limits = {"Name": "cpu", "Hard": 100000, "Soft": 100000}
     assert c.data['dockerInspect']['HostConfig']['Ulimits'] == [host_limits]
     assert c.data['dockerInspect']['Config']['StopSignal'] == 'SIGTERM'
+    assert c.data['dockerInspect']['Config']['StopTimeout'] == 10
 
 
 @if_docker_1_12
