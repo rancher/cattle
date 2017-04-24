@@ -99,30 +99,30 @@ def test_settings_user_list(context):
     names = {x.name for x in settings}
 
     assert len(settings) != 0
-    assert len(settings) < 15
+    assert len(settings) < 16
     assert 'rancher.compose.linux.url' in names
 
     settings = user_client.list_setting(all=True)
     assert len(settings) != 0
-    assert len(settings) < 15
+    assert len(settings) < 16
 
     settings = user_client.list_setting(all=False)
     assert len(settings) != 0
-    assert len(settings) < 15
+    assert len(settings) < 16
 
 
 def test_settings_admin_user_list(admin_user_client):
     settings = admin_user_client.list_setting()
     assert len(settings) != 0
-    assert len(settings) > 15
+    assert len(settings) > 16
 
     settings = admin_user_client.list_setting(all=True)
     assert len(settings) != 0
-    assert len(settings) > 15
+    assert len(settings) > 16
 
     settings = admin_user_client.list_setting(all=False)
     names = {x.name for x in settings}
 
     assert len(settings) != 0
-    assert len(settings) < 15
+    assert len(settings) < 16
     assert 'rancher.compose.linux.url' in names
