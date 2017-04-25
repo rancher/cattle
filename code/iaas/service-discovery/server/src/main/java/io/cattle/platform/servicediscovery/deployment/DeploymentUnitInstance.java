@@ -1,131 +1,39 @@
-
 package io.cattle.platform.servicediscovery.deployment;
 
-import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.model.Service;
-import io.cattle.platform.core.model.ServiceExposeMap;
-import io.cattle.platform.core.model.ServiceIndex;
-import io.cattle.platform.core.model.Stack;
-import io.cattle.platform.iaas.api.auditing.AuditEventType;
-import io.cattle.platform.object.process.StandardProcess;
-import io.cattle.platform.object.resource.ResourcePredicate;
-import io.cattle.platform.servicediscovery.deployment.impl.DeploymentManagerImpl.DeploymentServiceContext;
+import io.cattle.platform.core.model.Instance;
 
-import java.util.List;
 import java.util.Map;
 
+public interface DeploymentUnitInstance {
 
-public abstract class DeploymentUnitInstance {
-    protected String uuid;
-    protected DeploymentServiceContext context;
-    protected ServiceExposeMap exposeMap;
-    protected String launchConfigName;
-    protected Service service;
-    protected Stack stack;
+    boolean isUnhealthy();
 
-    public abstract boolean isError();
+    void stop();
 
-    public void remove() {
-        removeUnitInstance();
-        if (exposeMap != null) {
-            context.objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, exposeMap, null);
-        }
-    }
+    void scheduleCreate();
 
-    public void waitForRemoval() {
-        if (exposeMap != null) {
-            context.resourceMonitor.waitFor(exposeMap,
-                    new ResourcePredicate<ServiceExposeMap>() {
-                        @Override
-                        public boolean evaluate(ServiceExposeMap obj) {
-                            return CommonStatesConstants.REMOVED.equals(obj.getState());
-                        }
+    void remove(String reason, String level);
 
-                        @Override
-                        public String getMessage() {
-                            return "removed state";
-                        }
-                    });
-        }
-    }
+    String getLaunchConfigName();
 
-    protected abstract void removeUnitInstance();
+    Instance getInstance();
 
-    public abstract boolean isTransitioning();
+    void create(Map<String, Object> deployParams);
 
-    public abstract void stop();
+    void waitForStart(boolean isDependee);
 
-    protected DeploymentUnitInstance(DeploymentServiceContext context, String uuid, Service service,
-            String launchConfigName) {
-        this.context = context;
-        this.uuid = uuid;
-        this.launchConfigName = launchConfigName;
-        this.service = service;
-        this.stack = context.objectManager.loadResource(Stack.class, service.getStackId());
-    }
+    DeploymentUnitInstance start(boolean isDependee);
 
-    public abstract DeploymentUnitInstance create(Map<String, Object> deployParams);
+    boolean isStarted(boolean isDependee);
 
-    public abstract void scheduleCreate();
+    void waitForHealthy();
 
-    public DeploymentUnitInstance start() {
-        if (this.isStarted()) {
-            return this;
-        }
-        return this.startImpl();
-    }
+    boolean isHealthy();
+    
+    void waitForStop();
 
-    protected abstract DeploymentUnitInstance startImpl();
+    void resetUpgrade(boolean upgrade);
+    
+    boolean isSetForUpgrade();
 
-    public abstract boolean createNew();
-
-    public DeploymentUnitInstance waitForStart() {
-        if (this.isStarted()) {
-            return this;
-        }
-        return this.waitForStartImpl();
-    }
-
-    protected abstract DeploymentUnitInstance waitForStartImpl();
-
-    public boolean isStarted() {
-        return isStartedImpl();
-    }
-
-    protected abstract boolean isStartedImpl();
-
-    public abstract boolean isUnhealthy();
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public String getLaunchConfigName() {
-        return launchConfigName;
-    }
-
-    public Service getService() {
-        return service;
-    }
-
-    public abstract void waitForAllocate();
-
-    public abstract boolean isHealthCheckInitializing();
-
-    public abstract ServiceIndex getServiceIndex();
-
-    public Stack getStack() {
-        return stack;
-    }
-
-    public void generateAuditLog(AuditEventType eventType, String description, String level) {
-        if (this instanceof InstanceUnit) {
-            InstanceUnit defaultInstance = (InstanceUnit) this;
-            context.activityService.instance(defaultInstance.getInstance(), eventType.toString(), description, level);
-        }
-    }
-
-    public abstract List<String> getSearchDomains();
-
-    public abstract Long getCreateIndex();
 }

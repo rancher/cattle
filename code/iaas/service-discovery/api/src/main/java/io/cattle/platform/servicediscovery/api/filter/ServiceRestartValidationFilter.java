@@ -3,12 +3,12 @@ package io.cattle.platform.servicediscovery.api.filter;
 import io.cattle.platform.core.addon.RollingRestartStrategy;
 import io.cattle.platform.core.addon.ServiceRestart;
 import io.cattle.platform.core.constants.ServiceConstants;
+import io.cattle.platform.core.dao.ServiceExposeMapDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
@@ -37,7 +37,8 @@ public class ServiceRestartValidationFilter extends AbstractDefaultResourceManag
 
     @Override
     public String[] getTypes() {
-        return new String[] { "service", "loadBalancerService" };
+        return new String[] { ServiceConstants.KIND_SERVICE, ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
+                ServiceConstants.KIND_SCALING_GROUP_SERVICE };
     }
 
     @Override

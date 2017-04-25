@@ -9,6 +9,8 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
+import io.cattle.platform.servicediscovery.api.service.ServiceDataManager;
+import io.cattle.platform.servicediscovery.service.DeploymentManager;
 import io.cattle.platform.servicediscovery.upgrade.UpgradeManager;
 
 import javax.inject.Inject;
@@ -19,30 +21,32 @@ public class ServiceRollback extends AbstractDefaultProcessHandler {
 
     @Inject
     JsonMapper jsonMapper;
-
     @Inject
     UpgradeManager upgradeManager;
-
     @Inject
     ActivityService activityService;
+    @Inject
+    ServiceDataManager serviceDataMgr;
+    @Inject
+    DeploymentManager deploymentMgr;
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         final Service service = (Service) state.getResource();
-        final io.cattle.platform.core.addon.ServiceUpgrade upgrade = DataAccessor.field(service,
-                ServiceConstants.FIELD_UPGRADE, jsonMapper,
-                io.cattle.platform.core.addon.ServiceUpgrade.class);
-
-        if (upgrade != null) {
-            activityService.run(service, "service.rollback", "Rolling back service", new Runnable() {
-                @Override
-                public void run() {
-                    upgradeManager.rollback(service, upgrade.getStrategy());
+        activityService.run(service, "service.rollback", "Rolling back service", new Runnable() {
+            @Override
+            public void run() {
+                upgradeManager.upgrade(service, service.getState(), false,
+                        false);
+                if (DataAccessor.fieldBool(service, ServiceConstants.FIELD_FINISH_UPGRADE)) {
+                    // v1 rollback
                     upgradeManager.finishUpgrade(service, true);
+                } else {
+                    // v2 rollback, no cleanup
+                    deploymentMgr.activate(service);
                 }
-            });
-        }
-
+            }
+        });
         return null;
     }
 }

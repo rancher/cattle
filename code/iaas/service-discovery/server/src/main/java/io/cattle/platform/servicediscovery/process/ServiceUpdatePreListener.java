@@ -51,11 +51,11 @@ public class ServiceUpdatePreListener extends AbstractObjectProcessLogic impleme
         Boolean oldRetainIp = false;
         if (data.get("old") != null) {
             Map<String, Object> old = CollectionUtils.toMap(data.get("old"));
-            if (old.get(ServiceConstants.FIELD_SERVICE_RETAIN_IP) != null) {
-                oldRetainIp = (Boolean) old.get(ServiceConstants.FIELD_SERVICE_RETAIN_IP);
+            if (old.get(ServiceConstants.FIELD_RETAIN_IP) != null) {
+                oldRetainIp = (Boolean) old.get(ServiceConstants.FIELD_RETAIN_IP);
             }
         }
-        Boolean newRetainIp = DataAccessor.fieldBoolean(service, ServiceConstants.FIELD_SERVICE_RETAIN_IP);
+        Boolean newRetainIp = DataAccessor.fieldBoolean(service, ServiceConstants.FIELD_RETAIN_IP);
 
         boolean update = false;
         if (newRetainIp.booleanValue() && !oldRetainIp.booleanValue()) {

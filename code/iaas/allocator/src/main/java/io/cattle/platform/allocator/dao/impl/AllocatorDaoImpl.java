@@ -16,7 +16,6 @@ import static io.cattle.platform.core.model.tables.StorageDriverTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
-
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.service.AllocationAttempt;
@@ -181,7 +180,8 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
         if (StringUtils.isEmpty(instance.getDeploymentUnitUuid())) {
             return INSTANCE_HOST_MAP.INSTANCE_ID.eq(instance.getId());
         } else {
-            return INSTANCE.DEPLOYMENT_UNIT_UUID.eq(instance.getDeploymentUnitUuid());
+            return INSTANCE.DEPLOYMENT_UNIT_ID.eq(instance.getDeploymentUnitId()).and(
+                    INSTANCE.STATE.notIn(InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING));
         }
     }
 
@@ -518,14 +518,14 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     }
 
     @Override
-    public List<Instance> getUnmappedDeploymentUnitInstances(String deploymentUnitUuid) {
+    public List<Instance> getUnmappedDeploymentUnitInstances(Long deploymentUnitId) {
         List<? extends Instance> instanceRecords = create()
                 .select(INSTANCE.fields())
                 .from(INSTANCE)
                 .leftOuterJoin(INSTANCE_HOST_MAP)
                     .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID).and(INSTANCE_HOST_MAP.REMOVED.isNull()))
                 .where(INSTANCE.REMOVED.isNull())
-                .and(INSTANCE.DEPLOYMENT_UNIT_UUID.eq(deploymentUnitUuid))
+                .and(INSTANCE.DEPLOYMENT_UNIT_ID.eq(deploymentUnitId))
                 .and(INSTANCE_HOST_MAP.ID.isNull())
                 .fetchInto(InstanceRecord.class);
 
