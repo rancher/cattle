@@ -20,7 +20,7 @@ public class PostInstancePurge extends AgentBasedProcessHandler {
     
     @Override
     public String[] getProcessNames() {
-        return new String[] { "instance.purge" };
+        return new String[] { "instance.remove" };
     }
 
     @Override
@@ -43,6 +43,6 @@ public class PostInstancePurge extends AgentBasedProcessHandler {
 
     @Override
     public int getPriority() {
-        return Priority.DEFAULT;
+        return Priority.BIG_ONE;
     }
 }

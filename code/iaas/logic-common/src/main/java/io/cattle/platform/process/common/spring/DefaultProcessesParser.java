@@ -21,7 +21,6 @@ public class DefaultProcessesParser extends ProcessParser {
             "%s.remove;requested,inactive,registering,updating-active,updating-inactive;removing;removed",
             "%s.purge;removed;purging;purged",
             "%s.update;inactive,active;inactive=updating-inactive,active=updating-active;updating-inactive=inactive,updating-active=active",
-            "%s.restore;removed;restoring;inactive"
     });
 
     @Override

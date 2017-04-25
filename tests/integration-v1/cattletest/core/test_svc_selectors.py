@@ -121,19 +121,6 @@ def test_service_add_instance_selector(new_context):
     expose_map = container2.serviceExposeMaps()[0]
     assert expose_map.managed == 0
 
-    # case #3 - remove and restore the container
-    container2 = client.wait_success(container2.stop())
-    container2 = client.wait_success(container2.remove())
-    wait_for(
-        lambda: len(client.list_serviceExposeMap(serviceId=service.id,
-                                                 state='active')) == 1
-    )
-    client.wait_success(container2.restore())
-    wait_for(
-        lambda: len(client.list_serviceExposeMap(serviceId=service.id,
-                                                 state='active')) == 2
-    )
-
 
 def _create_stack(client):
     env = client.create_environment(name=random_str())
