@@ -31,5 +31,5 @@ public interface AllocationHelper {
 
     List<Long> getAllHostsSatisfyingHostAffinity(Long accountId, Map<String, String> labelConstraints);
 
-    List<LockDefinition> extractAllocationLockDefinitions(Instance instance);
+    List<LockDefinition> extractAllocationLockDefinitions(Instance instance, List<Instance> instances);
 }

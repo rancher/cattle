@@ -3524,3 +3524,33 @@ def test_populate_system_label(client, context):
     instance1 = _validate_compose_instance_start(client, svc, env, "1")
     assert instance1.labels["foo"] == "bar"
     assert instance1.labels["io.rancher.container.system"] == "true"
+
+
+def test_sidekicks_container_anti_affinity(client, context):
+    register_simulated_host(context)
+    register_simulated_host(context)
+    stack = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    name = random_str()
+    service_name = "service" + name
+    launch_config = {"imageUuid": image_uuid,
+                     "labels": {
+                         "io.rancher.sidekicks": "secondary",
+                         "io.rancher.scheduler.affinity:container_label_ne":
+                             "io.rancher.stack_service.name=" +
+                             stack.name + '/' + service_name
+                     }}
+    secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
+    service = client.create_service(name=service_name,
+                                    stackId=stack.id,
+                                    launchConfig=launch_config,
+                                    scale=3,
+                                    secondaryLaunchConfigs=[secondary_lc])
+    service = client.wait_success(service)
+    service = client.wait_success(service.activate(), 120)
+    instances = _get_instance_for_service(client, service.id)
+    result = {}
+    for instance in instances:
+        result[instance.hostId] = True
+    assert len(result) == 3

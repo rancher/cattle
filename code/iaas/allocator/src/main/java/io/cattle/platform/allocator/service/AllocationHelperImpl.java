@@ -370,13 +370,27 @@ public class AllocationHelperImpl implements AllocationHelper {
 
     @Override
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public List<LockDefinition> extractAllocationLockDefinitions(Instance instance) {
+    public List<LockDefinition> extractAllocationLockDefinitions(Instance instance, List<Instance> instances) {
         Map env = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_ENVIRONMENT).as(jsonMapper, Map.class);
         List<LockDefinition> lockDefs = extractAllocationLockDefinitionsFromEnv(env);
 
         Map labels = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_LABELS).as(jsonMapper, Map.class);
         if (labels == null) {
             return lockDefs;
+        }
+        // we need to merge all the affinity labels from primary containers and sickkicks
+        for (Instance inst: instances) {
+            Map lbs = DataAccessor.fields(inst).withKey(InstanceConstants.FIELD_LABELS).as(jsonMapper, Map.class);
+            Iterator<Map.Entry> it = lbs.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry affinityDef = it.next();
+                String key = ((String)affinityDef.getKey()).toLowerCase();
+                String valueStr = (String)affinityDef.getValue();
+                if (key.startsWith(ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL) || 
+                        key.startsWith(ContainerAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER)) {
+                        labels.put(key, valueStr);
+                }
+            }
         }
 
         Iterator<Map.Entry> iter = labels.entrySet().iterator();
