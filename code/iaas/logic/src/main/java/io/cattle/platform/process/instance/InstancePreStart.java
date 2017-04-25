@@ -1,6 +1,9 @@
 package io.cattle.platform.process.instance;
 
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
+
+import io.cattle.platform.allocator.constraint.HostAffinityConstraint;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.StoragePoolDao;
 import io.cattle.platform.core.model.Instance;
@@ -18,6 +21,7 @@ import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.process.lock.InstanceVolumeAccessModeLock;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -37,6 +41,7 @@ public class InstancePreStart extends AbstractObjectProcessLogic implements Proc
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         final Instance instance = (Instance)state.getResource();
+        Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
 
         List<Volume> volumes = InstanceHelpers.extractVolumesFromMounts(instance, objectManager);
         for (final Volume v : volumes) {
@@ -57,6 +62,12 @@ public class InstancePreStart extends AbstractObjectProcessLogic implements Proc
                         }
                     });
                 }
+            }
+            Map<String, Object> driver_opts = DataAccessor.fieldMap(v, VolumeConstants.FIELD_VOLUME_DRIVER_OPTS);
+            if (driver_opts.containsKey(VolumeConstants.EC2_AZ)) {
+                String zone = driver_opts.get(VolumeConstants.EC2_AZ).toString();
+                labels.put(HostAffinityConstraint.LABEL_HEADER_AFFINITY_HOST_LABEL, String.format("%s=%s", VolumeConstants.EC2_AZ_HOST_LABEL_KEY, zone));
+                objectManager.setFields(instance, InstanceConstants.FIELD_LABELS, labels);
             }
         }
 
