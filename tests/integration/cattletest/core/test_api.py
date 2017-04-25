@@ -1,5 +1,6 @@
 from cattle import ApiError
 from common_fixtures import *  # NOQA
+import requests
 
 
 def test_agent_unique(super_client):
@@ -369,3 +370,13 @@ def test_query_length(admin_user_client):
 
     bigger = 'a' * (16384 - 512)
     admin_user_client.list_account(name=bigger)
+
+
+def test_x_bad_forwarded(cattle_url):
+    resp = requests.get(cattle_url, headers={'x-forwarded-for': '1.1.1.1'})
+    assert resp.headers['x-api-client-ip'] == '1.1.1.1'
+
+    resp = requests.get(cattle_url, headers={
+        'x-forwarded-for': '1.1.1.1:1234'
+    })
+    assert resp.headers['x-api-client-ip'] == '1.1.1.1'

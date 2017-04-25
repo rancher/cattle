@@ -165,6 +165,13 @@ public class DefaultApiRequestParser implements ApiRequestParser {
         clientIp = getOverrideHeader(request, overrideClientIpHeader, clientIp);
         clientIp = getOverrideHeader(request, FORWARDED_FOR_HEADER, clientIp, false);
 
+        if (StringUtils.isNotBlank(clientIp)) {
+            // This is to deal with situations in which the x-forwarded-for is incorrect and has the remote port in it
+            String[] parts = clientIp.split("[:]");
+            if (parts.length == 2) {
+                return parts[0];
+            }
+        }
         return clientIp;
     }
 
