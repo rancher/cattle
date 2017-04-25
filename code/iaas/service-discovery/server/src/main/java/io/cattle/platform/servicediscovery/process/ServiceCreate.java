@@ -32,7 +32,7 @@ public class ServiceCreate extends AbstractObjectProcessHandler {
     }
 
     @Override
-    public HandlerResult handle(ProcessState state, ProcessInstance process) {
+    public HandlerResult handle(ProcessState state, ProcessInstance process) throws RuntimeException {
         Service service = (Service) state.getResource();
         sdService.setVIP(service);
         sdService.setPorts(service);
