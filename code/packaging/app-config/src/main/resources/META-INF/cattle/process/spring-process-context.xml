@@ -270,6 +270,10 @@
     <bean class="io.cattle.platform.process.instance.PostInstancePurge"
         p:commandName="compute.instance.remove" >
     </bean>
+    
+    <bean class="io.cattle.platform.servicediscovery.process.LoadBalancerServiceInstanceStopPreListener"
+        p:commandName="target.drain" >
+    </bean>
 
     <bean class="io.cattle.platform.process.common.spring.GenericResourceProcessDefinitionCollector" />
     <bean id="processFactory" abstract="true" class="io.cattle.platform.process.common.spring.GenericProcessFactory" />
