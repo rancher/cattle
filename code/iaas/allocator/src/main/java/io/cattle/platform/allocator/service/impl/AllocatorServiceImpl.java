@@ -321,7 +321,7 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
     }
 
     protected LockDefinition getInstanceLockDef(Instance origInstance, List<Instance> instances, Set<Long> volumeIds) {
-        List<LockDefinition> locks = allocationHelper.extractAllocationLockDefinitions(origInstance);
+        List<LockDefinition> locks = allocationHelper.extractAllocationLockDefinitions(origInstance, instances);
 
         if (origInstance.getDeploymentUnitUuid() != null) {
             locks.add(new AllocateConstraintLock(AllocateConstraintLock.Type.DEPLOYMENT_UNIT, origInstance.getDeploymentUnitUuid()));
