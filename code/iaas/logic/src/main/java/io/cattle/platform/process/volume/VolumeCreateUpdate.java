@@ -48,6 +48,7 @@ public class VolumeCreateUpdate extends AbstractObjectProcessHandler {
             deviceNum = -1;
         }
 
+        
         HandlerResult result = new HandlerResult(VolumeConstants.FIELD_VOLUME_DRIVER, driver,
                 VOLUME.DEVICE_NUMBER, deviceNum,
                 VOLUME.STORAGE_DRIVER_ID, driverId);
