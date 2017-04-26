@@ -4,6 +4,7 @@ import io.cattle.iaas.healthcheck.service.HealthcheckInstancesLookup;
 import io.cattle.iaas.healthcheck.service.HealthcheckService;
 import io.cattle.iaas.healthcheck.service.HealthcheckService.HealthcheckInstanceType;
 import io.cattle.platform.core.constants.AgentConstants;
+import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Instance;
@@ -41,7 +42,7 @@ public class HealthCheckReconcilePostTrigger extends AbstractObjectProcessLogic 
     @Override
     public String[] getProcessNames() {
         return new String[] { AgentConstants.PROCESS_RECONNECT, AgentConstants.PROCESS_FINISH_RECONNECT,
-                "networkserviceproviderinstancemap.create",
+                HostConstants.PROCESS_ACTIVATE,
                 "healthcheckinstancehostmap.remove" };
     }
 

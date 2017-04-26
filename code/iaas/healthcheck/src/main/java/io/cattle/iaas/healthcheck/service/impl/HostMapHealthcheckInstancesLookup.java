@@ -25,9 +25,6 @@ public class HostMapHealthcheckInstancesLookup extends AbstractJooqDao implement
         HealthcheckInstanceHostMap hostMap = (HealthcheckInstanceHostMap) obj;
 
         List<Instance> instances = new ArrayList<>();
-        if (!(obj instanceof HealthcheckInstanceHostMap)) {
-            return instances;
-        }
         HealthcheckInstance hInstance = objectManager.loadResource(HealthcheckInstance.class,
                 hostMap.getHealthcheckInstanceId());
         if (hInstance == null || hInstance.getRemoved() != null) {

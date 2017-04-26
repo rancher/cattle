@@ -38,6 +38,7 @@ public class SimulatorStartStopProcessor implements AgentSimulatorEventProcessor
 
     private static final Pattern SHUTDOWN = Pattern.compile(".*simShutdownAfter\",\"([0-9]+)");
     private static final Pattern FORGET = Pattern.compile(".*simForgetImmediately.*");
+    private static final Pattern DISCONNECT = Pattern.compile(".*simDisconnectAgent.*");
     private static final String SIM_CREATE_ANOTHER = "simCreateAnother_";
     private static final Pattern CREATE_ANOTHER = Pattern.compile(".*simCreateAnother_.*");
 
@@ -103,6 +104,10 @@ public class SimulatorStartStopProcessor implements AgentSimulatorEventProcessor
                     simulator.getInstances().remove(uuid.toString());
                 }
             }, Long.parseLong(m.group(1)), TimeUnit.SECONDS);
+        }
+
+        if (DISCONNECT.matcher(eventString).matches()) {
+            simulator.setOpen(false);
         }
 
         if (CREATE_ANOTHER.matcher(eventString).matches()) {
