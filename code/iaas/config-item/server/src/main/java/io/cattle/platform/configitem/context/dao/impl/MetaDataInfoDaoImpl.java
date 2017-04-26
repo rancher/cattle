@@ -344,7 +344,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
         boolean host_ports = DataAccessor.fieldBool(ntwk, NetworkConstants.FIELD_HOST_PORTS);
         Object policy = DataAccessor.field(ntwk, NetworkConstants.FIELD_POLICY, Object.class);
         String dpa = DataAccessor.fieldString(ntwk, NetworkConstants.FIELD_DEFAULT_POLICY_ACTION);
-        NetworkMetaData ntwkMeta = new NetworkMetaData(name, uuid, host_ports, isDefault, meta, dpa, policy);
+        NetworkMetaData ntwkMeta = new NetworkMetaData(name, uuid, host_ports, isDefault, meta, dpa, policy, account);
         writeToJson(os, ntwkMeta);
     }
 

@@ -1,21 +1,24 @@
 package io.cattle.platform.configitem.context.data.metadata.common;
 
+import io.cattle.platform.core.model.Account;
+
 import java.util.Map;
 
 public class NetworkMetaData {
     String name;
     String uuid;
+    String environment_uuid;
     boolean is_default;
     boolean host_ports;
     protected Map<String, Object> metadata;
     String default_policy_action;
     Object policy;
-    
+
  // helper field needed by metadata service to process object
     String metadata_kind;
 
     public NetworkMetaData(String name, String uuid, boolean is_default, boolean host_ports,
-            Map<String, Object> metadata, String defaultPolicyAction, Object policy) {
+            Map<String, Object> metadata, String defaultPolicyAction, Object policy, Account account) {
         super();
         this.name = name;
         this.uuid = uuid;
@@ -25,6 +28,7 @@ public class NetworkMetaData {
         this.default_policy_action = defaultPolicyAction;
         this.policy = policy;
         this.metadata_kind = "network";
+        this.environment_uuid = account.getUuid();
     }
 
     public String getName() {
@@ -89,5 +93,13 @@ public class NetworkMetaData {
 
     public void setMetadata_kind(String metadata_kind) {
         this.metadata_kind = metadata_kind;
+    }
+
+    public String getEnvironment_uuid() {
+        return environment_uuid;
+    }
+
+    public void setEnvironment_uuid (String environment_uuid) {
+        this.environment_uuid = environment_uuid;
     }
 }
