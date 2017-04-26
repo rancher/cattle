@@ -149,6 +149,10 @@ public class AuditServiceImpl implements AuditService{
     }
 
     private void putInAsString(Map<String, Object> data, String type, String fieldForObject, String errMsg, Object objectToPlace) {
+        if (objectToPlace == null) {
+            return;
+        }
+
         @SuppressWarnings("unchecked")
         Map<String, Object> obj = jsonMapper.convertValue(objectToPlace, Map.class);
 
@@ -157,6 +161,11 @@ public class AuditServiceImpl implements AuditService{
         }
 
         obj.remove("secretValue");
+        obj.remove("password");
+        obj.remove("newSecret");
+        obj.remove("oldSecret");
+        obj.remove("adminAccountPassword");
+        obj.remove("serviceAccountPassword");
         Iterator<Map.Entry<String, Object>> iter = obj.entrySet().iterator();
         while (iter.hasNext()) {
             if (iter.next().getKey().endsWith("Config")) {
