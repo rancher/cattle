@@ -740,9 +740,15 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
             return null;
         }
 
-        String key = String.format("service.v2.%d.cert", service.getId());
+        String oldKey = String.format("service.v2.%d.cert", service.getId());
+        String newKey = String.format("service.v3.%d.%s.cert", service.getAccountId(), service.getName());
 
-        return dataDao.getOrCreate(key, false, new Callable<String>() {
+        String oldCert = dataDao.get(oldKey, false);
+        if (StringUtils.isNotBlank(oldCert)) {
+            return oldCert;
+        }
+
+        return dataDao.getOrCreate(newKey, false, new Callable<String>() {
             @Override
             public String call() throws Exception {
                 return generateService(service, stack);
