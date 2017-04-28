@@ -26,6 +26,11 @@ public class ServiceProxyManager extends AbstractNoOpResourceManager {
     protected Object createInternal(String type, ApiRequest request) {
         ServiceProxy proxy = request.proxyRequestObject(ServiceProxy.class);
         String service = proxy.getService();
+        if (StringUtils.isBlank(service)) {
+            request.setResponseCode(ResponseCodes.NOT_FOUND);
+            return null;
+        }
+
         String[] parts = StringUtils.split(service, ".", 2);
         List<? extends Instance> instances = null;
 
