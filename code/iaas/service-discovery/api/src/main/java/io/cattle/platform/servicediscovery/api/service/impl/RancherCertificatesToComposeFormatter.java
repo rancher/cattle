@@ -12,6 +12,8 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.apache.commons.lang3.StringUtils;
+
 @Named
 public class RancherCertificatesToComposeFormatter extends AbstractJooqDao
         implements RancherConfigToComposeFormatter {
@@ -23,10 +25,13 @@ public class RancherCertificatesToComposeFormatter extends AbstractJooqDao
     @SuppressWarnings("unchecked")
     public Object format(ServiceDiscoveryConfigItem item, Object valueToTransform) {
         if (item.getDockerName().equalsIgnoreCase(ServiceDiscoveryConfigItem.CERTIFICATES.getDockerName())) {
-            List<Integer> certificateIds = (List<Integer>) valueToTransform;
+            List<Number> certificateIds = (List<Number>) valueToTransform;
             List<String> certificateNames = new ArrayList<>();
-            for (Integer certificateId : certificateIds) {
-                certificateNames.add(getCertName(certificateId));
+            for (Number certificateId : certificateIds) {
+                String certName = getCertName(certificateId);
+                if (StringUtils.isNotBlank(certName)) {
+                    certificateNames.add(certName);
+                }
             }
             return certificateNames;
         } else if (item.getDockerName().equals(ServiceDiscoveryConfigItem.DEFAULT_CERTIFICATE.getDockerName())) {
@@ -37,7 +42,11 @@ public class RancherCertificatesToComposeFormatter extends AbstractJooqDao
         }
     }
 
-    private String getCertName(Integer certId) {
-        return objManager.loadResource(Certificate.class, certId.longValue()).getName();
+    private String getCertName(Number certId) {
+        if (certId == null) {
+            return null;
+        }
+        Certificate cert = objManager.loadResource(Certificate.class, certId.longValue());
+        return cert == null ? null : cert.getName();
     }
 }
