@@ -532,7 +532,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
         List<Instance> waitList = new ArrayList<>();
         for (ServiceExposeMap map : maps) {
             Instance instance = objectManager.loadResource(Instance.class, map.getInstanceId());
-            if (instance == null || instance.getState().equals(CommonStatesConstants.REMOVED) || instance.getState().equals(
+            if (instance == null || instance.getRemoved() != null || instance.getState().equals(
                             CommonStatesConstants.REMOVING)) {
                 continue;
             }
