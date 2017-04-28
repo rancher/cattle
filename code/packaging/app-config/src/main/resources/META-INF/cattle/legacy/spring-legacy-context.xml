@@ -134,6 +134,12 @@
         </tx:attributes>
     </tx:advice>
 
+    <tx:advice id="DataDaoAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="getOrCreate" propagation="REQUIRES_NEW" />
+        </tx:attributes>
+    </tx:advice>
+
     <aop:config>
         <aop:advisor advice-ref="GenericResourceDaoImplAdvice"
             pointcut="execution(* io.cattle.platform.core.dao.GenericResourceDao.*(..))" />
@@ -156,6 +162,7 @@
         <aop:advisor advice-ref="AllocatorAdvice" pointcut="execution(* io.cattle.platform.allocator.dao.AllocatorDao.*(..))" />
         <aop:advisor advice-ref="ApiDelegateAdvice" pointcut="execution(* io.github.ibuildthecloud.gdapi.request.handler.write.ReadWriteApiDelegate.*(..))" />
         <aop:advisor advice-ref="StorageDriverDaoAdvice" pointcut="execution(* io.cattle.platform.core.dao.StorageDriverDao.*(..))" />
+        <aop:advisor advice-ref="DataDaoAdvice" pointcut="execution(* io.cattle.platform.core.dao.DataDao.*(..))" />
     </aop:config>
 
    <bean class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" depends-on="CoreSchemaFactory" >

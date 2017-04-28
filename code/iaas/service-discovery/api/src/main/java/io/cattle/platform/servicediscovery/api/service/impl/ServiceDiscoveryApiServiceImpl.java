@@ -743,20 +743,20 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
         String oldKey = String.format("service.v2.%d.cert", service.getId());
         String newKey = String.format("service.v3.%d.%s.cert", service.getAccountId(), service.getName());
 
+        return dataDao.getOrCreate(newKey, false, new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                return generateService(oldKey, service, stack);
+            }
+        });
+    }
+
+    protected String generateService(String oldKey, Service service, Stack stack) throws Exception {
         String oldCert = dataDao.get(oldKey, false);
         if (StringUtils.isNotBlank(oldCert)) {
             return oldCert;
         }
 
-        return dataDao.getOrCreate(newKey, false, new Callable<String>() {
-            @Override
-            public String call() throws Exception {
-                return generateService(service, stack);
-            }
-        });
-    }
-
-    protected String generateService(Service service, Stack stack) throws Exception {
         @SuppressWarnings("unchecked")
         Map<String, Object> metadata = DataAccessor.fields(service).withKey(ServiceConstants.FIELD_METADATA)
                 .withDefault(Collections.EMPTY_MAP).as(Map.class);
