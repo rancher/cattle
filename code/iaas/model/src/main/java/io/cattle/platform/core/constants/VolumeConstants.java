@@ -79,7 +79,5 @@ public class VolumeConstants {
     
     public static final String EC2_AZ = "ec2_az";
     
-    public static final String SCALE_GROUP_LABEL = "io.rancher.scheduler.scale_per_group";
-
-    public static final String EC2_AZ_HOST_LABEL_KEY = "ec2.availability_zone";
+    public static final String HOST_ZONE_LABEL_KEY = "io.rancher.host.zone";
 }
