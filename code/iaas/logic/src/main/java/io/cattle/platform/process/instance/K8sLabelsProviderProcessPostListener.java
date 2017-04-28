@@ -110,6 +110,10 @@ public class K8sLabelsProviderProcessPostListener extends AgentBasedProcessLogic
 
         Instance instance = getInstance(state);
 
+        if (labels.size() == 0) {
+            throw new ExecutionException("Failed to find labels for POD", instance);
+        }
+
         for (Map.Entry<String, String>label : labels.entrySet()) {
             labelsService.createContainerLabel(instance.getAccountId(), instance.getId(), label.getKey(), label.getValue());
         }
