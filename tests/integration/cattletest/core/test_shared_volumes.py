@@ -582,7 +582,7 @@ def test_ebs_volume_hard_affinity(super_client, new_context):
     sp_name = 'storage-%s' % random_str()
     host2 = register_simulated_host(new_context)
     host_uuids = [host.uuid, host2.uuid]
-    host = super_client.update(host, labels={'ec2.availability_zone': 'east'})
+    host = super_client.update(host, labels={'io.rancher.host.zone': 'east'})
     super_client.wait_success(host)
 
     d1 = super_client.create_storageDriver(name=sp_name)
@@ -625,7 +625,7 @@ def test_ebs_volume_hard_affinity(super_client, new_context):
     container_list = get_service_container_list(super_client, service)
     container = container_list[0]
     key = 'io.rancher.scheduler.affinity:host_label'
-    assert container.data.fields.labels[key] == 'ec2.availability_zone=east'
+    assert container.data.fields.labels[key] == 'io.rancher.host.zone=east'
 
 
 def create_volume_event(client, agent_client, context, event_type,
