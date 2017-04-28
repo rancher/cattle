@@ -66,7 +66,7 @@ public class InstancePreStart extends AbstractObjectProcessLogic implements Proc
             Map<String, Object> driver_opts = DataAccessor.fieldMap(v, VolumeConstants.FIELD_VOLUME_DRIVER_OPTS);
             if (driver_opts.containsKey(VolumeConstants.EC2_AZ)) {
                 String zone = driver_opts.get(VolumeConstants.EC2_AZ).toString();
-                labels.put(HostAffinityConstraint.LABEL_HEADER_AFFINITY_HOST_LABEL, String.format("%s=%s", VolumeConstants.EC2_AZ_HOST_LABEL_KEY, zone));
+                labels.put(HostAffinityConstraint.LABEL_HEADER_AFFINITY_HOST_LABEL, String.format("%s=%s", VolumeConstants.HOST_ZONE_LABEL_KEY, zone));
                 objectManager.setFields(instance, InstanceConstants.FIELD_LABELS, labels);
             }
         }
