@@ -57,6 +57,7 @@ public class AccountConstants {
     public static final String ADMIN_REQUIRED_MESSAGE = "At least one admin account is required at all times";
 
     public static final String ORC_KUBERNETES = "k8s";
+    public static final String ORC_KUBERNETES_DISPLAY = "kubernetes";
     public static final String ORC_SWARM = "swarm";
     public static final String ORC_MESOS = "mesos";
     public static final String ORC_WINDOWS = "windows";
