@@ -61,7 +61,7 @@ public class K8sLabelsProviderProcessPostListener extends AgentBasedProcessLogic
     protected boolean k8sRequired(Instance instance) {
         Account account = objectManager.loadResource(Account.class, instance.getAccountId());
         String orch = DataAccessor.fieldString(account, AccountConstants.FIELD_ORCHESTRATION);
-        return AccountConstants.ORC_KUBERNETES.equals(orch);
+        return AccountConstants.ORC_KUBERNETES_DISPLAY.equals(orch);
     }
 
     protected boolean isPod(Instance instance) {
