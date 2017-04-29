@@ -153,7 +153,7 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
         for (String orc : ORC_PRIORITY) {
             if (installedOrcs.contains(orc)) {
                 if (AccountConstants.ORC_KUBERNETES.equals(orc)) {
-                    orchestration = "kubernetes";
+                    orchestration = AccountConstants.ORC_KUBERNETES_DISPLAY;
                 } else {
                     orchestration = orc;
                 }
