@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections.IteratorUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.base.Splitter;
 
@@ -77,7 +78,9 @@ public class ContainerMetaData {
 
     public void setIp(String ip) {
         this.primary_ip = ip;
-        this.ips.add(primary_ip);
+        if (StringUtils.isNotBlank(ip)) {
+            this.ips.add(primary_ip);
+        }
     }
 
     @SuppressWarnings("unchecked")
