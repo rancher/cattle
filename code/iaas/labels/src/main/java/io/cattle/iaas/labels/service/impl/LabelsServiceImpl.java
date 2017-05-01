@@ -1,8 +1,6 @@
 package io.cattle.iaas.labels.service.impl;
 
-import static io.cattle.platform.core.model.Tables.HOST_LABEL_MAP;
-import static io.cattle.platform.core.model.Tables.INSTANCE_LABEL_MAP;
-import static io.cattle.platform.core.model.Tables.LABEL;
+import static io.cattle.platform.core.model.Tables.*;
 
 import io.cattle.iaas.labels.service.LabelsService;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -38,14 +36,21 @@ public class LabelsServiceImpl implements LabelsService {
         if (label == null) {
             Map<Object, Object> labelData = new HashMap<>();
             labelData.put(LABEL.STATE, CommonStatesConstants.CREATED);
-            labelData.put(LABEL.KEY, key);
-            labelData.put(LABEL.VALUE, value);
+            labelData.put(LABEL.KEY, truncate(key, 1024));
+            labelData.put(LABEL.VALUE, truncate(value, 4096));
             labelData.put(LABEL.ACCOUNT_ID, accountId);
 
             labelData.put(LABEL.TYPE, type);
             label = objectManager.create(Label.class, objectManager.convertToPropertiesFor(Label.class, labelData));
         }
         return label;
+    }
+
+    protected String truncate(String value, int length) {
+        if (value != null && value.length() > length) {
+            return value.substring(0, length);
+        }
+        return value;
     }
 
     @Override
