@@ -13,7 +13,8 @@ import io.cattle.platform.systemstack.catalog.CatalogService;
 import io.cattle.platform.systemstack.lock.ScheduledUpgradeLock;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,6 +36,23 @@ public class UpgradeManager {
     public static final String METADATA = "library:infra*network-services";
     private static final DynamicBooleanProperty LAUNCH_CATALOG = ArchaiusUtil.getBoolean("catalog.execute");
     private static final Logger log = LoggerFactory.getLogger(UpgradeManager.class);
+    private static final Set<String> OLD_METADATAS = new HashSet<>(Arrays.asList(
+            "library:infra*network-services:0",
+            "library:infra*network-services:1",
+            "library:infra*network-services:2",
+            "library:infra*network-services:3",
+            "library:infra*network-services:4",
+            "library:infra*network-services:5",
+            "library:infra*network-services:6",
+            "library:infra*network-services:7",
+            "library:infra*network-services:8",
+            "library:infra*network-services:9",
+            "library:infra*network-services:11",
+            "library:infra*network-services:12",
+            "library:infra*network-services:13",
+            "library:infra*network-services:14",
+            "library:infra*network-services:18"
+            ));
 
     @Inject
     CatalogService catalogService;
@@ -79,20 +97,12 @@ public class UpgradeManager {
             }
         }
 
-        if (!UPGRADE_MANAGER.get()) {
-            Map<String, String> temp = new HashMap<>();
-            String value = catalogs.get(METADATA);
-            if (value != null) {
-                temp.put(METADATA, value);
-            }
-            catalogs = temp;
-        }
-
         if (catalogs.size() == 0) {
             return;
         }
 
-        List<? extends Stack> stacks = stackDao.getStacksToUpgrade(catalogs.values());
+        List<? extends Stack> stacks = UPGRADE_MANAGER.get() ?
+                stackDao.getStacksToUpgrade(catalogs.values()) : stackDao.getStacksThatMatch(OLD_METADATAS);
 
         for (Stack stack : stacks) {
             String templateId = catalogService.getTemplateIdFromExternalId(stack.getExternalId());
