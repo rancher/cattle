@@ -80,11 +80,4 @@ public class DataDaoImpl extends AbstractJooqDao implements DataDao {
         this.objectManager = objectManager;
     }
 
-    @Override
-    public String get(String key, boolean visible) {
-        Data data = objectManager.findAny(Data.class,
-                DATA.NAME, key);
-        return data == null ? null : data.getValue();
-    }
-
 }

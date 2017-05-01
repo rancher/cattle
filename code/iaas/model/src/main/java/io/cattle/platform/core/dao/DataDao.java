@@ -6,6 +6,4 @@ public interface DataDao {
 
     String getOrCreate(String key, boolean visible, Callable<String> generator);
 
-    String get(String key, boolean visible);
-
 }
