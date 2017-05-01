@@ -50,7 +50,7 @@ public class SampleDataStartupV14 extends AbstractSampleData {
             }
 
             Service service = objectManager.loadResource(Service.class, id);
-            if (service == null || StringUtils.isBlank(service.getName())) {
+            if (service == null || service.getRemoved() != null || StringUtils.isBlank(service.getName())) {
                 continue;
             }
             String newKey = "service.v3." + service.getAccountId() + "." + service.getName() + ".cert";
