@@ -573,6 +573,14 @@ def test_container_request_ip(super_client, client, context):
         assert len(nics) == 0
 
 
+def test_container_long_labels(context, client):
+    key = 'k' * 1025
+    value = 'k' * 4097
+    c = context.create_container(networkMode=None, labels={key: value})
+    c = client.wait_success(c)
+    assert c.state == 'running'
+
+
 def test_container_network_modes(context, super_client):
     c = context.create_container(networkMode=None)
     c = super_client.wait_success(c)
