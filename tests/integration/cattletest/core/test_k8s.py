@@ -19,7 +19,7 @@ def test_create_k8s_container_no_k8s_fail(new_context, super_client):
         'io.kubernetes.container.name': 'POD',
     }, startOnCreate=False)
 
-    super_client.update(c.account(), orchestration='k8s')
+    super_client.update(c.account(), orchestration='kubernetes')
     c = client.wait_transitioning(c.start())
     assert c.transitioning == 'error'
     assert c.transitioningMessage == 'Failed to find labels provider'
