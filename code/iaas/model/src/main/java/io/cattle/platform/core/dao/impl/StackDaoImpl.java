@@ -68,6 +68,21 @@ public class StackDaoImpl extends AbstractJooqDao implements StackDao {
     }
 
     @Override
+    public List<? extends Stack> getStacksThatMatch(Collection<String> currentIds) {
+        return create().select(STACK.fields())
+            .from(STACK)
+            .leftOuterJoin(SCHEDULED_UPGRADE)
+                .on(SCHEDULED_UPGRADE.STACK_ID.eq(STACK.ID)
+                        .and(SCHEDULED_UPGRADE.REMOVED.isNull())
+                        .and(SCHEDULED_UPGRADE.FINISHED.isNull()))
+            .where(STACK.REMOVED.isNull()
+                    .and(STACK.SYSTEM.isTrue())
+                    .and(STACK.EXTERNAL_ID.in(currentIds))
+                    .and(SCHEDULED_UPGRADE.ID.isNull()))
+            .fetchInto(StackRecord.class);
+    }
+
+    @Override
     public List<? extends Stack> getStacksToUpgrade(Collection<String> currentIds) {
         return create().select(STACK.fields())
             .from(STACK)

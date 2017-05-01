@@ -17,6 +17,8 @@ public interface StackDao {
 
     List<? extends Stack> getStacksToUpgrade(Collection<String> currentIds);
 
+    List<? extends Stack> getStacksThatMatch(Collection<String> currentIds);
+
     List<? extends ScheduledUpgrade> getRunningUpgrades();
 
     List<? extends ScheduledUpgrade> getReadyUpgrades(Set<Long> accountsToIgnore, int max);
