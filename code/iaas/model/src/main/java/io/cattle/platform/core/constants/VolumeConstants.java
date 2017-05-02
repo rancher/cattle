@@ -80,4 +80,6 @@ public class VolumeConstants {
     public static final String EC2_AZ = "ec2_az";
     
     public static final String HOST_ZONE_LABEL_KEY = "io.rancher.host.zone";
+    
+    public static final String FIELD_LAST_ALLOCATED_HOST_ID = "lastAllocatedHostID";
 }
