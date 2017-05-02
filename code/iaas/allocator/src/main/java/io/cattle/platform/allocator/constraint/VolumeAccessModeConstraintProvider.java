@@ -10,6 +10,7 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.util.InstanceHelpers;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.Arrays;
 import java.util.List;
@@ -34,20 +35,24 @@ public class VolumeAccessModeConstraintProvider implements AllocationConstraints
             List<Volume> volumes = InstanceHelpers.extractVolumesFromMounts(instance, objectManager);
             for (Volume v : volumes) {
                 if (VolumeConstants.ACCESS_MODE_SINGLE_HOST_RW.equals(v.getAccessMode())) {
-                    if (v.getHostId() != null) {
-                        Set<Long> hostIds = allocatorDao.findHostsWithVolumeInUse(v.getId());
-                        boolean hardConstraint = false;
-                        Long hostID = v.getHostId();
-                        if (hostIds.size() == 0) {
-                            hardConstraint = false;
-                        } else if (hostIds.size() == 1) {
-                            hardConstraint = true;
-                            for(Long id: hostIds) {
-                                hostID = id;
-                            }
-                        } else {
-                            throw new FailedToAllocate("SingleHostRW volume is used by mutiple hosts");
+                    Long hostID = null;
+                    Object hostIdObject = DataAccessor.fromDataFieldOf(v).withKey(VolumeConstants.FIELD_LAST_ALLOCATED_HOST_ID).get();
+                    if ( hostIdObject != null) {
+                        hostID = Long.parseLong(hostIdObject.toString());
+                    }
+                    Set<Long> hostIds = allocatorDao.findHostsWithVolumeInUse(v.getId());
+                    boolean hardConstraint = false;
+                    if (hostIds.size() == 0) {
+                        hardConstraint = false;
+                    } else if (hostIds.size() == 1) {
+                        hardConstraint = true;
+                        for(Long id: hostIds) {
+                            hostID = id;
                         }
+                    } else {
+                        throw new FailedToAllocate("SingleHostRW volume is used by mutiple hosts");
+                    }
+                    if (hostID != null) {
                         constraints.add(new VolumeAccessModeSingleHostConstraint(hostID, v.getId(), hardConstraint));
                     }
                 } else if (VolumeConstants.ACCESS_MODE_SINGLE_INSTANCE_RW.equals(v.getAccessMode())) {
