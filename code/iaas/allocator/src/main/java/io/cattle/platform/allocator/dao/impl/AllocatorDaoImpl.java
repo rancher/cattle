@@ -275,7 +275,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
             }
             if (VolumeConstants.ACCESS_MODE_SINGLE_HOST_RW.equals(v.getAccessMode())) {
                 persist = true;
-                v.setHostId(newHost);
+                DataAccessor.fromDataFieldOf(v).withKey(VolumeConstants.FIELD_LAST_ALLOCATED_HOST_ID).set(newHost);
             }
             if (persist) {
                 objectManager.persist(v);
