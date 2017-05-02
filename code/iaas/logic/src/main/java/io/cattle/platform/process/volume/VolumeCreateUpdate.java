@@ -14,8 +14,6 @@ import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
 
-import java.util.Map;
-
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -55,13 +53,8 @@ public class VolumeCreateUpdate extends AbstractObjectProcessHandler {
         Long hostId = volume.getHostId();
         if (storageDriver != null && hostId != null) {
             if (storagePoolDao.associateVolumeToPool(volume.getId(), storageDriver.getId(), hostId) != null) {
-                Map<String, Object> driverOpts = DataAccessor.fieldMap(volume, VolumeConstants.FIELD_VOLUME_DRIVER_OPTS);
-                if (driverOpts != null) {
-                    if ("true".equals(driverOpts.get("created"))) {
-                        result.withShouldContinue(false)
-                        .withChainProcessName(objectProcessManager.getStandardProcessName(StandardProcess.DEACTIVATE, volume));
-                    }
-                }
+                result.withShouldContinue(false)
+                .withChainProcessName(objectProcessManager.getStandardProcessName(StandardProcess.DEACTIVATE, volume));
             }
         }
 
