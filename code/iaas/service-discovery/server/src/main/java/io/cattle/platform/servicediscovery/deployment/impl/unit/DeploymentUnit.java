@@ -2,6 +2,7 @@ package io.cattle.platform.servicediscovery.deployment.impl.unit;
 
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
+
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ExternalEventConstants;
@@ -377,12 +378,18 @@ public class DeploymentUnit {
         String volumeNamePostfix = splitted[0];
         String volumePath = volumeName.replaceFirst(splitted[0] + ":", "");
 
-        final VolumeTemplate template = context.objectManager.findOne(VolumeTemplate.class, VOLUME_TEMPLATE.ACCOUNT_ID,
+        VolumeTemplate tmplt = context.objectManager.findOne(VolumeTemplate.class, VOLUME_TEMPLATE.ACCOUNT_ID,
                 service.getAccountId(), VOLUME_TEMPLATE.REMOVED, null, VOLUME_TEMPLATE.NAME, splitted[0],
                 VOLUME_TEMPLATE.STACK_ID, stack.getId());
-        if (template == null) {
-            return;
+        if (tmplt == null) {
+            tmplt = context.objectManager.findOne(VolumeTemplate.class, VOLUME_TEMPLATE.ACCOUNT_ID,
+                    service.getAccountId(), VOLUME_TEMPLATE.REMOVED, null, VOLUME_TEMPLATE.NAME, splitted[0],
+                    VOLUME_TEMPLATE.STACK_ID, null, VOLUME_TEMPLATE.EXTERNAL, true);
+            if (tmplt == null) {
+                return;
+            }
         }
+        final VolumeTemplate template = tmplt;
         
         Volume volume = null;
         if (template.getExternal()) {
