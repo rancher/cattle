@@ -6,18 +6,22 @@ public class VolumeAccessModeSingleHostConstraint implements Constraint {
 
     Long hostId;
     Long volumeId;
+    String volumeName;
+    String hostName;
     boolean hard;
 
-    public VolumeAccessModeSingleHostConstraint(Long hostId, Long volumeId, boolean hard) {
+    public VolumeAccessModeSingleHostConstraint(Long hostId, Long volumeId, String volumeName, String hostName, boolean hard) {
         super();
         this.hostId = hostId;
         this.volumeId = volumeId;
+        this.volumeName = volumeName;
+        this.hostName = hostName;
         this.hard = hard;
     }
 
     @Override
     public String toString() {
-        return String.format("Volume %s can only be used on host %s", volumeId, hostId);
+        return String.format("Volume %s(%s) can only be used on host %s(%s)", volumeName, volumeId, hostName, hostId);
     }
 
     @Override
