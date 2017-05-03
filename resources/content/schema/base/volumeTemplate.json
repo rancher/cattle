@@ -3,6 +3,10 @@
         "name":{
             "required": true
         },
+        "stackId":{
+            "required": true,
+            "nullable": false
+        },
         "driverOpts": {
             "type": "map[string]",
             "nullable": true
