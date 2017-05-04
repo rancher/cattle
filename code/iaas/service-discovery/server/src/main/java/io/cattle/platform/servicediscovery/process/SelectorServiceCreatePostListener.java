@@ -75,8 +75,9 @@ public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogi
         Object oldObj = state.getData().get("old");
         if (oldObj != null) {
             Map<String, Object> old = (Map<String, Object>) oldObj;
-            if (old.containsKey(ServiceConstants.FIELD_SELECTOR_LINK)) {
-                oldSelectorLink = old.get(ServiceConstants.FIELD_SELECTOR_LINK).toString();
+            Object obj = old.get(ServiceConstants.FIELD_SELECTOR_LINK);
+            if (obj != null) {
+                oldSelectorLink = obj.toString();
             }
         }
         if (!StringUtils.isEmpty(oldSelectorLink) && !oldSelectorLink.equalsIgnoreCase(selectorLink)) {
