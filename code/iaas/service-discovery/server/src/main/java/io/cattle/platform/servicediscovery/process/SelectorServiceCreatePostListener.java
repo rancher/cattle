@@ -2,6 +2,7 @@ package io.cattle.platform.servicediscovery.process;
 
 
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
+
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
@@ -109,7 +110,7 @@ public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogi
                 INSTANCE.REMOVED, null);
 
         List<? extends ServiceExposeMap> current = exposeMapDao.getUnmanagedServiceInstanceMapsToRemove(service.getId());
-        final Map<Long, ServiceExposeMap> currentMappedInstances = new HashMap<Long, ServiceExposeMap>();
+        final Map<Long, ServiceExposeMap> currentMappedInstances = new HashMap<>();
         for (ServiceExposeMap map : current) {
             currentMappedInstances.put(map.getInstanceId(), map);
         }

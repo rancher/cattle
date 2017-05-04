@@ -62,6 +62,7 @@ public class ContainerProxyActionHandler implements ActionHandler {
         }
 
         Map<String, Object> data = CollectionUtils.asMap(DockerInstanceConstants.DOCKER_CONTAINER, dockerId,
+                "scheme", proxy.getScheme(),
                 "address", ipAddress + ":" + proxy.getPort());
 
         Date expiration = new Date(System.currentTimeMillis() + EXPIRE_SECONDS.get() * 1000);

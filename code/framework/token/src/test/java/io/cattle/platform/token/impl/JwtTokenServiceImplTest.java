@@ -1,13 +1,16 @@
 package io.cattle.platform.token.impl;
 
 import static org.junit.Assert.*;
+
 import io.cattle.platform.token.CertSet;
 import io.cattle.platform.token.TokenException;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.security.cert.Certificate;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
@@ -69,6 +72,16 @@ public class JwtTokenServiceImplTest {
 
             @Override
             public CertSet generateCertificate(String subject, String... sans) throws Exception {
+                return null;
+            }
+
+            @Override
+            public Certificate getCACertificate() {
+                return null;
+            }
+
+            @Override
+            public byte[] toBytes(Certificate cert) throws IOException {
                 return null;
             }
         });

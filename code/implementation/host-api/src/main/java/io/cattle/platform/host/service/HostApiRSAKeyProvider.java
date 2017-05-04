@@ -9,8 +9,12 @@ import io.cattle.platform.token.impl.RSAPrivateKeyHolder;
 import io.cattle.platform.util.exception.ExceptionUtils;
 import io.cattle.platform.util.type.InitializationTask;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.security.KeyPair;
 import java.security.PublicKey;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.HashMap;
@@ -18,6 +22,8 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
+
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 
 import com.netflix.config.DynamicBooleanProperty;
 
@@ -66,7 +72,8 @@ public class HostApiRSAKeyProvider implements RSAKeyProvider, InitializationTask
         }
     }
 
-    protected X509Certificate getCACertificate() {
+    @Override
+    public X509Certificate getCACertificate() {
         final KeyPair kp = getKeyPair();
         String encoded = dataDao.getOrCreate(CERT, false, new Callable<String>() {
             @Override
@@ -102,7 +109,7 @@ public class HostApiRSAKeyProvider implements RSAKeyProvider, InitializationTask
 
     @Override
     public Map<String, PublicKey> getPublicKeys() {
-        Map<String, PublicKey> result = new HashMap<String, PublicKey>();
+        Map<String, PublicKey> result = new HashMap<>();
 
         KeyPair defaultKp = getKeyPair();
         if (defaultKp != null) {
@@ -119,6 +126,16 @@ public class HostApiRSAKeyProvider implements RSAKeyProvider, InitializationTask
     @Inject
     public void setDataDao(DataDao dataDao) {
         this.dataDao = dataDao;
+    }
+
+    @Override
+    public byte[] toBytes(Certificate cert) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (JcaPEMWriter writer = new JcaPEMWriter(new OutputStreamWriter(baos))) {
+            writer.writeObject(cert);
+        }
+
+        return baos.toByteArray();
     }
 
 }
