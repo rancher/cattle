@@ -650,13 +650,24 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
 
     private String getHostUuid(Instance instance) {
         List<? extends InstanceHostMap> maps = mapDao.findNonRemoved(InstanceHostMap.class, Instance.class, instance.getId());
-        if (maps.size() > 1) {
-            throw new FailedToAllocate(
-                    String.format("Instance %s has %d instance host maps. Cannot reserve resources.", instance.getId(), maps.size()));
-        }
+        Long hostId = null;
         if (maps.size() == 1) {
-            Host h = objectManager.loadResource(Host.class, maps.get(0).getHostId());
-            return h.getUuid();
+            hostId = maps.get(0).getHostId();
+        } else if (maps.size() > 1) {
+            Set<Long> hostIds = new HashSet<>();
+            for (InstanceHostMap ihm : maps) {
+                hostIds.add(ihm.getHostId());
+            }
+            if (hostIds.size() == 1) {
+                hostId = hostIds.iterator().next();
+            } else {
+                log.warn("Instance {} has {} instance host maps. Cannot determine host uuid. Returning null.", instance.getId(), maps.size());
+                return null;
+            }
+        }
+        if (hostId != null) {
+            Host h = objectManager.loadResource(Host.class, hostId);
+            return h != null ? h.getUuid() : null;
         } else {
             return null;
         }
