@@ -1,20 +1,21 @@
 package io.cattle.platform.host.api;
 
-import io.cattle.platform.core.dao.CertificateDao;
 import io.cattle.platform.iaas.api.request.handler.ScriptsHandler;
+import io.cattle.platform.token.impl.RSAKeyProvider;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.io.IOException;
+import java.security.cert.Certificate;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
 
 public class HostApiPublicCAScriptHandler implements ScriptsHandler {
 
-    public static final String FILENAME = "ca.crt";
+    public static final String FILENAME = "ca.pem";
 
     @Inject
-    CertificateDao certDao;
+    RSAKeyProvider rsaKeyProvider;
 
     @Override
     public boolean handle(ApiRequest request) throws IOException {
@@ -24,16 +25,11 @@ public class HostApiPublicCAScriptHandler implements ScriptsHandler {
             return false;
         }
 
-        String cert = certDao.getPublicCA();
-        if (cert == null) {
-            return false;
-        }
-
-        byte[] content = cert.getBytes("UTF-8");
+        Certificate cert = rsaKeyProvider.getCACertificate();
+        byte[] content = rsaKeyProvider.toBytes(cert);
 
         HttpServletResponse response = request.getServletContext().getResponse();
 
-        response.getOutputStream().write(content);
         response.setContentLength(content.length);
         response.setContentType("application/octet-stream");
         response.setHeader("Content-Disposition", "attachment; filename=" + FILENAME);

@@ -14,6 +14,7 @@ public class ProxyUtils {
         final Object obj = new Object();
 
         return (T)Proxy.newProxyInstance(typeClz.getClassLoader(), new Class<?>[] { typeClz }, new InvocationHandler() {
+            @SuppressWarnings("rawtypes")
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 if (method.getDeclaringClass() == Object.class) {
@@ -25,6 +26,9 @@ public class ProxyUtils {
                     Object val = map.get(name);
                     if (val instanceof Long && (Integer.class.equals(method.getReturnType()) || Integer.TYPE.equals(method.getReturnType()))) {
                         return ((Long)val).intValue();
+                    }
+                    if (val instanceof String && method.getReturnType().isEnum()) {
+                        return Enum.valueOf((Class<? extends Enum>)method.getReturnType(), val.toString());
                     }
                     return val;
                 }

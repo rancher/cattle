@@ -55,6 +55,19 @@ cleanup()
     return $exit
 }
 
+ca_cert()
+{
+    mkdir -p /usr/share/ca-certificates/rancher
+    cat > /usr/share/ca-certificates/rancher/agent-ca.crt << EOF
+%CERT%
+EOF
+    if ! grep -q rancher/agent-ca.crt /etc/ca-certificates.conf; then
+        echo rancher/agent-ca.crt >> /etc/ca-certificates.conf
+    fi
+
+    update-ca-certificates
+}
+
 download_agent()
 {
     cleanup
@@ -151,5 +164,6 @@ print_config
 
 upgrade
 
+ca_cert
 download_agent
 start_agent
