@@ -628,6 +628,61 @@ def test_ebs_volume_hard_affinity(super_client, new_context):
     assert container.data.fields.labels[key] == 'io.rancher.host.zone=east'
 
 
+def test_ebs_volume_hard_affinity_no_override(super_client, new_context):
+    client, agent_client, host = from_context(new_context)
+    sp_name = 'storage-%s' % random_str()
+    host2 = register_simulated_host(new_context)
+    host_uuids = [host.uuid, host2.uuid]
+    host = super_client.update(host, labels={'io.rancher.host.zone': 'east',
+                                             'foo': 'bar'})
+    super_client.wait_success(host)
+
+    d1 = super_client.create_storageDriver(name=sp_name)
+    d1 = super_client.wait_success(d1)
+    d1 = super_client.update(d1, data={'fields':
+                                       {'volumeAccessMode':
+                                        'singleHostRW'}})
+    d1 = super_client.wait_success(d1)
+    assert d1.data["fields"]["volumeAccessMode"] == "singleHostRW"
+
+    create_sp_event(client, agent_client, new_context, sp_name, sp_name,
+                    SP_CREATE, host_uuids, sp_name,
+                    access_mode='singleHostRW')
+    storage_pool = wait_for(lambda: sp_wait(client, sp_name))
+    assert storage_pool.state == 'active'
+    storage_pool = super_client.update(storage_pool, storageDriverId=d1.id)
+    storage_pool = super_client.wait_success(storage_pool)
+
+    assert storage_pool.volumeAccessMode == 'singleHostRW'
+
+    # Create a volume with a driver that points to a storage pool
+    v1 = client.create_volume(name=random_str(), driver=sp_name)
+    v1 = client.wait_success(v1)
+    v1 = super_client.update(v1, storageDriverId=d1.id,
+                             driverOpts={'ec2_az': 'east'})
+    v1 = client.wait_success(v1)
+
+    labels = {'io.rancher.scheduler.affinity:host_label': 'foo=bar'}
+    launch_config = {"volumeDriver": sp_name,
+                     "dataVolumes": [v1.name + ":/test"],
+                     "imageUuid": new_context.image_uuid,
+                     "stdinOpen": True,
+                     "labels": labels,
+                     }
+    scale = 1
+
+    service, stack = create_env_and_svc(client, launch_config,
+                                        scale)
+    stack.activateservices()
+    service = client.wait_success(service, 300)
+    assert service.state == "active"
+    container_list = get_service_container_list(super_client, service)
+    container = container_list[0]
+    key = 'io.rancher.scheduler.affinity:host_label'
+    assert container.data.fields.labels[key] == \
+        'foo=bar,io.rancher.host.zone=east'
+
+
 def test_last_allocated_host_id(super_client, new_context):
     client, agent_client, host = from_context(new_context)
     sp_name = 'storage-%s' % random_str()
