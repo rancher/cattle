@@ -19,6 +19,7 @@ public class Identity {
     private String login = null;
     private String role = null;
     private String projectId = null;
+    private boolean user = false;
 
     @Field(required = false, nullable = true)
     public String getName() {
@@ -70,17 +71,29 @@ public class Identity {
         return projectId;
     }
 
-    public Identity(String externalIdType, String externalId) {
-        this(externalIdType, externalId, null, null, null, null);
+    @Field(required = false, nullable = true)
+    public boolean getUser() {
+        return user;
     }
 
-    public Identity(String externalIdType, String externalId, String name, String profileUrl, String profilePicture, String login) {
+    @Field(required = false, nullable = true)
+    public void setUser(boolean user) {
+        this.user = user;
+    }
+
+    public Identity(String externalIdType, String externalId) {
+        this(externalIdType, externalId, null, null, null, null, false);
+    }
+
+    public Identity(String externalIdType, String externalId, String name, String profileUrl, String profilePicture, String login,
+            boolean user) {
         this.externalId = externalId;
         this.name = name;
         this.externalIdType = externalIdType;
         this.profileUrl = profileUrl;
         this.login = login;
         this.profilePicture = profilePicture;
+        this.user = user;
     }
 
     public Identity(Identity identity, String role, String projectId){
@@ -92,6 +105,7 @@ public class Identity {
         this.profilePicture = identity.getProfilePicture();
         this.projectId = projectId;
         this.role = role;
+        this.user = identity.getUser();
     }
 
     @Override
@@ -128,11 +142,12 @@ public class Identity {
                 .append("name", name)
                 .append("externalIdType", externalIdType)
                 .append("profileUrl", profileUrl)
+                .append("user", user)
                 .toString();
     }
 
     public Identity maskExternalId() {
-        return new Identity(externalIdType, login, name, profileUrl, profilePicture, login);
+        return new Identity(externalIdType, login, name, profileUrl, profilePicture, login, user);
     }
 
     public static Identity fromId(String id) {

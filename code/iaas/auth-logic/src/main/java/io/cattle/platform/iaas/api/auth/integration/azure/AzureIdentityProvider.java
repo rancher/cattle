@@ -120,7 +120,7 @@ public class AzureIdentityProvider extends AzureConfigurable implements Identity
         } catch (ClientVisibleException e) {
             return identities;
         }
-        Identity identity = group.toIdentity(AzureConstants.GROUP_SCOPE);
+        Identity identity = group.toIdentity(AzureConstants.GROUP_SCOPE, false);
         identities.add(identity);
         return identities;
 
@@ -138,7 +138,7 @@ public class AzureIdentityProvider extends AzureConfigurable implements Identity
         if (user == null) {
             return identities;
         }
-        Identity identity = user.toIdentity(AzureConstants.USER_SCOPE);
+        Identity identity = user.toIdentity(AzureConstants.USER_SCOPE, true);
         identities.add(identity);
         return identities;
 
@@ -152,10 +152,10 @@ public class AzureIdentityProvider extends AzureConfigurable implements Identity
         switch (scope) {
             case AzureConstants.USER_SCOPE:
                 AzureAccountInfo user = azureClient.getUserById(id);
-                return user.toIdentity(AzureConstants.USER_SCOPE);
+                return user.toIdentity(AzureConstants.USER_SCOPE, true);
             case AzureConstants.GROUP_SCOPE:
                 AzureAccountInfo org = azureClient.getGroupById(id);
-                return org.toIdentity(AzureConstants.GROUP_SCOPE);
+                return org.toIdentity(AzureConstants.GROUP_SCOPE, false);
             default:
                 throw new ClientVisibleException(ResponseCodes.BAD_REQUEST,
                         IdentityConstants.INVALID_TYPE, "Invalid scope for AzureSearchProvider", null);

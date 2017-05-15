@@ -274,7 +274,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         String accountId = idFormatter != null ? (String) idFormatter.formatId(objectManager.getType(Account.class),
                 account.getId()) : String.valueOf(id);
         return new Identity(ProjectConstants.RANCHER_ID, accountId, account.getName(),
-                null, null, credential == null ? null : credential.getPublicValue());
+                null, null, credential == null ? null : credential.getPublicValue(), false);
     }
 
     @Override

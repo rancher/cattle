@@ -194,6 +194,7 @@ public abstract class LDAPIdentityProvider implements IdentityProvider{
             String accountName;
             String externalId = dn.toString();
             String login;
+            boolean user = false;
             if (isType(search, getConstantsConfig().getUserObjectClass())){
                 externalIdType = getConstantsConfig().getUserScope();
                 if (search.get(getConstantsConfig().getUserNameField()) != null) {
@@ -202,6 +203,7 @@ public abstract class LDAPIdentityProvider implements IdentityProvider{
                     accountName = externalId;
                 }
                 login = (String) search.get(getConstantsConfig().getUserLoginField()).get();
+                user = true;
             } else if (isType(search, getConstantsConfig().getGroupObjectClass())) {
                 externalIdType = getConstantsConfig().getGroupScope();
                 if (search.get(getConstantsConfig().getGroupNameField()) != null) {
@@ -217,7 +219,7 @@ public abstract class LDAPIdentityProvider implements IdentityProvider{
             } else {
                 return null;
             }
-            return new Identity(externalIdType, externalId, accountName, null, null, login);
+            return new Identity(externalIdType, externalId, accountName, null, null, login, user);
         } catch (NamingException e) {
             getLogger().error("Failed to get attributes: {} : {}", dn, e.getExplanation());
             if(!LDAPUtils.isRecoverable(e)) {

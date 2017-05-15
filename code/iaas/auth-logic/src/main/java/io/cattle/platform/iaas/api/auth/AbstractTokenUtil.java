@@ -404,7 +404,8 @@ public abstract class AbstractTokenUtil implements TokenUtil {
         String profilePicture = ObjectUtils.toString(jsonData.get("profilePicture"));
         String profileUrl = ObjectUtils.toString(jsonData.get("profileUrl"));
         String login = ObjectUtils.toString(jsonData.get("login"));
-        return new Identity(externalIdType, externalId, name, profileUrl, profilePicture, login);
+        boolean user = Boolean.TRUE.equals(jsonData.get("user"));
+        return new Identity(externalIdType, externalId, name, profileUrl, profilePicture, login, user);
     }
 
     public Token getUserIdentityFromJWT() {

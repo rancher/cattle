@@ -4,7 +4,7 @@ import io.cattle.platform.api.auth.Identity;
 
 public class AzureAccountInfo {
     private final String objectId;
-    private final String accountName;    
+    private final String accountName;
     private final String userPrincipalName;
     private final String thumbNail;
     private final String displayName;
@@ -36,8 +36,8 @@ public class AzureAccountInfo {
     }
 
 
-    public Identity toIdentity(String scope) {
-        return new Identity(scope, objectId, displayName, null, thumbNail, accountName);
+    public Identity toIdentity(String scope, boolean user) {
+        return new Identity(scope, objectId, displayName, null, thumbNail, accountName, user);
     }
 
     public String getName() {
