@@ -160,7 +160,99 @@ def test_external_volume(client, context):
     assert 'per_container' not in vol
 
 
-def test_du_volume(client, context, super_client):
+def test_du_unhealthy_reuse_volume(new_context, super_client):
+    client = new_context.client
+
+    # create storage driver
+    storage_stack = client.create_stack(name=random_str())
+    super_client.update(storage_stack, system=True)
+    storage = client.create_storage_driver_service(
+        name=random_str(),
+        stackId=storage_stack.id,
+        storageDriver={
+            'name': 'nfs',
+            'volumeAccessMode': 'singleHostRW',
+            'blockDevicePath': 'some path',
+            'volumeCapabilities': [
+                'superAwesome',
+            ],
+        })
+    storage = client.wait_success(storage)
+    client.wait_success(storage.activate())
+
+    # create volume template
+    stack = client.create_stack(name=random_str())
+    stack = client.wait_success(stack)
+    t = client.create_volumeTemplate(name=random_str(),
+                                     driver="nfs",
+                                     stackId=stack.id,
+                                     perContainer=True)
+
+    # create service
+    launch_config = {
+        'imageUuid': new_context.image_uuid,
+        'dataVolumes': t.name + ':/bar'
+    }
+    svc = client.create_service(name=random_str(),
+                                stackId=stack.id,
+                                launchConfig=launch_config,
+                                scale=2)
+    svc = client.wait_success(svc)
+    svc = client.wait_success(svc.activate())
+
+    assert len(svc.instanceIds) == 2
+
+    c1 = client.by_id_container(svc.instanceIds[0])
+    c1 = client.wait_success(c1)
+    assert c1.state == 'running'
+    c2 = client.by_id_container(svc.instanceIds[1])
+    c2 = client.wait_success(c2)
+    assert c2.state == 'running'
+
+    assert c1.id != c2.id
+
+    super_client.update(c2, healthState='unhealthy')
+    c2.restart()
+    c2 = client.wait_success(c2)
+
+    c2 = wait_for_condition(client, c2, lambda x: x.removed is not None)
+    svc = wait_state(client, svc, 'active')
+    assert len(svc.instanceIds) == 2
+
+    c3 = None
+    for i in svc.instanceIds:
+        if i != c1.id:
+            c3 = client.by_id_container(i)
+
+    assert c3.id != c2.id
+    assert dict(c1.dataVolumeMounts) != dict(c2.dataVolumeMounts)
+    assert dict(c2.dataVolumeMounts) == dict(c3.dataVolumeMounts)
+
+    svc = client.update(svc, scale=1)
+    wait_state(client, svc, 'active')
+
+    c3 = client.wait_success(c3)
+    assert c3.removed is not None
+    volume = client.by_id_volume(dict(c3.dataVolumeMounts).values()[0])
+    volume = client.wait_success(volume)
+    assert volume.removed is None
+
+    client.delete(stack)
+    stack = client.wait_success(stack)
+    assert stack.removed is not None
+
+    volume = client.by_id_volume(dict(c2.dataVolumeMounts).values()[0])
+    volume = client.wait_success(volume)
+    assert volume.removed is not None
+
+    volume = client.by_id_volume(dict(c1.dataVolumeMounts).values()[0])
+    volume = client.wait_success(volume)
+    assert volume.removed is not None
+
+
+def test_du_volume(new_context, super_client):
+    context = new_context
+    client = context.client
     opts = {'foo': 'true', 'bar': 'true'}
     stack = client.create_stack(name=random_str())
     stack = client.wait_success(stack)

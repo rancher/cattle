@@ -2,6 +2,7 @@ package io.cattle.platform.servicediscovery.deployment.impl.unit;
 
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
+
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ExternalEventConstants;
@@ -22,6 +23,7 @@ import io.cattle.platform.iaas.api.auditing.AuditEventType;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.StandardProcess;
+import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.TransitioningUtils;
 import io.cattle.platform.process.common.util.ProcessUtils;
@@ -253,6 +255,9 @@ public class DeploymentUnit {
         List<? extends Volume> volumes = context.objectManager.find(Volume.class, VOLUME.REMOVED, null,
                 VOLUME.DEPLOYMENT_UNIT_ID, unit.getId());
         for (Volume volume : volumes) {
+            if (context.storagePoolDao.isOnSharedStorage(volume)) {
+                continue;
+            }
             if (!(volume.getState().equals(CommonStatesConstants.REMOVED) || volume.getState().equals(
                     CommonStatesConstants.REMOVING))) {
                 try {
@@ -265,6 +270,17 @@ public class DeploymentUnit {
                                             ExternalEventConstants.PROC_VOL_REMOVE));
                 }
             }
+            context.resourceMonitor.waitFor(volume, new ResourcePredicate<Volume>() {
+                @Override
+                public boolean evaluate(Volume obj) {
+                    return obj.getRemoved() != null;
+                }
+
+                @Override
+                public String getMessage() {
+                    return "volume removed";
+                }
+            });
         }
     }
 
@@ -383,7 +399,7 @@ public class DeploymentUnit {
         if (template == null) {
             return;
         }
-        
+
         Volume volume = null;
         if (template.getExternal()) {
             // external volume should exist, otherwise fail
@@ -408,6 +424,24 @@ public class DeploymentUnit {
                     if (vol.getName().startsWith(name)) {
                         volume = vol;
                         break;
+                    }
+                }
+                if (volume == null) {
+                    volumes = context.objectManager
+                            .find(Volume.class, VOLUME.ACCOUNT_ID, service.getAccountId(),
+                                    VOLUME.REMOVED, null, VOLUME.VOLUME_TEMPLATE_ID, template.getId(), VOLUME.STACK_ID,
+                                    stack.getId());
+                    for (Volume testVolume : volumes) {
+                        if (testVolume.getDeploymentUnitId() == null) {
+                            continue;
+                        }
+                        io.cattle.platform.core.model.DeploymentUnit testUnit =
+                                context.objectManager.loadResource(io.cattle.platform.core.model.DeploymentUnit.class, testVolume.getDeploymentUnitId());
+                        if (testUnit.getRemoved() != null) {
+                            // reassign orphaned volume to current unit
+                            volume = context.objectManager.setFields(testVolume, VOLUME.DEPLOYMENT_UNIT_ID, unit.getId());
+                            break;
+                        }
                     }
                 }
                 if (volume == null) {
