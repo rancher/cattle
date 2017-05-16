@@ -460,3 +460,39 @@ def test_v1_v2_mix_export(client, context):
     assert 'per_container' not in vol
 
     assert 'volume_driver' not in docker_yml["services"][svc.name]
+
+
+def test_create_external_volume_templates_across_accounts(context,
+                                                          new_context):
+    client = context.client
+    new_client = new_context.client
+    name = random_str()
+    client.create_volumeTemplate(name=name, driver="nfs", external=True)
+
+    # Can use same name in different environment
+    new_client.create_volumeTemplate(name=name, driver="nfs", external=True)
+
+    # Cannot reuse name in same environment
+    with pytest.raises(ApiError) as e:
+        new_client.create_volumeTemplate(name=name, driver="nfs",
+                                         external=True)
+    assert e.value.error.code == 'NotUnique'
+
+
+def test_external_volume_not_created(new_context):
+    client = new_context.client
+    stack = client.wait_success(client.create_stack(name=random_str()))
+
+    client.create_volumeTemplate(name="foo", driver="nfs", external=True)
+
+    image_uuid = new_context.image_uuid
+    launch_config = {"imageUuid": image_uuid, "dataVolumes": "foo:/bar"}
+    svc = client.create_service(name=random_str(), stackId=stack.id,
+                                launchConfig=launch_config)
+    svc = client.wait_success(svc)
+
+    # Fail to activate because the volumeTemplate is external but a volume with
+    # a matching name does not exist
+    svc.activate()
+    wait_for(lambda: 'Failed to locate volume'
+                     in client.reload(svc).transitioningMessage)

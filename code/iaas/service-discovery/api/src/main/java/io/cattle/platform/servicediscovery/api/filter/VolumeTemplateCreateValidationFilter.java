@@ -2,9 +2,11 @@ package io.cattle.platform.servicediscovery.api.filter;
 
 import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
 
+import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.core.model.VolumeTemplate;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.ObjectManager;
+import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
@@ -40,8 +42,8 @@ public class VolumeTemplateCreateValidationFilter extends AbstractDefaultResourc
     }
 
     private void validateNameUniqueness(VolumeTemplate template) {
-        if (objectManager.find(VolumeTemplate.class, VOLUME_TEMPLATE.REMOVED, null, VOLUME_TEMPLATE.STACK_ID,
-                template.getStackId(), VOLUME_TEMPLATE.NAME, template.getName()).size() > 0) {
+        if (objectManager.find(VolumeTemplate.class, VOLUME_TEMPLATE.ACCOUNT_ID, ((Policy) ApiContext.getContext().getPolicy()).getAccountId(),
+                VOLUME_TEMPLATE.REMOVED, null, VOLUME_TEMPLATE.STACK_ID, template.getStackId(), VOLUME_TEMPLATE.NAME, template.getName()).size() > 0) {
             throw new ValidationErrorException(ValidationErrorCodes.NOT_UNIQUE, "name");
         }
     }
