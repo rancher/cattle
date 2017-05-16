@@ -3,6 +3,7 @@ package io.cattle.platform.core.dao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.StoragePoolHostMap;
+import io.cattle.platform.core.model.Volume;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.List;
@@ -41,5 +42,7 @@ public interface StoragePoolDao {
     Map<Long, List<Object>> findVolumesForPools(List<Long> ids, IdFormatter idFormatter);
 
     List<? extends StoragePool> findBadDockerPools(int count);
+
+    boolean isOnSharedStorage(Volume volume);
 
 }

@@ -662,8 +662,15 @@ def _sleep_time():
 
 
 def wait_state(client, obj, state):
+    def is_state():
+        o = client.reload(obj)
+        if o.state == state:
+            return True
+        if state == 'removed' and o.removed is not None:
+            return True
+        return False
     try:
-        wait_for(lambda: client.reload(obj).state == state)
+        wait_for(is_state)
     except:
         obj = client.reload(obj)
         msg = 'Timeout waiting for state {}, resource is {} : {}'.format(

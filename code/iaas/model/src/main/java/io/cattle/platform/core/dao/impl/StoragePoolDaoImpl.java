@@ -27,9 +27,12 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -37,9 +40,12 @@ import javax.inject.Named;
 import org.jooq.Record;
 import org.jooq.Record2;
 import org.jooq.RecordHandler;
+import org.jooq.Result;
 
 @Named
 public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDao {
+
+    public static final Set<String> UNMANGED_STORAGE_POOLS = new HashSet<>(Arrays.asList(new String[]{"docker", "sim"}));
 
     @Inject
     GenericResourceDao resourceDao;
@@ -287,6 +293,22 @@ public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDa
                         .and(HOST.STATE.eq(CommonStatesConstants.PURGED).or(STORAGE_POOL.STATE.eq(CommonStatesConstants.PURGED))))
                 .limit(limit)
                 .fetchInto(StoragePoolHostMapRecord.class);
+    }
+
+    @Override
+    public boolean isOnSharedStorage(Volume volume) {
+        Result<?> r = create().select(STORAGE_POOL.ID)
+            .from(STORAGE_POOL)
+            .join(VOLUME_STORAGE_POOL_MAP)
+                .on(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID.eq(STORAGE_POOL.ID))
+            .where(STORAGE_POOL.REMOVED.isNull()
+                    .and(VOLUME_STORAGE_POOL_MAP.REMOVED.isNull())
+                    .and(VOLUME_STORAGE_POOL_MAP.VOLUME_ID.eq(volume.getId()))
+                    .and(STORAGE_POOL.KIND.notIn(UNMANGED_STORAGE_POOLS)))
+            .limit(1)
+            .fetch();
+
+        return r.size() > 0;
     }
 
 }

@@ -17,6 +17,7 @@ import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.dao.ServiceDao;
+import io.cattle.platform.core.dao.StoragePoolDao;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.engine.idempotent.IdempotentRetryException;
@@ -109,6 +110,8 @@ public class DeploymentManagerImpl implements DeploymentManager {
     ObjectMetaDataManager objMetaDataMgr;
     @Inject
     HostDao hostDao;
+    @Inject
+    StoragePoolDao storagePoolDao;
 
     @Override
     public boolean isHealthy(Service service) {
@@ -511,6 +514,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
     }
 
     public final class DeploymentServiceContext {
+        final public StoragePoolDao storagePoolDao = DeploymentManagerImpl.this.storagePoolDao;
         final public ObjectManager objectManager = objectMgr;
         final public ResourceMonitor resourceMonitor = resourceMntr;
         final public ObjectProcessManager objectProcessManager = objectProcessMgr;
