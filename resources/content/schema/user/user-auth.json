@@ -300,6 +300,7 @@
         "identity.projectId": "cr",
         "identity.role": "cr",
         "identity.all": "cr",
+        "identity.user": "r",
 
         "image" : "r",
 

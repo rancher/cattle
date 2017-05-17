@@ -56,7 +56,7 @@ public class AzureRESTClient extends AzureConfigurable{
             }
             
             Map<String, Object> jsonData = jsonMapper.readValue(response.getEntity().getContent());
-            return jsonToAzureAccountInfo(jsonData).toIdentity(AzureConstants.USER_SCOPE);
+            return jsonToAzureAccountInfo(jsonData).toIdentity(AzureConstants.USER_SCOPE, true);
         } catch (IOException e) {
             logger.error("Failed to get Azure user account info.", e);
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, AzureConstants.AZURE_CLIENT,
@@ -97,7 +97,7 @@ public class AzureRESTClient extends AzureConfigurable{
 
             if(searchResponseList != null && !searchResponseList.isEmpty()){
                 for(AzureAccountInfo userOrGroup : searchResponseList){
-                    groupIdentities.add(userOrGroup.toIdentity(AzureConstants.GROUP_SCOPE));
+                    groupIdentities.add(userOrGroup.toIdentity(AzureConstants.GROUP_SCOPE, false));
                 }
             }
 

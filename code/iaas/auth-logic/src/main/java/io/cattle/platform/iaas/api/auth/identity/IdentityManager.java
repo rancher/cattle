@@ -169,7 +169,7 @@ public class IdentityManager extends AbstractNoOpResourceManager {
         gotIdentity = projectMemberToIdentity(member.getExternalIdType() + ':' + member.getExternalId());
         if (gotIdentity == null){
             gotIdentity = new Identity(member.getExternalIdType(), member.getExternalId(), member.getName(),
-                    null, null, '(' + member.getExternalIdType().split("_")[1].toUpperCase() +  "  not found) " + member.getName());
+                    null, null, '(' + member.getExternalIdType().split("_")[1].toUpperCase() +  "  not found) " + member.getName(), false);
         }
         return untransform(new Identity(gotIdentity, member.getRole(), String.valueOf(member.getProjectId())), false);
     }
