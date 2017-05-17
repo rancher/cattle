@@ -85,8 +85,12 @@ public class RancherIdentityProvider implements IdentityProvider {
             return null;
         }
         String accountId = idFormatter.parseId(id);
-        return authDao.getIdentity(Long.valueOf(accountId == null ? id : accountId),
+        Identity newIdentity = authDao.getIdentity(Long.valueOf(accountId == null ? id : accountId),
                 idFormatter);
+        if (newIdentity != null) {
+            newIdentity.setUser(true);
+        }
+        return newIdentity;
     }
 
     @Override
