@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.upgrade.impl;
 
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
+
 import io.cattle.platform.activity.ActivityLog;
 import io.cattle.platform.activity.ActivityService;
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
@@ -298,7 +299,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
             Instance instance) {
         List<Instance> toRemove = deploymentUnitInstancesToUpgrade.get(instance.getDeploymentUnitUuid());
         if (toRemove == null) {
-            toRemove = new ArrayList<Instance>();
+            toRemove = new ArrayList<>();
         }
         toRemove.add(instance);
         deploymentUnitInstancesToUpgrade.put(instance.getDeploymentUnitUuid(), toRemove);
@@ -617,6 +618,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
             public void run() {
                 List<Instance> toStop = new ArrayList<>();
                 List<Instance> toWait = new ArrayList<>();
+                List<Instance> toWaitRemoved = new ArrayList<>();
                 for (String key : deploymentUnitInstancesToStop.keySet()) {
                     toStop.addAll(deploymentUnitInstancesToStop.get(key));
                 }
@@ -625,6 +627,7 @@ public class UpgradeManagerImpl implements UpgradeManager {
                     if (InstanceConstants.STATE_ERROR.equals(instance.getState())) {
                         objectProcessMgr.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_REMOVE,
                                 instance, null);
+                        toWaitRemoved.add(instance);
                     } else if (!instance.getState().equalsIgnoreCase(InstanceConstants.STATE_STOPPED)) {
                         objectProcessMgr.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP,
                                 instance, null);
@@ -633,6 +636,19 @@ public class UpgradeManagerImpl implements UpgradeManager {
                 }
                 for (Instance instance : toWait) {
                     resourceMntr.waitForState(instance, InstanceConstants.STATE_STOPPED);
+                }
+                for (Instance instance : toWaitRemoved) {
+                    resourceMntr.waitFor(instance, new ResourcePredicate<Instance>() {
+                        @Override
+                        public boolean evaluate(Instance obj) {
+                            return obj.getRemoved() != null;
+                        }
+
+                        @Override
+                        public String getMessage() {
+                            return "removed";
+                        }
+                    });
                 }
             }
         });
