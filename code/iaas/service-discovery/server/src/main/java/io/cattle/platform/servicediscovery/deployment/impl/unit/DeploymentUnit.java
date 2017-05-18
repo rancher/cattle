@@ -437,7 +437,8 @@ public class DeploymentUnit {
                         }
                         io.cattle.platform.core.model.DeploymentUnit testUnit =
                                 context.objectManager.loadResource(io.cattle.platform.core.model.DeploymentUnit.class, testVolume.getDeploymentUnitId());
-                        if (testUnit.getRemoved() != null) {
+                        if (unit.getServiceIndex().equals(testUnit.getServiceIndex()) &&
+                                testUnit.getServiceId() != null && testUnit.getServiceId().equals(unit.getServiceId())) {
                             // reassign orphaned volume to current unit
                             volume = context.objectManager.setFields(testVolume, VOLUME.DEPLOYMENT_UNIT_ID, unit.getId());
                             break;
