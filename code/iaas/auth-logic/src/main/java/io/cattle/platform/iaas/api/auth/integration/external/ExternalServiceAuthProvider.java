@@ -209,12 +209,16 @@ public class ExternalServiceAuthProvider {
         //check if the setting 'support.identity.lookup = false', if yes then lookup the identity from token
 
         if(ServiceAuthConstants.NO_IDENTITY_LOOKUP_SUPPORTED.get()) {
+            // This means it is saml (among github and saml)
             log.debug("Identity lookup is not supported at the provider");
             if (tokenUtil.findAndSetJWT()) {
                 Set<Identity> identitiesInToken = tokenUtil.getIdentities();
                 log.debug("Found identitiesInToken {}" , identitiesInToken);
                 for (Identity identity : identitiesInToken) {
                     if(identity != null && id.equals(identity.getExternalId()) && scope.equals(identity.getExternalIdType())) {
+                        if (StringUtils.equals(identity.getExternalIdType(), ServiceAuthConstants.USER_TYPE.get())) {
+                            identity.setUser(true);
+                        }
                         return identity;
                     }
                 }
