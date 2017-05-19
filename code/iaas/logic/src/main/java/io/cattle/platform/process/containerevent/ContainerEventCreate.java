@@ -175,7 +175,11 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
                         if (STATE_STOPPED.equals(state) || STATE_STOPPING.equals(state))
                             return null;
 
-                        objectProcessManager.scheduleProcessInstance(PROCESS_STOP, instance, makeData());
+                        if (STATE_STARTING.equals(state)) {
+                            instance = resourceMonitor.waitForNotTransitioning(instance, 3000L);
+                        }
+
+                        objectProcessManager.scheduleProcessInstance(PROCESS_STOP, objectManager.reload(instance), makeData());
                     } else if (EVENT_DESTROY.equals(status)) {
                         if (REMOVED.equals(state) || REMOVING.equals(state) || PURGED.equals(state) || PURGING.equals(state))
                             return null;
