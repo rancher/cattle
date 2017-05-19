@@ -41,8 +41,8 @@ def test_hoststats_host(docker_client, context):
 
 
 @if_docker
-def test_hoststats_project(admin_user_client, context):
-    project = admin_user_client.list_project()[0]
+def test_hoststats_project(context):
+    project = context.project
 
     assert 'hostStats' in project.links
 
@@ -92,7 +92,7 @@ def test_stats_container(docker_client):
 
 
 def test_host_api_key_download(client):
-    url = client._url.split('v2-beta', 1)[0] + 'v1/scripts/api.crt'
+    url = client._url.split('v2', 1)[0] + 'v1/scripts/api.crt'
     assert url is not None
 
     cert = requests.get(url).text

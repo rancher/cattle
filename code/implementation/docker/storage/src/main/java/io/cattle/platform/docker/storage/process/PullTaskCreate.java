@@ -48,6 +48,7 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
     public static final String MODE = "mode";
     public static final String COMPLETE = "complete";
     public static final String STATUS = "status";
+    public static final String ERRORS = "errors";
 
     @Inject
     AllocationHelper allocationHelper;
@@ -81,6 +82,7 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
         Credential cred = getCredential(image, pullTask.getAccountId());
         Map<String, String> labels = DataAccessor.field(pullTask, LABELS, Map.class);
         Map<String, String> status = new HashMap<>();
+        Map<String, String> errors = new HashMap<>();
 
         if (tag == null) {
             tag = "pull-" + process.getId().hashCode();
@@ -126,7 +128,7 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
                 AsyncUtils.get(future);
                 cleanupFutures.put(host, pullImage(cred, host, mode, image, tag, true));
             } catch (EventExecutionException e) {
-                pullTask = setStatus(pullTask, status, host, e.getTransitioningInternalMessage());
+                pullTask = setStatus(pullTask, status, errors, host, e.getTransitioningInternalMessage(), true);
             }
         }
 
@@ -136,7 +138,7 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
             progress.checkPoint("Finishing pull " + image + " on "
                     + DataAccessor.fieldString(host, HostConstants.FIELD_HOSTNAME));
             AsyncUtils.get(future);
-            pullTask = setStatus(pullTask, status, host, "Done");
+            pullTask = setStatus(pullTask, status, errors, host, "Done", false);
         }
 
         return null;
@@ -153,14 +155,19 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
         return null;
     }
 
-    protected GenericObject setStatus(GenericObject object, Map<String, String> status, Host host, String message) {
+    protected GenericObject setStatus(GenericObject object, Map<String, String> status, Map<String, String> errors, Host host, String message, boolean error) {
         if (host.getName() == null) {
             return object;
         }
 
         object = objectManager.reload(object);
         status.put(host.getName(), message);
-        return objectManager.setFields(object, STATUS, status);
+        if (error) {
+            errors.put(host.getName(), message);
+        }
+        return objectManager.setFields(object,
+                ERRORS, errors,
+                STATUS, status);
     }
 
     protected ListenableFuture<? extends Event> pullImage(Credential cred, Host host, String mode, String image, String tag, boolean complete) {

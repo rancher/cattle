@@ -2,35 +2,26 @@ package io.cattle.platform.servicediscovery.api.filter;
 
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.ServiceUpgrade;
-import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
-import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.ServiceUtil;
-import io.cattle.platform.core.util.ServiceUtil.RevisionData;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
+import io.cattle.platform.iaas.api.service.RevisionDiffomatic;
+import io.cattle.platform.iaas.api.service.RevisionManager;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.storage.api.filter.ExternalTemplateInstanceFilter;
 import io.cattle.platform.storage.service.StorageService;
-import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 @Named
 public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManagerFilter {
@@ -40,9 +31,9 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
     @Inject
     JsonMapper jsonMapper;
     @Inject
-    StorageService storageService;
+    RevisionManager revisionManager;
     @Inject
-    ServiceDao svcDao;
+    StorageService storageService;
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -61,74 +52,26 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
     @Override
     public Object resourceAction(String type, ApiRequest request, ResourceManager next) {
         if (request.getAction().equals(ServiceConstants.ACTION_SERVICE_UPGRADE)) {
-            processInServiceUpgradeStrategy(request);
+            return processInServiceUpgradeStrategy(type, request, next);
         }
 
         return super.resourceAction(type, request, next);
     }
 
-    @SuppressWarnings("unchecked")
-    protected void processInServiceUpgradeStrategy(ApiRequest request) {
+    protected Object processInServiceUpgradeStrategy(String type, ApiRequest request, ResourceManager next) {
         Service service = objectManager.loadResource(Service.class, request.getId());
-        ServiceUpgrade upgrade = jsonMapper.convertValue(request.getRequestObject(),
-                ServiceUpgrade.class);
+        ServiceUpgrade upgrade = jsonMapper.convertValue(request.getRequestObject(), ServiceUpgrade.class);
         InServiceUpgradeStrategy strategy = finalizeUpgradeStrategy(service, upgrade.getInServiceStrategy());
+        Map<String, Object> data = jsonMapper.writeValueAsMap(strategy);
 
-        Object currentConfig = DataAccessor.field(service, ServiceConstants.FIELD_LAUNCH_CONFIG,
-                    Object.class);
-        List<Object> currentSecondaryLaunchConfigs = DataAccessor.fields(service)
-                .withKey(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
-                .withDefault(Collections.EMPTY_LIST).as(
-                        List.class);
-        Object newLaunchConfigObj = strategy.getLaunchConfig();
-        if (newLaunchConfigObj != null) {
-            ServiceUtil.validateScaleSwitch(newLaunchConfigObj, currentConfig);
-        }
+        revisionManager.setFieldsForUpgrade(data);
 
-        strategy.setPreviousLaunchConfig(currentConfig);
-        strategy.setPreviousSecondaryLaunchConfigs(currentSecondaryLaunchConfigs);
-        upgrade.setInServiceStrategy(strategy);
-        request.setRequestObject(jsonMapper.writeValueAsMap(upgrade));
+        RevisionDiffomatic diff = revisionManager.createNewRevision(request.getSchemaFactory(), service, data);
+        objectManager.setFields(service, diff.getNewRevisionData());
+        request.setRequestObject(diff.getNewRevisionData());
+        service = revisionManager.assignRevision(diff, service);
 
-        Map<String, Object> newLaunchConfig = CollectionUtils.toMap(strategy.getLaunchConfig());
-        List<Map<String, Object>> newSecondaryLaunchConfigs = new ArrayList<>();
-        if (strategy.getSecondaryLaunchConfigs() != null) {
-            for (Object secObj : strategy.getSecondaryLaunchConfigs()) {
-                newSecondaryLaunchConfigs.add(CollectionUtils.toMap(secObj));
-            }
-        }
-
-        Map<String, Object> newData = new HashMap<>();
-        newData.put(ServiceConstants.FIELD_LAUNCH_CONFIG, newLaunchConfig);
-        newData.put(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS, newSecondaryLaunchConfigs);
-
-        RevisionData newRevision = svcDao.createServiceRevision(service, newData, true);
-        Map<String, Object> data = new HashMap<>();
-        data.putAll(newRevision.getConfig());
-        data.put(InstanceConstants.FIELD_REVISION_ID, newRevision.getRevisionId());
-        data.put(InstanceConstants.FIELD_PREVIOUS_REVISION_ID, service.getRevisionId());
-        data.put(ServiceConstants.FIELD_IS_UPGRADE, true);
-        data.put(ServiceConstants.FIELD_BATCHSIZE, strategy.getBatchSize());
-        data.put(ServiceConstants.FIELD_INTERVAL_MILLISEC, strategy.getIntervalMillis());
-        data.put(ServiceConstants.FIELD_START_FIRST_ON_UPGRADE, strategy.getStartFirst());
-        objectManager.setFields(objectManager.reload(service), data);
-    }
-
-    protected void setForceUpgrae(InServiceUpgradeStrategy upgrade) {
-        if (upgrade.getSecondaryLaunchConfigs() != null) {
-            for (Object launchConfigObj : upgrade.getSecondaryLaunchConfigs()) {
-                setForceUpgrade(launchConfigObj);
-            }
-        }
-        if (upgrade.getLaunchConfig() != null) {
-            setForceUpgrade(upgrade.getLaunchConfig());
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    protected void setForceUpgrade(Object launchConfigObj) {
-        Map<String, Object> launchConfig = (Map<String, Object>) launchConfigObj;
-        launchConfig.put(ServiceConstants.FIELD_FORCE_UPGRADE, true);
+        return super.resourceAction(type, request, next);
     }
 
     @SuppressWarnings("unchecked")
@@ -154,143 +97,7 @@ public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManag
             ServiceUtil.injectBalancerLabelsAndHealthcheck((Map<Object, Object>) strategy.getLaunchConfig());
         }
 
-        Map<String, Map<String, Object>> serviceLCs = getExistingLaunchConfigs(service);
-        Map<String, Map<String, Object>> lCsToUpdateInitial = getLaunchConfigsToUpdateInitial(service, strategy,
-                serviceLCs);
-        Map<String, Map<String, Object>> lCsToUpdateFinal = getLaunchConfigsToUpdateFinal(serviceLCs,
-                lCsToUpdateInitial);
-
-        for (String name : lCsToUpdateFinal.keySet()) {
-            if (!lCsToUpdateInitial.containsKey(name)) {
-                Object launchConfig = lCsToUpdateFinal.get(name);
-                if (name.equalsIgnoreCase(service.getName())) {
-                    strategy.setLaunchConfig(launchConfig);
-                } else {
-                    List<Object> secondaryLCs = strategy.getSecondaryLaunchConfigs();
-                    if (secondaryLCs == null) {
-                        secondaryLCs = new ArrayList<>();
-                    }
-                    secondaryLCs.add(launchConfig);
-                    strategy.setSecondaryLaunchConfigs(secondaryLCs);
-                }
-            }
-        }
-
-        setForceUpgrae(strategy);
-
-        // add launch configs that don't need to be upgraded
-        // they will get saved with the old version value
-        List<Object> finalizedSecondary = new ArrayList<>();
-        if (strategy.getSecondaryLaunchConfigs() != null) {
-            finalizedSecondary.addAll(strategy.getSecondaryLaunchConfigs());
-        }
-        Object finalizedPrimary = strategy.getLaunchConfig();
-        Map<String, Map<String, Object>> existingLCs = getExistingLaunchConfigs(service);
-        for (String scName : existingLCs.keySet()) {
-            if (!lCsToUpdateFinal.containsKey(scName)) {
-                if (StringUtils.equals(scName, service.getName())) {
-                    finalizedPrimary = existingLCs.get(scName);
-                } else {
-                    finalizedSecondary.add(existingLCs.get(scName));
-                }
-            }
-        }
-
-        // remove secondary launch configs marked with labels
-        Iterator<Object> it = finalizedSecondary.iterator();
-        while (it.hasNext()) {
-            Object lc = it.next();
-            Map<String, Object> mapped = CollectionUtils.toMap(lc);
-            Object imageUuid = mapped.get(InstanceConstants.FIELD_IMAGE_UUID);
-            if (imageUuid == null) {
-                continue;
-            }
-
-            if (StringUtils.equalsIgnoreCase(ServiceConstants.IMAGE_NONE, imageUuid.toString())) {
-                continue;
-            }
-
-            String fullImageName = ExternalTemplateInstanceFilter.getImageUuid(imageUuid.toString(), storageService);
-            ((Map<String, Object>) lc).put(InstanceConstants.FIELD_IMAGE_UUID, fullImageName);
-        }
-
-        Map<String, Object> mapped = CollectionUtils.toMap(finalizedPrimary);
-        Object imageUuid = mapped.get(InstanceConstants.FIELD_IMAGE_UUID);
-        if (imageUuid != null && !imageUuid.toString().equalsIgnoreCase(ServiceConstants.IMAGE_NONE)) {
-            String fullImageName = ExternalTemplateInstanceFilter.getImageUuid(imageUuid.toString(), storageService);
-            ((Map<String, Object>) finalizedPrimary).put(InstanceConstants.FIELD_IMAGE_UUID, fullImageName);
-        }
-
-        strategy.setLaunchConfig(finalizedPrimary);
-        strategy.setSecondaryLaunchConfigs(finalizedSecondary);
-
         return strategy;
     }
 
-    protected Map<String, Map<String, Object>> getLaunchConfigsToUpdateFinal(
-            Map<String, Map<String, Object>> serviceLCs,
-            Map<String, Map<String, Object>> lCsToUpdateInitial) {
-        Map<String, Map<String, Object>> lCsToUpdateFinal = new HashMap<>();
-        for (String lcNameToUpdate : lCsToUpdateInitial.keySet()) {
-            finalizeLCNamesToUpdate(serviceLCs, lCsToUpdateFinal,
-                    Pair.of(lcNameToUpdate, lCsToUpdateInitial.get(lcNameToUpdate)));
-        }
-        return lCsToUpdateFinal;
-    }
-
-    @SuppressWarnings("unchecked")
-    protected Map<String, Map<String, Object>> getLaunchConfigsToUpdateInitial(Service service,
-            InServiceUpgradeStrategy strategy,
-            Map<String, Map<String, Object>> serviceLCs) {
-        Map<String, Map<String, Object>> lCsToUpdateInitial = new HashMap<>();
-        if (strategy.getLaunchConfig() != null) {
-            lCsToUpdateInitial.put(service.getName(), (Map<String, Object>) strategy.getLaunchConfig());
-        }
-
-        if (strategy.getSecondaryLaunchConfigs() != null) {
-            for (Object secondaryLC : strategy.getSecondaryLaunchConfigs()) {
-                String lcName = CollectionUtils.toMap(secondaryLC).get("name").toString();
-                lCsToUpdateInitial.put(lcName, (Map<String, Object>) secondaryLC);
-            }
-        }
-        return lCsToUpdateInitial;
-    }
-
-    protected Map<String, Map<String, Object>> getExistingLaunchConfigs(Service service) {
-        Map<String, Map<String, Object>> serviceLCs = ServiceUtil.getServiceLaunchConfigsWithNames(service);
-        Map<String, Object> primaryLC = serviceLCs.get(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
-        serviceLCs.remove(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
-        serviceLCs.put(service.getName(), primaryLC);
-        return serviceLCs;
-    }
-
-    @SuppressWarnings("unchecked")
-    // this method finalizes volumeFrom/networkFrom dependencies that need to be updated as well
-    protected void finalizeLCNamesToUpdate(Map<String, Map<String, Object>> serviceLCs,
-            Map<String, Map<String, Object>> lCToUpdateFinal,
-            Pair<String, Map<String, Object>> lcToUpdate) {
-        Map<String, Object> finalConfig = new HashMap<>();
-        finalConfig.putAll(lcToUpdate.getRight());
-        lCToUpdateFinal.put(lcToUpdate.getLeft(), finalConfig);
-        for (String serviceLCName : serviceLCs.keySet()) {
-            Map<String, Object> serviceLC = serviceLCs.get(serviceLCName);
-            List<String> refs = new ArrayList<>();
-            Object networkFromLaunchConfig = serviceLC
-                    .get(ServiceConstants.FIELD_NETWORK_LAUNCH_CONFIG);
-            if (networkFromLaunchConfig != null) {
-                refs.add((String) networkFromLaunchConfig);
-            }
-            Object volumesFromLaunchConfigs = serviceLC
-                    .get(ServiceConstants.FIELD_DATA_VOLUMES_LAUNCH_CONFIG);
-            if (volumesFromLaunchConfigs != null) {
-                refs.addAll((List<String>) volumesFromLaunchConfigs);
-            }
-            for (String ref : refs) {
-                if (lcToUpdate.getLeft().equalsIgnoreCase(ref)) {
-                    finalizeLCNamesToUpdate(serviceLCs, lCToUpdateFinal,
-                            Pair.of(serviceLCName, serviceLC));
-                }
-            }
-        }
-    }
 }

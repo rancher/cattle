@@ -1,5 +1,6 @@
 package io.cattle.platform.process.common.generic;
 
+import io.cattle.platform.engine.manager.impl.ProcessRecordDao;
 import io.cattle.platform.engine.process.AbstractProcessDefinition;
 import io.cattle.platform.engine.process.LaunchConfiguration;
 import io.cattle.platform.engine.process.ProcessState;
@@ -16,12 +17,16 @@ public class GenericResourceProcessDefinition extends AbstractProcessDefinition 
 
     String resourceType;
     ResourceStatesDefinition statesDefinition;
+    @Inject
     ObjectManager objectManager;
+    @Inject
     JsonMapper jsonMapper;
+    @Inject
+    ProcessRecordDao processRecordDao;
 
     @Override
     public ProcessState constructProcessState(LaunchConfiguration config) {
-        return new GenericResourceProcessState(jsonMapper, statesDefinition, config, objectManager);
+        return new GenericResourceProcessState(jsonMapper, statesDefinition, config, objectManager, processRecordDao);
     }
 
     public ObjectManager getObjectManager() {

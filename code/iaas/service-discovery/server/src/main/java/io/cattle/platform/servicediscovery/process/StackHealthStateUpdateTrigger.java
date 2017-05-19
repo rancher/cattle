@@ -51,7 +51,7 @@ public class StackHealthStateUpdateTrigger extends AbstractObjectProcessLogic im
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         List<Service> services = new ArrayList<>();
         Set<Long> stackIds = new HashSet<>();
-        
+
         if (state.getResource() instanceof Stack) {
             stackIds.add(((Stack) state.getResource()).getId());
         } else if (state.getResource() instanceof Service) {
@@ -71,6 +71,10 @@ public class StackHealthStateUpdateTrigger extends AbstractObjectProcessLogic im
         }
 
         for (Long stackId : stackIds) {
+            if (stackId == null) {
+                continue;
+            }
+
             ConfigUpdateRequest request = ConfigUpdateRequest.forResource(Stack.class,
                     stackId);
             request.addItem(STACK);

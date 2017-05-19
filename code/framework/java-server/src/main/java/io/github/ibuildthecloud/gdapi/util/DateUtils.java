@@ -1,7 +1,9 @@
 package io.github.ibuildthecloud.gdapi.util;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -9,7 +11,7 @@ public class DateUtils {
 
     public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 
-    public static Date parse(String date) throws ParseException {
+    public static Date parse(String date) throws DateTimeParseException {
         if (date == null)
             return null;
 
@@ -17,8 +19,7 @@ public class DateUtils {
             return new Date();
         }
 
-        SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT);
-        return df.parse(date);
+        return Date.from(Instant.from(DateTimeFormatter.ISO_INSTANT.parse(date)));
     }
 
     public static String toString(Date date) {

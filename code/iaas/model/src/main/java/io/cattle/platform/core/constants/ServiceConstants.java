@@ -5,8 +5,10 @@ import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -23,7 +25,9 @@ public class ServiceConstants {
     public static final String KIND_SCALING_GROUP_SERVICE = "scalingGroup";
     public static final String KIND_SELECTOR_SERVICE = "selectorService";
     public static final String KIND_KUBERNETES_SERVICE = "kubernetesService";
-    public static final String KIND_COMPOSE_SERVICE = "composeService";
+    public static final String KIND_SECONDARY_LAUNCH_CONFIG = "secondaryLaunchConfig";
+
+    public static final String KIND_DEPLOYMENT_UNIT = "deploymentUnit";
 
     public static final Set<String> SERVICE_LIKE = new HashSet<>(Arrays.asList(
             KIND_SERVICE,
@@ -32,13 +36,12 @@ public class ServiceConstants {
             KIND_NETWORK_DRIVER_SERVICE,
             KIND_SCALING_GROUP_SERVICE
         ));
-    
+
 
     public static final String TYPE_STACK = "stack";
     public static final String FIELD_SCALE = "scale";
     public static final String FIELD_NETWORK_ID = "networkId";
     public static final String FIELD_SERVICE_IDS = "serviceIds";
-    public static final String FIELD_UPGRADE = "upgrade";
     public static final String FIELD_LAUNCH_CONFIG = "launchConfig";
     public static final String FIELD_LOG_CONFIG = "logConfig";
     public static final String FIELD_TMPFS= "tmpfs";
@@ -49,6 +52,8 @@ public class ServiceConstants {
     public static final String FIELD_LINKED_SERVICES = "linkedServices";
     public static final String FIELD_SERVICE_LINKS = "serviceLinks";
     public static final String FIELD_NETWORK_LAUNCH_CONFIG = "networkLaunchConfig";
+    public static final String FIELD_IPC_LAUNCH_CONFIG = "networkLaunchConfig";
+    public static final String FIELD_PID_LAUNCH_CONFIG = "pidLaunchConfig";
     public static final String FIELD_SECONDARY_LAUNCH_CONFIGS = "secondaryLaunchConfigs";
     public static final String FIELD_DATA_VOLUMES_LAUNCH_CONFIG = "dataVolumesFromLaunchConfigs";
     public static final String FIELD_WAIT_FOR_CONSUMED_SERVICES_IDS = "waitForConsumedServicesIds";
@@ -63,7 +68,6 @@ public class ServiceConstants {
     public static final String FIELD_FQDN = "fqdn";
     public static final String FIELD_OUTPUTS = "outputs";
     public static final String FIELD_PUBLIC_ENDPOINTS = "publicEndpoints";
-    public static final String FIELD_RESTART = "restart";
     public static final String FIELD_TOKEN = "token";
     public static final String FIELD_RETAIN_IP = "retainIp";
     public static final String STACK_FIELD_DOCKER_COMPOSE = "dockerCompose";
@@ -87,11 +91,10 @@ public class ServiceConstants {
     public static final String FIELD_STORAGE_DRIVER = "storageDriver";
     public static final String FIELD_NETWORK_DRIVER = "networkDriver";
     public static final String FIELD_PORT_RULES = "portRules";
-    public static final String FIELD_EXECUTION_COUNT = "executionCount";
-    public static final String FIELD_EXECUTION_PERIOD_START = "executionPeriodStart";
     public static final String FIELD_DEPLOYMENT_UNIT_REMOVE_LOG_LEVEL = "removeLogLevel";
     public static final String FIELD_DEPLOYMENT_UNIT_REMOVE_REASON = "removeReason";
     public static final String FIELD_DEPLOYMENT_UNIT_CLEANUP = "cleanup";
+    public static final String FIELD_UPGRADE_LAST_RUN = "upgradeLastRun";
     public static final String FIELD_BATCHSIZE = "batchSize";
     public static final String FIELD_INTERVAL_MILLISEC = "intervalMillis";
     public static final String FIELD_START_FIRST_ON_UPGRADE = "startFirst";
@@ -99,14 +102,14 @@ public class ServiceConstants {
     public static final String FIELD_SCALE_INCREMENT = "scaleIncrement";
     public static final String FIELD_SCALE_MIN = "scaleMin";
     public static final String FIELD_FINISH_UPGRADE = "finishUpgrade";
-    public static final String FIELD_IS_UPGRADE = "isUpgrade";
     public static final String FIELD_FORCE_UPGRADE = "forceUpgrade";
-    
+    public static final String FIELD_COMPLETE_UPDATE = "completeUpdate";
+    public static final String FIELD_RESTART_TRIGGER = "restartTrigger";
+
     public static final String FIELD_INTERNAL_VOLUMES = "internalVolumes";
     public static final String FIELD_VOLUME_TEMPLATE_ID = "volumeTemplateId";
     public static final String FIELD_DEPLOYMENT_UNIT_ID = "deploymentUnitId";
     public static final String FIELD_SERVICE_INDEX_STRATEGY = "serviceIndexStrategy";
-    public static final String FIELD_DEPLOYMENT_UNIT_CLEANUP_TIME = "cleanupTime";
 
     public static final String ACTION_SERVICE_ACTIVATE = "activate";
     public static final String ACTION_SERVICE_CREATE = "create";
@@ -150,6 +153,7 @@ public class ServiceConstants {
     public static final String PROCESS_DU_DEACTIVATE = "deploymentunit.deactivate";
     public static final String PROCESS_DU_REMOVE = "deploymentunit.remove";
     public static final String PROCESS_DU_ERROR = "deploymentunit.error";
+    public static final String PROCESS_DU_PAUSE = "deploymentunit.pause";
     public static final String PROCESS_SERVICE_CANCEL_UPGRADE = "service.cancelupgrade";
     public static final String PROCESS_SERVICE_PAUSE = "service.pause";
     public static final String PROCESS_SERVICE_GARBAGE_COLLECT = "service.garbagecollect";
@@ -159,9 +163,6 @@ public class ServiceConstants {
     public static final String LABEL_SERVICE_DEPLOYMENT_UNIT = "io.rancher.service.deployment.unit";
     public static final String LABEL_STACK_NAME = "io.rancher.stack.name";
     public static final String LABEL_STACK_SERVICE_NAME = "io.rancher.stack_service.name";
-    // LEGACY: preserving project_name
-    public static final String LABEL_PROJECT_NAME = "io.rancher.project.name";
-    public static final String LABEL_PROJECT_SERVICE_NAME = "io.rancher.project_service.name";
     public static final String LABEL_SERVICE_GLOBAL = "io.rancher.scheduler.global";
     public static final String LABEL_SERVICE_REQUESTED_HOST_ID = "io.rancher.service.requested.host.id";
     public static final String LABEL_SERVICE_LAUNCH_CONFIG = "io.rancher.service.launch.config";
@@ -196,6 +197,30 @@ public class ServiceConstants {
     public static final String PROCESS_DATA_SERVICE_RECONCILE = "reconcileState";
 
     public static final List<String> SERVICE_INSTANCE_NAME_DIVIDORS = Arrays.asList("-", "_");
+
+    public static final String[] NS_DEPS = new String[] {
+            FIELD_IPC_LAUNCH_CONFIG,
+            FIELD_PID_LAUNCH_CONFIG,
+            FIELD_NETWORK_LAUNCH_CONFIG,
+            FIELD_DATA_VOLUMES_LAUNCH_CONFIG
+    };
+
+    public static final String[] HARD_DEPS = new String[] {
+            DockerInstanceConstants.FIELD_IPC_CONTAINER_ID,
+            DockerInstanceConstants.FIELD_PID_CONTAINER_ID,
+            DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID,
+            DockerInstanceConstants.FIELD_VOLUMES_FROM
+    };
+
+    public static final Map<String, String> NS_DEP_FIELD_MAPPING = new HashMap<>();
+
+    static {
+        NS_DEP_FIELD_MAPPING.put(FIELD_IPC_LAUNCH_CONFIG, DockerInstanceConstants.FIELD_IPC_CONTAINER_ID);
+        NS_DEP_FIELD_MAPPING.put(FIELD_PID_LAUNCH_CONFIG, DockerInstanceConstants.FIELD_PID_CONTAINER_ID);
+        NS_DEP_FIELD_MAPPING.put(FIELD_NETWORK_LAUNCH_CONFIG, DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID);
+        NS_DEP_FIELD_MAPPING.put(FIELD_DATA_VOLUMES_LAUNCH_CONFIG, DockerInstanceConstants.FIELD_VOLUMES_FROM);
+        NS_DEP_FIELD_MAPPING.put(null, InstanceConstants.FIELD_SIDEKICK_TO);
+    }
 
     public static boolean isSystem(Stack stack) {
         return stack.getSystem() || DataAccessor.fieldBool(stack, FIELD_SYSTEM)|| DataAccessor.fieldBool(stack, "isSystem");

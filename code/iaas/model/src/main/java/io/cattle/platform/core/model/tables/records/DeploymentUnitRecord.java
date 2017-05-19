@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "deployment_unit", schema = "cattle")
-public class DeploymentUnitRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.DeploymentUnitRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record16<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Boolean, java.lang.Long, java.util.Date>, io.cattle.platform.core.model.DeploymentUnit {
+public class DeploymentUnitRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.DeploymentUnitRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record18<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long>, io.cattle.platform.core.model.DeploymentUnit {
 
-	private static final long serialVersionUID = 950057680;
+	private static final long serialVersionUID = -1289360467;
 
 	/**
 	 * Setter for <code>cattle.deployment_unit.id</code>.
@@ -238,20 +238,71 @@ public class DeploymentUnitRecord extends org.jooq.impl.UpdatableRecordImpl<io.c
 	}
 
 	/**
-	 * Setter for <code>cattle.deployment_unit.cleanup</code>.
+	 * Setter for <code>cattle.deployment_unit.environment_id</code>.
 	 */
 	@Override
-	public void setCleanup(java.lang.Boolean value) {
+	public void setStackId(java.lang.Long value) {
 		setValue(13, value);
 	}
 
 	/**
-	 * Getter for <code>cattle.deployment_unit.cleanup</code>.
+	 * Getter for <code>cattle.deployment_unit.environment_id</code>.
 	 */
-	@javax.persistence.Column(name = "cleanup", nullable = false, precision = 1)
+	@javax.persistence.Column(name = "environment_id", nullable = false, precision = 19)
 	@Override
-	public java.lang.Boolean getCleanup() {
-		return (java.lang.Boolean) getValue(13);
+	public java.lang.Long getStackId() {
+		return (java.lang.Long) getValue(13);
+	}
+
+	/**
+	 * Setter for <code>cattle.deployment_unit.health_state</code>.
+	 */
+	@Override
+	public void setHealthState(java.lang.String value) {
+		setValue(14, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.deployment_unit.health_state</code>.
+	 */
+	@javax.persistence.Column(name = "health_state", length = 255)
+	@Override
+	public java.lang.String getHealthState() {
+		return (java.lang.String) getValue(14);
+	}
+
+	/**
+	 * Setter for <code>cattle.deployment_unit.host_id</code>.
+	 */
+	@Override
+	public void setHostId(java.lang.Long value) {
+		setValue(15, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.deployment_unit.host_id</code>.
+	 */
+	@javax.persistence.Column(name = "host_id", precision = 19)
+	@Override
+	public java.lang.Long getHostId() {
+		return (java.lang.Long) getValue(15);
+	}
+
+	/**
+	 * Setter for <code>cattle.deployment_unit.requested_revision_id</code>.
+	 */
+	@Override
+	public void setRequestedRevisionId(java.lang.Long value) {
+		setValue(16, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.deployment_unit.requested_revision_id</code>.
+	 */
+	@javax.persistence.Column(name = "requested_revision_id", precision = 19)
+	@Override
+	public java.lang.Long getRequestedRevisionId() {
+		return (java.lang.Long) getValue(16);
 	}
 
 	/**
@@ -259,7 +310,7 @@ public class DeploymentUnitRecord extends org.jooq.impl.UpdatableRecordImpl<io.c
 	 */
 	@Override
 	public void setRevisionId(java.lang.Long value) {
-		setValue(14, value);
+		setValue(17, value);
 	}
 
 	/**
@@ -268,24 +319,7 @@ public class DeploymentUnitRecord extends org.jooq.impl.UpdatableRecordImpl<io.c
 	@javax.persistence.Column(name = "revision_id", precision = 19)
 	@Override
 	public java.lang.Long getRevisionId() {
-		return (java.lang.Long) getValue(14);
-	}
-
-	/**
-	 * Setter for <code>cattle.deployment_unit.cleanup_time</code>.
-	 */
-	@Override
-	public void setCleanupTime(java.util.Date value) {
-		setValue(15, value);
-	}
-
-	/**
-	 * Getter for <code>cattle.deployment_unit.cleanup_time</code>.
-	 */
-	@javax.persistence.Column(name = "cleanup_time")
-	@Override
-	public java.util.Date getCleanupTime() {
-		return (java.util.Date) getValue(15);
+		return (java.lang.Long) getValue(17);
 	}
 
 	// -------------------------------------------------------------------------
@@ -301,23 +335,23 @@ public class DeploymentUnitRecord extends org.jooq.impl.UpdatableRecordImpl<io.c
 	}
 
 	// -------------------------------------------------------------------------
-	// Record16 type implementation
+	// Record18 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row16<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Boolean, java.lang.Long, java.util.Date> fieldsRow() {
-		return (org.jooq.Row16) super.fieldsRow();
+	public org.jooq.Row18<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long> fieldsRow() {
+		return (org.jooq.Row18) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row16<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Boolean, java.lang.Long, java.util.Date> valuesRow() {
-		return (org.jooq.Row16) super.valuesRow();
+	public org.jooq.Row18<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.Long, java.lang.String, java.lang.Long, java.lang.Long, java.lang.Long> valuesRow() {
+		return (org.jooq.Row18) super.valuesRow();
 	}
 
 	/**
@@ -428,24 +462,40 @@ public class DeploymentUnitRecord extends org.jooq.impl.UpdatableRecordImpl<io.c
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.Boolean> field14() {
-		return io.cattle.platform.core.model.tables.DeploymentUnitTable.DEPLOYMENT_UNIT.CLEANUP;
+	public org.jooq.Field<java.lang.Long> field14() {
+		return io.cattle.platform.core.model.tables.DeploymentUnitTable.DEPLOYMENT_UNIT.STACK_ID;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.Long> field15() {
+	public org.jooq.Field<java.lang.String> field15() {
+		return io.cattle.platform.core.model.tables.DeploymentUnitTable.DEPLOYMENT_UNIT.HEALTH_STATE;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public org.jooq.Field<java.lang.Long> field16() {
+		return io.cattle.platform.core.model.tables.DeploymentUnitTable.DEPLOYMENT_UNIT.HOST_ID;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public org.jooq.Field<java.lang.Long> field17() {
+		return io.cattle.platform.core.model.tables.DeploymentUnitTable.DEPLOYMENT_UNIT.REQUESTED_REVISION_ID;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public org.jooq.Field<java.lang.Long> field18() {
 		return io.cattle.platform.core.model.tables.DeploymentUnitTable.DEPLOYMENT_UNIT.REVISION_ID;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.util.Date> field16() {
-		return io.cattle.platform.core.model.tables.DeploymentUnitTable.DEPLOYMENT_UNIT.CLEANUP_TIME;
 	}
 
 	/**
@@ -556,24 +606,40 @@ public class DeploymentUnitRecord extends org.jooq.impl.UpdatableRecordImpl<io.c
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.Boolean value14() {
-		return getCleanup();
+	public java.lang.Long value14() {
+		return getStackId();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.Long value15() {
+	public java.lang.String value15() {
+		return getHealthState();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.Long value16() {
+		return getHostId();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.Long value17() {
+		return getRequestedRevisionId();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.Long value18() {
 		return getRevisionId();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.util.Date value16() {
-		return getCleanupTime();
 	}
 
 	/**
@@ -697,8 +763,8 @@ public class DeploymentUnitRecord extends org.jooq.impl.UpdatableRecordImpl<io.c
 	 * {@inheritDoc}
 	 */
 	@Override
-	public DeploymentUnitRecord value14(java.lang.Boolean value) {
-		setCleanup(value);
+	public DeploymentUnitRecord value14(java.lang.Long value) {
+		setStackId(value);
 		return this;
 	}
 
@@ -706,7 +772,34 @@ public class DeploymentUnitRecord extends org.jooq.impl.UpdatableRecordImpl<io.c
 	 * {@inheritDoc}
 	 */
 	@Override
-	public DeploymentUnitRecord value15(java.lang.Long value) {
+	public DeploymentUnitRecord value15(java.lang.String value) {
+		setHealthState(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public DeploymentUnitRecord value16(java.lang.Long value) {
+		setHostId(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public DeploymentUnitRecord value17(java.lang.Long value) {
+		setRequestedRevisionId(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public DeploymentUnitRecord value18(java.lang.Long value) {
 		setRevisionId(value);
 		return this;
 	}
@@ -715,16 +808,7 @@ public class DeploymentUnitRecord extends org.jooq.impl.UpdatableRecordImpl<io.c
 	 * {@inheritDoc}
 	 */
 	@Override
-	public DeploymentUnitRecord value16(java.util.Date value) {
-		setCleanupTime(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public DeploymentUnitRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.Long value13, java.lang.Boolean value14, java.lang.Long value15, java.util.Date value16) {
+	public DeploymentUnitRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.Long value13, java.lang.Long value14, java.lang.String value15, java.lang.Long value16, java.lang.Long value17, java.lang.Long value18) {
 		return this;
 	}
 
@@ -750,9 +834,11 @@ public class DeploymentUnitRecord extends org.jooq.impl.UpdatableRecordImpl<io.c
 		setData(from.getData());
 		setServiceIndex(from.getServiceIndex());
 		setServiceId(from.getServiceId());
-		setCleanup(from.getCleanup());
+		setStackId(from.getStackId());
+		setHealthState(from.getHealthState());
+		setHostId(from.getHostId());
+		setRequestedRevisionId(from.getRequestedRevisionId());
 		setRevisionId(from.getRevisionId());
-		setCleanupTime(from.getCleanupTime());
 	}
 
 	/**
@@ -778,7 +864,7 @@ public class DeploymentUnitRecord extends org.jooq.impl.UpdatableRecordImpl<io.c
 	/**
 	 * Create a detached, initialised DeploymentUnitRecord
 	 */
-	public DeploymentUnitRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String serviceIndex, java.lang.Long serviceId, java.lang.Boolean cleanup, java.lang.Long revisionId, java.util.Date cleanupTime) {
+	public DeploymentUnitRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String serviceIndex, java.lang.Long serviceId, java.lang.Long environmentId, java.lang.String healthState, java.lang.Long hostId, java.lang.Long requestedRevisionId, java.lang.Long revisionId) {
 		super(io.cattle.platform.core.model.tables.DeploymentUnitTable.DEPLOYMENT_UNIT);
 
 		setValue(0, id);
@@ -794,8 +880,10 @@ public class DeploymentUnitRecord extends org.jooq.impl.UpdatableRecordImpl<io.c
 		setValue(10, data);
 		setValue(11, serviceIndex);
 		setValue(12, serviceId);
-		setValue(13, cleanup);
-		setValue(14, revisionId);
-		setValue(15, cleanupTime);
+		setValue(13, environmentId);
+		setValue(14, healthState);
+		setValue(15, hostId);
+		setValue(16, requestedRevisionId);
+		setValue(17, revisionId);
 	}
 }

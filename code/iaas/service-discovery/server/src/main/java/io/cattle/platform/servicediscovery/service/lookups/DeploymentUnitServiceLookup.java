@@ -1,12 +1,10 @@
 package io.cattle.platform.servicediscovery.service.lookups;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
-import io.cattle.platform.core.constants.CommonStatesConstants;
+
 import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.object.ObjectManager;
-import io.github.ibuildthecloud.gdapi.condition.Condition;
-import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
 import java.util.Collection;
 
@@ -23,9 +21,8 @@ public class DeploymentUnitServiceLookup implements ServiceLookup {
             return null;
         }
         DeploymentUnit du = (DeploymentUnit)obj;
-        return objectMgr.find(Service.class, SERVICE.ID, du.getServiceId(), SERVICE.REMOVED, null, SERVICE.STATE, new Condition(
-                ConditionType.NE,
-                        CommonStatesConstants.REMOVING));
+        return objectMgr.find(Service.class,
+                SERVICE.ID, du.getServiceId());
     }
 
 }

@@ -61,7 +61,7 @@ def test_container_compute_fail(super_client, context):
                                                    networkContainerId=c1.id)
 
     assert c2.transitioning == 'error'
-    assert c2.deploymentUnitUuid is None
+    assert c2.deploymentUnitUuid == c1.deploymentUnitUuid
 
     du = super_client.list_deploymentUnit(uuid=c1.deploymentUnitUuid)[0]
     wait_for(lambda: super_client.reload(du).state == 'active')
@@ -87,26 +87,34 @@ def test_du_sidekick_to(super_client, context):
     wait_for(lambda: super_client.reload(du).state == 'removed')
 
 
-def test_restart_always(context, super_client):
+def test_restart_always(context, client, super_client):
     p = {"name": "always"}
-    c1 = context.super_create_container(name=random_str(),
-                                        restartPolicy=p)
-    c2 = context.super_create_container(name=random_str(),
-                                        networkContainerId=c1.id,
-                                        restartPolicy=p)
-    c3 = context.super_create_container(name=random_str(),
-                                        networkContainerId=c2.id,
-                                        restartPolicy=p)
+    c1 = context.create_container(name=random_str(),
+                                  restartPolicy=p)
+    c2 = context.create_container(name=random_str(),
+                                  networkContainerId=c1.id,
+                                  restartPolicy=p)
+    c3 = context.create_container(name=random_str(),
+                                  networkContainerId=c2.id,
+                                  restartPolicy=p)
+
+    c1 = client.wait_success(c1)
+    c2 = client.wait_success(c2)
+    c3 = client.wait_success(c3)
+
+    assert c1.state == 'running'
+    assert c2.state == 'running'
+    assert c3.state == 'running'
 
     sc_1 = c1.startCount
     sc_2 = c2.startCount
     sc_3 = c3.startCount
     c1.stop(stopSource="external")
 
-    wait_for(lambda: super_client.reload(c1).state == 'running')
-    wait_for(lambda: super_client.reload(c1).startCount > sc_1)
-    wait_for(lambda: super_client.reload(c2).startCount > sc_2)
-    wait_for(lambda: super_client.reload(c3).startCount > sc_3)
+    wait_for(lambda: client.reload(c1).state == 'running')
+    wait_for(lambda: client.reload(c1).startCount > sc_1)
+    wait_for(lambda: client.reload(c2).startCount > sc_2)
+    wait_for(lambda: client.reload(c3).startCount > sc_3)
     assert super_client.reload(c1).stopSource is None
     assert super_client.reload(c2).stopSource is None
     assert super_client.reload(c3).stopSource is None
@@ -146,12 +154,10 @@ def test_instance_revision(client, context):
     c = client.wait_success(c)
     assert c.deploymentUnitUuid is not None
 
-    rs = client.list_instanceRevision(instanceId=c.id)
-    assert len(rs) == 1
-    r = rs[0]
+    r = c.revision()
     config = r.config
-    assert config['imageUuid'] == context.image_uuid
-    assert config['version'] == '0'
+    assert config.launchConfig.imageUuid == context.image_uuid
+    assert config.launchConfig.version == '0'
 
 
 def test_convert_to_service_primary(client, context):
@@ -160,19 +166,16 @@ def test_convert_to_service_primary(client, context):
     c = client.wait_success(c)
     assert c.deploymentUnitUuid is not None
 
-    rs = client.list_instanceRevision(instanceId=c.id)
-    assert len(rs) == 1
-    r = rs[0]
+    r = c.revision()
     config = r.config
-    assert config['imageUuid'] == context.image_uuid
-    assert config['version'] == '0'
+    assert config.launchConfig.imageUuid == context.image_uuid
+    assert config.launchConfig.version == '0'
 
-    s_name = random_str()
-    s = c.converttoservice(name=s_name)
+    s = c.converttoservice()
     s = client.wait_success(s)
     assert s.state == 'active'
     assert s is not None
-    assert s.name == s_name
+    assert s.name == c.name
     assert s.stackId == c.stackId
     assert s.scale == 1
     assert s.launchConfig is not None
@@ -191,7 +194,7 @@ def test_convert_to_service_primary(client, context):
     # validate the new container
     stack = client.by_id('stack', s.stackId)
     _wait_until_active_map_count(s, 2, client)
-    c1 = _validate_service_instance_start(client, s, stack, "1")
+    c1 = _validate_service_instance_start(client, s, stack, "2")
 
     s = client.wait_success(s.deactivate())
     wait_for(lambda: client.reload(c).state == 'stopped')
@@ -208,25 +211,22 @@ def test_convert_to_service_sidekicks(client, context):
     c1 = client.wait_success(c1)
     assert c1.deploymentUnitUuid is not None
 
-    c2 = context.super_create_container(networkContainerId=c1.id,
-                                        dataVolumesFrom=[c1.id],
-                                        name=random_str())
+    c2 = context.create_container(networkContainerId=c1.id,
+                                  dataVolumesFrom=[c1.id],
+                                  name=random_str())
     assert c1.deploymentUnitUuid == c2.deploymentUnitUuid
 
-    rs = client.list_instanceRevision(instanceId=c1.id)
-    assert len(rs) == 1
-    r = rs[0]
+    r = c1.revision()
     config = r.config
-    assert config['imageUuid'] == context.image_uuid
-    assert config['version'] == '0'
+    assert config.launchConfig.imageUuid == context.image_uuid
+    assert config.launchConfig.version == '0'
 
-    s_name = random_str()
-    s = c1.converttoservice(name=s_name)
+    s = c1.converttoservice()
     assert s is not None
 
     s = client.wait_success(s)
     assert s.state == 'active'
-    assert s.name == s_name
+    assert s.name == c1.name
     assert s.stackId == c1.stackId
     assert s.revisionId is not None
 
@@ -258,10 +258,10 @@ def test_convert_to_service_sidekicks(client, context):
 
     # validate the new container
     stack = client.by_id('stack', s.stackId)
-    _wait_until_active_map_count(s, 2, client)
-    c3 = _validate_service_instance_start(client, s, stack, "1")
+    _wait_until_active_map_count(s, 4, client)
+    c3 = _validate_service_instance_start(client, s, stack, "2")
     c4 = _validate_service_instance_start(client, s,
-                                          stack, "1", c2.name)
+                                          stack, "2", c2.name)
 
     s = client.wait_success(s.deactivate())
     wait_for(lambda: client.reload(c1).state == 'stopped')
@@ -314,44 +314,33 @@ def test_instance_upgrade(client, context):
     c1 = client.wait_success(c1)
     assert c1.deploymentUnitUuid is not None
 
-    rs = client.list_instanceRevision(instanceId=c1.id)
-    assert len(rs) == 1
-    r1 = rs[0]
+    r1 = c1.revision()
     config = r1.config
-    assert config['imageUuid'] == context.image_uuid
-    assert config['version'] == '0'
+    assert config.launchConfig['imageUuid'] == context.image_uuid
+    assert config.launchConfig['version'] == '0'
 
     config = {
-        'name': random_str(),
-        'imageUuid': context.image_uuid,
-        'prePullOnUpgrade': True,
+        'imageUuid': context.image_uuid + '1',
     }
 
     # upgrade with config
-    c2 = c1.upgrade(config=config)
+    new_rev = c1.upgrade(config=config)
+
+    assert r1.id != new_rev.id
+
+    def get_instance():
+        instances = new_rev.instances()
+        if len(instances) == 1:
+            return instances[0]
+
+    c2 = wait_for(get_instance)
     c2 = client.wait_success(c2)
+
     assert c2.imageUuid == config['imageUuid']
     assert c1.id != c2.id
     assert c1.deploymentUnitUuid == c2.deploymentUnitUuid
-    assert c2.previousRevisionId == c1.revisionId
-    rs = client.list_instanceRevision(instanceId=c1.id)
-    assert len(rs) == 0
-    rs = client.list_instanceRevision(instanceId=c2.id)
-    assert len(rs) == 2
+    assert c1.revisionId != c2.revisionId
     wait_for(lambda: client.reload(c1).state == 'removed')
-
-    # upgrade to revision
-    c3 = c2.upgrade(revisionId=r1.id)
-    c3 = client.wait_success(c3)
-    assert c3.imageUuid == config['imageUuid']
-    assert c3.id != c2.id
-    assert c3.deploymentUnitUuid == c2.deploymentUnitUuid
-    assert c3.revisionId == r1.id
-    rs = client.list_instanceRevision(instanceId=c2.id)
-    assert len(rs) == 0
-    rs = client.list_instanceRevision(instanceId=c3.id)
-    assert len(rs) == 2
-    wait_for(lambda: client.reload(c2).state == 'removed')
 
 
 def test_standalone_upgrade_lb_replacement(client, context):
@@ -392,10 +381,13 @@ def test_standalone_upgrade_lb_replacement(client, context):
     # upgrade c1 and make sure its replacement got programmed to lb
     config = {
         'name': random_str(),
-        'imageUuid': context.image_uuid
+        'imageUuid': context.image_uuid + '1'
     }
 
-    c2 = c1.upgrade(config=config)
+    rev = c1.upgrade(config=config)
+    wait_for(lambda: len(rev.instances()) == 1)
+    c2 = rev.instances()[0]
+    wait_for_condition(client, c2, lambda x: x.state == 'running')
 
     wait_for(lambda: len(client.reload(lb_svc).lbConfig.portRules) == 1)
     wait_for(lambda: client.reload(lb_svc).

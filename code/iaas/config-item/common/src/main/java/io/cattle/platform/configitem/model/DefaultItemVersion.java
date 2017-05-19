@@ -1,21 +1,21 @@
 package io.cattle.platform.configitem.model;
 
-import io.cattle.platform.configitem.model.ItemVersion;
-
-public class DefaultItemVersion implements ItemVersion {
+public class DefaultItemVersion implements ItemVersion, AppliedItemVersion {
 
     public static final String LATEST = "latest";
 
     long revision;
     String sourceRevision;
     boolean latest;
+    Long applied;
 
     public DefaultItemVersion() {
     }
 
-    public DefaultItemVersion(long revision, String sourceRevision) {
+    public DefaultItemVersion(long revision, String sourceRevision, Long applied) {
         this.revision = revision;
         this.sourceRevision = sourceRevision;
+        this.applied = applied;
     }
 
     @Override
@@ -86,5 +86,10 @@ public class DefaultItemVersion implements ItemVersion {
     @Override
     public String toString() {
         return toExternalForm();
+    }
+
+    @Override
+    public Long getAppliedVersion() {
+        return applied;
     }
 }

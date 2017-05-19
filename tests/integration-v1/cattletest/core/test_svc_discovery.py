@@ -98,10 +98,10 @@ def test_activate_single_service(client, context, super_client):
     env = _create_stack(client)
 
     image_uuid = context.image_uuid
-    host = context.host
+    context.host
     container1 = client.create_container(imageUuid=image_uuid,
                                          startOnCreate=True)
-    container1 = client.wait_success(container1)
+    client.wait_success(container1)
 
     container2 = client.create_container(imageUuid=image_uuid,
                                          startOnCreate=True)
@@ -124,14 +124,13 @@ def test_activate_single_service(client, context, super_client):
     consumed_service = client.create_service(name=random_str(),
                                              environmentId=env.id,
                                              launchConfig=launch_config)
-    consumed_service = client.wait_success(consumed_service)
+    client.wait_success(consumed_service)
 
     launch_config = {"imageUuid": image_uuid,
                      "command": ['sleep', '42'],
                      "environment": {'TEST_FILE': "/etc/testpath.conf"},
                      "ports": ['8681', '8082/tcp'],
                      "dataVolumes": ['/foo'],
-                     "dataVolumesFrom": [container1.id],
                      "capAdd": caps,
                      "capDrop": caps,
                      "dnsSearch": search,
@@ -150,7 +149,6 @@ def test_activate_single_service(client, context, super_client):
                      "instanceLinks": {
                          'container2_link':
                              container2.id},
-                     "requestedHostId": host.id,
                      "healthCheck": health_check,
                      "labels": labels}
 
@@ -168,7 +166,6 @@ def test_activate_single_service(client, context, super_client):
     assert len(svc.launchConfig.environment) == 1
     assert len(svc.launchConfig.ports) == 2
     assert len(svc.launchConfig.dataVolumes) == 1
-    assert svc.launchConfig.dataVolumesFrom == list([container1.id])
     assert svc.launchConfig.capAdd == caps
     assert svc.launchConfig.capDrop == caps
     assert svc.launchConfig.dns == dns
@@ -195,7 +192,6 @@ def test_activate_single_service(client, context, super_client):
     assert svc.launchConfig.healthCheck.port == 200
     assert svc.metadata == metadata
     assert svc.launchConfig.version == '0'
-    assert svc.launchConfig.requestedHostId == host.id
 
     # activate the service and validate that parameters were set for instance
     svc.activate()
@@ -206,7 +202,6 @@ def test_activate_single_service(client, context, super_client):
     assert len(container.environment) == 1
     assert len(container.ports) == 2
     assert len(container.dataVolumes) == 1
-    assert set(container.dataVolumesFrom) == set([container1.id])
     assert container.capAdd == caps
     assert container.capDrop == caps
     dns.append("169.254.169.250")
@@ -225,7 +220,6 @@ def test_activate_single_service(client, context, super_client):
     assert container.user == "test"
     assert container.state == "running"
     assert container.cpuSet == "2"
-    assert container.requestedHostId == host.id
     assert container.healthState == 'initializing'
     assert container.deploymentUnitUuid is not None
     assert container.version == '0'
@@ -673,8 +667,8 @@ def test_validate_service_scaleup_scaledown(client, context):
     assert instance21.createIndex != instance11.createIndex
 
     # stop the instance2
-    instance21 = client.wait_success(instance21.stop())
-    client.wait_success(instance21.remove())
+    client.delete(instance21)
+    client.wait_success(instance21)
     service = client.wait_success(service)
     wait_for(lambda: client.reload(service).healthState == 'healthy')
 
@@ -2557,7 +2551,8 @@ def test_project_random_port_update_create(new_context):
                                 launchConfig=launch_config)
 
     def condition(x):
-        return 'Not enough environment ports' in x.transitioningMessage
+        return x.transitioningMessage is not None and \
+               'Not enough environment ports' in x.transitioningMessage
     wait_for_condition(client, svc, condition)
     assert svc.state == 'registering'
     client.wait_success(client.delete(svc))
@@ -3040,4 +3035,16 @@ def test_retain_ip_update(client, context, super_client):
     c2 = super_client.reload(c2)
     ip2 = c2.primaryIpAddress
     assert c1.id != c2.id
-    assert ip1 == ip2
+    assert ip1 != ip2
+
+    _instance_remove(c2, client)
+    _wait_until_active_map_count(svc, 1, client)
+    svc = client.wait_success(svc)
+    assert svc.state == "active"
+
+    c3 = _wait_for_compose_instance_start(client, svc, env, "1")
+
+    c3 = super_client.reload(c3)
+    ip3 = c3.primaryIpAddress
+    assert c2.id != c3.id
+    assert ip2 == ip3

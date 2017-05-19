@@ -13,9 +13,9 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "resource_pool", schema = "cattle", uniqueConstraints = {
 	@javax.persistence.UniqueConstraint(columnNames = {"pool_type", "pool_id", "qualifier", "item"})
 })
-public class ResourcePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ResourcePoolRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record17<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.String>, io.cattle.platform.core.model.ResourcePool {
+public class ResourcePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ResourcePoolRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record18<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.lang.String>, io.cattle.platform.core.model.ResourcePool {
 
-	private static final long serialVersionUID = 1323875213;
+	private static final long serialVersionUID = -1978265081;
 
 	/**
 	 * Setter for <code>cattle.resource_pool.id</code>.
@@ -307,6 +307,23 @@ public class ResourcePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 		return (java.lang.String) getValue(16);
 	}
 
+	/**
+	 * Setter for <code>cattle.resource_pool.sub_owner</code>.
+	 */
+	@Override
+	public void setSubOwner(java.lang.String value) {
+		setValue(17, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.resource_pool.sub_owner</code>.
+	 */
+	@javax.persistence.Column(name = "sub_owner", length = 255)
+	@Override
+	public java.lang.String getSubOwner() {
+		return (java.lang.String) getValue(17);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -320,23 +337,23 @@ public class ResourcePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	}
 
 	// -------------------------------------------------------------------------
-	// Record17 type implementation
+	// Record18 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row17<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.String> fieldsRow() {
-		return (org.jooq.Row17) super.fieldsRow();
+	public org.jooq.Row18<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.lang.String> fieldsRow() {
+		return (org.jooq.Row18) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row17<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.String> valuesRow() {
-		return (org.jooq.Row17) super.valuesRow();
+	public org.jooq.Row18<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.Long, java.lang.String, java.lang.String> valuesRow() {
+		return (org.jooq.Row18) super.valuesRow();
 	}
 
 	/**
@@ -479,6 +496,14 @@ public class ResourcePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.lang.String> field18() {
+		return io.cattle.platform.core.model.tables.ResourcePoolTable.RESOURCE_POOL.SUB_OWNER;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -609,6 +634,14 @@ public class ResourcePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	@Override
 	public java.lang.String value17() {
 		return getQualifier();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.String value18() {
+		return getSubOwner();
 	}
 
 	/**
@@ -768,7 +801,16 @@ public class ResourcePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ResourcePoolRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.Long value13, java.lang.String value14, java.lang.String value15, java.lang.Long value16, java.lang.String value17) {
+	public ResourcePoolRecord value18(java.lang.String value) {
+		setSubOwner(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public ResourcePoolRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.Long value13, java.lang.String value14, java.lang.String value15, java.lang.Long value16, java.lang.String value17, java.lang.String value18) {
 		return this;
 	}
 
@@ -798,6 +840,7 @@ public class ResourcePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 		setOwnerType(from.getOwnerType());
 		setOwnerId(from.getOwnerId());
 		setQualifier(from.getQualifier());
+		setSubOwner(from.getSubOwner());
 	}
 
 	/**
@@ -823,7 +866,7 @@ public class ResourcePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	/**
 	 * Create a detached, initialised ResourcePoolRecord
 	 */
-	public ResourcePoolRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String poolType, java.lang.Long poolId, java.lang.String item, java.lang.String ownerType, java.lang.Long ownerId, java.lang.String qualifier) {
+	public ResourcePoolRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String poolType, java.lang.Long poolId, java.lang.String item, java.lang.String ownerType, java.lang.Long ownerId, java.lang.String qualifier, java.lang.String subOwner) {
 		super(io.cattle.platform.core.model.tables.ResourcePoolTable.RESOURCE_POOL);
 
 		setValue(0, id);
@@ -843,5 +886,6 @@ public class ResourcePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 		setValue(14, ownerType);
 		setValue(15, ownerId);
 		setValue(16, qualifier);
+		setValue(17, subOwner);
 	}
 }

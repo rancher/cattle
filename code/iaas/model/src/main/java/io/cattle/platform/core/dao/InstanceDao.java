@@ -8,7 +8,6 @@ import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.InstanceLink;
-import io.cattle.platform.core.model.InstanceRevision;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Service;
 
@@ -41,8 +40,6 @@ public interface InstanceDao {
 
     List<? extends Instance> findInstanceByServiceName(long accountId, String serviceName, String stackName);
 
-    List<? extends Instance> findUnallocatedInstanceByDeploymentUnitUuid(long accountId, String deploymentUnitUuid);
-
     List<? extends Host> findHosts(long accountId, long instanceId);
 
     Map<String, Object> getCacheInstanceData(long instanceId);
@@ -57,12 +54,5 @@ public interface InstanceDao {
 
     List<GenericObject> getImagePullTasks(long accountId, List<String> images, Map<String, String> labels);
 
-    /**
-     * INSTANCE REVISION MANAGEMENT
-     */
-    InstanceRevision createRevision(Instance instance, Map<String, Object> config, boolean isInitial);
-
-    void cleanupRevisions(Instance instance);
-
-    Map<String, Object> getRevisionConfig(Instance instance);
+    void updatePorts(Instance instance, List<String> ports);
 }

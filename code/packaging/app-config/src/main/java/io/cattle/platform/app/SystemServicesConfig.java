@@ -12,7 +12,6 @@ import io.cattle.platform.activity.ActivityService;
 import io.cattle.platform.agent.impl.AgentLocatorImpl;
 import io.cattle.platform.agent.instance.dao.impl.AgentInstanceDaoImpl;
 import io.cattle.platform.agent.instance.factory.impl.AgentInstanceFactoryImpl;
-import io.cattle.platform.agent.instance.link.process.AgentInstanceLinkActivate;
 import io.cattle.platform.agent.instance.serialization.AgentInstanceAuthObjectPostProcessor;
 import io.cattle.platform.agent.instance.service.AgentMetadataService;
 import io.cattle.platform.api.formatter.DefaultIdFormatter;
@@ -26,8 +25,7 @@ import io.cattle.platform.core.cleanup.BadDataCleanup;
 import io.cattle.platform.core.cleanup.TableCleanup;
 import io.cattle.platform.core.dao.impl.ServiceConsumeMapDaoImpl;
 import io.cattle.platform.core.dao.impl.ServiceExposeMapDaoImpl;
-import io.cattle.platform.docker.process.dao.impl.ComposeDaoImpl;
-import io.cattle.platform.docker.service.impl.ComposeManagerImpl;
+import io.cattle.platform.docker.process.serializer.DockerContainerSerializer;
 import io.cattle.platform.docker.storage.DockerImageCredentialLookup;
 import io.cattle.platform.docker.storage.DockerStoragePoolDriver;
 import io.cattle.platform.docker.storage.dao.impl.DockerStorageDaoImpl;
@@ -105,27 +103,28 @@ import io.cattle.platform.sample.data.SampleDataStartupV11;
 import io.cattle.platform.sample.data.SampleDataStartupV12;
 import io.cattle.platform.sample.data.SampleDataStartupV13;
 import io.cattle.platform.sample.data.SampleDataStartupV14;
-import io.cattle.platform.sample.data.SampleDataStartupV15;
 import io.cattle.platform.sample.data.SampleDataStartupV3;
 import io.cattle.platform.sample.data.SampleDataStartupV5;
 import io.cattle.platform.sample.data.SampleDataStartupV6;
 import io.cattle.platform.sample.data.SampleDataStartupV7;
 import io.cattle.platform.sample.data.SampleDataStartupV8;
 import io.cattle.platform.sample.data.SampleDataStartupV9;
+import io.cattle.platform.service.account.SystemRoleObjectPostProcessor;
 import io.cattle.platform.service.launcher.ServiceAccountCreateStartup;
-import io.cattle.platform.servicediscovery.deployment.impl.manager.DeploymentUnitManagerImpl;
 import io.cattle.platform.servicediscovery.deployment.lookups.AgentServiceDeploymentUnitLookup;
+import io.cattle.platform.servicediscovery.deployment.lookups.DeploymentUnitImplLookup;
 import io.cattle.platform.servicediscovery.deployment.lookups.HostServiceDeploymentUnitLookup;
 import io.cattle.platform.servicediscovery.deployment.lookups.InstanceDeploymentUnitLookup;
-import io.cattle.platform.servicediscovery.service.impl.DeploymentManagerImpl;
+import io.cattle.platform.servicediscovery.deployment.lookups.VolumeDeploymentUnitLookup;
 import io.cattle.platform.servicediscovery.service.impl.ServiceDiscoveryServiceImpl;
 import io.cattle.platform.servicediscovery.service.lookups.AgentServiceLookup;
 import io.cattle.platform.servicediscovery.service.lookups.DeploymentUnitServiceLookup;
+import io.cattle.platform.servicediscovery.service.lookups.GenericObjectLookup;
 import io.cattle.platform.servicediscovery.service.lookups.GlobalHostActivateServiceLookup;
 import io.cattle.platform.servicediscovery.service.lookups.HostServiceLookup;
 import io.cattle.platform.servicediscovery.service.lookups.InstanceServiceLookup;
+import io.cattle.platform.servicediscovery.service.lookups.ServiceImplLookup;
 import io.cattle.platform.servicediscovery.service.lookups.SkipServiceLookup;
-import io.cattle.platform.servicediscovery.upgrade.impl.UpgradeManagerImpl;
 import io.cattle.platform.spring.resource.SpringUrlListFactory;
 import io.cattle.platform.storage.ImageCredentialLookup;
 import io.cattle.platform.storage.service.dao.impl.ImageDaoImpl;
@@ -164,7 +163,9 @@ import org.springframework.context.annotation.Configuration;
     @ComponentScan("io.cattle.iaas.healthcheck.process"),
     @ComponentScan("io.cattle.platform.register.process"),
     @ComponentScan("io.cattle.platform.agent.instance.process"),
+    @ComponentScan("io.cattle.platform.service.revision"),
     @ComponentScan("io.cattle.platform.servicediscovery.process"),
+    @ComponentScan("io.cattle.platform.compose"),
     @ComponentScan("io.cattle.platform.systemstack.process")
 })
 public class SystemServicesConfig {
@@ -190,8 +191,13 @@ public class SystemServicesConfig {
     }
 
     @Bean
-    AgentInstanceLinkActivate agentInstanceLinkActivate() {
-        return new AgentInstanceLinkActivate();
+    SystemRoleObjectPostProcessor SystemRoleObjectPostProcessor() {
+        return new SystemRoleObjectPostProcessor();
+    }
+
+    @Bean
+    DockerContainerSerializer DockerContainerSerializer() {
+        return new DockerContainerSerializer();
     }
 
     @Bean
@@ -661,11 +667,6 @@ public class SystemServicesConfig {
     }
 
     @Bean
-    SampleDataStartupV15 SampleDataStartupV15() {
-        return new SampleDataStartupV15();
-    }
-
-    @Bean
     ServiceConsumeMapDaoImpl ServiceConsumeMapDaoImpl() {
         return new ServiceConsumeMapDaoImpl();
     }
@@ -714,18 +715,13 @@ public class SystemServicesConfig {
     }
 
     @Bean
-    DeploymentManagerImpl DeploymentManagerImpl() {
-        return new DeploymentManagerImpl();
+    GenericObjectLookup GenericObjectLookup() {
+        return new GenericObjectLookup();
     }
 
     @Bean
-    DeploymentUnitManagerImpl DeploymentUnitManagerImpl() {
-        return new DeploymentUnitManagerImpl();
-    }
-
-    @Bean
-    UpgradeManagerImpl UpgradeManagerImpl() {
-        return new UpgradeManagerImpl();
+    ServiceImplLookup ServiceImplLookup() {
+        return new ServiceImplLookup();
     }
 
     @Bean
@@ -823,16 +819,6 @@ public class SystemServicesConfig {
     }
 
     @Bean
-    ComposeDaoImpl ComposeDaoImpl() {
-        return new ComposeDaoImpl();
-    }
-
-    @Bean
-    ComposeManagerImpl ComposeManagerImpl() {
-        return new ComposeManagerImpl();
-    }
-
-    @Bean
     ServiceAccountCreateStartup ServiceAccountCreateStartup() {
         return new ServiceAccountCreateStartup();
     }
@@ -878,7 +864,17 @@ public class SystemServicesConfig {
     }
 
     @Bean
+    DeploymentUnitImplLookup DeploymentUnitImplLookup() {
+        return new DeploymentUnitImplLookup();
+    }
+
+    @Bean
     InstanceDeploymentUnitLookup InstanceServiceDeploymentUnitLookup() {
         return new InstanceDeploymentUnitLookup();
+    }
+
+    @Bean
+    VolumeDeploymentUnitLookup VolumeDeploymentUnitLookup() {
+        return new VolumeDeploymentUnitLookup();
     }
 }

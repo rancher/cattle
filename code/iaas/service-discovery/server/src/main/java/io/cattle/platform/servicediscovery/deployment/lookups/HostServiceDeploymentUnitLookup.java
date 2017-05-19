@@ -13,11 +13,11 @@ public class HostServiceDeploymentUnitLookup implements DeploymentUnitLookup {
     ServiceDao svcDao;
 
     @Override
-    public Collection<? extends DeploymentUnit> getDeploymentUnits(Object obj, boolean transitioningOnly) {
+    public Collection<? extends DeploymentUnit> getDeploymentUnits(Object obj) {
         if (!(obj instanceof Host)) {
             return null;
         }
         Host host = (Host) obj;
-        return svcDao.getServiceDeploymentUnitsOnHost(host, false);
+        return svcDao.getServiceDeploymentUnitsOnHost(host);
     }
 }

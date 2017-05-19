@@ -1,24 +1,22 @@
 package io.cattle.platform.activity.impl;
 
 import io.cattle.platform.activity.Entry;
-import io.cattle.platform.core.model.DeploymentUnit;
-import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceLog;
 
 public class EntryImpl implements Entry {
     ActivityLogImpl logImpl;
-    Service owner;
+    Long serviceId, deploymentUnitId;
     ServiceLog auditLog;
     boolean failed;
+    boolean waiting;
     String message;
-    DeploymentUnit unit;
 
-    public EntryImpl(ActivityLogImpl logImpl, Service owner, DeploymentUnit unit, ServiceLog auditLog) {
+    public EntryImpl(ActivityLogImpl logImpl, Long serviceId, Long deploymentUnitId, ServiceLog auditLog) {
         super();
         this.logImpl = logImpl;
-        this.owner = owner;
+        this.serviceId = serviceId;
         this.auditLog = auditLog;
-        this.unit = unit;
+        this.deploymentUnitId = deploymentUnitId;
     }
 
     @Override
@@ -31,12 +29,12 @@ public class EntryImpl implements Entry {
         logImpl.exception(this, t);
     }
 
-    public Object getOwner() {
-        return owner;
+    public Long getServiceId() {
+        return serviceId;
     }
 
-    public DeploymentUnit getUnit() {
-        return unit;
+    public Long getDeploymentUnitId() {
+        return deploymentUnitId;
     }
 
 }

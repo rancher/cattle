@@ -24,6 +24,7 @@ import io.cattle.platform.allocator.service.AllocationLog;
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.DockerInstanceConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.StorageDriverConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
@@ -40,7 +41,6 @@ import io.cattle.platform.core.util.InstanceHelpers;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.client.DockerImage;
-import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.eventing.exception.EventExecutionException;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
@@ -241,7 +241,7 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
         instance.put("data", data);
         return instance;
     }
-    
+
     protected List<Instance> getInstancesToAllocate(Instance instance) {
         if (instance.getDeploymentUnitUuid() != null) {
             return allocatorDao.getUnmappedDeploymentUnitInstances(instance.getDeploymentUnitId());
@@ -294,8 +294,8 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
         Host host = allocatorDao.getHost(origInstance);
         Long hostId = host != null ? host.getId() : null;
 
-        Set<Volume> volumes = new HashSet<Volume>();
-        Map<Volume, Set<StoragePool>> pools = new HashMap<Volume, Set<StoragePool>>();
+        Set<Volume> volumes = new HashSet<>();
+        Map<Volume, Set<StoragePool>> pools = new HashMap<>();
         Long requestedHostId = null;
 
         for (Instance instance : instances) {
@@ -418,14 +418,14 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
     protected Set<Constraint> runAllocation(AllocationAttempt attempt) {
         logStart(attempt);
 
-        List<Set<Constraint>> candidateFailedConstraintSets = new ArrayList<Set<Constraint>>();
+        List<Set<Constraint>> candidateFailedConstraintSets = new ArrayList<>();
         Iterator<AllocationCandidate> iter = getCandidates(attempt);
         try {
             boolean foundOne = false;
             while (iter.hasNext()) {
                 foundOne = true;
                 AllocationCandidate candidate = iter.next();
-                Set<Constraint> failedConstraints = new HashSet<Constraint>();
+                Set<Constraint> failedConstraints = new HashSet<>();
                 attempt.getCandidates().add(candidate);
 
                 String prefix = String.format("[%s][%s]", attempt.getId(), candidate.getId());
@@ -527,7 +527,7 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
         String id = attempt.getId();
         StringBuilder candidateLog = new StringBuilder(String.format("[%s] Attempting allocation for:\n", id));
         if (attempt.getInstances() != null) {
-            List<Long>instanceIds = new ArrayList<Long>();
+            List<Long>instanceIds = new ArrayList<>();
             for (Instance i : attempt.getInstances()) {
                 instanceIds.add(i.getId());
             }
@@ -599,7 +599,7 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
     }
 
     protected Iterator<AllocationCandidate> getCandidates(AllocationAttempt attempt) {
-        List<Long> volumeIds = new ArrayList<Long>();
+        List<Long> volumeIds = new ArrayList<>();
         for (Volume v : attempt.getVolumes()) {
             volumeIds.add(v.getId());
         }
@@ -692,11 +692,11 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
                 if (eventResult.getData() == null) {
                     return;
                 }
-                
+
                 List<Map<String, Object>> data = (List<Map<String, Object>>) CollectionUtils.getNestedValue(eventResult.getData(), PORT_RESERVATION);
                 if (data != null) {
                     attempt.setAllocatedIPs(data);
-                } 
+                }
             }
         }
     }
@@ -718,7 +718,7 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
             }
         }
     }
-    
+
     private void callExternalSchedulerToRelease(Volume volume) {
         String hostUuid = allocatorDao.getAllocatedHostUuid(volume);
         if (StringUtils.isEmpty(hostUuid)) {
@@ -800,7 +800,7 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
 
     private EventVO<Map<String, Object>> newEvent(String eventName, List<ResourceRequest> resourceRequests, String resourceType, String phase,
             Object resourceId, Object context) {
-        Map<String, Object> eventData = new HashMap<String, Object>();
+        Map<String, Object> eventData = new HashMap<>();
         Map<String, Object> reqData = new HashMap<>();
         if (resourceRequests != null) {
             reqData.put(RESOURCE_REQUESTS, resourceRequests);
@@ -846,7 +846,7 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
         if (cpuRequest != null) {
             requests.add(cpuRequest);
         }
-        
+
         ResourceRequest portRequests = populateResourceRequestFromInstance(instance, PORT_RESERVATION, PORT_POOL, schedulerVersion);
         if (portRequests != null) {
             requests.add(portRequests);
@@ -912,7 +912,7 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
             if (instance.getMemoryReservation() != null && instance.getMemoryReservation() > 0) {
                 ResourceRequest rr = new ComputeResourceRequest(MEMORY_RESERVATION, instance.getMemoryReservation(), poolType);
                 return rr;
-            } 
+            }
             return null;
         case CPU_RESERVATION:
             if (instance.getMilliCpuReservation() != null && instance.getMilliCpuReservation() > 0) {

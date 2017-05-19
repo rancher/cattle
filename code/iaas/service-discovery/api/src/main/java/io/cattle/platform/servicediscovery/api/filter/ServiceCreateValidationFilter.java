@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+
 import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -10,13 +11,14 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.core.util.ServiceUtil;
-import io.cattle.platform.core.util.ServiceUtil.RevisionData;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
+import io.cattle.platform.iaas.api.service.RevisionDiffomatic;
+import io.cattle.platform.iaas.api.service.RevisionManager;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
-import io.cattle.platform.servicediscovery.api.service.ServiceDataManager;
 import io.cattle.platform.servicediscovery.api.util.selector.SelectorUtils;
 import io.cattle.platform.storage.api.filter.ExternalTemplateInstanceFilter;
 import io.cattle.platform.storage.service.StorageService;
@@ -45,13 +47,15 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     @Inject
     ObjectManager objectManager;
     @Inject
+    ObjectProcessManager processManager;
+    @Inject
     StorageService storageService;
     @Inject
     JsonMapper jsonMapper;
     @Inject
-    ServiceDataManager svcDataMgr;
-    @Inject
     ServiceDao svcDao;
+    @Inject
+    RevisionManager revisionManager;
 
     private static final int LB_HEALTH_CHECK_PORT = 42;
 
@@ -64,8 +68,10 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     public String[] getTypes() {
         return new String[] { ServiceConstants.KIND_SERVICE,
                 ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
-                ServiceConstants.KIND_EXTERNAL_SERVICE, ServiceConstants.KIND_DNS_SERVICE,
-                ServiceConstants.KIND_NETWORK_DRIVER_SERVICE, ServiceConstants.KIND_STORAGE_DRIVER_SERVICE,
+                ServiceConstants.KIND_EXTERNAL_SERVICE,
+                ServiceConstants.KIND_DNS_SERVICE,
+                ServiceConstants.KIND_NETWORK_DRIVER_SERVICE,
+                ServiceConstants.KIND_STORAGE_DRIVER_SERVICE,
                 ServiceConstants.KIND_SCALING_GROUP_SERVICE,
                 ServiceConstants.KIND_SELECTOR_SERVICE };
     }
@@ -95,17 +101,37 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         validateLbConfig(request, type);
 
         Object svcObj = super.create(type, request, next);
-        if (svcObj == null) {
+        if (!(svcObj instanceof Service)) {
             return svcObj;
         }
-        RevisionData revision = svcDao.createServiceRevision((Service) svcObj,
-                CollectionUtils.toMap(request.getRequestObject()), true);
-        if (revision.getRevisionId() != null) {
-            objectManager.setFields(svcObj, InstanceConstants.FIELD_REVISION_ID, revision.getRevisionId(),
-                    ServiceConstants.FIELD_IS_UPGRADE, revision.isUpgrade());
-        }
+
+        revisionManager.createInitialRevision((Service) svcObj, CollectionUtils.toMap(request.getRequestObject()));
 
         return svcObj;
+    }
+
+    @Override
+    public Object update(String type, String id, ApiRequest request, ResourceManager next) {
+        Service service = objectManager.loadResource(Service.class, id);
+
+        validateLaunchConfigs(service, request);
+        validateSelector(request);
+        validateLbConfig(request, type);
+        validatePorts(service, type, request);
+
+        RevisionDiffomatic diff = revisionManager.createNewRevision(request.getSchemaFactory(),
+                service,
+                CollectionUtils.toMap(request.getRequestObject()));
+        request.setRequestObject(diff.getNewRevisionData());
+
+        Object result = super.update(type, id, request, next);
+        if (result instanceof Service) {
+            service = revisionManager.assignRevision(diff, service);
+            processManager.update(service, null);
+            return objectManager.reload(service);
+        }
+
+        return result;
     }
 
     @SuppressWarnings("unchecked")
@@ -207,11 +233,11 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
     public void validatePorts(Service service, String type, ApiRequest request) {
         validateLBPortRules(type, request);
-        validatePorts(request);
+        validatePorts(type, request);
     }
 
     @SuppressWarnings("unchecked")
-    private void validatePorts(ApiRequest request) {
+    private void validatePorts(String type, ApiRequest request) {
         Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
         if (data.get(ServiceConstants.FIELD_LAUNCH_CONFIG) == null) {
             return;
@@ -220,14 +246,20 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         List<String> ports = jsonMapper.convertCollectionValue(
                 lc.get(InstanceConstants.FIELD_PORTS), List.class, String.class);
         if (ports != null) {
+            List<String> normalized = new ArrayList<>();
             for (Object port : ports) {
                 if (port == null) {
                     throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED,
                             InstanceConstants.FIELD_PORTS);
                 }
                 /* This will parse the PortSpec and throw an error */
-                new PortSpec(port.toString());
+                PortSpec spec = new PortSpec(port.toString());
+                if (type.equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE) && spec.getPublicPort() == null) {
+                    spec.setPublicPort(spec.getPrivatePort());
+                }
+                normalized.add(spec.toSpec());
             }
+            lc.put(InstanceConstants.FIELD_PORTS, normalized);
         }
     }
 
@@ -352,35 +384,6 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
                     ServiceConstants.FIELD_EXTERNALIPS + " and "
                             + ServiceConstants.FIELD_HOSTNAME + " are mutually exclusive");
         }
-    }
-
-    @Override
-    public Object update(String type, String id, ApiRequest request, ResourceManager next) {
-        Service service = objectManager.loadResource(Service.class, id);
-
-        validateLaunchConfigs(service, request);
-        validateSelector(request);
-        validateLbConfig(request, type);
-        validatePorts(service, type, request);
-        request = setForUpgrade(service, request);
-
-        return super.update(type, id, request, next);
-    }
-
-    protected ApiRequest setForUpgrade(Service service, ApiRequest request) {
-        RevisionData newRevision = svcDao.createServiceRevision(service,
-                CollectionUtils.toMap(request.getRequestObject()),
-                false);
-        if (newRevision.getRevisionId() == null) {
-            return request;
-        }
-        Map<String, Object> data = new HashMap<>();
-        data.putAll(newRevision.getConfig());
-        data.put(InstanceConstants.FIELD_REVISION_ID, newRevision.getRevisionId());
-        data.put(InstanceConstants.FIELD_PREVIOUS_REVISION_ID, service.getRevisionId());
-        data.put(ServiceConstants.FIELD_IS_UPGRADE, newRevision.isUpgrade());
-        request.setRequestObject(data);
-        return request;
     }
 
     protected void validateLaunchConfigs(Service service, ApiRequest request) {

@@ -1,6 +1,7 @@
 package io.cattle.platform.process.instance;
 
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
+
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.StoragePoolDao;
@@ -16,6 +17,7 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.util.exception.ExecutionException;
+import io.cattle.platform.util.exception.UserException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,7 +65,7 @@ public class InstanceVolumeLookupPreCreate extends AbstractObjectProcessLogic im
         }
 
         Object va = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS).get(LABEL_VOLUME_AFFINITY);
-        Set<String> affinities = new HashSet<String>();
+        Set<String> affinities = new HashSet<>();
         if (va != null) {
             affinities.addAll(Arrays.asList(va.toString().split(",")));
         }
@@ -73,7 +75,7 @@ public class InstanceVolumeLookupPreCreate extends AbstractObjectProcessLogic im
         Map<Object, Object> data = new HashMap<>();
         List<String> dataVolumes = DataAccessor.fieldStringList(instance, InstanceConstants.FIELD_DATA_VOLUMES);
         Map<String, Object> dataVolumeMounts = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_DATA_VOLUME_MOUNTS);
-        List<String> newDataVolumes = new ArrayList<String>();
+        List<String> newDataVolumes = new ArrayList<>();
         data.put(InstanceConstants.FIELD_DATA_VOLUMES, newDataVolumes);
         data.put(InstanceConstants.FIELD_DATA_VOLUME_MOUNTS, dataVolumeMounts);
         for (String v : dataVolumes) {
@@ -113,7 +115,7 @@ public class InstanceVolumeLookupPreCreate extends AbstractObjectProcessLogic im
                 } else if (volumes.size() > 1) {
                     objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_REMOVE, instance, null);
                     ExecutionException ex =
-                            new ExecutionException(
+                            new UserException(
                                     String.format("Could not process named volume %s. More than one volume " + "with that name exists.", volName));
                     ex.setResources(state.getResource());
                     throw ex;

@@ -18,4 +18,6 @@ public interface ProcessRecordDao {
 
     ProcessInstanceReference loadReference(Long id);
 
+    void setDone(Object obj, String stateField, String state);
+
 }
