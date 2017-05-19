@@ -1,11 +1,12 @@
 package io.cattle.platform.docker.process.serializer;
 
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
+
+import io.cattle.platform.core.constants.DockerInstanceConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.util.InstanceHelpers;
-import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.serialization.ObjectTypeSerializerPostProcessor;
@@ -46,7 +47,7 @@ public class DockerContainerSerializer implements ObjectTypeSerializerPostProces
             containers = objectManager.find(Instance.class, INSTANCE.ID, condition);
         }
         if (containers == null)
-            containers = new ArrayList<Instance>();
+            containers = new ArrayList<>();
         data.put(DockerInstanceConstants.EVENT_FIELD_VOLUMES_FROM, containers);
 
         List<Volume>volumes = InstanceHelpers.extractVolumesFromMounts(instance, objectManager);

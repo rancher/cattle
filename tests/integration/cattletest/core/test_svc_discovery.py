@@ -107,8 +107,7 @@ def test_service_fields(client, context):
     container2 = client.create_container(imageUuid=image_uuid,
                                          startOnCreate=True)
 
-    host = context.host
-    container1 = client.wait_success(container1)
+    client.wait_success(container1)
 
     container2 = client.wait_success(container2)
 
@@ -129,14 +128,13 @@ def test_service_fields(client, context):
     consumed_service = client.create_service(name=random_str(),
                                              stackId=env.id,
                                              launchConfig=launch_config)
-    consumed_service = client.wait_success(consumed_service)
+    client.wait_success(consumed_service)
     container_meta = {"foo": "bar", "foo1": "bar1"}
     launch_config = {"imageUuid": image_uuid,
                      "command": ['sleep', '42'],
                      "environment": {'TEST_FILE': "/etc/testpath.conf"},
                      "ports": ['8681', '8082/tcp'],
                      "dataVolumes": ['/foo'],
-                     "dataVolumesFrom": [container1.id],
                      "capAdd": caps,
                      "capDrop": caps,
                      "dnsSearch": search,
@@ -155,7 +153,6 @@ def test_service_fields(client, context):
                      "instanceLinks": {
                          'container2_link':
                              container2.id},
-                     "requestedHostId": host.id,
                      "healthCheck": health_check,
                      "labels": labels,
                      "metadata": container_meta}
@@ -175,7 +172,6 @@ def test_service_fields(client, context):
     assert len(svc.launchConfig.ports) == 2
     assert len(svc.launchConfig.dataVolumes) == 1
     assert svc.launchConfig.type == 'launchConfig'
-    assert svc.launchConfig.dataVolumesFrom == list([container1.id])
     assert svc.launchConfig.capAdd == caps
     assert svc.launchConfig.capDrop == caps
     assert svc.launchConfig.dns == dns
@@ -202,7 +198,6 @@ def test_service_fields(client, context):
     assert svc.launchConfig.healthCheck.port == 200
     assert svc.metadata == metadata
     assert svc.launchConfig.version == '0'
-    assert svc.launchConfig.requestedHostId == host.id
     assert svc.batchSize == 1
     assert svc.intervalMillis == 2000
     assert svc.startFirst is False
@@ -217,7 +212,6 @@ def test_service_fields(client, context):
     assert len(c.environment) == 1
     assert len(c.ports) == 2
     assert len(c.dataVolumes) == 1
-    assert set(c.dataVolumesFrom) == set([container1.id])
     assert c.capAdd == caps
     assert c.capDrop == caps
     dns.append("169.254.169.250")
@@ -236,7 +230,6 @@ def test_service_fields(client, context):
     assert c.user == "test"
     assert c.state == "running"
     assert c.cpuSet == "2"
-    assert c.requestedHostId == host.id
     assert c.healthState == 'initializing'
     assert c.deploymentUnitUuid is not None
     assert c.version == '0'
@@ -2776,6 +2769,9 @@ def test_random_ports(new_context):
     assert 49153 <= port12.publicPort <= 65535
     assert 49153 <= port21.publicPort <= 65535
     assert 49153 <= port22.publicPort <= 65535
+    assert port11.publicPort != port12.publicPort
+    assert port12.publicPort != port21.publicPort
+    assert port21.publicPort != port22.publicPort
 
 
 def test_random_ports_sidekicks(new_context):
@@ -2864,10 +2860,13 @@ def test_project_random_port_update_create(new_context):
                                 stackId=env.id,
                                 launchConfig=launch_config)
 
+    svc = client.wait_success(svc).activate()
+
     def condition(x):
         return 'Not enough environment ports' in x.transitioningMessage
+
     wait_for_condition(client, svc, condition)
-    assert svc.state == 'registering'
+    assert svc.state == 'activating'
 
     # There is one port left in the range. This asserts that the previous
     # service that failed released the port
@@ -2877,7 +2876,7 @@ def test_project_random_port_update_create(new_context):
                                  launchConfig=launch_config)
     client.wait_success(svc2)
 
-    client.wait_success(client.delete(svc))
+    client.delete(svc)
 
     # create the port
     new_range = {"startPort": 65532, "endPort": 65535}
@@ -3357,7 +3356,19 @@ def test_retain_ip_update(client, context, super_client):
     c2 = super_client.reload(c2)
     ip2 = c2.primaryIpAddress
     assert c1.id != c2.id
-    assert ip1 == ip2
+    assert ip1 != ip2
+
+    _instance_remove(c2, client)
+    _wait_until_active_map_count(svc, 1, client)
+    svc = client.wait_success(svc)
+    assert svc.state == "active"
+
+    c3 = _wait_for_compose_instance_start(client, svc, env, "1")
+
+    c3 = super_client.reload(c3)
+    ip3 = c3.primaryIpAddress
+    assert c2.id != c3.id
+    assert ip2 == ip3
 
 
 def test_svc_ports_update(client, context):
@@ -3407,17 +3418,19 @@ def test_upgrade_scale_to_global(client, context, super_client):
     svc = client.wait_success(svc, 120)
     assert svc.state == "active"
 
-    _wait_for_compose_instance_start(client, svc, env, "1")
+    c = _wait_for_compose_instance_start(client, svc, env, "1")
 
     # try to upgrade the service
-    with pytest.raises(ApiError) as e:
-        labels = {'io.rancher.scheduler.global': 'true'}
-        launch_config = {"imageUuid": image_uuid, "labels": labels}
-        strategy = {"launchConfig": launch_config,
-                    "intervalMillis": 100}
-        svc.upgrade_action(inServiceStrategy=strategy)
-    assert e.value.error.status == 422
-    assert e.value.error.code == 'InvalidOption'
+    labels = {'io.rancher.scheduler.global': 'true'}
+    launch_config = {"imageUuid": image_uuid, "labels": labels}
+    strategy = {"launchConfig": launch_config,
+                "intervalMillis": 100}
+    svc = svc.upgrade_action(inServiceStrategy=strategy)
+    svc = client.wait_success(svc)
+    assert svc.state == 'upgraded'
+
+    c = client.wait_success(c)
+    assert c.removed is not None
 
 
 def test_populate_system_label(client, context):
@@ -3514,8 +3527,7 @@ def test_error_state(new_context):
 
     wait_for(lambda: client.reload(c1).state == 'error' or
              client.reload(c1).state == 'removed')
-    du1 = c1.deploymentUnitUuid
-    name = stack.name + "_foo_1_" + du1
+    name = stack.name + "_foo_1"
     volumes = client.list_volume(name_like=name + "_%")
     assert len(volumes) == 1
     v1 = volumes[0]
@@ -3554,8 +3566,7 @@ def test_host_remove_error_state(new_context, super_client):
     # 1. service should fail to activate
     service.activate()
     c1 = _validate_compose_instance_start(client, service, stack, "1")
-    du1 = c1.deploymentUnitUuid
-    name = stack.name + "_foo_1_" + du1
+    name = stack.name + "_foo_1"
     volumes = client.list_volume(name_like=name + "_%")
     assert len(volumes) == 1
     v = volumes[0]
@@ -3568,7 +3579,8 @@ def test_host_remove_error_state(new_context, super_client):
     # remove host
     host = super_client.wait_success(host.deactivate())
     super_client.delete(host)
-    wait_for(lambda: client.reload(v).state == 'removed')
+    wait_for(lambda: client.reload(v).removed is not None)
+    wait_for(lambda: client.reload(c1).removed is not None)
 
 
 def _validate_id_not_equal(client, service, env,
@@ -3702,16 +3714,12 @@ def test_max_scale(new_context):
     # 1. verify that the service was activated
     service = client.wait_success(service.activate(), 120)
     assert service.state == "active"
-    # only 3 instances should start
-    _wait_until_active_map_count(service, 3, client)
-    service = client.update(service, scaleMax=2, scaleIncrement=1)
+    # only 4 instances should start
+    _wait_until_active_map_count(service, 4, client)
+    service = client.update(service, scale=2)
     # reduce scale max
-    _wait_until_active_map_count(service, 2, client)
+    _wait_until_active_map_count(service, 8, client)
     service = client.wait_success(service)
-
-    # increase it again
-    service = client.update(service, scaleMax=4, scaleIncrement=2)
-    _wait_until_active_map_count(service, 3, client)
 
     compose_config = env.exportconfig()
     assert compose_config is not None
@@ -3719,4 +3727,4 @@ def test_max_scale(new_context):
     svc = rancher_yml['services'][service.name]
     assert svc['scale_max'] == 4
     assert svc['scale_increment'] == 2
-    assert svc['scale_min'] == 1
+    assert svc['scale_min'] == 0

@@ -1,14 +1,13 @@
 package io.cattle.platform.iaas.api.filter.instance;
 
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
+
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.InstanceRevision;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataUtils;
-import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
@@ -18,7 +17,6 @@ import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -42,21 +40,7 @@ public class ContainerCreateValidationFilter extends AbstractDefaultResourceMana
     public Object create(String type, ApiRequest request, ResourceManager next) {
         validateDeploymentUnit(request);
 
-        Object object = super.create(type, request, next);
-        if (object instanceof Instance) {
-            setRevision(request, object);
-        } else if (object instanceof List) {
-            for (Object i : (List<?>) object) {
-                setRevision(request, i);
-            }
-        }
-        return object;
-    }
-
-    public void setRevision(ApiRequest request, Object object) {
-        Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
-        InstanceRevision revision = instanceDao.createRevision((Instance) object, data, true);
-        objMgr.setFields(object, InstanceConstants.FIELD_REVISION_ID, revision.getId());
+        return super.create(type, request, next);
     }
 
     @SuppressWarnings("unchecked")

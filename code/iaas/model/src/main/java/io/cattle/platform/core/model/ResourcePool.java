@@ -203,6 +203,17 @@ public interface ResourcePool extends java.io.Serializable {
 	@javax.persistence.Column(name = "qualifier", nullable = false, length = 128)
 	public java.lang.String getQualifier();
 
+	/**
+	 * Setter for <code>cattle.resource_pool.sub_owner</code>.
+	 */
+	public void setSubOwner(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.resource_pool.sub_owner</code>.
+	 */
+	@javax.persistence.Column(name = "sub_owner", length = 255)
+	public java.lang.String getSubOwner();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

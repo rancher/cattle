@@ -90,7 +90,7 @@
         "serviceRollback" : "cr",
         "convertToServiceInput": "cr",
         "instanceRevision": "r",
-        "serviceRevision": "r",
+        "revision": "r",
         "containerUpgrade" : "cr",
         "deploymentUnit" : "cr",
         "selectorService" : "crud",

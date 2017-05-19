@@ -3,10 +3,8 @@ package io.cattle.platform.app;
 import io.cattle.platform.allocator.constraint.AccountConstraintsProvider;
 import io.cattle.platform.allocator.constraint.AffinityConstraintsProvider;
 import io.cattle.platform.allocator.constraint.BaseConstraintsProvider;
-import io.cattle.platform.allocator.constraint.NetworkContainerConstraintProvider;
 import io.cattle.platform.allocator.constraint.PortsConstraintProvider;
 import io.cattle.platform.allocator.constraint.VolumeAccessModeConstraintProvider;
-import io.cattle.platform.allocator.constraint.VolumesFromConstraintProvider;
 import io.cattle.platform.allocator.dao.impl.AllocatorDaoImpl;
 import io.cattle.platform.allocator.service.AllocationHelperImpl;
 import io.cattle.platform.allocator.service.impl.AllocatorServiceImpl;
@@ -51,16 +49,6 @@ public class AllocatorServerConfig {
     @Bean
     AffinityConstraintsProvider AffinityConstraintsProvider() {
         return new AffinityConstraintsProvider();
-    }
-
-    @Bean
-    VolumesFromConstraintProvider VolumesFromConstraintProvider() {
-        return new VolumesFromConstraintProvider();
-    }
-
-    @Bean
-    NetworkContainerConstraintProvider NetworkContainerConstraintProvider() {
-        return new NetworkContainerConstraintProvider();
     }
 
     @Bean

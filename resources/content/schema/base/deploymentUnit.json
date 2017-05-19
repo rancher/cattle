@@ -4,11 +4,8 @@
             "type": "map[string]",
             "create": true
         },
-        "executionCount": {
+        "restartTrigger": {
             "type": "int"
-        },
-        "executionPeriodStart": {
-            "type": "date"
         }
     }
 }

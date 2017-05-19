@@ -9,6 +9,7 @@ import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
+
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.configitem.events.ConfigUpdated;
 import io.cattle.platform.configitem.model.Client;
@@ -48,7 +49,7 @@ import java.util.Set;
 import javax.inject.Inject;
 
 import org.jooq.Condition;
-import org.jooq.Record2;
+import org.jooq.Record3;
 import org.jooq.TableField;
 import org.jooq.exception.DataAccessException;
 import org.slf4j.Logger;
@@ -255,7 +256,7 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
 
     @Override
     public List<? extends ConfigItemStatus> listItems(ConfigUpdateRequest request) {
-        Set<String> names = new HashSet<String>();
+        Set<String> names = new HashSet<>();
 
         for ( ConfigUpdateItem item : request.getItems() ) {
             names.add(item.getName());
@@ -271,8 +272,8 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
 
     @Override
     public ItemVersion getRequestedItemVersion(Client client, String itemName) {
-        Record2<Long,String> result = create()
-                .select(CONFIG_ITEM_STATUS.REQUESTED_VERSION, CONFIG_ITEM.SOURCE_VERSION)
+        Record3<Long, String, Long> result = create()
+                .select(CONFIG_ITEM_STATUS.REQUESTED_VERSION, CONFIG_ITEM.SOURCE_VERSION, CONFIG_ITEM_STATUS.APPLIED_VERSION)
                 .from(CONFIG_ITEM_STATUS)
                 .join(CONFIG_ITEM)
                     .on(CONFIG_ITEM.NAME.eq(CONFIG_ITEM_STATUS.NAME))
@@ -281,7 +282,7 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
                         .and(targetObjectCondition(client)))
                 .fetchOne();
 
-        return result == null ? null : new DefaultItemVersion(result.value1(), result.value2());
+        return result == null ? null : new DefaultItemVersion(result.value1(), result.value2(), result.value3());
     }
 
 
@@ -344,7 +345,7 @@ public class ConfigItemStatusDaoImpl extends AbstractJooqDao implements ConfigIt
             if (applied == null) {
                 continue;
             }
-            versions.put(record.getName(), new DefaultItemVersion(record.getAppliedVersion(), ""));
+            versions.put(record.getName(), new DefaultItemVersion(record.getAppliedVersion(), "", record.getAppliedVersion()));
         }
 
         return versions;

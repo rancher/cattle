@@ -3,6 +3,7 @@ package io.cattle.platform.process.instance;
 import io.cattle.platform.core.addon.LogConfig;
 import io.cattle.platform.core.addon.SecretReference;
 import io.cattle.platform.core.constants.AgentConstants;
+import io.cattle.platform.core.constants.DockerInstanceConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.dao.ServiceDao;
@@ -14,7 +15,6 @@ import io.cattle.platform.core.model.StorageDriver;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.core.util.SystemLabels;
-import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -43,7 +43,7 @@ import com.google.common.base.Joiner;
 
 @Named
 public class InstancePreCreate extends AbstractObjectProcessLogic implements ProcessPreListener, Priority {
-    
+
     @Inject
     JsonMapper jsonMapper;
     @Inject
@@ -71,7 +71,6 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
         setLogConfig(instance, data);
         setSecrets(instance, data);
         setSystemLabel(instance, labels);
-        setName(instance, data);
         Stack stack = setStack(instance, data);
         setDns(instance, labels, data, stack);
 
@@ -84,19 +83,12 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
     protected Stack setStack(Instance instance, Map<Object, Object> data) {
         Long stackId = instance.getStackId();
         if (stackId != null) {
+            data.put(InstanceConstants.FIELD_STACK_ID, stackId);
             return objectManager.loadResource(Stack.class, stackId);
         }
         Stack stack = svcDao.getOrCreateDefaultStack(instance.getAccountId());
         data.put(InstanceConstants.FIELD_STACK_ID, stack.getId());
         return stack;
-    }
-
-    protected void setName(Instance instance, Map<Object, Object> data) {
-        if (instance.getName() != null) {
-            return;
-        }
-        String name = "r-" + instance.getUuid().substring(0, 10);
-        data.put(ObjectMetaDataManager.NAME_FIELD, name);
     }
 
     protected String toString(Object obj) {
@@ -106,7 +98,11 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
     protected void setName(Instance instance, Map<String, Object> labels, Map<Object, Object> data) {
         String name = toString(labels.get(SystemLabels.LABEL_DISPLAY_NAME));
         if (StringUtils.isBlank(name)) {
-            return;
+            name = instance.getName();
+        }
+
+        if (StringUtils.isBlank(name)) {
+            name = "r-" + instance.getUuid().substring(0, 8);
         }
 
         data.put(ObjectMetaDataManager.NAME_FIELD, name.replaceFirst("/", ""));
@@ -179,7 +175,10 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
             for (String dnsSearch : DataAccessor.fieldStringList(network, NetworkConstants.FIELD_DNS_SEARCH)) {
                 List<String> dnsSearchList = DataAccessor.appendToFieldStringList(instance, DockerInstanceConstants.FIELD_DNS_SEARCH, dnsSearch);
                 data.put(DockerInstanceConstants.FIELD_DNS_SEARCH, dnsSearchList);
-                String stackDns = ServiceUtil.getStackNamespace(stack);
+                String stackDns = null;
+                if (stack != null) {
+                    stackDns = ServiceUtil.getStackNamespace(stack.getName());
+                }
                 if (!dnsSearchList.contains(stackDns)) {
                     dnsSearchList.add(stackDns);
                 }
@@ -187,7 +186,7 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
             }
         }
     }
-    
+
     protected void setSystemLabel(Instance instance, Map<String, Object> labels) {
         if(Boolean.TRUE.equals(instance.getSystem()) && !labels.containsKey(SystemLabels.LABEL_CONTAINER_SYSTEM)) {
             labels.put(SystemLabels.LABEL_CONTAINER_SYSTEM, "true");

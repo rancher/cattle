@@ -410,13 +410,7 @@
         },
         "stopSource" : {
             "type": "enum",
-            "options" : [ "api", "native" ],
-            "create" : true,
-            "nullable" : true
-        },
-        "removeSource" : {
-            "type": "enum",
-            "options" : [ "api", "native" ],
+            "options" : [ "api", "external" ],
             "create" : true,
             "nullable" : true
         },
@@ -432,9 +426,18 @@
             "type": "string",
             "nullable": true
         },
+        "launchConfigName": {
+            "type": "string",
+            "nullable": true
+        },
         "prePullOnUpgrade": {
-            "type": "boolean",
-            "default": true
+            "type": "enum",
+            "default": "all",
+            "options": [
+                "all",
+                "existing",
+                "none"
+            ]
         }
     },
     "resourceActions": {
@@ -446,12 +449,11 @@
             }
         },
         "converttoservice" : {
-            "input":"convertToServiceInput",
             "output" : "service"
         },
         "upgrade" : {
             "input":"containerUpgrade",
-            "output" : "container"
+            "output" : "revision"
         }
     }
 }

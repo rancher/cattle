@@ -1,9 +1,7 @@
 package io.cattle.platform.process.instance;
 
-import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.async.utils.ResourceTimeoutException;
 import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.constants.AgentConstants;
@@ -23,14 +21,10 @@ import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.Volume;
-import io.cattle.platform.core.util.SystemLabels;
-import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.json.JsonMapper;
-import io.cattle.platform.object.resource.ResourceMonitor;
-import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.process.common.util.ProcessUtils;
@@ -38,19 +32,14 @@ import io.cattle.platform.process.containerevent.ContainerEventCreate;
 import io.cattle.platform.process.progress.ProcessProgress;
 import io.cattle.platform.util.exception.ExecutionException;
 import io.cattle.platform.util.exception.ResourceExhaustionException;
-import io.cattle.platform.util.type.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,37 +49,20 @@ import com.netflix.config.DynamicIntProperty;
 public class InstanceStart extends AbstractDefaultProcessHandler {
 
     private static final DynamicIntProperty COMPUTE_TRIES = ArchaiusUtil.getInt("instance.compute.tries");
-
-    private static final List<String> REMOVED_STATES = Arrays.asList(CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING,
-            CommonStatesConstants.PURGED, CommonStatesConstants.PURGING);
-
-    private static final List<String> ERROR_STATES = Arrays.asList(InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING);
-
-    private static final List<String> STOPPED_STATES = Arrays.asList(InstanceConstants.STATE_STOPPED, InstanceConstants.STATE_STOPPING);
-
-    private static final List<String> START_ONCE_STATES = Arrays.asList(InstanceConstants.STATE_STOPPED, InstanceConstants.STATE_STOPPING,
-            InstanceConstants.STATE_RUNNING);
-
-    private static final List<String> UNALLOCATED_WAIT_STATES = Arrays.asList(CommonStatesConstants.REQUESTED, CommonStatesConstants.CREATING);
-
     private static final Logger log = LoggerFactory.getLogger(InstanceStart.class);
 
     @Inject
     JsonMapper jsonMapper;
-
     @Inject
     InstanceDao instanceDao;
-
-    GenericMapDao mapDao;
-    IpAddressDao ipAddressDao;
-    ProcessProgress progress;
-
     @Inject
-    ResourceMonitor resourceMonitor;
-
+    GenericMapDao mapDao;
+    @Inject
+    IpAddressDao ipAddressDao;
+    @Inject
+    ProcessProgress progress;
     @Inject
     ServiceDao serviceDao;
-
     @Inject
     AllocatorService allocatorService;
 
@@ -98,30 +70,14 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         final Instance instance = (Instance) state.getResource();
 
-        Map<String, Object> resultData = new ConcurrentHashMap<String, Object>();
+        Map<String, Object> resultData = new HashMap<>();
         HandlerResult result = new HandlerResult(resultData);
 
         progress.init(state, 16, 16, 16, 16, 20, 16);
 
+        resultData.put(InstanceConstants.FIELD_STOP_SOURCE, null);
+
         try {
-            try {
-                setStopSource(instance, state);
-                progress.checkPoint("Waiting for dependencies");
-                // wait until volumesFrom/networksFrom containers start up
-                waitForDependenciesStart(instance);
-
-                progress.checkPoint("Waiting for deployment unit instances to create");
-                ///wait until all containers in deployment unit are starting
-                waitForDeploymentUnitCreate(instance);
-            } catch (ExecutionException e) {
-                log.error("Failed [{} {}] for instance [{}]", e.getMessage(), e.getTransitioningMessage(), instance.getId());
-                int count = incrementDepTry(state);
-                if (serviceDao.isServiceManagedInstance(instance) && count < 10) {
-                    throw new ResourceTimeoutException(instance, e.getMessage());
-                }
-                return handleStartError(state, instance, e);
-            }
-
             try {
                 progress.checkPoint("Scheduling");
                 allocate(instance);
@@ -183,116 +139,6 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         return result;
     }
 
-    protected void waitForDeploymentUnitCreate(Instance instance) {
-        // Wait until all instances in the deployment unit are out of the creating state (to ensure all of instnace.create has ran)
-        if(StringUtils.isEmpty(instance.getDeploymentUnitUuid())) {
-            return;
-        }
-
-        List<? extends Instance> duInstances =
-                instanceDao.findUnallocatedInstanceByDeploymentUnitUuid(instance.getAccountId(), instance.getDeploymentUnitUuid());
-
-        List<Instance> waitList = new ArrayList<>();
-        for (Instance i : duInstances) {
-            if (UNALLOCATED_WAIT_STATES.contains(i.getState())) {
-                waitList.add(i);
-            }
-        }
-
-        //timeout is 15 seconds
-        Long timeout = 15000L;
-        for (Instance wait : waitList) {
-            try {
-                resourceMonitor.waitFor(wait, timeout,
-                    new ResourcePredicate<Instance>() {
-                        @Override
-                        public boolean evaluate(Instance obj) {
-                            return !UNALLOCATED_WAIT_STATES.contains(obj.getState());
-                        }
-
-                        @Override
-                        public String getMessage() {
-                            return "starting state";
-                        }
-                    }
-                );
-            } catch (TimeoutException e) {
-                throw new ExecutionException("Dependencies readiness error", "instance hasn't gotten passed creating state", instance.getId());
-            }
-        }
-    }
-
-    protected void waitForDependenciesStart(Instance instance) {
-        List<Long> instancesIds = DataAccessor.fieldLongList(instance, DockerInstanceConstants.FIELD_VOLUMES_FROM);
-        Long networkFromId = instance.getNetworkContainerId();
-        if (networkFromId != null) {
-            instancesIds.add(networkFromId);
-        }
-        List<Instance> waitList = new ArrayList<>();
-        for (Long id : instancesIds) {
-            Instance i = objectManager.loadResource(Instance.class, id);
-
-            String type = networkFromId != null && networkFromId.equals(id) ? "networkFrom" : "volumeFrom";
-            // Because of data cleanup and these soft references, it's possible for this to be null
-            if (i == null || REMOVED_STATES.contains(i.getState())) {
-                throw new ExecutionException("Dependencies readiness error", type + " instance is removed", instance.getId());
-            }
-
-            if (!isStartOnce(i) && !serviceDao.isServiceManagedInstance(instance)
-                    && STOPPED_STATES.contains(i.getState())) {
-                throw new ExecutionException("Dependencies readiness error", type + " instance is not running",
-                        instance.getId());
-            }
-            waitList.add(i);
-        }
-
-        //timeout is 30 seconds
-        Long timeout = 30000L;
-        for (Instance wait : waitList) {
-            try {
-                resourceMonitor.waitFor(wait, timeout,
-                    new ResourcePredicate<Instance>() {
-                        @Override
-                        public boolean evaluate(Instance obj) {
-                            if (obj.getRemoved() != null) {
-                                throw new TimeoutException("Instance is removed");
-                            }
-
-                            if (ERROR_STATES.contains(obj.getState())) {
-                                throw new TimeoutException("Instance encountered an error");
-                            }
-
-                            if (isStartOnce(obj)) {
-                                return START_ONCE_STATES.contains(obj.getState());
-                            }
-
-                            InstanceHostMap ihm =
-                                    objectManager.findAny(InstanceHostMap.class, INSTANCE_HOST_MAP.INSTANCE_ID, obj.getId(), INSTANCE_HOST_MAP.STATE,
-                                            CommonStatesConstants.ACTIVE, INSTANCE_HOST_MAP.REMOVED, null);
-                            return ihm != null;
-                        }
-
-                        @Override
-                        public String getMessage() {
-                            return "created state";
-                        }
-                    }
-                );
-            } catch (TimeoutException e) {
-                throw new ExecutionException("Dependencies readiness error", "instance is not running", instance.getId());
-            }
-        }
-    }
-
-    protected boolean isStartOnce(Instance instance) {
-        Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
-        if (labels.get(SystemLabels.LABEL_SERVICE_CONTAINER_START_ONCE) != null) {
-            return Boolean.valueOf(((String) labels
-                    .get(SystemLabels.LABEL_SERVICE_CONTAINER_START_ONCE)));
-        }
-        return false;
-    }
-
     protected void handleReconnecting(ProcessState state, Instance instance) {
         boolean reconnecting = false;
         InstanceHealthCheck healthCheck = DataAccessor.field(instance,
@@ -311,8 +157,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         }
 
         if (reconnecting && (healthCheck != null || instance.getFirstRunning() == null)) {
-            getObjectProcessManager().scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance,
-                    CollectionUtils.asMap(InstanceConstants.REMOVE_OPTION, true));
+            getObjectProcessManager().stopAndRemove(instance, null);
         }
     }
 
@@ -356,8 +201,8 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
     }
 
     protected HandlerResult handleStartError(ProcessState state, Instance instance, ExecutionException e) {
-        if (InstanceCreate.isCreateStart(state) && !ContainerEventCreate.isNativeDockerStart(state) ) {
-            HashMap<String, Object> data = new HashMap<String, Object>();
+        if ((InstanceCreate.isCreateStart(state) || instance.getFirstRunning() == null) && !ContainerEventCreate.isNativeDockerStart(state)) {
+            HashMap<String, Object> data = new HashMap<>();
             data.put(InstanceConstants.PROCESS_DATA_ERROR, true);
             getObjectProcessManager().scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance,
                     ProcessUtils.chainInData(data, InstanceConstants.PROCESS_STOP,
@@ -432,45 +277,10 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
     protected void activatePorts(Instance instance, ProcessState state) {
         for (Port port : getObjectManager().children(instance, Port.class)) {
             // ports can be removed while instance is still present (lb instance is an example)
-            if (port.getRemoved() == null
-                    && !(port.getState().equalsIgnoreCase(CommonStatesConstants.REMOVED) || port.getState()
-                            .equalsIgnoreCase(CommonStatesConstants.REMOVING))) {
+            if (port.getRemoved() == null || CommonStatesConstants.REMOVING.equals(port.getState())) {
                 createThenActivate(port, state.getData());
             }
         }
-    }
-
-    public GenericMapDao getMapDao() {
-        return mapDao;
-    }
-
-    @Inject
-    public void setMapDao(GenericMapDao mapDao) {
-        this.mapDao = mapDao;
-    }
-
-    public IpAddressDao getIpAddressDao() {
-        return ipAddressDao;
-    }
-
-    @Inject
-    public void setIpAddressDao(IpAddressDao ipAddressDao) {
-        this.ipAddressDao = ipAddressDao;
-    }
-
-    public ProcessProgress getProgress() {
-        return progress;
-    }
-
-    @Inject
-    public void setProgress(ProcessProgress progress) {
-        this.progress = progress;
-    }
-
-    protected void setStopSource(Instance instance, ProcessState state) {
-        Map<String, Object> data = new HashMap<>();
-        data.put(InstanceConstants.FIELD_STOP_SOURCE, null);
-        objectManager.setFields(instance, data);
     }
 
 }

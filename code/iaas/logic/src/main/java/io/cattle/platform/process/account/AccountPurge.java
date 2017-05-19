@@ -1,8 +1,8 @@
 package io.cattle.platform.process.account;
 
 import static io.cattle.platform.core.model.tables.HostTable.*;
+
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Account;
@@ -25,7 +25,6 @@ import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
-import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
@@ -88,13 +87,7 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
 
         for (Instance instance : instanceDao.listNonRemovedNonStackInstances(account)) {
             deleteAgentAccount(instance.getAgentId(), state.getData());
-
-            try {
-                objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, instance, null);
-            } catch (ProcessCancelException e) {
-                objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance,
-                        CollectionUtils.asMap(InstanceConstants.REMOVE_OPTION, true));
-            }
+            objectProcessManager.stopAndRemove(instance, null);
         }
 
         for (PhysicalHost host : list(account, PhysicalHost.class)) {

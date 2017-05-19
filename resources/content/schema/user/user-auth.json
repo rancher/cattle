@@ -183,8 +183,6 @@
         "container.metadata" : "cru",
         "container.exitCode": "r",
         "container.prePullOnUpgrade": "cru",
-        "container.revisionId": "r",
-        "container.previousRevisionId": "r",
         
         "ulimit" : "r",
         "ulimit.name" : "cr",
@@ -328,6 +326,8 @@
         "instance.externalId": "r",
         "instance.hostId": "r",
         "instance.healthcheckStates": "r",
+        "instance.revisionId": "r",
+        "instance.desired": "r",
 
         "healthcheckState" : "r",
         "healthcheckState.hostId" : "r",
@@ -589,7 +589,7 @@
         "volume.accessMode": "r",
         "volume.sizeMb": "cr",
         "volume.stackId": "cr",
-        "volume.volumeTemplateId": "cr",
+        "volume.volumeTemplateId": "r",
         "volume.hostId": "cru",
         "volume.storageDriverId": "cr",
         "volume.resourceActions.deactivate" : "",
@@ -627,49 +627,6 @@
         "stack.group": "cru",
         "stack.system": "r",
         "stack.serviceIds": "r",
-
-        "composeProject" : "r",
-        "composeProject.name": "cr",
-        "composeProject.templates": "cr",
-        "composeProject.dockerCompose": "",
-        "composeProject.rancherCompose": "",
-        "composeProject.outputs": "",
-        "composeProject.startOnCreate": "",
-        "composeProject.resourceActions.upgrade" : "",
-        "composeProject.resourceActions.addoutputs" : "",
-        "composeProject.resourceActions.deactivateservices" : "",
-        "composeProject.resourceActions.update" : "",
-        "composeProject.resourceActions.activateservices" : "",
-        "composeProject.resourceActions.exportconfig" : "",
-
-        "composeService" : "r",
-        "composeService.secondaryLaunchConfigs" : "",
-        "composeService.upgrade" : "",
-        "composeService.retainIp" : "",
-        "composeService.assignServiceIpAddress" : "",
-        "composeService.createIndex" : "",
-        "composeService.metadata" : "",
-        "composeService.resourceActions.deactivate" : "",
-        "composeService.resourceActions.addservicelink" : "",
-        "composeService.resourceActions.setservicelinks" : "",
-        "composeService.resourceActions.removeservicelink" : "",
-        "composeService.resourceActions.restart" : "",
-        "composeService.resourceActions.update" : "",
-        "composeService.resourceActions.upgrade" : "",
-        "composeService.resourceActions.rollback" : "",
-        "composeService.resourceActions.garbagecollect": "",
-        "composeService.lbConfig" : "",
-        "composeService.batchSize" : "",
-        "composeService.intervalMillis" : "",
-        "composeService.startFirst" : "",
-        "composeService.revisionId" : "",
-        "composeService.previousRevisionId": "",
-        "composeService.externalIpAddresses" : "",
-        "composeService.hostname" : "",
-        "composeService.healthCheck" : "",
-        "composeService.networkDriver" : "",
-        "composeService.storageDriver" : "",
-
 
         "service" : "r",
         "service.name": "cr",
@@ -709,6 +666,7 @@
         "service.healthCheck" : "cr",
         "service.networkDriver" : "cru",
         "service.storageDriver" : "cru",
+        "service.completeUpdate" : "ru",
 
         "addRemoveServiceLinkInput" : "r",
         "addRemoveServiceLinkInput.serviceLink" : "cr",
@@ -782,10 +740,6 @@
         "instanceHealthCheck.strategy" : "cr",
         "instanceHealthCheck.initializingTimeout" : "cr",
         "instanceHealthCheck.reinitializingTimeout" : "cr",
-
-
-        "recreateOnQuorumStrategyConfig" : "r",
-        "recreateOnQuorumStrategyConfig.quorum" : "cr",
 
         "serviceConsumeMap" : "r",
         "serviceConsumeMap.name" : "r",
@@ -879,6 +833,7 @@
         "kubernetesService.healthCheck" : "",
         "kubernetesService.networkDriver" : "",
         "kubernetesService.storageDriver" : "",
+        "kubernetesService.completeUpdate" : "",
 
         "kubernetesStack" : "r",
         "kubernetesStack.name": "cr",
@@ -942,6 +897,8 @@
         "launchConfig.requestedIpAddress": "cr",
         "launchConfig.resourceActions.logs" : "",
         "launchConfig.ports" : "cru",
+        "launchConfig.forceUpgrade" : "ru",
+        "launchConfig.completeUpdate" : "ru",
 
         "secondaryLaunchConfig" : "cr",
         "secondaryLaunchConfig.name" : "cr",
@@ -952,11 +909,6 @@
 
         "addOutputsInput" : "r",
         "addOutputsInput.outputs" : "cr",
-
-        "serviceRestart" : "r",
-        "serviceRestart.rollingRestartStrategy" : "cr",
-
-        "rollingRestartStrategy" : "r",
 
         "serviceUpgrade" : "r",
         "serviceUpgrade.inServiceStrategy" : "cr",
@@ -1020,7 +972,6 @@
         "virtualMachine.secrets" : "",
         "virtualMachine.prePullOnUpgrade": "",
         "virtualMachine.revisionId": "",
-        "virtualMachine.previousRevisionId": "",
 
         "virtualMachineDisk" : "r",
         "virtualMachineDisk.name" : "cr",
@@ -1105,9 +1056,9 @@
         "instanceRevision.config": "r",
         "instanceRevision.instanceId": "r",
 
-        "serviceRevision": "r",
-        "serviceRevision.config": "r",
-        "serviceRevision.serviceId": "r",
+        "revision": "r",
+        "revision.config": "r",
+        "revision.serviceId": "r",
 
         "serviceRollback" : "r",
         "serviceRollback.revisionId" : "cr",
@@ -1115,12 +1066,8 @@
         "instanceRemove" : "r",
         "instanceRemove.removeSource" : "cr",
 
-        "convertToServiceInput" : "r",
-        "convertToServiceInput.name" : "cr",
-
         "containerUpgrade" : "r",
         "containerUpgrade.config" : "cr",
-        "containerUpgrade.revisionId" : "cr",
 
         "deploymentUnit": "r",
         "deploymentUnit.serviceIndex": "r",

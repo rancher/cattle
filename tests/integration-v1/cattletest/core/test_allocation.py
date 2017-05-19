@@ -381,45 +381,6 @@ def test_container_label_affinity(new_context):
             new_context.delete(c)
 
 
-def test_volumes_from_constraint(new_context):
-    # Three hosts
-    register_simulated_host(new_context)
-    register_simulated_host(new_context)
-
-    containers = []
-    try:
-        # nominal condition.  start c1 before c2
-        c1 = new_context.create_container_no_success(startOnCreate=False)
-
-        c2 = new_context.create_container_no_success(startOnCreate=False,
-                                                     dataVolumesFrom=[c1.id])
-
-        c1 = c1.start()
-        c2 = c2.start()
-        c1 = new_context.wait_for_state(c1, 'running')
-        c2 = new_context.wait_for_state(c2, 'running')
-
-        containers.append(c1)
-        containers.append(c2)
-
-        assert c1.hosts()[0].id == c2.hosts()[0].id
-
-        # less than ideal situation.  start c4 before c3
-        c3 = new_context.create_container_no_success(startOnCreate=False)
-        c4 = new_context.create_container_no_success(startOnCreate=False,
-                                                     dataVolumesFrom=[c3.id])
-
-        c4 = c4.start()
-        c4 = new_context.client.wait_transitioning(c4)
-        assert c4.transitioning == 'error'
-        assert c4.transitioningMessage == 'volumeFrom instance is not ' \
-                                          'running : Dependencies readiness' \
-                                          ' error'
-    finally:
-        for c in containers:
-            new_context.delete(c)
-
-
 def test_network_mode_constraint(new_context):
     client = new_context.client
 

@@ -4,6 +4,7 @@ import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
@@ -12,7 +13,7 @@ import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
-import io.cattle.platform.core.model.ServiceRevision;
+import io.cattle.platform.core.model.Revision;
 import io.cattle.platform.core.model.tables.InstanceTable;
 import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
@@ -36,6 +37,7 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.jooq.Condition;
 import org.jooq.impl.DSL;
 
 public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceExposeMapDao {
@@ -45,16 +47,48 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
     Configuration lockingConfiguration;
 
     @Override
-    public Pair<Instance, ServiceExposeMap> createServiceInstance(final Map<String, Object> properties,
-            final Service service, final ServiceRecord record) {
-        record.attach(lockingConfiguration);
-        record.setCreateIndex((record.getCreateIndex() == null ? 0 : record.getCreateIndex()) + 1);
-        record.update();
-        properties.put(InstanceConstants.FIELD_CREATE_INDEX, record.getCreateIndex());
-        properties.put(ServiceConstants.FIELD_SYSTEM, ServiceConstants.isSystem(service));
-        final Instance instance = objectManager.create(Instance.class, properties);
-        ServiceExposeMap exposeMap = createServiceInstanceMap(service, instance, true);
-        return Pair.of(instance, exposeMap);
+    public Pair<Instance, ServiceExposeMap> createServiceInstance(final Map<String, Object> properties, Long serviceId, boolean system) {
+        Map<String, String> labels = CollectionUtils.toMap(properties.get(InstanceConstants.FIELD_LABELS));
+        String dnsPrefix = labels.get(ServiceConstants.LABEL_SERVICE_LAUNCH_CONFIG);
+        if (ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME.equalsIgnoreCase(dnsPrefix)) {
+            dnsPrefix = null;
+        }
+
+        Long next = null;
+
+        if (serviceId != null) {
+            Long index = create().select(SERVICE.CREATE_INDEX)
+                .from(SERVICE)
+                .where(SERVICE.ID.eq(serviceId))
+                .forUpdate()
+                .fetchAny().value1();
+            Condition cond = index == null ? SERVICE.CREATE_INDEX.isNull() : SERVICE.CREATE_INDEX.eq(index);
+            next = index == null ? 0L : index+1;
+
+            create().update(SERVICE)
+                .set(SERVICE.CREATE_INDEX, next)
+                .where(SERVICE.ID.eq(serviceId)
+                        .and(cond))
+                .execute();
+        }
+
+        properties.put(InstanceConstants.FIELD_CREATE_INDEX, next);
+        properties.put(ServiceConstants.FIELD_SYSTEM, system);
+
+        Instance instance = objectManager.create(Instance.class, properties);
+
+        ServiceExposeMap map = null;
+
+        if (serviceId != null ) {
+            map = objectManager.create(ServiceExposeMap.class,
+                SERVICE_EXPOSE_MAP.INSTANCE_ID, instance.getId(),
+                SERVICE_EXPOSE_MAP.SERVICE_ID, serviceId,
+                SERVICE_EXPOSE_MAP.ACCOUNT_ID, instance.getAccountId(),
+                SERVICE_EXPOSE_MAP.DNS_PREFIX, dnsPrefix,
+                SERVICE_EXPOSE_MAP.MANAGED, true);
+        }
+
+        return Pair.of(instance, map);
     }
 
     @Override
@@ -129,7 +163,7 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
 
     @Override
     public List<Pair<Instance, ServiceExposeMap>> listDeploymentUnitInstances(Service service, DeploymentUnit unit, boolean forCurrentRevision) {
-        ServiceRevision revision = objectManager.loadResource(ServiceRevision.class, unit.getRevisionId());
+        Revision revision = objectManager.loadResource(Revision.class, unit.getRevisionId());
         if (revision == null) {
             return new ArrayList<>();
         }
@@ -159,7 +193,7 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
                 .and(exposeMap.STATE.in(CommonStatesConstants.ACTIVATING,
                         CommonStatesConstants.ACTIVE, CommonStatesConstants.REQUESTED))
                 .fetch().map(mapper);
-        
+
         Map<String, String> currentVersions = getRevisionConfigNameToVersions(service, revision);
         List<Pair<Instance, ServiceExposeMap>> toReturn = new ArrayList<>();
         for (Pair<Instance, ServiceExposeMap> it : instances) {
@@ -273,7 +307,7 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
     }
 
     @SuppressWarnings("unchecked")
-    protected Map<String, String> getRevisionConfigNameToVersions(Service service, ServiceRevision revision) {
+    protected Map<String, String> getRevisionConfigNameToVersions(Service service, Revision revision) {
         Map<String, String> versions = new HashMap<>();
         Map<String, Object> revisionConfig = CollectionUtils.toMap(DataAccessor.field(
                 revision, InstanceConstants.FIELD_REVISION_CONFIG, Object.class));

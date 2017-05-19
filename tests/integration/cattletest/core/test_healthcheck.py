@@ -714,126 +714,6 @@ def _remove_service(svc):
         time.sleep(1)
 
 
-def test_health_check_quorum(super_client, context, client):
-    env = client.create_stack(name='env-' + random_str())
-    svc = _create_and_activate_svc(client, 2, name='test', launchConfig={
-        'imageUuid': context.image_uuid,
-        'healthCheck': {
-            'port': 80,
-            'recreateOnQuorumStrategyConfig': {"quorum": 2},
-            'strategy': "recreateOnQuorum"
-        }
-    }, stackId=env.id, scale=2)
-    action = svc.launchConfig.healthCheck.strategy
-    config = svc.launchConfig.healthCheck.recreateOnQuorumStrategyConfig
-    assert action == 'recreateOnQuorum'
-    assert config.quorum == 2
-
-    expose_maps = svc.serviceExposeMaps()
-    c1 = super_client.reload(expose_maps[0].instance())
-    hci1 = find_one(c1.healthcheckInstances)
-    hcihm1 = find_one(hci1.healthcheckInstanceHostMaps)
-    agent1 = _get_agent_for_container(context, c1)
-    assert hcihm1.healthState == 'initializing'
-    assert c1.healthState == 'initializing'
-    hcihm1 = _update_healthy(agent1, hcihm1, c1, super_client)
-
-    c2 = super_client.reload(expose_maps[1].instance())
-    hci2 = find_one(c2.healthcheckInstances)
-    hcihm2 = find_one(hci2.healthcheckInstanceHostMaps)
-    agent2 = _get_agent_for_container(context, c2)
-    assert hcihm2.healthState == 'initializing'
-    assert c2.healthState == 'initializing'
-    _update_healthy(agent2, hcihm2, c2, super_client)
-
-    # update unheatlhy, check container is not removed
-    # as quorum is not reached yet
-    _update_unhealthy(agent1, hcihm1, c1, super_client)
-    assert len(svc.serviceExposeMaps()) == 2
-    c1 = super_client.wait_success(c1)
-    assert c1.state == 'running'
-
-    wait_for_condition(client, svc,
-                       lambda x: x.healthState == 'degraded')
-
-    # update healthy and increase the scale
-    hcihm1 = _update_healthy(agent1, hcihm1, c1, super_client)
-    wait_state(client, svc, 'active')
-    wait_for_condition(client, svc,
-                       lambda x: x.healthState == 'healthy')
-    svc = super_client.reload(svc)
-    svc = super_client.update(svc, scale=3)
-    wait_for(lambda: len(svc.serviceExposeMaps()) == 3)
-    assert svc.scale == 3
-    svc = client.reload(svc)
-    expose_maps = svc.serviceExposeMaps()
-    for m in expose_maps:
-        if m.instance().id == c1.id or m.instance().id == c2.id:
-            continue
-        c3 = m.instance()
-
-    wait_for(lambda: client.reload(c3).state == 'running')
-    c3 = super_client.reload(c3)
-    hci3 = find_one(c3.healthcheckInstances)
-    hcihm3 = find_one(hci3.healthcheckInstanceHostMaps)
-    agent3 = _get_agent_for_container(context, c3)
-    assert hcihm3.healthState == 'initializing'
-    assert c3.healthState == 'initializing'
-    _update_healthy(agent3, hcihm3, c3, super_client)
-
-    # update unhealthy, check container removed
-    # as quorum is reached
-    _update_unhealthy(agent1, hcihm1, c1, super_client)
-    wait_for_condition(client, c1,
-                       lambda x: x.removed is not None)
-    wait_for(lambda: len(client.reload(svc).serviceExposeMaps()) == 3)
-    _remove_service(svc)
-
-
-def test_health_check_chk_name_quorum(super_client, context, client):
-    env = client.create_stack(name='env-' + random_str())
-    svc = _create_and_activate_svc(client, 1, name='test', launchConfig={
-        'imageUuid': context.image_uuid,
-        'healthCheck': {
-            'port': 80,
-            'recreateOnQuorumStrategyConfig': {"quorum": 2},
-            'strategy': "recreateOnQuorum"
-        }
-    }, stackId=env.id, scale=1)
-    action = svc.launchConfig.healthCheck.strategy
-    config = svc.launchConfig.healthCheck.recreateOnQuorumStrategyConfig
-    assert action == 'recreateOnQuorum'
-    assert config.quorum == 2
-
-    expose_maps = svc.serviceExposeMaps()
-    c1 = super_client.reload(expose_maps[0].instance())
-    hci1 = find_one(c1.healthcheckInstances)
-    hcihm1 = find_one(hci1.healthcheckInstanceHostMaps)
-    agent1 = _get_agent_for_container(context, c1)
-    assert hcihm1.healthState == 'initializing'
-    assert c1.healthState == 'initializing'
-    hcihm1 = _update_healthy(agent1, hcihm1, c1, super_client)
-
-    # update unheatlhy, check container is not removed
-    _update_unhealthy(agent1, hcihm1, c1, super_client)
-    assert len(svc.serviceExposeMaps()) == 1
-    c1 = super_client.wait_success(c1)
-    assert c1.state == 'running'
-
-    # leave the container as unhealthy and scale up
-    # check that the new container is created
-    # with new service index
-    svc = client.update(svc, scale=2, name=svc.name)
-    wait_for(lambda: len(client.reload(svc).serviceExposeMaps()) == 2)
-    expose_maps = svc.serviceExposeMaps()
-    c1 = super_client.reload(expose_maps[0].instance())
-    c2 = super_client.reload(expose_maps[1].instance())
-    c1 = super_client.wait_success(c1)
-    c2 = super_client.wait_success(c2)
-    assert c1.serviceIndex != c2.serviceIndex
-    _remove_service(svc)
-
-
 def test_health_check_default(super_client, context, client):
     env = client.create_stack(name='env-' + random_str())
     svc = _create_and_activate_svc(client, 1, name='test', launchConfig={
@@ -1043,13 +923,12 @@ def test_health_check_host_disconnected_reconcile(super_client, new_context):
         'imageUuid': new_context.image_uuid,
         'healthCheck': {'port': 80},
     }, stackId=env.id)
-    service = client.wait_success(client.wait_success(service).activate())
-    assert service.state == 'active'
+    service = client.wait_success(service).activate()
 
     # Get and check the healthcheck resources
     maps = _wait_until_active_map_count(service, 1, client)
     c = super_client.reload(maps[0].instance())
-    assert len(c.healthcheckInstanceHostMaps()) == 1
+    wait_for(lambda: len(c.healthcheckInstanceHostMaps()) == 1)
     hcihm1 = c.healthcheckInstanceHostMaps()[0]
     assert len(super_client.list_host(uuid=hcihm1.host().uuid)) == 1
 
@@ -1099,8 +978,6 @@ def test_health_check_host_disconnected_reconcile(super_client, new_context):
     maps = _wait_until_active_map_count(service, 1, client)
     c2 = super_client.reload(maps[0].instance())
     assert c2.id != c.id
-
-    remove_service(service)
 
 
 def test_hosts_removed_reconcile_when_init(super_client, new_context):
@@ -1702,7 +1579,7 @@ def test_unheatlhy_du_volume(new_context, super_client):
     c1 = super_client.reload(c1)
 
     du1 = c1.deploymentUnitUuid
-    name = stack.name + "_foo_1_" + du1
+    name = stack.name + "_foo_1"
     volumes = client.list_volume(name_like=name + "_%")
     assert len(volumes) == 1
     v1 = volumes[0]
@@ -1728,7 +1605,7 @@ def test_unheatlhy_du_volume(new_context, super_client):
 
     du2 = c2.deploymentUnitUuid
     assert du1 == du2
-    name = stack.name + "_foo_1_" + du2
+    name = stack.name + "_foo_1"
     volumes = client.list_volume(name_like=name + "_%")
     assert len(volumes) == 1
     v2 = volumes[0]

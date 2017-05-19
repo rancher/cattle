@@ -1,6 +1,5 @@
 package io.cattle.platform.servicediscovery.process;
 
-import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -42,9 +41,8 @@ public class ServiceDiscoveryInstanceRemovePreListener extends AbstractObjectPro
                 objectManager.loadResource(Instance.class, instance.getId()),
                 ServiceExposeMap.class);
         for (ServiceExposeMap map : maps) {
-            if (!(map.getState().equals(CommonStatesConstants.REMOVED) || map.getState().equals(
-                    CommonStatesConstants.REMOVING))) {
-                objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, map, null);
+            if (map.getRemoved() == null) {
+                objectProcessManager.executeStandardProcess(StandardProcess.REMOVE, map, null);
             }
         }
     }

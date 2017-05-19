@@ -256,6 +256,7 @@ def test_docker_purge(docker_client):
 
 def safe_purge(c, docker_client):
     try:
+        c = docker_client.wait_success(c)
         c.purge()
     except (ApiError, AttributeError):
         # It's possible for the container to already have been purged
@@ -538,8 +539,12 @@ def test_docker_volumes(docker_client, super_client):
         elif mount.path == '/bar':
             assert mount.volumeId == bar_vol.id
 
-    c = docker_client.wait_success(c.stop(remove=True, timeout=0))
-    c2 = docker_client.wait_success(c2.stop(remove=True, timeout=0))
+    c = docker_client.wait_success(c.stop(timeout=0))
+    c2 = docker_client.wait_success(c2.stop(timeout=0))
+    docker_client.delete(c2)
+    docker_client.wait_success(c2)
+    docker_client.delete(c)
+    docker_client.wait_success(c)
 
     # set it as false bc we delete volume as soon as we delete container
     _check_path(foo_vol, False, docker_client, super_client)
@@ -781,7 +786,9 @@ def volume_cleanup_setup(docker_client, uuid, strategy=None):
                        lambda x: 'state is %s' % x)
     named_vol = v1 if v1.name == vol_name else v2
     unnamed_vol = v1 if v1.name != vol_name else v2
-    c = docker_client.wait_success(c.stop(remove=True, timeout=0))
+    c = docker_client.wait_success(c.stop(timeout=0))
+    docker_client.delete(c)
+    docker_client.wait_success(c)
 
     safe_purge(c, docker_client)
     check_mounts(docker_client, c, 0)

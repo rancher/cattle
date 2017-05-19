@@ -70,16 +70,16 @@ def test_big_scale(context, client):
                                 launchConfig=launch_config,
                                 intervalMillis=100)
     svc = client.wait_success(svc)
-    svc = client.wait_success(svc.activate(), DEFAULT_TIMEOUT)
+    svc = client.wait_success(svc.activate())
     svc = _run_insvc_upgrade(svc,
                              batchSize=1,
                              launchConfig=launch_config)
-    svc = client.wait_success(svc, DEFAULT_TIMEOUT)
+    svc = client.wait_success(svc)
     svc = client.wait_success(svc.finishupgrade())
     svc = _run_insvc_upgrade(svc,
                              batchSize=5,
                              launchConfig=launch_config)
-    svc = client.wait_success(svc, DEFAULT_TIMEOUT)
+    svc = client.wait_success(svc)
     client.wait_success(svc.finishupgrade())
 
 
@@ -102,10 +102,6 @@ def _create_and_schedule_inservice_upgrade(client, context, startFirst=False):
                              startFirst=startFirst,
                              intervalMillis=100)
 
-    def upgrade_not_null():
-        return _validate_in_svc_upgrade(client, svc)
-
-    svc = wait_for(upgrade_not_null, DEFAULT_TIMEOUT)
     return svc
 
 
@@ -195,7 +191,7 @@ def test_in_service_upgrade_networks_from(context, client, super_client):
     assert u_svc.state == 'upgraded'
     u_svc = client.wait_success(u_svc.finishupgrade(), DEFAULT_TIMEOUT)
     _validate_upgrade(super_client, svc, u_svc,
-                      primary='1', secondary1='1', secondary2='0')
+                      primary='0', secondary1='1', secondary2='0')
 
 
 def test_in_service_upgrade_volumes_from(context, client, super_client):
@@ -223,7 +219,7 @@ def test_in_service_upgrade_volumes_from(context, client, super_client):
     assert u_svc.state == 'upgraded'
     u_svc = client.wait_success(u_svc.finishupgrade(), DEFAULT_TIMEOUT)
     _validate_upgrade(super_client, svc, u_svc,
-                      primary='1', secondary1='1', secondary2='1')
+                      primary='1', secondary1='0', secondary2='1')
 
 
 def _create_stack(client):
@@ -391,28 +387,13 @@ def _insvc_upgrade(context, client, super_client, finish_upgrade,
 
     _run_insvc_upgrade(svc, **kw)
 
-    def upgrade_not_null():
-        return _validate_in_svc_upgrade(client, svc)
-
-    u_svc = wait_for(upgrade_not_null)
-    u_svc = client.wait_success(u_svc, timeout=DEFAULT_TIMEOUT)
+    u_svc = client.wait_success(svc, timeout=DEFAULT_TIMEOUT)
     assert u_svc.state == 'upgraded'
     if finish_upgrade:
         u_svc = client.wait_success(u_svc.finishupgrade(),
                                     DEFAULT_TIMEOUT)
         assert u_svc.state == 'active'
     return env, svc, u_svc
-
-
-def _validate_in_svc_upgrade(client, svc):
-    s = client.reload(svc)
-    upgrade = s.upgrade
-    if upgrade is not None:
-        strategy = upgrade.inServiceStrategy
-        c1 = strategy.previousLaunchConfig is not None
-        c2 = strategy.previousSecondaryLaunchConfigs is not None
-        if c1 or c2:
-            return s
 
 
 def _wait_for_instance_start(super_client, id):
@@ -582,22 +563,15 @@ def _validate_upgrade(super_client, svc, upgraded_svc,
     primary_upgraded_v = primary_v
     sec1_upgraded_v = sec1_v
     sec2_upgraded_v = sec2_v
-    strategy = upgraded_svc.upgrade.inServiceStrategy
     if primary == '1':
         primary_upgraded_v = upgraded_svc.launchConfig.version
-        primary_prev_v = strategy.previousLaunchConfig.version
         assert primary_v != primary_upgraded_v
-        assert primary_prev_v == primary_v
     if secondary1 == '1':
         sec1_upgraded_v = upgraded_svc.secondaryLaunchConfigs[0].version
-        sec1_prev_v = strategy.previousSecondaryLaunchConfigs[0].version
         assert sec1_v != sec1_upgraded_v
-        assert sec1_prev_v == sec1_v
     if secondary2 == '1':
         sec2_upgraded_v = upgraded_svc.secondaryLaunchConfigs[1].version
-        sec2_prev_v = strategy.previousSecondaryLaunchConfigs[1].version
         assert sec2_v != sec2_upgraded_v
-        assert sec2_prev_v == sec2_v
 
     c21, c21_sec1, c21_sec2, c22, c22_sec1, c22_sec2 = \
         _get_containers(super_client, upgraded_svc)
@@ -613,15 +587,14 @@ def _validate_upgrade(super_client, svc, upgraded_svc,
 
 
 def _validate_rollback(super_client, svc, rolledback_svc,
-                       primary='0', secondary1='0', secondary2='0'):
+                       primary='0', secondary1='0', secondary2='0',
+                       primary_prev_v='0', sec1_prev_v='0', sec2_prev_v='0'):
     # validate number of upgraded instances first
     _validate_upgraded_instances_count(super_client,
                                        svc,
                                        primary, secondary1, secondary2)
-    strategy = svc.upgrade.inServiceStrategy
     if primary == 1:
         primary_v = rolledback_svc.launchConfig.version
-        primary_prev_v = strategy.previousLaunchConfig.version
         assert primary_prev_v == primary_v
         maps = _wait_for_map_count(super_client, rolledback_svc)
         for map in maps:
@@ -629,7 +602,6 @@ def _validate_rollback(super_client, svc, rolledback_svc,
             assert i.version == primary_v
     if secondary1 == 1:
         sec1_v = rolledback_svc.secondaryLaunchConfigs[0].version
-        sec1_prev_v = strategy.previousSecondaryLaunchConfigs[0].version
         assert sec1_prev_v == sec1_v
         maps = _wait_for_map_count(super_client, rolledback_svc, "secondary1")
         for map in maps:
@@ -637,7 +609,6 @@ def _validate_rollback(super_client, svc, rolledback_svc,
             assert i.version == sec1_v
     if secondary2 == 1:
         sec2_v = rolledback_svc.secondaryLaunchConfigs[1].version
-        sec2_prev_v = strategy.previousSecondaryLaunchConfigs[1].version
         assert sec2_prev_v == sec2_v
         maps = _wait_for_map_count(super_client, rolledback_svc, "secondary2")
         for map in maps:
@@ -649,22 +620,17 @@ def _cancel_upgrade(client, svc):
     svc.cancelupgrade()
     wait_for(lambda: client.reload(svc).state == 'paused')
     svc = client.reload(svc)
-    strategy = svc.upgrade.inServiceStrategy
-    assert strategy.previousLaunchConfig is not None
-    assert strategy.previousSecondaryLaunchConfigs is not None
     return svc
 
 
 def _rollback(client, super_client,
-              svc, primary=0, secondary1=0, secondary2=0):
-    rolledback_svc = client.wait_success(svc.rollback(),
-                                         DEFAULT_TIMEOUT)
+              svc, primary=0, secondary1=0, secondary2=0,
+              primary_prev_v='0', sec1_prev_v='0', sec2_prev_v='0'):
+    rolledback_svc = client.wait_success(svc.rollback(), DEFAULT_TIMEOUT)
     assert rolledback_svc.state == 'active'
-    roll_v = rolledback_svc.launchConfig.version
-    strategy = svc.upgrade.inServiceStrategy
-    assert roll_v == strategy.previousLaunchConfig.version
     _validate_rollback(super_client, svc, rolledback_svc,
-                       primary, secondary1, secondary2)
+                       primary, secondary1, secondary2, primary_prev_v,
+                       sec1_prev_v, sec2_prev_v)
 
 
 def test_rollback_id(context, client, super_client):
@@ -718,7 +684,7 @@ def test_in_service_upgrade_port_mapping(context, client, super_client):
     svc = client.wait_success(svc.activate())
 
     launch_config = {"imageUuid": image_uuid,
-                     'ports': ['80', '82/tcp', '8083:83/udp']}
+                     'ports': ['80/tcp', '82/tcp', '8083:83/udp']}
     u_svc = _run_insvc_upgrade(svc, launchConfig=launch_config,
                                secondaryLaunchConfigs=[secondary1,
                                                        secondary2],
@@ -804,6 +770,7 @@ def test_sidekick_addition_rollback(context, client):
     u_svc = client.wait_success(u_svc, DEFAULT_TIMEOUT)
     assert u_svc.state == 'upgraded'
     u_svc = client.wait_success(u_svc.rollback(), DEFAULT_TIMEOUT)
+    u_svc = client.wait_success(u_svc.garbagecollect(), DEFAULT_TIMEOUT)
 
     # validate that all service instances are present, and their version
     _wait_until_active_map_count(u_svc, 4, client)
@@ -913,7 +880,7 @@ def test_sidekick_removal(context, client):
     c1_pre = _validate_compose_instance_start(client, svc, env, "1")
 
     secondary2 = {"imageUuid": image_uuid, "name": "secondary2",
-                  'imageUuid': "rancher/none"}
+                  'imageUuid': "docker:rancher/none"}
     u_svc = _run_insvc_upgrade(svc,
                                secondaryLaunchConfigs=[secondary1, secondary2],
                                batchSize=1)
@@ -952,7 +919,7 @@ def test_sidekick_removal_rollback(context, client):
                                               "secondary2")
 
     secondary2 = {"imageUuid": image_uuid, "name": "secondary2",
-                  'imageUuid': "rancher/none"}
+                  'imageUuid': "docker:rancher/none"}
     u_svc = _run_insvc_upgrade(svc,
                                secondaryLaunchConfigs=[secondary1, secondary2],
                                batchSize=1)
@@ -961,7 +928,7 @@ def test_sidekick_removal_rollback(context, client):
     u_svc = wait_state(client, u_svc.rollback(), "active")
 
     # validate that all service instances are present, and their version
-    _wait_until_active_map_count(u_svc, 3, client)
+    _wait_until_active_map_count(u_svc, 4, client)
     c1 = _validate_compose_instance_start(client, svc, env, "1")
     assert c1.version == '0'
     assert c1.id == c1_pre.id
@@ -1045,4 +1012,4 @@ def test_upgrade_global_service(new_context):
 
     # rollback the service
     service = client.wait_success(service.rollback())
-    _wait_until_active_map_count(service, len(c), client)
+    _wait_until_active_map_count(service, len(c)*2, client)

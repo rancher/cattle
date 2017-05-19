@@ -11,11 +11,10 @@
         },
         "stopSource" : {
             "type": "enum",
-            "options" : [ "api", "external" ],
+            "options" : [ "user", "external" ],
             "create" : true,
-            "required": true,
             "nullable" : false,
-            "default": "api"
+            "default": "user"
         }
     }
 }

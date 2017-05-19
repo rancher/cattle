@@ -12,7 +12,7 @@ public class ServiceManager extends AbstractJooqResourceManager {
 
     @Override
     public String[] getTypes() {
-        return new String[] { "stack", "composeProject", "kubernetesStack" };
+        return new String[] { "stack", "kubernetesStack" };
     }
 
     @Override

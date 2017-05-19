@@ -49,6 +49,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jooq.exception.DataChangedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -137,7 +138,10 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
             startedStackIds.add(stackId);
         }
 
-        objectManager.setFields(account, AccountConstants.FIELD_STARTED_STACKS, startedStackIds);
+        try {
+            objectManager.setFields(account, AccountConstants.FIELD_STARTED_STACKS, startedStackIds);
+        } catch (DataChangedException e) {
+        }
     }
 
     public static String chooseOrchestration(List<String> externalIds) {

@@ -217,7 +217,11 @@ def test_delete_project(admin_user_client, new_context,
     check_state(new_context.user_client, proj_id,
                 ['removed'], ['account', 'project', 'host', 'subscribe',
                               'machineDriver'])
-    super_client.wait_success(project.purge())
+    try:
+        super_client.wait_success(project.purge())
+    except:
+        pass
+    wait_for_condition(super_client, project, lambda x: x.state == 'purged')
     project = new_context.user_client.by_id('project', id=proj_id)
     assert project is None or project.state == 'purged'
     check_state(new_context.user_client, proj_id,

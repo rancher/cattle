@@ -598,5 +598,6 @@ def test_dependencies_start(client, context):
     # activate services all at once
     stack.activateservices()
     wait_for(lambda: client.reload(svc1).state == 'active')
-    assert client.reload(svc2).state == 'active'
-    assert client.reload(svc3).state == 'active'
+    # TODO: replace with depends_on
+    wait_for(lambda: client.reload(svc2).state == 'active')
+    wait_for(lambda: client.reload(svc3).state == 'active')
