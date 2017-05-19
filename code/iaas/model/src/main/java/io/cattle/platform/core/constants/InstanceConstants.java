@@ -17,7 +17,7 @@ public class InstanceConstants {
     public static final String SYSTEM_CONTAINER_LB_AGENT = "LoadBalancerAgent";
     public static final String SYSTEM_CONTAINER_BALANCER_AGENT = "BalancerAgent";
     public static final String SYSTEM_CONTAINER_CLUSTER_AGENT = "ClusterAgent";
-    public static final String ACTION_SOURCE_API = "api";
+    public static final String ACTION_SOURCE_USER = "user";
     public static final String ACTION_SOURCE_EXTERNAL = "external";
 
     public static final String TYPE = "instance";
@@ -75,9 +75,15 @@ public class InstanceConstants {
     public static final String FIELD_START_RETRY_COUNT = "startRetryCount";
     public static final String FIELD_REVISION_ID = "revisionId";
     public static final String FIELD_PREVIOUS_REVISION_ID = "previousRevisionId";
-    public static final String FIELD_REMOVE_SOURCE = "removeSource";
-    public static final String FIELD_REPLACEMNT_FOR_INSTANCE_ID = "replacementFor";
     public static final String FIELD_IMAGE_PRE_PULL = "prePullOnUpgrade";
+    public static final String FIELD_SHOULD_RESTART = "shouldRestart";
+    public static final String FIELD_LAST_START = "lastStart";
+    public static final String FIELD_LAUNCH_CONFIG_NAME = "launchConfigName";
+    public static final String FIELD_LB_RULES_ON_REMOVE = "lbRulesOnRemove";
+
+    public static final String PULL_NONE = "none";
+    public static final String PULL_ALL = "all";
+    public static final String PULL_EXISTING = "existing";
 
     public static final String PROCESS_DATA_NO_OP = "containerNoOpEvent";
 
@@ -94,7 +100,7 @@ public class InstanceConstants {
     public static final String PROCESS_REMOVE = "instance.remove";
     public static final String PROCESS_PURGE = "instance.purge";
     public static final String PROCESS_ERROR = "instance.error";
-    
+
     public static final String ACTIONT_CONVERT_TO_SERVICE = "instance.converttoservice";
 
     public static final String KIND_CONTAINER = "container";
@@ -130,7 +136,7 @@ public class InstanceConstants {
         Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
         return ("rancher-agent".equals(labels.get("io.rancher.container.system")) &&
                 "rancher-agent".equals(instance.getName()));
-        
+
     }
 
     public static List<Long> getInstanceDependencies(Instance instance) {

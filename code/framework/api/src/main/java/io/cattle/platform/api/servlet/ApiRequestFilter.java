@@ -39,12 +39,14 @@ public class ApiRequestFilter extends SpringFilter {
     private static final String PL = "PL";
     private static final String LANG = "LANG";
     private static final String VERSION = "X-Rancher-Version";
+    private static final String XFRAME = "X-Frame-Options";
+    private static final String DENY = "DENY";
     private static final DynamicStringProperty LOCALIZATION = ArchaiusUtil.getString("localization");
     private static final DynamicStringProperty SERVER_VERSION = ArchaiusUtil.getString("rancher.server.version");
 
     ApiRequestFilterDelegate delegate;
     Versions versions;
-    Map<String, Timer> timers = new ConcurrentHashMap<String, Timer>();
+    Map<String, Timer> timers = new ConcurrentHashMap<>();
     IndexFile indexFile = new IndexFile();
 
     @Override
@@ -76,6 +78,7 @@ public class ApiRequestFilter extends SpringFilter {
         addVersionHeader(httpRequest, (HttpServletResponse) response);
 
         if (isUIRequest(httpRequest, path)) {
+            addUIHeaders(httpRequest, (HttpServletResponse) response);
             if (path.contains(".") || !indexFile.canServeContent()) {
                 chain.doFilter(request, response);
                 return;
@@ -110,6 +113,10 @@ public class ApiRequestFilter extends SpringFilter {
             ExceptionUtils.rethrow(t, ServletException.class);
             ExceptionUtils.rethrowExpectedRuntime(t);
         }
+    }
+
+    protected void addUIHeaders(HttpServletRequest httpRequest, HttpServletResponse response) {
+        response.setHeader(XFRAME, DENY);
     }
 
     protected void addVersionHeader(HttpServletRequest httpRequest, HttpServletResponse response) {

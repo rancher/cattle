@@ -475,7 +475,7 @@ def test_url_response_positive(admin_user_client, cattle_url,
     id = 'api.auth.local.validate.url'
     # Using v1/scripts/api.crt since it's not under auth control
     # and will always return 200 as required by the test
-    url = cattle_url.split('v2-beta', 1)[0] + 'v1/scripts/api.crt'
+    url = cattle_url.split('v2', 1)[0] + 'v1/scripts/api.crt'
     validation_url = admin_user_client.by_id_setting(id)
     validation_url = admin_user_client.update(validation_url, value=url)
     wait_setting_active(admin_user_client, validation_url)

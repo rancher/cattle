@@ -58,7 +58,7 @@ public class ProcessInstanceDispatcherImpl implements ProcessInstanceDispatcher,
     ProcessManager processManager;
     @Inject
     ProcessServer processServer;
-    Map<ExitReason, Counter> counters = new HashMap<ExitReason, Counter>();
+    Map<ExitReason, Counter> counters = new HashMap<>();
 
     @Override
     public void dispatch(ProcessInstanceReference ref) {
@@ -114,8 +114,10 @@ public class ProcessInstanceDispatcherImpl implements ProcessInstanceDispatcher,
         ProcessInstance instance = null;
         try {
             instance = processManager.loadProcess(processId);
-            instance.execute();
-            runRemaining = true;
+            if (instance != null) {
+                instance.execute();
+                runRemaining = true;
+            }
             DONE.inc();
         } catch (ProcessNotFoundException e) {
             NOT_FOUND.inc();

@@ -44,7 +44,7 @@ public class CollectionUtils {
             } else {
                 Map<T, Object> nestedMap = (Map<T, Object>) map.get(keys[i]);
                 if (nestedMap == null) {
-                    nestedMap = new HashMap<T, Object>();
+                    nestedMap = new HashMap<>();
                     map.put(key, nestedMap);
                 }
                 map = nestedMap;
@@ -83,20 +83,20 @@ public class CollectionUtils {
     @SuppressWarnings("unchecked")
     public static <K, V> Map<K, V> toMap(Object obj) {
         if (obj == null) {
-            return new HashMap<K, V>();
+            return new HashMap<>();
         }
 
         if (obj instanceof Map) {
             return (Map<K, V>) obj;
         } else {
-            return new HashMap<K, V>();
+            return new HashMap<>();
         }
     }
 
     @SuppressWarnings("unchecked")
     public static <K, V> Map<K, V> castMap(Object obj) {
         if (obj == null) {
-            return new HashMap<K, V>();
+            return new HashMap<>();
         }
 
         if (obj instanceof Map) {
@@ -108,7 +108,7 @@ public class CollectionUtils {
 
     @SuppressWarnings("unchecked")
     public static <T> Map<T, Object> asMap(T key, Object... values) {
-        Map<T, Object> result = new LinkedHashMap<T, Object>();
+        Map<T, Object> result = new LinkedHashMap<>();
 
         if (values == null || values.length % 2 == 0) {
             throw new IllegalArgumentException("value[] must be not null and an odd length");
@@ -148,7 +148,7 @@ public class CollectionUtils {
 
         String list = ArchaiusUtil.getString(key + ".list").get();
         if (!StringUtils.isBlank(list)) {
-            List<Object> result = new ArrayList<Object>();
+            List<Object> result = new ArrayList<>();
             for (String name : list.split("\\s*,\\s*")) {
                 if (excludes.contains(name)) {
                     continue;
@@ -161,7 +161,7 @@ public class CollectionUtils {
 
         Set<String> includes = getSetting(key + ".include");
 
-        Set<Object> ordered = new TreeSet<Object>(new Comparator<Object>() {
+        Set<Object> ordered = new TreeSet<>(new Comparator<Object>() {
             @Override
             public int compare(Object o1, Object o2) {
                 int left = PriorityUtils.getPriority(o1);
@@ -197,7 +197,7 @@ public class CollectionUtils {
             }
         }
 
-        return (List<T>) new ArrayList<Object>(ordered);
+        return (List<T>) new ArrayList<>(ordered);
     }
 
     private static Set<String> getSetting(String key) {
@@ -206,7 +206,7 @@ public class CollectionUtils {
             return Collections.emptySet();
         }
 
-        Set<String> result = new HashSet<String>();
+        Set<String> result = new HashSet<>();
 
         for (String part : value.trim().split("\\s*,\\s*")) {
             result.add(part);
@@ -217,6 +217,10 @@ public class CollectionUtils {
 
     private static String getSettingValue(String key) {
         return ArchaiusUtil.getString(key).get();
+    }
+
+    public static <T> Set<T> set(@SuppressWarnings("unchecked") T... object) {
+        return new HashSet<>(Arrays.asList(object));
     }
 
 }

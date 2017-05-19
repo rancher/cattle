@@ -5,8 +5,6 @@ import io.cattle.iaas.healthcheck.service.HealthcheckService;
 import io.cattle.iaas.healthcheck.service.HealthcheckService.HealthcheckInstanceType;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.HostConstants;
-import io.cattle.platform.core.dao.HostDao;
-import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;

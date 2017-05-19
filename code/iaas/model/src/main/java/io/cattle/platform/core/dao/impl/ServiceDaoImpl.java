@@ -7,12 +7,15 @@ import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.RevisionTable.*;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
-import static io.cattle.platform.core.model.tables.ServiceRevisionTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
+import static io.cattle.platform.core.model.tables.VolumeTable.*;
+import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
+
 import io.cattle.platform.core.addon.HealthcheckState;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
@@ -27,35 +30,41 @@ import io.cattle.platform.core.model.HealthcheckInstance;
 import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.Revision;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.ServiceIndex;
-import io.cattle.platform.core.model.ServiceRevision;
 import io.cattle.platform.core.model.Stack;
+import io.cattle.platform.core.model.Volume;
+import io.cattle.platform.core.model.VolumeTemplate;
 import io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
 import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
+import io.cattle.platform.core.model.tables.ServiceIndexTable;
+import io.cattle.platform.core.model.tables.VolumeTable;
+import io.cattle.platform.core.model.tables.VolumeTemplateTable;
 import io.cattle.platform.core.model.tables.records.DeploymentUnitRecord;
 import io.cattle.platform.core.model.tables.records.HealthcheckInstanceRecord;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.core.model.tables.records.ServiceIndexRecord;
 import io.cattle.platform.core.model.tables.records.ServiceRecord;
 import io.cattle.platform.core.model.tables.records.StackRecord;
-import io.cattle.platform.core.util.ServiceUtil;
-import io.cattle.platform.core.util.ServiceUtil.RevisionData;
+import io.cattle.platform.core.model.tables.records.VolumeTemplateRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
+import io.cattle.platform.engine.handler.ProcessLogic;
+import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -67,6 +76,7 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.jooq.Condition;
 import org.jooq.Record;
 import org.jooq.Record2;
@@ -85,6 +95,8 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
     LockManager lockManager;
     @Inject
     GenericResourceDao resourceDao;
+    @Inject
+    EventService eventService;
 
     @Override
     public Service getServiceByExternalId(Long accountId, String externalId) {
@@ -96,26 +108,24 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
     }
 
     @Override
-    public ServiceIndex createServiceIndex(Service service, String launchConfigName, String serviceIndex) {
+    public ServiceIndex createServiceIndex(Long serviceId, String launchConfigName, String serviceIndex) {
         List<String> configNames = new ArrayList<>();
-        if (launchConfigName.equals(service.getName())) {
-            configNames.add(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
-        }
         configNames.add(launchConfigName);
         List<? extends ServiceIndex> serviceIndexes = create()
                 .select(SERVICE_INDEX.fields())
                 .from(SERVICE_INDEX)
                 .where(SERVICE_INDEX.SERVICE_INDEX_.eq(serviceIndex))
-                .and(SERVICE_INDEX.SERVICE_ID.eq(service.getId()))
+                .and(SERVICE_INDEX.SERVICE_ID.eq(serviceId))
                 .and(SERVICE_INDEX.REMOVED.isNull())
                 .and(SERVICE_INDEX.STATE.ne(CommonStatesConstants.REMOVING))
                 .and(SERVICE_INDEX.LAUNCH_CONFIG_NAME.in(configNames))
                 .fetchInto(ServiceIndexRecord.class);
         ServiceIndex index = null;
         if (serviceIndexes.isEmpty()) {
-            index = objectManager.create(ServiceIndex.class, SERVICE_INDEX.SERVICE_ID,
-                    service.getId(),
-                    SERVICE_INDEX.LAUNCH_CONFIG_NAME, launchConfigName, SERVICE_INDEX.SERVICE_INDEX_, serviceIndex);
+            index = resourceDao.createAndSchedule(ServiceIndex.class,
+                    SERVICE_INDEX.SERVICE_ID, serviceId,
+                    SERVICE_INDEX.LAUNCH_CONFIG_NAME, launchConfigName,
+                    SERVICE_INDEX.SERVICE_INDEX_, serviceIndex);
         } else {
             index = serviceIndexes.get(0);
         }
@@ -354,8 +364,7 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                 .select(DEPLOYMENT_UNIT.fields())
                 .from(DEPLOYMENT_UNIT)
                 .where(DEPLOYMENT_UNIT.SERVICE_ID.eq(service.getId())
-                        .and(DEPLOYMENT_UNIT.REMOVED.isNull())
-                        .and(DEPLOYMENT_UNIT.STATE.notIn(CommonStatesConstants.REMOVING)))
+                        .and(DEPLOYMENT_UNIT.REMOVED.isNull()))
                 .fetchInto(DeploymentUnitRecord.class);
 
         Map<String, DeploymentUnit> uuidToUnit = new HashMap<>();
@@ -482,18 +491,9 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
     }
 
     @Override
-    public List<? extends DeploymentUnit> getServiceDeploymentUnitsOnHost(Host host, boolean transitioningOnly) {
+    public List<? extends DeploymentUnit> getServiceDeploymentUnitsOnHost(Host host) {
         List<DeploymentUnit> toReturn = new ArrayList<>();
         Set<Long> processed = new HashSet<>();
-        Condition condition = null;
-        if (transitioningOnly) {
-            List<String> transitioningStates = Arrays.asList(InstanceConstants.STATE_CREATING,
-                    InstanceConstants.STATE_STOPPING, InstanceConstants.STATE_STARTING,
-                    InstanceConstants.STATE_RESTARTING);
-            condition = INSTANCE.ACCOUNT_ID.eq(host.getAccountId()).and(INSTANCE.STATE.in(transitioningStates));
-        } else {
-            condition = INSTANCE.ACCOUNT_ID.eq(host.getAccountId());
-        }
 
         // 1. Get non empty units
         List<? extends DeploymentUnit> nonEmptyUnits =
@@ -507,7 +507,7 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                         .and(INSTANCE_HOST_MAP.HOST_ID.eq(host.getId()))
                 .and(DEPLOYMENT_UNIT.REMOVED.isNull())
                         .and(DEPLOYMENT_UNIT.SERVICE_ID.isNotNull())
-                        .and(condition)
+                        .and(INSTANCE.ACCOUNT_ID.eq(host.getAccountId()))
                         .fetchInto(DeploymentUnitRecord.class);
         for (DeploymentUnit unit : nonEmptyUnits) {
             if (processed.contains(unit.getId())) {
@@ -517,21 +517,15 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
             toReturn.add(unit);
         }
 
-        if (transitioningOnly) {
-            return toReturn;
-        }
-
         // 2. Get global units for the host
         // (they can exist w/o instances present)
-        String hostUnit = String.format("\"%s\":\"%s", ServiceConstants.LABEL_SERVICE_REQUESTED_HOST_ID, host.getId()
-                .toString());
         List<? extends DeploymentUnit> emptyUnits =
                 create().select(DEPLOYMENT_UNIT.fields())
                         .from(DEPLOYMENT_UNIT)
                         .where(DEPLOYMENT_UNIT.REMOVED.isNull())
                         .and(DEPLOYMENT_UNIT.ACCOUNT_ID.eq(host.getAccountId()))
                         .and(DEPLOYMENT_UNIT.SERVICE_ID.isNotNull())
-                        .and(DEPLOYMENT_UNIT.DATA.like("%" + hostUnit + "%"))
+                        .and(DEPLOYMENT_UNIT.HOST_ID.eq(host.getId()))
                         .fetchInto(DeploymentUnitRecord.class);
         for (DeploymentUnit unit : emptyUnits) {
             if (processed.contains(unit.getId())) {
@@ -546,23 +540,38 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
 
     @Override
     public DeploymentUnit createDeploymentUnit(long accountId, Long serviceId, long stackId,
-            Map<String, String> labels, String serviceIndex, Long revisionId) {
+            Long hostId, String serviceIndex, Long revisionId, boolean active) {
         Map<String, Object> params = new HashMap<>();
         params.put("accountId", accountId);
-        params.put("uuid", io.cattle.platform.util.resource.UUID.randomUUID().toString());
-        params.put(InstanceConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX,
-                serviceIndex);
+        params.put(InstanceConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX, serviceIndex);
         params.put(InstanceConstants.FIELD_SERVICE_ID, serviceId);
         params.put(InstanceConstants.FIELD_STACK_ID, stackId);
-        if (labels != null) {
-            params.put(InstanceConstants.FIELD_LABELS, labels);
-        }
+        params.put(InstanceConstants.FIELD_HOST_ID, hostId);
         params.put(InstanceConstants.FIELD_REVISION_ID, revisionId);
+        if (hostId != null) {
+            params.put(InstanceConstants.FIELD_LABELS, CollectionUtils.asMap(
+                    ServiceConstants.LABEL_SERVICE_REQUESTED_HOST_ID, hostId));
+        }
+        if (active) {
+            params.put(ServiceConstants.PROCESS_DU_CREATE + ProcessLogic.CHAIN_PROCESS, ServiceConstants.PROCESS_DU_ACTIVATE);
+            return resourceDao.createAndSchedule(DeploymentUnit.class, params);
+        }
         return objectManager.create(DeploymentUnit.class, params);
     }
 
     @Override
     public Stack getOrCreateDefaultStack(final long accountId) {
+        List<? extends Stack> stacks = create()
+                .select(STACK.fields())
+                .from(STACK)
+                .where(STACK.ACCOUNT_ID.eq(accountId)
+                        .and(STACK.REMOVED.isNull())
+                        .and(STACK.NAME.equalIgnoreCase(ServiceConstants.DEFAULT_STACK_NAME)))
+                .fetchInto(StackRecord.class);
+        if (stacks.size() > 0) {
+            return stacks.get(0);
+        }
+
         return lockManager.lock(new StackCreateLock(accountId), new LockCallback<Stack>() {
             @Override
             public Stack doWithLock() {
@@ -601,10 +610,10 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
     }
 
     @Override
-    public void cleanupServiceRevisions(Service service) {
-        List<ServiceRevision> revisions = objectManager.find(ServiceRevision.class, SERVICE_REVISION.SERVICE_ID,
+    public void cleanupRevisions(Service service) {
+        List<Revision> revisions = objectManager.find(Revision.class, REVISION.SERVICE_ID,
                 service.getId());
-        for (ServiceRevision revision : revisions) {
+        for (Revision revision : revisions) {
             if (revision.getId().equals(service.getPreviousRevisionId())
                     || revision.getId().equals(service.getRevisionId())) {
                 // only mark as removed; they will be delete as a part of
@@ -629,37 +638,119 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
     }
 
     @Override
-    public RevisionData createServiceRevision(Service service, Map<String, Object> serviceData, boolean force) {
-        boolean isFirstRevision = service.getRevisionId() == null;
-        ServiceRevision revision = objectManager.findAny(ServiceRevision.class, SERVICE_REVISION.SERVICE_ID,
-                service.getId(),
-                SERVICE_REVISION.REMOVED, null);
-        RevisionData revisionData = null;
-        if ((revision != null && !isFirstRevision) || (revision == null && isFirstRevision)) {
-            ServiceRevision currentRevision = objectManager
-                    .loadResource(ServiceRevision.class, service.getRevisionId());
-            revisionData = ServiceUtil.generateNewRevisionData(service, currentRevision,
-                    serviceData);
-            if (revisionData.isUpdate() || revisionData.isUpgrade() || force) {
-                Map<String, Object> data = new HashMap<>();
-                data.put(InstanceConstants.FIELD_SERVICE_ID, service.getId());
-                data.put(ObjectMetaDataManager.ACCOUNT_FIELD, service.getAccountId());
-                Map<String, Object> revisionConfig = revisionData.getConfig();
-                revisionConfig.remove(ServiceConstants.FIELD_SCALE);
-                revisionConfig.remove(ServiceConstants.FIELD_SCALE_INCREMENT);
-                revisionConfig.remove(ServiceConstants.FIELD_SCALE_MIN);
-                revisionConfig.remove(ServiceConstants.FIELD_SCALE_MAX);
-                data.put(InstanceConstants.FIELD_REVISION_CONFIG, revisionConfig);
-                revision = objectManager.create(ServiceRevision.class, data);
-                revisionData.setRevisionId(revision.getId());
+    public List<InstanceData> getInstanceData(Long id, String uuid) {
+        MultiRecordMapper<InstanceData> mapper = new MultiRecordMapper<InstanceData>() {
+            @Override
+            protected InstanceData map(List<Object> input) {
+                InstanceData data = new InstanceData();
+                data.instance = (Instance)input.get(0);
+                data.serviceIndex = (ServiceIndex)input.get(1);
+                data.serviceExposeMap = (ServiceExposeMap)input.get(2);
+                return data;
             }
-        }
-        return revisionData;
+        };
+
+        InstanceTable instance = mapper.add(INSTANCE);
+        ServiceIndexTable serviceIndex = mapper.add(SERVICE_INDEX);
+        ServiceExposeMapTable serviceExposeMap = mapper.add(SERVICE_EXPOSE_MAP);
+
+        return create()
+            .select(mapper.fields())
+            .from(instance)
+            .leftOuterJoin(serviceIndex)
+                .on(instance.SERVICE_INDEX_ID.eq(serviceIndex.ID))
+            .leftOuterJoin(serviceExposeMap)
+                .on(instance.SERVICE_ID.eq(serviceExposeMap.SERVICE_ID)
+                        .and(instance.ID.eq(serviceExposeMap.INSTANCE_ID))
+                        .and(serviceExposeMap.MANAGED.isTrue())
+                        .and(serviceExposeMap.REMOVED.isNull()))
+            .where(instance.REMOVED.isNull()
+                .and(instance.DEPLOYMENT_UNIT_ID.eq(id)
+                        .or(instance.DEPLOYMENT_UNIT_UUID.eq(uuid))))
+            .fetch().map(mapper);
     }
 
     @Override
-    public void setForCleanup(DeploymentUnit unit, boolean cleanup) {
-        objectManager.setFields(objectManager.reload(unit), ServiceConstants.FIELD_DEPLOYMENT_UNIT_CLEANUP, cleanup,
-                ServiceConstants.FIELD_DEPLOYMENT_UNIT_CLEANUP_TIME, new Date(System.currentTimeMillis()));
+    public Long getNextCreate(Long serviceId) {
+        Long next = null;
+
+        if (serviceId != null) {
+            Long index = create().select(SERVICE.CREATE_INDEX)
+                .from(SERVICE)
+                .where(SERVICE.ID.eq(serviceId))
+                .forUpdate()
+                .fetchAny().value1();
+            Condition cond = index == null ? SERVICE.CREATE_INDEX.isNull() : SERVICE.CREATE_INDEX.eq(index);
+            next = index == null ? 1L : index+1;
+
+            create().update(SERVICE)
+                .set(SERVICE.CREATE_INDEX, next)
+                .where(SERVICE.ID.eq(serviceId)
+                        .and(cond))
+                .execute();
+        }
+
+        return next;
     }
+
+    @Override
+    public Pair<Instance, ServiceExposeMap> createServiceInstance(final Map<String, Object> properties, Long serviceId, Long createIndex) {
+        properties.put(InstanceConstants.FIELD_CREATE_INDEX, createIndex);
+        Instance instance = objectManager.create(Instance.class, properties);
+
+        Map<String, String> labels = CollectionUtils.toMap(properties.get(InstanceConstants.FIELD_LABELS));
+        String dnsPrefix = labels.get(ServiceConstants.LABEL_SERVICE_LAUNCH_CONFIG);
+        if (ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME.equalsIgnoreCase(dnsPrefix)) {
+            dnsPrefix = null;
+        }
+
+        ServiceExposeMap map = null;
+
+        if (serviceId != null ) {
+            map = objectManager.create(ServiceExposeMap.class,
+                SERVICE_EXPOSE_MAP.STATE, CommonStatesConstants.ACTIVE,
+                SERVICE_EXPOSE_MAP.INSTANCE_ID, instance.getId(),
+                SERVICE_EXPOSE_MAP.SERVICE_ID, serviceId,
+                SERVICE_EXPOSE_MAP.ACCOUNT_ID, instance.getAccountId(),
+                SERVICE_EXPOSE_MAP.DNS_PREFIX, dnsPrefix,
+                SERVICE_EXPOSE_MAP.MANAGED, true);
+        }
+
+        return Pair.of(instance, map);
+    }
+
+    @Override
+    public List<? extends VolumeTemplate> getVolumeTemplates(Long stackId) {
+        return create()
+            .select(VOLUME_TEMPLATE.fields())
+            .from(VOLUME_TEMPLATE)
+            .where(VOLUME_TEMPLATE.STACK_ID.eq(stackId)
+                    .and(VOLUME_TEMPLATE.REMOVED.isNull()))
+            .fetchInto(VolumeTemplateRecord.class);
+    }
+
+    @Override
+    public List<VolumeData> getVolumeData(long deploymentUnitId) {
+        MultiRecordMapper<VolumeData> mapper = new MultiRecordMapper<VolumeData>() {
+            @Override
+            protected VolumeData map(List<Object> input) {
+                VolumeData data = new VolumeData();
+                data.volume = (Volume) input.get(0);
+                data.template = (VolumeTemplate) input.get(1);
+                return data;
+            }
+        };
+
+        VolumeTable volume = mapper.add(VOLUME);
+        VolumeTemplateTable volumeTemplate = mapper.add(VOLUME_TEMPLATE);
+
+        return create()
+                .select(mapper.fields())
+                .from(volume)
+                .join(volumeTemplate)
+                    .on(volume.VOLUME_TEMPLATE_ID.eq(volumeTemplate.ID))
+                .where(volume.DEPLOYMENT_UNIT_ID.eq(deploymentUnitId))
+                .fetch().map(mapper);
+    }
+
 }

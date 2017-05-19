@@ -1,6 +1,5 @@
 package io.cattle.platform.core.util;
 
-import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -9,11 +8,10 @@ import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.core.model.ServiceRevision;
-import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
+import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
@@ -21,21 +19,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-
-import com.netflix.config.DynamicStringListProperty;
 
 public class ServiceUtil {
 
     private static final int LB_HEALTH_CHECK_PORT = 42;
-    private static DynamicStringListProperty UPGRADE_TRIGGER_FIELDS = ArchaiusUtil
-            .getList("container.upgrade.trigger.fields");
-    private static DynamicStringListProperty UPDATE_SKIP_FIELDS = ArchaiusUtil.getList("service.update.skip.fields");
 
     public static String getInstanceName(Instance instance) {
         if (instance != null && instance.getRemoved() == null) {
@@ -43,6 +36,16 @@ public class ServiceUtil {
         } else {
             return null;
         }
+    }
+
+    public static Set<String> getLaunchConfigExternalNames(Map<String, Object> data) {
+        Set<String> names = new HashSet<>();
+        String name = ObjectUtils.toString(data.get(ObjectMetaDataManager.NAME_FIELD));
+        names.add(name);
+        for (Object o : CollectionUtils.toList(data.get(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS))) {
+            names.add(ObjectUtils.toString(CollectionUtils.toMap(o)));
+        }
+        return names;
     }
 
     @SuppressWarnings("unchecked")
@@ -87,30 +90,6 @@ public class ServiceUtil {
         data.putAll(getLaunchConfigDataAsMap(service, launchConfigName));
 
         return data;
-    }
-
-    @SuppressWarnings("unchecked")
-    public static Map<String, Map<String, Object>> getServiceLaunchConfigsWithNames(Service service) {
-        Map<String, Object> originalData = new HashMap<>();
-        originalData.putAll(DataUtils.getFields(service));
-        Map<String, Map<String, Object>> launchConfigsWithNames = new HashMap<>();
-
-        // put the primary config in
-        launchConfigsWithNames.put(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME,
-                CollectionUtils.toMap(originalData
-                        .get(ServiceConstants.FIELD_LAUNCH_CONFIG)));
-
-        // put the secondary configs in
-        Object secondaryLaunchConfigs = originalData
-                .get(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS);
-        if (secondaryLaunchConfigs != null) {
-            for (Map<String, Object> secondaryLaunchConfig : (List<Map<String, Object>>) secondaryLaunchConfigs) {
-                launchConfigsWithNames.put(String.valueOf(secondaryLaunchConfig.get("name")),
-                        CollectionUtils.toMap(secondaryLaunchConfig));
-            }
-        }
-
-        return launchConfigsWithNames;
     }
 
     @SuppressWarnings("unchecked")
@@ -177,19 +156,19 @@ public class ServiceUtil {
         return serviceData.get(objectName);
     }
 
-    public static String generateServiceInstanceName(Stack env, Service service, String launchConfigName,
-            int finalOrder) {
+    public static String generateServiceInstanceName(String stackName, String serviceName, String launchConfigName,
+            String finalOrder) {
         boolean isPrimary = launchConfigName == null
                 || launchConfigName.equals(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
 
-        if (finalOrder == 0) {
+        if ("0".equals(finalOrder)) {
             if (isPrimary) {
-                return service.getName();
+                return serviceName;
             }
             return launchConfigName;
         }
         String configName = isPrimary ? "" : launchConfigName + "-";
-        return String.format("%s-%s-%s%d", env.getName(), service.getName(), configName, finalOrder);
+        return String.format("%s-%s-%s%s", stackName, serviceName, configName, finalOrder);
     }
 
     public static boolean isNoopService(Service service) {
@@ -209,52 +188,6 @@ public class ServiceUtil {
         return service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)
                 && imageUUID != null && imageUUID.toString().toLowerCase()
                         .contains(ServiceConstants.IMAGE_NONE);
-    }
-
-    public static void preserveOldRandomPorts(Service service,
-            Map<String, Object> newLaunchConfig) {
-
-        // get from svc
-        String lcName = newLaunchConfig.get("name") == null ? ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME
-                : newLaunchConfig.get("name").toString();
-        Map<Integer, PortSpec> oldPortMap = getServicePortsMap(ServiceUtil.getLaunchConfigDataAsMap(service, lcName));
-        Map<Integer, PortSpec> newPortMap = getServicePortsMap(newLaunchConfig);
-
-        boolean changedNewPorts = false;
-
-        for(Integer privatePort : newPortMap.keySet()) {
-            if(newPortMap.get(privatePort).getPublicPort() == null) {
-                if (oldPortMap.containsKey(privatePort)) {
-                    newPortMap.get(privatePort).setPublicPort(oldPortMap.get(privatePort).getPublicPort());
-                    changedNewPorts = true;
-                }
-            }
-        }
-
-        if(changedNewPorts) {
-            List<String> newPorts = new ArrayList<>();
-            for (Map.Entry<Integer, PortSpec> entry : newPortMap.entrySet()) {
-                 newPorts.add(entry.getValue().toSpec());
-            }
-            if (!newPorts.isEmpty()) {
-                newLaunchConfig.put(InstanceConstants.FIELD_PORTS, newPorts);
-            }
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    protected static Map<Integer, PortSpec> getServicePortsMap(Map<String, Object> launchConfigData) {
-        if (launchConfigData.get(InstanceConstants.FIELD_PORTS) == null) {
-            return new LinkedHashMap<>();
-        }
-        List<String> specs = (List<String>) launchConfigData.get(InstanceConstants.FIELD_PORTS);
-        Map<Integer, PortSpec> portMap = new LinkedHashMap<>();
-        for (String spec : specs) {
-            PortSpec portSpec = new PortSpec(spec);
-            portMap.put(new Integer(portSpec.getPrivatePort()), portSpec);
-
-        }
-        return portMap;
     }
 
     @SuppressWarnings("unchecked")
@@ -312,13 +245,13 @@ public class ServiceUtil {
         return NetworkConstants.INTERNAL_DNS_SEARCH_DOMAIN;
     }
 
-    public static String getServiceNamespace(Stack stack, Service service) {
-        return new StringBuilder().append(service.getName()).append(".").append(getStackNamespace(stack))
+    public static String getServiceNamespace(String stackName, String serviceName) {
+        return new StringBuilder().append(serviceName).append(".").append(getStackNamespace(stackName))
                 .toString().toLowerCase();
     }
 
-    public static String getStackNamespace(Stack stack) {
-        return new StringBuilder().append(stack.getName()).append(".")
+    public static String getStackNamespace(String stackName) {
+        return new StringBuilder().append(stackName).append(".")
                 .append(getGlobalNamespace()).toString().toLowerCase();
     }
 
@@ -333,204 +266,8 @@ public class ServiceUtil {
                 ServiceConstants.STATE_RESTARTING);
     }
 
-    public static MergedLaunchConfigs mergeLaunchConfigs(Map<String, Object> currentLaunchConfig,
-            List<Map<String, Object>> currentSecondaryLaunchConfigs, Map<String, Object> newPrimaryLaunchConfig,
-            List<Map<String, Object>> newSecondaryLaunchConfigs, Service service) {
-
-        if (newPrimaryLaunchConfig == null && newSecondaryLaunchConfigs == null) {
-            return null;
-        }
-
-        Map<String, Map<String, Object>> currentConfigsMap = new HashMap<>();
-        if (currentLaunchConfig != null) {
-            currentConfigsMap.put(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME, currentLaunchConfig);
-        }
-        // preserve the initial order of the secondary launch configs
-        List<String> secNames = new ArrayList<>();
-        if (currentSecondaryLaunchConfigs != null) {
-            for (Map<String, Object> lc : currentSecondaryLaunchConfigs) {
-                currentConfigsMap.put(lc.get("name").toString(), lc);
-            }
-            for (Object sec : currentSecondaryLaunchConfigs) {
-                secNames.add(CollectionUtils.toMap(sec).get("name").toString());
-            }
-        }
-        boolean isUpgrade = false;
-        boolean isUpdate = false;
-        // 1. Generate merge configs
-        List<Map<String, Object>> mergedConfigs = new ArrayList<>();
-        if (newPrimaryLaunchConfig != null) {
-            mergedConfigs.add(newPrimaryLaunchConfig);
-        }
-        if (newSecondaryLaunchConfigs != null && !newSecondaryLaunchConfigs.isEmpty()) {
-            for (Map<String, Object> newConfig : newSecondaryLaunchConfigs) {
-                Object name = newConfig.get("name");
-                Object imageUuid = newConfig.get(InstanceConstants.FIELD_IMAGE_UUID);
-                if (service.getSelectorContainer() == null && imageUuid != null
-                        && StringUtils.equalsIgnoreCase(ServiceConstants.IMAGE_NONE, imageUuid.toString())) {
-                    currentConfigsMap.remove(name);
-                    isUpgrade = true;
-                    continue;
-                }
-                mergedConfigs.add(newConfig);
-            }
-        }
-
-        // 2. Merge configs
-        List<String> upgradeTriggerFields = UPGRADE_TRIGGER_FIELDS.get();
-        String generatedVersion = io.cattle.platform.util.resource.UUID.randomUUID().toString();
-        for (Map<String, Object> mergedConfig : mergedConfigs) {
-            boolean resetVersion = false;
-            String currentVersion = null;
-            String name = mergedConfig.get("name") != null ? mergedConfig.get("name").toString()
-                    : ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME;
-            try {
-
-                Map<String, Object> currentConfig = currentConfigsMap.get(name);
-                if (currentConfig == null) {
-                    resetVersion = true;
-                    continue;
-                }
-                if (mergedConfig.containsKey(ServiceConstants.FIELD_FORCE_UPGRADE)
-                        && Boolean.valueOf(mergedConfig.get(ServiceConstants.FIELD_FORCE_UPGRADE).toString())) {
-                    resetVersion = true;
-                }
-                currentVersion = String.valueOf(currentConfig.get(ServiceConstants.FIELD_VERSION));
-                for (String key : mergedConfig.keySet()) {
-                    if (currentConfig.containsKey(key)) {
-                        if (key.equalsIgnoreCase(InstanceConstants.FIELD_PORTS)) {
-                            preserveOldRandomPorts(service, mergedConfig);
-                        }
-                        // if field triggers upgrade + value changed, trigger upgrade
-                        if (!areObjectsEqual(currentConfig.get(key), mergedConfig.get(key))) {
-                            if (upgradeTriggerFields.contains(key)) {
-                                resetVersion = true;
-                            } else {
-                                isUpdate = true;
-                            }
-                        }
-                        currentConfig.remove(key);
-                    } else if (mergedConfig.get(key) != null) {
-                        if (upgradeTriggerFields.contains(key)) {
-                            resetVersion = true;
-                        } else {
-                            isUpdate = true;
-                        }
-                    }
-                }
-                mergedConfig.putAll(currentConfig);
-                currentConfigsMap.remove(name);
-            } finally {
-                if (resetVersion) {
-                    setVersion(mergedConfig, generatedVersion);
-                    isUpgrade = true;
-                } else {
-                    setVersion(mergedConfig, currentVersion);
-                }
-            }
-        }
-
-        mergedConfigs.addAll(currentConfigsMap.values());
-
-        return new MergedLaunchConfigs(secNames, mergedConfigs, isUpgrade, isUpdate);
-    }
-
-    protected static void setVersion(Map<String, Object> config, String version) {
-        config.put(ServiceConstants.FIELD_VERSION, version);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static Map<String, Map<String, Object>> getCurrentLaunchConfigs(Service service) {
-        Map<String, Map<String, Object>> currentLaunchConfigs = new HashMap<>();
-        for (Object secondaryLaunchConfigObject : DataAccessor.fields(service)
-                .withKey(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
-                .withDefault(Collections.EMPTY_LIST).as(
-                        List.class)) {
-            Map<String, Object> lc = new HashMap<>();
-            lc.putAll(CollectionUtils.toMap(secondaryLaunchConfigObject));
-            currentLaunchConfigs.put(lc.get("name").toString(), lc);
-        }
-        Map<String, Object> lc = new HashMap<>();
-        lc.putAll(DataAccessor.fields(service)
-                .withKey(ServiceConstants.FIELD_LAUNCH_CONFIG).withDefault(Collections.EMPTY_MAP)
-                .as(Map.class));
-        currentLaunchConfigs.put(service.getName(), lc);
-        return currentLaunchConfigs;
-    }
-
-    public static class MergedLaunchConfigs {
-        private Map<String, Object> primaryLaunchConfig;
-        private List<Map<String, Object>> secondaryLaunchConfigs;
-        private boolean isUpgrade;
-        private boolean isUpdate;
-
-        public MergedLaunchConfigs(List<String> currentOrderedSecondaryConfigNames,
-                List<Map<String, Object>> newLaunchConfigs, boolean isUpgrade, boolean isUpdate) {
-            super();
-
-            Map<String, Map<String, Object>> secondaryLCTemp = new HashMap<>();
-
-            for (Map<String, Object> lc : newLaunchConfigs) {
-                if (!lc.containsKey("name")) {
-                    this.primaryLaunchConfig = lc;
-                } else {
-                    secondaryLCTemp.put(lc.get("name").toString(), lc);
-                }
-            }
-
-            secondaryLaunchConfigs = new ArrayList<>();
-            for (String secName : currentOrderedSecondaryConfigNames) {
-                if (secondaryLCTemp.containsKey(secName)) {
-                    secondaryLaunchConfigs.add(secondaryLCTemp.get(secName));
-                    secondaryLCTemp.remove(secName);
-                }
-            }
-            // add the rest
-            secondaryLaunchConfigs.addAll(secondaryLCTemp.values());
-            this.isUpgrade = isUpgrade;
-            this.isUpdate = isUpdate;
-        }
-
-        public Map<String, Object> getPrimaryLaunchConfig() {
-            return primaryLaunchConfig;
-        }
-
-        public List<Map<String, Object>> getSecondaryLaunchConfigs() {
-            return secondaryLaunchConfigs;
-        }
-
-        public boolean isUpgrade() {
-            return isUpgrade;
-        }
-
-        public boolean isUpdate() {
-            return isUpdate;
-        }
-    }
-
-    public static final List<String> getServiceImagesToPrePull(Service service) {
-        List<String> images = new ArrayList<>();
-        for (String lcName : getLaunchConfigNames(service)) {
-            Object imageUUID = getLaunchConfigObject(service, lcName, InstanceConstants.FIELD_IMAGE_UUID);
-            if (imageUUID == null) {
-                continue;
-            }
-            if (isImagePrePullOnLaunchConfig(service, lcName)) {
-                images.add(imageUUID.toString());
-            }
-        }
-        return images;
-    }
-
     public static boolean isActiveService(Service service) {
         return getServiceActiveStates().contains(service.getState());
-    }
-
-    public static boolean isServiceValidForReconcile(Service service) {
-        List<String> activeStates = Arrays.asList(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE);
-        return service != null
-                && (activeStates.contains(service.getState()))
-                && !service.getIsUpgrade();
     }
 
     /**
@@ -580,25 +317,27 @@ public class ServiceUtil {
     }
 
     public static boolean isGlobalService(Service service) {
-        Map<String, String> serviceLabels = getMergedServiceLabels(service);
-        String globalService = serviceLabels.get(ServiceConstants.LABEL_SERVICE_GLOBAL);
-        return Boolean.valueOf(globalService);
-    }
+        String val = ObjectUtils.toString(CollectionUtils.getNestedValue(service.getData(),
+                DataUtils.FIELDS,
+                ServiceConstants.FIELD_LAUNCH_CONFIG,
+                InstanceConstants.FIELD_LABELS,
+                ServiceConstants.LABEL_SERVICE_GLOBAL));
+        if (Boolean.valueOf(val)) {
+            return true;
+        }
 
-    public static boolean isImagePrePull(Service service) {
-        for (String lc : ServiceUtil.getLaunchConfigNames(service)) {
-            if (isImagePrePullOnLaunchConfig(service, lc)) {
+        List<?> secondaries = CollectionUtils.toList(CollectionUtils.getNestedValue(service.getData(),
+                DataUtils.FIELDS,
+                ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS));
+        for (Object map : secondaries) {
+            val = ObjectUtils.toString(CollectionUtils.getNestedValue(map,
+                InstanceConstants.FIELD_LABELS,
+                ServiceConstants.LABEL_SERVICE_GLOBAL));
+            if (Boolean.valueOf(val)) {
                 return true;
             }
         }
-        return false;
-    }
 
-    public static boolean isImagePrePullOnLaunchConfig(Service service, String lc) {
-        Object prePull = ServiceUtil.getLaunchConfigObject(service, lc, InstanceConstants.FIELD_IMAGE_PRE_PULL);
-        if (prePull != null && Boolean.valueOf(prePull.toString())) {
-            return true;
-        }
         return false;
     }
 
@@ -610,209 +349,4 @@ public class ServiceUtil {
         return lbConfig == null;
     }
 
-    public static boolean areObjectsEqual(Object a, Object b) {
-        // covers both being nulls and primitives
-        if (a == b) {
-            return true;
-        }
-
-        // covers both being not null
-        if ((a != null) != (b != null)) {
-            if (a instanceof String) {
-                if (b == null) {
-                    b = "";
-                }
-            } else if (b instanceof String) {
-                if (a == null) {
-                    a = "";
-                }
-            } else {
-                return false;
-            }
-        }
-
-        if (a instanceof String || a instanceof Long || a instanceof Integer || a instanceof Boolean) {
-            return StringUtils.equalsIgnoreCase(a.toString(), b.toString());
-        } else if (a instanceof List) {
-            return compareLists(a, b);
-        } else if (a instanceof Map) {
-            return compareMaps(CollectionUtils.toMap(a), CollectionUtils.toMap(b));
-        } else {
-            areObjectsEqual(CollectionUtils.toMap(a), CollectionUtils.toMap(b));
-        }
-
-        return false;
-    }
-
-    @SuppressWarnings("unchecked")
-    public static boolean compareLists(Object a, Object b) {
-        for (Object aItem : (List<Object>) a) {
-            boolean found = false;
-            for (Object bItem : (List<Object>) b) {
-                if (areObjectsEqual(aItem, bItem)) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                return false;
-            }
-        }
-
-        for (Object bItem : (List<Object>) b) {
-            boolean found = false;
-            for (Object aItem : (List<Object>) a) {
-                if (areObjectsEqual(aItem, bItem)) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public static boolean compareMaps(Map<Object, Object> a, Map<Object, Object> b) {
-        if (!compareMap(a, b)) {
-            return false;
-        }
-        if (!compareMap(b, a)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    public static boolean compareMap(Map<Object, Object> aMap, Map<Object, Object> bMap) {
-        for (Object aKey : aMap.keySet()) {
-            if (!bMap.containsKey(aKey)) {
-                return false;
-            }
-
-            if (!areObjectsEqual(aMap.get(aKey), bMap.get(aKey))) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public static Pair<Long, Long> getBatchSizeAndInterval(Service service) {
-        Long batchSize = DataAccessor.fieldLong(service, ServiceConstants.FIELD_BATCHSIZE);
-        Long intervalMillis = DataAccessor.fieldLong(service, ServiceConstants.FIELD_INTERVAL_MILLISEC);
-        if (batchSize == null) {
-            batchSize = 1L;
-        }
-
-        if (intervalMillis == null) {
-            intervalMillis = 2000L;
-        }
-        return Pair.of(batchSize, intervalMillis);
-    }
-
-    public static class RevisionData {
-        Map<String, Object> config;
-        boolean isUpdate;
-        boolean isUpgrade;
-        Long revisionId;
-
-        public RevisionData(Map<String, Object> config, boolean isUpdate, boolean isUpgrade) {
-            super();
-            this.config = config;
-            this.isUpdate = isUpdate;
-            this.isUpgrade = isUpgrade;
-        }
-
-        public Map<String, Object> getConfig() {
-            return config;
-        }
-
-        public boolean isUpdate() {
-            return isUpdate;
-        }
-
-        public boolean isUpgrade() {
-            return isUpgrade;
-        }
-
-        public Long getRevisionId() {
-            return revisionId;
-        }
-
-        public void setRevisionId(Long revisionId) {
-            this.revisionId = revisionId;
-        }
-    }
-
-    public static RevisionData generateNewRevisionData(Service service, ServiceRevision currentRevision,
-            Map<String, Object> newData) {
-        Map<String, Object> finalData = new HashMap<>();
-        finalData.putAll(newData);
-        if (currentRevision == null) {
-            return new RevisionData(finalData, false, false);
-        }
-
-        Map<String, Object> currentData = new HashMap<>();
-        currentData.putAll(CollectionUtils.toMap(DataAccessor.field(currentRevision,
-                InstanceConstants.FIELD_REVISION_CONFIG, Object.class)));
-        // 1. process launchConfigs separately
-        MergedLaunchConfigs mergedConfig = processLaunchConfigs(service, finalData, currentData);
-
-        // 2. process top level service keys
-        List<String> updateSkipFields = UPDATE_SKIP_FIELDS.get();
-        boolean isUpdate = mergedConfig.isUpdate();
-        for (String key : finalData.keySet()) {
-            if (updateSkipFields.contains(key)) {
-                continue;
-            }
-            if (currentData.containsKey(key)) {
-                if (!areObjectsEqual(currentData.get(key), finalData.get(key))) {
-                    isUpdate = true;
-                }
-                currentData.remove(key);
-            } else if (finalData.get(key) != null) {
-                isUpdate = true;
-            }
-        }
-
-        finalData.putAll(currentData);
-        finalData.put(ObjectMetaDataManager.ACCOUNT_FIELD, service.getAccountId());
-        finalData.put(InstanceConstants.FIELD_SERVICE_ID, service.getId());
-        return new RevisionData(finalData, isUpdate, mergedConfig.isUpgrade());
-    }
-
-    @SuppressWarnings("unchecked")
-    public static MergedLaunchConfigs processLaunchConfigs(Service service, Map<String, Object> finalData,
-            Map<String, Object> currentData) {
-        Map<String, Object> newPrimaryLaunchConfig = null;
-        if (finalData.get(ServiceConstants.FIELD_LAUNCH_CONFIG) != null) {
-            newPrimaryLaunchConfig = (Map<String, Object>) finalData.get(ServiceConstants.FIELD_LAUNCH_CONFIG);
-        }
-        List<Map<String, Object>> newSecondaryLaunchConfigs = null;
-        if (finalData.get(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS) != null) {
-            newSecondaryLaunchConfigs = (List<Map<String, Object>>) finalData
-                    .get(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS);
-        }
-
-        Map<String, Object> currentPrimaryLaunchConfig = null;
-        if (currentData.get(ServiceConstants.FIELD_LAUNCH_CONFIG) != null) {
-            currentPrimaryLaunchConfig = (Map<String, Object>) currentData.get(ServiceConstants.FIELD_LAUNCH_CONFIG);
-        }
-
-        List<Map<String, Object>> currentSecondaryLaunchConfigs = null;
-        if (currentData.get(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS) != null) {
-            currentSecondaryLaunchConfigs = (List<Map<String, Object>>) currentData
-                    .get(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS);
-        }
-        MergedLaunchConfigs mergedConfig = ServiceUtil.mergeLaunchConfigs(currentPrimaryLaunchConfig,
-                currentSecondaryLaunchConfigs, newPrimaryLaunchConfig,
-                newSecondaryLaunchConfigs, service);
-
-        currentData.remove(ServiceConstants.FIELD_LAUNCH_CONFIG);
-        currentData.remove(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS);
-        finalData.put(ServiceConstants.FIELD_LAUNCH_CONFIG, mergedConfig.getPrimaryLaunchConfig());
-        finalData.put(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS, mergedConfig.getSecondaryLaunchConfigs());
-        return mergedConfig;
-    }
 }

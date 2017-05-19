@@ -102,7 +102,7 @@ def test_external_host_event_hit(new_context):
     c = client.wait_success(c)
 
     assert event.state == 'created'
-    assert host.state == 'purged'
+    assert host.removed is not None
     assert c.removed is not None
 
 
@@ -287,7 +287,7 @@ def test_external_service_event_create(client, context, super_client):
     )
 
     wait_for_condition(client, svc,
-                       lambda x: x.state == 'removed',
+                       lambda x: x.removed is not None,
                        lambda x: 'State is: ' + x.state)
 
 
@@ -299,7 +299,7 @@ def test_external_stack_event_create(client, context, super_client):
              "kind": "environment"}
 
     env = client.create_stack(stack)
-    env = client.wait_success(env)
+    client.wait_success(env)
 
     service = {
         'kind': SERVICE_KIND,

@@ -1,14 +1,14 @@
 package io.cattle.platform.servicediscovery.api.action;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+
 import io.cattle.platform.api.action.ActionHandler;
-import io.cattle.platform.core.addon.ConvertToServiceInput;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.iaas.api.service.RevisionManager;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.servicediscovery.api.service.ServiceDataManager;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
@@ -24,7 +24,7 @@ public class ContainerConvertToServiceActionHandler implements ActionHandler {
     @Inject
     JsonMapper jsonMapper;
     @Inject
-    ServiceDataManager svcDataManager;
+    RevisionManager svcDataManager;
 
     @Override
     public String getName() {
@@ -44,27 +44,23 @@ public class ContainerConvertToServiceActionHandler implements ActionHandler {
                     "Container is already a part of the service");
         }
 
-        if (instance.getRevisionId() == null) {
+        if (instance.getDeploymentUnitId() == null) {
             ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_ACTION,
-                    "Container is not qualified for the conversion; instance revision is missing");
+                    "Container is not qualified for the conversion; legacy or native container");
         }
 
-        final ConvertToServiceInput input = jsonMapper.convertValue(
-                request.getRequestObject(),
-                ConvertToServiceInput.class);
-        String serviceName = input.getName();
         Long stackId = instance.getStackId();
         if (stackId == null) {
             ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_ACTION,
                     "Container is not qualified for the conversion; stackId is null");
         }
-        if (!objMgr.find(Service.class, SERVICE.ACCOUNT_ID, instance.getAccountId(), SERVICE.NAME, serviceName,
+        if (!objMgr.find(Service.class, SERVICE.ACCOUNT_ID, instance.getAccountId(), SERVICE.NAME, instance.getName(),
                 SERVICE.STACK_ID, stackId).isEmpty()) {
             ValidationErrorCodes.throwValidationError(ValidationErrorCodes.NOT_UNIQUE,
-                    "Service name " + serviceName + " already exists in the stack");
+                    "Service name " + instance.getName() + " already exists in the stack");
         }
 
-        return svcDataManager.convertToService(instance, serviceName, stackId);
+        return svcDataManager.convertToService(instance);
     }
 
 

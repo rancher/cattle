@@ -353,7 +353,7 @@ public class TableCleanup extends AbstractJooqDao implements Task {
      * @return
      */
     public static List<ForeignKey<?, ?>> getReferencesFrom(CleanableTable table, List<CleanableTable> others) {
-        List<ForeignKey<?, ?>> keys = new ArrayList<ForeignKey<?, ?>>();
+        List<ForeignKey<?, ?>> keys = new ArrayList<>();
         for (CleanableTable other : others) {
             keys.addAll(table.table.getReferencesFrom(other.table));
         }
@@ -367,15 +367,15 @@ public class TableCleanup extends AbstractJooqDao implements Task {
      * @param tables The list of tables to sort
      */
     public static List<CleanableTable> sortByReferences(List<CleanableTable> tables) {
-        List<CleanableTable> unsorted = new ArrayList<CleanableTable>(tables);
-        List<CleanableTable> sorted = new ArrayList<CleanableTable>();
+        List<CleanableTable> unsorted = new ArrayList<>(tables);
+        List<CleanableTable> sorted = new ArrayList<>();
 
         int tableCount = unsorted.size();
         while (tableCount > 0) {
             for (int i = 0; i < unsorted.size(); i++) {
                 CleanableTable table = unsorted.get(i);
 
-                List<CleanableTable> others = new ArrayList<CleanableTable>(unsorted);
+                List<CleanableTable> others = new ArrayList<>(unsorted);
                 others.remove(i);
 
                 if (!JooqUtils.isReferencedBy(table.table, stripContext(others))) {
@@ -384,7 +384,7 @@ public class TableCleanup extends AbstractJooqDao implements Task {
             }
 
             if (tableCount == unsorted.size()) {
-                log.error("Cycle detected in table references! Aborting.");
+                log.error("Cycle detected in table references! Aborting. " + unsorted);
                 System.exit(1);
             } else {
                 tableCount = unsorted.size();
@@ -402,7 +402,7 @@ public class TableCleanup extends AbstractJooqDao implements Task {
     }
 
     private static List<Table<?>> stripContext(List<CleanableTable> cleanableTables) {
-        List<Table<?>> tables = new ArrayList<Table<?>>();
+        List<Table<?>> tables = new ArrayList<>();
         for (CleanableTable cleanableTable : cleanableTables) {
             tables.add(cleanableTable.table);
         }

@@ -13,10 +13,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 
 import javax.annotation.PostConstruct;
-import javax.servlet.http.Cookie;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 
 public class DefaultHtmlTemplate implements HtmlTemplate {
 
@@ -42,20 +40,6 @@ public class DefaultHtmlTemplate implements HtmlTemplate {
             result = result.replace("%SCHEMAS%", "");
         } else {
             result = result.replace("%SCHEMAS%", schemaUrl.toExternalForm());
-        }
-
-        if ("true".equals(SettingsUtil.getSetting(settings, "api.dev", ""))) {
-            Cookie[] cookies = request.getServletContext().getRequest().getCookies();
-            if (cookies != null) {
-                for (Cookie cookie : cookies) {
-                    if ("js.url".equals(cookie.getName()) && !StringUtils.isEmpty(cookie.getValue())) {
-                        result = result.replace("%JS%", cookie.getValue());
-                    }
-                    if ("css.url".equals(cookie.getName()) && !StringUtils.isEmpty(cookie.getValue())) {
-                        result = result.replace("%CSS%", cookie.getValue());
-                    }
-                }
-            }
         }
 
         result = result.replace("%JS%", SettingsUtil.getSetting(settings, "api.js.url", getJsUrl()));

@@ -8,18 +8,27 @@ import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.core.model.Stack;
-import io.cattle.platform.core.util.ServiceUtil.RevisionData;
+import io.cattle.platform.core.model.Volume;
+import io.cattle.platform.core.model.VolumeTemplate;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 public interface ServiceDao {
+
+    List<InstanceData> getInstanceData(Long id, String uuid);
+
+    List<VolumeData> getVolumeData(long deploymentUnitId);
+
     Service getServiceByExternalId(Long accountId, String externalId);
 
-    ServiceIndex createServiceIndex(Service service, String launchConfigName, String serviceIndex);
+    ServiceIndex createServiceIndex(Long serviceId, String launchConfigName, String serviceIndex);
 
     Service getServiceByServiceIndexId(long serviceIndexId);
 
@@ -68,10 +77,10 @@ public interface ServiceDao {
 
     public Map<Long, List<Instance>> getServiceInstancesWithNoDeploymentUnit();
 
-    List<? extends DeploymentUnit> getServiceDeploymentUnitsOnHost(Host host, boolean transitioningOnly);
+    List<? extends DeploymentUnit> getServiceDeploymentUnitsOnHost(Host host);
 
     DeploymentUnit createDeploymentUnit(long accountId, Long serviceId,
-            long stackId, Map<String, String> labels, String serviceIndex, Long revisionId);
+            long stackId, Long hostId, String serviceIndex, Long revisionId, boolean active);
 
     Stack getOrCreateDefaultStack(long accountId);
 
@@ -79,13 +88,26 @@ public interface ServiceDao {
 
     List<DeploymentUnit> getDeploymentUnitsForRevision(Service service, boolean currentRevision);
 
+    Pair<Instance, ServiceExposeMap> createServiceInstance(Map<String, Object> properties, Long serviceId, Long nextId);
+
+    Long getNextCreate(Long serviceId);
+
+    List<? extends VolumeTemplate> getVolumeTemplates(Long stackId);
+
     /**
      * SERVICE REVISION MANAGEMENT
      */
 
-    void cleanupServiceRevisions(Service service);
+    void cleanupRevisions(Service service);
 
-    RevisionData createServiceRevision(Service service, Map<String, Object> newData, boolean force);
+    public class InstanceData {
+        public Instance instance;
+        public ServiceIndex serviceIndex;
+        public ServiceExposeMap serviceExposeMap;
+    }
 
-    void setForCleanup(DeploymentUnit unit, boolean cleanup);
+    public class VolumeData {
+        public Volume volume;
+        public VolumeTemplate template;
+    }
 }

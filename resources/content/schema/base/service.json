@@ -41,14 +41,11 @@
             "required": false,
             "nullable": true
         },
-        "restart": {
-            "type": "serviceRestart",
-            "create": false
-        },
         "secondaryLaunchConfigs": {
             "type": "array[secondaryLaunchConfig]",
             "create": true,
             "required": false,
+            "nullable": true,
              "attributes" : {
                 "scheduleUpdate" : true
             }
@@ -163,10 +160,10 @@
         "scaleMin": {
             "type": "int",
             "required": false,
-            "nullable": false,
-            "default": 1,
-            "min": 1,
-             "attributes" : {
+            "nullable": true,
+            "default": 0,
+            "min": 0,
+            "attributes" : {
                 "scheduleUpdate" : true
             }
         },
@@ -174,18 +171,18 @@
             "type": "int",
             "required": false,
             "nullable": true,
-            "min": 1,
-             "attributes" : {
+            "min": 0,
+            "attributes" : {
                 "scheduleUpdate" : true
             }
         },
         "scaleIncrement": {
             "type": "int",
             "required": false,
-            "nullable": false,
+            "nullable": true,
             "default": 1,
-            "min": 1    ,
-             "attributes" : {
+            "min": 1,
+            "attributes" : {
                 "scheduleUpdate" : true
             }
         },
@@ -225,12 +222,24 @@
                 "scheduleUpdate" : true
             }
         },
+        "upgradeLastRun": {
+            "type": "int"
+        },
          "networkDriver":{
             "type": "networkDriver",
             "nullable": true,
             "attributes" : {
                 "scheduleUpdate" : true
             }
+        },
+        "completeUpdate": {
+            "type": "boolean",
+            "default": false,
+            "nullable": true
+        },
+        "restartTrigger": {
+            "type": "int",
+            "nullable": true
         }
     },
     "resourceActions" : {
@@ -250,10 +259,6 @@
         },
         "upgrade" : {
             "input" : "serviceUpgrade",
-            "output" : "service"
-        },
-        "restart" : {
-            "input" : "serviceRestart",
             "output" : "service"
         },
         "cancelupgrade": {

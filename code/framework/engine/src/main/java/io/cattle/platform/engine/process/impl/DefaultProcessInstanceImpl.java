@@ -16,12 +16,12 @@ import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.idempotent.Idempotent;
 import io.cattle.platform.engine.idempotent.IdempotentExecution;
 import io.cattle.platform.engine.idempotent.IdempotentRetryException;
+import io.cattle.platform.engine.manager.OnDoneActions;
 import io.cattle.platform.engine.manager.ProcessManager;
 import io.cattle.platform.engine.manager.impl.ProcessRecord;
 import io.cattle.platform.engine.process.ExecutionExceptionHandler;
 import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.LaunchConfiguration;
-import io.cattle.platform.engine.process.Predicate;
 import io.cattle.platform.engine.process.ProcessDefinition;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessInstanceException;
@@ -40,7 +40,6 @@ import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockCallbackNoReturn;
-import io.cattle.platform.lock.definition.DefaultMultiLockDefinition;
 import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.lock.definition.Namespace;
 import io.cattle.platform.lock.exception.FailedToAcquireLockException;
@@ -66,7 +65,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
     ProcessServiceContext context;
     ProcessInstanceContext instanceContext;
-    Stack<ProcessInstanceContext> instanceContextHistory = new Stack<ProcessInstanceContext>();
+    Stack<ProcessInstanceContext> instanceContextHistory = new Stack<>();
 
     ProcessRecord record;
     ProcessLog processLog;
@@ -129,6 +128,8 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
     }
 
     protected void openLog(EngineContext engineContext) {
+        OnDoneActions.push();
+
         if (processLog == null) {
             ParentLog parentLog = engineContext.peekLog();
             if (parentLog == null) {
@@ -148,6 +149,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
     }
 
     protected void closeLog(EngineContext engineContext) {
+        OnDoneActions.pop();
         engineContext.popLog();
     }
 
@@ -308,21 +310,11 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                         getResourceId() + "]");
             }
 
-
             preRunStateCheck();
 
             if (shouldCancel()) {
                 throw new ProcessCancelException("State [" + instanceContext.getState().getState() + "] is not valid for process [" +
                         getName() + ":" + getId() + "] on resource [" + getResourceId() + "]");
-            }
-
-            if (schedule) {
-                Predicate predicate = record.getPredicate();
-                if (predicate != null) {
-                    if (!predicate.evaluate(this.instanceContext.getState(), this, this.instanceContext.getProcessDefinition())) {
-                        throw new ProcessCancelException("Predicate is not valid");
-                    }
-                }
             }
 
             if (instanceContext.getState().isStart(record)) {
@@ -388,6 +380,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
             }
         });
+        record.setRunAfter(null);
         throw new ProcessExecutionExitException(SCHEDULED);
     }
 
@@ -604,6 +597,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         assertState(previousState);
 
         if (chainProcess != null) {
+            OnDoneActions.runAndClear();
             scheduleChain(chainProcess);
             chained = true;
         }
@@ -627,12 +621,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
         LockDefinition lockDef = state.getProcessLock();
         if (schedule) {
-            LockDefinition scheduleLock = new Namespace("schedule").getLockDefinition(lockDef);
-            if (record.getPredicate() == null) {
-                lockDef = scheduleLock;
-            } else {
-                lockDef = new DefaultMultiLockDefinition(lockDef, scheduleLock);
-            }
+            lockDef = new Namespace("schedule").getLockDefinition(lockDef);
         }
 
         instanceContext.setProcessLock(lockDef);

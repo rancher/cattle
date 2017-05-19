@@ -5,18 +5,9 @@ import io.github.ibuildthecloud.gdapi.annotation.Type;
 
 @Type(list = false)
 public class ContainerUpgrade {
-    String revisionId;
     Object config;
 
-    @Field(typeString = "reference[instanceRevision]")
-    public String getRevisionId() {
-        return revisionId;
-    }
-
-    public void setRevisionId(String revisionId) {
-        this.revisionId = revisionId;
-    }
-
+    @Field
     public Object getConfig() {
         return config;
     }

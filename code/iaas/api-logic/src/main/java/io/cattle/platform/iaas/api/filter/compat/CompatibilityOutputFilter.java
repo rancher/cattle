@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 public class CompatibilityOutputFilter implements ResourceOutputFilter {
 
     private static final Logger log = LoggerFactory.getLogger(CompatibilityOutputFilter.class);
-    
+
     @Override
     public Resource filter(ApiRequest request, Object original, Resource converted) {
         if (request == null) {
@@ -39,7 +39,6 @@ public class CompatibilityOutputFilter implements ResourceOutputFilter {
             break;
         case ServiceConstants.KIND_SERVICE:
         case ServiceConstants.KIND_KUBERNETES_SERVICE:
-        case ServiceConstants.KIND_COMPOSE_SERVICE:
         case ServiceConstants.KIND_LOAD_BALANCER_SERVICE:
         case ServiceConstants.KIND_DNS_SERVICE:
         case ServiceConstants.KIND_EXTERNAL_SERVICE:
@@ -65,7 +64,7 @@ public class CompatibilityOutputFilter implements ResourceOutputFilter {
         convertURLs(converted, "/stacks/", "/environments/", converted.getLinks());
         convertURLs(converted, "/stacks/", "/environments/", converted.getActions());
     }
-    
+
     protected void mapService(ApiRequest apiRequest, Object original, Resource converted) {
         UrlBuilder urlBuilder = apiRequest.getUrlBuilder();
         IdFormatter idF = ApiContext.getContext().getIdFormatter();
@@ -82,7 +81,7 @@ public class CompatibilityOutputFilter implements ResourceOutputFilter {
         convertURLs(converted, "/stacks/", "/environments/", converted.getLinks());
         convertURLs(converted, "/stacks/", "/environments/", converted.getActions());
     }
-    
+
     protected void convertURLs(Resource converted, String from, String to, Map<String, URL> links) {
         Map<String, URL> newLinks = new TreeMap<>();
         for (String key : links.keySet()) {
@@ -99,12 +98,11 @@ public class CompatibilityOutputFilter implements ResourceOutputFilter {
         }
         links.putAll(newLinks);
     }
-    
+
     @Override
     public String[] getTypes() {
         return new String[] { "stack", ServiceConstants.KIND_SERVICE,
                 ServiceConstants.KIND_KUBERNETES_SERVICE,
-                ServiceConstants.KIND_COMPOSE_SERVICE,
                 ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
                 ServiceConstants.KIND_DNS_SERVICE,
                 ServiceConstants.KIND_EXTERNAL_SERVICE,

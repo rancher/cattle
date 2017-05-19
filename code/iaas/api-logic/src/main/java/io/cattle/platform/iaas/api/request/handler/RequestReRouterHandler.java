@@ -22,7 +22,7 @@ public class RequestReRouterHandler extends AbstractApiRequestHandler {
             routeV1(request);
         }
     }
-    
+
     protected void routeV1(ApiRequest request) throws IOException {
         if (request.getType() == null) {
             return;
@@ -30,13 +30,11 @@ public class RequestReRouterHandler extends AbstractApiRequestHandler {
 
         switch (request.getType()) {
         case "environment":
-        case "composeProject":
         case "kubernetesStack":
             routeV1Environment(request);
             break;
         case ServiceConstants.KIND_SERVICE:
         case ServiceConstants.KIND_KUBERNETES_SERVICE:
-        case ServiceConstants.KIND_COMPOSE_SERVICE:
         case ServiceConstants.KIND_LOAD_BALANCER_SERVICE:
         case ServiceConstants.KIND_DNS_SERVICE:
         case ServiceConstants.KIND_EXTERNAL_SERVICE:
@@ -46,7 +44,7 @@ public class RequestReRouterHandler extends AbstractApiRequestHandler {
             break;
         }
     }
-    
+
     protected void routeV1Environment(ApiRequest request) throws IOException {
         request.setSchemaVersion("v2-beta");
         if ("environment".equals(request.getType())) {
@@ -57,7 +55,7 @@ public class RequestReRouterHandler extends AbstractApiRequestHandler {
     protected void routeV1Service(ApiRequest request) throws IOException {
         Map<String, Object> body = CollectionUtils.toMap(request.getRequestObject());
         Object value = body.get("environmentId");
-        if (value != null){ 
+        if (value != null){
             body.put("stackId", value);
         }
         request.setSchemaVersion("v2-beta");

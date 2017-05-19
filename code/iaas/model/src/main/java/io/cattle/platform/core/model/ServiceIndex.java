@@ -37,17 +37,6 @@ public interface ServiceIndex extends java.io.Serializable {
 	public java.lang.String getName();
 
 	/**
-	 * Setter for <code>cattle.service_index.account_id</code>.
-	 */
-	public void setAccountId(java.lang.Long value);
-
-	/**
-	 * Getter for <code>cattle.service_index.account_id</code>.
-	 */
-	@javax.persistence.Column(name = "account_id", precision = 19)
-	public java.lang.Long getAccountId();
-
-	/**
 	 * Setter for <code>cattle.service_index.kind</code>.
 	 */
 	public void setKind(java.lang.String value);

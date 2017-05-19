@@ -96,7 +96,6 @@
             </activation>
             <modules>
                 <module>code/implementation/activity-log</module>
-                <module>code/implementation/agent-instance-impl</module>
                 <module>code/implementation/docker/api</module>
                 <module>code/implementation/docker/common</module>
                 <module>code/implementation/docker/compute</module>
@@ -108,6 +107,7 @@
                 <module>code/implementation/hazelcast/lock</module>
                 <module>code/implementation/host-api</module>
                 <module>code/implementation/host-stats</module>
+                <module>code/implementation/inator</module>
                 <module>code/implementation/register</module>
                 <module>code/implementation/sample-setup</module>
                 <module>code/implementation/settings-api</module>
