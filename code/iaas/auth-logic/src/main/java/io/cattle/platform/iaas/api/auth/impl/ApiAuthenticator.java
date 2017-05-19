@@ -2,6 +2,7 @@ package io.cattle.platform.iaas.api.auth.impl;
 
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
+import io.cattle.platform.api.parser.ApiRequestParser;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.dao.AccountDao;
@@ -184,14 +185,17 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         String parsedProjectId = null;
 
         String projectId = request.getServletContext().getRequest().getHeader(ProjectConstants.PROJECT_HEADER);
-        if (projectId == null || projectId.isEmpty()) {
+        if (StringUtils.isEmpty(projectId)) {
             projectId = request.getServletContext().getRequest().getParameter("projectId");
         }
-        if (projectId == null || projectId.isEmpty()) {
+        if (StringUtils.isEmpty(projectId)) {
             projectId = (String) request.getAttribute(ProjectConstants.PROJECT_HEADER);
         }
+        if (StringUtils.isEmpty(projectId)) {
+            projectId = ApiRequestParser.parseProjectIdFromPath(request);
+        }
 
-        if (projectId == null || projectId.isEmpty()) {
+        if (StringUtils.isEmpty(projectId)) {
             String accessKey = request.getServletContext().getRequest().getHeader(ProjectConstants.CLIENT_ACCESS_KEY);
             if (StringUtils.isNotBlank(accessKey)) {
                 Account account = authDao.getAccountByAccessKey(accessKey);
