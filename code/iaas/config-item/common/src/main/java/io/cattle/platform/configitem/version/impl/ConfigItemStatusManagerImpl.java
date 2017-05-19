@@ -6,6 +6,7 @@ import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.configitem.exception.ConfigTimeoutException;
+import io.cattle.platform.configitem.model.AppliedItemVersion;
 import io.cattle.platform.configitem.model.Client;
 import io.cattle.platform.configitem.model.ItemVersion;
 import io.cattle.platform.configitem.request.ConfigUpdateItem;
@@ -72,22 +73,30 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
     @Override
     public boolean runUpdateForEvent(final String itemName, final ConfigUpdate update, final Client client, final Runnable run) {
         boolean found = false;
+        Long requestedVersion = null;
         for (ConfigUpdateItem item : update.getData().getItems()) {
             if (itemName.equals(item.getName())) {
                 found = true;
+                requestedVersion = item.getRequestedVersion();
+                break;
             }
         }
 
         if (!found) {
-            return false;
+            return true;
         }
 
+        Long finalRequestedVersion = requestedVersion;
         return lockManager.tryLock(new ConfigItemProcessLock(itemName, client), new LockCallback<Object>() {
             @Override
             public Object doWithLock() {
                 ItemVersion itemVersion = getRequestedVersion(client, itemName);
                 if (itemVersion == null) {
-                    return null;
+                    return new Object();
+                }
+                if (finalRequestedVersion != null && (itemVersion instanceof AppliedItemVersion) &&
+                        ((AppliedItemVersion) itemVersion).getAppliedVersion() >= finalRequestedVersion) {
+                    return new Object();
                 }
                 run.run();
                 setApplied(client, itemName, itemVersion);
@@ -99,7 +108,7 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
 
 
     protected Map<String, ConfigItemStatus> getStatus(ConfigUpdateRequest request) {
-        Map<String, ConfigItemStatus> statuses = new HashMap<String, ConfigItemStatus>();
+        Map<String, ConfigItemStatus> statuses = new HashMap<>();
 
         for (ConfigItemStatus status : configItemStatusDao.listItems(request)) {
             statuses.put(status.getName(), status);
@@ -117,7 +126,7 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
         log.trace("ITEM UPDATE: for [{}]", request.getClient());
         Client client = request.getClient();
         Map<String, ConfigItemStatus> statuses = getStatus(request);
-        List<ConfigUpdateItem> toTrigger = new ArrayList<ConfigUpdateItem>();
+        List<ConfigUpdateItem> toTrigger = new ArrayList<>();
 
         for (ConfigUpdateItem item : request.getItems()) {
             String name = item.getName();
@@ -231,7 +240,7 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
     protected List<ConfigUpdateItem> getNeedsUpdating(ConfigUpdateRequest request, boolean checkVersions) {
         Client client = request.getClient();
         Map<String, ConfigItemStatus> statuses = getStatus(request);
-        List<ConfigUpdateItem> toTrigger = new ArrayList<ConfigUpdateItem>();
+        List<ConfigUpdateItem> toTrigger = new ArrayList<>();
 
         for (ConfigUpdateItem item : request.getItems()) {
             String name = item.getName();

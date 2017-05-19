@@ -22,7 +22,8 @@ mkdir -p $RUNTIME_DIR
 
 CMD="java
     -Xmx1024m
-    -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled
+    -XX:+UseG1GC -XX:+UseStringDeduplication
+    -Didempotent.checks=true
     -Dmodule.profile.hazelcast.eventing=true
     -Dspring.profiles.active=hazelcast.eventing,hazelcast.lock,hazelcast.config.basic
     -Dconfig.item.dynamic=false
@@ -31,7 +32,7 @@ CMD="java
     -Dagent.ping.resources.every=1
     -Dprocess.retry_max_wait.millis=1
     -Dprocess.running_delay.millis=1
-    -Dservice.execution.credits=1000
+    -Dexecution.tokens.max=1000
     -Dcattle.http.port=${CATTLE_TEST_HTTP_PORT:-8081}
     -Dcattle.http.proxied.port=${CATTLE_TEST_HTTP_PROXIED_PORT:-8082}
     -Dlogback.log.dir=$RUNTIME_DIR/logs/

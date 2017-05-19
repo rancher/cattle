@@ -158,15 +158,48 @@ public interface DeploymentUnit extends java.io.Serializable {
 	public java.lang.Long getServiceId();
 
 	/**
-	 * Setter for <code>cattle.deployment_unit.cleanup</code>.
+	 * Setter for <code>cattle.deployment_unit.environment_id</code>.
 	 */
-	public void setCleanup(java.lang.Boolean value);
+	public void setStackId(java.lang.Long value);
 
 	/**
-	 * Getter for <code>cattle.deployment_unit.cleanup</code>.
+	 * Getter for <code>cattle.deployment_unit.environment_id</code>.
 	 */
-	@javax.persistence.Column(name = "cleanup", nullable = false, precision = 1)
-	public java.lang.Boolean getCleanup();
+	@javax.persistence.Column(name = "environment_id", nullable = false, precision = 19)
+	public java.lang.Long getStackId();
+
+	/**
+	 * Setter for <code>cattle.deployment_unit.health_state</code>.
+	 */
+	public void setHealthState(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.deployment_unit.health_state</code>.
+	 */
+	@javax.persistence.Column(name = "health_state", length = 255)
+	public java.lang.String getHealthState();
+
+	/**
+	 * Setter for <code>cattle.deployment_unit.host_id</code>.
+	 */
+	public void setHostId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.deployment_unit.host_id</code>.
+	 */
+	@javax.persistence.Column(name = "host_id", precision = 19)
+	public java.lang.Long getHostId();
+
+	/**
+	 * Setter for <code>cattle.deployment_unit.requested_revision_id</code>.
+	 */
+	public void setRequestedRevisionId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.deployment_unit.requested_revision_id</code>.
+	 */
+	@javax.persistence.Column(name = "requested_revision_id", precision = 19)
+	public java.lang.Long getRequestedRevisionId();
 
 	/**
 	 * Setter for <code>cattle.deployment_unit.revision_id</code>.
@@ -178,17 +211,6 @@ public interface DeploymentUnit extends java.io.Serializable {
 	 */
 	@javax.persistence.Column(name = "revision_id", precision = 19)
 	public java.lang.Long getRevisionId();
-
-	/**
-	 * Setter for <code>cattle.deployment_unit.cleanup_time</code>.
-	 */
-	public void setCleanupTime(java.util.Date value);
-
-	/**
-	 * Getter for <code>cattle.deployment_unit.cleanup_time</code>.
-	 */
-	@javax.persistence.Column(name = "cleanup_time")
-	public java.util.Date getCleanupTime();
 
 	// -------------------------------------------------------------------------
 	// FROM and INTO

@@ -4,6 +4,7 @@ public class PooledResourceOptions {
 
     String requestedItem;
     String qualifier = ResourcePoolManager.DEFAULT_QUALIFIER;
+    String subOwner = null;
     int count = 1;
 
     public String getQualifier() {
@@ -40,4 +41,16 @@ public class PooledResourceOptions {
         this.requestedItem = requestedItem;
     }
 
+    public String getSubOwner() {
+        return subOwner;
+    }
+
+    public void setSubOwner(String subOwner) {
+        this.subOwner = subOwner;
+    }
+
+    public PooledResourceOptions withSubOwner(String subOwner) {
+        this.subOwner = subOwner;
+        return this;
+    }
 }

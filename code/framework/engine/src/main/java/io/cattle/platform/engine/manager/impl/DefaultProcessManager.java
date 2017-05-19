@@ -23,6 +23,7 @@ import io.cattle.platform.util.type.InitializationTask;
 import io.cattle.platform.util.type.NamedUtils;
 
 import java.lang.ref.WeakReference;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,10 +45,10 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
     ProcessRecordDao processRecordDao;
     @Inject
     List<ProcessDefinition> definitionList;
-    Map<String, ProcessDefinition> definitions = new HashMap<String, ProcessDefinition>();
+    Map<String, ProcessDefinition> definitions = new HashMap<>();
     @Inject
     LockManager lockManager;
-    DelayQueue<DelayedObject<WeakReference<ProcessInstance>>> toPersist = new DelayQueue<DelayedObject<WeakReference<ProcessInstance>>>();
+    DelayQueue<DelayedObject<WeakReference<ProcessInstance>>> toPersist = new DelayQueue<>();
     @Inject
     ScheduledExecutorService executor;
     @Inject
@@ -79,6 +80,10 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
     protected ProcessInstance createProcessInstance(ProcessRecord record, boolean schedule, boolean replay) {
         if (record == null)
             return null;
+
+        if (record.getRunAfter() != null && record.getRunAfter().after(new Date())) {
+            return null;
+        }
 
         ProcessDefinition processDef = definitions.get(record.getProcessName());
 
@@ -176,8 +181,8 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
     }
 
     protected void queue(ProcessInstance process) {
-        WeakReference<ProcessInstance> ref = new WeakReference<ProcessInstance>(process);
-        toPersist.put(new DelayedObject<WeakReference<ProcessInstance>>(System.currentTimeMillis() + EXECUTION_DELAY.get(), ref));
+        WeakReference<ProcessInstance> ref = new WeakReference<>(process);
+        toPersist.put(new DelayedObject<>(System.currentTimeMillis() + EXECUTION_DELAY.get(), ref));
     }
 
     @Override

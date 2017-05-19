@@ -6,15 +6,18 @@ import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.framework.event.FrameworkEvents;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class ObjectUtils {
 
@@ -170,6 +173,10 @@ public class ObjectUtils {
     }
 
     public static void publishChanged(EventService eventService, ObjectManager objectManager, Object obj) {
+        if (obj == null) {
+            return;
+        }
+
         Object accountId = getAccountId(obj);
         Object resourceId = getId(obj);
         String type = objectManager.getType(obj);
@@ -186,6 +193,95 @@ public class ObjectUtils {
                 .withResourceId(toString(resourceId));
 
         eventService.publish(event);
+    }
+
+    public static boolean areObjectsEqual(Object a, Object b) {
+        // covers both being nulls and primitives
+        if (a == b) {
+            return true;
+        }
+
+        // covers both being not null
+        if ((a != null) != (b != null)) {
+            if (a instanceof String) {
+                if (b == null) {
+                    b = "";
+                }
+            } else if (b instanceof String) {
+                if (a == null) {
+                    a = "";
+                }
+            } else {
+                return false;
+            }
+        }
+
+        if (a instanceof String || a instanceof Long || a instanceof Integer || a instanceof Boolean) {
+            return StringUtils.equalsIgnoreCase(a.toString(), b.toString());
+        } else if (a instanceof List) {
+            return compareLists(a, b);
+        } else if (a instanceof Map) {
+            return compareMaps(CollectionUtils.toMap(a), CollectionUtils.toMap(b));
+        } else {
+            areObjectsEqual(CollectionUtils.toMap(a), CollectionUtils.toMap(b));
+        }
+
+        return false;
+    }
+
+
+    @SuppressWarnings("unchecked")
+    private static boolean compareLists(Object a, Object b) {
+        for (Object aItem : (List<Object>) a) {
+            boolean found = false;
+            for (Object bItem : (List<Object>) b) {
+                if (areObjectsEqual(aItem, bItem)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                return false;
+            }
+        }
+
+        for (Object bItem : (List<Object>) b) {
+            boolean found = false;
+            for (Object aItem : (List<Object>) a) {
+                if (areObjectsEqual(aItem, bItem)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean compareMaps(Map<Object, Object> a, Map<Object, Object> b) {
+        if (!compareMap(a, b)) {
+            return false;
+        }
+        if (!compareMap(b, a)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private static boolean compareMap(Map<Object, Object> aMap, Map<Object, Object> bMap) {
+        for (Object aKey : aMap.keySet()) {
+            if (!bMap.containsKey(aKey)) {
+                return false;
+            }
+
+            if (!areObjectsEqual(aMap.get(aKey), bMap.get(aKey))) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

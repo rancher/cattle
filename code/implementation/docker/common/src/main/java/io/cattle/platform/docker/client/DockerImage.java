@@ -13,7 +13,7 @@ public class DockerImage {
     public static final String DEFAULT_REGISTRY = "index.docker.io";
 
     public static final String KIND_PREFIX = "docker:";
-    
+
     public static final String SIM_PREFIX = "sim:";
 
     String fullName, serverAddress;
@@ -38,7 +38,7 @@ public class DockerImage {
         }
         String[] subMatches = findAllSubMatches(uuid, Regexp.REFERENCE_REGEXP);
         if (subMatches.length == 0) {
-            if (uuid == "") {
+            if (StringUtils.isBlank(uuid)) {
                 return null;
             }
             String[] subMatches2 = findAllSubMatches(uuid.toLowerCase(), Regexp.REFERENCE_REGEXP);
@@ -84,14 +84,14 @@ public class DockerImage {
 
         return result.toArray(new String[result.size()]);
     }
-    
+
     public static String resolveHostName(String name) {
         String hostname = "";
         int i = name.indexOf("/");
         if (i == -1 || (!(name.substring(0, i).contains(".") || name.substring(0, i).contains(":"))
                 && !name.substring(0, i).equals("localhost"))) {
             return DEFAULT_REGISTRY;
-        } 
+        }
         else {
             hostname = name.substring(0, i);
         }

@@ -1,7 +1,8 @@
 package io.cattle.platform.docker.transform;
 
+import static io.cattle.platform.core.constants.DockerInstanceConstants.*;
 import static io.cattle.platform.core.constants.InstanceConstants.*;
-import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
+
 import io.cattle.platform.core.addon.BlkioDeviceOption;
 import io.cattle.platform.core.addon.LogConfig;
 import io.cattle.platform.core.addon.Ulimit;
@@ -30,7 +31,6 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.github.dockerjava.api.command.InspectContainerResponse.ContainerState;
 import com.github.dockerjava.api.model.Capability;
 import com.github.dockerjava.api.model.ContainerConfig;
 import com.github.dockerjava.api.model.Device;
@@ -73,7 +73,7 @@ public class DockerTransformerImpl implements DockerTransformer {
             return volumes;
         }
 
-        volumes = new ArrayList<DockerInspectTransformVolume>();
+        volumes = new ArrayList<>();
         InspectContainerResponse inspect = transformInspect(fromInspect);
         HostConfig hostConfig = inspect.getHostConfig();
         VolumeBind[] volumeBinds = null;
@@ -99,7 +99,7 @@ public class DockerTransformerImpl implements DockerTransformer {
         if (mounts == null) {
             return null;
         }
-        List<DockerInspectTransformVolume> volumes = new ArrayList<DockerInspectTransformVolume>();
+        List<DockerInspectTransformVolume> volumes = new ArrayList<>();
         for (Object mount : mounts) {
             Map<String, Object> mountObj = (Map<String, Object>)mount;
             String am = ((boolean)mountObj.get(ACCESS_MODE)) ? "rw" : "ro";
@@ -131,7 +131,7 @@ public class DockerTransformerImpl implements DockerTransformer {
     Map<String, String> rwMap(Map<String, Boolean> volumeRws) {
         // TODO When this bug is fixed, switch to using java-docker's volumesRW
         // https://github.com/docker-java/docker-java/issues/205
-        Map<String, String> rwMap = new HashMap<String, String>();
+        Map<String, String> rwMap = new HashMap<>();
 
         if (volumeRws == null) {
             return rwMap;
@@ -147,7 +147,7 @@ public class DockerTransformerImpl implements DockerTransformer {
     }
 
     Set<String> bindSet(String[] binds) {
-        Set<String> hostBindMounts = new HashSet<String>();
+        Set<String> hostBindMounts = new HashSet<>();
         if (binds == null)
             return hostBindMounts;
 
@@ -390,7 +390,7 @@ public class DockerTransformerImpl implements DockerTransformer {
 
         setField(instance, FIELD_LOG_CONFIG, logConfig);
     }
-    
+
     @SuppressWarnings("unchecked")
     void setUlimit(Instance instance, Map<String, Object> fromInspect) {
         Object ulimits = CollectionUtils.getNestedValue(fromInspect, HOST_CONFIG, "Ulimits");
@@ -430,7 +430,7 @@ public class DockerTransformerImpl implements DockerTransformer {
     public void setLabels(Instance instance, Map<String, Object> fromInspect) {
         // Labels not yet implemented in docker-java. Need to use the raw map
         Object l = CollectionUtils.getNestedValue(fromInspect, "Config", "Labels");
-        Map<String, Object> cleanedLabels = new HashMap<String, Object>();
+        Map<String, Object> cleanedLabels = new HashMap<>();
         if (l instanceof Map) {
             Map labels = (Map)l;
             for (Object key : labels.keySet()) {
@@ -488,7 +488,7 @@ public class DockerTransformerImpl implements DockerTransformer {
             devices = new Device[0];
         }
 
-        List<String> instanceDevices = new ArrayList<String>();
+        List<String> instanceDevices = new ArrayList<>();
         for (Device d : devices) {
             StringBuilder fullDevice = new StringBuilder(d.getPathOnHost()).append(":").append(d.getPathInContainer()).append(":");
             if (StringUtils.isEmpty(d.getcGroupPermissions())) {
@@ -518,7 +518,7 @@ public class DockerTransformerImpl implements DockerTransformer {
             caps = new Capability[0];
         }
 
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         for (Capability cap : caps) {
             list.add(cap.toString());
         }
@@ -530,7 +530,7 @@ public class DockerTransformerImpl implements DockerTransformer {
             lxcConf = new LxcConf[0];
         }
 
-        Map<String, String> instanceLxcConf = new HashMap<String, String>();
+        Map<String, String> instanceLxcConf = new HashMap<>();
         for (LxcConf lxc : lxcConf) {
             instanceLxcConf.put(lxc.getKey(), lxc.getValue());
         }
@@ -543,7 +543,7 @@ public class DockerTransformerImpl implements DockerTransformer {
             exposedPorts = new ExposedPort[0];
         }
 
-        List<String> ports = new ArrayList<String>();
+        List<String> ports = new ArrayList<>();
         for (ExposedPort ep : exposedPorts) {
             String port = ep.toString();
 
@@ -565,7 +565,7 @@ public class DockerTransformerImpl implements DockerTransformer {
     }
 
     void setVolumes(Instance instance, Map<String, ?> volumes, String[] binds) {
-        List<String> dataVolumes = new ArrayList<String>();
+        List<String> dataVolumes = new ArrayList<>();
         if (volumes != null) {
             dataVolumes.addAll(volumes.keySet());
         }
@@ -582,7 +582,7 @@ public class DockerTransformerImpl implements DockerTransformer {
             value = new String[0];
         }
 
-        List<String> list = new ArrayList<String>(Arrays.asList(value));
+        List<String> list = new ArrayList<>(Arrays.asList(value));
         setField(instance, field, list);
     }
 
@@ -591,7 +591,7 @@ public class DockerTransformerImpl implements DockerTransformer {
             cmd = new String[0];
         }
 
-        List<String> args = new ArrayList<String>();
+        List<String> args = new ArrayList<>();
         args.addAll(Arrays.asList(cmd));
         setField(instance, FIELD_COMMAND, args);
     }
@@ -601,7 +601,7 @@ public class DockerTransformerImpl implements DockerTransformer {
             env = new String[0];
         }
 
-        Map<String, String> envMap = new HashMap<String, String>();
+        Map<String, String> envMap = new HashMap<>();
         for (String e : env) {
             String[] kvp = e.split("=", 2);
             if (kvp.length == 2) {
@@ -647,15 +647,20 @@ public class DockerTransformerImpl implements DockerTransformer {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public int getExitCode(Instance instance) {
-        Map<String, Object> inspectData = new HashMap<>();
-        if (instance.getData().get(FIELD_DOCKER_INSPECT) == null) {
-            return 0;
+        Object obj = CollectionUtils.getNestedValue(instance.getData(),
+                FIELD_DOCKER_INSPECT,
+                "State",
+                "ExitCode");
+        if (obj instanceof Number) {
+            return ((Number) obj).intValue();
         }
-        inspectData = (Map<String, Object>) instance.getData().get(FIELD_DOCKER_INSPECT);
-        InspectContainerResponse inspect = jsonMapper.convertValue(inspectData, InspectContainerResponse.class);
-        ContainerState state = inspect.getState();
-        return state.getExitCode();
+        if (obj == null) {
+            Integer fieldCode = DataAccessor.fieldInteger(instance, InstanceConstants.FIELD_EXIT_CODE);
+            if (fieldCode != null) {
+                return fieldCode.intValue();
+            }
+        }
+        return 0;
     }
 }

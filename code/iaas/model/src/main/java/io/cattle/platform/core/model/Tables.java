@@ -39,6 +39,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.AuthTokenTable AUTH_TOKEN = io.cattle.platform.core.model.tables.AuthTokenTable.AUTH_TOKEN;
 
 	/**
+	 * The table cattle.backoff
+	 */
+	public static final io.cattle.platform.core.model.tables.BackoffTable BACKOFF = io.cattle.platform.core.model.tables.BackoffTable.BACKOFF;
+
+	/**
 	 * The table cattle.backup
 	 */
 	public static final io.cattle.platform.core.model.tables.BackupTable BACKUP = io.cattle.platform.core.model.tables.BackupTable.BACKUP;
@@ -209,11 +214,6 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.InstanceLinkTable INSTANCE_LINK = io.cattle.platform.core.model.tables.InstanceLinkTable.INSTANCE_LINK;
 
 	/**
-	 * The table cattle.instance_revision
-	 */
-	public static final io.cattle.platform.core.model.tables.InstanceRevisionTable INSTANCE_REVISION = io.cattle.platform.core.model.tables.InstanceRevisionTable.INSTANCE_REVISION;
-
-	/**
 	 * The table cattle.ip_address
 	 */
 	public static final io.cattle.platform.core.model.tables.IpAddressTable IP_ADDRESS = io.cattle.platform.core.model.tables.IpAddressTable.IP_ADDRESS;
@@ -289,6 +289,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.ResourcePoolTable RESOURCE_POOL = io.cattle.platform.core.model.tables.ResourcePoolTable.RESOURCE_POOL;
 
 	/**
+	 * The table cattle.revision
+	 */
+	public static final io.cattle.platform.core.model.tables.RevisionTable REVISION = io.cattle.platform.core.model.tables.RevisionTable.REVISION;
+
+	/**
 	 * The table cattle.scheduled_upgrade
 	 */
 	public static final io.cattle.platform.core.model.tables.ScheduledUpgradeTable SCHEDULED_UPGRADE = io.cattle.platform.core.model.tables.ScheduledUpgradeTable.SCHEDULED_UPGRADE;
@@ -327,11 +332,6 @@ public class Tables {
 	 * The table cattle.service_log
 	 */
 	public static final io.cattle.platform.core.model.tables.ServiceLogTable SERVICE_LOG = io.cattle.platform.core.model.tables.ServiceLogTable.SERVICE_LOG;
-
-	/**
-	 * The table cattle.service_revision
-	 */
-	public static final io.cattle.platform.core.model.tables.ServiceRevisionTable SERVICE_REVISION = io.cattle.platform.core.model.tables.ServiceRevisionTable.SERVICE_REVISION;
 
 	/**
 	 * The table cattle.setting

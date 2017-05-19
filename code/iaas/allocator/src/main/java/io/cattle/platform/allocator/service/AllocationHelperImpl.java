@@ -92,7 +92,7 @@ public class AllocationHelperImpl implements AllocationHelper {
     private List<Constraint> getHostAffinityConstraintsFromLabels(Map<String, String> labelConstraints) {
         List<Constraint> constraints = extractConstraintsFromLabels(labelConstraints, null);
 
-        List<Constraint> hostConstraints = new ArrayList<Constraint>();
+        List<Constraint> hostConstraints = new ArrayList<>();
         for (Constraint constraint : constraints) {
             if (constraint instanceof HostAffinityConstraint) {
                 hostConstraints.add(constraint);
@@ -152,7 +152,7 @@ public class AllocationHelperImpl implements AllocationHelper {
 
     // TODO: Fix repeated DB call even if DB's cache no longer hits the disk
     private Set<String> getServiceNamesInStack(long stackId) {
-        Set<String> servicesInEnv = new HashSet<String>();
+        Set<String> servicesInEnv = new HashSet<>();
 
         List<? extends Service> services = objectManager.find(Service.class, SERVICE.STACK_ID, stackId, SERVICE.REMOVED,
                 null);
@@ -165,7 +165,7 @@ public class AllocationHelperImpl implements AllocationHelper {
     @Override
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public List<Constraint> extractConstraintsFromEnv(Map env) {
-        List<Constraint> constraints = new ArrayList<Constraint>();
+        List<Constraint> constraints = new ArrayList<>();
         if (env != null) {
             Set<String> affinityDefinitions = env.keySet();
             for (String affinityDef : affinityDefinitions) {
@@ -202,7 +202,7 @@ public class AllocationHelperImpl implements AllocationHelper {
     @Override
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public List<Constraint> extractConstraintsFromLabels(Map labels, Instance instance) {
-        List<Constraint> constraints = new ArrayList<Constraint>();
+        List<Constraint> constraints = new ArrayList<>();
         if (labels == null) {
             return constraints;
         }
@@ -308,7 +308,7 @@ public class AllocationHelperImpl implements AllocationHelper {
     }
 
     private List<AffinityConstraintDefinition> extractAffinityConstraintDefinitionFromLabel(String opStr, String valueStr, boolean keyValuePairs) {
-        List<AffinityConstraintDefinition> defs = new ArrayList<AffinityConstraintDefinition>();
+        List<AffinityConstraintDefinition> defs = new ArrayList<>();
 
         AffinityOps affinityOp = null;
         for (AffinityOps op : AffinityOps.values()) {
@@ -398,7 +398,7 @@ public class AllocationHelperImpl implements AllocationHelper {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private List<LockDefinition> extractAllocationLockDefinitionsFromEnv(Map env) {
-        List<LockDefinition> constraints = new ArrayList<LockDefinition>();
+        List<LockDefinition> constraints = new ArrayList<>();
         if (env != null) {
             Set<String> affinityDefinitions = env.keySet();
             for (String affinityDef : affinityDefinitions) {

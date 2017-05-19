@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "service_index", schema = "cattle")
-public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ServiceIndexRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.Long, java.lang.String>, io.cattle.platform.core.model.ServiceIndex {
+public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ServiceIndexRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record14<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.Long, java.lang.String>, io.cattle.platform.core.model.ServiceIndex {
 
-	private static final long serialVersionUID = 2035387994;
+	private static final long serialVersionUID = -969885715;
 
 	/**
 	 * Setter for <code>cattle.service_index.id</code>.
@@ -51,28 +51,11 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	}
 
 	/**
-	 * Setter for <code>cattle.service_index.account_id</code>.
-	 */
-	@Override
-	public void setAccountId(java.lang.Long value) {
-		setValue(2, value);
-	}
-
-	/**
-	 * Getter for <code>cattle.service_index.account_id</code>.
-	 */
-	@javax.persistence.Column(name = "account_id", precision = 19)
-	@Override
-	public java.lang.Long getAccountId() {
-		return (java.lang.Long) getValue(2);
-	}
-
-	/**
 	 * Setter for <code>cattle.service_index.kind</code>.
 	 */
 	@Override
 	public void setKind(java.lang.String value) {
-		setValue(3, value);
+		setValue(2, value);
 	}
 
 	/**
@@ -81,7 +64,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	@javax.persistence.Column(name = "kind", nullable = false, length = 255)
 	@Override
 	public java.lang.String getKind() {
-		return (java.lang.String) getValue(3);
+		return (java.lang.String) getValue(2);
 	}
 
 	/**
@@ -89,7 +72,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 */
 	@Override
 	public void setUuid(java.lang.String value) {
-		setValue(4, value);
+		setValue(3, value);
 	}
 
 	/**
@@ -98,7 +81,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	@javax.persistence.Column(name = "uuid", unique = true, nullable = false, length = 128)
 	@Override
 	public java.lang.String getUuid() {
-		return (java.lang.String) getValue(4);
+		return (java.lang.String) getValue(3);
 	}
 
 	/**
@@ -106,7 +89,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 */
 	@Override
 	public void setDescription(java.lang.String value) {
-		setValue(5, value);
+		setValue(4, value);
 	}
 
 	/**
@@ -115,7 +98,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	@javax.persistence.Column(name = "description", length = 1024)
 	@Override
 	public java.lang.String getDescription() {
-		return (java.lang.String) getValue(5);
+		return (java.lang.String) getValue(4);
 	}
 
 	/**
@@ -123,7 +106,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 */
 	@Override
 	public void setState(java.lang.String value) {
-		setValue(6, value);
+		setValue(5, value);
 	}
 
 	/**
@@ -132,7 +115,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	@javax.persistence.Column(name = "state", nullable = false, length = 128)
 	@Override
 	public java.lang.String getState() {
-		return (java.lang.String) getValue(6);
+		return (java.lang.String) getValue(5);
 	}
 
 	/**
@@ -140,7 +123,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 */
 	@Override
 	public void setCreated(java.util.Date value) {
-		setValue(7, value);
+		setValue(6, value);
 	}
 
 	/**
@@ -149,7 +132,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	@javax.persistence.Column(name = "created")
 	@Override
 	public java.util.Date getCreated() {
-		return (java.util.Date) getValue(7);
+		return (java.util.Date) getValue(6);
 	}
 
 	/**
@@ -157,7 +140,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 */
 	@Override
 	public void setRemoved(java.util.Date value) {
-		setValue(8, value);
+		setValue(7, value);
 	}
 
 	/**
@@ -166,7 +149,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	@javax.persistence.Column(name = "removed")
 	@Override
 	public java.util.Date getRemoved() {
-		return (java.util.Date) getValue(8);
+		return (java.util.Date) getValue(7);
 	}
 
 	/**
@@ -174,7 +157,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 */
 	@Override
 	public void setRemoveTime(java.util.Date value) {
-		setValue(9, value);
+		setValue(8, value);
 	}
 
 	/**
@@ -183,7 +166,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	@javax.persistence.Column(name = "remove_time")
 	@Override
 	public java.util.Date getRemoveTime() {
-		return (java.util.Date) getValue(9);
+		return (java.util.Date) getValue(8);
 	}
 
 	/**
@@ -191,7 +174,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 */
 	@Override
 	public void setData(java.util.Map<String,Object> value) {
-		setValue(10, value);
+		setValue(9, value);
 	}
 
 	/**
@@ -200,7 +183,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	@javax.persistence.Column(name = "data", length = 65535)
 	@Override
 	public java.util.Map<String,Object> getData() {
-		return (java.util.Map<String,Object>) getValue(10);
+		return (java.util.Map<String,Object>) getValue(9);
 	}
 
 	/**
@@ -208,7 +191,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 */
 	@Override
 	public void setServiceIndex(java.lang.String value) {
-		setValue(11, value);
+		setValue(10, value);
 	}
 
 	/**
@@ -217,7 +200,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	@javax.persistence.Column(name = "service_index", length = 255)
 	@Override
 	public java.lang.String getServiceIndex() {
-		return (java.lang.String) getValue(11);
+		return (java.lang.String) getValue(10);
 	}
 
 	/**
@@ -225,7 +208,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 */
 	@Override
 	public void setLaunchConfigName(java.lang.String value) {
-		setValue(12, value);
+		setValue(11, value);
 	}
 
 	/**
@@ -234,7 +217,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	@javax.persistence.Column(name = "launch_config_name", length = 255)
 	@Override
 	public java.lang.String getLaunchConfigName() {
-		return (java.lang.String) getValue(12);
+		return (java.lang.String) getValue(11);
 	}
 
 	/**
@@ -242,7 +225,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 */
 	@Override
 	public void setServiceId(java.lang.Long value) {
-		setValue(13, value);
+		setValue(12, value);
 	}
 
 	/**
@@ -251,7 +234,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	@javax.persistence.Column(name = "service_id", precision = 19)
 	@Override
 	public java.lang.Long getServiceId() {
-		return (java.lang.Long) getValue(13);
+		return (java.lang.Long) getValue(12);
 	}
 
 	/**
@@ -259,7 +242,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 */
 	@Override
 	public void setAddress(java.lang.String value) {
-		setValue(14, value);
+		setValue(13, value);
 	}
 
 	/**
@@ -268,7 +251,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	@javax.persistence.Column(name = "address", length = 255)
 	@Override
 	public java.lang.String getAddress() {
-		return (java.lang.String) getValue(14);
+		return (java.lang.String) getValue(13);
 	}
 
 	// -------------------------------------------------------------------------
@@ -284,23 +267,23 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	}
 
 	// -------------------------------------------------------------------------
-	// Record15 type implementation
+	// Record14 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.Long, java.lang.String> fieldsRow() {
-		return (org.jooq.Row15) super.fieldsRow();
+	public org.jooq.Row14<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.Long, java.lang.String> fieldsRow() {
+		return (org.jooq.Row14) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.Long, java.lang.String> valuesRow() {
-		return (org.jooq.Row15) super.valuesRow();
+	public org.jooq.Row14<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.String, java.lang.Long, java.lang.String> valuesRow() {
+		return (org.jooq.Row14) super.valuesRow();
 	}
 
 	/**
@@ -323,15 +306,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.Long> field3() {
-		return io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX.ACCOUNT_ID;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.String> field4() {
+	public org.jooq.Field<java.lang.String> field3() {
 		return io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX.KIND;
 	}
 
@@ -339,7 +314,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.String> field5() {
+	public org.jooq.Field<java.lang.String> field4() {
 		return io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX.UUID;
 	}
 
@@ -347,7 +322,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.String> field6() {
+	public org.jooq.Field<java.lang.String> field5() {
 		return io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX.DESCRIPTION;
 	}
 
@@ -355,7 +330,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.String> field7() {
+	public org.jooq.Field<java.lang.String> field6() {
 		return io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX.STATE;
 	}
 
@@ -363,7 +338,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.util.Date> field8() {
+	public org.jooq.Field<java.util.Date> field7() {
 		return io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX.CREATED;
 	}
 
@@ -371,7 +346,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.util.Date> field9() {
+	public org.jooq.Field<java.util.Date> field8() {
 		return io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX.REMOVED;
 	}
 
@@ -379,7 +354,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.util.Date> field10() {
+	public org.jooq.Field<java.util.Date> field9() {
 		return io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX.REMOVE_TIME;
 	}
 
@@ -387,7 +362,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.util.Map<String,Object>> field11() {
+	public org.jooq.Field<java.util.Map<String,Object>> field10() {
 		return io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX.DATA;
 	}
 
@@ -395,7 +370,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.String> field12() {
+	public org.jooq.Field<java.lang.String> field11() {
 		return io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX.SERVICE_INDEX_;
 	}
 
@@ -403,7 +378,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.String> field13() {
+	public org.jooq.Field<java.lang.String> field12() {
 		return io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX.LAUNCH_CONFIG_NAME;
 	}
 
@@ -411,7 +386,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.Long> field14() {
+	public org.jooq.Field<java.lang.Long> field13() {
 		return io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX.SERVICE_ID;
 	}
 
@@ -419,7 +394,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.String> field15() {
+	public org.jooq.Field<java.lang.String> field14() {
 		return io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX.ADDRESS;
 	}
 
@@ -443,15 +418,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.Long value3() {
-		return getAccountId();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.String value4() {
+	public java.lang.String value3() {
 		return getKind();
 	}
 
@@ -459,7 +426,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.String value5() {
+	public java.lang.String value4() {
 		return getUuid();
 	}
 
@@ -467,7 +434,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.String value6() {
+	public java.lang.String value5() {
 		return getDescription();
 	}
 
@@ -475,7 +442,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.String value7() {
+	public java.lang.String value6() {
 		return getState();
 	}
 
@@ -483,7 +450,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.util.Date value8() {
+	public java.util.Date value7() {
 		return getCreated();
 	}
 
@@ -491,7 +458,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.util.Date value9() {
+	public java.util.Date value8() {
 		return getRemoved();
 	}
 
@@ -499,7 +466,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.util.Date value10() {
+	public java.util.Date value9() {
 		return getRemoveTime();
 	}
 
@@ -507,7 +474,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.util.Map<String,Object> value11() {
+	public java.util.Map<String,Object> value10() {
 		return getData();
 	}
 
@@ -515,7 +482,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.String value12() {
+	public java.lang.String value11() {
 		return getServiceIndex();
 	}
 
@@ -523,7 +490,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.String value13() {
+	public java.lang.String value12() {
 		return getLaunchConfigName();
 	}
 
@@ -531,7 +498,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.Long value14() {
+	public java.lang.Long value13() {
 		return getServiceId();
 	}
 
@@ -539,7 +506,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.String value15() {
+	public java.lang.String value14() {
 		return getAddress();
 	}
 
@@ -565,16 +532,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ServiceIndexRecord value3(java.lang.Long value) {
-		setAccountId(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public ServiceIndexRecord value4(java.lang.String value) {
+	public ServiceIndexRecord value3(java.lang.String value) {
 		setKind(value);
 		return this;
 	}
@@ -583,7 +541,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ServiceIndexRecord value5(java.lang.String value) {
+	public ServiceIndexRecord value4(java.lang.String value) {
 		setUuid(value);
 		return this;
 	}
@@ -592,7 +550,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ServiceIndexRecord value6(java.lang.String value) {
+	public ServiceIndexRecord value5(java.lang.String value) {
 		setDescription(value);
 		return this;
 	}
@@ -601,7 +559,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ServiceIndexRecord value7(java.lang.String value) {
+	public ServiceIndexRecord value6(java.lang.String value) {
 		setState(value);
 		return this;
 	}
@@ -610,7 +568,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ServiceIndexRecord value8(java.util.Date value) {
+	public ServiceIndexRecord value7(java.util.Date value) {
 		setCreated(value);
 		return this;
 	}
@@ -619,7 +577,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ServiceIndexRecord value9(java.util.Date value) {
+	public ServiceIndexRecord value8(java.util.Date value) {
 		setRemoved(value);
 		return this;
 	}
@@ -628,7 +586,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ServiceIndexRecord value10(java.util.Date value) {
+	public ServiceIndexRecord value9(java.util.Date value) {
 		setRemoveTime(value);
 		return this;
 	}
@@ -637,7 +595,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ServiceIndexRecord value11(java.util.Map<String,Object> value) {
+	public ServiceIndexRecord value10(java.util.Map<String,Object> value) {
 		setData(value);
 		return this;
 	}
@@ -646,7 +604,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ServiceIndexRecord value12(java.lang.String value) {
+	public ServiceIndexRecord value11(java.lang.String value) {
 		setServiceIndex(value);
 		return this;
 	}
@@ -655,7 +613,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ServiceIndexRecord value13(java.lang.String value) {
+	public ServiceIndexRecord value12(java.lang.String value) {
 		setLaunchConfigName(value);
 		return this;
 	}
@@ -664,7 +622,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ServiceIndexRecord value14(java.lang.Long value) {
+	public ServiceIndexRecord value13(java.lang.Long value) {
 		setServiceId(value);
 		return this;
 	}
@@ -673,7 +631,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ServiceIndexRecord value15(java.lang.String value) {
+	public ServiceIndexRecord value14(java.lang.String value) {
 		setAddress(value);
 		return this;
 	}
@@ -682,7 +640,7 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ServiceIndexRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.String value13, java.lang.Long value14, java.lang.String value15) {
+	public ServiceIndexRecord values(java.lang.Long value1, java.lang.String value2, java.lang.String value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.util.Date value7, java.util.Date value8, java.util.Date value9, java.util.Map<String,Object> value10, java.lang.String value11, java.lang.String value12, java.lang.Long value13, java.lang.String value14) {
 		return this;
 	}
 
@@ -697,7 +655,6 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	public void from(io.cattle.platform.core.model.ServiceIndex from) {
 		setId(from.getId());
 		setName(from.getName());
-		setAccountId(from.getAccountId());
 		setKind(from.getKind());
 		setUuid(from.getUuid());
 		setDescription(from.getDescription());
@@ -735,23 +692,22 @@ public class ServiceIndexRecord extends org.jooq.impl.UpdatableRecordImpl<io.cat
 	/**
 	 * Create a detached, initialised ServiceIndexRecord
 	 */
-	public ServiceIndexRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String serviceIndex, java.lang.String launchConfigName, java.lang.Long serviceId, java.lang.String address) {
+	public ServiceIndexRecord(java.lang.Long id, java.lang.String name, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String serviceIndex, java.lang.String launchConfigName, java.lang.Long serviceId, java.lang.String address) {
 		super(io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX);
 
 		setValue(0, id);
 		setValue(1, name);
-		setValue(2, accountId);
-		setValue(3, kind);
-		setValue(4, uuid);
-		setValue(5, description);
-		setValue(6, state);
-		setValue(7, created);
-		setValue(8, removed);
-		setValue(9, removeTime);
-		setValue(10, data);
-		setValue(11, serviceIndex);
-		setValue(12, launchConfigName);
-		setValue(13, serviceId);
-		setValue(14, address);
+		setValue(2, kind);
+		setValue(3, uuid);
+		setValue(4, description);
+		setValue(5, state);
+		setValue(6, created);
+		setValue(7, removed);
+		setValue(8, removeTime);
+		setValue(9, data);
+		setValue(10, serviceIndex);
+		setValue(11, launchConfigName);
+		setValue(12, serviceId);
+		setValue(13, address);
 	}
 }

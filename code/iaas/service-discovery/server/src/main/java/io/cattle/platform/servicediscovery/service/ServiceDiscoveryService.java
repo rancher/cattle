@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.service;
 
 import io.cattle.platform.configitem.events.ConfigUpdate;
+import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -9,6 +10,8 @@ import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.eventing.annotation.AnnotatedEventListener;
 import io.cattle.platform.eventing.annotation.EventHandler;
+
+import java.util.List;
 
 public interface ServiceDiscoveryService extends AnnotatedEventListener {
 
@@ -56,19 +59,17 @@ public interface ServiceDiscoveryService extends AnnotatedEventListener {
      * RANDOM
      * TODO revise if can be moved to different interface(s)
      */
-    void allocateIpToServiceIndex(Service service, ServiceIndex serviceIndex, String requestedIp);
-
     void releaseIpFromServiceIndex(Service service, ServiceIndex serviceIndex);
-    
+
     void updateHealthState(Stack stack);
 
     void setServiceIndexIp(ServiceIndex serviceIndex, String ipAddress);
 
-    void removeFromLoadBalancerServices(Service service, Instance instance);
+    void removeFromLoadBalancerServices(Service service);
+    void removeFromLoadBalancerServices(Instance instance);
 
-    void incrementExecutionCount(Object object);
+    void addToBalancerService(Long serviceId, List<PortRule> rules);
 
-    void setPorts(Service service);
+    void incrementExecutionCount(String type, Long id);
 
-    void resetUpgradeFlag(Service service);
 }

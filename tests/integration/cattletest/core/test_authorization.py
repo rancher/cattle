@@ -102,8 +102,6 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'catalogTemplate',
         'certificate',
         'changeSecretInput',
-        'composeService',
-        'composeProject',
         'composeConfig',
         'composeConfigInput',
         'container',
@@ -196,11 +194,8 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'virtualMachine',
         'virtualMachineDisk',
         'publicEndpoint',
-        'serviceRestart',
-        'rollingRestartStrategy',
         'servicesPortRange',
         'healthcheckInstanceHostMap',
-        'recreateOnQuorumStrategyConfig',
         'volumeSnapshotInput',
         'nfsConfig',
         'blkioDeviceOption',
@@ -221,10 +216,8 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'scheduledUpgrade',
         'genericObject',
         'hostTemplate',
-        'instanceRevision',
-        'serviceRevision',
+        'revision',
         'serviceRollback',
-        'convertToServiceInput',
         'containerUpgrade',
         'deploymentUnit',
         'selectorService',
@@ -335,8 +328,6 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'clusterMembership',
         'composeConfig',
         'composeConfigInput',
-        'composeProject',
-        'composeService',
         'configItem',
         'configItemStatus',
         'container',
@@ -366,8 +357,6 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'externalHostEvent',
         'fieldDocumentation',
         'azureadconfig',
-        'haConfig',
-        'haConfigInput',
         'host',
         'hostAccess',
         'hostApiProxyToken',
@@ -455,11 +444,8 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'serviceUpgradeStrategy',
         'inServiceUpgradeStrategy',
         'publicEndpoint',
-        'serviceRestart',
-        'rollingRestartStrategy',
         'servicesPortRange',
         'healthcheckInstanceHostMap',
-        'recreateOnQuorumStrategyConfig',
         'volumeSnapshotInput',
         'nfsConfig',
         'blkioDeviceOption',
@@ -478,10 +464,8 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'processSummary',
         'scheduledUpgrade',
         'hostTemplate',
-        'instanceRevision',
-        'serviceRevision',
+        'revision',
         'serviceRollback',
-        'convertToServiceInput',
         'containerUpgrade',
         'deploymentUnit',
         'selectorService',
@@ -963,7 +947,7 @@ def test_volume_auth(admin_user_client, user_client, project_client):
         'isHostPath': 'r',
         'accessMode': 'r',
         'stackId': 'cr',
-        'volumeTemplateId': 'cr',
+        'volumeTemplateId': 'r',
         'storageDriverId': 'cr',
         'hostId': 'cru',
         'sizeMb': 'cr',
@@ -1083,14 +1067,13 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'secrets': 'r',
         'serviceId': 'r',
         'stackId': 'r',
-        'replacementFor': 'r',
         'sidekickTo': 'r',
         'metadata': 'r',
         'exitCode': 'r',
         'prePullOnUpgrade': 'r',
         'revisionId': 'r',
         'deploymentUnitId': 'r',
-        'previousRevisionId': 'r',
+        'desired': 'r',
     })
 
     auth_check(user_client.schema, 'container', 'r', {
@@ -1199,14 +1182,13 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'secrets': 'r',
         'serviceId': 'r',
         'stackId': 'r',
-        'replacementFor': 'r',
         'sidekickTo': 'r',
         'metadata': 'r',
         'exitCode': 'r',
         'prePullOnUpgrade': 'r',
         'revisionId': 'r',
         'deploymentUnitId': 'r',
-        'previousRevisionId': 'r',
+        'desired': 'r',
     })
 
     auth_check(project_client.schema, 'container', 'crud', {
@@ -1315,14 +1297,13 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'secrets': 'cr',
         'serviceId': 'r',
         'stackId': 'cr',
-        'replacementFor': 'r',
         'sidekickTo': 'cr',
         'metadata': 'cru',
         'exitCode': 'r',
         'prePullOnUpgrade': 'cru',
         'revisionId': 'r',
         'deploymentUnitId': 'r',
-        'previousRevisionId': 'r',
+        'desired': 'r',
     })
 
     auth_check(environment_client.schema, 'container', 'crud', {
@@ -1430,14 +1411,13 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'primaryNetworkId': 'r',
         'serviceId': 'r',
         'stackId': 'cr',
-        'replacementFor': 'r',
         'sidekickTo': 'cr',
         'metadata': 'cru',
         'exitCode': 'r',
         'prePullOnUpgrade': 'cru',
         'revisionId': 'r',
         'deploymentUnitId': 'r',
-        'previousRevisionId': 'r',
+        'desired': 'r',
     })
 
     auth_check(project_admin_client.schema, 'container', 'crud', {
@@ -1545,14 +1525,13 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'primaryNetworkId': 'r',
         'serviceId': 'r',
         'stackId': 'cr',
-        'replacementFor': 'r',
         'sidekickTo': 'cr',
         'metadata': 'cru',
         'exitCode': 'r',
         'prePullOnUpgrade': 'cru',
         'revisionId': 'r',
         'deploymentUnitId': 'r',
-        'previousRevisionId': 'r',
+        'desired': 'r',
     })
 
     auth_check(project_client.schema, 'dockerBuild', 'cr', {
@@ -2192,6 +2171,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'healthCheck': 'r',
         'storageDriver': 'r',
         'networkDriver': 'r',
+        'completeUpdate': 'r',
     })
 
     auth_check(user_client.schema, 'service', 'r', {
@@ -2232,6 +2212,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'healthCheck': 'r',
         'storageDriver': 'r',
         'networkDriver': 'r',
+        'completeUpdate': 'r',
     })
 
     auth_check(project_client.schema, 'service', 'crud', {
@@ -2272,6 +2253,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'healthCheck': 'cr',
         'storageDriver': 'cru',
         'networkDriver': 'cru',
+        'completeUpdate': 'ru',
     })
 
     resource_action_check(user_client.schema, 'service', [
@@ -2290,6 +2272,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'update',
         'upgrade',
         'garbagecollect',
+        'error',
     ])
 
     resource_action_check(admin_user_client.schema, 'service', [
@@ -2308,6 +2291,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'update',
         'upgrade',
         'garbagecollect',
+        'error',
     ])
 
     resource_action_check(project_client.schema, 'service', [
@@ -2326,6 +2310,7 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'update',
         'upgrade',
         'garbagecollect',
+        'error',
     ])
 
     resource_action_check(project_admin_client.schema, 'service', [
@@ -2345,58 +2330,8 @@ def test_svc_discovery_service(admin_user_client, user_client, project_client,
         'update',
         'upgrade',
         'garbagecollect',
+        'error',
     ])
-
-
-def test_auth_compose_project(admin_user_client, user_client, project_client):
-    auth_check(admin_user_client.schema, 'composeProject', 'r', {
-        'name': 'r',
-        'accountId': 'r',
-        'data': 'r',
-        'templates': 'r',
-        'environment': 'r',
-        'answers': 'r',
-        'externalId': 'r',
-        'previousExternalId': 'r',
-        'previousEnvironment': 'r',
-        'healthState': 'r',
-        'binding': 'r',
-        'system': 'r',
-        'group': 'r',
-        'serviceIds': 'r',
-    })
-
-    auth_check(user_client.schema, 'composeProject', 'r', {
-        'name': 'r',
-        'accountId': 'r',
-        'templates': 'r',
-        'environment': 'r',
-        'answers': 'r',
-        'externalId': 'r',
-        'previousExternalId': 'r',
-        'previousEnvironment': 'r',
-        'healthState': 'r',
-        'binding': 'r',
-        'system': 'r',
-        'group': 'r',
-        'serviceIds': 'r',
-    })
-
-    auth_check(project_client.schema, 'composeProject', 'crud', {
-        'name': 'cr',
-        'accountId': 'r',
-        'templates': 'cr',
-        'answers': 'cr',
-        'environment': 'cr',
-        'externalId': 'cru',
-        'previousExternalId': 'cru',
-        'previousEnvironment': 'cru',
-        'healthState': 'r',
-        'binding': 'cru',
-        'group': 'cru',
-        'system': 'r',
-        'serviceIds': 'r',
-    })
 
 
 def test_auth_kubernetes_stack(admin_user_client, user_client, project_client):
@@ -2567,7 +2502,9 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'startFirst': 'r',
         'revisionId': 'r',
         'previousRevisionId': 'r',
+        'completeUpdate': 'r',
         'scaleMax': 'r',
+        'scaleIncrement': 'r',
         'scaleIncrement': 'r',
         'scaleMin': 'r',
     })
@@ -2599,6 +2536,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'startFirst': 'r',
         'revisionId': 'r',
         'previousRevisionId': 'r',
+        'completeUpdate': 'r',
         'scaleMax': 'r',
         'scaleIncrement': 'r',
         'scaleMin': 'r',
@@ -2631,6 +2569,7 @@ def test_svc_discovery_lb_service(admin_user_client, user_client,
         'startFirst': 'cru',
         'revisionId': 'r',
         'previousRevisionId': 'r',
+        'completeUpdate': 'ru',
         'scaleMax': 'cru',
         'scaleIncrement': 'cru',
         'scaleMin': 'cru',
@@ -2804,6 +2743,7 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'linkedServices': 'r',
         'system': 'r',
         'revisionId': 'r',
+        'completeUpdate': 'r',
         'previousRevisionId': 'r'
     })
 
@@ -2825,6 +2765,7 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'linkedServices': 'r',
         'system': 'r',
         'revisionId': 'r',
+        'completeUpdate': 'r',
         'previousRevisionId': 'r'
     })
 
@@ -2846,6 +2787,7 @@ def test_svc_discovery_external_service(admin_user_client, user_client,
         'linkedServices': 'r',
         'system': 'r',
         'revisionId': 'r',
+        'completeUpdate': 'ru',
         'previousRevisionId': 'r'
     })
 
@@ -3269,11 +3211,11 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'primaryNetworkId': 'r',
         'serviceId': 'r',
         'stackId': 'r',
-        'replacementFor': 'r',
         'sidekickTo': 'r',
         'metadata': 'r',
         'exitCode': 'r',
         'deploymentUnitId': 'r',
+        'desired': 'r',
     })
 
     auth_check(user_client.schema, 'virtualMachine', 'r', {
@@ -3366,11 +3308,11 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'primaryNetworkId': 'r',
         'serviceId': 'r',
         'stackId': 'r',
-        'replacementFor': 'r',
         'sidekickTo': 'r',
         'metadata': 'r',
         'exitCode': 'r',
         'deploymentUnitId': 'r',
+        'desired': 'r',
     })
 
     auth_check(project_client.schema, 'virtualMachine', 'crud', {
@@ -3463,11 +3405,11 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'primaryNetworkId': 'r',
         'serviceId': 'r',
         'stackId': 'cr',
-        'replacementFor': 'r',
         'sidekickTo': 'cr',
         'metadata': 'cru',
         'exitCode': 'r',
         'deploymentUnitId': 'r',
+        'desired': 'r',
     })
 
 
@@ -3500,78 +3442,6 @@ def test_virtual_machine_disk(admin_user_client, user_client, project_client):
         'opts': 'cr',
         'driver': 'cr',
         'root': 'cr',
-    })
-
-
-def test_compose_service(admin_user_client, user_client, project_client):
-    auth_check(admin_user_client.schema, 'composeService', 'r', {
-        'name': 'r',
-        'externalId': 'r',
-        'stackId': 'r',
-        'accountId': 'r',
-        'data': 'r',
-        'vip': 'r',
-        'selectorContainer': 'r',
-        'healthState': 'r',
-        'startOnCreate': 'r',
-        'launchConfig': 'r',
-        'fqdn': 'r',
-        'selectorLink': 'r',
-        'scale': 'r',
-        'publicEndpoints': 'r',
-        'currentScale': 'r',
-        'instanceIds': 'r',
-        'linkedServices': 'r',
-        'system': 'r',
-        'scaleMax': 'r',
-        'scaleIncrement': 'r',
-        'scaleMin': 'r',
-    })
-
-    auth_check(user_client.schema, 'composeService', 'r', {
-        'name': 'r',
-        'externalId': 'r',
-        'stackId': 'r',
-        'accountId': 'r',
-        'vip': 'r',
-        'selectorContainer': 'r',
-        'healthState': 'r',
-        'startOnCreate': 'r',
-        'launchConfig': 'r',
-        'fqdn': 'r',
-        'selectorLink': 'r',
-        'scale': 'r',
-        'publicEndpoints': 'r',
-        'currentScale': 'r',
-        'instanceIds': 'r',
-        'linkedServices': 'r',
-        'system': 'r',
-        'scaleMax': 'r',
-        'scaleIncrement': 'r',
-        'scaleMin': 'r',
-    })
-
-    auth_check(project_client.schema, 'composeService', 'rd', {
-        'name': 'r',
-        'externalId': 'r',
-        'stackId': 'r',
-        'accountId': 'r',
-        'vip': 'r',
-        'selectorContainer': 'r',
-        'healthState': 'r',
-        'startOnCreate': 'r',
-        'launchConfig': 'r',
-        'fqdn': 'r',
-        'selectorLink': 'r',
-        'scale': 'r',
-        'publicEndpoints': 'r',
-        'currentScale': 'r',
-        'instanceIds': 'r',
-        'linkedServices': 'r',
-        'system': 'r',
-        'scaleMax': 'r',
-        'scaleIncrement': 'r',
-        'scaleMin': 'r',
     })
 
 

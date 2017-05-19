@@ -12,7 +12,7 @@ def test_u_update_check_revision(client, super_client, context):
     svc = client.wait_success(svc)
     svc = client.wait_success(svc.activate())
 
-    revisions = client.list_serviceRevision(serviceId=svc.id)
+    revisions = client.list_revision(serviceId=svc.id)
     assert len(revisions) == 1
     rev1 = revisions[0]
     assert rev1.config['launchConfig']['capAdd'] == ['AUDIT_CONTROL']
@@ -27,7 +27,7 @@ def test_u_update_check_revision(client, super_client, context):
     svc = client.wait_success(svc)
     assert svc.previousRevisionId == rev1.id
 
-    revisions = client.list_serviceRevision(serviceId=svc.id)
+    revisions = client.list_revision(serviceId=svc.id)
     assert len(revisions) == 2
     rev2_id = 0
     for rev in revisions:
@@ -49,7 +49,7 @@ def test_u_update_check_revision(client, super_client, context):
     launch_config = {'ports': '80:80/tcp'}
     svc = client.update(svc, launchConfig=launch_config)
     svc = client.wait_success(svc)
-    revisions = client.list_serviceRevision(serviceId=svc.id)
+    revisions = client.list_revision(serviceId=svc.id)
     assert len(revisions) == 3
     assert svc.launchConfig.ports == ['80:80/tcp']
     p_v3 = svc.launchConfig.version
@@ -63,7 +63,7 @@ def test_u_update_check_revision(client, super_client, context):
     svc = client.update(svc, secondaryLaunchConfigs=[launch_config])
     svc = client.wait_success(svc)
     assert svc.previousRevisionId == rev3_id
-    revisions = client.list_serviceRevision(serviceId=svc.id)
+    revisions = client.list_revision(serviceId=svc.id)
     assert len(revisions) == 4
     rev4_id = 0
     omit_set = set([rev1.id, rev2_id, rev3_id])
@@ -85,7 +85,7 @@ def test_u_update_check_revision(client, super_client, context):
     svc = client.update(svc, secondaryLaunchConfigs=[launch_config])
     svc = client.wait_success(svc)
     assert svc.previousRevisionId == rev4_id
-    revisions = client.list_serviceRevision(serviceId=svc.id)
+    revisions = client.list_revision(serviceId=svc.id)
     assert len(revisions) == 5
     rev5_id = 0
     omit_set = set([rev1.id, rev2_id, rev3_id, rev4_id])
@@ -106,9 +106,11 @@ def test_u_update_check_revision(client, super_client, context):
 
     # update secondary launch config that doesn't trigger upgrade
     launch_config = {'ports': '80:80/tcp', 'name': 'sec'}
+    assert client.reload(svc).state == 'active'
     svc = client.update(svc, secondaryLaunchConfigs=[launch_config])
+    assert svc.state == 'updating-active'
     svc = client.wait_success(svc)
-    revisions = client.list_serviceRevision(serviceId=svc.id)
+    revisions = client.list_revision(serviceId=svc.id)
     assert len(revisions) == 6
     assert svc.previousRevisionId == rev5_id
     assert svc.secondaryLaunchConfigs[0]['ports'] == ['80:80/tcp']
@@ -124,10 +126,9 @@ def test_u_update_check_revision(client, super_client, context):
     svc = client.update(svc, secondaryLaunchConfigs=[launch_config])
     svc = client.wait_success(svc)
     assert svc.previousRevisionId == rev6_id
-    revisions = client.list_serviceRevision(serviceId=svc.id)
+    revisions = client.list_revision(serviceId=svc.id)
     assert len(revisions) == 7
     assert svc.secondaryLaunchConfigs == []
-    assert super_client.reload(svc).isUpgrade == 0
 
 
 def test_u_in_service_upgrade_primary(context, client, super_client):
@@ -195,7 +196,7 @@ def test_u_big_scale(context, client):
     image_uuid = context.image_uuid
     launch_config = {'imageUuid': image_uuid,
                      'networkMode': None,
-                     'prePullOnUpgrade': False}
+                     'prePullOnUpgrade': 'none'}
 
     svc = client.create_service(name=random_str(),
                                 stackId=env.id,
@@ -227,11 +228,11 @@ def test_u_in_service_upgrade_networks_from(context, client, super_client):
     image_uuid = context.image_uuid
     lc1 = {"imageUuid": image_uuid, "networkMode": 'container',
            "networkLaunchConfig": "secondary1",
-           'prePullOnUpgrade': False}
+           'prePullOnUpgrade': 'none'}
     s11 = {"imageUuid": image_uuid, "name": "secondary1",
-           'prePullOnUpgrade': False}
+           'prePullOnUpgrade': 'none'}
     s12 = {"imageUuid": image_uuid, "name": "secondary2",
-           'prePullOnUpgrade': False}
+           'prePullOnUpgrade': 'none'}
     svc = client.create_service(name=random_str(),
                                 stackId=env.id,
                                 scale=2,
@@ -250,7 +251,7 @@ def test_u_in_service_upgrade_networks_from(context, client, super_client):
                                            "2", "secondary1")
 
     s21 = {"imageUuid": image_uuid, "name": "secondary1",
-           'prePullOnUpgrade': False, 'dns': ['10.1.1.1']}
+           'prePullOnUpgrade': 'none', 'dns': ['10.1.1.1']}
     u_svc = _run_insvc_upgrade(client, svc,
                                secondaryLaunchConfigs=[s21],
                                batchSize=1)
@@ -272,12 +273,12 @@ def test_u_in_service_upgrade_volumes_from(context, client, super_client):
     env = client.wait_success(env)
     image_uuid = context.image_uuid
     lc1 = {"imageUuid": image_uuid,
-           'prePullOnUpgrade': False}
+           'prePullOnUpgrade': 'none'}
     sec11 = {"imageUuid": image_uuid, "name": "secondary1",
              "dataVolumesFromLaunchConfigs": ['secondary2'],
-             'prePullOnUpgrade': False}
+             'prePullOnUpgrade': 'none'}
     sec12 = {"imageUuid": image_uuid, "name": "secondary2",
-             'prePullOnUpgrade': False}
+             'prePullOnUpgrade': 'none'}
     svc = client.create_service(name=random_str(),
                                 stackId=env.id,
                                 scale=2,
@@ -298,10 +299,10 @@ def test_u_in_service_upgrade_volumes_from(context, client, super_client):
                                            "2", "secondary2")
 
     lc2 = {"imageUuid": image_uuid,
-           'prePullOnUpgrade': False,
+           'prePullOnUpgrade': 'none',
            'dns': ['10.1.1.1']}
     sec22 = {"imageUuid": image_uuid, "name": "secondary2",
-             'prePullOnUpgrade': False,
+             'prePullOnUpgrade': 'none',
              'dns': ['10.1.1.1']}
     u_svc = _run_insvc_upgrade(client, svc,
                                launchConfig=lc2,
@@ -334,7 +335,7 @@ def test_u_dns_service_upgrade(client):
 
     labels = {"bar": "foo"}
     launch_config = {"labels": labels,
-                     'prePullOnUpgrade': False}
+                     'prePullOnUpgrade': 'none'}
     dns = _run_insvc_upgrade(client, dns, batchSize=1,
                              launchConfig=launch_config)
     dns = client.wait_success(dns)
@@ -347,7 +348,7 @@ def test_u_external_service_upgrade(client):
     env = client.wait_success(env)
     labels = {"foo": "bar"}
     launch_config = {"labels": labels,
-                     'prePullOnUpgrade': False}
+                     'prePullOnUpgrade': 'none'}
     ips = ["72.22.16.5", '192.168.0.10']
     svc = client.create_externalService(name=random_str(),
                                         stackId=env.id,
@@ -373,7 +374,7 @@ def test_u_service_upgrade_mixed_selector(client, context):
 
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid,
-                     'prePullOnUpgrade': False}
+                     'prePullOnUpgrade': 'none'}
     svc2 = client.create_service(name=random_str(),
                                  stackId=env.id,
                                  launchConfig=launch_config,
@@ -388,11 +389,11 @@ def test_u_rollback_sidekicks(context, client, super_client):
     env = client.wait_success(env)
     image_uuid = context.image_uuid
     lc1 = {"imageUuid": image_uuid,
-           'prePullOnUpgrade': False}
+           'prePullOnUpgrade': 'none'}
     s11 = {"imageUuid": image_uuid, "name": "secondary1",
-           'prePullOnUpgrade': False}
+           'prePullOnUpgrade': 'none'}
     s12 = {"imageUuid": image_uuid, "name": "secondary2",
-           'prePullOnUpgrade': False}
+           'prePullOnUpgrade': 'none'}
     svc = client.create_service(name=random_str(),
                                 stackId=env.id,
                                 scale=3,
@@ -406,7 +407,7 @@ def test_u_rollback_sidekicks(context, client, super_client):
                               state='active', upgrade=False)
 
     s22 = {"imageUuid": image_uuid, "name": "secondary2",
-           'prePullOnUpgrade': False, 'dns': ['10.1.1.1']}
+           'prePullOnUpgrade': 'none', 'dns': ['10.1.1.1']}
     u_svc = _run_insvc_upgrade(client, svc,
                                secondaryLaunchConfigs=[s22],
                                batchSize=2)
@@ -435,7 +436,7 @@ def test_u_rollback_id(context, client, super_client):
     image_uuid = context.image_uuid
     lc1 = {'imageUuid': image_uuid,
            'networkMode': None,
-           'prePullOnUpgrade': False}
+           'prePullOnUpgrade': 'none'}
     svc = client.create_service(name=random_str(),
                                 stackId=env.id,
                                 scale=1,
@@ -449,7 +450,7 @@ def test_u_rollback_id(context, client, super_client):
 
     lc2 = {'imageUuid': image_uuid,
            'networkMode': None,
-           'prePullOnUpgrade': False,
+           'prePullOnUpgrade': 'none',
            'dns': ['10.1.1.1']}
     svc = _run_insvc_upgrade(client, svc, batchSize=2,
                              launchConfig=lc2,
@@ -485,7 +486,7 @@ def test_u_in_service_upgrade_port_mapping(context, client, super_client):
 
     launch_config = {"imageUuid": image_uuid,
                      'ports': ['80', '82/tcp', '8083:83/udp'],
-                     'prePullOnUpgrade': False}
+                     'prePullOnUpgrade': 'none'}
     u_svc = _run_insvc_upgrade(client, svc, launchConfig=launch_config,
                                secondaryLaunchConfigs=[secondary1,
                                                        secondary2],
@@ -507,9 +508,9 @@ def test_u_sidekick_addition(context, client):
     env = client.wait_success(env)
     image_uuid = context.image_uuid
     lc1 = {"imageUuid": image_uuid,
-           'prePullOnUpgrade': False}
+           'prePullOnUpgrade': 'none'}
     s11 = {"imageUuid": image_uuid, "name": "secondary1",
-           'prePullOnUpgrade': False}
+           'prePullOnUpgrade': 'none'}
     svc = client.create_service(name=random_str(),
                                 stackId=env.id,
                                 scale=1,
@@ -522,10 +523,10 @@ def test_u_sidekick_addition(context, client):
                                               "1", "secondary1")
 
     lc2 = {"imageUuid": image_uuid,
-           'prePullOnUpgrade': False,
+           'prePullOnUpgrade': 'none',
            'dns': ['10.1.1.1']}
     s12 = {"imageUuid": image_uuid, "name": "secondary2",
-           'prePullOnUpgrade': False}
+           'prePullOnUpgrade': 'none'}
     u_svc = _run_insvc_upgrade(client, svc,
                                launchConfig=lc2,
                                secondaryLaunchConfigs=[s12],
@@ -550,11 +551,11 @@ def test_u_sidekick_addition_rollback(context, client):
     env = client.wait_success(env)
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid,
-                     'prePullOnUpgrade': False}
+                     'prePullOnUpgrade': 'none'}
     secondary1 = {"imageUuid": image_uuid, "name": "secondary1",
-                  'prePullOnUpgrade': False}
+                  'prePullOnUpgrade': 'none'}
     secondary2 = {"imageUuid": image_uuid, "name": "secondary2",
-                  'prePullOnUpgrade': False}
+                  'prePullOnUpgrade': 'none'}
     svc = client.create_service(name=random_str(),
                                 stackId=env.id,
                                 scale=2,
@@ -599,11 +600,11 @@ def test_u_sidekick_addition_wo_primary(context, client):
     env = client.wait_success(env)
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid,
-                     'prePullOnUpgrade': False}
+                     'prePullOnUpgrade': 'none'}
     secondary1 = {"imageUuid": image_uuid, "name": "secondary1",
-                  'prePullOnUpgrade': False}
+                  'prePullOnUpgrade': 'none'}
     secondary2 = {"imageUuid": image_uuid, "name": "secondary2",
-                  'prePullOnUpgrade': False}
+                  'prePullOnUpgrade': 'none'}
     svc = client.create_service(name=random_str(),
                                 stackId=env.id,
                                 scale=1,
@@ -639,11 +640,11 @@ def test_u_sidekick_addition_two_sidekicks(context, client):
     env = client.wait_success(env)
     image_uuid = context.image_uuid
     launch_config = {"imageUuid": image_uuid,
-                     'prePullOnUpgrade': False}
+                     'prePullOnUpgrade': 'none'}
     secondary1 = {"imageUuid": image_uuid, "name": "secondary1",
-                  'prePullOnUpgrade': False}
+                  'prePullOnUpgrade': 'none'}
     secondary2 = {"imageUuid": image_uuid, "name": "secondary2",
-                  'prePullOnUpgrade': False}
+                  'prePullOnUpgrade': 'none'}
     svc = client.create_service(name=random_str(),
                                 stackId=env.id,
                                 scale=1,
@@ -673,11 +674,11 @@ def test_u_sidekick_removal(context, client):
     env = client.wait_success(env)
     image_uuid = context.image_uuid
     lc1 = {"imageUuid": image_uuid,
-           'prePullOnUpgrade': False}
+           'prePullOnUpgrade': 'none'}
     s11 = {"imageUuid": image_uuid, "name": "secondary1",
-           'prePullOnUpgrade': False}
+           'prePullOnUpgrade': 'none'}
     s12 = {"imageUuid": image_uuid, "name": "secondary2",
-           'prePullOnUpgrade': False}
+           'prePullOnUpgrade': 'none'}
     svc = client.create_service(name=random_str(),
                                 stackId=env.id,
                                 scale=1,
@@ -689,7 +690,7 @@ def test_u_sidekick_removal(context, client):
     c1_pre = _validate_compose_instance_start(client, svc, env, "1")
 
     s21 = {"imageUuid": image_uuid, "name": "secondary1",
-           'prePullOnUpgrade': False,
+           'prePullOnUpgrade': 'none',
            'dns': ['10.1.1.1']}
     s22 = {"imageUuid": image_uuid, "name": "secondary2",
            'imageUuid': "rancher/none"}
@@ -712,11 +713,11 @@ def test_u_sidekick_removal_rollback(context, client):
     env = client.wait_success(env)
     image_uuid = context.image_uuid
     lc1 = {"imageUuid": image_uuid,
-           'prePullOnUpgrade': False}
+           'prePullOnUpgrade': 'none'}
     s11 = {"imageUuid": image_uuid, "name": "secondary1",
-           'prePullOnUpgrade': False}
+           'prePullOnUpgrade': 'none'}
     s12 = {"imageUuid": image_uuid, "name": "secondary2",
-           'prePullOnUpgrade': False}
+           'prePullOnUpgrade': 'none'}
     svc = client.create_service(name=random_str(),
                                 stackId=env.id,
                                 scale=1,
@@ -732,7 +733,7 @@ def test_u_sidekick_removal_rollback(context, client):
                                               "secondary2")
 
     s21 = {"imageUuid": image_uuid, "name": "secondary1",
-           'prePullOnUpgrade': False,
+           'prePullOnUpgrade': 'none',
            'dns': ['10.1.1.1']}
     s22 = {"imageUuid": image_uuid, "name": "secondary2",
            'imageUuid': "rancher/none"}
@@ -830,7 +831,7 @@ def _create_and_schedule_inservice_upgrade(client, context, startFirst=False):
     image_uuid = context.image_uuid
     lc1 = {'imageUuid': image_uuid,
            'networkMode': None,
-           'prePullOnUpgrade': False}
+           'prePullOnUpgrade': 'none'}
     svc = client.create_service(name=random_str(),
                                 stackId=env.id,
                                 scale=4,
@@ -840,7 +841,7 @@ def _create_and_schedule_inservice_upgrade(client, context, startFirst=False):
     svc = client.wait_success(svc.activate())
     lc2 = {'imageUuid': image_uuid,
            'networkMode': None,
-           'prePullOnUpgrade': False,
+           'prePullOnUpgrade': 'none',
            'dns': ['10.1.1.1']}
     svc = _run_insvc_upgrade(client, svc, batchSize=2,
                              launchConfig=lc2,
@@ -972,13 +973,13 @@ def _validate_upgrade(super_client, svc, upgraded_svc,
     primary_upgraded_v = primary_v
     sec1_upgraded_v = sec1_v
     sec2_upgraded_v = sec2_v
-    revisions = super_client.list_serviceRevision(serviceId=svc.id)
+    revisions = super_client.list_revision(serviceId=svc.id)
     assert len(revisions) == 2
 
     prev = {}
     for rev in revisions:
         if rev.id == upgraded_svc.revisionId:
-            p_rev = super_client.by_id('serviceRevision',
+            p_rev = super_client.by_id('revision',
                                        id=upgraded_svc.previousRevisionId)
             assert p_rev is not None
             prev[svc.name] = p_rev.config['launchConfig']
@@ -1063,7 +1064,7 @@ def test_u_rollback_to_revision(context, client, super_client):
     image_uuid = context.image_uuid
     lc1 = {'imageUuid': image_uuid,
            'networkMode': None,
-           'prePullOnUpgrade': False}
+           'prePullOnUpgrade': 'none'}
     svc = client.create_service(name=random_str(),
                                 stackId=env.id,
                                 launchConfig=lc1,
@@ -1077,7 +1078,7 @@ def test_u_rollback_to_revision(context, client, super_client):
 
     lc2 = {'imageUuid': image_uuid,
            'networkMode': None,
-           'prePullOnUpgrade': False,
+           'prePullOnUpgrade': 'none',
            'dns': ['10.1.1.1']}
     # upgrade once
     svc = _run_insvc_upgrade(client, svc, batchSize=2,
@@ -1096,7 +1097,7 @@ def test_u_rollback_to_revision(context, client, super_client):
     # upgrade second time
     lc3 = {'imageUuid': image_uuid,
            'networkMode': None,
-           'prePullOnUpgrade': False,
+           'prePullOnUpgrade': 'none',
            'dns': ['10.1.1.2']}
     svc = _run_insvc_upgrade(client, svc, batchSize=2,
                              launchConfig=lc3,
@@ -1135,7 +1136,7 @@ def test_svc_update_scale(context, client, super_client):
     assert env.state == 'active'
     image_uuid = context.image_uuid
     lc = {'imageUuid': image_uuid,
-          'prePullOnUpgrade': False}
+          'prePullOnUpgrade': 'none'}
     svc = client.create_service(name=random_str(),
                                 stackId=env.id,
                                 launchConfig=lc, )
@@ -1156,7 +1157,7 @@ def test_svc_update_fields_object(context, client):
     image_uuid = context.image_uuid
     restart_policy = {"name": "always", "maximumRetryCount": 4}
     lc = {'imageUuid': image_uuid,
-          'prePullOnUpgrade': False,
+          'prePullOnUpgrade': 'none',
           'restartPolicy': restart_policy}
     svc = client.create_service(name='restart-' + random_str(),
                                 stackId=env.id,
@@ -1173,7 +1174,7 @@ def test_svc_update_fields_object(context, client):
 
     # change the value
     lc = {'imageUuid': image_uuid,
-          'prePullOnUpgrade': False,
+          'prePullOnUpgrade': 'none',
           'restartPolicy': {"name": "always", "maximumRetryCount": 5}}
     svc = client.update(svc, launchConfig=lc)
     wait_for(lambda: client.reload(c).state == 'stopped')
@@ -1186,7 +1187,7 @@ def test_svc_update_fields_list(context, client, super_client):
     assert env.state == 'active'
     image_uuid = context.image_uuid
     lc = {'imageUuid': image_uuid,
-          'prePullOnUpgrade': False,
+          'prePullOnUpgrade': 'none',
           'dns': ['10.1.1.1', '10.1.1.2']}
     svc = client.create_service(name=random_str(),
                                 stackId=env.id,
@@ -1202,7 +1203,7 @@ def test_svc_update_fields_list(context, client, super_client):
 
     # swap the order - noop
     lc = {'imageUuid': image_uuid,
-          'prePullOnUpgrade': False,
+          'prePullOnUpgrade': 'none',
           'dns': ['10.1.1.2', '10.1.1.1']}
     svc = client.update(svc, launchConfig=lc)
     svc = client.wait_success(svc)
@@ -1210,7 +1211,7 @@ def test_svc_update_fields_list(context, client, super_client):
 
     # remove one of the values - upgrade
     lc = {'imageUuid': image_uuid,
-          'prePullOnUpgrade': False,
+          'prePullOnUpgrade': 'none',
           'dns': ['10.1.1.2']}
     svc = client.update(svc, launchConfig=lc)
     svc = client.wait_success(svc)
@@ -1219,7 +1220,7 @@ def test_svc_update_fields_list(context, client, super_client):
 
     # remove the entire field - upgrade
     lc = {'imageUuid': image_uuid,
-          'prePullOnUpgrade': False,
+          'prePullOnUpgrade': 'none',
           'dns': None}
     svc = client.update(svc, launchConfig=lc)
     svc = client.wait_success(svc)
@@ -1232,7 +1233,7 @@ def test_svc_update_fields_maps(context, client, super_client):
     assert env.state == 'active'
     image_uuid = context.image_uuid
     lc = {'imageUuid': image_uuid,
-          'prePullOnUpgrade': False,
+          'prePullOnUpgrade': 'none',
           'labels': {'foo': 'bar', 'bar': 'foo'}}
     svc = client.create_service(name=random_str(),
                                 stackId=env.id,
@@ -1248,7 +1249,7 @@ def test_svc_update_fields_maps(context, client, super_client):
 
     # swap the order - noop
     lc = {'imageUuid': image_uuid,
-          'prePullOnUpgrade': False,
+          'prePullOnUpgrade': 'none',
           'labels': {'bar': 'foo', 'foo': 'bar'}}
     svc = client.update(svc, launchConfig=lc)
     svc = client.wait_success(svc)
@@ -1256,7 +1257,7 @@ def test_svc_update_fields_maps(context, client, super_client):
 
     # remove one of the values - upgrade
     lc = {'imageUuid': image_uuid,
-          'prePullOnUpgrade': False,
+          'prePullOnUpgrade': 'none',
           'labels': {'foo': 'bar'}}
     svc = client.update(svc, launchConfig=lc)
     svc = client.wait_success(svc)
@@ -1265,7 +1266,7 @@ def test_svc_update_fields_maps(context, client, super_client):
 
     # add the value back - upgrade
     lc = {'imageUuid': image_uuid,
-          'prePullOnUpgrade': False,
+          'prePullOnUpgrade': 'none',
           'labels': {'foo': 'bar', 'bar': 'foo'}}
     svc = client.update(svc, launchConfig=lc)
     svc = client.wait_success(svc)
@@ -1274,7 +1275,7 @@ def test_svc_update_fields_maps(context, client, super_client):
 
     # remove the entire field - upgrade
     lc = {'imageUuid': image_uuid,
-          'prePullOnUpgrade': False,
+          'prePullOnUpgrade': 'none',
           'labels': {}}
     svc = client.update(svc, launchConfig=lc)
     svc = client.wait_success(svc)

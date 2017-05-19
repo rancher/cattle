@@ -342,7 +342,7 @@ def test_volume_storage_pool_purge(new_context, super_client):
     client.wait_success(host.purge())
 
     wait_for_condition(client, sp, lambda x: x.state is not None)
-    wait_for_condition(client, v1, lambda x: x.state == 'detached')
+    wait_for_condition(client, v1, lambda x: x.state is not None)
 
     register_simulated_host(new_context)
 

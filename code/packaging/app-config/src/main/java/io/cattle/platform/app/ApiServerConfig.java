@@ -163,9 +163,10 @@ public class ApiServerConfig {
         io.github.ibuildthecloud.gdapi.version.Versions v = new Versions();
         v.setVersions(new HashSet<>(Arrays.asList(
                 "v1",
-                "v2-beta"
+                "v2-beta",
+                "v2"
                 )));
-        v.setLatest("v2-beta");
+        v.setLatest("v2");
         v.setRootVersion("v1");
         return v;
     }
@@ -176,6 +177,7 @@ public class ApiServerConfig {
         Map<String, SchemaFactory> factories = new HashMap<>();
         factories.put("v1", v1);
         factories.put("v2-beta", core);
+        factories.put("v2", core);
         io.github.ibuildthecloud.gdapi.servlet.ApiRequestFilterDelegate delegate = new ApiRequestFilterDelegate();
         delegate.setSchemaFactories(factories);
         delegate.setIdFormatter(idF);

@@ -35,6 +35,10 @@ public class ContainerEventDaoImpl extends AbstractJooqDao implements ContainerE
             return true;
         }
 
+        if (MAX_EVENTS.get() == 0) {
+            return true;
+        }
+
         Record1<Integer> count = create().select(DSL.count())
             .from(CONTAINER_EVENT)
             .where(CONTAINER_EVENT.HOST_ID.eq(hostId)

@@ -1,6 +1,5 @@
 package io.cattle.platform.process.host;
 
-import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.HostIpAddressMap;
@@ -13,10 +12,7 @@ import io.cattle.platform.docker.constants.DockerHostConstants;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
-import io.cattle.platform.engine.process.impl.ProcessCancelException;
-import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
-import io.cattle.platform.util.type.CollectionUtils;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -62,12 +58,7 @@ public class HostRemove extends AbstractDefaultProcessHandler {
 
     protected void removeInstances(Host host) {
         for (Instance instance : instanceDao.getNonRemovedInstanceOn(host.getId())) {
-            try {
-                objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, instance, null);
-            } catch (ProcessCancelException e) {
-                objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance,
-                        CollectionUtils.asMap(InstanceConstants.REMOVE_OPTION, true));
-            }
+            objectProcessManager.stopAndRemove(instance, null);
         }
     }
 

@@ -11,7 +11,7 @@ package io.cattle.platform.core.model;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class CattleTable extends org.jooq.impl.SchemaImpl {
 
-	private static final long serialVersionUID = -221326417;
+	private static final long serialVersionUID = 46360393;
 
 	/**
 	 * The singleton instance of <code>cattle</code>
@@ -39,6 +39,7 @@ public class CattleTable extends org.jooq.impl.SchemaImpl {
 			io.cattle.platform.core.model.tables.AgentTable.AGENT,
 			io.cattle.platform.core.model.tables.AuditLogTable.AUDIT_LOG,
 			io.cattle.platform.core.model.tables.AuthTokenTable.AUTH_TOKEN,
+			io.cattle.platform.core.model.tables.BackoffTable.BACKOFF,
 			io.cattle.platform.core.model.tables.BackupTable.BACKUP,
 			io.cattle.platform.core.model.tables.BackupTargetTable.BACKUP_TARGET,
 			io.cattle.platform.core.model.tables.CertificateTable.CERTIFICATE,
@@ -73,7 +74,6 @@ public class CattleTable extends org.jooq.impl.SchemaImpl {
 			io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP,
 			io.cattle.platform.core.model.tables.InstanceLabelMapTable.INSTANCE_LABEL_MAP,
 			io.cattle.platform.core.model.tables.InstanceLinkTable.INSTANCE_LINK,
-			io.cattle.platform.core.model.tables.InstanceRevisionTable.INSTANCE_REVISION,
 			io.cattle.platform.core.model.tables.IpAddressTable.IP_ADDRESS,
 			io.cattle.platform.core.model.tables.IpAddressNicMapTable.IP_ADDRESS_NIC_MAP,
 			io.cattle.platform.core.model.tables.LabelTable.LABEL,
@@ -89,6 +89,7 @@ public class CattleTable extends org.jooq.impl.SchemaImpl {
 			io.cattle.platform.core.model.tables.ProjectMemberTable.PROJECT_MEMBER,
 			io.cattle.platform.core.model.tables.ProjectTemplateTable.PROJECT_TEMPLATE,
 			io.cattle.platform.core.model.tables.ResourcePoolTable.RESOURCE_POOL,
+			io.cattle.platform.core.model.tables.RevisionTable.REVISION,
 			io.cattle.platform.core.model.tables.ScheduledUpgradeTable.SCHEDULED_UPGRADE,
 			io.cattle.platform.core.model.tables.SecretTable.SECRET,
 			io.cattle.platform.core.model.tables.ServiceTable.SERVICE,
@@ -97,7 +98,6 @@ public class CattleTable extends org.jooq.impl.SchemaImpl {
 			io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP,
 			io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX,
 			io.cattle.platform.core.model.tables.ServiceLogTable.SERVICE_LOG,
-			io.cattle.platform.core.model.tables.ServiceRevisionTable.SERVICE_REVISION,
 			io.cattle.platform.core.model.tables.SettingTable.SETTING,
 			io.cattle.platform.core.model.tables.SnapshotTable.SNAPSHOT,
 			io.cattle.platform.core.model.tables.StorageDriverTable.STORAGE_DRIVER,

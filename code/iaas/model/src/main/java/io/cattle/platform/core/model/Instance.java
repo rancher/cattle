@@ -466,17 +466,6 @@ public interface Instance extends java.io.Serializable {
 	public java.lang.Long getStackId();
 
 	/**
-	 * Setter for <code>cattle.instance.replacement_for</code>.
-	 */
-	public void setReplacementFor(java.lang.Long value);
-
-	/**
-	 * Getter for <code>cattle.instance.replacement_for</code>.
-	 */
-	@javax.persistence.Column(name = "replacement_for", precision = 19)
-	public java.lang.Long getReplacementFor();
-
-	/**
 	 * Setter for <code>cattle.instance.deployment_unit_id</code>.
 	 */
 	public void setDeploymentUnitId(java.lang.Long value);
@@ -499,15 +488,15 @@ public interface Instance extends java.io.Serializable {
 	public java.lang.Long getRevisionId();
 
 	/**
-	 * Setter for <code>cattle.instance.previous_revision_id</code>.
+	 * Setter for <code>cattle.instance.desired</code>.
 	 */
-	public void setPreviousRevisionId(java.lang.Long value);
+	public void setDesired(java.lang.Boolean value);
 
 	/**
-	 * Getter for <code>cattle.instance.previous_revision_id</code>.
+	 * Getter for <code>cattle.instance.desired</code>.
 	 */
-	@javax.persistence.Column(name = "previous_revision_id", precision = 19)
-	public java.lang.Long getPreviousRevisionId();
+	@javax.persistence.Column(name = "desired", nullable = false, precision = 1)
+	public java.lang.Boolean getDesired();
 
 	// -------------------------------------------------------------------------
 	// FROM and INTO

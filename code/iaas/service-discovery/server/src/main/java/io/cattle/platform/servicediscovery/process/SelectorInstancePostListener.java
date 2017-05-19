@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.process;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.ServiceExposeMapDao;
@@ -46,8 +47,10 @@ public class SelectorInstancePostListener extends AbstractObjectProcessLogic imp
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         final Instance instance = (Instance) state.getResource();
-        List<Service> services = objectManager.find(Service.class, SERVICE.ACCOUNT_ID, instance.getAccountId(),
-                SERVICE.REMOVED, null, SERVICE.SELECTOR_CONTAINER, new Condition(ConditionType.NOTNULL));
+        List<Service> services = objectManager.find(Service.class,
+                SERVICE.ACCOUNT_ID, instance.getAccountId(),
+                SERVICE.REMOVED, null,
+                SERVICE.SELECTOR_CONTAINER, new Condition(ConditionType.NOTNULL));
 
         for (final Service service : services) {
             if (sdService.isSelectorContainerMatch(service.getSelectorContainer(), instance)) {

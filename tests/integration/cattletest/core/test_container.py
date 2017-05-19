@@ -289,7 +289,6 @@ def test_container_stop(client, super_client, context):
 
 
 def _assert_removed(container):
-    assert container.state == "removed"
     assert_removed_fields(container)
 
     volumes = container.volumes()
