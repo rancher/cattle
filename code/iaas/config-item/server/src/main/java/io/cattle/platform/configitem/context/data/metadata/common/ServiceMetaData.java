@@ -5,8 +5,8 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.core.util.LBMetadataUtil.LBConfigMetadataStyle;
+import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 
@@ -84,7 +84,7 @@ public class ServiceMetaData {
             this.port = port;
         }
     }
-   
+
     String name;
     String uuid;
     String stack_name;
@@ -119,6 +119,9 @@ public class ServiceMetaData {
         this.stack_name = stackName;
         this.stack_uuid = stackUUID;
         this.kind = service.getKind();
+        if (ServiceConstants.KIND_SCALING_GROUP_SERVICE.equals(this.kind)) {
+            this.kind = ServiceConstants.KIND_SERVICE;
+        }
         this.sidekicks = sidekicks;
         this.vip = getVip(service);
         boolean isPrimaryConfig = service.getName().equalsIgnoreCase(serviceName);
@@ -329,7 +332,7 @@ public class ServiceMetaData {
     public void setLb_config(LBConfigMetadataStyle lb_config) {
         this.lb_config = lb_config;
     }
-    
+
     public String getPrimary_service_name() {
         return primary_service_name;
     }
