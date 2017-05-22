@@ -2,7 +2,7 @@ package io.cattle.platform.docker.machine.launch;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.ProjectConstants;
-import io.cattle.platform.iaas.api.manager.HaConfigManager;
+import io.cattle.platform.iaas.api.manager.DBSettings;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.service.launcher.GenericServiceLauncher;
@@ -139,11 +139,11 @@ public class CatalogLauncher extends GenericServiceLauncher implements Initializ
 
     @Override
     protected void setEnvironment(Map<String, String> env) {
-        env.put("CATALOG_SERVICE_MYSQL_ADDRESS", String.format("%s:%s", HaConfigManager.DB_HOST.get(),
-                HaConfigManager.DB_PORT.get()));
-        env.put("CATALOG_SERVICE_MYSQL_DBNAME", HaConfigManager.DB_NAME.get());
-        env.put("CATALOG_SERVICE_MYSQL_USER", HaConfigManager.DB_USER.get());
-        env.put("CATALOG_SERVICE_MYSQL_PASSWORD", HaConfigManager.DB_PASS.get());
+        env.put("CATALOG_SERVICE_MYSQL_ADDRESS", String.format("%s:%s", DBSettings.DB_HOST.get(),
+                DBSettings.DB_PORT.get()));
+        env.put("CATALOG_SERVICE_MYSQL_DBNAME", DBSettings.DB_NAME.get());
+        env.put("CATALOG_SERVICE_MYSQL_USER", DBSettings.DB_USER.get());
+        env.put("CATALOG_SERVICE_MYSQL_PASSWORD", DBSettings.DB_PASS.get());
         env.put("CATALOG_SERVICE_MYSQL_PARAMS", DB_PARAMS.get() == null ? "" : DB_PARAMS.get());
     }
 

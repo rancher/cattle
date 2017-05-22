@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class DeploymentUnitTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.DeploymentUnitRecord> {
 
-	private static final long serialVersionUID = -1750265786;
+	private static final long serialVersionUID = -99853828;
 
 	/**
 	 * The singleton instance of <code>cattle.deployment_unit</code>
@@ -92,6 +92,31 @@ public class DeploymentUnitTable extends org.jooq.impl.TableImpl<io.cattle.platf
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.DeploymentUnitRecord, java.lang.Long> SERVICE_ID = createField("service_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
+	 * The column <code>cattle.deployment_unit.environment_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.DeploymentUnitRecord, java.lang.Long> STACK_ID = createField("environment_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
+
+	/**
+	 * The column <code>cattle.deployment_unit.health_state</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.DeploymentUnitRecord, java.lang.String> HEALTH_STATE = createField("health_state", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
+
+	/**
+	 * The column <code>cattle.deployment_unit.host_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.DeploymentUnitRecord, java.lang.Long> HOST_ID = createField("host_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>cattle.deployment_unit.requested_revision_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.DeploymentUnitRecord, java.lang.Long> REQUESTED_REVISION_ID = createField("requested_revision_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>cattle.deployment_unit.revision_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.DeploymentUnitRecord, java.lang.Long> REVISION_ID = createField("revision_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
 	 * Create a <code>cattle.deployment_unit</code> table reference
 	 */
 	public DeploymentUnitTable() {
@@ -142,7 +167,7 @@ public class DeploymentUnitTable extends org.jooq.impl.TableImpl<io.cattle.platf
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.DeploymentUnitRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.DeploymentUnitRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_DEPLOYMENT_UNIT__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_DEPLOYMENT_UNIT__SERVICE_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.DeploymentUnitRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_DEPLOYMENT_UNIT__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_DEPLOYMENT_UNIT__SERVICE_ID, io.cattle.platform.core.model.Keys.FK_DEPLOYMENT_UNIT__ENVIRONMENT_ID, io.cattle.platform.core.model.Keys.FK_DEPLOYMENT_UNIT__HOST_ID, io.cattle.platform.core.model.Keys.FK_DEPLOYMENT_UNIT_REQUESTED_REVISION_ID, io.cattle.platform.core.model.Keys.FK_DEPLOYMENT_UNIT__REVISION_ID);
 	}
 
 	/**

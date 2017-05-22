@@ -157,6 +157,61 @@ public interface DeploymentUnit extends java.io.Serializable {
 	@javax.persistence.Column(name = "service_id", precision = 19)
 	public java.lang.Long getServiceId();
 
+	/**
+	 * Setter for <code>cattle.deployment_unit.environment_id</code>.
+	 */
+	public void setStackId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.deployment_unit.environment_id</code>.
+	 */
+	@javax.persistence.Column(name = "environment_id", nullable = false, precision = 19)
+	public java.lang.Long getStackId();
+
+	/**
+	 * Setter for <code>cattle.deployment_unit.health_state</code>.
+	 */
+	public void setHealthState(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.deployment_unit.health_state</code>.
+	 */
+	@javax.persistence.Column(name = "health_state", length = 255)
+	public java.lang.String getHealthState();
+
+	/**
+	 * Setter for <code>cattle.deployment_unit.host_id</code>.
+	 */
+	public void setHostId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.deployment_unit.host_id</code>.
+	 */
+	@javax.persistence.Column(name = "host_id", precision = 19)
+	public java.lang.Long getHostId();
+
+	/**
+	 * Setter for <code>cattle.deployment_unit.requested_revision_id</code>.
+	 */
+	public void setRequestedRevisionId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.deployment_unit.requested_revision_id</code>.
+	 */
+	@javax.persistence.Column(name = "requested_revision_id", precision = 19)
+	public java.lang.Long getRequestedRevisionId();
+
+	/**
+	 * Setter for <code>cattle.deployment_unit.revision_id</code>.
+	 */
+	public void setRevisionId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.deployment_unit.revision_id</code>.
+	 */
+	@javax.persistence.Column(name = "revision_id", precision = 19)
+	public java.lang.Long getRevisionId();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

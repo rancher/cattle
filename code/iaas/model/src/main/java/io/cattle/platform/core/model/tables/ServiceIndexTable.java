@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ServiceIndexTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ServiceIndexRecord> {
 
-	private static final long serialVersionUID = -1181078724;
+	private static final long serialVersionUID = 1382264360;
 
 	/**
 	 * The singleton instance of <code>cattle.service_index</code>
@@ -35,11 +35,6 @@ public class ServiceIndexTable extends org.jooq.impl.TableImpl<io.cattle.platfor
 	 * The column <code>cattle.service_index.name</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceIndexRecord, java.lang.String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
-
-	/**
-	 * The column <code>cattle.service_index.account_id</code>.
-	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceIndexRecord, java.lang.Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
 	 * The column <code>cattle.service_index.kind</code>.
@@ -152,7 +147,7 @@ public class ServiceIndexTable extends org.jooq.impl.TableImpl<io.cattle.platfor
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ServiceIndexRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ServiceIndexRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_SERVICE_SUFFIX__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_SERVICE_SUFFIX__SERVICE_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ServiceIndexRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_SERVICE_SUFFIX__SERVICE_ID);
 	}
 
 	/**

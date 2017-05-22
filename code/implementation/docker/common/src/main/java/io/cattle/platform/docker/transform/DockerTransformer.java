@@ -8,8 +8,10 @@ import java.util.Map;
 public interface DockerTransformer {
 
     void transform(Map<String, Object> fromInspect, Instance toInstance);
-    
+
     List<DockerInspectTransformVolume> transformVolumes(Map<String, Object> fromInspect, List<Object> mounts);
 
     void setLabels(Instance instance, Map<String, Object> fromInspect);
+
+    int getExitCode(Instance instance);
 }

@@ -2,7 +2,6 @@ package io.cattle.platform.iaas.api.object.postinit;
 
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.utils.ApiUtils;
-import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.postinit.ObjectPostInstantiationHandler;
 import io.cattle.platform.object.util.ObjectUtils;
@@ -24,7 +23,7 @@ public class AccountFieldPostInitHandler implements ObjectPostInstantiationHandl
         Policy policy = ApiUtils.getPolicy();
         boolean overwrite = true;
 
-        if (policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS) && properties.containsKey(AccountConstants.ACCOUNT_ID)) {
+        if (policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS) && properties.containsKey(ObjectMetaDataManager.ACCOUNT_FIELD)) {
             overwrite = false;
         }
 

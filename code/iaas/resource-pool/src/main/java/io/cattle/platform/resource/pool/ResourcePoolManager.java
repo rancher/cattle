@@ -15,8 +15,4 @@ public interface ResourcePoolManager {
 
     void releaseResource(Object pool, Object owner, PooledResourceOptions options);
 
-    void transferResource(Object pool, Object owner, Object newOwner);
-
-    void transferResource(Object pool, Object owner, Object newOwner, PooledResourceOptions options);
-
 }

@@ -1,12 +1,12 @@
 package io.cattle.platform.network.impl;
 
+import io.cattle.platform.core.constants.DockerInstanceConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.util.SystemLabels;
-import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.network.IPAssignment;
 import io.cattle.platform.network.NetworkService;

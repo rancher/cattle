@@ -81,8 +81,20 @@
         "mounts": {
             "type": "array[mount]"
         },
+        "shouldRestart": {
+            "type": "shouldRestart"
+        },
+        "lastStart": {
+            "type": "date"
+        },
+        "desired": {
+            "type": "boolean"
+        },
         "healthcheckStates": {
             "type": "array[healthcheckState]"
+        },
+        "lbRulesOnRemove": {
+            "type": "map[json]"
         }
     },
     "resourceActions" : {
@@ -96,6 +108,10 @@
         },
         "stop" : {
             "input" : "instanceStop",
+            "output" : "instance"
+        },
+        "remove" : {
+            "input" : "instanceRemove",
             "output" : "instance"
         }
     }

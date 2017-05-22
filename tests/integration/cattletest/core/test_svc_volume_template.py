@@ -1,5 +1,4 @@
 from common_fixtures import *  # NOQA
-from cattle import ClientApiError
 from cattle import ApiError
 import yaml
 
@@ -63,13 +62,6 @@ def test_stack_volume(client, context):
     svc1 = client.wait_success(svc1)
     client.wait_success(svc1.activate())
 
-    svc2 = client.create_service(name=random_str(),
-                                 stackId=stack.id,
-                                 launchConfig=launch_config,
-                                 scale=1)
-    svc2 = client.wait_success(svc2)
-    client.wait_success(svc2.activate())
-
     c1 = _validate_compose_instance_start(client, svc1, stack, "1")
     path_to_mount = c1.dataVolumeMounts
     assert len(path_to_mount) == 1
@@ -85,6 +77,13 @@ def test_stack_volume(client, context):
     assert volume.id == volume_id_1
     assert volume.driver == 'nfs'
     assert volume.driverOpts == opts
+
+    svc2 = client.create_service(name=random_str(),
+                                 stackId=stack.id,
+                                 launchConfig=launch_config,
+                                 scale=1)
+    svc2 = client.wait_success(svc2)
+    client.wait_success(svc2.activate())
 
     # svc2 volume should be the same
     c2 = _validate_compose_instance_start(client, svc2, stack, "1")
@@ -136,16 +135,14 @@ def test_external_volume(client, context):
                                     scale=1)
     service = client.wait_success(service)
     assert service.state == "inactive"
+    service.activate()
 
-    # negative test case
-    with pytest.raises(ClientApiError) as e:
-        client.wait_success(service.activate())
-    assert 'Failed to locate' in e.value.message
+    wait_for(lambda: client.reload(service).state == 'error')
 
     # create volume
-    v = client.create_volume(name="foo", driver="nfs", volumeTemplateId=t.id,
-                             stackId=stack.id)
+    v = client.create_volume(name="foo", driver="nfs", stackId=stack.id)
     client.wait_success(v)
+    service.activate()
     wait_state(client, service, 'active')
 
     # test export
@@ -213,7 +210,7 @@ def test_du_unhealthy_reuse_volume(new_context, super_client):
 
     super_client.update(c2, healthState='unhealthy')
     c2.restart()
-    c2 = client.wait_success(c2)
+    c2 = wait_for_condition(client, c2, lambda x: x.removed is not None)
 
     c2 = wait_for_condition(client, c2, lambda x: x.removed is not None)
     svc = wait_state(client, svc, 'active')
@@ -231,11 +228,14 @@ def test_du_unhealthy_reuse_volume(new_context, super_client):
     svc = client.update(svc, scale=1)
     wait_state(client, svc, 'active')
 
-    c3 = client.wait_success(c3)
-    assert c3.removed is not None
-    volume = client.by_id_volume(dict(c3.dataVolumeMounts).values()[0])
-    volume = client.wait_success(volume)
-    assert volume.removed is None
+    count = set()
+    for i in [c1, c2, c3]:
+        volume = client.by_id_volume(dict(i.dataVolumeMounts).values()[0])
+        volume = client.wait_success(volume)
+        if volume.removed is None:
+            count.add(volume.id)
+
+    assert len(count) == 1
 
     client.delete(stack)
     stack = client.wait_success(stack)
@@ -284,8 +284,7 @@ def test_du_volume(new_context, super_client):
 
     c11 = super_client.reload(c11)
 
-    du = c11.deploymentUnitUuid
-    name = stack.name + "_foo_1_" + du
+    name = stack.name + "_foo_1"
     volumes = client.list_volume(name_like=name + "_%")
     assert len(volumes) == 1
     v11 = volumes[0]
@@ -300,10 +299,7 @@ def test_du_volume(new_context, super_client):
         assert key == '/bar'
         assert value is not None
 
-    c12 = super_client.reload(c12)
-
-    du = c12.deploymentUnitUuid
-    name = stack.name + "_foo_1_" + du
+    name = stack.name + "_foo_1"
     volumes = client.list_volume(name_like=name + "_%")
     assert len(volumes) == 1
     v12 = volumes[0]
@@ -319,8 +315,7 @@ def test_du_volume(new_context, super_client):
         assert value is not None
 
     c21 = super_client.reload(c21)
-    du = c21.deploymentUnitUuid
-    name = stack.name + "_foo_2_" + du
+    name = stack.name + "_foo_2"
     volumes = client.list_volume(name_like=name + "_%")
     assert len(volumes) == 1
     v21 = volumes[0]
@@ -383,7 +378,7 @@ def test_upgrade_du_volume(client, context, super_client):
     launch_config = {"imageUuid": image_uuid, "dataVolumes": "foo:/bar"}
     secondary_lc = {"imageUuid": image_uuid, "name": "secondary",
                     "dataVolumes": "foo:/bar"}
-    svc = client.create_service(name=random_str(),
+    svc = client.create_service(name="duvolume" + random_str(),
                                 stackId=stack.id,
                                 launchConfig=launch_config,
                                 scale=1,
@@ -400,8 +395,7 @@ def test_upgrade_du_volume(client, context, super_client):
 
     c11 = super_client.reload(c11)
 
-    du = c11.deploymentUnitUuid
-    name = stack.name + "_foo_1_" + du
+    name = stack.name + "_foo_1"
     volumes = client.list_volume(name_like=name + "_%")
     assert len(volumes) == 1
     v11 = volumes[0]
@@ -414,9 +408,12 @@ def test_upgrade_du_volume(client, context, super_client):
     svc.upgrade_action(inServiceStrategy=strategy)
     svc = client.wait_success(svc)
 
+    client.wait_success(svc.finishupgrade())
+
     c12 = _validate_compose_instance_start(client, svc, stack, "1")
 
     assert c11.id != c12.id
+    assert c11.deploymentUnitUuid == c12.deploymentUnitUuid
 
     path_to_mount = c12.dataVolumeMounts
     assert len(path_to_mount) == 1
@@ -426,14 +423,12 @@ def test_upgrade_du_volume(client, context, super_client):
 
     c12 = super_client.reload(c12)
 
-    du = c12.deploymentUnitUuid
-    name = stack.name + "_foo_1_" + du
+    name = stack.name + "_foo_1"
     volumes = client.list_volume(name_like=name + "_%")
     assert len(volumes) == 1
     v12 = volumes[0]
     assert v11.id == v12.id
 
-    client.wait_success(svc.finishupgrade())
     volumes = client.list_volume(name_like=name + "_%")
     assert len(volumes) == 1
     v12 = volumes[0]
@@ -446,9 +441,9 @@ def test_classic_volume(client, context):
 
     # create service
     image_uuid = context.image_uuid
-    launch_config = {"imageUuid": image_uuid, "dataVolumes": "foo:/bar"}
+    launch_config = {"imageUuid": image_uuid, "dataVolumes": "foo2:/bar"}
     secondary_lc = {"imageUuid": image_uuid, "name": "secondary",
-                    "dataVolumes": "foo:/bar"}
+                    "dataVolumes": "foo2:/bar"}
     svc = client.create_service(name=random_str(),
                                 stackId=stack.id,
                                 launchConfig=launch_config,
@@ -459,43 +454,7 @@ def test_classic_volume(client, context):
 
     c11 = _validate_compose_instance_start(client, svc, stack, "1")
     assert len(c11.dataVolumeMounts) == 0
-    assert "foo:/bar" in c11.dataVolumes
-
-
-def test_prev_version_service(client, context, super_client):
-    opts = {'foo': 'true', 'bar': 'true'}
-    stack = client.create_stack(name=random_str())
-    stack = client.wait_success(stack)
-
-    client.create_volumeTemplate(name="foo", driver="nfs",
-                                 driverOpts=opts,
-                                 stackId=stack.id)
-    stack = client.create_stack(name=random_str())
-    stack = client.wait_success(stack)
-
-    # create service
-    image_uuid = context.image_uuid
-    launch_config = {"imageUuid": image_uuid, "dataVolumes": "foo:/bar"}
-    secondary_lc = {"imageUuid": image_uuid, "name": "secondary",
-                    "dataVolumes": "foo:/bar"}
-    svc = client.create_service(name=random_str(),
-                                stackId=stack.id,
-                                launchConfig=launch_config,
-                                scale=1,
-                                secondaryLaunchConfigs=[secondary_lc])
-    svc = wait_state(client, svc, 'inactive')
-
-    # reset the flag automatically set for new services
-    svc = super_client.update(svc, serviceIndexStrategy="noop")
-    svc = super_client.wait_success(svc)
-    assert svc.serviceIndexStrategy == 'noop'
-    client.wait_success(svc.activate())
-
-    c11 = _validate_compose_instance_start(client, svc, stack, "1")
-    assert len(c11.dataVolumeMounts) == 0
-    assert "foo:/bar" in c11.dataVolumes
-    assert len(super_client.list_deploymentUnit(
-        uuid=c11.deploymentUnitUuid)) == 0
+    assert "foo2:/bar" in c11.dataVolumes
 
 
 def test_no_scope(client):

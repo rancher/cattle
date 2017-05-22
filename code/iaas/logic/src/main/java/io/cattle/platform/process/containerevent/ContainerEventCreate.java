@@ -2,10 +2,10 @@ package io.cattle.platform.process.containerevent;
 
 import static io.cattle.platform.core.constants.CommonStatesConstants.*;
 import static io.cattle.platform.core.constants.ContainerEventConstants.*;
+import static io.cattle.platform.core.constants.DockerInstanceConstants.*;
 import static io.cattle.platform.core.constants.InstanceConstants.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.util.SystemLabels.*;
-import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
 
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
@@ -193,8 +193,7 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
                                 instance = resourceMonitor.waitForNotTransitioning(instance, 3000L);
                                 objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, instance, data);
                             } else {
-                                data.put(REMOVE_OPTION, true);
-                                objectProcessManager.scheduleProcessInstance(PROCESS_STOP, instance, data);
+                                objectProcessManager.stopAndRemove(instance, data);
                             }
                         }
                     }
@@ -261,7 +260,7 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
     }
 
     private Event newInspectEvent(String containerName, String containerId) {
-        Map<String, Object> inspectEventData = new HashMap<String, Object>();
+        Map<String, Object> inspectEventData = new HashMap<>();
         Map<String, Object> reqData = CollectionUtils.asMap("kind", "docker");
         if (StringUtils.isNotEmpty(containerId))
             reqData.put("id", containerId);
@@ -279,7 +278,7 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
     }
 
     protected Map<String, Object> makeData() {
-        Map<String, Object> data = new HashMap<String, Object>();
+        Map<String, Object> data = new HashMap<>();
         DataAccessor.fromMap(data).withKey(PROCESS_DATA_NO_OP).set(true);
         return data;
     }

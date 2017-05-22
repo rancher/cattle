@@ -134,6 +134,10 @@ public abstract class AbstractObjectManager implements ObjectManager {
 
     @Override
     public <T> T setFields(Object obj, Object key, Object... valueKeyValue) {
+        if (obj == null) {
+            return null;
+        }
+
         Map<Object, Object> values = CollectionUtils.asMap(key, valueKeyValue);
 
         return setFields(obj, convertToPropertiesFor(obj, values));
@@ -143,7 +147,7 @@ public abstract class AbstractObjectManager implements ObjectManager {
     protected Map<Object, Object> toObjectsToWrite(Object obj, Map<String, Object> values) {
         String type = getType(obj);
         Map<String, Relationship> relationships = null;
-        Map<Object, Object> objValues = new LinkedHashMap<Object, Object>();
+        Map<Object, Object> objValues = new LinkedHashMap<>();
 
         for (Map.Entry<String, Object> entry : values.entrySet()) {
             String key = entry.getKey();

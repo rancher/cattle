@@ -4,6 +4,8 @@ import io.cattle.platform.activity.ActivityLog;
 import io.cattle.platform.activity.Entry;
 import io.cattle.platform.async.utils.ResourceTimeoutException;
 import io.cattle.platform.async.utils.TimeoutException;
+import io.cattle.platform.core.constants.ServiceConstants;
+import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceLog;
@@ -17,8 +19,6 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.object.util.TransitioningUtils;
-import io.cattle.platform.util.exception.InstanceException;
-import io.cattle.platform.util.exception.ServiceReconcileException;
 
 import java.util.Date;
 import java.util.Stack;
@@ -30,16 +30,18 @@ public class ActivityLogImpl implements ActivityLog {
     EventService eventService;
     ObjectManager objectManager;
     Stack<EntryImpl> entries = new Stack<>();
+    Long accountId;
 
-    public ActivityLogImpl(ObjectManager objectManager, EventService eventService) {
+    public ActivityLogImpl(ObjectManager objectManager, EventService eventService, Long accountId) {
         super();
         this.objectManager = objectManager;
         this.eventService = eventService;
+        this.accountId = accountId;
     }
 
     @Override
-    public Entry start(Service service, String type, String message) {
-        ServiceLog auditLog = newServiceLog(service);
+    public Entry start(Long serviceId, Long deploymentUnitId, String type, String message) {
+        ServiceLog auditLog = newServiceLog(serviceId, deploymentUnitId);
         auditLog.setEventType(type);
         auditLog.setDescription(message);
         auditLog.setTransactionId(io.cattle.platform.util.resource.UUID.randomUUID().toString());
@@ -49,19 +51,21 @@ public class ActivityLogImpl implements ActivityLog {
             auditLog.setEventType(parentLog.getEventType() + "." + type);
             auditLog.setTransactionId(parentLog.getTransactionId());
         }
-        EntryImpl impl = new EntryImpl(this, service, objectManager.create(auditLog));
+        EntryImpl impl = new EntryImpl(this, serviceId, deploymentUnitId, objectManager.create(auditLog));
         ObjectUtils.publishChanged(eventService, objectManager, impl.auditLog);
         entries.push(impl);
         return impl;
     }
 
 
-    protected ServiceLog newServiceLog(Service obj) {
+    protected ServiceLog newServiceLog(Long serviceId, Long deploymentUnitId) {
         ServiceLog auditLog = objectManager.newRecord(ServiceLog.class);
         auditLog.setLevel("info");
         auditLog.setCreated(new Date());
-        auditLog.setAccountId(obj.getAccountId());
-        auditLog.setServiceId(obj.getId());
+        auditLog.setAccountId(accountId);
+        auditLog.setServiceId(serviceId);
+        auditLog.setDeploymentUnitId(deploymentUnitId);
+
         return auditLog;
     }
 
@@ -80,14 +84,18 @@ public class ActivityLogImpl implements ActivityLog {
             } else if (entry.message != null) {
                 message = entry.message;
             }
-            objectManager.reload(entry.owner);
-            try {
-                objectManager.setFields(entry.owner,
-                        ObjectMetaDataManager.TRANSITIONING_FIELD, transitioning,
-                        ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD, message);
-            } catch (DataChangedException e) {
+            if (entry.serviceId != null && (entry.failed || !entry.waiting)) {
+                for (int i = 0 ; i < 3 ; i++) {
+                    try {
+                        objectManager.setFields(objectManager.loadResource(Service.class, entry.serviceId),
+                                ObjectMetaDataManager.TRANSITIONING_FIELD, transitioning,
+                                ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD, message);
+                        break;
+                    } catch (DataChangedException e) {
+                    }
+                }
+                ObjectUtils.publishChanged(eventService, accountId, entry.serviceId, ServiceConstants.KIND_SERVICE);
             }
-            ObjectUtils.publishChanged(eventService, objectManager, entry.owner);
         }
     }
 
@@ -101,21 +109,44 @@ public class ActivityLogImpl implements ActivityLog {
     }
 
     @Override
-    public void instance(Instance instance, String operation, String reason, String level) {
-        if (instance == null) {
+    public void error(String message, Object... args) {
+        String desc = String.format(message, args);
+        ServiceLog log = newSubEntry(entries.peek(), "error");
+        log.setDescription(desc);
+        log.setEndTime(new Date());
+        create(log);
+
+        EntryImpl entry = entries.peek();
+        if (!entry.failed) {
+            entry.failed = true;
+            entry.message = desc;
+        }
+    }
+
+    @Override
+    public void instance(Long instanceId, String operation, String reason, String level) {
+        if (instanceId == null) {
             return;
         }
         ServiceLog log = newSubEntry(entries.peek(), "");
         log.setEventType("service.instance." + operation);
         log.setEndTime(new Date());
         log.setDescription(reason);
-        log.setInstanceId(instance.getId());
+        log.setInstanceId(instanceId);
         log.setLevel(level);
         create(log);
+
+        if ("error".equals(level)) {
+            EntryImpl entry = entries.peek();
+            if (!entry.failed) {
+                entry.failed = true;
+                entry.message = reason;
+            }
+        }
     }
 
     protected ServiceLog newSubEntry(EntryImpl entryImpl, String suffix) {
-        ServiceLog log = newServiceLog(entryImpl.owner);
+        ServiceLog log = newServiceLog(entryImpl.serviceId, entryImpl.deploymentUnitId);
         log.setTransactionId(entryImpl.auditLog.getTransactionId());
         log.setEventType(entryImpl.auditLog.getEventType() + "." + suffix);
         log.setSubLog(true);
@@ -136,13 +167,9 @@ public class ActivityLogImpl implements ActivityLog {
         entryImpl.message = t.getMessage();
         ServiceLog log = newSubEntry(entryImpl, "exception");
         log.setInstanceId(getInstanceIdFromThrowable(t));
+        log.setDeploymentUnitId(getDeploymentIdFromThrowable(t));
         log.setDescription(t.getMessage());
         log.setLevel("error");
-
-        if (t instanceof ServiceReconcileException) {
-            entryImpl.failed = false;
-            log.setLevel("info");
-        }
 
         if (t instanceof DataChangedException) {
             entryImpl.failed = false;
@@ -181,15 +208,28 @@ public class ActivityLogImpl implements ActivityLog {
     }
 
     protected void create(ServiceLog serviceLog) {
+        String desc = serviceLog.getDescription();
+        if (desc != null && desc.length() > 1024) {
+            serviceLog.setDescription(desc.substring(0, 1024));
+        }
         objectManager.create(serviceLog);
         ObjectUtils.publishChanged(eventService, objectManager, serviceLog);
     }
 
+    protected Long getDeploymentIdFromThrowable(Throwable t) {
+        Object obj = null;
+        if (t instanceof ResourceTimeoutException) {
+            obj = ((ResourceTimeoutException) t).getResource();
+        }
+
+        if (obj instanceof DeploymentUnit) {
+            return ((DeploymentUnit) obj).getId();
+        }
+        return null;
+    }
+
     protected Long getInstanceIdFromThrowable(Throwable t) {
         Object obj = null;
-        if (t instanceof InstanceException) {
-            obj = ((InstanceException) t).getInstance();
-        }
         if (t instanceof ResourceTimeoutException) {
             obj = ((ResourceTimeoutException) t).getResource();
         }
@@ -197,6 +237,12 @@ public class ActivityLogImpl implements ActivityLog {
             return ((Instance) obj).getId();
         }
         return null;
+    }
+
+    @Override
+    public void waiting() {
+        EntryImpl entry = entries.peek();
+        entry.waiting = true;
     }
 
 }

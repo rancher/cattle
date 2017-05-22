@@ -1,16 +1,20 @@
 package io.cattle.platform.core.dao.impl;
 
 import static io.cattle.platform.core.model.tables.AccountTable.*;
+import static io.cattle.platform.core.model.tables.AgentTable.*;
+import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.ImageStoragePoolMapTable.*;
 import static io.cattle.platform.core.model.tables.ImageTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.MountTable.*;
 import static io.cattle.platform.core.model.tables.StorageDriverTable.*;
+import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 
 import io.cattle.platform.core.addon.MountEntry;
+import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
@@ -23,6 +27,8 @@ import io.cattle.platform.core.model.StorageDriver;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.VolumeStoragePoolMap;
+import io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable;
+import io.cattle.platform.core.model.tables.VolumeTable;
 import io.cattle.platform.core.model.tables.records.ImageRecord;
 import io.cattle.platform.core.model.tables.records.ImageStoragePoolMapRecord;
 import io.cattle.platform.core.model.tables.records.MountRecord;
@@ -30,6 +36,7 @@ import io.cattle.platform.core.model.tables.records.VolumeRecord;
 import io.cattle.platform.core.model.tables.records.VolumeStoragePoolMapRecord;
 import io.cattle.platform.core.util.VolumeUtils;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
@@ -47,6 +54,8 @@ import java.util.concurrent.Callable;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.apache.commons.lang3.tuple.Pair;
+import org.jooq.Condition;
 import org.jooq.Record;
 import org.jooq.Record1;
 import org.jooq.Record6;
@@ -55,7 +64,7 @@ import org.jooq.Result;
 
 @Named
 public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
-    private static final Set<String> LOCAL_POOL_KINDS = new HashSet<String>(Arrays.asList(new String[]{"docker", "sim"}));
+    private static final Set<String> LOCAL_POOL_KINDS = new HashSet<>(Arrays.asList(new String[]{"docker", "sim"}));
 
     @Inject
     GenericResourceDao resourceDao;
@@ -101,7 +110,7 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
         }
 
         Volume volume = resourceDao.createAndSchedule(Volume.class, volumeData);
-        Map<String, Object> vspm = new HashMap<String, Object>();
+        Map<String, Object> vspm = new HashMap<>();
         vspm.put("volumeId", volume.getId());
         vspm.put("storagePoolId", storagePool.getId());
         resourceDao.createAndSchedule(VolumeStoragePoolMap.class, vspm);
@@ -160,7 +169,7 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
                 .and(MOUNT.STATE.in(INELLIGIBLE_STATES)))
                 .fetchInto(Long.class);
 
-        Set<Long> volumeIds = new HashSet<Long>(instanceVolumeIds);
+        Set<Long> volumeIds = new HashSet<>(instanceVolumeIds);
         volumeIds.removeAll(inelligibleVolumeIds);
 
         List<VolumeRecord> vols = create()
@@ -174,7 +183,7 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
         return volumes;
     }
 
-    private static final Set<String> INSTANCE_STATES = new HashSet<String>(Arrays.asList(new String[] { InstanceConstants.STATE_STOPPED,
+    private static final Set<String> INSTANCE_STATES = new HashSet<>(Arrays.asList(new String[] { InstanceConstants.STATE_STOPPED,
             InstanceConstants.STATE_CREATED }));
 
     @Override
@@ -296,7 +305,7 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
                 .join(STORAGE_POOL)
                     .on(STORAGE_POOL.ID.eq(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID))
                 .where(VOLUME.REMOVED.isNull()
-                        .and(STORAGE_POOL.REMOVED.isNotNull()))
+                        .and(STORAGE_POOL.ID.eq(storagePoolId)))
                 .fetchInto(VolumeRecord.class);
     }
 
@@ -378,5 +387,73 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
                         .and(IMAGE_STORAGE_POOL_MAP.STATE.notIn(CommonStatesConstants.DEACTIVATING, CommonStatesConstants.REMOVING)))
                 .limit(count)
                 .fetchInto(ImageStoragePoolMapRecord.class);
+    }
+
+    @Override
+    public List<? extends Volume> getVolumesOnRemovedAndInactiveHosts(long deploymentUnitId, long accountId) {
+        // 1. Fetch volume for storage pool ids
+        MultiRecordMapper<Pair<Volume, Long>> mapper = new MultiRecordMapper<Pair<Volume, Long>>() {
+            @Override
+            protected Pair<Volume, Long> map(List<Object> input) {
+                Volume volume = (Volume)input.get(0);
+                VolumeStoragePoolMap map = (VolumeStoragePoolMap)input.get(1);
+                return Pair.of(volume, map.getStoragePoolId());
+            }
+        };
+
+        VolumeTable volume = mapper.add(VOLUME);
+        VolumeStoragePoolMapTable storagePoolMap = mapper.add(VOLUME_STORAGE_POOL_MAP);
+        List<Pair<Volume, Long>> volumes = create()
+                .select(mapper.fields())
+                .from(volume)
+                .join(storagePoolMap)
+                .on(storagePoolMap.VOLUME_ID.eq(volume.ID))
+                .where(volume.REMOVED.isNull())
+                .and(volume.DEPLOYMENT_UNIT_ID.eq(deploymentUnitId))
+                .fetch().map(mapper);
+
+        Map<Long, List<Volume>> storagePoolIdsToVolumes = new HashMap<>();
+        for (Pair<Volume, Long> i : volumes) {
+            List<Volume> vols = storagePoolIdsToVolumes.get(i.getRight());
+            if (vols == null) {
+                vols = new ArrayList<>();
+            }
+            vols.add(i.getLeft());
+            storagePoolIdsToVolumes.put(i.getRight(), vols);
+        }
+
+        // 2. pick the invalid storage pools
+        List<String> goodHostStates = Arrays.asList(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE,
+                CommonStatesConstants.UPDATING_ACTIVE);
+        List<String> goodAgentStates = Arrays.asList(CommonStatesConstants.ACTIVE,
+                AgentConstants.STATE_FINISHING_RECONNECT, AgentConstants.STATE_RECONNECTED);
+        Condition condition = STORAGE_POOL.REMOVED.isNull().and(HOST.STATE.in(goodHostStates))
+                .and(AGENT.STATE.isNull().or(AGENT.STATE.in(goodAgentStates)));
+
+        final List<Long> goodPoolIds = new ArrayList<>();
+        create().select(STORAGE_POOL.ID)
+                .from(STORAGE_POOL)
+                .join(STORAGE_POOL_HOST_MAP)
+                .on(STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID.eq(STORAGE_POOL.ID))
+                .join(HOST)
+                .on(HOST.ID.eq(STORAGE_POOL_HOST_MAP.HOST_ID))
+                .join(AGENT)
+                .on(HOST.AGENT_ID.eq(AGENT.ID))
+                .where(STORAGE_POOL.ACCOUNT_ID.eq(accountId))
+                .and(condition)
+                .fetchInto(new RecordHandler<Record1<Long>>() {
+                    @Override
+                    public void next(Record1<Long> record) {
+                        goodPoolIds.add(record.getValue(STORAGE_POOL.ID));
+                    }
+                });
+
+        List<Volume> toRemove = new ArrayList<>();
+        for (Long poolId : storagePoolIdsToVolumes.keySet()) {
+            if (!goodPoolIds.contains(poolId)) {
+                toRemove.addAll(storagePoolIdsToVolumes.get(poolId));
+            }
+        }
+        return toRemove;
     }
 }

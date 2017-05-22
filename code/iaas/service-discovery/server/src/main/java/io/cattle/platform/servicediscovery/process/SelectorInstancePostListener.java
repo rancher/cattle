@@ -4,6 +4,7 @@ import static io.cattle.platform.core.model.tables.ServiceTable.*;
 
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.dao.ServiceExposeMapDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
@@ -15,7 +16,6 @@ import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
-import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.deployment.impl.lock.ServiceInstanceLock;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.util.type.Priority;
@@ -47,8 +47,10 @@ public class SelectorInstancePostListener extends AbstractObjectProcessLogic imp
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         final Instance instance = (Instance) state.getResource();
-        List<Service> services = objectManager.find(Service.class, SERVICE.ACCOUNT_ID, instance.getAccountId(),
-                SERVICE.REMOVED, null, SERVICE.SELECTOR_CONTAINER, new Condition(ConditionType.NOTNULL));
+        List<Service> services = objectManager.find(Service.class,
+                SERVICE.ACCOUNT_ID, instance.getAccountId(),
+                SERVICE.REMOVED, null,
+                SERVICE.SELECTOR_CONTAINER, new Condition(ConditionType.NOTNULL));
 
         for (final Service service : services) {
             if (sdService.isSelectorContainerMatch(service.getSelectorContainer(), instance)) {

@@ -8,6 +8,13 @@
         "timeout" : {
             "type" : "int",
             "create" : true
+        },
+        "stopSource" : {
+            "type": "enum",
+            "options" : [ "user", "external" ],
+            "create" : true,
+            "nullable" : false,
+            "default": "user"
         }
     }
 }

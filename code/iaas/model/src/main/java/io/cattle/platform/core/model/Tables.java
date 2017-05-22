@@ -39,6 +39,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.AuthTokenTable AUTH_TOKEN = io.cattle.platform.core.model.tables.AuthTokenTable.AUTH_TOKEN;
 
 	/**
+	 * The table cattle.backoff
+	 */
+	public static final io.cattle.platform.core.model.tables.BackoffTable BACKOFF = io.cattle.platform.core.model.tables.BackoffTable.BACKOFF;
+
+	/**
 	 * The table cattle.backup
 	 */
 	public static final io.cattle.platform.core.model.tables.BackupTable BACKUP = io.cattle.platform.core.model.tables.BackupTable.BACKUP;
@@ -282,6 +287,11 @@ public class Tables {
 	 * The table cattle.resource_pool
 	 */
 	public static final io.cattle.platform.core.model.tables.ResourcePoolTable RESOURCE_POOL = io.cattle.platform.core.model.tables.ResourcePoolTable.RESOURCE_POOL;
+
+	/**
+	 * The table cattle.revision
+	 */
+	public static final io.cattle.platform.core.model.tables.RevisionTable REVISION = io.cattle.platform.core.model.tables.RevisionTable.REVISION;
 
 	/**
 	 * The table cattle.scheduled_upgrade

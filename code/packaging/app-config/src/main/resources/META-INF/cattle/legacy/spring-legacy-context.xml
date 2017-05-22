@@ -101,6 +101,7 @@
             <tx:method name="createServiceInstance" />
             <tx:method name="createServiceLink" />
             <tx:method name="createServiceLinks" />
+            <tx:method name="getNextCreate" />
         </tx:attributes>
     </tx:advice>
 
@@ -140,29 +141,40 @@
         </tx:attributes>
     </tx:advice>
 
+    <tx:advice id="InstanceDaoAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="updatePorts" />
+        </tx:attributes>
+    </tx:advice>
+
+<!--
+    <tx:advice id="ProcessDaoAdvice" transaction-manager="CoreTransactionManager">
+        <tx:attributes>
+            <tx:method name="setDone" />
+        </tx:attributes>
+    </tx:advice>
+-->
+
     <aop:config>
-        <aop:advisor advice-ref="GenericResourceDaoImplAdvice"
-            pointcut="execution(* io.cattle.platform.core.dao.GenericResourceDao.*(..))" />
-        <aop:advisor advice-ref="IpAddressDaoImplAdvice"
-            pointcut="execution(* io.cattle.platform.core.dao.IpAddressDao.*(..))" />
-        <aop:advisor advice-ref="StoragePoolDaoImplAdvice"
-            pointcut="execution(* io.cattle.platform.core.dao.StoragePoolDao.*(..))" />
-        <aop:advisor advice-ref="VolumeDaoImplAdvice"
-            pointcut="execution(* io.cattle.platform.core.dao.VolumeDao.*(..))" />
-        <aop:advisor advice-ref="HostDaoImplAdvice"
-            pointcut="execution(* io.cattle.platform.core.dao.HostDao.*(..))" />
-        <aop:advisor advice-ref="NetworkDaoImplAdvice"
-            pointcut="execution(* io.cattle.platform.core.dao.NetworkDao.*(..))" />
+        <aop:advisor advice-ref="InstanceDaoAdvice" pointcut="execution(* io.cattle.platform.core.dao.InstanceDao.*(..))" />
+        <aop:advisor advice-ref="GenericResourceDaoImplAdvice" pointcut="execution(* io.cattle.platform.core.dao.GenericResourceDao.*(..))" />
+        <aop:advisor advice-ref="IpAddressDaoImplAdvice" pointcut="execution(* io.cattle.platform.core.dao.IpAddressDao.*(..))" />
+        <aop:advisor advice-ref="StoragePoolDaoImplAdvice" pointcut="execution(* io.cattle.platform.core.dao.StoragePoolDao.*(..))" />
+        <aop:advisor advice-ref="VolumeDaoImplAdvice" pointcut="execution(* io.cattle.platform.core.dao.VolumeDao.*(..))" />
+        <aop:advisor advice-ref="HostDaoImplAdvice" pointcut="execution(* io.cattle.platform.core.dao.HostDao.*(..))" />
+        <aop:advisor advice-ref="NetworkDaoImplAdvice" pointcut="execution(* io.cattle.platform.core.dao.NetworkDao.*(..))" />
         <aop:advisor advice-ref="DockerStorageAdvice" pointcut="execution(* io.cattle.platform.docker.storage.dao.DockerStorageDao.*(..))" />
         <aop:advisor advice-ref="TransactionDelegateAdvice" pointcut="execution(* io.cattle.platform.object.impl.TransactionDelegate.*(..))" />
         <aop:advisor advice-ref="RegisterAdvice" pointcut="execution(* io.cattle.platform.register.dao.RegisterDao.*(..))" />
-        <aop:advisor advice-ref="ServiceMapDaoImplAdvice" pointcut="execution(* io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao.*(..))" />
-        <aop:advisor advice-ref="ServiceMapDaoImplAdvice" pointcut="execution(* io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao.*(..))" />
+        <aop:advisor advice-ref="ServiceMapDaoImplAdvice" pointcut="execution(* io.cattle.platform.core.dao.ServiceDao.*(..))" />
+        <aop:advisor advice-ref="ServiceMapDaoImplAdvice" pointcut="execution(* io.cattle.platform.core.dao.ServiceExposeMapDao.*(..))" />
+        <aop:advisor advice-ref="ServiceMapDaoImplAdvice" pointcut="execution(* io.cattle.platform.core.dao.ServiceConsumeMapDao.*(..))" />
         <aop:advisor advice-ref="ImageDaoAdvice" pointcut="execution(* io.cattle.platform.storage.service.dao.ImageDao.*(..))" />
         <aop:advisor advice-ref="AllocatorAdvice" pointcut="execution(* io.cattle.platform.allocator.dao.AllocatorDao.*(..))" />
         <aop:advisor advice-ref="ApiDelegateAdvice" pointcut="execution(* io.github.ibuildthecloud.gdapi.request.handler.write.ReadWriteApiDelegate.*(..))" />
         <aop:advisor advice-ref="StorageDriverDaoAdvice" pointcut="execution(* io.cattle.platform.core.dao.StorageDriverDao.*(..))" />
         <aop:advisor advice-ref="DataDaoAdvice" pointcut="execution(* io.cattle.platform.core.dao.DataDao.*(..))" />
+<!--         <aop:advisor advice-ref="ProcessDaoAdvice" pointcut="execution(* io.cattle.platform.engine.manager.impl.ProcessRecordDao.*(..))" /> -->
     </aop:config>
 
    <bean class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" depends-on="CoreSchemaFactory" >

@@ -187,17 +187,6 @@
         </property>
     </bean>
 
-    <bean class="io.cattle.platform.docker.process.stack.DockerComposeStackHandler"
-        p:name="DockerComposeStackHandler"
-        p:commandName="composeProject.create"
-        p:dataTypeClass="io.cattle.platform.core.model.Stack"
-        p:processNames="stack.create"
-        p:errorChainProcess="stack.error" >
-        <property name="priority">
-            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
-        </property>
-    </bean>
-
     <bean class="io.cattle.platform.process.stack.StackAgentHandler"
         p:name="StackAgentHandler"
         p:commandName="kubernetesStack.create"
@@ -431,17 +420,19 @@
 
     <!-- Service Discovery Service -->
     <process:process name="service.create" resourceType="service" start="requested" transitioning="registering" done="inactive" />
-    <process:process name="service.activate" resourceType="service" start="inactive,restarting" transitioning="activating" done="active" />    
-    <process:process name="service.update" resourceType="service" start="inactive,active,updating-active,finishing-upgrade,activating,canceling-upgrade,upgrading,rolling-back" transitioning="inactive=updating-inactive,active=updating-active,updating-active=updating-active,finishing-upgrade=finishing-upgrade,activating=activating,canceling-upgrade=canceling-upgrade,upgrading=upgrading,rolling-back=rolling-back" done="updating-inactive=inactive,updating-active=active,finishing-upgrade=active,activating=active,canceling-upgrade=canceled-upgrade,upgrading=upgraded,rolling-back=active" />
-    <process:process name="service.deactivate" resourceType="service" start="restarting,active,activating, updating-inactive, updating-active" transitioning="deactivating" done="inactive" />
-    <process:process name="service.remove" resourceType="service" start="inactive, registering, active, activating, updating-inactive, updating-active, upgrading, canceling-upgrade, rolling-back, deactivating, requested,canceled-upgrade,rolling-back,upgraded,finishing-upgrade,restarting" transitioning="removing" done="removed" />
+    <process:process name="service.activate" resourceType="service" start="inactive,restarting,paused,error" transitioning="activating" done="active" />    
+    <process:process name="service.update" resourceType="service" start="error,inactive,active,updating-active,finishing-upgrade,activating,upgrading,rolling-back" transitioning="error=updating-active,inactive=updating-inactive,active=updating-active,updating-active=updating-active,finishing-upgrade=finishing-upgrade,activating=activating,upgrading=upgrading,rolling-back=rolling-back" done="updating-inactive=inactive,updating-active=active,finishing-upgrade=active,activating=active,upgrading=upgraded,rolling-back=active" />
+    <process:process name="service.deactivate" resourceType="service" start="restarting,active,activating,updating-inactive,updating-active,paused,error" transitioning="deactivating" done="inactive" />
+    <process:process name="service.remove" resourceType="service" start="requested,inactive,registering,active,activating,updating-inactive,updating-active,upgrading,upgraded,rolling-back,deactivating,pausing,paused,finishing-upgrade,restarting,erroring,error" transitioning="removing" done="removed" />
     <process:process name="service.upgrade" resourceType="service" start="active,activating,inactive,updating-active" transitioning="upgrading" done="upgraded" />
-    <process:process name="service.continueupgrade" resourceType="service" start="canceled-upgrade" transitioning="upgrading" done="upgraded" />
-    <process:process name="service.cancelupgrade" resourceType="service" start="upgrading,finishing-upgrade" transitioning="canceling-upgrade" done="canceled-upgrade" />
-    <process:process name="service.rollback" resourceType="service" start="upgrading,upgraded,canceled-upgrade" transitioning="rolling-back" done="active" />
+    <process:process name="service.pause" resourceType="service" start="requested,inactive,registering,active,activating,updating-inactive,updating-active,upgrading,upgraded,rolling-back,deactivating,pausing,finishing-upgrade,restarting,erroring,error" transitioning="pausing" done="paused" />
+    <process:process name="service.cancelupgrade" resourceType="service" start="upgrading,upgraded,finishing-upgrade,active" transitioning="pausing" done="paused" />
+    <process:process name="service.error" resourceType="service" start="requested,inactive,registering,active,activating,updating-inactive,updating-active,upgrading,upgraded,rolling-back,deactivating,pausing,finishing-upgrade,restarting" transitioning="erroring" done="error" />
+    <process:process name="service.rollback" resourceType="service" start="upgrading,upgraded,paused,active,error" transitioning="rolling-back" done="active" />
     <process:process name="service.finishupgrade" resourceType="service" start="upgraded" transitioning="finishing-upgrade" done="active" />
     <process:process name="service.restart" resourceType="service" start="active" transitioning="restarting" done="active" />
 
+    <!-- Account -->
     <process:process name="account.upgrade" resourceType="account" start="active" transitioning="upgrading" done="active" />
 
     <!-- Service Discovery Service/Instance map -->
@@ -524,17 +515,23 @@
     <process:process name="scheduledupgrade.start" resourceType="scheduledUpgrade" start="scheduled" transitioning="running" done="done" />
     <process:process name="scheduledupgrade.remove" resourceType="scheduledUpgrade" start="scheduled,running,done" transitioning="removing" done="removed" />
 
+    <!-- Deployment Unit -->
+    <process:process name="deploymentunit.create" resourceType="deploymentUnit" start="requested" transitioning="registering" done="inactive" />
+    <process:process name="deploymentunit.activate" resourceType="deploymentUnit" start="inactive,error,erroring,pausing,paused" transitioning="activating" done="active" />
+    <process:process name="deploymentunit.update" resourceType="deploymentUnit" start="active,activating,pausing,paused" transitioning="activating" done="active" />
+    <process:process name="deploymentunit.deactivate" resourceType="deploymentUnit" start="active, activating,error,erroring,pausing,paused" transitioning="deactivating" done="inactive" />
+    <process:process name="deploymentunit.remove" resourceType="deploymentUnit" start="requested,registering,activating,active,deactivating,inactive,error,erroring,pausing,paused" transitioning="removing" done="removed" />
+    <process:process name="deploymentunit.error" resourceType="deploymentUnit" start="active,activating,pausing,paused" transitioning="erroring" done="error" />
+    <process:process name="deploymentunit.pause" resourceType="deploymentUnit" start="requested,registering,activating,active,deactivating,inactive,error,erroring" transitioning="pausing" done="paused" />
+
     <bean class="io.cattle.platform.docker.process.dao.impl.DockerComputeDaoImpl" />
 
     <bean class="io.cattle.platform.docker.process.instance.DockerInstancePreCreate" />
     <bean class="io.cattle.platform.docker.process.instance.DockerInstancePostCreate" />
     <bean class="io.cattle.platform.docker.process.account.DockerAccountCreate" />
     <bean class="io.cattle.platform.docker.process.instancehostmap.DockerPostInstanceHostMapActivate" />
-    <bean class="io.cattle.platform.docker.process.serializer.DockerContainerSerializer" />
     <bean class="io.cattle.platform.service.account.SystemRoleObjectPostProcessor" />
     <bean class="io.cattle.platform.docker.process.ipaddress.DockerIpAddressDeactivate" />
-    <bean class="io.cattle.platform.docker.process.instancehostmap.DockerComposeInstanceHostMapActivate" />
-    <bean class="io.cattle.platform.docker.process.instance.DockerComposeServiceCleanup" />
 
     <tx:advice id="DockerComputeDaoImplAdvice" transaction-manager="CoreTransactionManager">
         <tx:attributes>

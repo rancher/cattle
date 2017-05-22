@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "service", schema = "cattle")
-public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ServiceRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record20<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean, java.lang.Boolean>, io.cattle.platform.core.model.Service {
+public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ServiceRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record22<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean, java.lang.Boolean, java.lang.Long, java.lang.Long>, io.cattle.platform.core.model.Service {
 
-	private static final long serialVersionUID = 542776506;
+	private static final long serialVersionUID = 1501164545;
 
 	/**
 	 * Setter for <code>cattle.service.id</code>.
@@ -356,6 +356,40 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 		return (java.lang.Boolean) getValue(19);
 	}
 
+	/**
+	 * Setter for <code>cattle.service.previous_revision_id</code>.
+	 */
+	@Override
+	public void setPreviousRevisionId(java.lang.Long value) {
+		setValue(20, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.service.previous_revision_id</code>.
+	 */
+	@javax.persistence.Column(name = "previous_revision_id", precision = 19)
+	@Override
+	public java.lang.Long getPreviousRevisionId() {
+		return (java.lang.Long) getValue(20);
+	}
+
+	/**
+	 * Setter for <code>cattle.service.revision_id</code>.
+	 */
+	@Override
+	public void setRevisionId(java.lang.Long value) {
+		setValue(21, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.service.revision_id</code>.
+	 */
+	@javax.persistence.Column(name = "revision_id", precision = 19)
+	@Override
+	public java.lang.Long getRevisionId() {
+		return (java.lang.Long) getValue(21);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -369,23 +403,23 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	}
 
 	// -------------------------------------------------------------------------
-	// Record20 type implementation
+	// Record22 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row20<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean, java.lang.Boolean> fieldsRow() {
-		return (org.jooq.Row20) super.fieldsRow();
+	public org.jooq.Row22<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean, java.lang.Boolean, java.lang.Long, java.lang.Long> fieldsRow() {
+		return (org.jooq.Row22) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row20<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean, java.lang.Boolean> valuesRow() {
-		return (org.jooq.Row20) super.valuesRow();
+	public org.jooq.Row22<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean, java.lang.Boolean, java.lang.Long, java.lang.Long> valuesRow() {
+		return (org.jooq.Row22) super.valuesRow();
 	}
 
 	/**
@@ -552,6 +586,22 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.lang.Long> field21() {
+		return io.cattle.platform.core.model.tables.ServiceTable.SERVICE.PREVIOUS_REVISION_ID;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public org.jooq.Field<java.lang.Long> field22() {
+		return io.cattle.platform.core.model.tables.ServiceTable.SERVICE.REVISION_ID;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -706,6 +756,22 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	@Override
 	public java.lang.Boolean value20() {
 		return getSkip();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.Long value21() {
+		return getPreviousRevisionId();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.Long value22() {
+		return getRevisionId();
 	}
 
 	/**
@@ -892,7 +958,25 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ServiceRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.Long value12, java.lang.String value13, java.lang.Long value14, java.lang.String value15, java.lang.String value16, java.lang.String value17, java.lang.String value18, java.lang.Boolean value19, java.lang.Boolean value20) {
+	public ServiceRecord value21(java.lang.Long value) {
+		setPreviousRevisionId(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public ServiceRecord value22(java.lang.Long value) {
+		setRevisionId(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public ServiceRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.Long value12, java.lang.String value13, java.lang.Long value14, java.lang.String value15, java.lang.String value16, java.lang.String value17, java.lang.String value18, java.lang.Boolean value19, java.lang.Boolean value20, java.lang.Long value21, java.lang.Long value22) {
 		return this;
 	}
 
@@ -925,6 +1009,8 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 		setHealthState(from.getHealthState());
 		setSystem(from.getSystem());
 		setSkip(from.getSkip());
+		setPreviousRevisionId(from.getPreviousRevisionId());
+		setRevisionId(from.getRevisionId());
 	}
 
 	/**
@@ -950,7 +1036,7 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 	/**
 	 * Create a detached, initialised ServiceRecord
 	 */
-	public ServiceRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long environmentId, java.lang.String vip, java.lang.Long createIndex, java.lang.String selectorLink, java.lang.String selectorContainer, java.lang.String externalId, java.lang.String healthState, java.lang.Boolean system, java.lang.Boolean skip) {
+	public ServiceRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long environmentId, java.lang.String vip, java.lang.Long createIndex, java.lang.String selectorLink, java.lang.String selectorContainer, java.lang.String externalId, java.lang.String healthState, java.lang.Boolean system, java.lang.Boolean skip, java.lang.Long previousRevisionId, java.lang.Long revisionId) {
 		super(io.cattle.platform.core.model.tables.ServiceTable.SERVICE);
 
 		setValue(0, id);
@@ -973,5 +1059,7 @@ public class ServiceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.p
 		setValue(17, healthState);
 		setValue(18, system);
 		setValue(19, skip);
+		setValue(20, previousRevisionId);
+		setValue(21, revisionId);
 	}
 }

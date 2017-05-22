@@ -11,7 +11,6 @@ public class LaunchConfiguration {
     Object accountId;
     Integer priority;
     Map<String, Object> data;
-    Predicate predicate;
     ProcessState parentProcessState;
     Date runAfter;
 
@@ -32,7 +31,6 @@ public class LaunchConfiguration {
         this.resourceType = config.getResourceType();
         this.resourceId = config.getResourceId();
         this.data = config.getData();
-        this.predicate = config.getPredicate();
         this.parentProcessState = config.getParentProcessState();
         this.runAfter = config.getRunAfter();
         this.accountId = config.getAccountId();
@@ -74,16 +72,8 @@ public class LaunchConfiguration {
     @Override
     public String toString() {
         return "LaunchConfiguration [processName=" + processName + ", resourceType=" + resourceType + ", resourceId=" + resourceId + ", accountId=" + accountId
-                + ", priority=" + priority + ", data=" + data + ", runAfter=" + runAfter + ", predicate=" + predicate + ", parentProcessState="
+                + ", priority=" + priority + ", data=" + data + ", runAfter=" + runAfter + ", parentProcessState="
                 + parentProcessState + "]";
-    }
-
-    public Predicate getPredicate() {
-        return predicate;
-    }
-
-    public void setPredicate(Predicate predicate) {
-        this.predicate = predicate;
     }
 
     public ProcessState getParentProcessState() {
