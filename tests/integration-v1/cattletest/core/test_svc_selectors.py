@@ -27,47 +27,6 @@ def _create_service(client, env, image_uuid, service_kind):
     return labels, service
 
 
-def _validate_service_link(client, context, service_kind):
-    env = _create_stack(client)
-
-    image_uuid = context.image_uuid
-    # use case #1 - service having selector's label,
-    # is present when service with selector is created
-    labels, service = _create_service(client, env, image_uuid, service_kind)
-    service = client.wait_success(service)
-    assert all(item in service.launchConfig.labels.items()
-               for item in labels.items())
-    launch_config = {"imageUuid": image_uuid}
-    service1 = client.create_service(name=random_str(),
-                                     environmentId=env.id,
-                                     launchConfig=launch_config,
-                                     selectorLink="foo=bar")
-    service1 = client.wait_success(service1)
-    assert service1.selectorLink == "foo=bar"
-    _validate_add_service_link(service1, service, client)
-    # use case #2 - service having selector's label,
-    # is added after service with selector creation
-    labels, service2 = _create_service(client, env, image_uuid, service_kind)
-    service2 = client.wait_success(service2)
-    assert all(item in service2.launchConfig.labels.items()
-               for item in labels.items())
-    _validate_add_service_link(service1, service2, client)
-
-    compose_config = env.exportconfig()
-    assert compose_config is not None
-    document = yaml.load(compose_config.dockerComposeConfig)
-    svc = document['services'][service1.name]
-    assert len(svc['labels']) == 1
-    labels = {"io.rancher.service.selector.link": "foo=bar"}
-    assert svc['labels'] == labels
-
-
-def test_service_add_service_link_selector(client, context):
-    _validate_service_link(client, context, "service")
-    _validate_service_link(client, context, "dnsService")
-    _validate_service_link(client, context, "externalService")
-
-
 def test_service_add_instance_selector(new_context):
     client = new_context.client
     context = new_context
@@ -191,15 +150,6 @@ def test_svc_invalid_selector(client):
     assert e.value.error.status == 422
     assert e.value.error.code == 'InvalidFormat'
 
-    with pytest.raises(ApiError) as e:
-        client.create_service(name=random_str(),
-                              environmentId=env.id,
-                              launchConfig=launch_config,
-                              selectorContainer="foo notin barbar",
-                              selectorLink="foo not in barbar")
-    assert e.value.error.status == 422
-    assert e.value.error.code == 'InvalidFormat'
-
 
 def test_update_instance_selector(client, context):
     env = _create_stack(client)
@@ -253,94 +203,3 @@ def test_update_instance_selector(client, context):
 
     maps = client.list_serviceExposeMap(serviceId=svc.id, state='active')
     assert maps[0].instanceId == c2.id
-
-
-def test_update_link_selector(client, context):
-    env = _create_stack(client)
-
-    image_uuid = context.image_uuid
-    labels = {'foo1': "bar1"}
-    launch_config = {"imageUuid": image_uuid, "labels": labels}
-    s1 = client.create_service(name=random_str(),
-                               environmentId=env.id,
-                               launchConfig=launch_config)
-    s1 = client.wait_success(s1)
-    assert s1.launchConfig.labels == labels
-
-    labels = {'bar1': "foo1"}
-    launch_config = {"imageUuid": image_uuid, "labels": labels}
-    s2 = client.create_service(name=random_str(),
-                               environmentId=env.id,
-                               launchConfig=launch_config)
-    s2 = client.wait_success(s2)
-    assert s2.launchConfig.labels == labels
-
-    launch_config = {"imageUuid": image_uuid}
-    svc = client.create_service(name=random_str(),
-                                environmentId=env.id,
-                                launchConfig=launch_config,
-                                selectorLink="foo1=bar1")
-    svc = client.wait_success(svc)
-    assert svc.selectorLink == "foo1=bar1"
-    _validate_add_service_link(svc, s1, client)
-
-    # update selector link
-    service = client.update(svc, selectorLink="bar1=foo1")
-    client.wait_success(service)
-    _validate_add_service_link(svc, s2, client)
-    _validate_remove_service_link(svc, s1, client)
-
-
-def _validate_add_service_link(service,
-                               consumedService, client):
-    service_maps = client. \
-        list_serviceConsumeMap(serviceId=service.id,
-                               consumedServiceId=consumedService.id)
-
-    assert len(service_maps) == 1
-
-    service_map = service_maps[0]
-    wait_for_condition(
-        client, service_map, _resource_is_active,
-        lambda x: 'State is: ' + x.state)
-
-
-def _validate_remove_service_link(service,
-                                  consumedService, client):
-    def check():
-        service_maps = client. \
-            list_serviceConsumeMap(serviceId=service.id,
-                                   consumedServiceId=consumedService.id)
-
-        return len(service_maps) == 0
-    wait_for(check)
-
-
-def _resource_is_active(resource):
-    return resource.state == 'active'
-
-
-def _resource_is_removed(resource):
-    return resource.state == 'removed'
-
-
-def _validate_svc_instance_map_count(client, service,
-                                     state, count, timeout=30):
-    start = time.time()
-    instance_service_map = client. \
-        list_serviceExposeMap(serviceId=service.id, state=state)
-    while len(instance_service_map) < count:
-        time.sleep(.5)
-        instance_service_map = client. \
-            list_serviceExposeMap(serviceId=service.id, state=state)
-        if time.time() - start > timeout:
-            raise Exception('Timeout waiting for map to be in correct state')
-
-    return instance_service_map
-
-
-def _wait_for_instance_start(super_client, id):
-    wait_for(
-        lambda: len(super_client.by_id('container', id)) > 0
-    )
-    return super_client.by_id('container', id)

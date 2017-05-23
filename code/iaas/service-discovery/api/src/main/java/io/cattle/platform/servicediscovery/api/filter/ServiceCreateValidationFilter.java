@@ -293,13 +293,6 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         if (selectorContainer != null) {
             SelectorUtils.getSelectorConstraints(selectorContainer);
         }
-
-        String selectorLink = DataUtils.getFieldFromRequest(request,
-                ServiceConstants.FIELD_SELECTOR_LINK,
-                String.class);
-        if (selectorLink != null) {
-            SelectorUtils.getSelectorConstraints(selectorLink);
-        }
     }
 
     protected void validateMetadata(ApiRequest request) {
