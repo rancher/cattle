@@ -14,6 +14,7 @@ import io.cattle.platform.systemstack.lock.ScheduledUpgradeLock;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -28,11 +29,12 @@ import org.slf4j.LoggerFactory;
 
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicIntProperty;
+import com.netflix.config.DynamicStringProperty;
 
 public class UpgradeManager {
 
     private static final DynamicIntProperty MAX_UPGRADE = ArchaiusUtil.getInt("concurrent.scheduled.upgrades");
-    public static final DynamicBooleanProperty UPGRADE_MANAGER = ArchaiusUtil.getBoolean("upgrade.manager");
+    public static final DynamicStringProperty UPGRADE_MANAGER = ArchaiusUtil.getString("upgrade.manager");
     public static final String METADATA = "library:infra*network-services";
     private static final DynamicBooleanProperty LAUNCH_CATALOG = ArchaiusUtil.getBoolean("catalog.execute");
     private static final Logger log = LoggerFactory.getLogger(UpgradeManager.class);
@@ -101,8 +103,13 @@ public class UpgradeManager {
             return;
         }
 
-        List<? extends Stack> stacks = UPGRADE_MANAGER.get() ?
-                stackDao.getStacksToUpgrade(catalogs.values()) : stackDao.getStacksThatMatch(OLD_METADATAS);
+        List<? extends Stack> stacks = Collections.emptyList();
+
+        if ("true".equalsIgnoreCase(UPGRADE_MANAGER.get())) {
+            stacks = stackDao.getStacksToUpgrade(catalogs.values());
+        } else if ("mandatory".equalsIgnoreCase(UPGRADE_MANAGER.get())) {
+            stacks = stackDao.getStacksThatMatch(OLD_METADATAS);
+        }
 
         for (Stack stack : stacks) {
             String templateId = catalogService.getTemplateIdFromExternalId(stack.getExternalId());

@@ -96,6 +96,10 @@ public class CatalogServiceImpl implements CatalogService {
 
         //get the latest version from the catalog template
         Template template = getTemplateById(catalogTemplate.getTemplateId());
+        return getDefaultOrLatestTemplateExternalId(template);
+    }
+
+    protected String getDefaultOrLatestTemplateExternalId(Template template) throws IOException {
         if (template == null || template.getVersionLinks() == null) {
             return null;
         }
@@ -311,11 +315,12 @@ public class CatalogServiceImpl implements CatalogService {
 
         TemplateCollection collection = getTemplates(catalogTemplateUrl.toString());
         for (Template template : collection.getData()) {
-            if (!"library".equals(template.getCatalogId()) || StringUtils.isBlank(template.getDefaultVersion())) {
+            if (!"library".equals(template.getCatalogId())) {
                 continue;
             }
-            if (StringUtils.isNotBlank(template.getDefaultTemplateVersionId())) {
-                result.put(template.getId(), "catalog://" + template.getDefaultTemplateVersionId());
+            String externalId = getDefaultOrLatestTemplateExternalId(template);
+            if (StringUtils.isNotBlank(externalId)) {
+                result.put(template.getId(), externalId);
             }
         }
 
