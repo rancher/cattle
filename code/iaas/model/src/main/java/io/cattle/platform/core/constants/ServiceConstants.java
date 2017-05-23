@@ -62,7 +62,6 @@ public class ServiceConstants {
     public static final String FIELD_METADATA = "metadata";
     public static final String FIELD_VERSION = "version";
     public static final String FIELD_SELECTOR_CONTAINER = "selectorContainer";
-    public static final String FIELD_SELECTOR_LINK = "selectorLink";
     public static final String FIELD_START_ON_CREATE = "startOnCreate";
     public static final String FIELD_IN_SERVICE_STRATEGY = "inServiceStrategy";
     public static final String FIELD_FQDN = "fqdn";
@@ -172,7 +171,6 @@ public class ServiceConstants {
     public static final String LABEL_LB_PROXY_PORTS = "io.rancher.loadbalancer.proxy-protocol.ports";
 
     public static final String LABEL_SELECTOR_CONTAINER = "io.rancher.service.selector.container";
-    public static final String LABEL_SELECTOR_LINK = "io.rancher.service.selector.link";
     public static final String LABEL_SERVICE_HASH = "io.rancher.service.hash";
 
     public static final String PRIMARY_LAUNCH_CONFIG_NAME = "io.rancher.service.primary.launch.config";
