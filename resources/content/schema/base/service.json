@@ -81,11 +81,6 @@
           "nullable": false,
           "default": false
         },
-        "selectorLink":{
-             "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
         "selectorContainer":{
              "attributes" : {
                 "scheduleUpdate" : true

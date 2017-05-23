@@ -169,17 +169,6 @@ public interface Service extends java.io.Serializable {
 	public java.lang.Long getCreateIndex();
 
 	/**
-	 * Setter for <code>cattle.service.selector_link</code>.
-	 */
-	public void setSelectorLink(java.lang.String value);
-
-	/**
-	 * Getter for <code>cattle.service.selector_link</code>.
-	 */
-	@javax.persistence.Column(name = "selector_link", length = 4096)
-	public java.lang.String getSelectorLink();
-
-	/**
 	 * Setter for <code>cattle.service.selector_container</code>.
 	 */
 	public void setSelectorContainer(java.lang.String value);

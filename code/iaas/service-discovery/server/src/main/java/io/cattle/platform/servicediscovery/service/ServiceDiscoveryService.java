@@ -2,7 +2,6 @@ package io.cattle.platform.servicediscovery.service;
 
 import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.core.addon.PortRule;
-import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
@@ -27,17 +26,9 @@ public interface ServiceDiscoveryService extends AnnotatedEventListener {
      */
     void removeServiceLinks(Service service);
 
-    void addServiceLink(Service service, ServiceLink serviceLink);
-
-    void removeServiceLink(Service service, ServiceLink serviceLink);
-
-    void registerServiceLinks(Service service);
-
     /**
      * SERVICE INFO
      */
-    boolean isSelectorLinkMatch(String selector, Service targetService);
-
     boolean isSelectorContainerMatch(String selector, Instance instance);
 
     /**

@@ -1,6 +1,5 @@
 package io.cattle.platform.servicediscovery.service.impl;
 
-import static io.cattle.platform.core.model.tables.AccountLinkTable.*;
 import static io.cattle.platform.core.model.tables.BackoffTable.*;
 import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
@@ -15,7 +14,6 @@ import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.addon.LbConfig;
 import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.addon.PublicEndpoint;
-import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -28,7 +26,6 @@ import io.cattle.platform.core.dao.ServiceConsumeMapDao;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.dao.ServiceExposeMapDao;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.core.model.AccountLink;
 import io.cattle.platform.core.model.Backoff;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -227,44 +224,6 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         }
         Subnet subnet = subnets.get(0);
         poolManager.releaseResource(subnet, service);
-    }
-
-    @Override
-    public void addServiceLink(final Service service, final ServiceLink serviceLink) {
-        DeferredUtils.nest(new Runnable() {
-            @Override
-            public void run() {
-                consumeMapDao.createServiceLink(service, serviceLink);
-            }
-        });
-    }
-
-    @Override
-    public void removeServiceLink(final Service service, final ServiceLink serviceLink) {
-        DeferredUtils.nest(new Runnable() {
-            @Override
-            public void run() {
-                ServiceConsumeMap map = consumeMapDao.findMapToRemove(service.getId(), serviceLink.getServiceId());
-                if (map != null) {
-                    objectProcessManager.scheduleProcessInstanceAsync(
-                            ServiceConstants.PROCESS_SERVICE_CONSUME_MAP_REMOVE,
-                            map, null);
-                }
-            }
-        });
-    }
-
-    @Override
-    public boolean isSelectorLinkMatch(String selector, Service targetService) {
-        if (StringUtils.isBlank(selector)) {
-            return false;
-        }
-        Map<String, String> serviceLabels = ServiceUtil.getLaunchConfigLabels(targetService, ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
-        if (serviceLabels.isEmpty()) {
-            return false;
-        }
-        return SelectorUtils.isSelectorMatch(selector, serviceLabels);
-
     }
 
     @SuppressWarnings("unchecked")
@@ -668,79 +627,6 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         request.withDeferredTrigger(false);
         itemManager.updateConfig(request);
     }
-
-
-    @Override
-    public void registerServiceLinks(Service service) {
-        registerTargetServices(service);
-        registerAsTargetService(service);
-    }
-
-    private void registerAsTargetService(Service targetService) {
-        List<Long> accountIds = new ArrayList<>();
-        accountIds.add(targetService.getAccountId());
-        List<? extends AccountLink> linkedToAccounts = objectManager.find(AccountLink.class,
-                ACCOUNT_LINK.LINKED_ACCOUNT_ID, targetService.getAccountId(),
-                ACCOUNT_LINK.REMOVED, null);
-
-        // add all accounts that are linked to service's account
-        for (AccountLink linkedToAccount : linkedToAccounts) {
-            accountIds.add(linkedToAccount.getAccountId());
-        }
-
-        List<Service> services = new ArrayList<>();
-        for (Long accountId : accountIds) {
-            services.addAll(objectManager.find(Service.class, SERVICE.ACCOUNT_ID, accountId,
-                    SERVICE.REMOVED, null));
-        }
-        for (Service service : services) {
-            // skip itself
-            if (targetService.getId().equals(service.getId())) {
-                continue;
-            }
-            if (isSelectorLinkMatch(service.getSelectorLink(), targetService)) {
-                addServiceLink(service, targetService);
-            }
-        }
-    }
-
-    private void registerTargetServices(Service service) {
-        if (StringUtils.isBlank(service.getSelectorLink())) {
-            return;
-        }
-
-        List<Long> targetAccountIds = new ArrayList<>();
-        targetAccountIds.add(service.getAccountId());
-        // add all accounts that are linked to service's account
-        List<? extends AccountLink> linkedAccounts = objectManager.find(AccountLink.class,
-                ACCOUNT_LINK.ACCOUNT_ID, service.getAccountId(),
-                ACCOUNT_LINK.REMOVED, null);
-        for (AccountLink linkedAccount : linkedAccounts) {
-            targetAccountIds.add(linkedAccount.getLinkedAccountId());
-        }
-
-        List<Service> targetServices = new ArrayList<>();
-        for (Long accountId : targetAccountIds) {
-            targetServices.addAll(objectManager.find(Service.class, SERVICE.ACCOUNT_ID, accountId,
-                    SERVICE.REMOVED, null));
-        }
-
-        for (Service targetService : targetServices) {
-            // skip itself
-            if (targetService.getId().equals(service.getId())) {
-                continue;
-            }
-            if (isSelectorLinkMatch(service.getSelectorLink(), targetService)) {
-                addServiceLink(service, targetService);
-            }
-        }
-    }
-
-    protected void addServiceLink(Service service, Service targetService) {
-        ServiceLink link = new ServiceLink(targetService.getId(), null);
-        addServiceLink(service, link);
-    }
-
 
     @Override
     public void removeFromLoadBalancerServices(Service service) {

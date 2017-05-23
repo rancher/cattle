@@ -298,17 +298,13 @@ public class ComposeExportServiceImpl implements ComposeExportService {
     protected void populateSelectorServiceLabels(Service service,
             String launchConfigName, Map<String, Object> composeServiceData) {
         String selectorContainer = service.getSelectorContainer();
-        String selectorLink = service.getSelectorLink();
-        if (selectorContainer == null && selectorLink == null) {
+        if (selectorContainer == null) {
             return;
         }
 
         Map<String, String> labels = new HashMap<>();
         if (composeServiceData.get(InstanceConstants.FIELD_LABELS) != null) {
             labels.putAll((HashMap<String, String>) composeServiceData.get(InstanceConstants.FIELD_LABELS));
-        }
-        if (selectorLink != null) {
-            labels.put(ServiceConstants.LABEL_SELECTOR_LINK, selectorLink);
         }
         if (selectorContainer != null) {
             labels.put(ServiceConstants.LABEL_SELECTOR_CONTAINER, selectorContainer);
