@@ -400,7 +400,8 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
 
         if (attempt.getMatchedCandidate() == null) {
             if (finalFailedConstraints.size() > 0) {
-                throw new FailedToAllocate(toErrorMessage(finalFailedConstraints));
+                throw new FailedToAllocate(String.format("%s and resource constraints: %s", 
+                        toErrorMessage(finalFailedConstraints), attempt.getResourceRequests()));
             }
             throw new FailedToAllocate("Failed to find placement");
         }
@@ -743,6 +744,8 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
         for (Long agentId : agentIds) {
             EventVO<Map<String, Object>> schedulerEvent = buildEvent(SCHEDULER_PRIORITIZE_EVENT, InstanceConstants.PROCESS_ALLOCATE, attempt.getInstances(),
                     attempt.getVolumes(), agentId);
+            List<ResourceRequest> requests = extractResourceRequests(schedulerEvent);
+            attempt.setResourceRequests(requests);
             if (schedulerEvent != null) {
                 RemoteAgent agent = agentLocator.lookupAgent(agentId);
                 Event eventResult = callScheduler("Error getting hosts for resources: %s", schedulerEvent, agent);
