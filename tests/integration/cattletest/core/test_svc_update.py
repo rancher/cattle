@@ -260,8 +260,8 @@ def test_u_in_service_upgrade_networks_from(context, client, super_client):
     _validate_upgrade(super_client, svc, u_svc,
                       primary='0', secondary1='1', secondary2='0')
     # check that primary containers got recreated
-    wait_for(lambda: client.reload(p11).state == 'removed')
-    wait_for(lambda: client.reload(p12).state == 'removed')
+    wait_for(lambda: client.reload(p11).removed is not None)
+    wait_for(lambda: client.reload(p12).removed is not None)
     _validate_compose_instance_start(client, svc, env, "1")
     _validate_compose_instance_start(client, svc, env, "2")
     wait_for(lambda: client.reload(s11).state == 'stopped')
@@ -314,8 +314,8 @@ def test_u_in_service_upgrade_volumes_from(context, client, super_client):
                       primary='1', secondary1='0', secondary2='1')
     _validate_compose_instance_start(client, svc, env, "1")
     _validate_compose_instance_start(client, svc, env, "2")
-    wait_for(lambda: client.reload(s11).state == 'removed')
-    wait_for(lambda: client.reload(s12).state == 'removed')
+    wait_for(lambda: client.reload(s11).removed is not None)
+    wait_for(lambda: client.reload(s12).removed is not None)
     wait_for(lambda: client.reload(s21).state == 'stopped')
     wait_for(lambda: client.reload(s22).state == 'stopped')
 
@@ -1125,8 +1125,8 @@ def test_u_rollback_to_revision(context, client, super_client):
     assert client.reload(c3).state == 'stopped'
 
     svc.garbagecollect()
-    wait_for(lambda: client.reload(c2).state == 'removed')
-    wait_for(lambda: client.reload(c3).state == 'removed')
+    wait_for(lambda: client.reload(c2).removed is not None)
+    wait_for(lambda: client.reload(c3).removed is not None)
     assert client.reload(c1).state == 'running'
 
 
