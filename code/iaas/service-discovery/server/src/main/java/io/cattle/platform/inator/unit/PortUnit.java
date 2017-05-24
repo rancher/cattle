@@ -12,6 +12,7 @@ import io.cattle.platform.inator.Unit;
 import io.cattle.platform.inator.UnitRef;
 import io.cattle.platform.inator.deploy.DeploymentUnitInator;
 import io.cattle.platform.inator.factory.InatorServices;
+import io.cattle.platform.inator.lock.PortUnitLock;
 import io.cattle.platform.inator.wrapper.DeploymentUnitWrapper;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.resource.pool.PooledResource;
@@ -116,10 +117,12 @@ public class PortUnit implements Unit, InstanceBindable {
                 if (spec.getPublicPort() == null && spec.getPrivatePort() == port) {
                     Object owner = getOwner(getDeploymentUnit(context));
                     Account account = getAccount(owner);
-                    PooledResource resource = svc.poolManager.allocateOneResource(account, owner,
-                            new PooledResourceOptions()
-                                .withSubOwner(getSubOwner())
-                                .withQualifier(ResourcePoolConstants.ENVIRONMENT_PORT));
+                    PooledResource resource = svc.lockManager.lock(new PortUnitLock(account, this), () -> {
+                        return svc.poolManager.allocateOneResource(account, owner,
+                                new PooledResourceOptions()
+                                    .withSubOwner(getSubOwner())
+                                    .withQualifier(ResourcePoolConstants.ENVIRONMENT_PORT));
+                    });
                     if (resource == null) {
                         throw new ResourceExhaustionException("Not enough environment ports");
                     }
