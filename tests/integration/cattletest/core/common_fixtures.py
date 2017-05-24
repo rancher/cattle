@@ -24,7 +24,7 @@ def log():
 @pytest.fixture(scope='session')
 def cattle_url(project_id=None):
     default_url = 'http://localhost:8080/v1/schemas'
-    url = os.environ.get('CATTLE_URL', default_url).replace('/v1', '/v2-beta')
+    url = os.environ.get('CATTLE_URL', default_url).replace('/v1', '/v2')
     if project_id is None:
         return url
     if url.endswith('/schemas'):
@@ -745,10 +745,10 @@ def api_client(access_key, secret_key, project_id=None):
 
 def base_url():
     base_url = cattle_url()
-    if (base_url.endswith('/v2-beta/schemas')):
+    if (base_url.endswith('/v2/schemas')):
         base_url = base_url[:-7]
-    elif (not base_url.endswith('/v2-beta/')):
-        base_url = base_url + '/v2-beta/'
+    elif (not base_url.endswith('/v2/')):
+        base_url = base_url + '/v2/'
     return base_url
 
 

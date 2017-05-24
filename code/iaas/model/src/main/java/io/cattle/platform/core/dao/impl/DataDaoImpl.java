@@ -62,6 +62,28 @@ public class DataDaoImpl extends AbstractJooqDao implements DataDao {
         });
     }
 
+    @Override
+    public String get(String key) {
+        Data data = objectManager.findAny(Data.class,
+                DATA.NAME, key);
+        return data == null ? null : data.getValue();
+    }
+
+    @Override
+    public void save(String key, boolean visible, String value) {
+        int count = create().update(DATA)
+            .set(DATA.VALUE, value)
+            .where(DATA.NAME.eq(key))
+            .execute();
+        if (count == 0) {
+            objectManager.create(Data.class,
+                    DATA.NAME, key,
+                    DATA.VISIBLE, visible,
+                    DATA.VALUE, value);
+        }
+    }
+
+
     public LockManager getLockManager() {
         return lockManager;
     }
@@ -79,5 +101,4 @@ public class DataDaoImpl extends AbstractJooqDao implements DataDao {
     public void setObjectManager(ObjectManager objectManager) {
         this.objectManager = objectManager;
     }
-
 }

@@ -1,7 +1,8 @@
 package io.cattle.platform.core.dao.impl;
 
-import static io.cattle.platform.core.model.tables.HostTable.*;
+import static io.cattle.platform.core.model.tables.GenericObjectTable.*;
 import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.*;
+import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceLinkTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
@@ -14,13 +15,17 @@ import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
+
 import io.cattle.platform.core.addon.PublicEndpoint;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.GenericObjectConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.PortConstants;
 import io.cattle.platform.core.dao.InstanceDao;
+import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.core.model.GenericObject;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
@@ -47,10 +52,14 @@ import io.cattle.platform.core.model.tables.records.NicRecord;
 import io.cattle.platform.core.model.tables.records.ServiceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
+import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -72,6 +81,12 @@ import com.google.common.cache.LoadingCache;
 public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
     @Inject
     ObjectManager objectManager;
+    @Inject
+    JsonMapper jsonMapper;
+    @Inject
+    NetworkDao networkDao;
+    @Inject
+    ObjectProcessManager objectProcessManager;
 
     public static class IpAddressToServiceIndex {
         ServiceIndex index;
@@ -136,8 +151,7 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
     @Override
     public Instance getInstanceByUuidOrExternalId(Long accountId, String uuid, String externalId) {
         Instance instance = null;
-        Condition condition = INSTANCE.ACCOUNT_ID.eq(accountId).and(INSTANCE.STATE.notIn(CommonStatesConstants.PURGED,
-                CommonStatesConstants.PURGING));
+        Condition condition = INSTANCE.ACCOUNT_ID.eq(accountId);
 
         if(StringUtils.isNotEmpty(uuid)) {
             instance = create()
@@ -180,40 +194,14 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
     }
 
     @Override
-    public List<? extends Instance> listNonRemovedInstances(Account account, boolean forService) {
-        List<? extends Instance> serviceInstances = create().select(INSTANCE.fields())
-                    .from(INSTANCE)
-                    .join(SERVICE_EXPOSE_MAP)
-                    .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID))
-                .where(INSTANCE.ACCOUNT_ID.eq(account.getId()))
-                .and(INSTANCE.REMOVED.isNull())
-                    .fetchInto(InstanceRecord.class);
-        if (forService) {
-            return serviceInstances;
-        }
-        List<? extends Instance> allInstances = create().select(INSTANCE.fields())
+    public List<? extends Instance> listNonRemovedNonStackInstances(Account account) {
+        return create().select(INSTANCE.fields())
                 .from(INSTANCE)
                 .where(INSTANCE.ACCOUNT_ID.eq(account.getId()))
                 .and(INSTANCE.REMOVED.isNull())
+                .and(INSTANCE.STACK_ID.isNull())
                 .fetchInto(InstanceRecord.class);
 
-        allInstances.removeAll(serviceInstances);
-        return allInstances;
-    }
-
-    @Override
-    public List<? extends Instance> findInstancesFor(Service service) {
-        return create()
-                .select(INSTANCE.fields())
-                .from(INSTANCE)
-                .join(SERVICE_EXPOSE_MAP)
-                .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID)
-                        .and(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(service.getId()))
-                        .and(SERVICE_EXPOSE_MAP.STATE.in(CommonStatesConstants.ACTIVATING,
-                                CommonStatesConstants.ACTIVE, CommonStatesConstants.REQUESTED))
-                        .and(INSTANCE.STATE.notIn(CommonStatesConstants.PURGING, CommonStatesConstants.PURGED,
-                                CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING)))
-                .fetchInto(InstanceRecord.class);
     }
 
     @Override
@@ -249,20 +237,6 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
                     .and(SERVICE.NAME.eq(serviceName))
                     .and(STACK.NAME.eq(stackName)))
             .fetchInto(InstanceRecord.class);
-    }
-
-    @Override
-    public List<? extends Instance> findUnallocatedInstanceByDeploymentUnitUuid(long accountId, String deploymentUnitUuid) {
-        return create().select(INSTANCE.fields())
-                .from(INSTANCE)
-                .leftOuterJoin(INSTANCE_HOST_MAP)
-                    .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
-                .where(
-                        INSTANCE.REMOVED.isNull()
-                        .and(INSTANCE_HOST_MAP.ID.isNull())
-                        .and(INSTANCE.DEPLOYMENT_UNIT_UUID.eq(deploymentUnitUuid))
-                        .and(INSTANCE.ALLOCATION_STATE.eq(CommonStatesConstants.INACTIVE)))
-                .fetchInto(InstanceRecord.class);
     }
 
     @Override
@@ -478,5 +452,75 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
                 .where(INSTANCE.STATE.eq(CommonStatesConstants.PURGED))
                 .limit(count)
                 .fetchInto(InstanceLinkRecord.class);
+    }
+
+    @Override
+    public List<GenericObject> getImagePullTasks(long accountId, List<String> images, Map<String, String> labels) {
+        List<GenericObject> taskList = new ArrayList<>();
+        for (String image : images) {
+            GenericObject pullTask = getPullTask(accountId, image, labels);
+            if (pullTask != null) {
+                if (pullTask.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)) {
+                    continue;
+                }
+            } else {
+                Map<String, Object> data = new HashMap<>();
+                data.put(ObjectMetaDataManager.KIND_FIELD, GenericObjectConstants.KIND_PULL_TASK);
+                data.put("image", image);
+                data.put("pullTaskUuid", getPullTaskUuid(accountId, image, labels));
+                data.put(ObjectMetaDataManager.ACCOUNT_FIELD, accountId);
+                data.put(InstanceConstants.FIELD_LABELS, labels);
+                pullTask = objectManager.create(GenericObject.class, data);
+            }
+            taskList.add(pullTask);
+        }
+        return taskList;
+    }
+
+    GenericObject getPullTask(long accountId, String image, Map<String, String> labels) {
+        List<GenericObject> tasks = objectManager.find(GenericObject.class, GENERIC_OBJECT.ACCOUNT_ID, accountId,
+                GENERIC_OBJECT.REMOVED, null);
+        for (GenericObject task : tasks) {
+            if (getPullTaskUuid(accountId, image, labels)
+                    .equalsIgnoreCase(DataAccessor.fieldString(task, "pullTaskUuid"))) {
+                return task;
+            }
+        }
+        return null;
+    }
+
+    private String getPullTaskUuid(long accountId, String image, Map<String, String> labels) {
+        if (labels == null) {
+            labels = new HashMap<>();
+        }
+        try {
+            return String.format("%d:%s:%s", accountId, image, jsonMapper.writeValueAsString(labels));
+        } catch (IOException e) {
+            return String.format("%d:%s:%s", accountId, image);
+        }
+    }
+
+    @Override
+    public void updatePorts(Instance instance, List<String> newPorts) {
+        List<Port> toCreate = new ArrayList<>();
+        List<Port> toRemove = new ArrayList<>();
+        Map<String, Port> toRetain = new HashMap<>();
+
+        networkDao.updateInstancePorts(instance, newPorts, toCreate, toRemove, toRetain);
+        for (Port port : toCreate) {
+            port = objectManager.create(port);
+        }
+
+        // trigger instance/metadata update
+        instance = objectManager.setFields(instance, InstanceConstants.FIELD_PORTS, newPorts);
+        clearCacheInstanceData(instance.getId());
+
+        for (Port port : toRetain.values()) {
+            objectProcessManager.createThenActivate(port, null);
+        }
+
+        for (Port port : toRemove) {
+            objectProcessManager.deactivateThenRemove(port, null);
+        }
     }
 }

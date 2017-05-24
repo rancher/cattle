@@ -15,6 +15,7 @@ import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AgentBasedProcessLogic;
+import io.cattle.platform.util.exception.ExecutionErrorException;
 import io.cattle.platform.util.exception.ExecutionException;
 import io.cattle.platform.util.type.CollectionUtils;
 
@@ -49,7 +50,7 @@ public class K8sLabelsProviderProcessPostListener extends AgentBasedProcessLogic
 
         if (agentId == null) {
             if (k8sRequired(instance)) {
-                throw new ExecutionException("Failed to find labels provider", instance);
+                throw new ExecutionErrorException("Failed to find labels provider", instance);
             } else {
                 return null;
             }

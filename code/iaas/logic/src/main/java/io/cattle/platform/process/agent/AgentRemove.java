@@ -46,7 +46,7 @@ public class AgentRemove extends AbstractObjectProcessHandler {
                 continue;
             }
 
-            
+
             for (Object obj : objectManager.children(agent, clz)) {
                 if (obj instanceof StoragePool) {
                     StoragePool sp = (StoragePool)obj;
@@ -59,7 +59,9 @@ public class AgentRemove extends AbstractObjectProcessHandler {
             }
         }
 
-        deactivateThenScheduleRemove(objectManager.loadResource(Account.class, agent.getAccountId()), state.getData());
+        if (agent.getAccountId() != null) {
+            deactivateThenScheduleRemove(objectManager.loadResource(Account.class, agent.getAccountId()), state.getData());
+        }
 
         List<Long> authedRoleAccountIds = DataAccessor.fieldLongList(agent, AgentConstants.FIELD_AUTHORIZED_ROLE_ACCOUNTS);
         for (Long accountId : authedRoleAccountIds) {

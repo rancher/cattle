@@ -25,6 +25,7 @@
         "host" : "rud",
         "instanceLink" : "ru",
         "instanceStop" : "cr",
+        "instanceRemove" : "cr",
         "ipAddressAssociateInput" : "cr",
         "kubernetesStack" : "crud",
         "kubernetesStackUpgrade" : "cr",
@@ -70,7 +71,6 @@
         "typeDocumentation.resourceFields" : "r",
         "fieldDocumentation": "r",
         "inServiceUpgradeStrategy" : "cr",
-        "toServiceUpgradeStrategy" : "cr",
         "publicEndpoint" : "r",
         "rollingRestartStrategy" : "cr",
         "servicesPortRange" : "cru",
@@ -87,6 +87,15 @@
         "networkDriverService" : "crud",
         "storageDriverService" : "crud",
         "genericObject" : "crd",
+        "serviceRollback" : "cr",
+        "convertToServiceInput": "cr",
+        "instanceRevision": "r",
+        "revision": "r",
+        "containerUpgrade" : "cr",
+        "deploymentUnit" : "cr",
+        "selectorService" : "crud",
+        "scalingGroup" : "crud",
+
         "end" : ""
     }
 }

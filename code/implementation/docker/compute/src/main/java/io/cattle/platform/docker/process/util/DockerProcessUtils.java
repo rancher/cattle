@@ -1,7 +1,7 @@
 package io.cattle.platform.docker.process.util;
 
+import io.cattle.platform.core.constants.DockerInstanceConstants;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.object.util.DataAccessor;
 
 public class DockerProcessUtils {

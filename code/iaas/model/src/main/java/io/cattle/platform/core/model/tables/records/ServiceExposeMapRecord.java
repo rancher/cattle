@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "service_expose_map", schema = "cattle")
-public class ServiceExposeMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ServiceExposeMapRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record18<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean, java.lang.Boolean>, io.cattle.platform.core.model.ServiceExposeMap {
+public class ServiceExposeMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ServiceExposeMapRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record19<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean, java.lang.Boolean, java.util.Date>, io.cattle.platform.core.model.ServiceExposeMap {
 
-	private static final long serialVersionUID = 11329614;
+	private static final long serialVersionUID = 1417207357;
 
 	/**
 	 * Setter for <code>cattle.service_expose_map.id</code>.
@@ -322,6 +322,23 @@ public class ServiceExposeMapRecord extends org.jooq.impl.UpdatableRecordImpl<io
 		return (java.lang.Boolean) getValue(17);
 	}
 
+	/**
+	 * Setter for <code>cattle.service_expose_map.upgrade_time</code>.
+	 */
+	@Override
+	public void setUpgradeTime(java.util.Date value) {
+		setValue(18, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.service_expose_map.upgrade_time</code>.
+	 */
+	@javax.persistence.Column(name = "upgrade_time")
+	@Override
+	public java.util.Date getUpgradeTime() {
+		return (java.util.Date) getValue(18);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -335,23 +352,23 @@ public class ServiceExposeMapRecord extends org.jooq.impl.UpdatableRecordImpl<io
 	}
 
 	// -------------------------------------------------------------------------
-	// Record18 type implementation
+	// Record19 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row18<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean, java.lang.Boolean> fieldsRow() {
-		return (org.jooq.Row18) super.fieldsRow();
+	public org.jooq.Row19<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean, java.lang.Boolean, java.util.Date> fieldsRow() {
+		return (org.jooq.Row19) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row18<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean, java.lang.Boolean> valuesRow() {
-		return (org.jooq.Row18) super.valuesRow();
+	public org.jooq.Row19<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean, java.lang.Boolean, java.util.Date> valuesRow() {
+		return (org.jooq.Row19) super.valuesRow();
 	}
 
 	/**
@@ -502,6 +519,14 @@ public class ServiceExposeMapRecord extends org.jooq.impl.UpdatableRecordImpl<io
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.util.Date> field19() {
+		return io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP.UPGRADE_TIME;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -640,6 +665,14 @@ public class ServiceExposeMapRecord extends org.jooq.impl.UpdatableRecordImpl<io
 	@Override
 	public java.lang.Boolean value18() {
 		return getUpgrade();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.util.Date value19() {
+		return getUpgradeTime();
 	}
 
 	/**
@@ -808,7 +841,16 @@ public class ServiceExposeMapRecord extends org.jooq.impl.UpdatableRecordImpl<io
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ServiceExposeMapRecord values(java.lang.Long value1, java.lang.String value2, java.lang.String value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.util.Date value7, java.util.Date value8, java.util.Date value9, java.util.Map<String,Object> value10, java.lang.Long value11, java.lang.Long value12, java.lang.Long value13, java.lang.String value14, java.lang.String value15, java.lang.String value16, java.lang.Boolean value17, java.lang.Boolean value18) {
+	public ServiceExposeMapRecord value19(java.util.Date value) {
+		setUpgradeTime(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public ServiceExposeMapRecord values(java.lang.Long value1, java.lang.String value2, java.lang.String value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.util.Date value7, java.util.Date value8, java.util.Date value9, java.util.Map<String,Object> value10, java.lang.Long value11, java.lang.Long value12, java.lang.Long value13, java.lang.String value14, java.lang.String value15, java.lang.String value16, java.lang.Boolean value17, java.lang.Boolean value18, java.util.Date value19) {
 		return this;
 	}
 
@@ -839,6 +881,7 @@ public class ServiceExposeMapRecord extends org.jooq.impl.UpdatableRecordImpl<io
 		setHostName(from.getHostName());
 		setManaged(from.getManaged());
 		setUpgrade(from.getUpgrade());
+		setUpgradeTime(from.getUpgradeTime());
 	}
 
 	/**
@@ -864,7 +907,7 @@ public class ServiceExposeMapRecord extends org.jooq.impl.UpdatableRecordImpl<io
 	/**
 	 * Create a detached, initialised ServiceExposeMapRecord
 	 */
-	public ServiceExposeMapRecord(java.lang.Long id, java.lang.String name, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long serviceId, java.lang.Long instanceId, java.lang.Long accountId, java.lang.String ipAddress, java.lang.String dnsPrefix, java.lang.String hostName, java.lang.Boolean managed, java.lang.Boolean upgrade) {
+	public ServiceExposeMapRecord(java.lang.Long id, java.lang.String name, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long serviceId, java.lang.Long instanceId, java.lang.Long accountId, java.lang.String ipAddress, java.lang.String dnsPrefix, java.lang.String hostName, java.lang.Boolean managed, java.lang.Boolean upgrade, java.util.Date upgradeTime) {
 		super(io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP);
 
 		setValue(0, id);
@@ -885,5 +928,6 @@ public class ServiceExposeMapRecord extends org.jooq.impl.UpdatableRecordImpl<io
 		setValue(15, hostName);
 		setValue(16, managed);
 		setValue(17, upgrade);
+		setValue(18, upgradeTime);
 	}
 }

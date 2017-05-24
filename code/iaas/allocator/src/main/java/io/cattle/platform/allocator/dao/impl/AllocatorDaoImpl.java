@@ -76,7 +76,7 @@ import org.slf4j.LoggerFactory;
 public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
     private static final Logger log = LoggerFactory.getLogger(AllocatorDaoImpl.class);
-    
+
     private static final String ALLOCATED_IP = "allocatedIP";
     private static final String PROTOCOL = "protocol";
     private static final String PRIVATE_PORT = "privatePort";
@@ -87,7 +87,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
     private static final List<Field<?>> hostAndPortFields;
     static {
-       hostAndPortFields = new ArrayList<Field<?>>(Arrays.asList(PORT.fields()));
+       hostAndPortFields = new ArrayList<>(Arrays.asList(PORT.fields()));
        hostAndPortFields.add(INSTANCE_HOST_MAP.HOST_ID);
     }
 
@@ -181,7 +181,8 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
         if (StringUtils.isEmpty(instance.getDeploymentUnitUuid())) {
             return INSTANCE_HOST_MAP.INSTANCE_ID.eq(instance.getId());
         } else {
-            return INSTANCE.DEPLOYMENT_UNIT_UUID.eq(instance.getDeploymentUnitUuid());
+            return INSTANCE.DEPLOYMENT_UNIT_ID.eq(instance.getDeploymentUnitId()).and(
+                    INSTANCE.STATE.notIn(InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING));
         }
     }
 
@@ -243,7 +244,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
             }
         }
         if (attempt.getAllocatedIPs() != null) {
-            updateInstancePorts(attempt.getAllocatedIPs()); 
+            updateInstancePorts(attempt.getAllocatedIPs());
         }
 
         return true;
@@ -257,7 +258,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
             }
         }
 
-        Map<Object, Object> criteria = new HashMap<Object, Object>();
+        Map<Object, Object> criteria = new HashMap<>();
         criteria.put(STORAGE_DRIVER.REMOVED, new io.github.ibuildthecloud.gdapi.condition.Condition(ConditionType.NULL));
         criteria.put(STORAGE_DRIVER.ID, new io.github.ibuildthecloud.gdapi.condition.Condition(ConditionType.IN, storageDriverIds));
         List<StorageDriver> drivers = objectManager.find(StorageDriver.class, criteria);
@@ -320,7 +321,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     @Override
     public boolean isAllocationReleased(Object resource) {
         DataAccessor done = getDeallocatedProp(resource);
-        return done.as(Boolean.class);
+        return done.withDefault(false).as(Boolean.class);
     }
 
     private DataAccessor getDeallocatedProp(Object resource) {
@@ -438,7 +439,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
     @Override
     public Map<String, String[]> getLabelsForHost(long hostId) {
-        final Map<String, String[]> labelKeyValueStatusMap = new HashMap<String, String[]>();
+        final Map<String, String[]> labelKeyValueStatusMap = new HashMap<>();
 
         create()
             .select(LABEL.KEY, LABEL.VALUE, HOST_LABEL_MAP.STATE)
@@ -468,7 +469,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                 .select(HOST.fields())
                 .from(HOST)
                 .where(HOST.ACCOUNT_ID.eq(accountId)
-                .and(HOST.STATE.notEqual(CommonStatesConstants.PURGED)))
+                .and(HOST.REMOVED.isNull()))
                 .fetchInto(Host.class);
     }
 
@@ -516,24 +517,24 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     }
 
     @Override
-    public List<Instance> getUnmappedDeploymentUnitInstances(String deploymentUnitUuid) {
+    public List<Instance> getUnmappedDeploymentUnitInstances(Long deploymentUnitId) {
         List<? extends Instance> instanceRecords = create()
                 .select(INSTANCE.fields())
                 .from(INSTANCE)
                 .leftOuterJoin(INSTANCE_HOST_MAP)
                     .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID).and(INSTANCE_HOST_MAP.REMOVED.isNull()))
                 .where(INSTANCE.REMOVED.isNull())
-                .and(INSTANCE.DEPLOYMENT_UNIT_UUID.eq(deploymentUnitUuid))
+                .and(INSTANCE.DEPLOYMENT_UNIT_ID.eq(deploymentUnitId))
                 .and(INSTANCE_HOST_MAP.ID.isNull())
                 .fetchInto(InstanceRecord.class);
 
-        List<Instance> instances = new ArrayList<Instance>();
+        List<Instance> instances = new ArrayList<>();
         for (Instance i : instanceRecords) {
             instances.add(i);
         }
         return instances;
     }
-    
+
     /* (non-Java doc)
      * @see io.cattle.platform.allocator.dao.AllocatorDao#updateInstancePorts(java.util.Map)
      * Scheduler will return a list of map showing the allocated result in the following format:
@@ -554,9 +555,9 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
      *                              ]
      *                          }
      * }
-     *      
-     * Then update 
-     * Port Table. Binding address field in port table and public port field in port table if public port is allocated by external scheduler (for agent)  
+     *
+     * Then update
+     * Port Table. Binding address field in port table and public port field in port table if public port is allocated by external scheduler (for agent)
      */
     @SuppressWarnings("unchecked")
     private void updateInstancePorts(List<Map<String, Object>> dataList) {
@@ -568,7 +569,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
             if (data.get(ALLOCATED_IPS) == null) {
                 continue;
             }
-            
+
             List<Map<String, Object>> allocatedIPList = (List<Map<String, Object>>) data.get(ALLOCATED_IPS);
             Instance instance = objectManager.loadResource(Instance.class, instanceId);
             for (Map<String, Object> allocatedIp: allocatedIPList) {
@@ -588,7 +589,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
         }
         return;
     }
-    
+
 
     @Override
     public Iterator<AllocationCandidate> iteratorHosts(List<String> orderedHostUuids, List<Long> volumes, QueryOptions options) {
@@ -669,7 +670,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
         }
 
         for (CandidateHostInfo hostInfo : hostInfos) {
-            List<Port> ports = hostToPorts.get(hostInfo.getHostId()) != null ? hostToPorts.get(hostInfo.getHostId()) : new ArrayList<Port>();
+            List<Port> ports = hostToPorts.get(hostInfo.getHostId()) != null ? hostToPorts.get(hostInfo.getHostId()) : new ArrayList<>();
             hostInfo.setUsedPorts(ports);
         }
     }

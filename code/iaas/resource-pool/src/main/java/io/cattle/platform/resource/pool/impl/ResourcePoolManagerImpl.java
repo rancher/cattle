@@ -19,6 +19,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jooq.exception.DataAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,10 +45,11 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
                 (Object) RESOURCE_POOL.POOL_ID, poolId,
                 RESOURCE_POOL.QUALIFIER, qualifier,
                 RESOURCE_POOL.OWNER_TYPE, ownerType,
-                RESOURCE_POOL.OWNER_ID, ownerId);
+                RESOURCE_POOL.OWNER_ID, ownerId,
+                RESOURCE_POOL.SUB_OWNER, options.getSubOwner());
 
-        List<ResourcePool> resourcePools = new ArrayList<ResourcePool>(objectManager.find(ResourcePool.class, keys));
-        List<PooledResource> result = new ArrayList<PooledResource>();
+        List<ResourcePool> resourcePools = new ArrayList<>(objectManager.find(ResourcePool.class, keys));
+        List<PooledResource> result = new ArrayList<>();
 
         for (ResourcePool resourcePool : resourcePools) {
             result.add(new DefaultPooledResource(resourcePool.getItem()));
@@ -59,7 +61,8 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
             if (item == null) {
                 break;
             } else {
-                log.info("Assigning [{}] from pool [{}:{}] to owner [{}:{}]", item, poolType, poolId, ownerType, ownerId);
+                log.info("Assigning [{}] from pool [{}:{}]{} to owner [{}:{}]", item, poolType, poolId,
+                        qualifier, ownerType, ownerId);
             }
 
             result.add(new DefaultPooledResource(item));
@@ -92,38 +95,11 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
 
         for (ResourcePool resource : objectManager.find(ResourcePool.class, keys)) {
             log.info("Releasing [{}] id [{}] to pool [{}:{}] from owner [{}:{}]", resource.getItem(), resource.getId(), poolType, poolId, ownerType, ownerId);
+            if (StringUtils.isNotEmpty(options.getSubOwner()) && !options.getSubOwner().equals(resource.getSubOwner())) {
+                continue;
+            }
             objectManager.delete(resource);
         }
-    }
-
-    @Override
-    public void transferResource(Object pool, Object owner, Object newOwner) {
-        transferResource(pool, owner, newOwner, new PooledResourceOptions());
-    }
-
-    @Override
-    public void transferResource(Object pool, Object owner, Object newOwner, PooledResourceOptions options) {
-        String poolType = getResourceType(pool);
-        long poolId = getResourceId(pool);
-        String ownerType = getResourceType(owner);
-        long ownerId = getResourceId(owner);
-        String newOwnerType = getResourceType(newOwner);
-        long newOwnerId = getResourceId(newOwner);
-
-        Map<Object, Object> keys = CollectionUtils.asMap((Object) RESOURCE_POOL.POOL_TYPE, poolType,
-                (Object) RESOURCE_POOL.POOL_ID, poolId,
-                RESOURCE_POOL.QUALIFIER, options.getQualifier(), RESOURCE_POOL.OWNER_TYPE, ownerType,
-                RESOURCE_POOL.OWNER_ID, ownerId);
-
-        for (ResourcePool resource : objectManager.find(ResourcePool.class, keys)) {
-            log.info("Transfering [{}] id [{}] from pool [{}:{}] from owner [{}:{}] to owner [{}:{}]",
-                    resource.getItem(), resource.getId(), poolType,
-                    poolId, ownerType, ownerId, newOwnerType, newOwnerId);
-            resource.setOwnerType(newOwnerType);
-            resource.setOwnerId(newOwnerId);
-            objectManager.persist(resource);
-        }
-
     }
 
     @Override
@@ -156,7 +132,7 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
                 item = generator.isInPool(tryItem) ? tryItem : generator.next();
                 tryItem = null;
             }
-            Map<Object, Object> newKeys = new HashMap<Object, Object>(keys);
+            Map<Object, Object> newKeys = new HashMap<>(keys);
             newKeys.put(RESOURCE_POOL.ITEM, item);
 
             Map<String, Object> props = objectManager.convertToPropertiesFor(ResourcePool.class, newKeys);

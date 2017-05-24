@@ -289,7 +289,6 @@ def test_container_stop(client, super_client, context):
 
 
 def _assert_removed(container):
-    assert container.state == "removed"
     assert_removed_fields(container)
 
     volumes = container.volumes()
@@ -320,7 +319,7 @@ def test_container_remove(client, super_client, context):
 
     assert container.state == "stopped"
 
-    container = client.delete(container)
+    container = container.remove()
 
     assert container.state == "removing"
 
@@ -526,7 +525,8 @@ def test_container_labels(client, context):
                                          labels=labels)
     container = client.wait_success(container)
     assert container.state == 'running'
-    assert container.labels == labels
+    assert all(item in container.labels.items()
+               for item in labels.items())
 
 
 def _get_jwt(token):

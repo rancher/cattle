@@ -15,43 +15,25 @@
                 "scheduleUpdate" : true
             }
         },
-        "desiredScale": {
-            "type": "int",
-            "required": false,
-            "nullable": false
-        },
-        "lockedScale": {
-            "type": "int",
-            "required": false,
-            "nullable": false
-        },
         "currentScale": {
             "type": "int",
             "required": false,
             "nullable": false
         },
-        "scalePolicy": {
-            "type": "scalePolicy",
-            "required": false,
-            "nullable": true,
-            "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
         "name":{
             "required": true,
             "validChars": "a-zA-Z0-9-",
             "minLength": 1,
-            "maxLength": 63,
-             "attributes" : {
-                "scheduleUpdate" : true
-            }
+            "maxLength": 63
         },
         "launchConfig": {
             "type": "launchConfig",
             "create": true,
             "required": false,
-            "nullable": true
+            "nullable": true,
+             "attributes" : {
+                "scheduleUpdate" : true
+            }
         },
         "upgrade": {
             "type": "serviceUpgrade",
@@ -59,14 +41,14 @@
             "required": false,
             "nullable": true
         },
-        "restart": {
-            "type": "serviceRestart",
-            "create": false
-        },
         "secondaryLaunchConfigs": {
             "type": "array[secondaryLaunchConfig]",
             "create": true,
-            "required": false
+            "required": false,
+            "nullable": true,
+             "attributes" : {
+                "scheduleUpdate" : true
+            }
         },
         "metadata": {
             "type": "map[json]",
@@ -99,11 +81,6 @@
           "nullable": false,
           "default": false
         },
-        "selectorLink":{
-             "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
         "selectorContainer":{
              "attributes" : {
                 "scheduleUpdate" : true
@@ -134,7 +111,7 @@
             "default": false
         },
         "lbConfig": {
-            "type" : "lbTargetConfig",
+            "type" : "lbConfig",
             "nullable": true,
              "attributes" : {
                 "scheduleUpdate" : true
@@ -145,6 +122,119 @@
         },
         "executionPeriodStart": {
             "type": "date"
+        },
+        "batchSize": {
+            "type": "int",
+            "nullable": true,
+            "default": 1,
+            "min": 1,
+            "create": true,
+             "attributes" : {
+                "scheduleUpdate" : true
+            }
+        },
+        "intervalMillis": {
+            "type": "int",
+            "nullable": true,
+            "default": 2000,
+            "min": 100,
+            "create": true,
+             "attributes" : {
+                "scheduleUpdate" : true
+            }
+        },
+        "startFirst": {
+            "type": "boolean",
+            "nullable": true,
+            "default": false,
+            "create": true,
+             "attributes" : {
+                "scheduleUpdate" : true
+            }
+        },
+        "scaleMin": {
+            "type": "int",
+            "required": false,
+            "nullable": true,
+            "default": 0,
+            "min": 0,
+            "attributes" : {
+                "scheduleUpdate" : true
+            }
+        },
+        "scaleMax": {
+            "type": "int",
+            "required": false,
+            "nullable": true,
+            "min": 0,
+            "attributes" : {
+                "scheduleUpdate" : true
+            }
+        },
+        "scaleIncrement": {
+            "type": "int",
+            "required": false,
+            "nullable": true,
+            "default": 1,
+            "min": 1,
+            "attributes" : {
+                "scheduleUpdate" : true
+            }
+        },
+        "finishUpgrade": {
+            "type": "boolean",
+            "required": false,
+            "nullable": true
+        },
+        "externalIpAddresses": {
+            "type": "array[string]",
+            "required": false,
+            "nullable": true,
+            "attributes" : {
+                "scheduleUpdate" : true
+            },
+        "healthCheck": {
+            "type": "instanceHealthCheck",
+            "nullable": true
+        }
+        },
+        "hostname": {
+            "type": "string",
+            "required": false,
+            "nullable": true,
+            "attributes" : {
+                "scheduleUpdate" : true
+            }
+        },
+        "healthCheck": {
+            "type": "instanceHealthCheck",
+            "nullable": true
+        },
+        "storageDriver":{
+            "type": "storageDriver",
+            "nullable": true,
+            "attributes" : {
+                "scheduleUpdate" : true
+            }
+        },
+        "upgradeLastRun": {
+            "type": "int"
+        },
+         "networkDriver":{
+            "type": "networkDriver",
+            "nullable": true,
+            "attributes" : {
+                "scheduleUpdate" : true
+            }
+        },
+        "completeUpdate": {
+            "type": "boolean",
+            "default": false,
+            "nullable": true
+        },
+        "restartTrigger": {
+            "type": "int",
+            "nullable": true
         }
     },
     "resourceActions" : {
@@ -153,7 +243,6 @@
         "addservicelink" : {
             "input" : "addRemoveServiceLinkInput",
             "output" : "service"
-
         },
         "removeservicelink" : {
             "input" : "addRemoveServiceLinkInput",
@@ -167,8 +256,17 @@
             "input" : "serviceUpgrade",
             "output" : "service"
         },
-        "restart" : {
-            "input" : "serviceRestart",
+        "cancelupgrade": {
+            "output": "service",
+            "attributes": {
+                "states": ["upgrading", "finishing-upgrade"]
+            }
+        },
+        "rollback" : {
+            "input" : "serviceRollback",
+            "output" : "service"
+        },
+         "garbagecollect" : {
             "output" : "service"
         }
     }

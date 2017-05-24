@@ -102,7 +102,7 @@ def test_external_host_event_hit(new_context):
     c = client.wait_success(c)
 
     assert event.state == 'created'
-    assert host.state == 'purged'
+    assert host.removed is not None
     assert c.removed is not None
 
 

@@ -24,7 +24,7 @@ public abstract class AbstractConfigItem implements ConfigItem {
             return null;
         }
 
-        version = new DefaultItemVersion(version.getRevision(), getSourceRevision());
+        version = new DefaultItemVersion(version.getRevision(), getSourceRevision(), null);
 
         return version.toExternalForm();
     }

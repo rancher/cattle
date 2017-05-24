@@ -8,7 +8,6 @@ public class InstanceHealthCheck {
     public enum Strategy {
         none,
         recreate,
-        recreateOnQuorum
     }
     String name;
     Integer responseTimeout;
@@ -18,7 +17,6 @@ public class InstanceHealthCheck {
     String requestLine;
     Integer port;
     Strategy strategy;
-    RecreateOnQuorumStrategyConfig recreateOnQuorumStrategyConfig;
     Integer initializingTimeout;
     Integer reinitializingTimeout;
 
@@ -79,15 +77,6 @@ public class InstanceHealthCheck {
 
     public void setPort(Integer port) {
         this.port = port;
-    }
-
-    @Field(nullable = true, required = false)
-    public RecreateOnQuorumStrategyConfig getRecreateOnQuorumStrategyConfig() {
-        return recreateOnQuorumStrategyConfig;
-    }
-
-    public void setRecreateOnQuorumStrategyConfig(RecreateOnQuorumStrategyConfig recreateOnQuorumStrategyConfig) {
-        this.recreateOnQuorumStrategyConfig = recreateOnQuorumStrategyConfig;
     }
 
     @Field(required = false, nullable = true, defaultValue = "recreate")

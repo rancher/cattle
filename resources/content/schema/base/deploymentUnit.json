@@ -3,6 +3,9 @@
         "labels": {
             "type": "map[string]",
             "create": true
+        },
+        "restartTrigger": {
+            "type": "int"
         }
     }
 }

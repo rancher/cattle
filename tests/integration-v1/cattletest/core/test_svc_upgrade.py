@@ -3,83 +3,6 @@ from common import *  # NOQA
 DEFAULT_TIMEOUT = 120
 
 
-def test_upgrade_simple(context, client):
-    _run_upgrade(context, client, 1, 1,
-                 finalScale=2,
-                 intervalMillis=100)
-
-
-def test_upgrade_odd_numbers(context, client):
-    _run_upgrade(context, client, 5, 2,
-                 batchSize=100,
-                 finalScale=3,
-                 intervalMillis=100)
-
-
-def test_upgrade_to_too_high(context, client):
-    _run_upgrade(context, client, 1, 5,
-                 batchSize=2,
-                 finalScale=2,
-                 intervalMillis=100)
-
-
-def test_upgrade_relink(context, client):
-    service, service2, env = _create_env_and_services(context, client)
-
-    image_uuid = context.image_uuid
-    launch_config = {'imageUuid': image_uuid}
-
-    source = client.create_service(name=random_str(),
-                                   environmentId=env.id,
-                                   scale=1,
-                                   launchConfig=launch_config)
-
-    lb = client.create_service(name=random_str(),
-                               environmentId=env.id,
-                               scale=1,
-                               launchConfig=launch_config)
-
-    source = client.wait_success(client.wait_success(source).activate())
-    assert source.state == 'active'
-
-    lb = client.wait_success(client.wait_success(lb).activate())
-    assert lb.state == 'active'
-
-    service_link = {
-        "serviceId": service.id,
-        "name": "link1",
-    }
-
-    source.setservicelinks(serviceLinks=[service_link])
-    lb.setservicelinks(serviceLinks=[service_link])
-
-    source = client.wait_success(source)
-    assert source.state == 'active'
-    lb = client.wait_success(lb)
-    assert lb.state == 'active'
-
-    assert len(source.consumedservices()) == 1
-    assert len(lb.consumedservices()) == 1
-    assert len(service.consumedbyservices()) == 2
-    assert len(service2.consumedbyservices()) == 0
-
-    strategy = {"finalScale": 1,
-                "toServiceId": service2.id,
-                "updateLinks": True,
-                "intervalMillis": 100}
-    service = service.upgrade_action(toServiceStrategy=strategy)
-    service = client.wait_success(service, timeout=DEFAULT_TIMEOUT)
-    assert service.state == 'upgraded'
-
-    assert len(source.consumedservices()) == 2
-    assert len(lb.consumedservices()) == 2
-    assert len(service.consumedbyservices()) == 2
-    assert len(service2.consumedbyservices()) == 2
-
-    links = client.list_service_consume_map(serviceId=lb.id)
-    assert len(links) == 2
-
-
 def test_in_service_upgrade_primary(context, client, super_client):
     env, svc, up_svc = _insvc_upgrade(context,
                                       client, super_client, True,
@@ -160,19 +83,6 @@ def test_big_scale(context, client):
     client.wait_success(svc.finishupgrade())
 
 
-def test_rollback_regular_upgrade(context, client, super_client):
-    svc, service2, env = _create_env_and_services(context, client,
-                                                  4, 4)
-    svc = _run_tosvc_upgrade(svc,
-                             service2,
-                             toServiceId=service2.id,
-                             finalScale=4)
-    time.sleep(1)
-    svc = wait_state(client, svc.cancelupgrade(), 'canceled-upgrade')
-    svc = wait_state(client, svc.rollback(), 'active')
-    _wait_for_map_count(super_client, svc)
-
-
 def _create_and_schedule_inservice_upgrade(client, context, startFirst=False):
     env = client.create_environment(name=random_str())
     env = client.wait_success(env)
@@ -191,11 +101,6 @@ def _create_and_schedule_inservice_upgrade(client, context, startFirst=False):
                              launchConfig=launch_config,
                              startFirst=startFirst,
                              intervalMillis=100)
-
-    def upgrade_not_null():
-        return _validate_in_svc_upgrade(client, svc)
-
-    svc = wait_for(upgrade_not_null, DEFAULT_TIMEOUT)
     return svc
 
 
@@ -221,13 +126,6 @@ def test_cancelupgrade_rollback(context, client):
     svc.remove()
 
 
-def test_cancelupgrade_finish(context, client):
-    # upgrading-cancelingupgrade-canceledupgrade-finishupgrade
-    svc = _create_and_schedule_inservice_upgrade(client, context)
-    svc = _cancel_upgrade(client, svc)
-    svc.continueupgrade()
-
-
 def test_upgrade_finish_cancel_rollback(context, client):
     # upgrading-cancelingupgrade-canceledupgrade-finishupgrade
     svc = _create_and_schedule_inservice_upgrade(client, context)
@@ -236,7 +134,7 @@ def test_upgrade_finish_cancel_rollback(context, client):
     svc = svc.finishupgrade()
     wait_for(lambda: client.reload(svc).state == 'finishing-upgrade')
     svc = _cancel_upgrade(client, svc)
-    assert svc.state == 'canceled-upgrade'
+    assert svc.state == 'paused'
     svc = client.wait_success(svc.rollback())
 
 
@@ -292,7 +190,7 @@ def test_in_service_upgrade_networks_from(context, client, super_client):
     assert u_svc.state == 'upgraded'
     u_svc = client.wait_success(u_svc.finishupgrade(), DEFAULT_TIMEOUT)
     _validate_upgrade(super_client, svc, u_svc,
-                      primary='1', secondary1='1', secondary2='0')
+                      primary='0', secondary1='1', secondary2='0')
 
 
 def test_in_service_upgrade_volumes_from(context, client, super_client):
@@ -320,7 +218,7 @@ def test_in_service_upgrade_volumes_from(context, client, super_client):
     assert u_svc.state == 'upgraded'
     u_svc = client.wait_success(u_svc.finishupgrade(), DEFAULT_TIMEOUT)
     _validate_upgrade(super_client, svc, u_svc,
-                      primary='1', secondary1='1', secondary2='1')
+                      primary='1', secondary1='0', secondary2='1')
 
 
 def _create_stack(client):
@@ -488,28 +386,13 @@ def _insvc_upgrade(context, client, super_client, finish_upgrade,
 
     _run_insvc_upgrade(svc, **kw)
 
-    def upgrade_not_null():
-        return _validate_in_svc_upgrade(client, svc)
-
-    u_svc = wait_for(upgrade_not_null)
-    u_svc = client.wait_success(u_svc, timeout=DEFAULT_TIMEOUT)
+    u_svc = client.wait_success(svc, timeout=DEFAULT_TIMEOUT)
     assert u_svc.state == 'upgraded'
     if finish_upgrade:
         u_svc = client.wait_success(u_svc.finishupgrade(),
                                     DEFAULT_TIMEOUT)
         assert u_svc.state == 'active'
     return env, svc, u_svc
-
-
-def _validate_in_svc_upgrade(client, svc):
-    s = client.reload(svc)
-    upgrade = s.upgrade
-    if upgrade is not None:
-        strategy = upgrade.inServiceStrategy
-        c1 = strategy.previousLaunchConfig is not None
-        c2 = strategy.previousSecondaryLaunchConfigs is not None
-        if c1 or c2:
-            return s
 
 
 def _wait_for_instance_start(super_client, id):
@@ -613,39 +496,6 @@ def _create_env_and_services(context, client, from_scale=1, to_scale=1):
     return service, service2, env
 
 
-def _run_tosvc_upgrade(service, service2, **kw):
-    kw['toServiceId'] = service2.id
-    service = service.upgrade_action(toServiceStrategy=kw)
-    assert service.state == 'upgrading'
-    return service
-
-
-def _run_upgrade(context, client, from_scale, to_scale, **kw):
-    service, service2, env = _create_env_and_services(context, client,
-                                                      from_scale, to_scale)
-
-    _run_tosvc_upgrade(service, service2, **kw)
-
-    def upgrade_not_null():
-        s = client.reload(service)
-        if s.upgrade is not None:
-            return s
-
-    service = wait_for(upgrade_not_null)
-
-    service = client.wait_success(service, timeout=DEFAULT_TIMEOUT)
-    assert service.state == 'upgraded'
-    assert service.scale == 0
-
-    service2 = client.wait_success(service2)
-    assert service2.state == 'active'
-    assert service2.scale == kw['finalScale']
-
-    service = client.wait_success(service.finishupgrade(),
-                                  DEFAULT_TIMEOUT)
-    assert service.state == 'active'
-
-
 def _create_multi_lc_svc(super_client, client, context, activate=True):
     env = client.create_environment(name=random_str())
     env = client.wait_success(env)
@@ -713,22 +563,15 @@ def _validate_upgrade(super_client, svc, upgraded_svc,
     primary_upgraded_v = primary_v
     sec1_upgraded_v = sec1_v
     sec2_upgraded_v = sec2_v
-    strategy = upgraded_svc.upgrade.inServiceStrategy
     if primary == '1':
         primary_upgraded_v = upgraded_svc.launchConfig.version
-        primary_prev_v = strategy.previousLaunchConfig.version
         assert primary_v != primary_upgraded_v
-        assert primary_prev_v == primary_v
     if secondary1 == '1':
         sec1_upgraded_v = upgraded_svc.secondaryLaunchConfigs[0].version
-        sec1_prev_v = strategy.previousSecondaryLaunchConfigs[0].version
         assert sec1_v != sec1_upgraded_v
-        assert sec1_prev_v == sec1_v
     if secondary2 == '1':
         sec2_upgraded_v = upgraded_svc.secondaryLaunchConfigs[1].version
-        sec2_prev_v = strategy.previousSecondaryLaunchConfigs[1].version
         assert sec2_v != sec2_upgraded_v
-        assert sec2_prev_v == sec2_v
 
     c21, c21_sec1, c21_sec2, c22, c22_sec1, c22_sec2 = \
         _get_containers(super_client, upgraded_svc)
@@ -749,27 +592,20 @@ def _validate_rollback(super_client, svc, rolledback_svc,
     _validate_upgraded_instances_count(super_client,
                                        svc,
                                        primary, secondary1, secondary2)
-    strategy = svc.upgrade.inServiceStrategy
     if primary == 1:
         primary_v = rolledback_svc.launchConfig.version
-        primary_prev_v = strategy.previousLaunchConfig.version
-        assert primary_prev_v == primary_v
         maps = _wait_for_map_count(super_client, rolledback_svc)
         for map in maps:
             i = _wait_for_instance_start(super_client, map.instanceId)
             assert i.version == primary_v
     if secondary1 == 1:
         sec1_v = rolledback_svc.secondaryLaunchConfigs[0].version
-        sec1_prev_v = strategy.previousSecondaryLaunchConfigs[0].version
-        assert sec1_prev_v == sec1_v
         maps = _wait_for_map_count(super_client, rolledback_svc, "secondary1")
         for map in maps:
             i = _wait_for_instance_start(super_client, map.instanceId)
             assert i.version == sec1_v
     if secondary2 == 1:
         sec2_v = rolledback_svc.secondaryLaunchConfigs[1].version
-        sec2_prev_v = strategy.previousSecondaryLaunchConfigs[1].version
-        assert sec2_prev_v == sec2_v
         maps = _wait_for_map_count(super_client, rolledback_svc, "secondary2")
         for map in maps:
             i = _wait_for_instance_start(super_client, map.instanceId)
@@ -778,11 +614,8 @@ def _validate_rollback(super_client, svc, rolledback_svc,
 
 def _cancel_upgrade(client, svc):
     svc.cancelupgrade()
-    wait_for(lambda: client.reload(svc).state == 'canceled-upgrade')
+    wait_for(lambda: client.reload(svc).state == 'paused')
     svc = client.reload(svc)
-    strategy = svc.upgrade.inServiceStrategy
-    assert strategy.previousLaunchConfig is not None
-    assert strategy.previousSecondaryLaunchConfigs is not None
     return svc
 
 
@@ -791,9 +624,6 @@ def _rollback(client, super_client,
     rolledback_svc = client.wait_success(svc.rollback(),
                                          DEFAULT_TIMEOUT)
     assert rolledback_svc.state == 'active'
-    roll_v = rolledback_svc.launchConfig.version
-    strategy = svc.upgrade.inServiceStrategy
-    assert roll_v == strategy.previousLaunchConfig.version
     _validate_rollback(super_client, svc, rolledback_svc,
                        primary, secondary1, secondary2)
 
@@ -849,7 +679,7 @@ def test_in_service_upgrade_port_mapping(context, client, super_client):
     svc = client.wait_success(svc.activate())
 
     launch_config = {"imageUuid": image_uuid,
-                     'ports': ['80', '82/tcp', '8083:83/udp']}
+                     'ports': ['80/tcp', '82/tcp', '8083:83/udp']}
     u_svc = _run_insvc_upgrade(svc, launchConfig=launch_config,
                                secondaryLaunchConfigs=[secondary1,
                                                        secondary2],
@@ -935,6 +765,7 @@ def test_sidekick_addition_rollback(context, client):
     u_svc = client.wait_success(u_svc, DEFAULT_TIMEOUT)
     assert u_svc.state == 'upgraded'
     u_svc = client.wait_success(u_svc.rollback(), DEFAULT_TIMEOUT)
+    u_svc = client.wait_success(u_svc.garbagecollect(), DEFAULT_TIMEOUT)
 
     # validate that all service instances are present, and their version
     _wait_until_active_map_count(u_svc, 4, client)
@@ -1044,7 +875,7 @@ def test_sidekick_removal(context, client):
     c1_pre = _validate_compose_instance_start(client, svc, env, "1")
 
     secondary2 = {"imageUuid": image_uuid, "name": "secondary2",
-                  'imageUuid': "rancher/none"}
+                  'imageUuid': "docker:rancher/none"}
     u_svc = _run_insvc_upgrade(svc,
                                secondaryLaunchConfigs=[secondary1, secondary2],
                                batchSize=1)
@@ -1083,16 +914,16 @@ def test_sidekick_removal_rollback(context, client):
                                               "secondary2")
 
     secondary2 = {"imageUuid": image_uuid, "name": "secondary2",
-                  'imageUuid': "rancher/none"}
+                  'imageUuid': "docker:rancher/none"}
     u_svc = _run_insvc_upgrade(svc,
                                secondaryLaunchConfigs=[secondary1, secondary2],
                                batchSize=1)
     u_svc = client.wait_success(u_svc, DEFAULT_TIMEOUT)
     assert u_svc.state == 'upgraded'
-    u_svc = client.wait_success(u_svc.rollback(), DEFAULT_TIMEOUT)
+    u_svc = wait_state(client, u_svc.rollback(), "active")
 
     # validate that all service instances are present, and their version
-    _wait_until_active_map_count(u_svc, 3, client)
+    _wait_until_active_map_count(u_svc, 4, client)
     c1 = _validate_compose_instance_start(client, svc, env, "1")
     assert c1.version == '0'
     assert c1.id == c1_pre.id
@@ -1176,4 +1007,4 @@ def test_upgrade_global_service(new_context):
 
     # rollback the service
     service = client.wait_success(service.rollback())
-    _wait_until_active_map_count(service, len(c), client)
+    _wait_until_active_map_count(service, len(c)*2, client)

@@ -64,6 +64,9 @@ public class TransformationServiceImpl implements TransformationService {
 
     @Override
     public boolean compare(String plainText, String encrypted) {
+        if (StringUtils.isBlank(encrypted)) {
+            return false;
+        }
         String[] valueSplit = encrypted.split("\\" + EncryptionConstants.ENCRYPTER_NAME_DELM, 2);
         if (valueSplit.length != 2){
             return StringUtils.equals(plainText, encrypted);

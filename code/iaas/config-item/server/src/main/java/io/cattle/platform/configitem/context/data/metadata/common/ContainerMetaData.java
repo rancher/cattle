@@ -1,6 +1,9 @@
 package io.cattle.platform.configitem.context.data.metadata.common;
 
+import io.cattle.platform.configitem.context.data.metadata.common.ServiceMetaData.HealthCheck;
+import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.object.util.DataAccessor;
@@ -46,6 +49,9 @@ public class ContainerMetaData {
     String environment_uuid;
     Map<String, String> links = new HashMap<>(); // container links where key is linkName, value is instanceUUID
     String host_ip;
+    Map<String, Object> metadata;
+    HealthCheck health_check;
+
     // helper field needed by metadata service to process object
     String metadata_kind;
 
@@ -85,7 +91,7 @@ public class ContainerMetaData {
 
     @SuppressWarnings("unchecked")
     public void setInstanceAndHostMetadata(Instance instance, HostMetaData host, List<String> healthcheckHosts,
-            Account account) {
+            Account account, InstanceHealthCheck healthCheck) {
         this.name = instance.getName();
         this.uuid = instance.getUuid();
         this.external_id = instance.getExternalId();
@@ -120,6 +126,10 @@ public class ContainerMetaData {
         }
         this.environment_uuid = account.getUuid();
         this.metadata_kind = "container";
+        this.metadata = DataAccessor.fieldMap(instance, ServiceConstants.FIELD_METADATA);
+        if (healthCheck != null) {
+            this.health_check = new HealthCheck(healthCheck);
+        }
     }
 
     public Long getCreate_index() {
@@ -328,5 +338,29 @@ public class ContainerMetaData {
 
     public void setStack_uuid(String stack_uuid) {
         this.stack_uuid = stack_uuid;
+    }
+
+    public Map<String, Object> getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(Map<String, Object> metadata) {
+        this.metadata = metadata;
+    }
+
+    public Map<String, String> getLinks() {
+        return links;
+    }
+
+    public void setLinks(Map<String, String> links) {
+        this.links = links;
+    }
+
+    public HealthCheck getHealth_check() {
+        return health_check;
+    }
+
+    public void setHealth_check(HealthCheck health_check) {
+        this.health_check = health_check;
     }
 }
