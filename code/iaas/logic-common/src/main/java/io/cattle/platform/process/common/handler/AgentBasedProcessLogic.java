@@ -218,7 +218,11 @@ public class AgentBasedProcessLogic extends AbstractObjectProcessLogic implement
     }
 
     protected Object getAgentResource(ProcessState state, ProcessInstance process, Object dataResource) {
-        return getObjectByRelationship(agentResourceRelationship, state.getResource());
+        Object agentResource = getObjectByRelationship(agentResourceRelationship, state.getResource());
+        if (ObjectUtils.getRemoved(agentResource) != null) {
+            return null;
+        }
+        return agentResource;
     }
 
     protected Object getEventResource(ProcessState state, ProcessInstance process) {
