@@ -673,9 +673,9 @@ def _validate_compose_instance_start(client, service, env,
                            state="running")
         return len(instances) == 1
 
-    wait_for(lambda: wait_for_condition(client, service,
-                                        wait_for_map_count))
-
+    wait_for(lambda: wait_for_condition(client, service, wait_for_map_count))
+    wait_for(lambda:
+             len(client.list_container(name=name, state="running")) == 1)
     instances = client. \
         list_container(name=name,
                        state="running")
@@ -2866,7 +2866,6 @@ def test_project_random_port_update_create(new_context):
         return 'Not enough environment ports' in x.transitioningMessage
 
     wait_for_condition(client, svc, condition)
-    assert svc.state == 'activating'
 
     # There is one port left in the range. This asserts that the previous
     # service that failed released the port

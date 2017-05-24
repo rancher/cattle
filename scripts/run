@@ -33,6 +33,7 @@ CMD="java
     -Dprocess.retry_max_wait.millis=1
     -Dprocess.running_delay.millis=1
     -Dexecution.tokens.max=1000
+    -Dobject.remove.time.delay.seconds=1200
     -Dcattle.http.port=${CATTLE_TEST_HTTP_PORT:-8081}
     -Dcattle.http.proxied.port=${CATTLE_TEST_HTTP_PROXIED_PORT:-8082}
     -Dlogback.log.dir=$RUNTIME_DIR/logs/

@@ -411,12 +411,18 @@ def test_health_check_ip_retain(super_client, context, client):
     assert hcihm.externalTimestamp == ts
 
     wait_for(lambda: super_client.reload(c1).healthState == 'unhealthy')
-    wait_for(lambda: len(service.serviceExposeMaps()) == 1)
+
+    def check():
+        s = super_client.reload(service)
+        return s.instanceIds is not None and len(s.instanceIds) == 1 and \
+            c1.id not in s.instanceIds
+
+    wait_for(check)
     super_client.wait_success(c1)
     for e_map in service.serviceExposeMaps():
         if e_map.instance().id == c1.id:
             continue
-        c2 = super_client.wait_success(e_map.instance())
+        c2 = wait_state(super_client, e_map.instance(), 'running')
         assert c2.name == c1.name
         assert c2.primaryIpAddress == ip1
         break

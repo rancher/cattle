@@ -2549,13 +2549,14 @@ def test_project_random_port_update_create(new_context):
     svc = client.create_service(name=random_str(),
                                 environmentId=env.id,
                                 launchConfig=launch_config)
+    svc = client.wait_success(svc)
+    svc.activate()
 
     def condition(x):
         return x.transitioningMessage is not None and \
                'Not enough environment ports' in x.transitioningMessage
     wait_for_condition(client, svc, condition)
-    assert svc.state == 'registering'
-    client.wait_success(client.delete(svc))
+    client.delete(svc)
 
     # create the port
     new_range = {"startPort": 65533, "endPort": 65535}
