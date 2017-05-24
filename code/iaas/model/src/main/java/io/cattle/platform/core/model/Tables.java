@@ -104,6 +104,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.DatabasechangeloglockTable DATABASECHANGELOGLOCK = io.cattle.platform.core.model.tables.DatabasechangeloglockTable.DATABASECHANGELOGLOCK;
 
 	/**
+	 * The table cattle.datablob
+	 */
+	public static final io.cattle.platform.core.model.tables.DatablobTable DATABLOB = io.cattle.platform.core.model.tables.DatablobTable.DATABLOB;
+
+	/**
 	 * The table cattle.deployment_unit
 	 */
 	public static final io.cattle.platform.core.model.tables.DeploymentUnitTable DEPLOYMENT_UNIT = io.cattle.platform.core.model.tables.DeploymentUnitTable.DEPLOYMENT_UNIT;
