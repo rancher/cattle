@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "auth_token", schema = "cattle")
-public class AuthTokenRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.AuthTokenRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record8<java.lang.Long, java.lang.Long, java.util.Date, java.util.Date, java.lang.String, java.lang.String, java.lang.String, java.lang.String>, io.cattle.platform.core.model.AuthToken {
+public class AuthTokenRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.AuthTokenRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record9<java.lang.Long, java.lang.Long, java.util.Date, java.util.Date, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Long>, io.cattle.platform.core.model.AuthToken {
 
-	private static final long serialVersionUID = 1222164937;
+	private static final long serialVersionUID = 801035653;
 
 	/**
 	 * Setter for <code>cattle.auth_token.id</code>.
@@ -152,6 +152,23 @@ public class AuthTokenRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle
 		return (java.lang.String) getValue(7);
 	}
 
+	/**
+	 * Setter for <code>cattle.auth_token.authenticated_as_account_id</code>.
+	 */
+	@Override
+	public void setAuthenticatedAsAccountId(java.lang.Long value) {
+		setValue(8, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.auth_token.authenticated_as_account_id</code>.
+	 */
+	@javax.persistence.Column(name = "authenticated_as_account_id", precision = 19)
+	@Override
+	public java.lang.Long getAuthenticatedAsAccountId() {
+		return (java.lang.Long) getValue(8);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -165,23 +182,23 @@ public class AuthTokenRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle
 	}
 
 	// -------------------------------------------------------------------------
-	// Record8 type implementation
+	// Record9 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row8<java.lang.Long, java.lang.Long, java.util.Date, java.util.Date, java.lang.String, java.lang.String, java.lang.String, java.lang.String> fieldsRow() {
-		return (org.jooq.Row8) super.fieldsRow();
+	public org.jooq.Row9<java.lang.Long, java.lang.Long, java.util.Date, java.util.Date, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Long> fieldsRow() {
+		return (org.jooq.Row9) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row8<java.lang.Long, java.lang.Long, java.util.Date, java.util.Date, java.lang.String, java.lang.String, java.lang.String, java.lang.String> valuesRow() {
-		return (org.jooq.Row8) super.valuesRow();
+	public org.jooq.Row9<java.lang.Long, java.lang.Long, java.util.Date, java.util.Date, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.Long> valuesRow() {
+		return (org.jooq.Row9) super.valuesRow();
 	}
 
 	/**
@@ -252,6 +269,14 @@ public class AuthTokenRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.lang.Long> field9() {
+		return io.cattle.platform.core.model.tables.AuthTokenTable.AUTH_TOKEN.AUTHENTICATED_AS_ACCOUNT_ID;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -310,6 +335,14 @@ public class AuthTokenRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle
 	@Override
 	public java.lang.String value8() {
 		return getProvider();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.Long value9() {
+		return getAuthenticatedAsAccountId();
 	}
 
 	/**
@@ -388,7 +421,16 @@ public class AuthTokenRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle
 	 * {@inheritDoc}
 	 */
 	@Override
-	public AuthTokenRecord values(java.lang.Long value1, java.lang.Long value2, java.util.Date value3, java.util.Date value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.lang.String value8) {
+	public AuthTokenRecord value9(java.lang.Long value) {
+		setAuthenticatedAsAccountId(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public AuthTokenRecord values(java.lang.Long value1, java.lang.Long value2, java.util.Date value3, java.util.Date value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.lang.String value8, java.lang.Long value9) {
 		return this;
 	}
 
@@ -409,6 +451,7 @@ public class AuthTokenRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle
 		setValue(from.getValue());
 		setVersion(from.getVersion());
 		setProvider(from.getProvider());
+		setAuthenticatedAsAccountId(from.getAuthenticatedAsAccountId());
 	}
 
 	/**
@@ -434,7 +477,7 @@ public class AuthTokenRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle
 	/**
 	 * Create a detached, initialised AuthTokenRecord
 	 */
-	public AuthTokenRecord(java.lang.Long id, java.lang.Long accountId, java.util.Date created, java.util.Date expires, java.lang.String key, java.lang.String value, java.lang.String version, java.lang.String provider) {
+	public AuthTokenRecord(java.lang.Long id, java.lang.Long accountId, java.util.Date created, java.util.Date expires, java.lang.String key, java.lang.String value, java.lang.String version, java.lang.String provider, java.lang.Long authenticatedAsAccountId) {
 		super(io.cattle.platform.core.model.tables.AuthTokenTable.AUTH_TOKEN);
 
 		setValue(0, id);
@@ -445,5 +488,6 @@ public class AuthTokenRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle
 		setValue(5, value);
 		setValue(6, version);
 		setValue(7, provider);
+		setValue(8, authenticatedAsAccountId);
 	}
 }

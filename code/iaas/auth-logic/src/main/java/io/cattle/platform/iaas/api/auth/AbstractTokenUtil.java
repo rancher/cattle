@@ -358,7 +358,8 @@ public abstract class AbstractTokenUtil implements TokenUtil {
         String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getId());
         Date expiry = new Date(System.currentTimeMillis() + SecurityConstants.TOKEN_EXPIRY_MILLIS.get());
         String jwt = tokenService.generateEncryptedToken(jsonData, expiry);
-        return new Token(jwt, accountId, user, new ArrayList<>(identities), account.getKind());
+        Long authenticatedAsAccountId = account.getId();
+        return new Token(jwt, accountId, user, new ArrayList<>(identities), account.getKind(), authenticatedAsAccountId);
 
     }
 

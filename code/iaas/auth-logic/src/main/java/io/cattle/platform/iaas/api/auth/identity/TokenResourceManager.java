@@ -2,11 +2,16 @@ package io.cattle.platform.iaas.api.auth.identity;
 
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
+import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.integration.external.ExternalServiceAuthProvider;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.TokenCreator;
+import io.cattle.platform.iaas.api.auth.integration.internal.rancher.TokenAuthLookup;
+import io.cattle.platform.token.TokenService;
 import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
@@ -25,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.netflix.config.DynamicBooleanProperty;
 
 public class TokenResourceManager extends AbstractNoOpResourceManager {
 
@@ -40,7 +46,20 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
     @Inject
     ExternalServiceAuthProvider externalAuthProvider;
 
+    @Inject
+    TokenService tokenService;
+
+    @Inject
+    TokenAuthLookup tokenAuthLookup;
+
+    @Inject
+    AuthDao authDao;
+
+    @Inject
+    AccountDao accountDao;
+
     private List<TokenCreator> tokenCreators;
+    private static final DynamicBooleanProperty RESTRICT_CONCURRENT_SESSIONS = ArchaiusUtil.getBoolean("api.auth.restrict.concurrent.sessions");
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -57,6 +76,7 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
 
     private Token createToken(ApiRequest request) {
         Token token = null;
+
         if (SecurityConstants.AUTH_PROVIDER.get() == null || SecurityConstants.NO_PROVIDER.equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get())) {
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR,
                     "NoAuthProvider", "No Auth provider is configured.", null);
@@ -88,7 +108,17 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
         }
         token.setIdentities(transFormedIdentities);
         token.setUserIdentity(identityManager.untransform(token.getUserIdentity(), true));
-        token.setJwt(authTokenDao.createToken(token.getJwt(), token.getAuthProvider(), ((Policy) ApiContext.getContext().getPolicy()).getAccountId()).getKey());
+
+        long authenticatedAsAccountId = token.getAuthenticatedAsAccountId();
+        long tokenAccountId = ((Policy) ApiContext.getContext().getPolicy()).getAccountId();
+
+        if (RESTRICT_CONCURRENT_SESSIONS.get()) {
+            authTokenDao.deletePreviousTokens(authenticatedAsAccountId, tokenAccountId);
+        }
+
+        token.setJwt(authTokenDao.createToken(token.getJwt(), token.getAuthProvider(),
+                ((Policy) ApiContext.getContext().getPolicy()).getAccountId(), authenticatedAsAccountId).getKey());
+
         return token;
     }
 

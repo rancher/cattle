@@ -6,9 +6,11 @@ public interface AuthTokenDao {
 
     AuthToken getTokenByKey(String key);
 
-    AuthToken createToken(String jwt, String provider, long accountId);
+    AuthToken createToken(String jwt, String provider, long accountId, long authenticatedAsAccountId);
 
     AuthToken getTokenByAccountId(long accountId);
+
+    void deletePreviousTokens(long authenticatedAsAccountId, long tokenAccountId);
 
     boolean deleteToken(String key);
 }

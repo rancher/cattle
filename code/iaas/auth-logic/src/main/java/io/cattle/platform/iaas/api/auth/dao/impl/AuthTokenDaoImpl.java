@@ -15,6 +15,7 @@ import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.Date;
+
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
@@ -40,7 +41,7 @@ public class AuthTokenDaoImpl extends AbstractJooqDao implements AuthTokenDao{
     }
 
     @Override
-    public AuthToken createToken(String jwt, String provider, long accountId) {
+    public AuthToken createToken(String jwt, String provider, long accountId, long authenticatedAsAccountId) {
         if (StringUtils.isBlank(jwt)){
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "NoJwtToSave", "Cannot save a null jwt.",
                     null);
@@ -51,6 +52,7 @@ public class AuthTokenDaoImpl extends AbstractJooqDao implements AuthTokenDao{
         authTokenRecord.setKey(ApiKeyFilter.generateKeys()[1]);
         authTokenRecord.setVersion(SecurityConstants.TOKEN_VERSION);
         authTokenRecord.setProvider(provider);
+        authTokenRecord.setAuthenticatedAsAccountId(authenticatedAsAccountId);
         Date expiry = new Date(System.currentTimeMillis() + SecurityConstants.TOKEN_EXPIRY_MILLIS.get());
         authTokenRecord.setCreated(new Date());
         authTokenRecord.setExpires(expiry);
@@ -76,5 +78,15 @@ public class AuthTokenDaoImpl extends AbstractJooqDao implements AuthTokenDao{
     @Override
     public boolean deleteToken(String key) {
         return create().executeDelete(getTokenByKey(key)) == 1;
+    }
+
+    @Override
+    public void deletePreviousTokens(long authenticatedAsAccountId, long tokenAccountId) {
+        create().delete(AUTH_TOKEN)
+                .where(AUTH_TOKEN.AUTHENTICATED_AS_ACCOUNT_ID.eq(authenticatedAsAccountId))
+                        .and(AUTH_TOKEN.ACCOUNT_ID.eq(tokenAccountId))
+                        .and(AUTH_TOKEN.EXPIRES.greaterThan(new Date()))
+                .execute();
+
     }
 }
