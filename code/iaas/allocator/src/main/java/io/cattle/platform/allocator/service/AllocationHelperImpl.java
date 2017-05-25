@@ -76,7 +76,7 @@ public class AllocationHelperImpl implements AllocationHelper {
     }
 
     protected List<Long> getHostsSatisfyingHostAffinityInternal(boolean includeRemoved, Long accountId, Map<String, String> labelConstraints) {
-        List<? extends Host> hosts = includeRemoved ? allocatorDao.getNonPurgedHosts(accountId) : allocatorDao.getActiveHosts(accountId);
+        List<? extends Host> hosts = includeRemoved ? allocatorDao.getNonRemovedHosts(accountId) : allocatorDao.getActiveHosts(accountId);
 
         List<Constraint> hostAffinityConstraints = getHostAffinityConstraintsFromLabels(labelConstraints);
 

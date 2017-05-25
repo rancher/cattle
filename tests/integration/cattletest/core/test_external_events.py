@@ -140,9 +140,7 @@ def test_host_evacuate(new_context):
 
     host = client.wait_success(host.evacuate())
     wait_state(client, host, 'inactive')
-    c = client.wait_success(c)
-
-    assert c.removed is not None
+    wait_for_condition(client, c, lambda x: x.removed is not None)
 
 
 def test_external_host_event_by_id(new_context):

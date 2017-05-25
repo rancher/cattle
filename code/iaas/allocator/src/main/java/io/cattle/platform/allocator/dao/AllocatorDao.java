@@ -45,7 +45,7 @@ public interface AllocatorDao {
 
     List<? extends Host> getActiveHosts(long accountId);
 
-    List<? extends Host> getNonPurgedHosts(long accountId);
+    List<? extends Host> getNonRemovedHosts(long accountId);
 
     boolean isVolumeInUseOnHost(long volumeId, long hostId);
     

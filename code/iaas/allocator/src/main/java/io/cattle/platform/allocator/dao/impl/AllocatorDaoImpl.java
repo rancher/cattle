@@ -391,7 +391,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                     .and((INSTANCE.HEALTH_STATE.isNull().or(INSTANCE.HEALTH_STATE.eq(HealthcheckConstants.HEALTH_STATE_HEALTHY)))))
                 .fetch().size() > 0;
     }
-    
+
     @Override
     public Set<Long> findHostsWithVolumeInUse(long volumeId) {
         Set<Long> result = new HashSet<>();
@@ -464,7 +464,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     }
 
     @Override
-    public List<? extends Host> getNonPurgedHosts(long accountId) {
+    public List<? extends Host> getNonRemovedHosts(long accountId) {
         return create()
                 .select(HOST.fields())
                 .from(HOST)
@@ -525,6 +525,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                     .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID).and(INSTANCE_HOST_MAP.REMOVED.isNull()))
                 .where(INSTANCE.REMOVED.isNull())
                 .and(INSTANCE.DEPLOYMENT_UNIT_ID.eq(deploymentUnitId))
+                .and(INSTANCE.DESIRED.isTrue())
                 .and(INSTANCE_HOST_MAP.ID.isNull())
                 .fetchInto(InstanceRecord.class);
 
