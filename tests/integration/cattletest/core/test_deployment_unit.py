@@ -60,6 +60,7 @@ def test_container_compute_fail(super_client, context):
                                                    data=data,
                                                    networkContainerId=c1.id)
 
+    assert c2.state == 'error'
     assert c2.transitioning == 'error'
     assert c2.deploymentUnitUuid == c1.deploymentUnitUuid
 

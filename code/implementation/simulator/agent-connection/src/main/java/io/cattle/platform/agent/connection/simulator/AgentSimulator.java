@@ -11,6 +11,7 @@ import io.cattle.platform.eventing.util.EventUtils;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.resource.ResourceMonitor;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -97,7 +98,7 @@ public class AgentSimulator implements AnnotatedEventListener {
 
     @Inject
     public void setProcessors(List<AgentSimulatorEventProcessor> processors) {
-        this.processors = processors;
+        this.processors = CollectionUtils.orderList(AgentSimulatorEventProcessor.class, processors);
     }
 
 }

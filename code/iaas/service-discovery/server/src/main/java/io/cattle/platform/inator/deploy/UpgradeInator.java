@@ -108,24 +108,23 @@ public class UpgradeInator {
                 throw new ProcessDelayException(new Date(lastRun + interval));
             }
 
-            boolean scheduled = false;
-            long count = Math.min(toUpgrade.size(), batchSize);
-            for (int i = 0 ; i < count ; i++) {
-                if (i >= toUpgrade.size()) {
+            long maxCount = Math.min(toUpgrade.size(), batchSize);
+            long count = 0;
+            for (int i = 0 ; i < toUpgrade.size() ; i++) {
+                if (count >= maxCount) {
                     break;
                 }
 
                 DeploymentUnitUnit deploymentUnit = toUpgrade.get(i);
-                Result upgradeResult = new Result(UnitState.WAITING, deploymentUnit, String.format("Upgrading %s", deploymentUnit.getDisplayName()));
-                result.aggregate(upgradeResult);
-                upgrade(deploymentUnit, currentRevisionId);
-                scheduled = true;
+                if (upgrade(deploymentUnit, currentRevisionId)) {
+                    count++;
+                    Result upgradeResult = new Result(UnitState.WAITING, deploymentUnit, String.format("Upgrading %s", deploymentUnit.getDisplayName()));
+                    result.aggregate(upgradeResult);
+                }
             }
 
             service.setUpgradeLastRunToNow();
-            if (scheduled) {
-                throw new ProcessDelayException(new Date(System.currentTimeMillis() + interval));
-            }
+            throw new ProcessDelayException(new Date(System.currentTimeMillis() + interval));
         }
 
         return result;

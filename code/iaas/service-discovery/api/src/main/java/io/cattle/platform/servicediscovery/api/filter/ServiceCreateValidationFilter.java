@@ -126,6 +126,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
         Object result = super.update(type, id, request, next);
         if (result instanceof Service) {
+            service = (Service)result;
             service = revisionManager.assignRevision(diff, service);
             processManager.update(service, null);
             return objectManager.reload(service);
