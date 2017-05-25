@@ -62,6 +62,13 @@ public class InstanceOutputFilter extends CachedOutputFilter<Map<Long, Map<Strin
             }
         }
 
+        if (((Instance) original).getServiceId() != null) {
+            Map<String, URL> actions = converted.getActions();
+            if (actions != null) {
+                actions.remove("converttoservice");
+            }
+        }
+
         List<Long> networkIds = DataAccessor.fieldLongList(original, InstanceConstants.FIELD_NETWORK_IDS);
         if (networkIds.size() > 0) {
             IdFormatter idF = ApiContext.getContext().getIdFormatter();

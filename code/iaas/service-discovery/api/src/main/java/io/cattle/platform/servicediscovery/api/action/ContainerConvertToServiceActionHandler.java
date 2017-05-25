@@ -28,7 +28,7 @@ public class ContainerConvertToServiceActionHandler implements ActionHandler {
 
     @Override
     public String getName() {
-        return InstanceConstants.ACTIONT_CONVERT_TO_SERVICE;
+        return InstanceConstants.ACTION_CONVERT_TO_SERVICE;
     }
 
     @Override
