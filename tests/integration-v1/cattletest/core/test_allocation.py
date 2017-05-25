@@ -109,8 +109,9 @@ def test_port_constraint(new_context):
             client.create_container(imageUuid=image_uuid,
                                     ports=['8081:81/tcp']))
         assert c2.transitioning == 'error'
-        assert c2.transitioningMessage == \
-            'Allocation failed: host needs ports 8081/tcp available'
+        assert 'Allocation failed: host needs ports 8081/tcp available' in \
+               c2.transitioningMessage
+
         assert c2.state == 'error'
 
         # try different public port
@@ -129,8 +130,9 @@ def test_port_constraint(new_context):
             client.create_container(imageUuid=image_uuid,
                                     ports=['8081:81/udp']))
         assert c5.transitioning == 'error'
-        assert c5.transitioningMessage == \
-            'Allocation failed: host needs ports 8081/udp available'
+        assert 'Allocation failed: host needs ports 8081/udp available' in \
+               c5.transitioningMessage
+
         assert c5.state == 'error'
 
         # try different bind IP
@@ -145,8 +147,9 @@ def test_port_constraint(new_context):
             client.create_container(imageUuid=image_uuid,
                                     ports=['127.2.2.2:8081:81/tcp']))
         assert c7.transitioning == 'error'
-        assert c7.transitioningMessage == \
-            'Allocation failed: host needs ports 8081/tcp available'
+        assert 'Allocation failed: host needs ports 8081/tcp available' in \
+               c7.transitioningMessage
+
         assert c7.state == 'error'
 
         # increase host pool and check whether allocator picks other host

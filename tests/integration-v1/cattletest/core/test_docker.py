@@ -448,8 +448,9 @@ def test_docker_bind_address(docker_client, super_client):
                                        ports=['127.2.2.2:89:8999'])
     c = docker_client.wait_transitioning(c)
     assert c.transitioning == 'error'
-    assert c.transitioningMessage == \
-        'Allocation failed: host needs ports 89/tcp available'
+    assert 'Allocation failed: host needs ports 89/tcp available' in \
+           c.transitioningMessage
+
     assert c.state == 'error'
 
 

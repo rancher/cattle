@@ -33,7 +33,7 @@ public class ComputeResourceRequest implements ResourceRequest {
     }
     
     public String toString() {
-        return String.format("ResourceType: %s, Amount: %s", resource, amount);
+        return String.format("%s %s", amount, resource);
     }
     
     @Override

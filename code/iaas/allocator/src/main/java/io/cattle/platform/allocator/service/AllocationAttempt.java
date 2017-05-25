@@ -1,6 +1,7 @@
 package io.cattle.platform.allocator.service;
 
 import io.cattle.platform.allocator.constraint.Constraint;
+import io.cattle.platform.allocator.service.impl.ResourceRequest;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
@@ -33,6 +34,7 @@ public class AllocationAttempt {
     List<Constraint> constraints = new ArrayList<Constraint>();
     List<AllocationCandidate> candidates = new ArrayList<AllocationCandidate>();
     AllocationCandidate matchedCandidate;
+    List<ResourceRequest> resourceRequests;
 
     public AllocationAttempt(long accountId, List<Instance> instances, Long hostId, Long requestedHostId, Set<Volume> volumes,
             Map<Volume, Set<StoragePool>> pools) {
@@ -146,4 +148,11 @@ public class AllocationAttempt {
         this.allocatedIPs = allocatedIPs;
     }
 
+    public List<ResourceRequest> getResourceRequests() {
+        return resourceRequests;
+    }
+
+    public void setResourceRequests(List<ResourceRequest> resourceRequests) {
+        this.resourceRequests = resourceRequests;
+    }
 }

@@ -4,6 +4,8 @@ import io.cattle.platform.core.util.PortSpec;
 
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class PortBindingResourceRequest implements ResourceRequest {
     private String instanceId;
     private String resourceUuid;
@@ -55,6 +57,6 @@ public class PortBindingResourceRequest implements ResourceRequest {
 
     @Override
     public String toString() {
-        return String.format("ports: %s", portRequests);
+        return String.format("%s %s", StringUtils.join(portRequests, ", "), resource);
     }
 }
