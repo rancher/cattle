@@ -11,7 +11,7 @@ import io.cattle.platform.inator.Unit;
 import io.cattle.platform.inator.UnitRef;
 import io.cattle.platform.inator.factory.InatorFactoryinator;
 import io.cattle.platform.inator.lock.ReconcileLock;
-import io.cattle.platform.inator.unit.MetaUnit;
+import io.cattle.platform.inator.unit.AllUnits;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
@@ -85,11 +85,7 @@ public class DeployinatorImpl implements Deployinator {
     }
 
     private Result remove(InatorContext context) {
-        for (Unit unit : context.getUnits().values()) {
-            unit.remove(context);
-        }
-
-        return Result.good();
+        return recurse(context, false, (unit) -> unit.remove(context));
     }
 
     protected Result pause(InatorContext context) {
@@ -106,7 +102,7 @@ public class DeployinatorImpl implements Deployinator {
     }
 
     private Result activate(InatorContext context) {
-        Result result = recurse(new HashMap<>(), new MetaUnit(), context, false, (unit) -> {
+        Result result = recurse(new HashMap<>(), new AllUnits(), context, false, (unit) -> {
             boolean desired = context.getInator().getDesiredRefs().contains(unit.getRef());
             return unit.define(context, desired);
         });
@@ -157,7 +153,7 @@ public class DeployinatorImpl implements Deployinator {
     }
 
     private Result recurse(InatorContext context, boolean checkResult, Function<Unit, Result> fun) {
-        return recurse(context.getResults(), new MetaUnit(), context, checkResult, fun);
+        return recurse(context.getResults(), new AllUnits(), context, checkResult, fun);
 
     }
 }

@@ -7,7 +7,7 @@ import io.cattle.platform.inator.UnitRef;
 
 import java.util.Collection;
 
-public class MetaUnit implements Unit {
+public class AllUnits implements Unit {
 
     @Override
     public Result scheduleActions(InatorContext context) {

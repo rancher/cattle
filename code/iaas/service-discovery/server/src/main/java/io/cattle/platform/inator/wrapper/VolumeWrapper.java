@@ -5,6 +5,7 @@ import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.VolumeTemplate;
+import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.inator.factory.InatorServices;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -51,7 +52,11 @@ public class VolumeWrapper implements BasicStateWrapper {
         if (volume.getRemoved() != null) {
             return true;
         }
-        svc.processManager.remove(volume, null);
+        try {
+            svc.processManager.remove(volume, null);
+        } catch (ProcessCancelException e) {
+            return false;
+        }
         return false;
     }
 

@@ -68,8 +68,11 @@ public class GlobalServicePlanner implements UnitPlanner {
                 indexes.add(index);
                 Integer count = countsNeeded.get(hostId);
                 if (count != null) {
-                    desiredSet.add(DeploymentUnitWrapper.newRef(hostId, index, svc));
-                    countsNeeded.put(hostId, count-1);
+                    int newCount = count - 1;
+                    if (newCount >= 0) {
+                        desiredSet.add(DeploymentUnitWrapper.newRef(hostId, index, svc));
+                    }
+                    countsNeeded.put(hostId, newCount);
                 }
             }
         }

@@ -37,7 +37,7 @@ public class RestartInator {
         Long lastRun = service.getLastRun();
         Long restartTrigger = service.getRestartTrigger();
 
-        List<DeploymentUnitUnit> toUpgrade = new ArrayList<>();
+        List<DeploymentUnitUnit> toRestart = new ArrayList<>();
 
         context.getUnits().forEach((ref, unit) -> {
             if (unit instanceof DeploymentUnitUnit) {
@@ -48,24 +48,24 @@ public class RestartInator {
                 Long duRestartTrigger = dpw.getRestartTrigger();
 
                 if (duRestartTrigger < restartTrigger) {
-                    toUpgrade.add((DeploymentUnitUnit) unit);
+                    toRestart.add((DeploymentUnitUnit) unit);
                 }
             }
         });
 
-        if (toUpgrade.size() > 0) {
+        if (toRestart.size() > 0) {
             if (System.currentTimeMillis() <= (lastRun + interval)) {
                 throw new ProcessDelayException(new Date(lastRun + interval));
             }
 
             boolean scheduled = false;
-            long count = Math.min(toUpgrade.size(), batchSize);
+            long count = Math.min(toRestart.size(), batchSize);
             for (int i = 0 ; i < count ; i++) {
-                if (i >= toUpgrade.size()) {
+                if (i >= toRestart.size()) {
                     break;
                 }
 
-                DeploymentUnitUnit deploymentUnit = toUpgrade.get(i);
+                DeploymentUnitUnit deploymentUnit = toRestart.get(i);
                 Result upgradeResult = new Result(UnitState.WAITING, deploymentUnit, String.format("Restarting %s", deploymentUnit.getDisplayName()));
                 result.aggregate(upgradeResult);
                 svc.processManager.deactivate(deploymentUnit.getDeploymentUnit().getInternal(), null);
