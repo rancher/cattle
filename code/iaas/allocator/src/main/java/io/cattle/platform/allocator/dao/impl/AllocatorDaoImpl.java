@@ -577,7 +577,9 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                 Integer publicPort = (Integer) allocatedIp.get(PUBLIC_PORT);
                 Integer privatePort = (Integer) allocatedIp.get(PRIVATE_PORT);
                 for (Port port: objectManager.children(instance, Port.class)) {
-                    if (port.getPrivatePort().equals(privatePort) && StringUtils.equals(port.getProtocol(), protocol)) {
+                    if (port.getPrivatePort().equals(privatePort) 
+                            && StringUtils.equals(port.getProtocol(), protocol) 
+                            && (port.getPublicPort() == null || port.getPublicPort().equals(publicPort))) { 
                         DataAccessor.setField(port, BIND_ADDRESS, ipAddress);
                         port.setPublicPort(publicPort);
                         objectManager.persist(port);
