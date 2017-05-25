@@ -43,30 +43,3 @@ def test_host_template_create(client, service_client):
     client.delete(mds)
     mds = client.wait_success(mds)
     assert mds.removed is not None
-
-
-def _ignore_test_host_from_host_template(docker_client):  # NOQA
-    for i in docker_client.list_host_template():
-        docker_client.delete(i)
-
-    ht = docker_client.create_host_template(
-        publicValues={
-            'digitaloceanConfig': {
-                'region': 'sfo1',
-                'size': '1gb',
-            },
-        },
-        secretValues={
-            'digitaloceanConfig': {
-                'accessToken': 'XXXXX',
-            },
-        },
-    )
-    ht = docker_client.wait_success(ht)
-    assert ht.state == 'active'
-
-    host = docker_client.create_host(hostname='lala',
-                                     digitaloceanConfig={},
-                                     hostTemplateId=ht.id)
-    host = docker_client.wait_success(host)
-    assert host.state == 'active'

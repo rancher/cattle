@@ -63,7 +63,7 @@ public class MachineValidationFilter extends AbstractDefaultResourceManagerFilte
             }
         }
 
-        if (!alreadyFound) {
+        if (!alreadyFound && data.get(HostConstants.FIELD_HOST_TEMPLATE_ID) == null) {
             throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, DRIVER_CONFIG_EXACTLY_ONE_REQUIRED);
         }
         return super.create(type, request, next);
