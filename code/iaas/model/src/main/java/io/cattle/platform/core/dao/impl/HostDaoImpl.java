@@ -138,7 +138,7 @@ public class HostDaoImpl extends AbstractJooqDao implements HostDao {
     }
 
     @Override
-    public PhysicalHost createMachineForHost(final Host host) {
+    public PhysicalHost createMachineForHost(final Host host, String driver) {
         String uuid = UUID.randomUUID().toString();
         final Map<Object, Object> data = new HashMap<Object, Object>(DataUtils.getFields(host));
         data.put(PHYSICAL_HOST.KIND, MachineConstants.KIND_MACHINE);
@@ -146,6 +146,7 @@ public class HostDaoImpl extends AbstractJooqDao implements HostDao {
         data.put(PHYSICAL_HOST.DESCRIPTION, host.getDescription());
         data.put(PHYSICAL_HOST.ACCOUNT_ID, host.getAccountId());
         data.put(PHYSICAL_HOST.EXTERNAL_ID, uuid);
+        data.put(PHYSICAL_HOST.DRIVER, driver);
 
         PhysicalHost phyHost = DeferredUtils.nest(new Callable<PhysicalHost>() {
             @Override

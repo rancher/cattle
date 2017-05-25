@@ -26,7 +26,7 @@ public interface HostDao {
 
     Map<Long, List<Object>> getInstancesPerHost(List<Long> hosts, IdFormatter idFormatter);
 
-    PhysicalHost createMachineForHost(Host host);
+    PhysicalHost createMachineForHost(Host host, String driver);
 
     Map<Long, PhysicalHost> getPhysicalHostsForHosts(List<Long> hosts);
 
