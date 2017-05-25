@@ -5,7 +5,9 @@ import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationLog;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
+import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.util.InstanceHelpers;
@@ -53,7 +55,9 @@ public class VolumeAccessModeConstraintProvider implements AllocationConstraints
                         throw new FailedToAllocate("SingleHostRW volume is used by mutiple hosts");
                     }
                     if (hostID != null) {
-                        constraints.add(new VolumeAccessModeSingleHostConstraint(hostID, v.getId(), hardConstraint));
+                        Host host = objectManager.loadResource(Host.class, hostID);
+                        String hostName = DataAccessor.fieldString(host, HostConstants.FIELD_HOSTNAME);
+                        constraints.add(new VolumeAccessModeSingleHostConstraint(hostID, v.getId(), v.getName(), hostName, hardConstraint));
                     }
                 } else if (VolumeConstants.ACCESS_MODE_SINGLE_INSTANCE_RW.equals(v.getAccessMode())) {
                     List<Long> currentlyUsedBy = allocatorDao.getInstancesWithVolumeMounted(v.getId(), instance.getId());
