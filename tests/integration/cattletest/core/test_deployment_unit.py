@@ -182,6 +182,9 @@ def test_convert_to_service_primary(client, context):
     assert s.launchConfig is not None
     assert s.launchConfig.imageUuid == c.imageUuid
 
+    c = client.wait_success(c)
+    assert 'converttoservice' not in c
+
     # scale up the service
     s = client.update(s, scale=2)
     c = client.reload(c)
