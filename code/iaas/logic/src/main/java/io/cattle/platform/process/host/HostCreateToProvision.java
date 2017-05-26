@@ -58,15 +58,16 @@ public class HostCreateToProvision extends AbstractObjectProcessLogic implements
             }
         }
 
-        Object hostTemplateIdObj = fields.get(HostConstants.FIELD_HOST_TEMPLATE_ID);
-        Long hostTemplateId = null;
-        if (hostTemplateIdObj != null && hostTemplateIdObj instanceof Long) {
-           hostTemplateId = (Long)hostTemplateIdObj;
-           HostTemplate ht = objectManager.loadResource(HostTemplate.class, hostTemplateId);
-           // TODO Look at the config in the public/private fields to determine what driver this is for, as we do above for the config fields
-           // on the host itself. If more than one config is set, should probably error out. We'll have to add validation later to prevent conflicting
-           // configs in a host template.
+        if (obj instanceof Host) {
+            Long hostTemplateId = ((Host) obj).getHostTemplateId();
+            if (hostTemplateId != null) {
+                HostTemplate ht = objectManager.loadResource(HostTemplate.class, hostTemplateId);
+                return ht.getDriver();
+                // HostTemplate should have the driver set by this point
+                // TODO infer the driver while creating a HostTemplate if not set explicitly
+            }
         }
+
         return null;
     }
 
