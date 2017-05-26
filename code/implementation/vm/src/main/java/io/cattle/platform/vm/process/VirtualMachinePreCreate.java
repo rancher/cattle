@@ -4,6 +4,7 @@ import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 
 import io.cattle.platform.core.addon.VirtualMachineDisk;
+import io.cattle.platform.core.constants.DockerInstanceConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.StoragePoolConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
@@ -15,7 +16,6 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.util.SystemLabels;
-import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -59,7 +59,7 @@ public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implemen
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { "instance.create" };
+        return new String[] { InstanceConstants.PROCESS_CREATE };
     }
 
     @Override
@@ -225,7 +225,7 @@ public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implemen
         }
 
         // TODO: I'd really like to remove this
-        List<Object> command = new ArrayList<Object>(DataAccessor.fieldStringList(instance, DockerInstanceConstants.FIELD_COMMAND));
+        List<Object> command = new ArrayList<>(DataAccessor.fieldStringList(instance, DockerInstanceConstants.FIELD_COMMAND));
         if (!command.contains("-m")) {
             command.add("-m");
             command.add(labels.get(SystemLabels.LABEL_VM_MEMORY));

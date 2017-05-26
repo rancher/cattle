@@ -45,7 +45,7 @@ public interface AllocatorDao {
 
     List<? extends Host> getActiveHosts(long accountId);
 
-    List<? extends Host> getNonPurgedHosts(long accountId);
+    List<? extends Host> getNonRemovedHosts(long accountId);
 
     boolean isVolumeInUseOnHost(long volumeId, long hostId);
     
@@ -55,7 +55,7 @@ public interface AllocatorDao {
 
     Map<String, List<InstanceHostMap>> getInstanceHostMapsWithHostUuid(long instanceId);
 
-    List<Instance> getUnmappedDeploymentUnitInstances(String deploymentUnitUuid);
+    List<Instance> getUnmappedDeploymentUnitInstances(Long deploymentUnitId);
 
     boolean isAllocationReleased(Object resource);
 

@@ -8,6 +8,7 @@ import io.cattle.iaas.labels.service.LabelsService;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
+import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.LabelsDao;
 import io.cattle.platform.core.model.CredentialInstanceMap;
 import io.cattle.platform.core.model.Instance;
@@ -39,16 +40,16 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
 
     @Inject
     LabelsService labelsService;
-
     @Inject
     GenericResourceDao resourceDao;
     @Inject
     JsonMapper jsonMapper;
     @Inject
     ObjectProcessManager processManager;
-
     @Inject
     LabelsDao labelsDao;
+    @Inject
+    InstanceDao instanceDao;
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
@@ -64,11 +65,11 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
         Set<Long> volumesIds = createVolumes(instance, volumes, state.getData());
         Set<Long> nicIds = createNics(instance, nics, state.getData());
 
+        createLabels(instance);
+
         HandlerResult result = new HandlerResult("_volumeIds", volumesIds, "_nicIds", nicIds, "_creds", creds, InstanceConstants.FIELD_DATA_VOLUMES,
                 dataVolumes);
-        result.shouldDelegate(shouldStart(instance));
-
-        createLabels(instance);
+        result.shouldDelegate(shouldStart(state, instance));
 
         return result;
     }
@@ -76,7 +77,7 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
     private List<String> processManagedVolumes(Instance instance) {
         List<String> dataVolumes = DataAccessor.fieldStringList(instance, InstanceConstants.FIELD_DATA_VOLUMES);
         if (dataVolumes == null) {
-            dataVolumes = new ArrayList<String>();
+            dataVolumes = new ArrayList<>();
         }
         Map<String, Object> dataVolumeMounts = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_DATA_VOLUME_MOUNTS);
         if (dataVolumeMounts == null) {
@@ -95,7 +96,13 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
         return dataVolumes;
     }
 
-    protected boolean shouldStart(Instance instance) {
+    protected boolean shouldStart(ProcessState state, Instance instance) {
+        Boolean shouldStart = DataAccessor
+                .fromDataFieldOf(state)
+                .withKey(InstanceConstants.FIELD_START_ON_CREATE).as(Boolean.class);
+        if (shouldStart != null) {
+            return shouldStart;
+        }
         return DataAccessor.fields(instance)
                 .withKey(InstanceConstants.FIELD_START_ON_CREATE)
                 .withDefault(true)
@@ -118,7 +125,7 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
     }
 
     protected Set<Long> createVolumes(Instance instance, List<Volume> volumes, Map<String, Object> data) {
-        Set<Long> volumeIds = new TreeSet<Long>();
+        Set<Long> volumeIds = new TreeSet<>();
         Volume root = createRoot(instance, volumes, data);
         if (root != null) {
             volumeIds.add(root.getId());
@@ -160,7 +167,7 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
     }
 
     protected Set<Long> createNicsFromIds(Instance instance, List<Nic> nics, Map<String, Object> data, List<Long> networkIds) {
-        Set<Long> nicIds = new TreeSet<Long>();
+        Set<Long> nicIds = new TreeSet<>();
 
         int deviceId = 0;
 
@@ -206,8 +213,8 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
             return Collections.emptySet();
         }
 
-        Set<Long> created = new HashSet<Long>();
-        List<CredentialInstanceMap> maps = new ArrayList<CredentialInstanceMap>();
+        Set<Long> created = new HashSet<>();
+        List<CredentialInstanceMap> maps = new ArrayList<>();
 
         for (CredentialInstanceMap map : children(instance, CredentialInstanceMap.class)) {
             maps.add(map);
@@ -225,7 +232,7 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
             createThenActivate(map, data);
         }
 
-        return new TreeSet<Long>(credIds);
+        return new TreeSet<>(credIds);
     }
 
     public static boolean isCreateStart(ProcessState state) {

@@ -125,7 +125,7 @@ public class JooqObjectManager extends AbstractObjectManager {
 
     @SuppressWarnings("unchecked")
     protected <T> T setFieldsInternal(final Schema schema, final Object obj, final Map<String, Object> values) {
-        final List<UpdatableRecord<?>> pending = new ArrayList<UpdatableRecord<?>>();
+        final List<UpdatableRecord<?>> pending = new ArrayList<>();
         Map<Object, Object> toWrite = toObjectsToWrite(obj, values);
         setFields(schema, obj, toWrite, pending);
 
@@ -276,7 +276,7 @@ public class JooqObjectManager extends AbstractObjectManager {
         }
 
         recordObject.attach(getConfiguration());
-        return (List<T>) recordObject.fetchChildren((ForeignKey) foreignKey);
+        return recordObject.fetchChildren((ForeignKey) foreignKey);
     }
 
     @Override
@@ -325,7 +325,7 @@ public class JooqObjectManager extends AbstractObjectManager {
 
     @Override
     public Map<String, Object> convertToPropertiesFor(Object obj, Map<Object, Object> values) {
-        Map<String, Object> result = new LinkedHashMap<String, Object>();
+        Map<String, Object> result = new LinkedHashMap<>();
         Class<?> recordClass = null;
 
         if (obj instanceof Class<?>) {
@@ -429,11 +429,7 @@ public class JooqObjectManager extends AbstractObjectManager {
         Table<?> table = JooqUtils.getTableFromRecordClass(JooqUtils.getRecordClass(getSchemaFactory(), obj.getClass()));
         TableField<?, Object> idField = JooqUtils.getTableField(getMetaDataManager(), type, ObjectMetaDataManager.ID_FIELD);
 
-        int result = create().delete(table).where(idField.eq(id)).execute();
-
-        if (result != 1) {
-            throw new IllegalStateException("Failed to delete [" + type + "] id [" + id + "]");
-        }
+        create().delete(table).where(idField.eq(id)).execute();
     }
 
     @Override

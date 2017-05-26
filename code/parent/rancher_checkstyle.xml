@@ -25,6 +25,7 @@
       <property name="groups" value="io,java,javax,liquibase,org,redis,ch,com"/>
       <property name="ordered" value="false"/>
     </module>
+    <module name="StringLiteralEquality"/>
     <module name="WhitespaceAfter">
       <property name="tokens" value="COMMA,SEMI"/>
     </module>

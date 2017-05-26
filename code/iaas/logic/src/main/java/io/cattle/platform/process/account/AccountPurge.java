@@ -1,7 +1,8 @@
 package io.cattle.platform.process.account;
 
+import static io.cattle.platform.core.model.tables.HostTable.*;
+
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Account;
@@ -24,7 +25,6 @@ import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
-import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
@@ -45,6 +45,13 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Account account = (Account) state.getResource();
+
+        for (Stack env : list(account, Stack.class)) {
+            if (env.getRemoved() != null) {
+                continue;
+            }
+            objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, env, null);
+        }
 
         for (Agent agent : list(account, Agent.class)) {
             if (agent.getRemoved() != null) {
@@ -78,22 +85,9 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
             deactivateThenRemove(cred, state.getData());
         }
 
-        for (Stack env : list(account, Stack.class)) {
-            if (env.getRemoved() != null) {
-                continue;
-            }
-            objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, env, null);
-        }
-
-        for (Instance instance : instanceDao.listNonRemovedInstances(account, false)) {
+        for (Instance instance : instanceDao.listNonRemovedNonStackInstances(account)) {
             deleteAgentAccount(instance.getAgentId(), state.getData());
-
-            try {
-                objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, instance, null);
-            } catch (ProcessCancelException e) {
-                objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance,
-                        CollectionUtils.asMap(InstanceConstants.REMOVE_OPTION, true));
-            }
+            objectProcessManager.stopAndRemove(instance, null);
         }
 
         for (PhysicalHost host : list(account, PhysicalHost.class)) {
@@ -158,7 +152,7 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
     protected <T> List<T> hostList(Account account, Class<T> type) {
         return objectManager.find(type,
                 ObjectMetaDataManager.STATE_FIELD, new Condition(ConditionType.NE, CommonStatesConstants.PURGED),
-                ObjectMetaDataManager.ACCOUNT_FIELD, account.getId());
+                ObjectMetaDataManager.ACCOUNT_FIELD, account.getId(), HOST.STACK_ID, null);
     }
 
     protected void deleteAgentAccount(Long agentId, Map<String, Object> data) {

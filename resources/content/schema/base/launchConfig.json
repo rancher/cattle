@@ -1,11 +1,24 @@
 {
     "collectionMethods" : [ "POST" ],
     "resourceFields": {
+        "completeUpdate": {
+            "type": "boolean",
+            "default": false,
+            "nullable": true
+        },
         "dataVolumesFromLaunchConfigs": {
             "type" : "array[string]",
             "nullable" : true
         },
         "networkLaunchConfig": {
+            "type" : "string",
+            "nullable" : true
+        },
+        "ipcLaunchConfig": {
+            "type" : "string",
+            "nullable" : true
+        },
+        "pidLaunchConfig": {
             "type" : "string",
             "nullable" : true
         },

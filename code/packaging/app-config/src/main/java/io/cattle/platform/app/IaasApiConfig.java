@@ -8,8 +8,8 @@ import io.cattle.platform.core.util.SettingsUtils;
 import io.cattle.platform.docker.api.transform.TransformInspect;
 import io.cattle.platform.docker.machine.api.MachineLinkFilter;
 import io.cattle.platform.docker.machine.api.addon.BaseMachineConfig;
-import io.cattle.platform.docker.machine.api.filter.MachineValidationFilter;
 import io.cattle.platform.docker.machine.api.filter.MachineOutputFilter;
+import io.cattle.platform.docker.machine.api.filter.MachineValidationFilter;
 import io.cattle.platform.docker.machine.launch.SecretsApiLauncher;
 import io.cattle.platform.docker.machine.launch.WebsocketProxyLauncher;
 import io.cattle.platform.extension.impl.EMUtils;
@@ -74,6 +74,7 @@ import io.cattle.platform.iaas.api.filter.containerevent.ContainerEventFilter;
 import io.cattle.platform.iaas.api.filter.dynamic.schema.DynamicSchemaFilter;
 import io.cattle.platform.iaas.api.filter.externalevent.ExternalEventFilter;
 import io.cattle.platform.iaas.api.filter.hosts.HostsFilter;
+import io.cattle.platform.iaas.api.filter.instance.ContainerCreateValidationFilter;
 import io.cattle.platform.iaas.api.filter.instance.InstanceAgentValidationFilter;
 import io.cattle.platform.iaas.api.filter.instance.InstanceImageValidationFilter;
 import io.cattle.platform.iaas.api.filter.instance.InstanceOutputFilter;
@@ -90,9 +91,8 @@ import io.cattle.platform.iaas.api.filter.stack.StackOutputFilter;
 import io.cattle.platform.iaas.api.filter.storagepool.StoragePoolOutputFilter;
 import io.cattle.platform.iaas.api.filter.volume.VolumeOutputFilter;
 import io.cattle.platform.iaas.api.manager.DataManager;
-import io.cattle.platform.iaas.api.manager.HaConfigManager;
-import io.cattle.platform.iaas.api.manager.InstanceManager;
 import io.cattle.platform.iaas.api.manager.HostTemplateManager;
+import io.cattle.platform.iaas.api.manager.InstanceManager;
 import io.cattle.platform.iaas.api.manager.ProcessPoolManager;
 import io.cattle.platform.iaas.api.manager.ProcessSummaryManager;
 import io.cattle.platform.iaas.api.manager.SecretManager;
@@ -273,13 +273,6 @@ public class IaasApiConfig {
     }
 
     @Bean
-    HaConfigManager HaConfigManager(@Qualifier("FreemarkerConfig") freemarker.template.Configuration config) {
-        HaConfigManager haConfig = new HaConfigManager();
-        haConfig.setConfiguration(config);
-        return haConfig;
-    }
-
-    @Bean
     ServiceManager ServiceManager() {
         return new ServiceManager();
     }
@@ -332,6 +325,11 @@ public class IaasApiConfig {
     @Bean
     InstanceImageValidationFilter InstanceImageValidationFilter() {
         return new InstanceImageValidationFilter();
+    }
+
+    @Bean
+    ContainerCreateValidationFilter InstanceCreateValidationFilter() {
+        return new ContainerCreateValidationFilter();
     }
 
     @Bean

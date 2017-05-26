@@ -1,6 +1,7 @@
 package io.cattle.platform.process.common.generic;
 
 import io.cattle.platform.engine.manager.impl.ProcessRecord;
+import io.cattle.platform.engine.manager.impl.ProcessRecordDao;
 import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.LaunchConfiguration;
 import io.cattle.platform.engine.process.impl.AbstractStatesBasedProcessState;
@@ -32,8 +33,10 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
     LockDefinition processLock;
     Map<String, Object> data;
     String state;
+    ProcessRecordDao processRecordDao;
 
-    public GenericResourceProcessState(JsonMapper jsonMapper, ResourceStatesDefinition stateDef, LaunchConfiguration config, ObjectManager objectManager) {
+    public GenericResourceProcessState(JsonMapper jsonMapper, ResourceStatesDefinition stateDef, LaunchConfiguration config, ObjectManager objectManager,
+            ProcessRecordDao processRecordDao) {
         super(jsonMapper, stateDef);
         this.objectManager = objectManager;
         this.resource = objectManager.loadResource(config.getResourceType(), config.getResourceId());
@@ -41,6 +44,7 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
         this.resourceId = config.getResourceId();
         this.data = config.getData();
         this.state = lookupState();
+        this.processRecordDao = processRecordDao;
     }
 
     @Override
@@ -105,7 +109,15 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
         }
 
         try {
-            Object newResource = objectManager.setFields(resource, getStatesDefinition().getStateField(), newState);
+            Object newResource = null;
+
+            if (transitioning) {
+                newResource = objectManager.setFields(resource, getStatesDefinition().getStateField(), newState);
+            } else {
+                processRecordDao.setDone(resource, getStatesDefinition().getStateField(), newState);
+                newResource = objectManager.reload(resource);
+            }
+
             if (newResource == null) {
                 return false;
             } else {

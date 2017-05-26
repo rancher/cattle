@@ -55,8 +55,13 @@ public class DataAccessor {
         return CollectionUtils.toMap(list);
     }
 
+    public static Map<String, Object> fieldMapRO(Object obj, String key) {
+        Object list = fields(obj).withKey(key).get();
+        return CollectionUtils.toMap(list);
+    }
+
     public static List<String> fieldStringList(Object obj, String key) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         Object list = fields(obj).withKey(key).getForWrite();
 
         if (list == null || !(list instanceof List)) {
@@ -92,7 +97,7 @@ public class DataAccessor {
     }
 
     public static List<Long> fieldLongList(Object obj, String key) {
-        List<Long> result = new ArrayList<Long>();
+        List<Long> result = new ArrayList<>();
         Object list = fields(obj).withKey(key).getForWrite();
 
         if (list == null || !(list instanceof List)) {
@@ -177,7 +182,13 @@ public class DataAccessor {
 
     @SuppressWarnings("unchecked")
     public <T> T as(Class<T> clz) {
-        return (T) ConvertUtils.convert(get(), clz);
+        Object obj = get();
+
+        // Doing .as(Boolean.class) will convert null to false, so do it manually
+        if (clz == Boolean.class && obj == null) {
+            return null;
+        }
+        return (T) ConvertUtils.convert(obj, clz);
     }
 
     public Object get() {
@@ -243,7 +254,7 @@ public class DataAccessor {
         } else if (map instanceof UnmodifiableMap<?, ?>) {
             map = ((UnmodifiableMap<String, Object>) map).getModifiableCopy();
         } else if (map == null) {
-            map = new HashMap<String, Object>();
+            map = new HashMap<>();
         }
 
         ObjectUtils.setProperty(obj, DataUtils.DATA, map);

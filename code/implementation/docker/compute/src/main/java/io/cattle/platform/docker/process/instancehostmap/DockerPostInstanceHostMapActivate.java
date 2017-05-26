@@ -1,11 +1,12 @@
 package io.cattle.platform.docker.process.instancehostmap;
 
+import static io.cattle.platform.core.constants.DockerInstanceConstants.*;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
 import static io.cattle.platform.core.model.tables.MountTable.*;
-import static io.cattle.platform.docker.constants.DockerInstanceConstants.*;
 
 import io.cattle.iaas.labels.service.LabelsService;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.DockerInstanceConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.PortConstants;
@@ -24,7 +25,6 @@ import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.util.PortSpec;
-import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.docker.constants.DockerIpAddressConstants;
 import io.cattle.platform.docker.process.dao.DockerComputeDao;
 import io.cattle.platform.docker.process.lock.DockerStoragePoolVolumeCreateLock;
@@ -166,7 +166,7 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
         }
 
         StoragePool dockerLocalStoragePool = null;
-        Map<String, StoragePool> pools = new HashMap<String, StoragePool>();
+        Map<String, StoragePool> pools = new HashMap<>();
         for (StoragePool pool : objectManager.mappedChildren(host, StoragePool.class)) {
             if (DockerStoragePoolDriver.isDockerPool(pool) &&
                     (VolumeConstants.LOCAL_DRIVER.equals(pool.getDriverName()) || StringUtils.isEmpty(pool.getDriverName()))) {
@@ -223,7 +223,7 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
         return lockManager.lock(new MountVolumeLock(volume.getId()), new LockCallback<Mount>() {
             @Override
             public Mount doWithLock() {
-                Map<Object, Object> criteria = new HashMap<Object, Object>();
+                Map<Object, Object> criteria = new HashMap<>();
                 criteria.put(MOUNT.VOLUME_ID, volume.getId());
                 criteria.put(MOUNT.INSTANCE_ID, instance.getId());
                 criteria.put(MOUNT.PATH, path);
@@ -269,7 +269,7 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
     protected void processPorts(IpAddress primaryIp, IpAddress ipAddress, List<String> ports, Instance instance, Nic nic, final Host host) {
         Long privateIpAddressId = primaryIp == null ? null : primaryIp.getId();
 
-        Map<Integer, Port> existing = new HashMap<Integer, Port>();
+        Map<Integer, Port> existing = new HashMap<>();
         for (Port port : getObjectManager().children(instance, Port.class)) {
             existing.put(port.getPrivatePort(), port);
         }

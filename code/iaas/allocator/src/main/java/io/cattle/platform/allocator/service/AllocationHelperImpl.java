@@ -76,7 +76,7 @@ public class AllocationHelperImpl implements AllocationHelper {
     }
 
     protected List<Long> getHostsSatisfyingHostAffinityInternal(boolean includeRemoved, Long accountId, Map<String, String> labelConstraints) {
-        List<? extends Host> hosts = includeRemoved ? allocatorDao.getNonPurgedHosts(accountId) : allocatorDao.getActiveHosts(accountId);
+        List<? extends Host> hosts = includeRemoved ? allocatorDao.getNonRemovedHosts(accountId) : allocatorDao.getActiveHosts(accountId);
 
         List<Constraint> hostAffinityConstraints = getHostAffinityConstraintsFromLabels(labelConstraints);
 
@@ -92,7 +92,7 @@ public class AllocationHelperImpl implements AllocationHelper {
     private List<Constraint> getHostAffinityConstraintsFromLabels(Map<String, String> labelConstraints) {
         List<Constraint> constraints = extractConstraintsFromLabels(labelConstraints, null);
 
-        List<Constraint> hostConstraints = new ArrayList<Constraint>();
+        List<Constraint> hostConstraints = new ArrayList<>();
         for (Constraint constraint : constraints) {
             if (constraint instanceof HostAffinityConstraint) {
                 hostConstraints.add(constraint);
@@ -152,7 +152,7 @@ public class AllocationHelperImpl implements AllocationHelper {
 
     // TODO: Fix repeated DB call even if DB's cache no longer hits the disk
     private Set<String> getServiceNamesInStack(long stackId) {
-        Set<String> servicesInEnv = new HashSet<String>();
+        Set<String> servicesInEnv = new HashSet<>();
 
         List<? extends Service> services = objectManager.find(Service.class, SERVICE.STACK_ID, stackId, SERVICE.REMOVED,
                 null);
@@ -163,37 +163,9 @@ public class AllocationHelperImpl implements AllocationHelper {
     }
 
     @Override
-    public void mergeLabels(Map<String, String> srcMap, Map<String, String> destMap) {
-        if (srcMap == null || destMap == null) {
-            return;
-        }
-        for (Map.Entry<String, String> entry : srcMap.entrySet()) {
-            String key = entry.getKey();
-            if (key.toLowerCase().startsWith("io.rancher")) {
-                key = key.toLowerCase();
-            }
-            String value = entry.getValue();
-            if (key.startsWith("io.rancher.scheduler.affinity")) {
-                // merge labels
-                String destValue = destMap.get(key);
-                if (StringUtils.isEmpty(destValue)) {
-                    destMap.put(key, value);
-                } else if (StringUtils.isEmpty(value)) {
-                    continue;
-                } else if (!destValue.toLowerCase().contains(value.toLowerCase())) {
-                    destMap.put(key, destValue + "," + value);
-                }
-            } else {
-                // overwrite label value
-                destMap.put(key, value);
-            }
-        }
-    }
-
-    @Override
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public List<Constraint> extractConstraintsFromEnv(Map env) {
-        List<Constraint> constraints = new ArrayList<Constraint>();
+        List<Constraint> constraints = new ArrayList<>();
         if (env != null) {
             Set<String> affinityDefinitions = env.keySet();
             for (String affinityDef : affinityDefinitions) {
@@ -230,7 +202,7 @@ public class AllocationHelperImpl implements AllocationHelper {
     @Override
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public List<Constraint> extractConstraintsFromLabels(Map labels, Instance instance) {
-        List<Constraint> constraints = new ArrayList<Constraint>();
+        List<Constraint> constraints = new ArrayList<>();
         if (labels == null) {
             return constraints;
         }
@@ -336,7 +308,7 @@ public class AllocationHelperImpl implements AllocationHelper {
     }
 
     private List<AffinityConstraintDefinition> extractAffinityConstraintDefinitionFromLabel(String opStr, String valueStr, boolean keyValuePairs) {
-        List<AffinityConstraintDefinition> defs = new ArrayList<AffinityConstraintDefinition>();
+        List<AffinityConstraintDefinition> defs = new ArrayList<>();
 
         AffinityOps affinityOp = null;
         for (AffinityOps op : AffinityOps.values()) {
@@ -426,7 +398,7 @@ public class AllocationHelperImpl implements AllocationHelper {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private List<LockDefinition> extractAllocationLockDefinitionsFromEnv(Map env) {
-        List<LockDefinition> constraints = new ArrayList<LockDefinition>();
+        List<LockDefinition> constraints = new ArrayList<>();
         if (env != null) {
             Set<String> affinityDefinitions = env.keySet();
             for (String affinityDef : affinityDefinitions) {

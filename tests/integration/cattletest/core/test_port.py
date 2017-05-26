@@ -153,8 +153,9 @@ def test_container_port_purge(new_context):
     c = client.wait_success(c)
     assert c.state == 'running'
 
-    c = client.wait_success(c.stop(remove=True))
-    assert c.state == 'removed'
+    client.delete(c)
+    c = client.wait_success(c)
+    assert c.removed is not None
 
     # instance.remove will remove the ports_links
     assert len(c.ports_link()) == 0

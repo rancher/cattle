@@ -1,9 +1,9 @@
 package io.cattle.platform.activity;
 
 import io.cattle.platform.activity.impl.ActivityLogImpl;
-import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.Service;
+import io.cattle.platform.engine.process.impl.ProcessDelayException;
 import io.cattle.platform.eventing.EventService;
+import io.cattle.platform.lock.exception.FailedToAcquireLockException;
 import io.cattle.platform.object.ObjectManager;
 
 import javax.inject.Inject;
@@ -17,12 +17,12 @@ public class ActivityService {
     @Inject
     EventService eventService;
 
-    private static ManagedThreadLocal<ActivityLog> TL = new ManagedThreadLocal<ActivityLog>();
+    private static ManagedThreadLocal<ActivityLog> TL = new ManagedThreadLocal<>();
 
-    public ActivityLog newLog() {
+    private ActivityLog newLog(Long accountId) {
         ActivityLog log = TL.get();
         if (log == null) {
-            log = new ActivityLogImpl(objectManager, eventService);
+            log = new ActivityLogImpl(objectManager, eventService, accountId);
             TL.set(log);
         }
         return log;
@@ -36,23 +36,43 @@ public class ActivityService {
         activityLog.info(message, args);
     }
 
-    public void run(Service service, String type, String message, Runnable run) {
-        ActivityLog log = newLog();
-        try (Entry entry = log.start(service, type, message)) {
+    public void error(String message, Object... args) {
+        ActivityLog activityLog = TL.get();
+        if (activityLog == null) {
+            return;
+        }
+        activityLog.error(message, args);
+    }
+
+    public void waiting() {
+        ActivityLog activityLog = TL.get();
+        if (activityLog == null) {
+            return;
+        }
+        activityLog.waiting();
+    }
+
+    public void run(Long accountId, Long serviceId, Long deploymentUnitId, String type, String message, Runnable run) {
+        ActivityLog log = newLog(accountId);
+        try (Entry entry = log.start(serviceId, deploymentUnitId, type, message)) {
             try {
                 run.run();
-            } catch (RuntimeException|Error e) {
-                entry.exception(e);
+            } catch (RuntimeException | Error e) {
+                if (!(e instanceof ProcessDelayException) && !(e instanceof FailedToAcquireLockException)) {
+                    entry.exception(e);
+                } else if (e instanceof ProcessDelayException) {
+                    log.waiting();
+                }
                 throw e;
             }
         }
     }
 
-    public void instance(Instance instance, String operation, String reason, String level) {
+    public void instance(Long instanceId, String operation, String reason, String level) {
         ActivityLog activityLog = TL.get();
         if (activityLog == null) {
             return;
         }
-        activityLog.instance(instance, operation, reason, level);
+        activityLog.instance(instanceId, operation, reason, level);
     }
 }

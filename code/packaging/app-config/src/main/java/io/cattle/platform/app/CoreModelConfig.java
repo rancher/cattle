@@ -3,7 +3,7 @@ package io.cattle.platform.app;
 import io.cattle.platform.core.addon.BlkioDeviceOption;
 import io.cattle.platform.core.addon.CatalogTemplate;
 import io.cattle.platform.core.addon.ComposeConfig;
-import io.cattle.platform.core.addon.HaConfigInput;
+import io.cattle.platform.core.addon.ContainerUpgrade;
 import io.cattle.platform.core.addon.HaproxyConfig;
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
@@ -19,18 +19,15 @@ import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.addon.ProcessPool;
 import io.cattle.platform.core.addon.ProcessSummary;
 import io.cattle.platform.core.addon.PublicEndpoint;
-import io.cattle.platform.core.addon.RecreateOnQuorumStrategyConfig;
 import io.cattle.platform.core.addon.RestartPolicy;
-import io.cattle.platform.core.addon.RollingRestartStrategy;
 import io.cattle.platform.core.addon.ScalePolicy;
 import io.cattle.platform.core.addon.SecretReference;
 import io.cattle.platform.core.addon.ServiceLink;
-import io.cattle.platform.core.addon.ServiceRestart;
+import io.cattle.platform.core.addon.ServiceRollback;
 import io.cattle.platform.core.addon.ServiceUpgrade;
 import io.cattle.platform.core.addon.ServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.ServicesPortRange;
 import io.cattle.platform.core.addon.TargetPortRule;
-import io.cattle.platform.core.addon.ToServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.Ulimit;
 import io.cattle.platform.core.addon.VirtualMachineDisk;
 import io.cattle.platform.core.addon.VolumeActivateInput;
@@ -69,16 +66,11 @@ public class CoreModelConfig {
                 ServiceUpgrade.class,
                 ServiceUpgradeStrategy.class,
                 InServiceUpgradeStrategy.class,
-                ToServiceUpgradeStrategy.class,
                 PublicEndpoint.class,
                 VirtualMachineDisk.class,
                 VolumeActivateInput.class,
                 HaproxyConfig.class,
-                RollingRestartStrategy.class,
-                ServiceRestart.class,
                 ServicesPortRange.class,
-                RecreateOnQuorumStrategyConfig.class,
-                HaConfigInput.class,
                 BlkioDeviceOption.class,
                 ScalePolicy.class,
                 Ulimit.class,
@@ -93,7 +85,9 @@ public class CoreModelConfig {
                 NetworkPolicyRuleAction.class,
                 ProcessSummary.class,
                 ProcessPool.class,
-                SecretReference.class
+                SecretReference.class,
+                ServiceRollback.class,
+                ContainerUpgrade.class
                 ));
         return typeSet;
     }
@@ -112,6 +106,7 @@ public class CoreModelConfig {
                 "instanceConsole",
                 "instanceConsoleInput",
                 "instanceStop",
+                "instanceRemove",
                 "project,parent=account",
                 "password,parent=credential",
                 "registry,parent=storagePool",
@@ -137,10 +132,7 @@ public class CoreModelConfig {
                 "externalDnsEvent,parent=externalEvent",
                 "externalHostEvent,parent=externalEvent",
                 "loadBalancerConfig",
-                "composeService,parent=service",
-                "composeProject,parent=stack",
                 "kubernetesStack,parent=stack",
-                "haConfig",
                 "machine,parent=physicalHost",
                 "revertToSnapshotInput",
                 "restoreFromBackupInput",
@@ -153,7 +145,9 @@ public class CoreModelConfig {
                 "lbTargetConfig",
                 "balancerServiceConfig",
                 "balancerTargetConfig",
-                "defaultNetwork,parent=network"
+                "defaultNetwork,parent=network",
+                "selectorService,parent=service",
+                "scalingGroup,parent=service"
                 ));
         typeSet.setPriority(Priority.PRE);
         return typeSet;

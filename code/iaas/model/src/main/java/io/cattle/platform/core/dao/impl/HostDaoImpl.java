@@ -65,8 +65,8 @@ public class HostDaoImpl extends AbstractJooqDao implements HostDao {
 
     @Override
     public boolean hasActiveHosts(Long accountId) {
-        return create()
-            .select(HOST.ID.count())
+        List<?> result = create()
+            .select(HOST.ID)
             .from(HOST)
             .join(AGENT)
                 .on(AGENT.ID.eq(HOST.AGENT_ID))
@@ -75,7 +75,9 @@ public class HostDaoImpl extends AbstractJooqDao implements HostDao {
                                 CommonStatesConstants.UPDATING_ACTIVE)
                                 .and(AGENT.STATE.in(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE,
                                         AgentConstants.STATE_FINISHING_RECONNECT, AgentConstants.STATE_RECONNECTED))))
-            .fetchOneInto(Integer.class) > 0;
+            .limit(1)
+            .fetch();
+        return result.size() > 0;
     }
 
     @Override
@@ -140,7 +142,7 @@ public class HostDaoImpl extends AbstractJooqDao implements HostDao {
     @Override
     public PhysicalHost createMachineForHost(final Host host, String driver) {
         String uuid = UUID.randomUUID().toString();
-        final Map<Object, Object> data = new HashMap<Object, Object>(DataUtils.getFields(host));
+        final Map<Object, Object> data = new HashMap<>(DataUtils.getFields(host));
         data.put(PHYSICAL_HOST.KIND, MachineConstants.KIND_MACHINE);
         data.put(PHYSICAL_HOST.NAME, DataAccessor.fieldString(host, HostConstants.FIELD_HOSTNAME));
         data.put(PHYSICAL_HOST.DESCRIPTION, host.getDescription());

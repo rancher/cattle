@@ -1,7 +1,8 @@
 package io.cattle.iaas.healthcheck.service.impl;
 
-import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.HEALTHCHECK_INSTANCE;
-import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
+import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
@@ -10,15 +11,11 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.engine.process.ProcessInstanceException;
-import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.process.ObjectProcessManager;
-import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.task.Task;
 
-import java.util.HashMap;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -36,7 +33,7 @@ public class HealthcheckCleanupMonitorImpl extends AbstractJooqDao implements Ta
 
     @Override
     public void run() {
-        List<? extends Instance> instances = 
+        List<? extends Instance> instances =
                 create()
                 .select(INSTANCE.fields())
                 .from(INSTANCE)
@@ -53,17 +50,7 @@ public class HealthcheckCleanupMonitorImpl extends AbstractJooqDao implements Ta
                 continue;
             }
             try {
-                try {
-                    objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, instance,
-                            null);
-                } catch (ProcessCancelException e) {
-                    if (instance.getState().equalsIgnoreCase(InstanceConstants.STATE_STOPPING)) {
-                        continue;
-                    }
-                    objectProcessManager.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP,
-                            instance, ProcessUtils.chainInData(new HashMap<String, Object>(),
-                                    InstanceConstants.PROCESS_STOP, InstanceConstants.PROCESS_REMOVE));
-                }
+                objectProcessManager.stopAndRemove(instance, null);
                 log.info("Scheduled remove for instance id [{}]", instance.getId());
             } catch (ProcessInstanceException e) {
                 // don't error out so we have a chance to schedule remove for the rest of the instances
@@ -82,7 +69,7 @@ public class HealthcheckCleanupMonitorImpl extends AbstractJooqDao implements Ta
         } else {
             timeout = healthCheck.getReinitializingTimeout();
         }
-        
+
         if (timeout != null && instance.getHealthUpdated() != null) {
             long createdTimeAgo = System.currentTimeMillis() - instance.getHealthUpdated().getTime();
             if (createdTimeAgo >= timeout) {

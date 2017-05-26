@@ -1,6 +1,7 @@
 package io.github.ibuildthecloud.gdapi.validation;
 
 import static org.junit.Assert.*;
+
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.impl.SchemaFactoryImpl;
 import io.github.ibuildthecloud.gdapi.model.impl.FieldImpl;
@@ -33,7 +34,7 @@ public class ValidationHandlerTest {
         ValidationContext context = new ValidationContext();
         ValidationHandler handler = new ValidationHandler();
 
-        Map<String, Object> input = new HashMap<String, Object>();
+        Map<String, Object> input = new HashMap<>();
         input.put("test", null);
         request.setRequestObject(input);
 
@@ -54,7 +55,7 @@ public class ValidationHandlerTest {
         ValidationContext context = new ValidationContext();
         ValidationHandler handler = new ValidationHandler();
 
-        Map<String, Object> input = new HashMap<String, Object>();
+        Map<String, Object> input = new HashMap<>();
         input.put("test", "three");
         request.setRequestObject(input);
 
@@ -82,11 +83,11 @@ public class ValidationHandlerTest {
 
         context.schemaFactory = factory;
 
-        Map<String, Object> childType = new HashMap<String, Object>();
+        Map<String, Object> childType = new HashMap<>();
         childType.put("testField", "abc");
         childType.put("notWrite", "xyz");
 
-        Map<String, Object> input = new HashMap<String, Object>();
+        Map<String, Object> input = new HashMap<>();
         input.put("subType", childType);
 
         request.setRequestObject(input);
@@ -114,15 +115,15 @@ public class ValidationHandlerTest {
 
         context.schemaFactory = factory;
 
-        Map<String, Object> childType = new HashMap<String, Object>();
+        Map<String, Object> childType = new HashMap<>();
         childType.put("testField", "abc");
         childType.put("notWrite", "xyz");
 
-        Map<String, Object> childType2 = new HashMap<String, Object>();
+        Map<String, Object> childType2 = new HashMap<>();
         childType2.put("testField", "abc2");
         childType2.put("notWrite", "xyz");
 
-        Map<String, Object> input = new HashMap<String, Object>();
+        Map<String, Object> input = new HashMap<>();
         input.put("subTypes", Arrays.asList(childType, childType2));
 
         request.setRequestObject(input);

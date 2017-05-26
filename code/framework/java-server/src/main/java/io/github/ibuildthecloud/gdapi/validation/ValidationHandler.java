@@ -22,7 +22,7 @@ import io.github.ibuildthecloud.gdapi.util.TypeUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.ParseException;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -138,7 +138,7 @@ public class ValidationHandler extends AbstractResponseGenerator {
             return null;
         }
 
-        Map<String, Object> sanitized = new LinkedHashMap<String, Object>();
+        Map<String, Object> sanitized = new LinkedHashMap<>();
         Map<String, Field> fields = schema.getResourceFields();
 
         for (Map.Entry<String, Object> entry : input.entrySet()) {
@@ -306,7 +306,7 @@ public class ValidationHandler extends AbstractResponseGenerator {
 
     protected Map<String, Object> convertMap(String fieldName, List<FieldType> subTypes, List<String> subTypesNames, Map<String, Object> value,
             ValidationContext context) {
-        Map<String, Object> result = new LinkedHashMap<String, Object>();
+        Map<String, Object> result = new LinkedHashMap<>();
 
         if (subTypes == null) {
             result.putAll(value);
@@ -325,7 +325,7 @@ public class ValidationHandler extends AbstractResponseGenerator {
     }
 
     protected List<Object> convertArray(String fieldName, List<FieldType> subTypes, List<String> subTypesNames, Object value, ValidationContext context) {
-        List<Object> result = new ArrayList<Object>();
+        List<Object> result = new ArrayList<>();
         List<?> items = null;
 
         if (value instanceof Object[]) {
@@ -364,7 +364,7 @@ public class ValidationHandler extends AbstractResponseGenerator {
                 return null;
             }
             return DateUtils.parse(value.toString());
-        } catch (ParseException e) {
+        } catch (DateTimeParseException e) {
             return error(INVALID_DATE_FORMAT, fieldName);
         }
     }
@@ -498,7 +498,7 @@ public class ValidationHandler extends AbstractResponseGenerator {
     @PostConstruct
     public void init() {
         if (supportedMethods == null) {
-            supportedMethods = new HashSet<String>();
+            supportedMethods = new HashSet<>();
             for (Method m : Method.values()) {
                 supportedMethods.add(m.toString());
             }

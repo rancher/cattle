@@ -554,35 +554,11 @@ def test_docker_volumes(docker_client, super_client):
         elif mount.path == '/bar':
             assert mount.volumeId == bar_vol.id
 
-    c = docker_client.wait_success(c.stop(remove=True, timeout=0))
-    c2 = docker_client.wait_success(c2.stop(remove=True, timeout=0))
+    docker_client.wait_success(c2.stop(remove=True, timeout=0))
+    docker_client.wait_success(c.stop(remove=True, timeout=0))
 
     _check_path(foo_vol, False, docker_client, super_client)
     _check_path(bar_vol, True, docker_client, super_client)
-
-
-@if_docker
-def test_volumes_from_more_than_one_container(docker_client):
-    c = docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
-                                       networkMode='bridge',
-                                       dataVolumes=['/foo'])
-    docker_client.wait_success(c)
-
-    c2 = docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
-                                        networkMode='bridge',
-                                        dataVolumes=['/bar'])
-    docker_client.wait_success(c2)
-
-    c3 = docker_client.create_container(imageUuid=TEST_IMAGE_UUID,
-                                        networkMode='bridge',
-                                        dataVolumesFrom=[c.id, c2.id])
-    c3 = docker_client.wait_success(c3)
-
-    mounts = c3.mounts()
-    assert len(mounts) == 2
-    paths = ['/foo', '/bar']
-    for m in mounts:
-        assert m.path in paths
 
 
 @if_docker
@@ -817,7 +793,8 @@ def test_docker_labels(docker_client, super_client):
         'io.rancher.container.name': c.name,
         'io.rancher.container.mac_address': mac_address,
     }
-    assert actual_labels == expected_labels
+    assert all(item in actual_labels.items()
+               for item in expected_labels.items())
 
     docker_client.delete(c)
 

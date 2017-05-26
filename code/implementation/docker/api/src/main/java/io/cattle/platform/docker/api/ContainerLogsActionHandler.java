@@ -2,11 +2,11 @@ package io.cattle.platform.docker.api;
 
 import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.DockerInstanceConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.docker.api.model.ContainerLogs;
 import io.cattle.platform.docker.api.model.HostAccess;
-import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.docker.util.DockerUtils;
 import io.cattle.platform.host.model.HostApiAccess;
 import io.cattle.platform.host.service.HostApiService;

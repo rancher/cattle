@@ -155,7 +155,7 @@ def do_scheduling_test(container_kw, client, mock_scheduler, hosts,
 
     c = client.wait_success(c)
     assert c.state == 'running'
-    c.stop(remove=True)
+    client.delete(c)
 
     def stop_check():
         return client.reload(c).removed is not None

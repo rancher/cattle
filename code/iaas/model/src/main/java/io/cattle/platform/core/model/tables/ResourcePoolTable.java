@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ResourcePoolTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ResourcePoolRecord> {
 
-	private static final long serialVersionUID = -364789645;
+	private static final long serialVersionUID = 1681140280;
 
 	/**
 	 * The singleton instance of <code>cattle.resource_pool</code>
@@ -110,6 +110,11 @@ public class ResourcePoolTable extends org.jooq.impl.TableImpl<io.cattle.platfor
 	 * The column <code>cattle.resource_pool.qualifier</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ResourcePoolRecord, java.lang.String> QUALIFIER = createField("qualifier", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false).defaulted(true), this, "");
+
+	/**
+	 * The column <code>cattle.resource_pool.sub_owner</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ResourcePoolRecord, java.lang.String> SUB_OWNER = createField("sub_owner", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
 	/**
 	 * Create a <code>cattle.resource_pool</code> table reference

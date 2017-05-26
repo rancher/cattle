@@ -24,6 +24,9 @@ def test_edit_host_label(super_client, context):
 
     _assert_labels(host.hostLabels(), new_labels)
 
+    host = super_client.wait_success(host)
+    assert host.state == 'active'
+
     new_labels = {'role': 'web+db',
                   'foo': 'bar',
                   'loc': 'sf'}

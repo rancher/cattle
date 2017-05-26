@@ -43,7 +43,11 @@ public class SetRemovedFields extends AbstractObjectProcessLogic implements Proc
             removeTime = new Date(getRemoveTime(resource));
         }
 
-        return new HandlerResult(ObjectMetaDataManager.REMOVED_FIELD, removed, ObjectMetaDataManager.REMOVE_TIME_FIELD, removeTime);
+        objectManager.setFields(resource,
+                ObjectMetaDataManager.REMOVED_FIELD, removed,
+                ObjectMetaDataManager.REMOVE_TIME_FIELD, removeTime);
+
+        return null;
     }
 
     protected Long getRemoveTime(Object obj) {

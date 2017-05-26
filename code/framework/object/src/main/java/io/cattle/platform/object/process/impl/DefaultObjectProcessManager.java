@@ -5,7 +5,6 @@ import io.cattle.platform.engine.handler.ProcessLogic;
 import io.cattle.platform.engine.manager.ProcessManager;
 import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.LaunchConfiguration;
-import io.cattle.platform.engine.process.Predicate;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.object.ObjectManager;
@@ -34,25 +33,14 @@ public class DefaultObjectProcessManager implements ObjectProcessManager {
 
     @Override
     public void scheduleStandardProcess(StandardProcess process, Object resource, Map<String, Object> data) {
-        scheduleStandardProcess(process, resource, data, null);
-    }
-
-    @Override
-    public void scheduleStandardProcess(StandardProcess process, Object resource, Map<String, Object> data, Predicate predicate) {
         String processName = getProcessName(resource, process);
-        scheduleProcessInstance(processName, resource, data, predicate);
-    }
-
-    @Override
-    public void scheduleProcessInstance(String processName, Object resource, Map<String, Object> data, Predicate predicate) {
-        LaunchConfiguration config = ObjectLaunchConfigurationUtils.createConfig(schemaFactory, processName, resource, data);
-        config.setPredicate(predicate);
-        processManager.scheduleProcessInstance(config);
+        scheduleProcessInstance(processName, resource, data);
     }
 
     @Override
     public void scheduleProcessInstance(String processName, Object resource, Map<String, Object> data) {
-        scheduleProcessInstance(processName, resource, data, null);
+        LaunchConfiguration config = ObjectLaunchConfigurationUtils.createConfig(schemaFactory, processName, resource, data);
+        processManager.scheduleProcessInstance(config);
     }
 
     @Override
@@ -63,6 +51,9 @@ public class DefaultObjectProcessManager implements ObjectProcessManager {
 
     @Override
     public String getStandardProcessName(StandardProcess process, String type) {
+        if (type == null || process == null) {
+            return null;
+        }
         return type.toLowerCase() + "." + process.toString().toLowerCase();
     }
 
@@ -133,6 +124,16 @@ public class DefaultObjectProcessManager implements ObjectProcessManager {
 
     @Override
     public void scheduleStandardChainedProcessAsync(StandardProcess from, StandardProcess to, Object resource, Map<String, Object> data) {
+        DeferredUtils.nest(new Runnable() {
+            @Override
+            public void run() {
+                scheduleStandardChainedProcess(from, to, resource, data);
+            }
+        });
+    }
+
+    @Override
+    public void scheduleStandardChainedProcess(StandardProcess from, StandardProcess to, Object resource, Map<String, Object> data) {
         String fromProcess = getProcessName(resource, from);
         String toProcess = getProcessName(resource, to);
 
@@ -142,10 +143,16 @@ public class DefaultObjectProcessManager implements ObjectProcessManager {
         }
         newData.put(fromProcess + ProcessLogic.CHAIN_PROCESS, toProcess);
         try {
-            scheduleStandardProcessAsync(to, resource, data);
+            scheduleStandardProcess(to, resource, data);
         } catch (ProcessCancelException e) {
-            scheduleStandardProcessAsync(from, resource, newData);
+            scheduleStandardProcess(from, resource, newData);
         }
+    }
+
+    @Override
+    public String getProcessName(Object resource, String processName) {
+        String type = objectManager.getType(resource);
+        return String.format("%s.%s", type, processName).toLowerCase();
     }
 
 }

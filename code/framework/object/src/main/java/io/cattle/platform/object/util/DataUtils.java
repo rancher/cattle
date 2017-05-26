@@ -43,7 +43,7 @@ public class DataUtils {
         Map<String, Object> fields = (Map<String, Object>) data.get(FIELDS);
 
         if (fields == null) {
-            fields = new HashMap<String, Object>();
+            fields = new HashMap<>();
             data.put(FIELDS, fields);
         }
 
@@ -70,7 +70,7 @@ public class DataUtils {
                 return (List<T>) list;
             }
 
-            List<T> result = new ArrayList<T>(list.size());
+            List<T> result = new ArrayList<>(list.size());
             for (Object obj : list) {
                 result.add((T) ConvertUtils.convert(obj, type));
             }
@@ -79,19 +79,6 @@ public class DataUtils {
             throw new IllegalArgumentException("[" + value + "] is not a list");
         }
     }
-
-    // @SuppressWarnings("unchecked")
-    // public static <T> T getField(Map<String,Object> data, String name,
-    // Class<T> type) {
-    // Map<String,Object> fields = CollectionUtils.castMap(data.get(FIELDS));
-    // Object value = fields.get(name);
-    //
-    // if ( value == null ) {
-    // return null;
-    // }
-    //
-    // return (T)ConvertUtils.convert(value, type);
-    // }
 
     @SuppressWarnings("unchecked")
     public static <T> T getFieldFromRequest(ApiRequest request, String name, Class<T> type) {

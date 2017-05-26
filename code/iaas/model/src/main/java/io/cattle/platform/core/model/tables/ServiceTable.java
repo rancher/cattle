@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ServiceTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.ServiceRecord> {
 
-	private static final long serialVersionUID = -616219560;
+	private static final long serialVersionUID = -297156575;
 
 	/**
 	 * The singleton instance of <code>cattle.service</code>
@@ -97,11 +97,6 @@ public class ServiceTable extends org.jooq.impl.TableImpl<io.cattle.platform.cor
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceRecord, java.lang.Long> CREATE_INDEX = createField("create_index", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
-	 * The column <code>cattle.service.selector_link</code>.
-	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceRecord, java.lang.String> SELECTOR_LINK = createField("selector_link", org.jooq.impl.SQLDataType.VARCHAR.length(4096), this, "");
-
-	/**
 	 * The column <code>cattle.service.selector_container</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceRecord, java.lang.String> SELECTOR_CONTAINER = createField("selector_container", org.jooq.impl.SQLDataType.VARCHAR.length(4096), this, "");
@@ -125,6 +120,16 @@ public class ServiceTable extends org.jooq.impl.TableImpl<io.cattle.platform.cor
 	 * The column <code>cattle.service.skip</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceRecord, java.lang.Boolean> SKIP = createField("skip", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this, "");
+
+	/**
+	 * The column <code>cattle.service.previous_revision_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceRecord, java.lang.Long> PREVIOUS_REVISION_ID = createField("previous_revision_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>cattle.service.revision_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.ServiceRecord, java.lang.Long> REVISION_ID = createField("revision_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
 	 * Create a <code>cattle.service</code> table reference
@@ -177,7 +182,7 @@ public class ServiceTable extends org.jooq.impl.TableImpl<io.cattle.platform.cor
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ServiceRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ServiceRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_SERVICE__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_SERVICE__ENVIRONMENT_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.ServiceRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_SERVICE__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_SERVICE__ENVIRONMENT_ID, io.cattle.platform.core.model.Keys.FK_SERVICE__PREVIOUS_REVISION_ID, io.cattle.platform.core.model.Keys.FK_SERVICE__REVISION_ID);
 	}
 
 	/**
