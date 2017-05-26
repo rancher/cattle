@@ -10,6 +10,11 @@
     <dependencies>
         <dependency>
             <groupId>io.cattle</groupId>
+            <artifactId>cattle-docker-machine</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.cattle</groupId>
             <artifactId>cattle-iaas-model</artifactId>
             <version>${project.version}</version>
         </dependency>
