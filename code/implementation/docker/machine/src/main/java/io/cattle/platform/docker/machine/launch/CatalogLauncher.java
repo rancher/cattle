@@ -11,6 +11,7 @@ import io.cattle.platform.util.type.InitializationTask;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.fluent.Request;
 
 import com.netflix.config.DynamicBooleanProperty;
@@ -30,6 +32,7 @@ public class CatalogLauncher extends GenericServiceLauncher implements Initializ
     private static final DynamicStringProperty CATALOG_BINARY = ArchaiusUtil.getString("catalog.service.executable");
     private static final DynamicStringProperty DB_PARAMS = ArchaiusUtil.getString("db.cattle.go.params");
     private static final DynamicBooleanProperty LAUNCH_CATALOG = ArchaiusUtil.getBoolean("catalog.execute");
+    private static final DynamicStringProperty RANCHER_SERVER_VERSION = ArchaiusUtil.getString("rancher.server.version");
 
     public static class CatalogEntry {
         String url;
@@ -54,8 +57,6 @@ public class CatalogLauncher extends GenericServiceLauncher implements Initializ
         public CatalogEntry() {
             this.branch = "master";
         }
-
-
     }
 
     public static class ConfigFileFields {
@@ -88,9 +89,10 @@ public class CatalogLauncher extends GenericServiceLauncher implements Initializ
 
     @Override
     protected List<DynamicStringProperty> getReloadSettings() {
-        List<DynamicStringProperty> list = new ArrayList<DynamicStringProperty>();
+        List<DynamicStringProperty> list = new ArrayList<>();
         list.add(CATALOG_URL);
         list.add(CATALOG_REFRESH_INTERVAL);
+        list.add(RANCHER_SERVER_VERSION);
         return list;
     }
 
@@ -107,32 +109,47 @@ public class CatalogLauncher extends GenericServiceLauncher implements Initializ
     protected void prepareConfigFile() throws IOException {
         File configFile = new File("repo.json");
 
+        try (OutputStream os = new FileOutputStream(configFile.getAbsoluteFile())) {
+            prepareConfigFile(os, jsonMapper);
+        }
+    }
+
+    public static void prepareConfigFile(OutputStream fos, JsonMapper jsonMapper) throws IOException {
         String catUrl = CATALOG_URL.get();
         ConfigFileFields configCatalogEntries = new ConfigFileFields();
-        FileOutputStream fos = null;
-        try {
-            if (catUrl.startsWith("{")) {
-                configCatalogEntries = jsonMapper.readValue(catUrl, ConfigFileFields.class);
-                fos = new FileOutputStream(configFile.getAbsoluteFile());
-                jsonMapper.writeValue(fos, configCatalogEntries);
+        if (catUrl.startsWith("{")) {
+            configCatalogEntries = jsonMapper.readValue(catUrl, ConfigFileFields.class);
+        } else {
+            String[] catalogs = catUrl.split(",");
+            Map<String, CatalogEntry> catalogEntryMap = new HashMap<>();
+            for (String catalog : catalogs) {
+                CatalogEntry entry = new CatalogEntry();
+                String[] splitted = catalog.split("=");
+                entry.setUrl(splitted[1]);
+                entry.setBranch("master");
+                catalogEntryMap.put(splitted[0], entry);
             }
-            else {
-                String[] catalogs = catUrl.split(",");
-                Map<String, CatalogEntry> catalogEntryMap = new HashMap<String, CatalogEntry>();
-                for (String catalog : catalogs) {
-                    CatalogEntry entry = new CatalogEntry();
-                    String[] splitted = catalog.split("=");
-                    entry.setUrl(splitted[1]);
-                    entry.setBranch("master");
-                    catalogEntryMap.put(splitted[0], entry);
-                }
-                configCatalogEntries.setCatalogs(catalogEntryMap);
-                fos = new FileOutputStream(configFile.getAbsoluteFile());
-                jsonMapper.writeValue(fos, configCatalogEntries);
+            configCatalogEntries.setCatalogs(catalogEntryMap);
+        }
+
+        setReleaseBranch(configCatalogEntries);
+        jsonMapper.writeValue(fos, configCatalogEntries);
+    }
+
+    protected static void setReleaseBranch(ConfigFileFields fields) {
+        String branch = RANCHER_SERVER_VERSION.get();
+        if (StringUtils.isBlank(branch)) {
+            branch = "master";
+        } else {
+            String[] parts = branch.split("[.]");
+            if (parts.length > 2) {
+                branch = String.format("%s.%s-release", parts[0], parts[1]);
             }
-        } finally {
-            if (fos != null) {
-                fos.close();
+        }
+
+        for (CatalogEntry entry : fields.getCatalogs().values()) {
+            if ("${RELEASE}".equals(entry.getBranch())) {
+                entry.setBranch(branch);
             }
         }
     }

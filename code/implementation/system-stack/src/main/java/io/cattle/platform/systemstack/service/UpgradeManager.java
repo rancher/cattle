@@ -105,7 +105,7 @@ public class UpgradeManager {
 
         List<? extends Stack> stacks = Collections.emptyList();
 
-        if ("true".equalsIgnoreCase(UPGRADE_MANAGER.get())) {
+        if ("true".equalsIgnoreCase(UPGRADE_MANAGER.get()) || "all".equalsIgnoreCase(UPGRADE_MANAGER.get())) {
             stacks = stackDao.getStacksToUpgrade(catalogs.values());
         } else if ("mandatory".equalsIgnoreCase(UPGRADE_MANAGER.get())) {
             stacks = stackDao.getStacksThatMatch(OLD_METADATAS);

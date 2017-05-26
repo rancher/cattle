@@ -102,6 +102,7 @@ import io.cattle.platform.sample.data.SampleDataStartupV11;
 import io.cattle.platform.sample.data.SampleDataStartupV12;
 import io.cattle.platform.sample.data.SampleDataStartupV13;
 import io.cattle.platform.sample.data.SampleDataStartupV14;
+import io.cattle.platform.sample.data.SampleDataStartupV15;
 import io.cattle.platform.sample.data.SampleDataStartupV3;
 import io.cattle.platform.sample.data.SampleDataStartupV5;
 import io.cattle.platform.sample.data.SampleDataStartupV6;
@@ -649,6 +650,11 @@ public class SystemServicesConfig {
     @Bean
     SampleDataStartupV14 SampleDataStartupV14() {
         return new SampleDataStartupV14();
+    }
+
+    @Bean
+    SampleDataStartupV15 SampleDataStartupV15() {
+        return new SampleDataStartupV15();
     }
 
     @Bean
