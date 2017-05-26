@@ -1,0 +1,11 @@
+{
+    "resourceMethods" : [
+      "GET", "PUT"
+    ],
+    "resourceFields": {
+        "capabilities": {
+            "create": true,
+            "update": true
+        }
+    }
+}

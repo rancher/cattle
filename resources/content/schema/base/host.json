@@ -53,6 +53,10 @@
             "attributes" : {
                 "scheduleUpdate" : true
             }
+        },
+        "capabilities" : {
+            "type" : "array[string]",
+            "nullable" : true
         }
     },
     "resourceActions": {

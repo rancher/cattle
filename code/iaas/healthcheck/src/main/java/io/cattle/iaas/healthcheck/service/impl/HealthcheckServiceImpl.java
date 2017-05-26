@@ -4,6 +4,8 @@ import static io.cattle.platform.core.constants.HealthcheckConstants.*;
 import static io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.*;
 import static io.cattle.platform.core.util.SystemLabels.*;
+
+import freemarker.core.CollectionAndSequence;
 import io.cattle.iaas.healthcheck.service.HealthcheckService;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -263,8 +265,10 @@ public class HealthcheckServiceImpl implements HealthcheckService {
         // skip hosts labeled accordingly
         Iterator<? extends Host> it = availableActiveHosts.iterator();
         while (it.hasNext()) {
-            String skip = (String) CollectionUtils.getNestedValue(it.next().getData(), "fields", "labels", LABEL_HEALTHCHECK_SKIP);
-            if (skip != null && "true".equals(skip)) {
+            List capabilities = CollectionUtils.toList(CollectionUtils.getNestedValue(it.next().getData(), "fields", "capabilities"));
+            // TODO Figure out what null capabilities means. A "legacy" host whose go-agent hasn't updated yet, woiuld not have
+            // capabilities set. So, we have to figure out the impact of that. 
+            if (capabilities == null || !capabilities.contains("healthcheck")) {
                it.remove();
             }
         }
