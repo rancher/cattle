@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "host", schema = "cattle")
 public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.HostRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, io.cattle.platform.core.model.Host {
 
-	private static final long serialVersionUID = 995834607;
+	private static final long serialVersionUID = -2040513012;
 
 	/**
 	 * Setter for <code>cattle.host.id</code>.
@@ -272,28 +272,11 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 	}
 
 	/**
-	 * Setter for <code>cattle.host.zone_id</code>.
-	 */
-	@Override
-	public void setZoneId(java.lang.Long value) {
-		setValue(15, value);
-	}
-
-	/**
-	 * Getter for <code>cattle.host.zone_id</code>.
-	 */
-	@javax.persistence.Column(name = "zone_id", precision = 19)
-	@Override
-	public java.lang.Long getZoneId() {
-		return (java.lang.Long) getValue(15);
-	}
-
-	/**
 	 * Setter for <code>cattle.host.physical_host_id</code>.
 	 */
 	@Override
 	public void setPhysicalHostId(java.lang.Long value) {
-		setValue(16, value);
+		setValue(15, value);
 	}
 
 	/**
@@ -302,7 +285,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 	@javax.persistence.Column(name = "physical_host_id", precision = 19)
 	@Override
 	public java.lang.Long getPhysicalHostId() {
-		return (java.lang.Long) getValue(16);
+		return (java.lang.Long) getValue(15);
 	}
 
 	/**
@@ -310,7 +293,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 	 */
 	@Override
 	public void setIsPublic(java.lang.Boolean value) {
-		setValue(17, value);
+		setValue(16, value);
 	}
 
 	/**
@@ -319,7 +302,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 	@javax.persistence.Column(name = "is_public", nullable = false, precision = 1)
 	@Override
 	public java.lang.Boolean getIsPublic() {
-		return (java.lang.Boolean) getValue(17);
+		return (java.lang.Boolean) getValue(16);
 	}
 
 	/**
@@ -327,7 +310,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 	 */
 	@Override
 	public void setAgentState(java.lang.String value) {
-		setValue(18, value);
+		setValue(17, value);
 	}
 
 	/**
@@ -336,7 +319,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 	@javax.persistence.Column(name = "agent_state", length = 128)
 	@Override
 	public java.lang.String getAgentState() {
-		return (java.lang.String) getValue(18);
+		return (java.lang.String) getValue(17);
 	}
 
 	/**
@@ -344,7 +327,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 	 */
 	@Override
 	public void setLocalStorageMb(java.lang.Long value) {
-		setValue(19, value);
+		setValue(18, value);
 	}
 
 	/**
@@ -353,7 +336,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 	@javax.persistence.Column(name = "local_storage_mb", precision = 19)
 	@Override
 	public java.lang.Long getLocalStorageMb() {
-		return (java.lang.Long) getValue(19);
+		return (java.lang.Long) getValue(18);
 	}
 
 	/**
@@ -361,7 +344,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 	 */
 	@Override
 	public void setMemory(java.lang.Long value) {
-		setValue(20, value);
+		setValue(19, value);
 	}
 
 	/**
@@ -370,7 +353,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 	@javax.persistence.Column(name = "memory", precision = 19)
 	@Override
 	public java.lang.Long getMemory() {
-		return (java.lang.Long) getValue(20);
+		return (java.lang.Long) getValue(19);
 	}
 
 	/**
@@ -378,7 +361,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 	 */
 	@Override
 	public void setMilliCpu(java.lang.Long value) {
-		setValue(21, value);
+		setValue(20, value);
 	}
 
 	/**
@@ -387,7 +370,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 	@javax.persistence.Column(name = "milli_cpu", precision = 19)
 	@Override
 	public java.lang.Long getMilliCpu() {
-		return (java.lang.Long) getValue(21);
+		return (java.lang.Long) getValue(20);
 	}
 
 	/**
@@ -395,7 +378,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 	 */
 	@Override
 	public void setStackId(java.lang.Long value) {
-		setValue(22, value);
+		setValue(21, value);
 	}
 
 	/**
@@ -404,7 +387,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 	@javax.persistence.Column(name = "environment_id", precision = 19)
 	@Override
 	public java.lang.Long getStackId() {
-		return (java.lang.Long) getValue(22);
+		return (java.lang.Long) getValue(21);
 	}
 
 	/**
@@ -412,7 +395,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 	 */
 	@Override
 	public void setRemoveAfter(java.util.Date value) {
-		setValue(23, value);
+		setValue(22, value);
 	}
 
 	/**
@@ -421,7 +404,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 	@javax.persistence.Column(name = "remove_after")
 	@Override
 	public java.util.Date getRemoveAfter() {
-		return (java.util.Date) getValue(23);
+		return (java.util.Date) getValue(22);
 	}
 
 	/**
@@ -429,7 +412,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 	 */
 	@Override
 	public void setHostTemplateId(java.lang.Long value) {
-		setValue(24, value);
+		setValue(23, value);
 	}
 
 	/**
@@ -438,7 +421,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 	@javax.persistence.Column(name = "host_template_id", precision = 19)
 	@Override
 	public java.lang.Long getHostTemplateId() {
-		return (java.lang.Long) getValue(24);
+		return (java.lang.Long) getValue(23);
 	}
 
 	// -------------------------------------------------------------------------
@@ -477,7 +460,6 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 		setComputeFree(from.getComputeFree());
 		setComputeTotal(from.getComputeTotal());
 		setAgentId(from.getAgentId());
-		setZoneId(from.getZoneId());
 		setPhysicalHostId(from.getPhysicalHostId());
 		setIsPublic(from.getIsPublic());
 		setAgentState(from.getAgentState());
@@ -512,7 +494,7 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 	/**
 	 * Create a detached, initialised HostRecord
 	 */
-	public HostRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String uri, java.lang.Long computeFree, java.lang.Long computeTotal, java.lang.Long agentId, java.lang.Long zoneId, java.lang.Long physicalHostId, java.lang.Boolean isPublic, java.lang.String agentState, java.lang.Long localStorageMb, java.lang.Long memory, java.lang.Long milliCpu, java.lang.Long environmentId, java.util.Date removeAfter, java.lang.Long hostTemplateId) {
+	public HostRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String uri, java.lang.Long computeFree, java.lang.Long computeTotal, java.lang.Long agentId, java.lang.Long physicalHostId, java.lang.Boolean isPublic, java.lang.String agentState, java.lang.Long localStorageMb, java.lang.Long memory, java.lang.Long milliCpu, java.lang.Long environmentId, java.util.Date removeAfter, java.lang.Long hostTemplateId) {
 		super(io.cattle.platform.core.model.tables.HostTable.HOST);
 
 		setValue(0, id);
@@ -530,15 +512,14 @@ public class HostRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.plat
 		setValue(12, computeFree);
 		setValue(13, computeTotal);
 		setValue(14, agentId);
-		setValue(15, zoneId);
-		setValue(16, physicalHostId);
-		setValue(17, isPublic);
-		setValue(18, agentState);
-		setValue(19, localStorageMb);
-		setValue(20, memory);
-		setValue(21, milliCpu);
-		setValue(22, environmentId);
-		setValue(23, removeAfter);
-		setValue(24, hostTemplateId);
+		setValue(15, physicalHostId);
+		setValue(16, isPublic);
+		setValue(17, agentState);
+		setValue(18, localStorageMb);
+		setValue(19, memory);
+		setValue(20, milliCpu);
+		setValue(21, environmentId);
+		setValue(22, removeAfter);
+		setValue(23, hostTemplateId);
 	}
 }

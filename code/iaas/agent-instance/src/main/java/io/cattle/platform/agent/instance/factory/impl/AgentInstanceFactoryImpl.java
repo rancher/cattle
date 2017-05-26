@@ -2,6 +2,7 @@ package io.cattle.platform.agent.instance.factory.impl;
 
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
+
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.agent.instance.factory.AgentInstanceFactory;
@@ -90,13 +91,12 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
     }
 
     private Map<String, Object> getInstanceProperties(Agent agent, AgentInstanceBuilderImpl builder) {
-        Map<Object, Object> properties = new HashMap<Object, Object>();
+        Map<Object, Object> properties = new HashMap<>();
 
         properties.put(INSTANCE.ACCOUNT_ID, getAccountId(builder));
         properties.put(INSTANCE.AGENT_ID, agent.getId());
         properties.put(InstanceConstants.FIELD_IMAGE_UUID, builder.getImageUuid());
         properties.put(INSTANCE.NAME, builder.getName());
-        properties.put(INSTANCE.ZONE_ID, agent.getZoneId());
         properties.put(INSTANCE.KIND, builder.getInstanceKind());
         properties.put(InstanceConstants.FIELD_PRIVILEGED, builder.isPrivileged());
         properties.put(InstanceConstants.FIELD_NETWORK_IDS, getNetworkIds(agent, builder));
@@ -260,7 +260,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
                 }
 
                 if (builder.getRequestedRoles() != null) {
-                    data.put(AgentConstants.DATA_REQUESTED_ROLES, new ArrayList<String>(builder.getRequestedRoles()));
+                    data.put(AgentConstants.DATA_REQUESTED_ROLES, new ArrayList<>(builder.getRequestedRoles()));
                 }
 
                 if (agent == null) {
@@ -270,8 +270,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
                             return resourceDao.createAndSchedule(Agent.class,
                                     AGENT.DATA, data,
                                     AGENT.URI, uri,
-                                    AGENT.MANAGED_CONFIG, builder.isManagedConfig(),
-                                    AGENT.ZONE_ID, builder.getZoneId());
+                                    AGENT.MANAGED_CONFIG, builder.isManagedConfig());
                         }
                     });
                 }

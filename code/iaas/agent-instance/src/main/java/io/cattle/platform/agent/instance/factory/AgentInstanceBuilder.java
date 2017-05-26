@@ -10,8 +10,6 @@ public interface AgentInstanceBuilder {
 
     AgentInstanceBuilder withAccountId(Long accountId);
 
-    AgentInstanceBuilder withZoneId(Long zoneId);
-
     AgentInstanceBuilder withAccountOwned(boolean accountOwned);
 
     AgentInstanceBuilder withInstance(Instance instance);

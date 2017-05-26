@@ -279,8 +279,6 @@
 
 
     <process:defaultProcesses resourceType="account" />
-    <process:defaultProcesses resourceType="agentgroup" />
-    <process:defaultProcesses resourceType="credentialInstanceMap" />
     <process:process name="genericobject.create" resourceType="genericObject" start="requested" transitioning="activating" done="active" />
     <process:process name="genericobject.remove" resourceType="genericObject" start="requested,active,activating" transitioning="removing" done="removed" />
     <process:defaultProcesses resourceType="hostIpAddressMap" />
@@ -297,7 +295,6 @@
     <process:defaultProcesses resourceType="projectMember" />
     <process:defaultProcesses resourceType="storagePool" />
     <process:defaultProcesses resourceType="subnet" />
-    <process:defaultProcesses resourceType="zone" />
     <process:defaultProcesses resourceType="serviceIndex" />
     <process:defaultProcesses resourceType="volumeTemplate" />
     <process:defaultProcesses resourceType="accountLink" />

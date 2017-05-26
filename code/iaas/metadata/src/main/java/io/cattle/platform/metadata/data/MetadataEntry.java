@@ -1,6 +1,5 @@
 package io.cattle.platform.metadata.data;
 
-import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Network;
@@ -14,18 +13,15 @@ public class MetadataEntry {
     Nic nic;
     IpAddress localIp;
     Volume volume;
-    Credential credential;
     Network network;
     Subnet subnet;
 
-    public MetadataEntry(Instance instance, Nic nic, IpAddress localIp, Volume volume, Credential credential,
-            Network network, Subnet subnet) {
+    public MetadataEntry(Instance instance, Nic nic, IpAddress localIp, Volume volume, Network network, Subnet subnet) {
         super();
         this.instance = instance;
         this.nic = nic;
         this.localIp = localIp;
         this.volume = volume;
-        this.credential = credential;
         this.network = network;
         this.subnet = subnet;
     }
@@ -60,14 +56,6 @@ public class MetadataEntry {
 
     public void setVolume(Volume volume) {
         this.volume = volume;
-    }
-
-    public Credential getCredential() {
-        return credential;
-    }
-
-    public void setCredential(Credential credential) {
-        this.credential = credential;
     }
 
     public Network getNetwork() {

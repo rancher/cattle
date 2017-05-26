@@ -180,17 +180,6 @@ public interface StoragePool extends java.io.Serializable {
 	public java.lang.Long getAgentId();
 
 	/**
-	 * Setter for <code>cattle.storage_pool.zone_id</code>.
-	 */
-	public void setZoneId(java.lang.Long value);
-
-	/**
-	 * Getter for <code>cattle.storage_pool.zone_id</code>.
-	 */
-	@javax.persistence.Column(name = "zone_id", precision = 19)
-	public java.lang.Long getZoneId();
-
-	/**
 	 * Setter for <code>cattle.storage_pool.external_id</code>.
 	 */
 	public void setExternalId(java.lang.String value);

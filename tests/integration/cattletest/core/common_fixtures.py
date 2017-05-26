@@ -342,7 +342,7 @@ def _wait_for_pool(host):
 def _is_valid_super_client(client):
     try:
         # stupid test
-        return 'zone' in client.schema.types
+        return len(client.schema.types) > 190
     except:
         return False
 

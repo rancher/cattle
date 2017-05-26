@@ -21,7 +21,6 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     String instanceKind = InstanceConstants.KIND_CONTAINER;
     Long vnetId;
     Long accountId;
-    Long zoneId;
     Long resourceAccountId;
     String imageUuid;
     String name = DEFAULT_NAME.get();
@@ -41,7 +40,6 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     public AgentInstanceBuilderImpl(AgentInstanceFactoryImpl factory, Instance instance, Set<String> roles) {
         this(factory);
         this.accountId = instance.getAccountId();
-        this.zoneId = instance.getZoneId();
         String uriPrefix = "event";
         Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
         Object prefix = labels.get(SystemLabels.LABEL_AGENT_URI_PREFIX);
@@ -87,7 +85,6 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     @Override
     public AgentInstanceBuilder withInstance(Instance instance) {
         withAccountId(instance.getAccountId());
-        withZoneId(instance.getZoneId());
 
         return this;
     }
@@ -95,12 +92,6 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
     @Override
     public AgentInstanceBuilder withAccountId(Long accountId) {
         this.accountId = accountId;
-        return this;
-    }
-
-    @Override
-    public AgentInstanceBuilder withZoneId(Long zoneId) {
-        this.zoneId = zoneId;
         return this;
     }
 
@@ -118,10 +109,6 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
 
     public Long getAccountId() {
         return accountId;
-    }
-
-    public Long getZoneId() {
-        return zoneId;
     }
 
     public boolean isAccountOwned() {

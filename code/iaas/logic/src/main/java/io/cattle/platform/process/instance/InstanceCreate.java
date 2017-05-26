@@ -1,6 +1,5 @@
 package io.cattle.platform.process.instance;
 
-import static io.cattle.platform.core.model.tables.CredentialInstanceMapTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 
@@ -10,7 +9,6 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.LabelsDao;
-import io.cattle.platform.core.model.CredentialInstanceMap;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Volume;
@@ -25,8 +23,6 @@ import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,13 +57,12 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
         List<String> dataVolumes = processManagedVolumes(instance);
         List<Nic> nics = objectManager.children(instance, Nic.class);
 
-        Set<Long> creds = createCreds(instance, state.getData());
         Set<Long> volumesIds = createVolumes(instance, volumes, state.getData());
         Set<Long> nicIds = createNics(instance, nics, state.getData());
 
         createLabels(instance);
 
-        HandlerResult result = new HandlerResult("_volumeIds", volumesIds, "_nicIds", nicIds, "_creds", creds, InstanceConstants.FIELD_DATA_VOLUMES,
+        HandlerResult result = new HandlerResult("_volumeIds", volumesIds, "_nicIds", nicIds, InstanceConstants.FIELD_DATA_VOLUMES,
                 dataVolumes);
         result.shouldDelegate(shouldStart(state, instance));
 
@@ -200,39 +195,6 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
         }
 
         return nicIds;
-    }
-
-    protected Set<Long> createCreds(Instance instance, Map<String, Object> data) {
-        List<Long> credIds = DataUtils.getFieldList(instance.getData(), InstanceConstants.FIELD_CREDENTIAL_IDS, Long.class);
-
-        return createCredsFromIds(credIds, instance, data);
-    }
-
-    protected Set<Long> createCredsFromIds(List<Long> credIds, Instance instance, Map<String, Object> data) {
-        if (credIds == null) {
-            return Collections.emptySet();
-        }
-
-        Set<Long> created = new HashSet<>();
-        List<CredentialInstanceMap> maps = new ArrayList<>();
-
-        for (CredentialInstanceMap map : children(instance, CredentialInstanceMap.class)) {
-            maps.add(map);
-            created.add(map.getCredentialId());
-        }
-
-        for (Long credId : credIds) {
-            if (!created.contains(credId)) {
-                maps.add(objectManager.create(CredentialInstanceMap.class, CREDENTIAL_INSTANCE_MAP.INSTANCE_ID, instance.getId(),
-                        CREDENTIAL_INSTANCE_MAP.CREDENTIAL_ID, credId));
-            }
-        }
-
-        for (CredentialInstanceMap map : maps) {
-            createThenActivate(map, data);
-        }
-
-        return new TreeSet<>(credIds);
     }
 
     public static boolean isCreateStart(ProcessState state) {

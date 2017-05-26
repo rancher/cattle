@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class StoragePoolTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.StoragePoolRecord> {
 
-	private static final long serialVersionUID = 645893858;
+	private static final long serialVersionUID = -1428765563;
 
 	/**
 	 * The singleton instance of <code>cattle.storage_pool</code>
@@ -102,11 +102,6 @@ public class StoragePoolTable extends org.jooq.impl.TableImpl<io.cattle.platform
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.StoragePoolRecord, java.lang.Long> AGENT_ID = createField("agent_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
-	 * The column <code>cattle.storage_pool.zone_id</code>.
-	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.StoragePoolRecord, java.lang.Long> ZONE_ID = createField("zone_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
-
-	/**
 	 * The column <code>cattle.storage_pool.external_id</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.StoragePoolRecord, java.lang.String> EXTERNAL_ID = createField("external_id", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
@@ -177,7 +172,7 @@ public class StoragePoolTable extends org.jooq.impl.TableImpl<io.cattle.platform
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.StoragePoolRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.StoragePoolRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_STORAGE_POOL__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_STORAGE_POOL__AGENT_ID, io.cattle.platform.core.model.Keys.FK_STORAGE_POOL__ZONE_ID, io.cattle.platform.core.model.Keys.FK_STORAGE_DRIVER__ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.StoragePoolRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_STORAGE_POOL__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_STORAGE_POOL__AGENT_ID, io.cattle.platform.core.model.Keys.FK_STORAGE_DRIVER__ID);
 	}
 
 	/**

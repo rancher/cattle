@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AgentTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.AgentRecord> {
 
-	private static final long serialVersionUID = 1713433720;
+	private static final long serialVersionUID = -689299239;
 
 	/**
 	 * The singleton instance of <code>cattle.agent</code>
@@ -92,11 +92,6 @@ public class AgentTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.AgentRecord, java.lang.Boolean> MANAGED_CONFIG = createField("managed_config", org.jooq.impl.SQLDataType.BIT.nullable(false).defaulted(true), this, "");
 
 	/**
-	 * The column <code>cattle.agent.zone_id</code>.
-	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.AgentRecord, java.lang.Long> ZONE_ID = createField("zone_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
-
-	/**
 	 * Create a <code>cattle.agent</code> table reference
 	 */
 	public AgentTable() {
@@ -147,7 +142,7 @@ public class AgentTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.AgentRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.AgentRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_AGENT__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_AGENT__ZONE_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.AgentRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_AGENT__ACCOUNT_ID);
 	}
 
 	/**

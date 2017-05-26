@@ -191,17 +191,6 @@ public interface Instance extends java.io.Serializable {
 	public java.lang.String getHostname();
 
 	/**
-	 * Setter for <code>cattle.instance.zone_id</code>.
-	 */
-	public void setZoneId(java.lang.Long value);
-
-	/**
-	 * Getter for <code>cattle.instance.zone_id</code>.
-	 */
-	@javax.persistence.Column(name = "zone_id", precision = 19)
-	public java.lang.Long getZoneId();
-
-	/**
 	 * Setter for <code>cattle.instance.instance_triggered_stop</code>.
 	 */
 	public void setInstanceTriggeredStop(java.lang.String value);

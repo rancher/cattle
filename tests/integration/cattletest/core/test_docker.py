@@ -834,7 +834,7 @@ def test_docker_volume_long(docker_client):
     assert c.state == 'running'
     vol = c.mounts_link()[0].volume()
     vol = docker_client.wait_success(vol)
-    assert vol.state == 'active'
+    wait_state(docker_client, vol, 'active')
 
 
 @if_docker

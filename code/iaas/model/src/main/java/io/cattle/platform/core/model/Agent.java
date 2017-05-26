@@ -157,17 +157,6 @@ public interface Agent extends java.io.Serializable {
 	@javax.persistence.Column(name = "managed_config", nullable = false, precision = 1)
 	public java.lang.Boolean getManagedConfig();
 
-	/**
-	 * Setter for <code>cattle.agent.zone_id</code>.
-	 */
-	public void setZoneId(java.lang.Long value);
-
-	/**
-	 * Getter for <code>cattle.agent.zone_id</code>.
-	 */
-	@javax.persistence.Column(name = "zone_id", precision = 19)
-	public java.lang.Long getZoneId();
-
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------
