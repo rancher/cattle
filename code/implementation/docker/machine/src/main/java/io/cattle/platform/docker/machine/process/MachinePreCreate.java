@@ -16,9 +16,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.inject.Inject;
+
 import org.apache.commons.lang3.StringUtils;
 
 public class MachinePreCreate extends AbstractObjectProcessLogic implements ProcessPreListener, Priority {
+
+    @Inject
+    HostCreateToProvision hostCreateToProvision;
 
     @Override
     public String[] getProcessNames() {
@@ -42,7 +47,7 @@ public class MachinePreCreate extends AbstractObjectProcessLogic implements Proc
             newFields.put(PHYSICAL_HOST.EXTERNAL_ID, physHost.getExternalId());
         }
 
-        String driver = HostCreateToProvision.getDriver(physHost);
+        String driver = hostCreateToProvision.getDriver(physHost);
         if (driver != null) {
             newFields.put(FIELD_DRIVER, driver);
         }

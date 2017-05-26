@@ -4,6 +4,7 @@ import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.MachineConstants;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.model.Host;
+import io.cattle.platform.core.model.HostTemplate;
 import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
@@ -49,13 +50,24 @@ public class HostCreateToProvision extends AbstractObjectProcessLogic implements
         return new HandlerResult(MachineConstants.FIELD_DRIVER, driver).withChainProcessName(HostConstants.PROCESS_PROVISION);
     }
 
-    public static String getDriver(Object obj) {
+    public String getDriver(Object obj) {
         Map<String, Object> fields = DataUtils.getFields(obj);
         for (Map.Entry<String, Object> field : fields.entrySet()) {
             if (StringUtils.endsWithIgnoreCase(field.getKey(), MachineConstants.CONFIG_FIELD_SUFFIX) && field.getValue() != null) {
                 return StringUtils.removeEndIgnoreCase(field.getKey(), MachineConstants.CONFIG_FIELD_SUFFIX);
             }
         }
+
+        if (obj instanceof Host) {
+            Long hostTemplateId = ((Host) obj).getHostTemplateId();
+            if (hostTemplateId != null) {
+                HostTemplate ht = objectManager.loadResource(HostTemplate.class, hostTemplateId);
+                return ht.getDriver();
+                // HostTemplate should have the driver set by this point
+                // TODO infer the driver while creating a HostTemplate if not set explicitly
+            }
+        }
+
         return null;
     }
 

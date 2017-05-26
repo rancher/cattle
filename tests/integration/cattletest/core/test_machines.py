@@ -613,6 +613,31 @@ def test_machine_validation(machine_context):
     assert host is not None
 
 
+def test_host_from_host_template(client):  # NOQA
+    ht = client.create_host_template(
+        publicValues={
+            'fooConfig': {
+                'region': 'sfo1',
+                'size': '1gb',
+            },
+        },
+        secretValues={
+            'fooConfig': {
+                'accessToken': 'XXXXX',
+            },
+        },
+    )
+
+    ht = client.wait_success(ht)
+    assert ht.state == 'active'
+
+    host = client.create_host(hostname='test1',
+                              hostTemplateId=ht.id)
+    host = client.wait_success(host)
+    assert host.state == 'active'
+    assert host.driver == 'foo'
+
+
 @pytest.mark.nonparallel
 def test_bar_config_machine(machine_context):
     name = "test-%s" % random_str()
