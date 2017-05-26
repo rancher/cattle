@@ -39,21 +39,21 @@ public class UpgradeManager {
     private static final DynamicBooleanProperty LAUNCH_CATALOG = ArchaiusUtil.getBoolean("catalog.execute");
     private static final Logger log = LoggerFactory.getLogger(UpgradeManager.class);
     private static final Set<String> OLD_METADATAS = new HashSet<>(Arrays.asList(
-            "library:infra*network-services:0",
-            "library:infra*network-services:1",
-            "library:infra*network-services:2",
-            "library:infra*network-services:3",
-            "library:infra*network-services:4",
-            "library:infra*network-services:5",
-            "library:infra*network-services:6",
-            "library:infra*network-services:7",
-            "library:infra*network-services:8",
-            "library:infra*network-services:9",
-            "library:infra*network-services:11",
-            "library:infra*network-services:12",
-            "library:infra*network-services:13",
-            "library:infra*network-services:14",
-            "library:infra*network-services:18"
+            "catalog://library:infra*network-services:0",
+            "catalog://library:infra*network-services:1",
+            "catalog://library:infra*network-services:2",
+            "catalog://library:infra*network-services:3",
+            "catalog://library:infra*network-services:4",
+            "catalog://library:infra*network-services:5",
+            "catalog://library:infra*network-services:6",
+            "catalog://library:infra*network-services:7",
+            "catalog://library:infra*network-services:8",
+            "catalog://library:infra*network-services:9",
+            "catalog://library:infra*network-services:11",
+            "catalog://library:infra*network-services:12",
+            "catalog://library:infra*network-services:13",
+            "catalog://library:infra*network-services:14",
+            "catalog://library:infra*network-services:18"
             ));
 
     @Inject

@@ -100,6 +100,11 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     protected String getDefaultOrLatestTemplateExternalId(Template template) throws IOException {
+        template = getDefaultOrLatestTemplate(template);
+        return template == null ? null : String.format("catalog://%s", template.getId());
+    }
+
+    protected Template getDefaultOrLatestTemplate(Template template) throws IOException {
         if (template == null || template.getVersionLinks() == null) {
             return null;
         }
@@ -119,8 +124,7 @@ public class CatalogServiceImpl implements CatalogService {
             }
         }
 
-        template = getTemplateAtURL(versionUrl);
-        return template == null ? null : String.format("catalog://%s", template.getId());
+        return getTemplateAtURL(versionUrl);
     }
 
     protected Template getTemplateById(String id) throws IOException {
@@ -170,12 +174,13 @@ public class CatalogServiceImpl implements CatalogService {
             return null;
         }
 
-        template = getTemplateAtURL(template.getLinks().get("template"));
-        if (template == null || StringUtils.isBlank(template.getDefaultTemplateVersionId())) {
+        String url = template.getLinks().get("template");
+        if (StringUtils.isBlank(url)) {
             return null;
         }
-
-        return getTemplateVersionById(template.getDefaultTemplateVersionId());
+        StringBuilder builder = new StringBuilder(url);
+        appendVersionCheck(builder);
+        return getDefaultOrLatestTemplate(getTemplateAtURL(builder.toString()));
     }
 
     @Override
