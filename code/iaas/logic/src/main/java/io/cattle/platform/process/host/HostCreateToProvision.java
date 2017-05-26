@@ -4,6 +4,7 @@ import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.MachineConstants;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.model.Host;
+import io.cattle.platform.core.model.HostTemplate;
 import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
@@ -38,12 +39,16 @@ public class HostCreateToProvision extends AbstractObjectProcessLogic implements
         Host host = (Host)state.getResource();
         String driver = getDriver(host);
         if (StringUtils.isBlank(driver)) {
+            driver = getDriverFromHostTemplate(host);
+        }
+
+        if (StringUtils.isBlank(driver)) {
             return new HandlerResult().withChainProcessName(HostConstants.PROCESS_ACTIVATE);
         }
 
         PhysicalHost phyHost = objectManager.loadResource(PhysicalHost.class, host.getPhysicalHostId());
         if (phyHost == null) {
-            phyHost = hostDao.createMachineForHost(host);
+            phyHost = hostDao.createMachineForHost(host, driver);
         }
 
         return new HandlerResult(MachineConstants.FIELD_DRIVER, driver).withChainProcessName(HostConstants.PROCESS_PROVISION);
@@ -56,6 +61,17 @@ public class HostCreateToProvision extends AbstractObjectProcessLogic implements
                 return StringUtils.removeEndIgnoreCase(field.getKey(), MachineConstants.CONFIG_FIELD_SUFFIX);
             }
         }
+
+        return null;
+    }
+
+    public String getDriverFromHostTemplate(Host host) {
+        Long hostTemplateId = host.getHostTemplateId();
+        if (hostTemplateId != null) {
+            HostTemplate ht = objectManager.loadResource(HostTemplate.class, hostTemplateId);
+            return ht.getDriver();
+        }
+
         return null;
     }
 

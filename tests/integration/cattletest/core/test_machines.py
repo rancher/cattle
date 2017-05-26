@@ -500,20 +500,7 @@ def register_host_through_agent(client, host, machine_context, super_client):
     return agent, host, machine
 
 
-@pytest.mark.nonparallel
-def test_machine_lifecycle(super_client, machine_context,
-                           update_ping_settings, machine=None):
-    if machine is None:
-        machine = machine_context.client.create_machine(name=random_str(),
-                                                        fooConfig={})
-
-    machine = machine_context.client.wait_success(machine)
-    assert machine.state == 'active'
-    assert machine.fooConfig is not None
-
-    external_id = super_client.reload(machine).externalId
-    assert external_id is not None
-
+def bootstrap_machine(super_client, machine_context, external_id):
     # Create an agent with the externalId specified. The agent simulator will
     # mimic how the go-machine-service would use this external_id to bootstrap
     # an agent onto the physical host with the proper PHYSICAL_HOST_UUID set.
@@ -536,6 +523,24 @@ def test_machine_lifecycle(super_client, machine_context,
     assert len(hosts) == 1
     host = hosts[0].physicalHost()
     assert host.kind == 'machine'
+    return agent, host
+
+
+@pytest.mark.nonparallel
+def test_machine_lifecycle(super_client, machine_context,
+                           update_ping_settings, machine=None):
+    if machine is None:
+        machine = machine_context.client.create_machine(name=random_str(),
+                                                        fooConfig={})
+
+    machine = machine_context.client.wait_success(machine)
+    assert machine.state == 'active'
+    assert machine.fooConfig is not None
+
+    external_id = super_client.reload(machine).externalId
+    assert external_id is not None
+    agent, host = bootstrap_machine(super_client, machine_context, external_id)
+
     assert machine.accountId == host.accountId
     assert machine.uuid == host.uuid
 
@@ -611,6 +616,41 @@ def test_machine_validation(machine_context):
                                                  fooConfig={},
                                                  barConfig=None)
     assert host is not None
+
+
+@pytest.mark.nonparallel
+def test_host_from_host_template(super_client, machine_context):
+    client = machine_context.client
+    ht = client.create_host_template(
+        driver='foo',
+        publicValues={
+            'fooConfig': {
+                'region': 'sfo1',
+                'size': '1gb',
+            },
+        },
+        secretValues={
+            'fooConfig': {
+                'accessToken': 'XXXXX',
+            },
+        },
+    )
+
+    ht = client.wait_success(ht)
+    assert ht.state == 'active'
+
+    host = client.create_host(hostname='test1',
+                              hostTemplateId=ht.id)
+
+    wait_for(lambda: super_client.reload(host).physicalHostId)
+    machine = super_client.reload(host).physicalHost()
+    external_id = super_client.reload(machine).externalId
+    assert external_id is not None
+    agent, host = bootstrap_machine(super_client, machine_context, external_id)
+
+    host = client.wait_success(host)
+    assert host.state == 'active'
+    assert host.driver == 'foo'
 
 
 @pytest.mark.nonparallel
