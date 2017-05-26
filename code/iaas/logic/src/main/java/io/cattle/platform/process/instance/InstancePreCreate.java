@@ -6,6 +6,7 @@ import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.dao.StorageDriverDao;
+import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.StorageDriver;
@@ -59,6 +60,7 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
         if (!InstanceConstants.CONTAINER_LIKE.contains(instance.getKind())) {
             return null;
         }
+        Account account = objectManager.loadResource(Account.class, instance.getAccountId());
         Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
         Map<Object, Object> data = new HashMap<>();
         setAgentVolumes(instance, labels, data);
@@ -67,6 +69,7 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
         setLogConfig(instance, data);
         setSecrets(instance, data);
         setSystemLabel(instance, labels);
+        setEnvironmentNameLabel(account, labels);
 
         if (!data.isEmpty()) {
             return new HandlerResult(data);
@@ -168,6 +171,10 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
     @Override
     public int getPriority() {
         return Priority.PRE;
+    }
+    
+    protected void setEnvironmentNameLabel(Account account, Map<String, Object> labels) {
+        labels.put(SystemLabels.LABEL_ENVIRONMENT_NAME, account.getName());
     }
 
 }
