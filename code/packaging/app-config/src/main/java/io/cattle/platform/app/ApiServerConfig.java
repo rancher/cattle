@@ -76,6 +76,7 @@ import io.cattle.platform.iaas.api.credential.SshKeyPemDownloadLinkHandler;
 import io.cattle.platform.iaas.api.host.HostEvacuateActionHandler;
 import io.cattle.platform.iaas.api.host.HostTemplateLinkHandler;
 import io.cattle.platform.iaas.api.host.HostTemplateOutputFilter;
+import io.cattle.platform.iaas.api.host.HostTemplateValidationFilter;
 import io.cattle.platform.object.meta.TypeSet;
 import io.cattle.platform.storage.api.filter.ExternalTemplateInstanceFilter;
 import io.cattle.platform.systemstack.service.UpgradeManager;
@@ -505,6 +506,11 @@ public class ApiServerConfig {
     @Bean
     HostEvacuateActionHandler HostEvacuateActionHandler() {
         return new HostEvacuateActionHandler();
+    }
+
+    @Bean
+    HostTemplateValidationFilter HostTemplateValidationFilter() {
+        return new HostTemplateValidationFilter();
     }
 
     @Bean
