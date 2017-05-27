@@ -121,6 +121,7 @@ public class CoreModelConfig {
                 "externalService,parent=service",
                 "dnsService,parent=service",
                 "kubernetesService,parent=service",
+                "containerConfig,parent=container",
                 "launchConfig,parent=container",
                 "secondaryLaunchConfig,parent=launchConfig",
                 "pullTask,parent=genericObject",

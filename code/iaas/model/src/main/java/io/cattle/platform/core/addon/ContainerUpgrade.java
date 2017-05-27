@@ -7,7 +7,7 @@ import io.github.ibuildthecloud.gdapi.annotation.Type;
 public class ContainerUpgrade {
     Object config;
 
-    @Field
+    @Field(typeString="containerConfig")
     public Object getConfig() {
         return config;
     }

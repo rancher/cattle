@@ -2,9 +2,9 @@
     "resourceFields": {
         "environment": {
             "type": "map[string]",
-            "create": true
+            "create": true,
+            "nullable": true
         },
-        
         "command": {
             "type": "array[string]",
             "nullable": true,
@@ -190,11 +190,13 @@
             "nullable": true
         },
         "registryCredentialId":{
-            "type":"reference[registryCredential]"
+            "type":"reference[registryCredential]",
+            "nullable": true
         },
         "labels": {
             "type": "map[string]",
-            "create": true
+            "create": true,
+            "nullable": true
         },
         "healthCheck": {
             "type": "instanceHealthCheck",
@@ -384,7 +386,8 @@
             "type" : "array[mountEntry]"
         },
         "secrets": {
-            "type" : "array[secretReference]"
+            "type" : "array[secretReference]",
+            "nullable": true
         },
          "userPorts" : {
             "type" : "array[string]",
@@ -453,7 +456,10 @@
         },
         "upgrade" : {
             "input":"containerUpgrade",
-            "output" : "revision"
+            "output" : "revision",
+            "attributes": {
+                "defaults": "false"
+            }
         }
     }
 }
