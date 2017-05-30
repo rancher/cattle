@@ -81,6 +81,7 @@ def init(admin_user_client):
         'task.process.replay.schedule': '2',
         'task.config.item.migration.schedule': '5',
         'task.config.item.source.version.sync.schedule': '5',
+        'allowed.user.agent.uri.prefix': 'sim://',
     }
     for k, v in kv.items():
         admin_user_client.create_setting(name=k, value=v)
