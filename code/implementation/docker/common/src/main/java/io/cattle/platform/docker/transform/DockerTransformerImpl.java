@@ -11,6 +11,7 @@ import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.util.SystemLabels;
+import io.cattle.platform.docker.constants.DockerVolumeConstants;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -18,6 +19,7 @@ import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -61,6 +63,8 @@ public class DockerTransformerImpl implements DockerTransformer {
     private static final String READ_BPS= "BlkioDeviceReadBps";
     private static final String WRITE_BPS= "BlkioDeviceWriteBps";
     private static final String WEIGHT = "BlkioWeightDevice";
+    
+    private static final String RANCHER_VOLUME_PREFIX = "/var/lib/rancher/volumes";
 
     @Inject
     JsonMapper jsonMapper;
@@ -102,12 +106,16 @@ public class DockerTransformerImpl implements DockerTransformer {
         List<DockerInspectTransformVolume> volumes = new ArrayList<DockerInspectTransformVolume>();
         for (Object mount : mounts) {
             Map<String, Object> mountObj = (Map<String, Object>)mount;
-            String am = ((boolean)mountObj.get(ACCESS_MODE)) ? "rw" : "ro";
+            String am = ((boolean)mountObj.get(ACCESS_MODE)) ? DockerVolumeConstants.READ_WRITE : DockerVolumeConstants.READ_ONLY;
             String dr = (String)mountObj.get(DRIVER);
             String containerPath = (String)mountObj.get(DEST);
             String hostPath = (String)mountObj.get(SRC);
             String name = (String)mountObj.get(NAME);
             String externalId = null;
+            if (StringUtils.startsWith(hostPath, RANCHER_VOLUME_PREFIX)) {
+                name = Paths.get(hostPath).getFileName().toString();
+                dr = Paths.get(hostPath).getParent().getFileName().toString();
+            }
             if (StringUtils.isEmpty(name)) {
                 name = hostPath;
             } else {
