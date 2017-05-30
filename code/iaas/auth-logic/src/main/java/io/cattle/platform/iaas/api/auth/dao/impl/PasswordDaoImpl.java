@@ -44,9 +44,8 @@ public class PasswordDaoImpl extends AbstractJooqDao implements PasswordDao {
 
     @Override
     public Credential changePassword(Credential password, ChangePassword changePassword, Policy policy) {
-
         if (policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS) || transformationService.compare(changePassword.getOldSecret(), password.getSecretValue())){
-            password.setSecretValue(transformationService.transform(changePassword.getNewSecret(), EncryptionConstants.HASH));
+            password.setSecretValue(transformationService.transform(changePassword.getNewSecret(), EncryptionConstants.PASSWORD));
             password = objectManager.persist(password);
             return password;
         }
@@ -92,7 +91,7 @@ public class PasswordDaoImpl extends AbstractJooqDao implements PasswordDao {
         Map<Object, Object> properties = new HashMap<>();
 
         properties.put(CREDENTIAL.PUBLIC_VALUE, username);
-        properties.put(CREDENTIAL.SECRET_VALUE, transformationService.transform(password, EncryptionConstants.HASH));
+        properties.put(CREDENTIAL.SECRET_VALUE, transformationService.transform(password, EncryptionConstants.PASSWORD));
         properties.put(CREDENTIAL.KIND, LocalAuthConstants.PASSWORD);
         properties.put(CREDENTIAL.ACCOUNT_ID, account.getId());
         properties.put(CREDENTIAL.STATE, CommonStatesConstants.ACTIVE);

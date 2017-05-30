@@ -23,6 +23,8 @@ public class TransformationServiceImpl implements TransformationService {
             transformer = EncryptionConstants.ENCRYPTER_NAME.get();
         } else if (method.equalsIgnoreCase(EncryptionConstants.HASH)) {
             transformer = EncryptionConstants.HASHER_NAME.get();
+        } else if (method.equalsIgnoreCase(EncryptionConstants.PASSWORD)) {
+            transformer = EncryptionConstants.PASSWORD_NAME.get();
         } else {
             throw new IllegalArgumentException(method);
         }

@@ -49,6 +49,7 @@ import io.cattle.platform.extension.impl.ExtensionManagerImpl;
 import io.cattle.platform.framework.encryption.EncryptionUtils;
 import io.cattle.platform.framework.encryption.handler.impl.TransformationServiceImpl;
 import io.cattle.platform.framework.encryption.impl.Aes256Encrypter;
+import io.cattle.platform.framework.encryption.impl.PasswordHasher;
 import io.cattle.platform.framework.encryption.impl.Sha256Hasher;
 import io.cattle.platform.framework.secret.SecretsService;
 import io.cattle.platform.framework.secret.SecretsServiceImpl;
@@ -239,6 +240,11 @@ public class SystemServicesConfig {
     @Bean
     Sha256Hasher sha256Hasher(ExtensionManagerImpl em) {
         return EMUtils.add(em, Transformer.class, new Sha256Hasher(), "SHA256");
+    }
+
+    @Bean
+    PasswordHasher passwordHasher(ExtensionManagerImpl em) {
+        return EMUtils.add(em, Transformer.class, new PasswordHasher());
     }
 
     @Bean

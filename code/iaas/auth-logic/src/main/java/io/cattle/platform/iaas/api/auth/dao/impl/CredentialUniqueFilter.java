@@ -2,6 +2,7 @@ package io.cattle.platform.iaas.api.auth.dao.impl;
 
 import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.model.Credential;
+import io.cattle.platform.framework.encryption.EncryptionConstants;
 import io.cattle.platform.iaas.api.auth.dao.PasswordDao;
 import io.cattle.platform.iaas.api.auth.integration.local.LocalAuthPasswordValidator;
 import io.cattle.platform.json.JsonMapper;
@@ -36,7 +37,7 @@ public class CredentialUniqueFilter extends AbstractResourceManagerFilter {
         if (StringUtils.equals(credential.getKind(), CredentialConstants.KIND_PASSWORD)) {
             LocalAuthPasswordValidator.validatePassword(credential.getSecretValue(), jsonMapper);
             String clearSecret = credential.getSecretValue();
-            credential.setSecretValue(ApiContext.getContext().getTransformationService().transform(clearSecret, "HASH"));
+            credential.setSecretValue(ApiContext.getContext().getTransformationService().transform(clearSecret, EncryptionConstants.PASSWORD));
 
             boolean isUnique = passwordDao.isUnique(credential);
             if (!isUnique) {
