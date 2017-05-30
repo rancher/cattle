@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.process;
 
 import static io.cattle.platform.core.model.tables.InstanceLinkTable.*;
+
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ServiceConsumeMapDao;
@@ -65,7 +66,7 @@ public class ServiceLinkPreInstanceStateHandler extends AbstractObjectProcessHan
         }
 
         for (InstanceLink link : links) {
-            create(link, state.getData());
+            createThenActivate(link, state.getData());
         }
 
         return null;

@@ -10,7 +10,6 @@ import java.util.Map;
 public class HandlerResult {
 
     Boolean shouldContinue;
-    boolean shouldDelegate = false;
     String chainProcessName;
     Map<Object, Object> data;
 
@@ -30,7 +29,7 @@ public class HandlerResult {
     public HandlerResult(Boolean shouldContinue, Map<Object, Object> data) {
         super();
         this.shouldContinue = shouldContinue;
-        this.data = Collections.unmodifiableMap(data == null ? new HashMap<Object, Object>() : data);
+        this.data = Collections.unmodifiableMap(data == null ? new HashMap<>() : data);
     }
 
     public Boolean shouldContinue(ProcessPhase phase) {
@@ -42,14 +41,6 @@ public class HandlerResult {
 
     public Map<Object, Object> getData() {
         return data;
-    }
-
-    public boolean shouldDelegate() {
-        return shouldDelegate;
-    }
-
-    public void shouldDelegate(boolean shouldDelegate) {
-        this.shouldDelegate = shouldDelegate;
     }
 
     public HandlerResult withShouldContinue(boolean shouldContinue) {
@@ -68,7 +59,6 @@ public class HandlerResult {
         int result = 1;
         result = prime * result + ((data == null) ? 0 : data.hashCode());
         result = prime * result + ((shouldContinue == null) ? 0 : shouldContinue.hashCode());
-        result = prime * result + (shouldDelegate ? 1231 : 1237);
         return result;
     }
 
@@ -91,14 +81,12 @@ public class HandlerResult {
                 return false;
         } else if (!shouldContinue.equals(other.shouldContinue))
             return false;
-        if (shouldDelegate != other.shouldDelegate)
-            return false;
         return true;
     }
 
     @Override
     public String toString() {
-        return "HandlerResult [shouldContinue=" + shouldContinue + ", shouldDelegate=" + shouldDelegate + ", data=" + data + "]";
+        return "HandlerResult [shouldContinue=" + shouldContinue + ", data=" + data + "]";
     }
 
     public String getChainProcessName() {

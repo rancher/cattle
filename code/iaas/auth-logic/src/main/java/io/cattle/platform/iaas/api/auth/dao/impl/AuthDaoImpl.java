@@ -514,7 +514,9 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         properties.put(PROJECT_MEMBER.EXTERNAL_ID, member.getExternalId());
         properties.put(PROJECT_MEMBER.EXTERNAL_ID_TYPE, member.getExternalIdType());
         properties.put(PROJECT_MEMBER.ROLE, member.getRole());
-        return resourceDao.create(ProjectMember.class, objectManager.convertToPropertiesFor(ProjectMember.class, properties));
+        ProjectMember projectMember = resourceDao.create(ProjectMember.class, objectManager.convertToPropertiesFor(ProjectMember.class, properties));
+        objectProcessManager.executeStandardProcess(StandardProcess.ACTIVATE, projectMember, null);
+        return projectMember;
     }
 
     @Override

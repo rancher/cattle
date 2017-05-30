@@ -135,7 +135,7 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
 
         try {
             Volume vol = storageDriverDao.createSecretsVolume(instance, driver, token);
-            create(vol, null);
+            createIfNot(vol, null);
         } catch (ProcessCancelException e) {
             // ignore
         }

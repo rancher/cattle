@@ -116,7 +116,7 @@ public class AgentActivate extends AbstractDefaultProcessHandler {
         }
         HandlerResult result = new HandlerResult();
         if (process.getName().equalsIgnoreCase(AgentConstants.PROCESS_RECONNECT)) {
-            result.shouldDelegate(true);
+            result.setChainProcessName(AgentConstants.PROCESS_FINISH_RECONNECT);
         }
         return result;
     }

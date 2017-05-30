@@ -13,7 +13,6 @@
         <xsd:attribute name="transitioning" type="xsd:string" use="required" />
         <xsd:attribute name="done" type="xsd:string" use="required" />
         <xsd:attribute name="stateField" type="xsd:string" use="optional" />
-        <xsd:attribute name="delegate" type="xsd:string" use="optional" />
     </xsd:complexType>
 
     <xsd:complexType name="DefaultProcessType">

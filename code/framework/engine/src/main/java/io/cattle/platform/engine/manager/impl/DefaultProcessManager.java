@@ -107,22 +107,6 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
     }
 
     @Override
-    public ProcessDefinition getProcessDelegate(ProcessDefinition def) {
-        String delegate = def.getProcessDelegateName();
-
-        if (delegate == null) {
-            return null;
-        }
-
-        ProcessDefinition processDef = definitions.get(delegate);
-
-        if (processDef == null)
-            throw new ProcessNotFoundException("Failed to find ProcessDefinition for [" + delegate + "]");
-
-        return processDef;
-    }
-
-    @Override
     public void persistState(ProcessInstance process, boolean schedule) {
         if (!(process instanceof DefaultProcessInstanceImpl)) {
             throw new IllegalArgumentException("Can only persist ProcessInstances that are created by this repository");

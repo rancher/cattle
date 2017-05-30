@@ -5,6 +5,7 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.util.type.Priority;
@@ -18,15 +19,17 @@ public class ActivateByDefault extends AbstractObjectProcessLogic implements Pro
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        HandlerResult result = new HandlerResult(true, (Map<Object, Object>) null);
 
         String type = getObjectManager().getType(state.getResource());
-        if (ArchaiusUtil.getBoolean("activate.by.default." + type).get()) {
-            result.shouldDelegate(true);
-        } else if (DataAccessor.fieldBool(state.getResource(), "activateOnCreate")) {
-            result.shouldDelegate(true);
+        if (ArchaiusUtil.getBoolean("activate.by.default." + type).get() ||
+                DataAccessor.fieldBool(state.getResource(), "activateOnCreate")) {
+            String chain = objectProcessManager.getStandardProcessName(StandardProcess.ACTIVATE, state.getResource());
+            HandlerResult result = new HandlerResult(true, (Map<Object, Object>) null);
+            result.setChainProcessName(chain);
+            return result;
         }
-        return result;
+
+        return null;
     }
 
     @Override

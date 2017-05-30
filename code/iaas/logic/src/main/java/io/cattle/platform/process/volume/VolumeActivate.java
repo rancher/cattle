@@ -1,6 +1,7 @@
 package io.cattle.platform.process.volume;
 
 import static io.cattle.platform.core.model.tables.ImageStoragePoolMapTable.*;
+
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Image;
 import io.cattle.platform.core.model.ImageStoragePoolMap;
@@ -32,7 +33,7 @@ public class VolumeActivate extends AbstractDefaultProcessHandler {
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Volume volume = (Volume) state.getResource();
 
-        Set<Long> pools = new HashSet<Long>();
+        Set<Long> pools = new HashSet<>();
         for (VolumeStoragePoolMap map : mapDao.findNonRemoved(VolumeStoragePoolMap.class, Volume.class, volume.getId())) {
             activatePool(volume, map, state.getData());
             pools.add(map.getStoragePoolId());
@@ -65,8 +66,7 @@ public class VolumeActivate extends AbstractDefaultProcessHandler {
             });
         }
 
-        create(map, data);
-        activate(map, data);
+        createThenActivate(map, data);
     }
 
     protected ImageStoragePoolMap associate(Image image, long poolId) {
