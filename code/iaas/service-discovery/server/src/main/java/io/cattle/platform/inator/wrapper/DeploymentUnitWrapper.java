@@ -8,6 +8,7 @@ import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.inator.Inator;
+import io.cattle.platform.inator.Inator.DesiredState;
 import io.cattle.platform.inator.Result;
 import io.cattle.platform.inator.UnitRef;
 import io.cattle.platform.inator.factory.InatorServices;
@@ -46,6 +47,9 @@ public class DeploymentUnitWrapper implements BasicStateWrapper {
     }
 
     public Inator.DesiredState getDesiredState() {
+        if (service != null && (CommonStatesConstants.REMOVING.equals(service.getState()) || service.getRemoved() != null)) {
+            return DesiredState.REMOVED;
+        }
         return StateUtil.getDesiredState(unit.getState(), unit.getRemoved());
     }
 
