@@ -827,8 +827,6 @@ def test_destroy_service_instance(client, context):
     # purge the instance1 w/o changing the service
     # and validate instance1-service map is gone
     instance1 = _instance_remove(instance1, client)
-    instance1 = client.wait_success(instance1.purge())
-    assert instance1.state == 'purged'
     wait_for(lambda: len(client.
                          list_serviceExposeMap(serviceId=service.id,
                                                instanceId=instance1.id)) == 0)

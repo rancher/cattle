@@ -156,7 +156,6 @@ def test_instance_volume_cleanup_strategy(new_context, super_client):
     c, vol, unnamed_vol = create_resources(new_context, client, super_client)
     c = client.wait_success(c.stop())
     c = client.wait_success(c.remove())
-    client.wait_success(c.purge())
     wait_for_condition(client, vol, lambda x: x.state == 'detached')
     wait_for_condition(client, unnamed_vol, lambda x: x.state is not None)
 
@@ -166,7 +165,6 @@ def test_instance_volume_cleanup_strategy(new_context, super_client):
             VOLUME_CLEANUP_LABEL: 'unnamed'})
     c = client.wait_success(c.stop())
     c = client.wait_success(c.remove())
-    client.wait_success(c.purge())
     wait_for_condition(client, vol, lambda x: x.state == 'detached')
     wait_for_condition(client, unnamed_vol, lambda x: x.state is not None)
 
@@ -176,7 +174,6 @@ def test_instance_volume_cleanup_strategy(new_context, super_client):
             VOLUME_CLEANUP_LABEL: 'none'})
     c = client.wait_success(c.stop())
     c = client.wait_success(c.remove())
-    client.wait_success(c.purge())
     wait_for_condition(client, vol, lambda x: x.state == 'detached')
     wait_for_condition(client, unnamed_vol, lambda x: x.state == 'detached')
 
@@ -186,7 +183,6 @@ def test_instance_volume_cleanup_strategy(new_context, super_client):
             VOLUME_CLEANUP_LABEL: 'all'})
     c = client.wait_success(c.stop())
     c = client.wait_success(c.remove())
-    client.wait_success(c.purge())
     wait_for_condition(client, vol, lambda x: x.state is not None)
     wait_for_condition(client, unnamed_vol, lambda x: x.state is not None)
 
@@ -210,8 +206,7 @@ def create_container_and_mount(client, data_volume_mounts, new_context,
 
 def purge_instance_and_check_volume_state(c, vols, s, client):
     c = client.wait_success(c.stop())
-    c = client.wait_success(c.remove())
-    client.wait_success(c.purge())
+    client.wait_success(c.remove())
     for vol in vols:
         wait_for_condition(client, vol,
                            lambda x: (s == 'removed' and
@@ -275,8 +270,7 @@ def test_volume_mounting_and_delete(new_context, super_client):
     v1 = wait_for_condition(client, v1, lambda x: x.state == 'active')
 
     # Assert that a volume with mounts cannot be deactivated, removed or purged
-    assert 'deactivate' not in v1.actions and 'remove' not in v1.actions \
-           and 'purge' not in v1.actions
+    assert 'deactivate' not in v1.actions and 'remove' not in v1.actions
 
     # Assert that once the container is removed, the mounts are removed and the
     # the volume is deactivated
@@ -309,8 +303,7 @@ def test_volume_mounting_and_delete(new_context, super_client):
     v1 = wait_for_condition(client, v1, lambda x: x.state == 'active')
     v1 = client.wait_success(v1)
     check_mount_count(client, v1, 1)
-    assert 'deactivate' not in v1.actions and 'remove' not in v1.actions \
-           and 'purge' not in v1.actions
+    assert 'deactivate' not in v1.actions and 'remove' not in v1.actions
 
     # Remove remaining container and assert the volume can be removed
     c3 = client.wait_success(c3.stop())
@@ -338,8 +331,7 @@ def test_volume_storage_pool_purge(new_context, super_client):
 
     host = c.hosts()[0]
     host = client.wait_success(host.deactivate())
-    host = client.wait_success(host.remove())
-    client.wait_success(host.purge())
+    client.wait_success(host.remove())
 
     wait_for_condition(client, sp, lambda x: x.state is not None)
     wait_for_condition(client, v1, lambda x: x.state is not None)

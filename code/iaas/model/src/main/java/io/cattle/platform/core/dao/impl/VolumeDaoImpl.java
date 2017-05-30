@@ -14,6 +14,7 @@ import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 
 import io.cattle.platform.core.addon.MountEntry;
+import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -316,7 +317,7 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
                 .join(ACCOUNT)
                     .on(ACCOUNT.ID.eq(VOLUME.ACCOUNT_ID))
                 .where(VOLUME.REMOVED.isNull()
-                        .and(ACCOUNT.STATE.eq(CommonStatesConstants.PURGED))
+                        .and(ACCOUNT.STATE.eq(AccountConstants.STATE_PURGED))
                         .and(VOLUME.STATE.notIn(CommonStatesConstants.DEACTIVATING, CommonStatesConstants.REMOVING)))
                 .limit(count)
                 .fetchInto(VolumeRecord.class);
@@ -330,7 +331,7 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
                     .on(MOUNT.VOLUME_ID.eq(VOLUME.ID))
                 .join(INSTANCE)
                     .on(MOUNT.INSTANCE_ID.eq(INSTANCE.ID))
-                .where(INSTANCE.STATE.eq(CommonStatesConstants.PURGED)
+                .where(INSTANCE.STATE.eq(AccountConstants.STATE_PURGED)
                         .and(VOLUME.STATE.eq(CommonStatesConstants.INACTIVE))
                         .and(INSTANCE.NATIVE_CONTAINER.isTrue()))
                 .limit(count)
@@ -343,7 +344,7 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
                 .from(IMAGE)
                 .leftOuterJoin(INSTANCE)
                     .on(IMAGE.ID.eq(INSTANCE.IMAGE_ID))
-                .where((INSTANCE.STATE.eq(CommonStatesConstants.PURGED).or(INSTANCE.ID.isNull()))
+                .where((INSTANCE.STATE.eq(AccountConstants.STATE_PURGED).or(INSTANCE.ID.isNull()))
                         .and(IMAGE.REMOVED.isNull())
                         .and(IMAGE.STATE.notIn(CommonStatesConstants.DEACTIVATING, CommonStatesConstants.REMOVING)))
                 .limit(count)
@@ -356,7 +357,7 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
                 .from(MOUNT)
                 .join(VOLUME)
                     .on(VOLUME.ID.eq(MOUNT.VOLUME_ID))
-                .where(VOLUME.STATE.eq(CommonStatesConstants.PURGED)
+                .where(VOLUME.STATE.eq(AccountConstants.STATE_PURGED)
                         .and(MOUNT.REMOVED.isNull())
                         .and(MOUNT.STATE.notIn(CommonStatesConstants.DEACTIVATING, CommonStatesConstants.REMOVING)))
                 .limit(count)
@@ -369,7 +370,7 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
                 .from(VOLUME_STORAGE_POOL_MAP)
                 .join(VOLUME)
                     .on(VOLUME.ID.eq(VOLUME_STORAGE_POOL_MAP.VOLUME_ID))
-                .where(VOLUME.STATE.eq(CommonStatesConstants.PURGED)
+                .where(VOLUME.STATE.eq(AccountConstants.STATE_PURGED)
                         .and(VOLUME_STORAGE_POOL_MAP.REMOVED.isNull())
                         .and(VOLUME_STORAGE_POOL_MAP.STATE.notIn(CommonStatesConstants.DEACTIVATING, CommonStatesConstants.REMOVING)))
                 .limit(count)
@@ -382,7 +383,7 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
                 .from(IMAGE_STORAGE_POOL_MAP)
                 .join(IMAGE)
                     .on(IMAGE.ID.eq(IMAGE_STORAGE_POOL_MAP.IMAGE_ID))
-                .where(IMAGE.STATE.eq(CommonStatesConstants.PURGED)
+                .where(IMAGE.STATE.eq(AccountConstants.STATE_PURGED)
                         .and(IMAGE_STORAGE_POOL_MAP.REMOVED.isNull())
                         .and(IMAGE_STORAGE_POOL_MAP.STATE.notIn(CommonStatesConstants.DEACTIVATING, CommonStatesConstants.REMOVING)))
                 .limit(count)

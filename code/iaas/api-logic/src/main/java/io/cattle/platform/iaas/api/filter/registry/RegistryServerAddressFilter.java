@@ -34,7 +34,7 @@ public class RegistryServerAddressFilter extends AbstractDefaultResourceManagerF
                 ObjectMetaDataManager.ACCOUNT_FIELD, accountId,
                 ObjectMetaDataManager.REMOVED_FIELD, null);
         for (StoragePool registry: registries){
-            if (!CommonStatesConstants.PURGED.equalsIgnoreCase(registry.getState())) {
+            if (!CommonStatesConstants.REMOVED.equalsIgnoreCase(registry.getState())) {
                 if (serverAddress.equalsIgnoreCase(
                         (String) CollectionUtils.getNestedValue(registry.getData(), "fields", StoragePoolConstants.SERVER_ADDRESS))) {
                     throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "ServerAddressUsed");

@@ -256,7 +256,7 @@
         </property>
     </bean>
 
-    <bean class="io.cattle.platform.process.instance.PostInstancePurge"
+    <bean class="io.cattle.platform.process.instance.PostInstanceRemove"
         p:commandName="compute.instance.remove" >
     </bean>
 
@@ -273,7 +273,6 @@
         <process:process name="agent.activate" resourceType="agent" start="inactive,registering" transitioning="activating" done="active" />
         <process:process name="agent.deactivate" resourceType="agent" start="requested,active,activating,updating-active,updating-inactive" transitioning="deactivating" done="inactive" delegate="agent.remove" />
         <process:process name="agent.remove" resourceType="agent" start="requested,inactive,activating,deactivating,registering,updating-active,updating-inactive" transitioning="removing" done="removed" />
-        <process:process name="agent.purge" resourceType="agent" start="removed" transitioning="purging" done="purged" />
         <process:process name="agent.update" resourceType="agent" start="inactive,active" transitioning="inactive=updating-inactive,active=updating-active" done="updating-inactive=inactive,updating-active=active" />
     -->
 
@@ -299,8 +298,12 @@
     <process:defaultProcesses resourceType="volumeTemplate" />
     <process:defaultProcesses resourceType="accountLink" />
 
+    <!-- Account -->
+    <process:defaultProcesses resourceType="account" />
+    <process:process name="account.purge" resourceType="account" start="removed" transitioning="purging" done="purged" />
+
     <!-- Volume Storage Pool Map -->
-    <process:defaultProcesses resourceType="volumeStoragePoolMap" exclude="volumestoragepoolmap.purge"/>
+    <process:defaultProcesses resourceType="volumeStoragePoolMap" />
 
     <!-- Host -->
     <process:defaultProcesses resourceType="host" />
@@ -501,7 +504,7 @@
 
     <!-- Dynamic Schema-->
     <process:process name="dynamicschema.create" resourceType="dynamicSchema" start="requested" transitioning="creating" done="active" />
-    <process:process name="dynamicschema.remove" resourceType="dynamicSchema" start="active" transitioning="removing" done="purged" />
+    <process:process name="dynamicschema.remove" resourceType="dynamicSchema" start="active" transitioning="removing" done="removed" />
 
     <!-- Host Template Update -->
     <process:process name="hosttemplate.create" resourceType="hostTemplate" start="requested" transitioning="activating" done="active" />

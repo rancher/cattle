@@ -103,7 +103,7 @@ public class GenericMapDaoImpl extends AbstractCoreDao implements GenericMapDao 
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> List<? extends T> findNonPurged(Class<T> mapType, Class<?> resourceType, long resourceId) {
+    public <T> List<? extends T> findAll(Class<T> mapType, Class<?> resourceType, long resourceId) {
         String type = schemaFactory.getSchemaName(mapType);
 
         Table<?> table = getTable(mapType);
@@ -119,8 +119,7 @@ public class GenericMapDaoImpl extends AbstractCoreDao implements GenericMapDao 
         return (List<? extends T>)create()
                 .selectFrom(table)
                 .where(
-                referenceField.eq(resourceId)
-                .and(state.ne(CommonStatesConstants.PURGED)))
+                referenceField.eq(resourceId))
                 .fetch();
     }
 

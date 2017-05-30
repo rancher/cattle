@@ -59,6 +59,9 @@ public class AccountConstants {
     public static final String ORC_MESOS = "mesos";
     public static final String ORC_WINDOWS = "windows";
 
+    public static final String STATE_PURGED = "purged";
+    public static final String STATE_PURGING = "purging";
+
     public static ServicesPortRange getDefaultServicesPortRange() {
         PortRangeSpec spec = new PortRangeSpec(ENV_PORT_RANGE.get());
         return new ServicesPortRange(spec.getStartPort(), spec.getEndPort());

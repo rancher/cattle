@@ -113,7 +113,7 @@ public class AccountDaoImpl extends AbstractCoreDao implements AccountDao {
                 .selectFrom(ACCOUNT)
                 .where(
                         ACCOUNT.ID.eq(id)
-                                .and(ACCOUNT.STATE.ne(CommonStatesConstants.PURGED))
+                                .and(ACCOUNT.STATE.ne(AccountConstants.STATE_PURGED))
                                 .and(ACCOUNT.REMOVED.isNull())
                 ).fetchOne();
     }
@@ -137,7 +137,7 @@ public class AccountDaoImpl extends AbstractCoreDao implements AccountDao {
                 .join(ACCOUNT)
                     .on(ACCOUNT.ID.eq(GENERIC_OBJECT.ACCOUNT_ID))
                 .where(GENERIC_OBJECT.REMOVED.isNull()
-                        .and(ACCOUNT.STATE.eq(CommonStatesConstants.PURGED))
+                        .and(ACCOUNT.STATE.eq(AccountConstants.STATE_PURGED))
                         .and(GENERIC_OBJECT.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.DEACTIVATING)))
                 .limit(count)
                 .fetchInto(GenericObjectRecord.class);
@@ -150,7 +150,7 @@ public class AccountDaoImpl extends AbstractCoreDao implements AccountDao {
                 .join(ACCOUNT)
                     .on(ACCOUNT.ID.eq(USER_PREFERENCE.ACCOUNT_ID))
                 .where(USER_PREFERENCE.REMOVED.isNull()
-                        .and(ACCOUNT.STATE.eq(CommonStatesConstants.PURGED))
+                        .and(ACCOUNT.STATE.eq(AccountConstants.STATE_PURGED))
                         .and(USER_PREFERENCE.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.DEACTIVATING)))
                 .limit(count)
                 .fetchInto(UserPreferenceRecord.class);
@@ -162,7 +162,7 @@ public class AccountDaoImpl extends AbstractCoreDao implements AccountDao {
                 .from(PROJECT_MEMBER)
                 .join(ACCOUNT)
                     .on(ACCOUNT.ID.eq(PROJECT_MEMBER.PROJECT_ID))
-                .where(ACCOUNT.STATE.eq(CommonStatesConstants.PURGED)
+                .where(ACCOUNT.STATE.eq(AccountConstants.STATE_PURGED)
                         .and(PROJECT_MEMBER.REMOVED.isNull())
                         .and(PROJECT_MEMBER.STATE.notIn(CommonStatesConstants.DEACTIVATING, CommonStatesConstants.REMOVING)))
                 .limit(count)

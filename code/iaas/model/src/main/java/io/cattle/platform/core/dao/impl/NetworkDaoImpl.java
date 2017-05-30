@@ -7,7 +7,9 @@ import static io.cattle.platform.core.model.tables.NetworkTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
+
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.PortConstants;
 import io.cattle.platform.core.constants.SubnetConstants;
@@ -249,7 +251,7 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
                 .join(ACCOUNT)
                     .on(ACCOUNT.ID.eq(NETWORK.ACCOUNT_ID))
                 .where(NETWORK.REMOVED.isNull()
-                        .and(ACCOUNT.STATE.eq(CommonStatesConstants.PURGED))
+                        .and(ACCOUNT.STATE.eq(AccountConstants.STATE_PURGED))
                         .and(NETWORK.STATE.notIn(CommonStatesConstants.REMOVING)))
                 .limit(count)
                 .fetchInto(NetworkRecord.class);

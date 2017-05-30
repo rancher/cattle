@@ -80,12 +80,6 @@ public interface ObjectProcessManager {
         }
     }
 
-    default void purge(Object resource, Map<String, Object> data) {
-        if (!StandardStates.PURGING.equals(ObjectUtils.getState(resource))) {
-            scheduleStandardProcessAsync(StandardProcess.PURGE, resource, data);
-        }
-    }
-
     default void update(Object resource, Map<String, Object> data) {
         if (!StandardStates.UPDATING_ACTIVE.equals(ObjectUtils.getState(resource)) &&
              !StandardStates.UPDATING_INACTIVE.equals(ObjectUtils.getState(resource))) {

@@ -3,8 +3,6 @@ import json
 
 from cattle import ApiError, ClientApiError
 from common_fixtures import *  # NOQA
-from datetime import timedelta
-import time
 
 
 def test_container_create_count(client, context):
@@ -365,30 +363,7 @@ def test_container_purge(client, super_client, context):
     container = test_container_remove(client, super_client, context)
 
     assert container.state == "removed"
-
-    # It's easier to call container.purge(), but this was to test other
-    # things too
-
-    remove_time = now() - timedelta(hours=1)
-    super_client.update(container, {
-        'removeTime': format_time(remove_time)
-    })
-
-    purge = super_client.list_task(name="purge.resources")[0]
-    purge.execute()
-
-    container = client.reload(container)
-    for x in range(30):
-        if container.state == "removed":
-            time.sleep(0.5)
-            container = client.reload(container)
-        else:
-            break
-
-    assert container.state != "removed"
-
-    container = client.wait_success(container)
-    assert container.state == "purged"
+    assert container.removed is not None
 
     instance_host_mappings = super_client.reload(container).instanceHostMaps()
     assert len(instance_host_mappings) == 0
@@ -586,7 +561,6 @@ def test_container_request_ip(super_client, client, context):
 
         # Release 1.1.1.1
         container = super_client.wait_success(super_client.delete(container))
-        container = super_client.wait_success(container.purge())
 
         nics = container.nics()
         assert len(nics) == 0

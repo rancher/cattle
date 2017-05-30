@@ -327,8 +327,6 @@ def test_state_enum(super_client):
     states = set([
         'creating',
         'migrating',
-        'purged',
-        'purging',
         'removed',
         'removing',
         'requested',

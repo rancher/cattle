@@ -239,9 +239,6 @@ def test_docker_purge(docker_client):
     container = docker_client.wait_success(container)
     assert container.removed is not None
 
-    container = docker_client.wait_success(container.purge())
-    assert container.state == 'purged'
-
     volumes = container.volumes()
     assert len(volumes) == 0
 
@@ -672,16 +669,8 @@ def volume_cleanup_setup(docker_client, uuid, strategy=None):
     named_vol = v1 if v1.name == vol_name else v2
     unnamed_vol = v1 if v1.name != vol_name else v2
 
-    def purged(c):
-        c = docker_client.reload(c)
-        if c.state == 'purged':
-            return True
-        try:
-            c.purge()
-        except:
-            pass
     c = docker_client.wait_success(c.stop(remove=True, timeout=0))
-    wait_for(lambda: purged(c))
+    c = wait_for_condition(docker_client, c, lambda x: x.removed is not None)
     check_mounts(docker_client, c, 0)
     return c, named_vol, unnamed_vol
 

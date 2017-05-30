@@ -17,6 +17,7 @@ import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
 
 import io.cattle.platform.core.addon.HealthcheckState;
+import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -339,7 +340,7 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                 .from(HEALTHCHECK_INSTANCE)
                 .join(INSTANCE)
                     .on(INSTANCE.ID.eq(HEALTHCHECK_INSTANCE.INSTANCE_ID))
-                .where(INSTANCE.STATE.eq(CommonStatesConstants.PURGED)
+                .where(INSTANCE.STATE.eq(AccountConstants.STATE_PURGED)
                         .and(HEALTHCHECK_INSTANCE.REMOVED.isNull())
                         .and(HEALTHCHECK_INSTANCE.STATE.notIn(CommonStatesConstants.DEACTIVATING,
                                 CommonStatesConstants.REMOVING)))

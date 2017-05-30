@@ -10,8 +10,6 @@ public class CommonStatesConstants {
     public static final String INACTIVE = StandardStates.INACTIVE;
     public static final String ACTIVATING = StandardStates.ACTIVATING;
     public static final String DEACTIVATING = StandardStates.DEACTIVATING;
-    public static final String PURGED = StandardStates.PURGED;
-    public static final String PURGING = StandardStates.PURGING;
     public static final String REMOVING = StandardStates.REMOVING;
     public static final String REQUESTED = StandardStates.REQUESTED;
     public static final String REGISTERING = StandardStates.REGISTERING;

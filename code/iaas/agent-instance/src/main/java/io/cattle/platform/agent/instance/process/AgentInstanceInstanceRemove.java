@@ -20,8 +20,7 @@ public class AgentInstanceInstanceRemove extends AbstractObjectProcessLogic impl
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { InstanceConstants.PROCESS_REMOVE,
-                InstanceConstants.PROCESS_PURGE};
+        return new String[] { InstanceConstants.PROCESS_REMOVE };
     }
 
     @Override

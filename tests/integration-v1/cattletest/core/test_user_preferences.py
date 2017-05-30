@@ -42,14 +42,11 @@ def test_delete_user_preference(user_client):
     preference = _user_preference(user_client)
     preference = user_client.wait_success(preference.deactivate())
     preference = user_client.wait_success(preference.remove())
-    preference = user_client.wait_success(preference.purge())
     preference = user_client.by_id('userPreference', preference.id)
-    assert preference.state == 'purged'
+    assert preference.state == 'removed'
     preference = _user_preference(user_client)
     preference = user_client.wait_success(preference.remove())
     assert preference.state == 'removed'
-    preference = user_client.wait_success(preference.purge())
-    assert preference.state == 'purged'
 
 
 def test_update_user_preference(user_client):

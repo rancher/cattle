@@ -21,7 +21,7 @@ import javax.inject.Named;
 import org.apache.commons.lang3.StringUtils;
 
 @Named
-public class MacAddressNetworkActivate extends AbstractObjectProcessLogic implements ProcessPreListener, Priority {
+public class NetworkActivate extends AbstractObjectProcessLogic implements ProcessPreListener, Priority {
 
     ResourcePoolManager resourcePoolManager;
 
