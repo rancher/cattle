@@ -96,8 +96,6 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'addRemoveServiceLinkInput',
         'apiKey',
         'auditLog',
-        'backup',
-        'backupTarget',
         'baseMachineConfig',
         'catalogTemplate',
         'certificate',
@@ -161,8 +159,6 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'registry',
         'registryCredential',
         'restartPolicy',
-        'restoreFromBackupInput',
-        'revertToSnapshotInput',
         'schema',
         'secret',
         'secretReference',
@@ -172,8 +168,6 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'serviceProxy',
         'setProjectMembersInput',
         'setServiceLinksInput',
-        'snapshot',
-        'snapshotBackupInput',
         'statsAccess',
         'storageDriver',
         'storagePool',
@@ -197,7 +191,6 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'publicEndpoint',
         'servicesPortRange',
         'healthcheckInstanceHostMap',
-        'volumeSnapshotInput',
         'nfsConfig',
         'blkioDeviceOption',
         'binding',
@@ -320,8 +313,6 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'agent',
         'apiKey',
         'auditLog',
-        'backup',
-        'backupTarget',
         'baseMachineConfig',
         'catalogTemplate',
         'certificate',
@@ -408,8 +399,6 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'registryCredential',
         'resourceDefinition',
         'restartPolicy',
-        'restoreFromBackupInput',
-        'revertToSnapshotInput',
         'schema',
         'secret',
         'secretReference',
@@ -420,8 +409,6 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'setProjectMembersInput',
         'setServiceLinksInput',
         'setting',
-        'snapshot',
-        'snapshotBackupInput',
         'stateTransition',
         'statsAccess',
         'storageDriver',
@@ -448,7 +435,6 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'publicEndpoint',
         'servicesPortRange',
         'healthcheckInstanceHostMap',
-        'volumeSnapshotInput',
         'nfsConfig',
         'blkioDeviceOption',
         'binding',
@@ -3726,69 +3712,6 @@ def test_machine(admin_user_client, user_client, project_client,
         'engineLabel': 'r',
         'engineStorageDriver': 'r',
         'engineEnv': 'r',
-    })
-
-
-def test_snapshot_auth(admin_user_client, user_client, project_client):
-    auth_check(admin_user_client.schema, 'snapshot', 'r', {
-        'accountId': 'r',
-        'data': 'r',
-        'volumeId': 'r',
-        })
-
-    auth_check(user_client.schema, 'snapshot', 'r', {
-        'accountId': 'r',
-        'volumeId': 'r',
-        })
-
-    auth_check(project_client.schema, 'snapshot', 'rd', {
-        'accountId': 'r',
-        'volumeId': 'r',
-        })
-
-
-def test_backup_auth(admin_user_client, user_client, project_client):
-    auth_check(admin_user_client.schema, 'backup', 'r', {
-        'accountId': 'r',
-        'data': 'r',
-        'backupTargetId': 'r',
-        'snapshotId': 'r',
-        'uri': 'r',
-        'volumeId': 'r',
-        })
-
-    auth_check(user_client.schema, 'backup', 'r', {
-        'accountId': 'r',
-        'backupTargetId': 'r',
-        'snapshotId': 'r',
-        'uri': 'r',
-        'volumeId': 'r',
-        })
-
-    auth_check(project_client.schema, 'backup', 'rd', {
-        'accountId': 'r',
-        'backupTargetId': 'r',
-        'snapshotId': 'r',
-        'uri': 'r',
-        'volumeId': 'r',
-        })
-
-
-def test_backup_target_auth(admin_user_client, user_client, project_client):
-    auth_check(admin_user_client.schema, 'backupTarget', 'r', {
-        'accountId': 'r',
-        'data': 'r',
-        'nfsConfig': 'r',
-    })
-
-    auth_check(user_client.schema, 'backupTarget', 'r', {
-        'accountId': 'r',
-        'nfsConfig': 'r',
-    })
-
-    auth_check(project_client.schema, 'backupTarget', 'crd', {
-        'accountId': 'r',
-        'nfsConfig': 'cr',
     })
 
 

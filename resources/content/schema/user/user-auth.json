@@ -45,15 +45,6 @@
 
         "auditLog.resourceActions\\..*" : "",
 
-        "backup" : "r",
-        "backup.snapshotId" : "r",
-        "backup.backupTargetId" : "r",
-        "backup.uri" : "r",
-        "backup.volumeId" : "r",
-
-        "backupTarget" : "r",
-        "backupTarget.nfsConfig" : "cr",
-
         "baseMachineConfig": "r",
 
         "blkioDeviceOption": "r",
@@ -523,12 +514,6 @@
         "restartPolicy" : "r",
         "restartPolicy.maximumRetryCount" : "cr",
 
-        "revertToSnapshotInput": "r",
-        "revertToSnapshotInput.snapshotId": "cr",
-
-        "restoreFromBackupInput": "r",
-        "restoreFromBackupInput.backupId": "cr",
-
         "schema" : "r",
         "schema\\..*" : "cr",
 
@@ -711,17 +696,6 @@
         "targetPortRule.path": "cr",
         "targetPortRule.targetPort": "cr",
         "targetPortRule.backendName": "cr",
-
-        "snapshot" : "r",
-        "snapshot.volumeId" : "r",
-
-        "snapshotBackupInput" : "r",
-        "snapshotBackupInput\\..*" : "",
-        "snapshotBackupInput.backupTargetId" : "cr",
-        "snapshotBackupInput.name" : "cr",
-        "snapshotBackupInput.snapshotId" : "",
-        "snapshotBackupInput.uri" : "",
-        "snapshotBackupInput.volumeId" : "",
 
         "label" : "r",
         "label.type" : "",

@@ -85,7 +85,6 @@ import io.cattle.platform.iaas.api.filter.registry.RegistryServerAddressFilter;
 import io.cattle.platform.iaas.api.filter.secret.SecretValidationFilter;
 import io.cattle.platform.iaas.api.filter.service.ServiceMappingsOutputFilter;
 import io.cattle.platform.iaas.api.filter.serviceevent.ServiceEventFilter;
-import io.cattle.platform.iaas.api.filter.snapshot.SnapshotValidationFilter;
 import io.cattle.platform.iaas.api.filter.ssl.CertificateCreateValidationFilter;
 import io.cattle.platform.iaas.api.filter.stack.StackOutputFilter;
 import io.cattle.platform.iaas.api.filter.storagepool.StoragePoolOutputFilter;
@@ -110,8 +109,6 @@ import io.cattle.platform.iaas.api.request.handler.SecretsApiRequestHandler;
 import io.cattle.platform.iaas.api.user.preference.UserPreferenceDaoImpl;
 import io.cattle.platform.iaas.api.user.preference.UserPreferenceFilter;
 import io.cattle.platform.iaas.api.volume.VolumeCreateValidationFilter;
-import io.cattle.platform.iaas.api.volume.VolumeRevertRestoreActionOutputFilter;
-import io.cattle.platform.iaas.api.volume.VolumeRevertRestoreValidationFilter;
 import io.cattle.platform.object.meta.TypeSet;
 import io.cattle.platform.register.api.RegisterOutputFilter;
 import io.cattle.platform.register.api.RegisterScriptHandler;
@@ -395,11 +392,6 @@ public class IaasApiConfig {
     @Bean
     ServiceEventFilter ServiceEventFilter() {
         return new ServiceEventFilter();
-    }
-
-    @Bean
-    SnapshotValidationFilter SnapshotValidationFilter() {
-        return new SnapshotValidationFilter();
     }
 
     @Bean
@@ -925,16 +917,6 @@ public class IaasApiConfig {
     @Bean
     RegistrationTokenAuthDaoImpl RegistrationTokenAuthDaoImpl() {
         return new RegistrationTokenAuthDaoImpl();
-    }
-
-    @Bean
-    VolumeRevertRestoreActionOutputFilter VolumeRevertRestoreActionOutputFilter() {
-        return new VolumeRevertRestoreActionOutputFilter();
-    }
-
-    @Bean
-    VolumeRevertRestoreValidationFilter VolumeRevertRestoreValidationFilter() {
-        return new VolumeRevertRestoreValidationFilter();
     }
 
     @Bean

@@ -61,15 +61,7 @@ public class VolumeConstants {
 
     public static final String ACTION_SNAPSHOT = "snapshot";
 
-    public static final String ACTION_REVERT = "reverttosnapshot";
-
-    public static final String ACTION_RESTORE = "restorefrombackup";
-
     public static final String PROCESS_SNAPSHOT = "volume." + ACTION_SNAPSHOT;
-
-    public static final String PROCESS_REVERT = "volume." + ACTION_REVERT;
-
-    public static final String PROCESS_RESTORE_FROM_BACKUP = "volume." + ACTION_RESTORE;
 
     public static final String DRIVER_OPT_BASE_IMAGE = "base-image";
 

@@ -58,78 +58,6 @@
         </property>
     </bean>
 
-    <bean class="io.cattle.platform.process.volume.SnapshotAgentProcessHandler"
-        p:name="SnapshotCreate"
-        p:commandName="storage.snapshot.create"
-        p:dataTypeClass="io.cattle.platform.core.model.Snapshot"
-        p:processNames="snapshot.create"
-        p:shortCircuitIfAgentRemoved="true" >
-        <property name="priority">
-            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
-        </property>
-    </bean>
-
-    <bean class="io.cattle.platform.process.volume.SnapshotAgentProcessHandler"
-        p:name="SnapshotRemove"
-        p:commandName="storage.snapshot.remove"
-        p:dataTypeClass="io.cattle.platform.core.model.Snapshot"
-        p:processNames="snapshot.remove"
-        p:shortCircuitIfAgentRemoved="true" >
-        <property name="priority">
-            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
-        </property>
-    </bean>
-
-    <bean class="io.cattle.platform.process.volume.SnapshotAgentProcessHandler"
-        p:name="BackupCreate"
-        p:commandName="storage.backup.create"
-        p:dataTypeClass="io.cattle.platform.core.model.Backup"
-        p:processNames="backup.create"
-        p:shortCircuitIfAgentRemoved="true" >
-        <property name="priority">
-            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
-        </property>
-    </bean>
-
-    <bean class="io.cattle.platform.process.volume.SnapshotAgentProcessHandler"
-        p:name="BackupRemove"
-        p:commandName="storage.backup.remove"
-        p:dataTypeClass="io.cattle.platform.core.model.Backup"
-        p:processNames="backup.remove"
-        p:shortCircuitIfAgentRemoved="true" >
-        <property name="priority">
-            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
-        </property>
-    </bean>
-
-    <bean class="io.cattle.platform.process.volume.VolumeRevertRestoreAgentProcessHandler"
-        p:name="RevertToSnapshot"
-        p:commandName="storage.volume.reverttosnapshot"
-        p:dataTypeClass="io.cattle.platform.core.model.Snapshot"
-        p:processNames="volume.reverttosnapshot"
-        p:shortCircuitIfAgentRemoved="true" >
-        <property name="priority">
-            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
-        </property>
-    </bean>
-
-    <bean class="io.cattle.platform.process.volume.VolumeRevertRestoreAgentProcessHandler"
-        p:name="RestoreFromBackup"
-        p:commandName="storage.volume.restorefrombackup"
-        p:dataTypeClass="io.cattle.platform.core.model.Backup"
-        p:processNames="volume.restorefrombackup"
-        p:shortCircuitIfAgentRemoved="true" >
-        <property name="processDataKeys">
-            <list>
-                <value>processId</value>
-                <value>volumeName</value>
-            </list>
-        </property>
-        <property name="priority">
-            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
-        </property>
-    </bean>
-
     <bean class="io.cattle.platform.process.mount.MountRemove"
         p:name="MountRemove"
         p:commandName="storage.volume.remove"
@@ -359,21 +287,7 @@
     <process:process name="volume.allocate" resourceType="volume" stateField="allocationState" start="inactive" transitioning="activating" done="active" />
     <process:process name="volume.deallocate" resourceType="volume" stateField="allocationState" start="activating,active" transitioning="deactivating" done="inactive" />
     <process:process name="volume.deactivate" resourceType="volume" start="registering,creating,active,activating,updating-active,updating-inactive" transitioning="deactivating" done="deactivating=detached,activating=inactive" />
-    <process:process name="volume.reverttosnapshot" resourceType="volume" start="active,inactive" transitioning="active=reverting-active,inactive=reverting-inactive" done="reverting-active=active,reverting-inactive=inactive" />
-    <process:process name="volume.restorefrombackup" resourceType="volume" start="active,inactive" transitioning="active=restoring-active,inactive=restoring-inactive" done="restoring-active=active,restoring-inactive=inactive" />
     <process:process name="volume.remove" resourceType="volume" start="requested,inactive,detached,deactivating,registering,updating-active,updating-inactive" transitioning="removing" done="removed" />
-
-    <!-- Snapshot -->
-    <process:process name="snapshot.create" resourceType="snapshot" start="requested" transitioning="creating" done="created" />
-    <process:process name="snapshot.remove" resourceType="snapshot" start="creating,created" transitioning="removing" done="removed" />
-
-    <!-- Backup -->
-    <process:process name="backup.create" resourceType="backup" start="requested" transitioning="creating" done="created" />
-    <process:process name="backup.remove" resourceType="backup" start="creating,created" transitioning="removing" done="removed" />
-
-    <!-- Backup target-->
-    <process:process name="backuptarget.create" resourceType="backupTarget" start="requested" transitioning="creating" done="created" />
-    <process:process name="backuptarget.remove" resourceType="backupTarget" start="creating,created" transitioning="removing" done="removed" />
 
     <!-- Network Driver -->
     <process:process name="networkdriver.create" resourceType="networkDriver" start="requested" transitioning="creating" done="active" />

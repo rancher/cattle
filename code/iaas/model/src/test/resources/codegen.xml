@@ -37,7 +37,7 @@
 
             <includeExcludeColumns>true</includeExcludeColumns>
 
-            <excludes>.*ui_.*|.*catalog.*|.*load_balancer.*|.*machine_driver.account_id|.*snapshot_storage_pool_map.*|.*vnet.*|.*network_service.*|.*instance.system_container.*|.*agent_group.*|.*offering.*|.*ip_association.*|.*ip_pool.*|.*nic.subnet_id.*|.*service_index.account_id.*|.*service.selector_link.*|.*credential_instance_map.*|.*zone.*</excludes>
+            <excludes>.*ui_.*|.*catalog.*|.*load_balancer.*|.*machine_driver.account_id|.*snapshot_storage_pool_map.*|.*vnet.*|.*network_service.*|.*instance.system_container.*|.*agent_group.*|.*offering.*|.*ip_association.*|.*ip_pool.*|.*nic.subnet_id.*|.*service_index.account_id.*|.*service.selector_link.*|.*credential_instance_map.*|.*zone.*|.*snapshot.*|.*backup.*</excludes>
 
             <unsignedTypes>false</unsignedTypes>
 
