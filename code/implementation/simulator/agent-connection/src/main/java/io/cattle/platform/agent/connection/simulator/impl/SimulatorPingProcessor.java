@@ -37,11 +37,11 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
         Ping ping = jsonMapper.convertValue(event, Ping.class);
         Ping pong = jsonMapper.convertValue(EventVO.reply(event).withData(ping.getData()), Ping.class);
 
-        if (ping.getOption(Ping.RESOURCES) && !agent.getUri().startsWith("delegate://")) {
+        if (ping.getOption(Ping.RESOURCES)) {
             addResources(pong, agent);
         }
 
-        if (ping.getOption(Ping.INSTANCES) && !agent.getUri().startsWith("delegate://")) {
+        if (ping.getOption(Ping.INSTANCES)) {
             addInstances(simulator, pong, agent);
         }
 

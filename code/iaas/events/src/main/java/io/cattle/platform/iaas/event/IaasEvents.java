@@ -4,8 +4,6 @@ import io.cattle.platform.framework.event.FrameworkEvents;
 
 public class IaasEvents {
 
-    public static final String DELEGATE_REQUEST = "delegate.request";
-
     public static final String AGENT_REQUEST = "agent.request";
     public static final String CONFIG_UPDATE = "config.update";
     public static final String CONFIG_UPDATED = "config.updated";
