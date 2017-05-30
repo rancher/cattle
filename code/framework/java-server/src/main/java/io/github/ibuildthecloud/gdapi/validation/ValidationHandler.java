@@ -83,13 +83,16 @@ public class ValidationHandler extends AbstractResponseGenerator {
             }
         }
 
-        String input = actions.get(action).getInput();
+        Action actionObj = actions.get(action);
+        String input = actionObj.getInput();
         if (input != null) {
             Schema inputSchema = context.schemaFactory.getSchema(input);
             if (inputSchema == null) {
                 log.error("Failed to find input schema [{}] for action [{}] on type [{}]", input, action, request.getType());
                 error(ResponseCodes.NOT_FOUND);
             } else {
+                context.ignoreDefaults = actionObj.getAttributes() != null &&
+                        "false".equals(actionObj.getAttributes().get("defaults"));
                 context.actionSchema = inputSchema;
             }
         }
@@ -164,10 +167,10 @@ public class ValidationHandler extends AbstractResponseGenerator {
                         if (individualValue == null) {
                             error(NOT_NULLABLE, fieldName);
                         }
-                        checkFieldCriteria(type, fieldName, field, individualValue, id);
+                        checkFieldCriteria(context, type, fieldName, field, individualValue, id);
                     }
                 } else {
-                    checkFieldCriteria(type, fieldName, field, value, id);
+                    checkFieldCriteria(context, type, fieldName, field, value, id);
                 }
                 sanitized.put(fieldName, value);
             }
@@ -177,7 +180,7 @@ public class ValidationHandler extends AbstractResponseGenerator {
             String fieldName = entry.getKey();
             Field field = entry.getValue();
 
-            if (create && !sanitized.containsKey(fieldName) && field.hasDefault()) {
+            if (create && !sanitized.containsKey(fieldName) && field.hasDefault() && !context.ignoreDefaults) {
                 sanitized.put(fieldName, field.getDefault());
             }
 
@@ -252,6 +255,7 @@ public class ValidationHandler extends AbstractResponseGenerator {
                 validationContext.idFormatter = context.idFormatter;
                 validationContext.schema = schema;
                 validationContext.schemaFactory = context.schemaFactory;
+                validationContext.ignoreDefaults = context.ignoreDefaults;
                 return validateRawOperationField(schema, lastSubTypeName, mapValue, true, validationContext, null);
             }
         default:
@@ -369,7 +373,7 @@ public class ValidationHandler extends AbstractResponseGenerator {
         }
     }
 
-    protected void checkFieldCriteria(String type, String fieldName, Field field, Object inputValue, String id) {
+    protected void checkFieldCriteria(ValidationContext context, String type, String fieldName, Field field, Object inputValue, String id) {
         Object value = inputValue;
         Number numVal = null;
         String stringValue = null;
@@ -382,7 +386,7 @@ public class ValidationHandler extends AbstractResponseGenerator {
         String validChars = field.getValidChars();
         String invalidChars = field.getInvalidChars();
 
-        if (value == null && field.getDefault() != null) {
+        if (value == null && field.getDefault() != null && !context.ignoreDefaults) {
             value = field.getDefault();
         }
 
@@ -449,7 +453,6 @@ public class ValidationHandler extends AbstractResponseGenerator {
             return;
         }
 
-        // TODO should add some property on whether the ID should be formatted
         if (context.schemaFactory.typeStringMatches(Schema.class, request.getType())) {
             return;
         }
@@ -518,6 +521,7 @@ public class ValidationHandler extends AbstractResponseGenerator {
         Schema schema;
         Schema actionSchema;
         IdFormatter idFormatter;
+        boolean ignoreDefaults;
     }
 
     public ReferenceValidator getReferenceValidator() {

@@ -312,8 +312,47 @@ def _validate_service_instance_start(client, service, env,
     return instances[0]
 
 
+def test_instance_upgrade_like_ui(client, context):
+    c1 = client.create_container(name=random_str(),
+                                 imageUuid=context.image_uuid)
+    c1 = client.wait_success(c1)
+    assert c1.deploymentUnitUuid is not None
+
+    r1 = c1.revision()
+    config = r1.config
+    assert config.launchConfig['imageUuid'] == context.image_uuid
+    assert config.launchConfig['version'] == '0'
+
+    c1.imageUuid = context.image_uuid + '1'
+    c1.ports = ['8080']
+    c1.description = 'foo'
+
+    # upgrade with config
+    new_rev = c1.upgrade(config=c1)
+
+    assert r1.id != new_rev.id
+
+    def get_instance():
+        instances = new_rev.instances()
+        if len(instances) == 1:
+            return instances[0]
+
+    c2 = wait_for(get_instance)
+    c2 = client.wait_success(c2)
+
+    assert c2.imageUuid == c1.imageUuid
+    assert c2.description == 'foo'
+    assert c2.ports == ['8080']
+    assert c2.labels is None
+    assert c1.id != c2.id
+    assert c1.deploymentUnitUuid == c2.deploymentUnitUuid
+    assert c1.revisionId != c2.revisionId
+    wait_for(lambda: client.reload(c1).state == 'removed')
+
+
 def test_instance_upgrade(client, context):
     c1 = client.create_container(name=random_str(),
+                                 privileged=True,
                                  imageUuid=context.image_uuid)
     c1 = client.wait_success(c1)
     assert c1.deploymentUnitUuid is not None
@@ -325,6 +364,7 @@ def test_instance_upgrade(client, context):
 
     config = {
         'imageUuid': context.image_uuid + '1',
+        'description': 'foo',
     }
 
     # upgrade with config
@@ -341,9 +381,13 @@ def test_instance_upgrade(client, context):
     c2 = client.wait_success(c2)
 
     assert c2.imageUuid == config['imageUuid']
+    assert c2.description == 'foo'
     assert c1.id != c2.id
     assert c1.deploymentUnitUuid == c2.deploymentUnitUuid
     assert c1.revisionId != c2.revisionId
+    assert c2.labels is None
+    # Test default values
+    assert c2.privileged
     wait_for(lambda: client.reload(c1).state == 'removed')
 
 

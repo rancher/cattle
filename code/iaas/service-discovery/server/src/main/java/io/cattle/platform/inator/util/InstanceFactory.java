@@ -119,8 +119,10 @@ public class InstanceFactory {
 
     protected static void addServiceFields(Map<String, Object> fields, StackWrapper stack, RevisionWrapper revision, DeploymentUnitWrapper unit,
             String launchConfigName, ServiceIndex serviceIndex) {
-        Map<String, String> labels = createServiceLabels(fields, revision, stack, unit, launchConfigName);
-        addLabels(fields, labels);
+        if (revision.getServiceId() != null) {
+            Map<String, String> labels = createServiceLabels(fields, revision, stack, unit, launchConfigName);
+            addLabels(fields, labels);
+        }
         fields.put(InstanceConstants.FIELD_LAUNCH_CONFIG_NAME, launchConfigName);
         fields.put(InstanceConstants.FIELD_SERVICE_ID, revision.getServiceId());
         fields.put(InstanceConstants.FIELD_REVISION_ID, revision.getId());

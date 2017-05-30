@@ -882,6 +882,9 @@
         "activeSetting.name": "r",
         "activeSetting.value" : "r",
 
+        "containerConfig" : "cru",
+        "containerConfig.resourceActions.logs" : "",
+
         "launchConfig" : "cru",
         "launchConfig.name" : "",
         "launchConfig.networkLaunchConfig" : "cr",
