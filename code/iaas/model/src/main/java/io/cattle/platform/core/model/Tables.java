@@ -89,11 +89,6 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.CredentialTable CREDENTIAL = io.cattle.platform.core.model.tables.CredentialTable.CREDENTIAL;
 
 	/**
-	 * The table cattle.credential_instance_map
-	 */
-	public static final io.cattle.platform.core.model.tables.CredentialInstanceMapTable CREDENTIAL_INSTANCE_MAP = io.cattle.platform.core.model.tables.CredentialInstanceMapTable.CREDENTIAL_INSTANCE_MAP;
-
-	/**
 	 * The table cattle.data
 	 */
 	public static final io.cattle.platform.core.model.tables.DataTable DATA = io.cattle.platform.core.model.tables.DataTable.DATA;
@@ -392,9 +387,4 @@ public class Tables {
 	 * The table cattle.volume_template
 	 */
 	public static final io.cattle.platform.core.model.tables.VolumeTemplateTable VOLUME_TEMPLATE = io.cattle.platform.core.model.tables.VolumeTemplateTable.VOLUME_TEMPLATE;
-
-	/**
-	 * The table cattle.zone
-	 */
-	public static final io.cattle.platform.core.model.tables.ZoneTable ZONE = io.cattle.platform.core.model.tables.ZoneTable.ZONE;
 }

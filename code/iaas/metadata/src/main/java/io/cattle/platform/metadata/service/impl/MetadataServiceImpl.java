@@ -5,7 +5,6 @@ import static io.cattle.platform.util.type.CollectionUtils.*;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
-import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.Image;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
@@ -13,7 +12,6 @@ import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.model.Volume;
-import io.cattle.platform.core.model.Zone;
 import io.cattle.platform.core.util.HostnameGenerator;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.metadata.dao.MetadataDao;
@@ -94,15 +92,14 @@ public class MetadataServiceImpl implements MetadataService {
     }
 
     protected Map<String, Object> getMetaData(IdFormatter idFormatter, List<MetadataEntry> entries) {
-        Map<Long, String> primaryIps = new HashMap<Long, String>();
-        Map<Long, Map<String, Object>> instanceMetadatas = new HashMap<Long, Map<String, Object>>();
-        Map<Long, String> userData = new HashMap<Long, String>();
+        Map<Long, String> primaryIps = new HashMap<>();
+        Map<Long, Map<String, Object>> instanceMetadatas = new HashMap<>();
+        Map<Long, String> userData = new HashMap<>();
 
         for (MetadataEntry entry : entries) {
             Instance instance = entry.getInstance();
             Nic nic = entry.getNic();
             IpAddress localIp = entry.getLocalIp();
-            Credential credential = entry.getCredential();
             Network network = entry.getNetwork();
             Subnet subnet = entry.getSubnet();
             Volume volume = entry.getVolume();
@@ -114,7 +111,6 @@ public class MetadataServiceImpl implements MetadataService {
                 instanceMetadatas.put(instance.getId(), instanceMetadata);
             }
 
-            populateCredential(instanceMetadata, credential);
             populateNic(idFormatter, instanceMetadata, nic, network);
             populateIps(idFormatter, primaryIps, instanceMetadata, instance, nic, network, subnet, localIp);
             populateVolume(instanceMetadata, instance, volume);
@@ -122,10 +118,10 @@ public class MetadataServiceImpl implements MetadataService {
             userData.put(instance.getId(), instance.getUserdata());
         }
 
-        Map<String, Object> metadata = new HashMap<String, Object>();
+        Map<String, Object> metadata = new HashMap<>();
 
         for (Map.Entry<Long, Map<String, Object>> entry : instanceMetadatas.entrySet()) {
-            Map<String, Object> fullData = new HashMap<String, Object>();
+            Map<String, Object> fullData = new HashMap<>();
 
             fullData.put("meta-data", entry.getValue());
             fullData.put("user-data", userData.get(entry.getKey()));
@@ -243,31 +239,8 @@ public class MetadataServiceImpl implements MetadataService {
         }
     }
 
-    protected void populateCredential(Map<String, Object> instanceMetadata, Credential credential) {
-        if (credential == null) {
-            return;
-        }
-
-        int count = 0;
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> creds = (Map<String, Object>) getNestedValue(instanceMetadata, "public-keys");
-
-        if (creds != null) {
-            count = creds.size();
-        }
-
-        String name = credential.getName();
-
-        if (name == null) {
-            name = "sshkey" + count;
-        }
-
-        setNestedValue(instanceMetadata, credential.getPublicValue(), "public-keys", count + "=" + name, "openssh-key");
-    }
-
     protected Map<String, Object> populateInstance(IdFormatter idFormatter, Instance instance, Network network) {
-        Map<String, Object> data = new HashMap<String, Object>();
+        Map<String, Object> data = new HashMap<>();
 
         data.put("ami-id", formatId(idFormatter, Image.class, instance.getImageId()));
         data.put("ami-manifest-path", "(unknown)");
@@ -298,7 +271,7 @@ public class MetadataServiceImpl implements MetadataService {
         Map<String, Object> data = (Map<String, Object>) CollectionUtils.getNestedValue(instanceData, "network", "interfaces", "macs", mac);
 
         if (data == null) {
-            data = new HashMap<String, Object>();
+            data = new HashMap<>();
             setNestedValue(instanceData, data, "network", "interfaces", "macs", mac);
         } else {
             return;
@@ -322,15 +295,7 @@ public class MetadataServiceImpl implements MetadataService {
     }
 
     protected String getZone(IdFormatter idFormatter, Instance instance) {
-        Zone zone = metadataDao.getZone(instance);
-
-        if (zone == null) {
-            return "unknown";
-        }
-
-        String name = zone.getName();
-
-        return name == null ? formatId(idFormatter, zone) : name;
+        return "unknown";
     }
 
     protected String getInstanceType(Instance instance) {

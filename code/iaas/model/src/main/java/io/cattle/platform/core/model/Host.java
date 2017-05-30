@@ -180,17 +180,6 @@ public interface Host extends java.io.Serializable {
 	public java.lang.Long getAgentId();
 
 	/**
-	 * Setter for <code>cattle.host.zone_id</code>.
-	 */
-	public void setZoneId(java.lang.Long value);
-
-	/**
-	 * Getter for <code>cattle.host.zone_id</code>.
-	 */
-	@javax.persistence.Column(name = "zone_id", precision = 19)
-	public java.lang.Long getZoneId();
-
-	/**
 	 * Setter for <code>cattle.host.physical_host_id</code>.
 	 */
 	public void setPhysicalHostId(java.lang.Long value);

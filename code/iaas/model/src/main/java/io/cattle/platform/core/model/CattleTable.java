@@ -11,7 +11,7 @@ package io.cattle.platform.core.model;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class CattleTable extends org.jooq.impl.SchemaImpl {
 
-	private static final long serialVersionUID = 46360393;
+	private static final long serialVersionUID = 858170811;
 
 	/**
 	 * The singleton instance of <code>cattle</code>
@@ -49,7 +49,6 @@ public class CattleTable extends org.jooq.impl.SchemaImpl {
 			io.cattle.platform.core.model.tables.ConfigItemStatusTable.CONFIG_ITEM_STATUS,
 			io.cattle.platform.core.model.tables.ContainerEventTable.CONTAINER_EVENT,
 			io.cattle.platform.core.model.tables.CredentialTable.CREDENTIAL,
-			io.cattle.platform.core.model.tables.CredentialInstanceMapTable.CREDENTIAL_INSTANCE_MAP,
 			io.cattle.platform.core.model.tables.DataTable.DATA,
 			io.cattle.platform.core.model.tables.DatabasechangelogTable.DATABASECHANGELOG,
 			io.cattle.platform.core.model.tables.DatabasechangeloglockTable.DATABASECHANGELOGLOCK,
@@ -109,7 +108,6 @@ public class CattleTable extends org.jooq.impl.SchemaImpl {
 			io.cattle.platform.core.model.tables.UserPreferenceTable.USER_PREFERENCE,
 			io.cattle.platform.core.model.tables.VolumeTable.VOLUME,
 			io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP,
-			io.cattle.platform.core.model.tables.VolumeTemplateTable.VOLUME_TEMPLATE,
-			io.cattle.platform.core.model.tables.ZoneTable.ZONE);
+			io.cattle.platform.core.model.tables.VolumeTemplateTable.VOLUME_TEMPLATE);
 	}
 }

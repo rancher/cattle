@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "volume", schema = "cattle")
 public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.VolumeRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, io.cattle.platform.core.model.Volume {
 
-	private static final long serialVersionUID = -705639029;
+	private static final long serialVersionUID = -400822942;
 
 	/**
 	 * Setter for <code>cattle.volume.id</code>.
@@ -340,28 +340,11 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	}
 
 	/**
-	 * Setter for <code>cattle.volume.zone_id</code>.
-	 */
-	@Override
-	public void setZoneId(java.lang.Long value) {
-		setValue(19, value);
-	}
-
-	/**
-	 * Getter for <code>cattle.volume.zone_id</code>.
-	 */
-	@javax.persistence.Column(name = "zone_id", precision = 19)
-	@Override
-	public java.lang.Long getZoneId() {
-		return (java.lang.Long) getValue(19);
-	}
-
-	/**
 	 * Setter for <code>cattle.volume.uri</code>.
 	 */
 	@Override
 	public void setUri(java.lang.String value) {
-		setValue(20, value);
+		setValue(19, value);
 	}
 
 	/**
@@ -370,7 +353,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	@javax.persistence.Column(name = "uri", length = 255)
 	@Override
 	public java.lang.String getUri() {
-		return (java.lang.String) getValue(20);
+		return (java.lang.String) getValue(19);
 	}
 
 	/**
@@ -378,7 +361,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	 */
 	@Override
 	public void setExternalId(java.lang.String value) {
-		setValue(21, value);
+		setValue(20, value);
 	}
 
 	/**
@@ -387,7 +370,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	@javax.persistence.Column(name = "external_id", length = 128)
 	@Override
 	public java.lang.String getExternalId() {
-		return (java.lang.String) getValue(21);
+		return (java.lang.String) getValue(20);
 	}
 
 	/**
@@ -395,7 +378,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	 */
 	@Override
 	public void setAccessMode(java.lang.String value) {
-		setValue(22, value);
+		setValue(21, value);
 	}
 
 	/**
@@ -404,7 +387,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	@javax.persistence.Column(name = "access_mode", length = 255)
 	@Override
 	public java.lang.String getAccessMode() {
-		return (java.lang.String) getValue(22);
+		return (java.lang.String) getValue(21);
 	}
 
 	/**
@@ -412,7 +395,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	 */
 	@Override
 	public void setHostId(java.lang.Long value) {
-		setValue(23, value);
+		setValue(22, value);
 	}
 
 	/**
@@ -421,7 +404,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	@javax.persistence.Column(name = "host_id", precision = 19)
 	@Override
 	public java.lang.Long getHostId() {
-		return (java.lang.Long) getValue(23);
+		return (java.lang.Long) getValue(22);
 	}
 
 	/**
@@ -429,7 +412,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	 */
 	@Override
 	public void setDeploymentUnitId(java.lang.Long value) {
-		setValue(24, value);
+		setValue(23, value);
 	}
 
 	/**
@@ -438,7 +421,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	@javax.persistence.Column(name = "deployment_unit_id", precision = 19)
 	@Override
 	public java.lang.Long getDeploymentUnitId() {
-		return (java.lang.Long) getValue(24);
+		return (java.lang.Long) getValue(23);
 	}
 
 	/**
@@ -446,7 +429,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	 */
 	@Override
 	public void setStackId(java.lang.Long value) {
-		setValue(25, value);
+		setValue(24, value);
 	}
 
 	/**
@@ -455,7 +438,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	@javax.persistence.Column(name = "environment_id", precision = 19)
 	@Override
 	public java.lang.Long getStackId() {
-		return (java.lang.Long) getValue(25);
+		return (java.lang.Long) getValue(24);
 	}
 
 	/**
@@ -463,7 +446,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	 */
 	@Override
 	public void setVolumeTemplateId(java.lang.Long value) {
-		setValue(26, value);
+		setValue(25, value);
 	}
 
 	/**
@@ -472,7 +455,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	@javax.persistence.Column(name = "volume_template_id", precision = 19)
 	@Override
 	public java.lang.Long getVolumeTemplateId() {
-		return (java.lang.Long) getValue(26);
+		return (java.lang.Long) getValue(25);
 	}
 
 	/**
@@ -480,7 +463,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	 */
 	@Override
 	public void setStorageDriverId(java.lang.Long value) {
-		setValue(27, value);
+		setValue(26, value);
 	}
 
 	/**
@@ -489,7 +472,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	@javax.persistence.Column(name = "storage_driver_id", precision = 19)
 	@Override
 	public java.lang.Long getStorageDriverId() {
-		return (java.lang.Long) getValue(27);
+		return (java.lang.Long) getValue(26);
 	}
 
 	/**
@@ -497,7 +480,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	 */
 	@Override
 	public void setSizeMb(java.lang.Long value) {
-		setValue(28, value);
+		setValue(27, value);
 	}
 
 	/**
@@ -506,7 +489,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	@javax.persistence.Column(name = "size_mb", precision = 19)
 	@Override
 	public java.lang.Long getSizeMb() {
-		return (java.lang.Long) getValue(28);
+		return (java.lang.Long) getValue(27);
 	}
 
 	// -------------------------------------------------------------------------
@@ -549,7 +532,6 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 		setAttachedState(from.getAttachedState());
 		setInstanceId(from.getInstanceId());
 		setImageId(from.getImageId());
-		setZoneId(from.getZoneId());
 		setUri(from.getUri());
 		setExternalId(from.getExternalId());
 		setAccessMode(from.getAccessMode());
@@ -584,7 +566,7 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 	/**
 	 * Create a detached, initialised VolumeRecord
 	 */
-	public VolumeRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long physicalSizeMb, java.lang.Long virtualSizeMb, java.lang.Integer deviceNumber, java.lang.String format, java.lang.String allocationState, java.lang.String attachedState, java.lang.Long instanceId, java.lang.Long imageId, java.lang.Long zoneId, java.lang.String uri, java.lang.String externalId, java.lang.String accessMode, java.lang.Long hostId, java.lang.Long deploymentUnitId, java.lang.Long environmentId, java.lang.Long volumeTemplateId, java.lang.Long storageDriverId, java.lang.Long sizeMb) {
+	public VolumeRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long physicalSizeMb, java.lang.Long virtualSizeMb, java.lang.Integer deviceNumber, java.lang.String format, java.lang.String allocationState, java.lang.String attachedState, java.lang.Long instanceId, java.lang.Long imageId, java.lang.String uri, java.lang.String externalId, java.lang.String accessMode, java.lang.Long hostId, java.lang.Long deploymentUnitId, java.lang.Long environmentId, java.lang.Long volumeTemplateId, java.lang.Long storageDriverId, java.lang.Long sizeMb) {
 		super(io.cattle.platform.core.model.tables.VolumeTable.VOLUME);
 
 		setValue(0, id);
@@ -606,15 +588,14 @@ public class VolumeRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pl
 		setValue(16, attachedState);
 		setValue(17, instanceId);
 		setValue(18, imageId);
-		setValue(19, zoneId);
-		setValue(20, uri);
-		setValue(21, externalId);
-		setValue(22, accessMode);
-		setValue(23, hostId);
-		setValue(24, deploymentUnitId);
-		setValue(25, environmentId);
-		setValue(26, volumeTemplateId);
-		setValue(27, storageDriverId);
-		setValue(28, sizeMb);
+		setValue(19, uri);
+		setValue(20, externalId);
+		setValue(21, accessMode);
+		setValue(22, hostId);
+		setValue(23, deploymentUnitId);
+		setValue(24, environmentId);
+		setValue(25, volumeTemplateId);
+		setValue(26, storageDriverId);
+		setValue(27, sizeMb);
 	}
 }

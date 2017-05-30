@@ -113,7 +113,6 @@ public class CoreModelConfig {
                 "registryCredential,parent=credential",
                 "setProjectMembersInput",
                 "setServiceLinksInput",
-                "sshKey,parent=credential",
                 "virtualMachine,parent=container",
                 "storageDriverService,parent=service",
                 "networkDriverService,parent=service",

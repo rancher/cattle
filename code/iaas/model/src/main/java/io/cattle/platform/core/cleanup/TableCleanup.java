@@ -21,7 +21,6 @@ import io.cattle.platform.core.model.tables.CertificateTable;
 import io.cattle.platform.core.model.tables.ClusterHostMapTable;
 import io.cattle.platform.core.model.tables.ConfigItemStatusTable;
 import io.cattle.platform.core.model.tables.ContainerEventTable;
-import io.cattle.platform.core.model.tables.CredentialInstanceMapTable;
 import io.cattle.platform.core.model.tables.CredentialTable;
 import io.cattle.platform.core.model.tables.DeploymentUnitTable;
 import io.cattle.platform.core.model.tables.DynamicSchemaTable;
@@ -73,7 +72,6 @@ import io.cattle.platform.core.model.tables.TaskInstanceTable;
 import io.cattle.platform.core.model.tables.UserPreferenceTable;
 import io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable;
 import io.cattle.platform.core.model.tables.VolumeTable;
-import io.cattle.platform.core.model.tables.ZoneTable;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.jooq.utils.JooqUtils;
 import io.cattle.platform.task.Task;
@@ -441,7 +439,6 @@ public class TableCleanup extends AbstractJooqDao implements Task {
                 CleanableTable.from(ClusterHostMapTable.CLUSTER_HOST_MAP),
                 CleanableTable.from(ConfigItemStatusTable.CONFIG_ITEM_STATUS),
                 CleanableTable.from(CredentialTable.CREDENTIAL),
-                CleanableTable.from(CredentialInstanceMapTable.CREDENTIAL_INSTANCE_MAP),
                 CleanableTable.from(DeploymentUnitTable.DEPLOYMENT_UNIT),
                 CleanableTable.from(DynamicSchemaTable.DYNAMIC_SCHEMA),
                 CleanableTable.from(ExternalEventTable.EXTERNAL_EVENT),
@@ -490,8 +487,7 @@ public class TableCleanup extends AbstractJooqDao implements Task {
                 CleanableTable.from(InstanceLabelMapTable.INSTANCE_LABEL_MAP),
                 CleanableTable.from(ServiceEventTable.SERVICE_EVENT),
                 CleanableTable.from(ScheduledUpgradeTable.SCHEDULED_UPGRADE),
-                CleanableTable.from(SecretTable.SECRET),
-                CleanableTable.from(ZoneTable.ZONE));
+                CleanableTable.from(SecretTable.SECRET));
         /* The most offending tables never set remove_time
         service_event
         external_handler_external_handler_process_map

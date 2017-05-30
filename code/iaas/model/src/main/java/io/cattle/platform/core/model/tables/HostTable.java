@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class HostTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.HostRecord> {
 
-	private static final long serialVersionUID = 177924154;
+	private static final long serialVersionUID = 1044493280;
 
 	/**
 	 * The singleton instance of <code>cattle.host</code>
@@ -100,11 +100,6 @@ public class HostTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.m
 	 * The column <code>cattle.host.agent_id</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.HostRecord, java.lang.Long> AGENT_ID = createField("agent_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
-
-	/**
-	 * The column <code>cattle.host.zone_id</code>.
-	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.HostRecord, java.lang.Long> ZONE_ID = createField("zone_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
 	/**
 	 * The column <code>cattle.host.physical_host_id</code>.
@@ -202,7 +197,7 @@ public class HostTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.m
 	 */
 	@Override
 	public java.util.List<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.HostRecord, ?>> getReferences() {
-		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.HostRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_HOST__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_HOST__AGENT_ID, io.cattle.platform.core.model.Keys.FK_HOST__ZONE_ID, io.cattle.platform.core.model.Keys.FK_HOST__PHYSICAL_HOST_ID, io.cattle.platform.core.model.Keys.FK_HOST__ENVIRONMENT_ID, io.cattle.platform.core.model.Keys.FK_HOST__HOST_TEMPLATE_ID);
+		return java.util.Arrays.<org.jooq.ForeignKey<io.cattle.platform.core.model.tables.records.HostRecord, ?>>asList(io.cattle.platform.core.model.Keys.FK_HOST__ACCOUNT_ID, io.cattle.platform.core.model.Keys.FK_HOST__AGENT_ID, io.cattle.platform.core.model.Keys.FK_HOST__PHYSICAL_HOST_ID, io.cattle.platform.core.model.Keys.FK_HOST__ENVIRONMENT_ID, io.cattle.platform.core.model.Keys.FK_HOST__HOST_TEMPLATE_ID);
 	}
 
 	/**

@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "storage_pool", schema = "cattle")
-public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.StoragePoolRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record20<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Boolean, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.Long>, io.cattle.platform.core.model.StoragePool {
+public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.StoragePoolRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record19<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Boolean, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.Long>, io.cattle.platform.core.model.StoragePool {
 
-	private static final long serialVersionUID = 959955876;
+	private static final long serialVersionUID = -620539894;
 
 	/**
 	 * Setter for <code>cattle.storage_pool.id</code>.
@@ -272,28 +272,11 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	}
 
 	/**
-	 * Setter for <code>cattle.storage_pool.zone_id</code>.
-	 */
-	@Override
-	public void setZoneId(java.lang.Long value) {
-		setValue(15, value);
-	}
-
-	/**
-	 * Getter for <code>cattle.storage_pool.zone_id</code>.
-	 */
-	@javax.persistence.Column(name = "zone_id", precision = 19)
-	@Override
-	public java.lang.Long getZoneId() {
-		return (java.lang.Long) getValue(15);
-	}
-
-	/**
 	 * Setter for <code>cattle.storage_pool.external_id</code>.
 	 */
 	@Override
 	public void setExternalId(java.lang.String value) {
-		setValue(16, value);
+		setValue(15, value);
 	}
 
 	/**
@@ -302,7 +285,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	@javax.persistence.Column(name = "external_id", length = 128)
 	@Override
 	public java.lang.String getExternalId() {
-		return (java.lang.String) getValue(16);
+		return (java.lang.String) getValue(15);
 	}
 
 	/**
@@ -310,7 +293,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 */
 	@Override
 	public void setDriverName(java.lang.String value) {
-		setValue(17, value);
+		setValue(16, value);
 	}
 
 	/**
@@ -319,7 +302,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	@javax.persistence.Column(name = "driver_name", length = 255)
 	@Override
 	public java.lang.String getDriverName() {
-		return (java.lang.String) getValue(17);
+		return (java.lang.String) getValue(16);
 	}
 
 	/**
@@ -327,7 +310,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 */
 	@Override
 	public void setVolumeAccessMode(java.lang.String value) {
-		setValue(18, value);
+		setValue(17, value);
 	}
 
 	/**
@@ -336,7 +319,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	@javax.persistence.Column(name = "volume_access_mode", length = 255)
 	@Override
 	public java.lang.String getVolumeAccessMode() {
-		return (java.lang.String) getValue(18);
+		return (java.lang.String) getValue(17);
 	}
 
 	/**
@@ -344,7 +327,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 */
 	@Override
 	public void setStorageDriverId(java.lang.Long value) {
-		setValue(19, value);
+		setValue(18, value);
 	}
 
 	/**
@@ -353,7 +336,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	@javax.persistence.Column(name = "storage_driver_id", precision = 19)
 	@Override
 	public java.lang.Long getStorageDriverId() {
-		return (java.lang.Long) getValue(19);
+		return (java.lang.Long) getValue(18);
 	}
 
 	// -------------------------------------------------------------------------
@@ -369,23 +352,23 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	}
 
 	// -------------------------------------------------------------------------
-	// Record20 type implementation
+	// Record19 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row20<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Boolean, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.Long> fieldsRow() {
-		return (org.jooq.Row20) super.fieldsRow();
+	public org.jooq.Row19<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Boolean, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.Long> fieldsRow() {
+		return (org.jooq.Row19) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row20<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Boolean, java.lang.Long, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.Long> valuesRow() {
-		return (org.jooq.Row20) super.valuesRow();
+	public org.jooq.Row19<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Boolean, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.Long> valuesRow() {
+		return (org.jooq.Row19) super.valuesRow();
 	}
 
 	/**
@@ -512,15 +495,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.Long> field16() {
-		return io.cattle.platform.core.model.tables.StoragePoolTable.STORAGE_POOL.ZONE_ID;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public org.jooq.Field<java.lang.String> field17() {
+	public org.jooq.Field<java.lang.String> field16() {
 		return io.cattle.platform.core.model.tables.StoragePoolTable.STORAGE_POOL.EXTERNAL_ID;
 	}
 
@@ -528,7 +503,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.String> field18() {
+	public org.jooq.Field<java.lang.String> field17() {
 		return io.cattle.platform.core.model.tables.StoragePoolTable.STORAGE_POOL.DRIVER_NAME;
 	}
 
@@ -536,7 +511,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.String> field19() {
+	public org.jooq.Field<java.lang.String> field18() {
 		return io.cattle.platform.core.model.tables.StoragePoolTable.STORAGE_POOL.VOLUME_ACCESS_MODE;
 	}
 
@@ -544,7 +519,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Field<java.lang.Long> field20() {
+	public org.jooq.Field<java.lang.Long> field19() {
 		return io.cattle.platform.core.model.tables.StoragePoolTable.STORAGE_POOL.STORAGE_DRIVER_ID;
 	}
 
@@ -672,15 +647,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.Long value16() {
-		return getZoneId();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public java.lang.String value17() {
+	public java.lang.String value16() {
 		return getExternalId();
 	}
 
@@ -688,7 +655,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.String value18() {
+	public java.lang.String value17() {
 		return getDriverName();
 	}
 
@@ -696,7 +663,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.String value19() {
+	public java.lang.String value18() {
 		return getVolumeAccessMode();
 	}
 
@@ -704,7 +671,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public java.lang.Long value20() {
+	public java.lang.Long value19() {
 		return getStorageDriverId();
 	}
 
@@ -847,16 +814,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public StoragePoolRecord value16(java.lang.Long value) {
-		setZoneId(value);
-		return this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public StoragePoolRecord value17(java.lang.String value) {
+	public StoragePoolRecord value16(java.lang.String value) {
 		setExternalId(value);
 		return this;
 	}
@@ -865,7 +823,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public StoragePoolRecord value18(java.lang.String value) {
+	public StoragePoolRecord value17(java.lang.String value) {
 		setDriverName(value);
 		return this;
 	}
@@ -874,7 +832,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public StoragePoolRecord value19(java.lang.String value) {
+	public StoragePoolRecord value18(java.lang.String value) {
 		setVolumeAccessMode(value);
 		return this;
 	}
@@ -883,7 +841,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public StoragePoolRecord value20(java.lang.Long value) {
+	public StoragePoolRecord value19(java.lang.Long value) {
 		setStorageDriverId(value);
 		return this;
 	}
@@ -892,7 +850,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public StoragePoolRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.Long value12, java.lang.Long value13, java.lang.Boolean value14, java.lang.Long value15, java.lang.Long value16, java.lang.String value17, java.lang.String value18, java.lang.String value19, java.lang.Long value20) {
+	public StoragePoolRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.Long value12, java.lang.Long value13, java.lang.Boolean value14, java.lang.Long value15, java.lang.String value16, java.lang.String value17, java.lang.String value18, java.lang.Long value19) {
 		return this;
 	}
 
@@ -920,7 +878,6 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 		setVirtualTotalSizeMb(from.getVirtualTotalSizeMb());
 		setExternal(from.getExternal());
 		setAgentId(from.getAgentId());
-		setZoneId(from.getZoneId());
 		setExternalId(from.getExternalId());
 		setDriverName(from.getDriverName());
 		setVolumeAccessMode(from.getVolumeAccessMode());
@@ -950,7 +907,7 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	/**
 	 * Create a detached, initialised StoragePoolRecord
 	 */
-	public StoragePoolRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long physicalTotalSizeMb, java.lang.Long virtualTotalSizeMb, java.lang.Boolean external, java.lang.Long agentId, java.lang.Long zoneId, java.lang.String externalId, java.lang.String driverName, java.lang.String volumeAccessMode, java.lang.Long storageDriverId) {
+	public StoragePoolRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long physicalTotalSizeMb, java.lang.Long virtualTotalSizeMb, java.lang.Boolean external, java.lang.Long agentId, java.lang.String externalId, java.lang.String driverName, java.lang.String volumeAccessMode, java.lang.Long storageDriverId) {
 		super(io.cattle.platform.core.model.tables.StoragePoolTable.STORAGE_POOL);
 
 		setValue(0, id);
@@ -968,10 +925,9 @@ public class StoragePoolRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 		setValue(12, virtualTotalSizeMb);
 		setValue(13, external);
 		setValue(14, agentId);
-		setValue(15, zoneId);
-		setValue(16, externalId);
-		setValue(17, driverName);
-		setValue(18, volumeAccessMode);
-		setValue(19, storageDriverId);
+		setValue(15, externalId);
+		setValue(16, driverName);
+		setValue(17, volumeAccessMode);
+		setValue(18, storageDriverId);
 	}
 }
