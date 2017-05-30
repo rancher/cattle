@@ -49,5 +49,4 @@ public class AccountPreCreate extends AbstractObjectProcessLogic implements Proc
                 ACCOUNT.PROJECT_TEMPLATE_ID, template == null ? null : template.getId());
     }
 
-
 }

@@ -15,7 +15,7 @@ import org.w3c.dom.Element;
 public class DefaultProcessesParser extends ProcessParser {
 
     private static final List<String> PROPS = Arrays.asList(new String[] {
-            "%s.create;requested;registering;inactive;%s.activate",
+            "%s.create;requested;registering;inactive",
             "%s.activate;inactive,registering;activating;active",
             "%s.deactivate;requested,registering,active,activating,updating-active,updating-inactive;deactivating;inactive",
             "%s.remove;requested,inactive,registering,updating-active,updating-inactive;removing;removed",
@@ -51,16 +51,9 @@ public class DefaultProcessesParser extends ProcessParser {
             String start = parts[1];
             String transitioning = parts[2];
             String done = parts[3];
-            String delegate = null;
-            if (parts.length > 4) {
-                delegate = String.format(parts[4], resourceType).toLowerCase();
-                if (processRenames.containsKey(delegate)) {
-                    delegate = processRenames.get(delegate);
-                }
-            }
 
             if (!excludes.contains(name)) {
-                last = parse(id, stateField, name, start, transitioning, done, resourceType, delegate, renames, parserContext);
+                last = parse(id, stateField, name, start, transitioning, done, resourceType, renames, parserContext);
             }
         }
 

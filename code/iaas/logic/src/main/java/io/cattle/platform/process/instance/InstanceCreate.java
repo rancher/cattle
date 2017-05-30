@@ -64,7 +64,9 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
 
         HandlerResult result = new HandlerResult("_volumeIds", volumesIds, "_nicIds", nicIds, InstanceConstants.FIELD_DATA_VOLUMES,
                 dataVolumes);
-        result.shouldDelegate(shouldStart(state, instance));
+        if (shouldStart(state, instance)) {
+            result.setChainProcessName(InstanceConstants.PROCESS_START);
+        }
 
         return result;
     }

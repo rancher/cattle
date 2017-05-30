@@ -7,4 +7,5 @@ public class MachineConstants {
     public static final String CONFIG_FIELD_SUFFIX = "Config";
     public static final String CONFIG_LINK = "config";
     public static final String EXTRACTED_CONFIG_FIELD = "extractedConfig";
+    public static final String PROCESS_BOOTSTRAP = "physicalhost.bootstrap";
 }

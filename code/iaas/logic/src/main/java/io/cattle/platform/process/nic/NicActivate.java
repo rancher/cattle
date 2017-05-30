@@ -14,7 +14,6 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.network.NetworkService;
-import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.resource.pool.PooledResource;
 import io.cattle.platform.resource.pool.PooledResourceOptions;
@@ -46,11 +45,7 @@ public class NicActivate extends AbstractDefaultProcessHandler {
             return null;
         }
 
-        IpAddress ipAddress = getIpAddress(nic, network);
-
-        if (ipAddress != null) {
-            activate(ipAddress, state.getData());
-        }
+        getIpAddress(nic, network);
 
         String mac = assignMacAddress(network, nic);
 
@@ -82,11 +77,11 @@ public class NicActivate extends AbstractDefaultProcessHandler {
         }
 
         for (IpAddressNicMap map : mapDao.findNonRemoved(IpAddressNicMap.class, Nic.class, nic.getId())) {
-            getObjectProcessManager().executeStandardProcess(StandardProcess.CREATE, map, null);
+            createThenActivate(map, null);
         }
 
         if (ipAddress != null) {
-            getObjectProcessManager().executeStandardProcess(StandardProcess.CREATE, ipAddress, null);
+            createThenActivate(ipAddress, null);
         }
 
         return ipAddress;

@@ -2,6 +2,7 @@ package io.cattle.platform.process.agent;
 
 import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.AgentTable.*;
+
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.AgentConstants;
@@ -43,7 +44,7 @@ public class AgentCreate extends AbstractDefaultProcessHandler {
 
     @Inject
     InstanceDao instanceDao;
-    
+
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Agent agent = (Agent) state.getResource();
@@ -63,9 +64,9 @@ public class AgentCreate extends AbstractDefaultProcessHandler {
                         .asList(jsonMapper, String.class);
         sortRoles(roles);
 
-        String primaryRole = getPrimaryRole(roles); // note null is an acceptable value 
+        String primaryRole = getPrimaryRole(roles); // note null is an acceptable value
         Account account = createPrimaryAccount(agent, primaryRole);
-        create(account, state.getData());
+        createThenActivate(account, state.getData());
 
         Map<String, Object> data = new HashMap<>();
         data.put(AgentConstants.FIELD_ACCOUNT_ID, account.getId());
@@ -100,7 +101,7 @@ public class AgentCreate extends AbstractDefaultProcessHandler {
 
     protected List<Long> createSecondaryAccounts(Agent agent, List<? extends String> roles, ProcessState state) {
         if (roles.isEmpty()) {
-            return new ArrayList<Long>();
+            return new ArrayList<>();
         }
 
         List<Long> authedRoleAccountIds = DataAccessor.fieldLongList(agent, AgentConstants.FIELD_AUTHORIZED_ROLE_ACCOUNTS);
@@ -108,7 +109,7 @@ public class AgentCreate extends AbstractDefaultProcessHandler {
             return authedRoleAccountIds;
         }
 
-        authedRoleAccountIds = new ArrayList<Long>();
+        authedRoleAccountIds = new ArrayList<>();
         for (String role : roles) {
             String uuid = getAccountUuid(agent, role);
             Account account = accountDao.findByUuid(uuid);
@@ -122,7 +123,7 @@ public class AgentCreate extends AbstractDefaultProcessHandler {
                         ACCOUNT.DATA, data,
                         ACCOUNT.KIND, "agent");
             }
-            create(account, state.getData());
+            createThenActivate(account, state.getData());
             authedRoleAccountIds.add(account.getId());
         }
 
@@ -174,7 +175,7 @@ public class AgentCreate extends AbstractDefaultProcessHandler {
         if (roles.isEmpty()) {
             return roles;
         } else if (roles.size() == 1){
-            return new ArrayList<String>();
+            return new ArrayList<>();
         }
         return roles.subList(1, roles.size());
     }

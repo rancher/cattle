@@ -11,8 +11,6 @@ public interface ProcessDefinition extends Named {
 
     String getResourceType();
 
-    String getProcessDelegateName();
-
     List<ProcessPreListener> getPreProcessListeners();
 
     List<ProcessHandler> getProcessHandlers();
