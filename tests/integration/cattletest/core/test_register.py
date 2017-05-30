@@ -86,6 +86,7 @@ def test_registration_token_account_create(kind, admin_user_client,
 
     auth_check(client.schema, 'register', 'crd', {
         'key': 'cr',
+        'agentUriFormat': 'cr',
         'accessKey': 'r',
         'secretKey': 'r',
     })
