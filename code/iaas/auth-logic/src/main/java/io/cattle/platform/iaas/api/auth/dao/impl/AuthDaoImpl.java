@@ -3,6 +3,7 @@ package io.cattle.platform.iaas.api.auth.dao.impl;
 import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.CredentialTable.*;
 import static io.cattle.platform.core.model.tables.ProjectMemberTable.*;
+
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
@@ -178,7 +179,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                 .selectFrom(ACCOUNT)
                 .where(
                         ACCOUNT.ID.eq(id)
-                                .and(ACCOUNT.STATE.ne(CommonStatesConstants.PURGED))
+                                .and(ACCOUNT.STATE.ne(AccountConstants.STATE_PURGED))
                                 .and(ACCOUNT.REMOVED.isNull())
                 ).fetchOne();
     }
@@ -232,7 +233,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                 .where(
                         ACCOUNT.EXTERNAL_ID.eq(externalId)
                                 .and(ACCOUNT.EXTERNAL_ID_TYPE.eq(externalType))
-                                .and(ACCOUNT.STATE.ne("purged"))
+                                .and(ACCOUNT.STATE.ne(AccountConstants.STATE_PURGED))
                 ).orderBy(ACCOUNT.ID.asc()).fetchOne();
     }
 
@@ -551,7 +552,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
             member = objectManager.reload(member);
         }
 
-        if (CommonStatesConstants.PURGED.equals(state)) {
+        if (AccountConstants.STATE_PURGED.equals(state)) {
             return;
         }
 

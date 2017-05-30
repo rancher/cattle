@@ -11,9 +11,9 @@ import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ServiceExposeMapDao;
 import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.Revision;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
-import io.cattle.platform.core.model.Revision;
 import io.cattle.platform.core.model.tables.InstanceTable;
 import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
@@ -135,9 +135,9 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
                         .and(SERVICE_EXPOSE_MAP.MANAGED.eq(true))
                         .and(SERVICE_EXPOSE_MAP.STATE.in(CommonStatesConstants.ACTIVATING,
                                 CommonStatesConstants.ACTIVE, CommonStatesConstants.REQUESTED))
-                        .and(INSTANCE.STATE.notIn(CommonStatesConstants.PURGING, CommonStatesConstants.PURGED,
-                                CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING,
+                        .and(INSTANCE.STATE.notIn(CommonStatesConstants.REMOVING,
                                 InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING))
+                        .and(INSTANCE.REMOVED.isNull())
                         .and(SERVICE_EXPOSE_MAP.DNS_PREFIX.isNull().or(
                                 SERVICE_EXPOSE_MAP.DNS_PREFIX.in(ServiceUtil
                                         .getLaunchConfigNames(service)))))
@@ -186,10 +186,8 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
                         .and(instance.DEPLOYMENT_UNIT_ID.eq(unit.getId()))
                         .and(exposeMap.MANAGED.eq(true))
                         .and(instance.REMOVED.isNull()))
-                .and(instance.STATE.notIn(CommonStatesConstants.REMOVING,
-                                CommonStatesConstants.REMOVED,
-                                CommonStatesConstants.PURGED,
-                        CommonStatesConstants.PURGING))
+                .and(instance.REMOVED.isNull())
+                .and(instance.STATE.notIn(CommonStatesConstants.REMOVING))
                 .and(exposeMap.STATE.in(CommonStatesConstants.ACTIVATING,
                         CommonStatesConstants.ACTIVE, CommonStatesConstants.REQUESTED))
                 .fetch().map(mapper);
@@ -228,8 +226,8 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
                         .and(SERVICE_EXPOSE_MAP.STATE.in(CommonStatesConstants.ACTIVATING,
                                 CommonStatesConstants.ACTIVE, CommonStatesConstants.REQUESTED))
                         .and(SERVICE_EXPOSE_MAP.UPGRADE.eq(false))
-                        .and(INSTANCE.STATE.notIn(CommonStatesConstants.PURGING, CommonStatesConstants.PURGED,
-                                CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING,
+                        .and(INSTANCE.REMOVED.isNull())
+                        .and(INSTANCE.STATE.notIn(CommonStatesConstants.REMOVING,
                         InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING))
                 .and(SERVICE_EXPOSE_MAP.DNS_PREFIX.isNull())
                 .and(DEPLOYMENT_UNIT.STATE.notIn(CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING))

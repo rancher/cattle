@@ -175,11 +175,6 @@ def do_scheduling_test(container_kw, client, mock_scheduler, hosts,
                 pass
 
     c = client.wait_success(c)
-    try:
-        # may have already purged
-        c.purge()
-    except:
-        pass
 
     # Looking for release event
     while True:

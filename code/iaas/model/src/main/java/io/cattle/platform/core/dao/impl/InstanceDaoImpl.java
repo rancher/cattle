@@ -17,6 +17,7 @@ import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
 
 import io.cattle.platform.core.addon.PublicEndpoint;
+import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.GenericObjectConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -425,7 +426,7 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
             .join(INSTANCE)
                 .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
             .where(INSTANCE_HOST_MAP.REMOVED.isNull()
-                    .and(INSTANCE.STATE.eq(CommonStatesConstants.PURGED))
+                    .and(INSTANCE.STATE.eq(AccountConstants.STATE_PURGED))
                     .and(INSTANCE_HOST_MAP.STATE.notIn(CommonStatesConstants.DEACTIVATING, CommonStatesConstants.REMOVING)))
             .limit(count)
             .fetchInto(InstanceHostMapRecord.class);
@@ -437,7 +438,7 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
                 .from(NIC)
                 .join(INSTANCE)
                     .on(INSTANCE.ID.eq(NIC.INSTANCE_ID))
-                .where(NIC.REMOVED.isNull().and(INSTANCE.STATE.eq(CommonStatesConstants.PURGED))
+                .where(NIC.REMOVED.isNull().and(INSTANCE.STATE.eq(AccountConstants.STATE_PURGED))
                         .and(NIC.STATE.notIn(CommonStatesConstants.DEACTIVATING, CommonStatesConstants.REMOVING)))
                 .limit(count)
                 .fetchInto(NicRecord.class);
@@ -449,7 +450,7 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
                 .from(INSTANCE_LINK)
                 .join(INSTANCE)
                     .on(INSTANCE.ID.eq(INSTANCE_LINK.TARGET_INSTANCE_ID))
-                .where(INSTANCE.STATE.eq(CommonStatesConstants.PURGED))
+                .where(INSTANCE.STATE.eq(AccountConstants.STATE_PURGED))
                 .limit(count)
                 .fetchInto(InstanceLinkRecord.class);
     }

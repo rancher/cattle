@@ -78,8 +78,6 @@ def _crud_registry(client):
     registry = client.delete(registry)
     registry = client.wait_success(registry)
     assert registry.state == 'removed'
-    registry = client.wait_success(registry.purge())
-    assert registry.state == 'purged'
 
 
 def _crud_registry_credential(client):
@@ -99,8 +97,6 @@ def _crud_registry_credential(client):
     registry_credential = client.delete(registry_credential)
     registry_credential = client.wait_success(registry_credential)
     assert registry_credential.state == 'removed'
-    registry_credential = client.wait_success(registry_credential.purge())
-    assert registry_credential.state == 'purged'
 
 
 def test_crud_registry(client):
@@ -117,14 +113,11 @@ def test_deleting_registry_deletes_credentials(client):
     registry = client.delete(registry)
     registry = client.wait_success(registry)
     assert registry.state == 'removed'
-    registry = client.wait_success(registry.purge())
-    assert registry.state == 'purged'
 
     def is_state():
         cred = client.reload(reg_cred)
         if (cred.state == 'removed'):
             return cred
-        print cred.state
         return False
 
     reg_cred = wait_for(is_state)

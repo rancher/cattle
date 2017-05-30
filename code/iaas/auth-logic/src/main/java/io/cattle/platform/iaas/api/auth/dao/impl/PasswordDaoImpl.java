@@ -2,6 +2,7 @@ package io.cattle.platform.iaas.api.auth.dao.impl;
 
 import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.CredentialTable.*;
+
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -77,7 +78,7 @@ public class PasswordDaoImpl extends AbstractJooqDao implements PasswordDao {
 
         Date now = new Date(System.currentTimeMillis());
 
-        create().update(CREDENTIAL).set(CREDENTIAL.STATE, CommonStatesConstants.PURGED)
+        create().update(CREDENTIAL).set(CREDENTIAL.STATE, CommonStatesConstants.REMOVED)
                 .set(CREDENTIAL.REMOVED, now)
                 .set(CREDENTIAL.REMOVE_TIME, now)
                 .where(CREDENTIAL.ACCOUNT_ID.eq(account.getId())

@@ -6,6 +6,7 @@ import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
 
+import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.dao.IpAddressDao;
@@ -165,7 +166,7 @@ public class IpAddressDaoImpl extends AbstractJooqDao implements IpAddressDao {
                     .on(HOST_IP_ADDRESS_MAP.IP_ADDRESS_ID.eq(IP_ADDRESS.ID))
                 .join(HOST)
                     .on(HOST.ID.eq(HOST_IP_ADDRESS_MAP.HOST_ID))
-                .where(HOST.STATE.eq(CommonStatesConstants.PURGED)
+                .where(HOST.STATE.eq(AccountConstants.STATE_PURGED)
                         .and(IP_ADDRESS.REMOVED.isNull())
                         .and(IP_ADDRESS.STATE.notIn(CommonStatesConstants.REMOVING)))
                 .limit(count)

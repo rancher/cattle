@@ -4,7 +4,6 @@ import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AccountConstants;
-import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.MachineDriver;
 import io.cattle.platform.iaas.api.servlet.filter.ProxyPreFilter;
@@ -12,8 +11,6 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.Named;
-import io.github.ibuildthecloud.gdapi.condition.Condition;
-import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -165,8 +162,8 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator implement
 
         Boolean value = allowCache.getIfPresent(host);
         if (value == null) {
-            List<MachineDriver> drivers = objectManager.find(MachineDriver.class, ObjectMetaDataManager.STATE_FIELD,
-                    new Condition(ConditionType.NE, CommonStatesConstants.PURGED));
+            List<MachineDriver> drivers = objectManager.find(MachineDriver.class,
+                    ObjectMetaDataManager.REMOVED_FIELD, new Object[] {null});
             for (MachineDriver driver : drivers) {
                 String url = DataAccessor.fieldString(driver, "uiUrl");
                 if (url != null) {
@@ -335,7 +332,7 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator implement
         if ("POST".equals(method) || "PUT".equals(method)) {
             if(isFormContent) {
                 Map<String, String[]> map = servletRequest.getParameterMap();
-                List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+                List<NameValuePair> nameValuePairs = new ArrayList<>();
                 for (String name : map.keySet()) {
                   String[] array = map.get(name);
                   for (int i = 0; i < array.length; i++) {

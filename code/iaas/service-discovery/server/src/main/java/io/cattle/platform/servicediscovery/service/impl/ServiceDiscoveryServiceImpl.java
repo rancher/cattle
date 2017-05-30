@@ -394,7 +394,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                 HealthcheckConstants.SERVICE_HEALTH_STATE_STARTED_ONCE.toLowerCase(),
                 HealthcheckConstants.HEALTH_STATE_HEALTHY.toLowerCase());
         List<String> ignoreStates = Arrays.asList(CommonStatesConstants.REMOVING,
-                CommonStatesConstants.REMOVED, CommonStatesConstants.PURGED, CommonStatesConstants.PURGING);
+                CommonStatesConstants.REMOVED);
         for (HealthChecker hc : hcs) {
             String sHS = hc.getHealthState() == null ? HealthcheckConstants.HEALTH_STATE_HEALTHY : hc
                     .getHealthState().toLowerCase();

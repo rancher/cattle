@@ -276,8 +276,6 @@ def test_state_enum(super_client):
     states = set([
         'creating',
         'migrating',
-        'purged',
-        'purging',
         'removed',
         'removing',
         'requested',
@@ -299,7 +297,7 @@ def test_state_enum(super_client):
 def test_actions_based_on_state(context):
     c = context.create_container()
     assert set(c.actions.keys()) == set(['migrate', 'restart', 'stop',
-                                         'update', 'execute', 'logs',
+                                         'update', 'execute', 'logs', 'purge',
                                          'proxy', 'setlabels'])
 
 

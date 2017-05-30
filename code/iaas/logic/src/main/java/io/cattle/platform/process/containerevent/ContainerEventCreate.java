@@ -181,7 +181,7 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
 
                         objectProcessManager.scheduleProcessInstance(PROCESS_STOP, objectManager.reload(instance), makeData());
                     } else if (EVENT_DESTROY.equals(status)) {
-                        if (REMOVED.equals(state) || REMOVING.equals(state) || PURGED.equals(state) || PURGING.equals(state))
+                        if (REMOVED.equals(state) || REMOVING.equals(state))
                             return null;
 
                         Map<String, Object> data = makeData();

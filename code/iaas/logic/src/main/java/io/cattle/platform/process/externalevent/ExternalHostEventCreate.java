@@ -73,9 +73,6 @@ public class ExternalHostEventCreate extends AbstractObjectProcessHandler {
                     remove(host, state.getData());
                 } catch (ProcessCancelException e) {
                 }
-
-                host = objectManager.reload(host);
-                purge(host, state.getData());
             }
         }
 

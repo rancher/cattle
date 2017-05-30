@@ -19,7 +19,6 @@ public class DefaultProcessesParser extends ProcessParser {
             "%s.activate;inactive,registering;activating;active",
             "%s.deactivate;requested,registering,active,activating,updating-active,updating-inactive;deactivating;inactive",
             "%s.remove;requested,inactive,registering,updating-active,updating-inactive;removing;removed",
-            "%s.purge;removed;purging;purged",
             "%s.update;inactive,active;inactive=updating-inactive,active=updating-active;updating-inactive=inactive,updating-active=active",
     });
 
@@ -32,7 +31,7 @@ public class DefaultProcessesParser extends ProcessParser {
         Map<String, String> renames = getMap(element.getAttribute("renames"), new HashMap<String, String>());
         Map<String, String> processRenames = getMap(element.getAttribute("processRenames"), new HashMap<String, String>());
 
-        Set<String> excludes = new HashSet<String>();
+        Set<String> excludes = new HashSet<>();
         if (!StringUtils.isBlank(exclude)) {
             excludes.addAll(Arrays.asList(exclude.trim().split("\\s*,\\s*")));
         }
@@ -44,9 +43,6 @@ public class DefaultProcessesParser extends ProcessParser {
             }
 
             String[] parts = value.trim().split(";");
-//            if (parts.length != 4 && parts.length != 5) {
-//                throw new IllegalStateException(PROP_PREFIX + i + " must be in the format name;start;transitioning;done;delegate(optional)");
-//            }
 
             String name = String.format(parts[0], resourceType).toLowerCase();
             if (processRenames.containsKey(name)) {

@@ -465,8 +465,7 @@ def test_passwords_non_alpha_numeric_characters(admin_user_client):
         make_client(admin_user_client, account, username, password)
         admin_user_client.wait_success(key.deactivate())
         admin_user_client.delete(key)
-        key = admin_user_client.wait_success(key)
-        key.purge()
+        admin_user_client.wait_success(key)
 
 
 @pytest.mark.nonparallel

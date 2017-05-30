@@ -97,7 +97,6 @@ public class InstanceConstants {
     public static final String PROCESS_STOP = "instance.stop";
     public static final String PROCESS_RESTART = "instance.restart";
     public static final String PROCESS_REMOVE = "instance.remove";
-    public static final String PROCESS_PURGE = "instance.purge";
     public static final String PROCESS_ERROR = "instance.error";
 
     public static final String ACTION_CONVERT_TO_SERVICE = "instance.converttoservice";

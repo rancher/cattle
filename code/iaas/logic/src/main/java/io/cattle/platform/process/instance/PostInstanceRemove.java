@@ -9,15 +9,14 @@ import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.process.common.handler.AgentBasedProcessHandler;
-import io.cattle.platform.util.type.Priority;
 
 import javax.inject.Inject;
 
-public class PostInstancePurge extends AgentBasedProcessHandler {
-   
+public class PostInstanceRemove extends AgentBasedProcessHandler {
+
     @Inject
     GenericMapDao mapDao;
-    
+
     @Override
     public String[] getProcessNames() {
         return new String[] { "instance.remove" };
@@ -26,23 +25,23 @@ public class PostInstancePurge extends AgentBasedProcessHandler {
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Instance instance = (Instance)state.getResource();
-        
-        for (InstanceHostMap ihm : mapDao.findNonPurged(InstanceHostMap.class, Instance.class, instance.getId())) {
+
+        for (InstanceHostMap ihm : mapDao.findAll(InstanceHostMap.class, Instance.class, instance.getId())) {
             Object agentResource = getObjectByRelationship("host", ihm);
             if (ObjectUtils.getRemoved(agentResource) != null)
                 continue; // Short circuit
             RemoteAgent agent = agentLocator.lookupAgent(agentResource);
             if (agent == null)
                 continue;
-            
+
             handleEvent(state, process, ihm, ihm, agentResource, agent);
         }
-        
+
         return new HandlerResult(state.getData());
     }
 
     @Override
     public int getPriority() {
-        return Priority.BIG_ONE;
+        return Integer.MAX_VALUE;
     }
 }

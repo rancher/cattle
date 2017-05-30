@@ -62,16 +62,13 @@ def test_network_purge(super_client):
 
     network = super_client.wait_success(network.deactivate())
     assert network.state == 'inactive'
-
-    network = super_client.wait_success(super_client.delete(network))
-    assert network.state == 'removed'
     assert network.macPrefix.startswith('02:')
 
     prefix = network.macPrefix
     items = super_client.list_resource_pool(item=prefix)
     assert len(items) == 1
-    network = super_client.wait_success(network.purge())
-    assert network.state == 'purged'
+    network = super_client.wait_success(super_client.delete(network))
+    assert network.state == 'removed'
     assert network.macPrefix is None
 
     items = super_client.list_resource_pool(item=prefix)

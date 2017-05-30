@@ -4,7 +4,7 @@ import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
-import io.cattle.platform.core.constants.CommonStatesConstants;
+
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.ha.monitor.dao.PingInstancesMonitorDao;
 import io.cattle.platform.ha.monitor.model.KnownInstance;
@@ -27,11 +27,11 @@ public class PingInstancesMonitorDaoImpl extends AbstractJooqDao implements Ping
                         .and(INSTANCE_HOST_MAP.REMOVED.isNull()))
                 .join(INSTANCE)
                     .on(INSTANCE.ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
-                .where(INSTANCE.STATE.ne(CommonStatesConstants.PURGED)
+                .where(INSTANCE.REMOVED.isNull()
                     .and(AGENT.ID.eq(agentId)))
                 .fetchInto(KnownInstance.class);
 
-        Map<String, KnownInstance> result = new HashMap<String, KnownInstance>();
+        Map<String, KnownInstance> result = new HashMap<>();
         for (KnownInstance i : instances)
             result.put(i.getUuid(), i);
 

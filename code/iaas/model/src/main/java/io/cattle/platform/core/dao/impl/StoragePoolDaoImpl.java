@@ -8,6 +8,7 @@ import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 
+import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
@@ -259,7 +260,7 @@ public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDa
                 .join(ACCOUNT)
                     .on(ACCOUNT.ID.eq(STORAGE_POOL.ACCOUNT_ID))
                 .where(STORAGE_POOL.REMOVED.isNull()
-                        .and(ACCOUNT.STATE.eq(CommonStatesConstants.PURGED))
+                        .and(ACCOUNT.STATE.eq(AccountConstants.STATE_PURGED))
                         .and(STORAGE_POOL.STATE.notIn(CommonStatesConstants.DEACTIVATING, CommonStatesConstants.REMOVING)))
                 .limit(count)
                 .fetchInto(StoragePoolRecord.class);
@@ -275,7 +276,7 @@ public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDa
                     .on(HOST.ID.eq(STORAGE_POOL_HOST_MAP.HOST_ID))
                 .where(STORAGE_POOL.REMOVED.isNull()
                         .and(STORAGE_POOL.KIND.eq("docker"))
-                        .and(HOST.STATE.eq(CommonStatesConstants.PURGED))
+                        .and(HOST.STATE.eq(AccountConstants.STATE_PURGED))
                         .and(STORAGE_POOL.STATE.notIn(CommonStatesConstants.DEACTIVATING, CommonStatesConstants.REMOVING)))
                 .limit(count)
                 .fetchInto(StoragePoolRecord.class);
@@ -290,7 +291,7 @@ public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDa
                 .join(HOST)
                     .on(HOST.ID.eq(STORAGE_POOL_HOST_MAP.HOST_ID))
                 .where(STORAGE_POOL_HOST_MAP.REMOVED.isNull()
-                        .and(HOST.STATE.eq(CommonStatesConstants.PURGED).or(STORAGE_POOL.STATE.eq(CommonStatesConstants.PURGED))))
+                        .and(HOST.STATE.eq(AccountConstants.STATE_PURGED).or(STORAGE_POOL.STATE.eq(AccountConstants.STATE_PURGED))))
                 .limit(limit)
                 .fetchInto(StoragePoolHostMapRecord.class);
     }

@@ -109,13 +109,13 @@ public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSche
                 .on(DYNAMIC_SCHEMA_ROLE.DYNAMIC_SCHEMA_ID.eq(DYNAMIC_SCHEMA.ID))
                 .where(DYNAMIC_SCHEMA.ACCOUNT_ID.eq(accountId)
                         .and(DYNAMIC_SCHEMA_ROLE.ROLE.eq(role))
-                        .and(DYNAMIC_SCHEMA.STATE.ne(CommonStatesConstants.PURGED)))
+                        .and(DYNAMIC_SCHEMA.STATE.ne(CommonStatesConstants.REMOVED)))
                 .or(DYNAMIC_SCHEMA.ACCOUNT_ID.eq(accountId)
                         .and(DYNAMIC_SCHEMA_ROLE.ROLE.isNull())
-                        .and(DYNAMIC_SCHEMA.STATE.ne(CommonStatesConstants.PURGED)))
+                        .and(DYNAMIC_SCHEMA.STATE.ne(CommonStatesConstants.REMOVED)))
                 .or(DYNAMIC_SCHEMA_ROLE.ROLE.eq(role)
                         .and(DYNAMIC_SCHEMA.ACCOUNT_ID.isNull())
-                        .and(DYNAMIC_SCHEMA.STATE.ne(CommonStatesConstants.PURGED)));
+                        .and(DYNAMIC_SCHEMA.STATE.ne(CommonStatesConstants.REMOVED)));
     }
 
     @Override
