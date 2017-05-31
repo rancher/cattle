@@ -74,7 +74,8 @@ public class ScheduledUpgradeStart extends AbstractDefaultProcessHandler {
                 if (setting.equalsIgnoreCase("manadatory") && !stack.getExternalId().contains(UpgradeManager.METADATA)) {
                     return;
                 }
-                if (!setting.equalsIgnoreCase("true") && !setting.equalsIgnoreCase("mandatory")) {
+                if (!setting.equalsIgnoreCase("true") && !setting.equalsIgnoreCase("all")
+                        && !setting.equalsIgnoreCase("mandatory")) {
                     return;
                 }
                 catalogService.upgrade(stack);
