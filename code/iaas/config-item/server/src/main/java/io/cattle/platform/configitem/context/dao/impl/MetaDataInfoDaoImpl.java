@@ -38,6 +38,7 @@ import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.InstanceHostMapTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
@@ -69,7 +70,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jooq.Condition;
 import org.jooq.JoinType;
 import org.jooq.Record11;
-import org.jooq.Record20;
+import org.jooq.Record21;
 import org.jooq.Record3;
 import org.jooq.Record4;
 import org.jooq.Record5;
@@ -97,7 +98,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                         INSTANCE.HEALTH_STATE, INSTANCE.START_COUNT, INSTANCE.STATE, INSTANCE.EXTERNAL_ID,
                         INSTANCE.DNS_INTERNAL, INSTANCE.DNS_SEARCH_INTERNAL, INSTANCE.MEMORY_RESERVATION,
                         INSTANCE.MILLI_CPU_RESERVATION, INSTANCE.SYSTEM, IP_ADDRESS.ADDRESS, NIC.MAC_ADDRESS,
-                        NETWORK.UUID, NETWORK.KIND, HOST.ID, targetInstance.UUID)
+                        NETWORK.UUID, NETWORK.KIND, HOST.ID, targetInstance.UUID, STACK.NAME)
                 .from(INSTANCE)
                 .leftOuterJoin(targetInstance)
                 .on(INSTANCE.NETWORK_CONTAINER_ID.eq(targetInstance.ID))
@@ -115,6 +116,8 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .on(IP_ADDRESS.ID.eq(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID))
                 .join(NETWORK)
                 .on(NIC.NETWORK_ID.eq(NETWORK.ID))
+                .leftOuterJoin(STACK)
+                .on(INSTANCE.STACK_ID.eq(STACK.ID))
                 .where(INSTANCE.REMOVED.isNull())
                 .and(INSTANCE.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED,
                         InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING))
@@ -131,10 +134,10 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .and(SERVICE_EXPOSE_MAP.UPGRADE.isNull().or(SERVICE_EXPOSE_MAP.UPGRADE.eq(false)))
                 .and(condition)
                 .fetchInto(
-                        new RecordHandler<Record20<Long, Long, String, String, Long, String, Long, String, String, String, String, Long, Long, Boolean, String, String, String, String, Long, String>>() {
+                        new RecordHandler<Record21<Long, Long, String, String, Long, String, Long, String, String, String, String, Long, Long, Boolean, String, String, String, String, Long, String, String>>() {
                             @Override
                             public void next(
-                                    Record20<Long, Long, String, String, Long, String, Long, String, String, String, String, Long, Long, Boolean, String, String, String, String, Long, String> record) {
+                                    Record21<Long, Long, String, String, Long, String, Long, String, String, String, String, Long, Long, Boolean, String, String, String, String, Long, String, String> record) {
                                 InstanceRecord instance = new InstanceRecord();
                                 instance.setId(record.getValue(INSTANCE.ID));
                                 instance.setName(record.getValue(INSTANCE.NAME));
@@ -156,6 +159,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                                 String networkKind = record.getValue(NETWORK.KIND);
                                 Long hostId = record.getValue(HOST.ID);
                                 String targetInstanceUUID = record.getValue(targetInstance.UUID);
+                                String stackName = record.getValue(STACK.NAME);
 
                                 ContainerMetaData data = new ContainerMetaData();
                                 instance.setData(instanceDao.getCacheInstanceData(instance.getId()));
@@ -188,6 +192,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                                 data.setNetwork_uuid(networkUUID);
                                 data.setNetwork_from_container_uuid(targetInstanceUUID);
                                 data.setPrimary_mac_address(macAddress);
+                                data.setStack_name(stackName);
 
                                 writeToJson(os, data);
                             }
