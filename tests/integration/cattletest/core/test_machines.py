@@ -623,6 +623,7 @@ def test_host_from_host_template(super_client, machine_context):
     client = machine_context.client
     ht = client.create_host_template(
         driver='foo',
+        name='foo-ht-test1',
         publicValues={
             'fooConfig': {
                 'region': 'sfo1',
