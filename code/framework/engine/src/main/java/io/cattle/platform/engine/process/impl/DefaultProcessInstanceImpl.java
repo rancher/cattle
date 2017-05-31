@@ -7,7 +7,7 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.engine.context.EngineContext;
-import io.cattle.platform.engine.eventing.EngineEvents;
+import io.cattle.platform.engine.eventing.ProcessExecuteEvent;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessHandler;
 import io.cattle.platform.engine.handler.ProcessLogic;
@@ -36,8 +36,6 @@ import io.cattle.platform.engine.process.log.ParentLog;
 import io.cattle.platform.engine.process.log.ProcessExecutionLog;
 import io.cattle.platform.engine.process.log.ProcessLog;
 import io.cattle.platform.engine.process.log.ProcessLogicExecutionLog;
-import io.cattle.platform.eventing.model.Event;
-import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.definition.LockDefinition;
@@ -374,7 +372,8 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             public void run() {
                 Long id = record.getId();
                 if (id != null) {
-                    Event event = EventVO.newEvent(EngineEvents.PROCESS_EXECUTE).withResourceId(id.toString());
+                    ProcessExecuteEvent event = new ProcessExecuteEvent(id, getName(), getProcessRecord().getResourceType(),
+                            getProcessRecord().getResourceId(), getProcessRecord().getAccountIdLong());
                     context.getEventService().publish(event);
                 }
 
@@ -533,6 +532,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         }
     }
 
+    @Override
     public ProcessRecord getProcessRecord() {
         record.setPhase(instanceContext.getPhase());
         record.setProcessLog(processLog);

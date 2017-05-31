@@ -156,6 +156,14 @@ public class DeploymentUnitWrapper implements BasicStateWrapper {
         return new UnitRef(ServiceConstants.KIND_DEPLOYMENT_UNIT + "/" + id + "/" + index);
     }
 
+    public static String getIndex(UnitRef ref) {
+        String refString = ref.toString();
+        if (refString.startsWith(ServiceConstants.KIND_DEPLOYMENT_UNIT + "/")) {
+            return refString.substring(ServiceConstants.KIND_DEPLOYMENT_UNIT.length() + 1);
+        }
+        return null;
+    }
+
     public String getUuid() {
         return unit.getUuid();
     }

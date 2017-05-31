@@ -1,10 +1,8 @@
 package io.cattle.platform.engine.server.impl;
 
 import io.cattle.platform.engine.manager.ProcessManager;
-import io.cattle.platform.engine.process.ProcessInstance;
-import io.cattle.platform.engine.server.ProcessInstanceDispatcher;
-import io.cattle.platform.engine.server.ProcessInstanceReference;
 import io.cattle.platform.engine.server.ProcessServer;
+import io.cattle.platform.engine2.model.ProcessReference;
 
 import javax.inject.Inject;
 
@@ -13,18 +11,13 @@ public class ProcessServerImpl implements ProcessServer {
     @Inject
     ProcessManager repository;
     @Inject
-    ProcessInstanceDispatcher dispatcher;
+    io.cattle.platform.engine2.server.ProcessServer server;
 
     @Override
     public void runOutstandingJobs() {
-        for (ProcessInstanceReference ref : repository.pendingTasks()) {
-            dispatcher.dispatch(ref);
+        for (ProcessReference ref : repository.pendingTasks()) {
+            server.submit(ref);
         }
-    }
-
-    @Override
-    public Long getNextTask(ProcessInstance instance) {
-        return repository.getRemainingTask(instance);
     }
 
 }

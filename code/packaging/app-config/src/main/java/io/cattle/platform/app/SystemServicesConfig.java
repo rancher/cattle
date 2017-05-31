@@ -530,6 +530,11 @@ public class SystemServicesConfig {
     }
 
     @Bean
+    io.cattle.platform.engine2.server.ProcessServer ProcessServer2() {
+        return new io.cattle.platform.engine2.server.ProcessServer();
+    }
+
+    @Bean
     ProcessRecordDao JooqProcessRecordDao() {
         return new JooqProcessRecordDao();
     }
