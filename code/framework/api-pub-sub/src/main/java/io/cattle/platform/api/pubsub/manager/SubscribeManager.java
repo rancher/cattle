@@ -7,6 +7,7 @@ import io.cattle.platform.api.pubsub.util.SubscriptionUtils;
 import io.cattle.platform.api.pubsub.util.SubscriptionUtils.SubscriptionStyle;
 import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.framework.event.FrameworkEvents;
+import io.cattle.platform.iaas.event.IaasEvents;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
@@ -28,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 
 public class SubscribeManager extends AbstractNoOpResourceManager {
 
+    public static final String EVENT_DISCONNECT = "disconnect";
     List<SubscriptionHandler> handlers = new ArrayList<SubscriptionHandler>();
 
     @Override
@@ -61,6 +63,11 @@ public class SubscribeManager extends AbstractNoOpResourceManager {
             filteredEventNames.add(eventName);
         }
 
+        if (SubscriptionStyle.QUALIFIED.equals(style)) {
+                String value = "" + policy.getAuthenticatedAsAccountId();
+                String eventName = String.format("%s%s%s=%s", EVENT_DISCONNECT, FrameworkEvents.EVENT_SEP, IaasEvents.ACCOUNT_QUALIFIER, value);
+                filteredEventNames.add(eventName);
+        }
         request.setResponseContentType("text/plain");
 
         try {
