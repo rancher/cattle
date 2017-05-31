@@ -37,8 +37,7 @@ import io.cattle.platform.engine.manager.impl.ProcessRecordDao;
 import io.cattle.platform.engine.manager.impl.jooq.JooqProcessRecordDao;
 import io.cattle.platform.engine.server.ProcessServer;
 import io.cattle.platform.engine.server.impl.ProcessInstanceDispatcherImpl;
-import io.cattle.platform.engine.server.impl.ProcessReplayTask;
-import io.cattle.platform.engine.server.impl.ProcessServerImpl;
+import io.cattle.platform.engine.task.ProcessReplayTask;
 import io.cattle.platform.eventing.annotation.AnnotatedListenerRegistration;
 import io.cattle.platform.eventing.memory.InMemoryEventService;
 import io.cattle.platform.extension.dynamic.DynamicExtensionHandler;
@@ -541,7 +540,7 @@ public class SystemServicesConfig {
 
     @Bean
     ProcessServer ProcessServer() {
-        return new ProcessServerImpl();
+        return new ProcessServer();
     }
 
     @Bean

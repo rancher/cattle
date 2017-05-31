@@ -96,7 +96,18 @@ public class LaunchConfiguration {
         return accountId;
     }
 
-    public void setAccountId(Object accountId) {
+    public Long getAccountIdLong() {
+        if (accountId instanceof Long) {
+            return (Long)accountId;
+        } else if (accountId instanceof Number) {
+            return ((Number) accountId).longValue();
+        } else if (accountId instanceof String) {
+            return new Long((String) accountId);
+        }
+        return null;
+    }
+
+    public void setAccountId(Long accountId) {
         this.accountId = accountId;
     }
 

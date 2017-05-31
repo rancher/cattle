@@ -1,7 +1,9 @@
 package io.cattle.platform.engine.server;
 
+import io.cattle.platform.engine.process.ProcessInstance;
+
 public interface ProcessInstanceExecutor {
 
-    void execute(long processId);
+    ProcessInstance execute(long processId);
 
 }
