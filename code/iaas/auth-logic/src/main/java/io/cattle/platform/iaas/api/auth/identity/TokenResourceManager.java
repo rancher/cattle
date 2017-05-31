@@ -2,17 +2,21 @@ package io.cattle.platform.iaas.api.auth.identity;
 
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
+import io.cattle.platform.api.pubsub.manager.SubscribeManager;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.dao.AccountDao;
+import io.cattle.platform.eventing.EventService;
+import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
-import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
+import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
 import io.cattle.platform.iaas.api.auth.integration.external.ExternalServiceAuthProvider;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.TokenCreator;
 import io.cattle.platform.iaas.api.auth.integration.internal.rancher.TokenAuthLookup;
-import io.cattle.platform.token.TokenService;
+import io.cattle.platform.iaas.event.IaasEvents;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.token.TokenService;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
@@ -25,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
 
@@ -57,6 +62,9 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
 
     @Inject
     AccountDao accountDao;
+
+    @Inject
+    EventService eventService;
 
     private List<TokenCreator> tokenCreators;
     private static final DynamicBooleanProperty RESTRICT_CONCURRENT_SESSIONS = ArchaiusUtil.getBoolean("api.auth.restrict.concurrent.sessions");
@@ -114,6 +122,8 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
 
         if (RESTRICT_CONCURRENT_SESSIONS.get()) {
             authTokenDao.deletePreviousTokens(authenticatedAsAccountId, tokenAccountId);
+            String event = IaasEvents.appendAccount(SubscribeManager.EVENT_DISCONNECT, authenticatedAsAccountId);
+            eventService.publish(EventVO.newEvent(event));
         }
 
         token.setJwt(authTokenDao.createToken(token.getJwt(), token.getAuthProvider(),
