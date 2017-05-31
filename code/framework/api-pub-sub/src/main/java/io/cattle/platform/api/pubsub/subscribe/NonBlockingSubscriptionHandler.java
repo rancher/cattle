@@ -1,5 +1,6 @@
 package io.cattle.platform.api.pubsub.subscribe;
 
+import io.cattle.platform.api.pubsub.manager.SubscribeManager;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.retry.CancelRetryException;
 import io.cattle.platform.async.retry.Retry;
@@ -77,7 +78,7 @@ public abstract class NonBlockingSubscriptionHandler implements SubscriptionHand
                     }
                     obfuscateIds(modified, idFormatter);
 
-                    write(modified, writer, writeLock, strip);
+                    write(modified, writer, writeLock, strip, this, disconnect);
                 } catch (IOException e) {
                     log.trace("IOException on write to client for pub sub, disconnecting", e);
                     disconnect.set(true);
@@ -118,13 +119,18 @@ public abstract class NonBlockingSubscriptionHandler implements SubscriptionHand
 
     protected abstract MessageWriter getMessageWriter(ApiRequest apiRequest) throws IOException;
 
-    protected void write(Event event, MessageWriter writer, Object writeLock, boolean strip) throws IOException {
+    protected void write(Event event, MessageWriter writer, Object writeLock, boolean strip, EventListener listener, final AtomicBoolean disconnect)
+            throws IOException {
         EventVO<Object> newEvent = new EventVO<Object>(event);
         if (strip) {
             String name = newEvent.getName();
             if (name != null) {
                 newEvent.setName(StringUtils.substringBefore(name, FrameworkEvents.EVENT_SEP));
             }
+        }
+
+        if (SubscribeManager.EVENT_DISCONNECT.equals(newEvent.getName())) {
+            unsubscribe(disconnect, writer, listener);
         }
 
         String content = jsonMapper.writeValueAsString(newEvent);
@@ -142,7 +148,7 @@ public abstract class NonBlockingSubscriptionHandler implements SubscriptionHand
             for (String eventName : eventNames) {
                 eventService.subscribe(eventName, listener).get(API_SUB_PING_INVERVAL.get(), TimeUnit.MILLISECONDS);
             }
-            write(new Ping(), writer, writeLock, strip);
+            write(new Ping(), writer, writeLock, strip, listener, disconnect);
             return schedulePing(listener, writer, disconnect);
         } catch (Throwable e) {
             unsubscribe = true;
