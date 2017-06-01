@@ -18,7 +18,9 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -41,7 +43,11 @@ public abstract class NonBlockingSubscriptionHandler implements SubscriptionHand
 
     public static final DynamicLongProperty API_SUB_PING_INVERVAL = ArchaiusUtil.getLong("api.sub.ping.interval.millis");
     public static final DynamicIntProperty API_MAX_PINGS = ArchaiusUtil.getInt("api.sub.max.pings");
-
+    private static final Map<String, Object> LOGOUT_MESSAGE = new HashMap<>();
+    
+    static {
+        LOGOUT_MESSAGE.put("name", "logout");
+    }
     @Inject
     JsonMapper jsonMapper;
     @Inject
@@ -130,6 +136,7 @@ public abstract class NonBlockingSubscriptionHandler implements SubscriptionHand
         }
 
         if (SubscribeManager.EVENT_DISCONNECT.equals(newEvent.getName())) {
+            write(writer, jsonMapper.writeValueAsString(LOGOUT_MESSAGE), listener);
             unsubscribe(disconnect, writer, listener);
         }
 
