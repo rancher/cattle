@@ -1,5 +1,16 @@
 {
     "resourceFields": {
+        "name": {
+            "type": "string",
+            "required": true,
+            "unique": true,
+            "nullable": false
+        },
+        "driver": {
+            "type": "string",
+            "required": true,
+            "nullable": false
+        },
         "secretValues": {
             "type": "map[json]"
         },

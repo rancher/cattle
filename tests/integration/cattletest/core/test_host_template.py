@@ -11,35 +11,39 @@ def service_client(admin_user_client):
 def test_host_template_create(client, service_client):
     secret_value = {
         'bye': 2,
-        'nested': {
+        'fooConfig': {
             'key1': 'value1'
         }
     }
-    mds = client.create_host_template(name='foo',
+    mds = client.create_host_template(name='foo-ht-test0',
+                                      driver='foo',
                                       publicValues={
-                                          'hi': 1,
+                                          'fooConfig': {
+                                              'hi': 1,
+                                          },
                                       },
                                       secretValues=secret_value)
-    assert mds.secretValues == secret_value
-    assert mds.publicValues == {'hi': 1}
+    try:
+        assert mds.secretValues == secret_value
+        assert mds.publicValues == {'fooConfig': {'hi': 1}}
 
-    mds = client.reload(mds)
-    assert 'secretValues' not in mds.links
-    assert mds.secretValues == {
-        'bye': None,
-        'nested': {
-            'key1': None,
+        mds = client.reload(mds)
+        assert 'secretValues' not in mds.links
+        assert mds.secretValues == {
+            'bye': None,
+            'fooConfig': {
+                'key1': None,
+            }
         }
-    }
 
-    mds = client.update(mds, name='foobar')
-    assert mds.name == 'foobar'
+        mds = client.update(mds, name='foobar')
+        assert mds.name == 'foobar'
 
-    mds_service = service_client.reload(mds)
-    assert 'secretValues' in mds_service.links
-    ret = mds_service.secretValues_link()
-    assert ret == secret_value
+        mds_service = service_client.reload(mds)
+        assert 'secretValues' in mds_service.links
+        ret = mds_service.secretValues_link()
+        assert ret == secret_value
 
-    client.delete(mds)
-    mds = client.wait_success(mds)
-    assert mds.removed is not None
+    finally:
+        mds = client.wait_success(client.delete(mds))
+        assert mds.removed is not None
