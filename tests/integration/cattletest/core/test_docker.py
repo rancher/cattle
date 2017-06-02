@@ -646,6 +646,7 @@ def test_docker_newfields(docker_client, super_client):
                                        tmpfs=tmpfs,
                                        uts=uts,
                                        ipcMode=ipcMode,
+                                       init=True,
                                        stopSignal=stopSignal,
                                        networkMode='bridge',
                                        ulimits=ulimits)
@@ -669,6 +670,7 @@ def test_docker_newfields(docker_client, super_client):
     assert c.data['dockerInspect']['HostConfig']['Tmpfs'] == {"/run": run_args}
     assert c.data['dockerInspect']['HostConfig']['UTSMode'] == 'host'
     assert c.data['dockerInspect']['HostConfig']['IpcMode'] == 'host'
+    assert c.data['dockerInspect']['HostConfig']['Init'] is True
     host_limits = {"Name": "cpu", "Hard": 100000, "Soft": 100000}
     assert c.data['dockerInspect']['HostConfig']['Ulimits'] == [host_limits]
     assert c.data['dockerInspect']['Config']['StopSignal'] == 'SIGTERM'

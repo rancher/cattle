@@ -342,6 +342,10 @@
          	"type" : "map[string]",
             "nullable" : true
         },
+        "init": {
+            "type": "boolean",
+            "default": false
+        },
          "storageOpt" : {
          	"type" : "map[string]",
          	"nullable" : true
