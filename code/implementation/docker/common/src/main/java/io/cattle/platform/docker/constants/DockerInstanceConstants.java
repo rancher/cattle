@@ -50,6 +50,7 @@ public class DockerInstanceConstants {
     public static final String FIELD_IPC_MODE = "ipcMode";
     public static final String FIELD_STOP_SIGNAL = "stopSignal";
     public static final String FIELD_SYSCTLS = "sysctls";
+    public static final String FIELD_INIT = "init";
     public static final String FIELD_STORAGE_OPT = "storageOpt";
     public static final String FIELD_OOM_SCORE_ADJ = "oomScoreAdj";
     public static final String FIELD_ULIMITS = "ulimits";
