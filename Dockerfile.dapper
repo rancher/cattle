@@ -45,9 +45,9 @@ RUN cd /tmp && \
     cd .. && \
     rm -rf cattle
 
+ARG DOCKER_VERSION=17.03.1-ce
 # Install Docker
-RUN curl -o /usr/bin/docker -sL -f https://get.docker.com/builds/Linux/x86_64/docker-1.10.3 && \
-    chmod +x /usr/bin/docker
+RUN curl -sfL https://get.docker.com/builds/Linux/x86_64/docker-${DOCKER_VERSION}.tgz | tar xzf - -C /usr/bin --strip-components=1
 
 # Cache binaries
 COPY ./resources/content/cattle-global.properties ${DAPPER_SOURCE}/resources/content/
