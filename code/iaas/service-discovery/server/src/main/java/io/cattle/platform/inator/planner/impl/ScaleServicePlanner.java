@@ -58,6 +58,7 @@ public class ScaleServicePlanner implements UnitPlanner {
         while (usedIndex.contains(Integer.toString(indexCounter))) {
             indexCounter++;
         }
+        usedIndex.add(Integer.toString(indexCounter));
         return Integer.toString(indexCounter);
     }
 

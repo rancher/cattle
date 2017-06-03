@@ -6,7 +6,6 @@ import io.cattle.platform.engine.model.ProcessInstance;
 import io.cattle.platform.engine.model.ProcessReference;
 import io.cattle.platform.engine.model.Trigger;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -40,11 +39,12 @@ public class ProcessServer implements ProcessInstanceExecutor {
     ProcessManager repository;
     @Inject
     Cluster cluster;
+    @Inject
+    List<Trigger> triggers;
 
     Map<String, Queue<Long>> queuedByResource = new HashMap<>();
     Map<Long, ProcessReference> refs = new HashMap<>();
     Map<String, ProcessInstance> inflightByResource = new HashMap<>();
-    List<Trigger> triggers = new ArrayList<>();
 
     public void runOutstandingJobs() {
         for (ProcessReference ref : repository.pendingTasks()) {
@@ -68,18 +68,16 @@ public class ProcessServer implements ProcessInstanceExecutor {
         refs.put(ref.getId(), ref);
 
         String resourceKey = ref.getResourceKey();
-        if (inflightByResource.containsKey(resourceKey)) {
-            queueByResource(resourceKey, ref);
-            return;
-        }
-
         ProcessInstance instance = new ProcessInstance(ref, this, getPriority(ref));
-        inflightByResource.put(resourceKey, instance);
-        submitToExecutor(instance);
+        submitToExecutor(resourceKey, instance);
     }
 
     protected Integer getPriority(ProcessReference ref) {
         return 0;
+    }
+
+    protected boolean isResourceInFlight(String resourceKey) {
+        return inflightByResource.containsKey(resourceKey);
     }
 
     protected void queueByResource(String resourceKey, ProcessReference ref) {
@@ -101,8 +99,10 @@ public class ProcessServer implements ProcessInstanceExecutor {
         }
     }
 
-    protected void submitToExecutor(ProcessInstance instance) {
-        if (isBlocking(instance)) {
+    protected synchronized void submitToExecutor(String resourceKey, ProcessInstance instance) {
+        if (isResourceInFlight(resourceKey)) {
+            queueByResource(resourceKey, instance.getRef());
+        } else if (isBlocking(instance)) {
             blockingExecutor.execute(instance);
         } else {
             nonBlockingExecutor.execute(instance);
@@ -111,20 +111,19 @@ public class ProcessServer implements ProcessInstanceExecutor {
 
     public synchronized void done(ProcessInstance instance) {
         ProcessReference ref = instance.getRef();
+        String resourceKey = ref.getResourceKey();
+        inflightByResource.remove(resourceKey);
+
         if (instance.isDone()) {
-            String resourceKey = ref.getResourceKey();
             refs.remove(ref.getId());
             Queue<Long> queue = queuedByResource.get(resourceKey);
-            if (queue == null) {
-                inflightByResource.remove(resourceKey);
-            } else {
+            if (queue != null) {
                 ProcessReference newRef = refs.get(queue.remove());
                 if (queue.size() == 0) {
                     queuedByResource.remove(ref.getResourceKey());
                 }
                 ProcessInstance newInstance = new ProcessInstance(newRef, this, -1000);
-                inflightByResource.put(resourceKey, newInstance);
-                submitToExecutor(newInstance);
+                submitToExecutor(resourceKey, newInstance);
             }
         } else {
             Date date = instance.getRunAfter();
@@ -135,7 +134,7 @@ public class ProcessServer implements ProcessInstanceExecutor {
             scheduledExecutor.schedule(new Runnable() {
                 @Override
                 public void run() {
-                    submitToExecutor(instance);
+                    submitToExecutor(resourceKey, instance);
                 }
             }, after, TimeUnit.MILLISECONDS);
         }

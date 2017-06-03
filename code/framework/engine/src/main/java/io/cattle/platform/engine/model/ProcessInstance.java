@@ -5,11 +5,11 @@ import io.cattle.platform.util.type.Priority;
 
 import java.util.Date;
 
-import org.apache.cloudstack.managed.context.ManagedContextRunnable;
+import org.apache.cloudstack.managed.context.NoExceptionRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ProcessInstance extends ManagedContextRunnable implements Runnable, Comparable<ProcessInstance>, Priority {
+public class ProcessInstance extends NoExceptionRunnable implements Runnable, Comparable<ProcessInstance>, Priority {
 
     private static Logger log = LoggerFactory.getLogger(ProcessInstance.class);
 
@@ -54,7 +54,7 @@ public class ProcessInstance extends ManagedContextRunnable implements Runnable,
     }
 
     @Override
-    protected void runInContext() {
+    protected void doRun() {
         instance = null;
         done = false;
         try {
@@ -81,5 +81,9 @@ public class ProcessInstance extends ManagedContextRunnable implements Runnable,
 
     public boolean isDone() {
         return done;
+    }
+
+    public Object getResource() {
+        return instance == null ? null : instance.getResource();
     }
 }

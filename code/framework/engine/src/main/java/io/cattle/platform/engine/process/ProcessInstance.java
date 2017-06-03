@@ -11,6 +11,8 @@ public interface ProcessInstance {
 
     String getResourceId();
 
+    Object getResource();
+
     ExitReason execute();
 
     ProcessRecord getProcessRecord();

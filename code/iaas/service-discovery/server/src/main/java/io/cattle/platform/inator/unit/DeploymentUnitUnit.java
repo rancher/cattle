@@ -59,11 +59,13 @@ public class DeploymentUnitUnit implements Unit, BasicStateUnit, PausableUnit {
             return Result.good();
         }
 
+        long start = System.currentTimeMillis();
         Service service = this.service.getService();
         DeploymentUnit unit = svc.serviceDao.createDeploymentUnit(service.getAccountId(), service.getId(),
                 service.getStackId(), hostId, index, service.getRevisionId(), context.getInator().getDesiredState() == DesiredState.ACTIVE);
         this.unit = new DeploymentUnitWrapper(unit, service, svc);
 
+        System.err.println("!!!!!!!! CREATE DU: " + unit.getId() + " " + (System.currentTimeMillis() - start) +"ms");
         return Result.good();
     }
 

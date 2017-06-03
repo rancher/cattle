@@ -674,4 +674,9 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         return instanceContext.getState().getResourceId();
     }
 
+    @Override
+    public Object getResource() {
+        return instanceContext.getState().getResource();
+    }
+
 }
