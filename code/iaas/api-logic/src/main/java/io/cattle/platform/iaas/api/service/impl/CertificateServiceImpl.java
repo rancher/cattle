@@ -20,11 +20,9 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.apache.commons.codec.binary.Base64;
 
-@Named
 public class CertificateServiceImpl implements CertificateService {
     @Inject
     ObjectManager objectManager;
