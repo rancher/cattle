@@ -19,6 +19,8 @@ public class SystemLabels {
     public static final String LABEL_PULL_IMAGE = "io.rancher.container.pull_image";
     public static final String COMPOSE_SERVICE_LABEL = "com.docker.compose.service";
     public static final String COMPOSE_PROJECT_LABEL = "com.docker.compose.project";
+    public static final String LABEL_PROXY_PORT = "io.rancher.websocket.proxy.port";
+    public static final String LABEL_PROXY_SCHEME = "io.rancher.websocket.proxy.scheme";
 
     /**
      * Indicates an instance runs an agent that provides the labels provider service
