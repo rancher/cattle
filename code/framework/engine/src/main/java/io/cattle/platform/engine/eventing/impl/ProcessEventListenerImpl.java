@@ -1,30 +1,24 @@
 package io.cattle.platform.engine.eventing.impl;
 
 import io.cattle.platform.engine.eventing.ProcessEventListener;
-import io.cattle.platform.engine.manager.ProcessManager;
-import io.cattle.platform.engine.server.ProcessInstanceDispatcher;
-import io.cattle.platform.engine.server.ProcessInstanceReference;
-import io.cattle.platform.eventing.model.Event;
+import io.cattle.platform.engine.eventing.ProcessExecuteEvent;
+import io.cattle.platform.engine2.model.ProcessReference;
+import io.cattle.platform.engine2.server.ProcessServer;
 
 import javax.inject.Inject;
 
 public class ProcessEventListenerImpl implements ProcessEventListener {
 
     @Inject
-    ProcessInstanceDispatcher dispatcher;
-    @Inject
-    ProcessManager processManager;
+    ProcessServer processServer;
 
     @Override
-    public void processExecute(Event event) {
-        if (event.getResourceId() == null)
+    public void processExecute(ProcessExecuteEvent event) {
+        if (event.getResourceId() == null || event.getData() == null)
             return;
 
-        ProcessInstanceReference ref = processManager.loadReference(new Long(event.getResourceId()));
-        if (ref != null) {
-            ref.setEvent(true);
-            dispatcher.dispatch(ref);
-        }
+        processServer.submit(new ProcessReference(new Long(event.getResourceId()), event.getData().getName(), event.getData().getResourceType(),
+                event.getData().getResourceId().toString(), event.getData().getAccountId()));
     }
 
 }

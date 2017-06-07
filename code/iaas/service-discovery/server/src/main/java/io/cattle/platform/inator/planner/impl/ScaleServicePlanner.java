@@ -20,6 +20,8 @@ public class ScaleServicePlanner implements UnitPlanner {
     ServiceWrapper service;
     Set<UnitRef> desiredSet;
     InatorServices svc;
+    Set<String> usedIndex = new HashSet<>();
+    int indexCounter = 1;
 
     public ScaleServicePlanner(Service service, InatorServices svc) {
         super();
@@ -31,15 +33,32 @@ public class ScaleServicePlanner implements UnitPlanner {
     public Map<UnitRef, Unit> fillIn(InatorContext context) {
         Map<UnitRef, Unit> result = new HashMap<>(context.getUnits());
         FillInLimit limit = new FillInLimit();
+        findIndexes(result.keySet());
         int scale = service.getScale();
         for (int i = result.size() ; i < scale ; i++) {
-            DeploymentUnitUnit unit = new DeploymentUnitUnit(service, Integer.toString(i+1), svc);
+            DeploymentUnitUnit unit = new DeploymentUnitUnit(service, nextIndex(), svc);
             if (!limit.add(result, unit)) {
                 break;
             }
         }
 
         return result;
+    }
+
+    protected void findIndexes(Set<UnitRef> refs) {
+        for (UnitRef ref : refs) {
+            String index = DeploymentUnitWrapper.getIndex(ref);
+            if (index != null) {
+                usedIndex.add(index);
+            }
+        }
+    }
+
+    protected String nextIndex() {
+        while (usedIndex.contains(Integer.toString(indexCounter))) {
+            indexCounter++;
+        }
+        return Integer.toString(indexCounter);
     }
 
     @Override

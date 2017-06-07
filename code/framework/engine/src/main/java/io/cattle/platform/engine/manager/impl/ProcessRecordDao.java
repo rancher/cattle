@@ -1,6 +1,6 @@
 package io.cattle.platform.engine.manager.impl;
 
-import io.cattle.platform.engine.server.ProcessInstanceReference;
+import io.cattle.platform.engine2.model.ProcessReference;
 
 import java.util.List;
 
@@ -10,13 +10,9 @@ public interface ProcessRecordDao {
 
     void update(ProcessRecord record, boolean schedule);
 
-    List<ProcessInstanceReference> pendingTasks();
-
-    Long nextTask(String resourceType, String resourceId);
+    List<ProcessReference> pendingTasks();
 
     ProcessRecord getRecord(Long id);
-
-    ProcessInstanceReference loadReference(Long id);
 
     void setDone(Object obj, String stateField, String state);
 

@@ -15,7 +15,7 @@ import io.cattle.platform.engine.process.ProcessServiceContext;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.engine.process.StateChangeMonitor;
 import io.cattle.platform.engine.process.impl.DefaultProcessInstanceImpl;
-import io.cattle.platform.engine.server.ProcessInstanceReference;
+import io.cattle.platform.engine2.model.ProcessReference;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.util.concurrent.DelayedObject;
@@ -138,22 +138,8 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
     }
 
     @Override
-    public List<ProcessInstanceReference> pendingTasks() {
+    public List<ProcessReference> pendingTasks() {
         return processRecordDao.pendingTasks();
-    }
-
-
-    @Override
-    public Long getRemainingTask(ProcessInstance instance) {
-        if (!(instance instanceof DefaultProcessInstanceImpl)) {
-            return null;
-        }
-        ProcessRecord record = ((DefaultProcessInstanceImpl)instance).getProcessRecord();
-        if (record == null) {
-            return null;
-        }
-
-        return processRecordDao.nextTask(record.getResourceType(), record.getResourceId());
     }
 
     @Override
@@ -204,11 +190,6 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
                 persistInProgress();
             }
         }, EXECUTION_DELAY.get(), EXECUTION_DELAY.get(), TimeUnit.MILLISECONDS);
-    }
-
-    @Override
-    public ProcessInstanceReference loadReference(Long id) {
-        return processRecordDao.loadReference(id);
     }
 
 }
