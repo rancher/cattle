@@ -552,3 +552,55 @@ def test_v1_v2_mix_export(client, context):
     assert 'per_container' not in vol
 
     assert 'volume_driver' not in docker_yml["services"][svc.name]
+
+
+def test_null_driver_export(client, context):
+    stack = client.create_stack(name=random_str())
+    stack = client.wait_success(stack)
+    image_uuid = context.image_uuid
+    data_volumes = ["foo:/bar"]
+    launch_config = {"imageUuid": image_uuid,
+                     "dataVolumes": data_volumes,
+                     }
+    svc = client.create_service(name=random_str(),
+                                stackId=stack.id,
+                                launchConfig=launch_config,
+                                scale=1)
+    svc = client.wait_success(svc)
+    assert svc.state == "inactive"
+
+    # test export
+    compose_config = stack.exportconfig()
+    assert compose_config is not None
+    docker_yml = yaml.load(compose_config.dockerComposeConfig)
+    assert 'volumes' not in docker_yml
+
+
+def test_volume_template_without_driver_fields(client, context):
+    stack = client.create_stack(name=random_str())
+    stack = client.wait_success(stack)
+
+    t = client.create_volumeTemplate(name="foo",
+                                     stackId=stack.id,
+                                     external=False)
+    image_uuid = context.image_uuid
+    data_volumes = ["foo:/bar"]
+    launch_config = {"imageUuid": image_uuid,
+                     "dataVolumes": data_volumes,
+                     }
+    svc = client.create_service(name=random_str(),
+                                stackId=stack.id,
+                                launchConfig=launch_config,
+                                scale=1)
+
+    svc = client.wait_success(svc)
+    assert svc.state == "inactive"
+
+    compose_config = stack.exportconfig()
+    assert compose_config is not None
+    docker_yml = yaml.load(compose_config.dockerComposeConfig)
+    volumes = docker_yml['volumes']
+    assert len(volumes) == 1
+    assert t.name in volumes
+    vol = volumes[t.name]
+    assert len(vol) == 0
