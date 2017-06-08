@@ -77,6 +77,8 @@ import io.cattle.platform.iaas.api.host.HostEvacuateActionHandler;
 import io.cattle.platform.iaas.api.host.HostTemplateLinkHandler;
 import io.cattle.platform.iaas.api.host.HostTemplateOutputFilter;
 import io.cattle.platform.iaas.api.host.HostTemplateValidationFilter;
+import io.cattle.platform.iaas.api.service.ServiceCertificateActionHandler;
+import io.cattle.platform.iaas.api.service.impl.CertificateServiceImpl;
 import io.cattle.platform.object.meta.TypeSet;
 import io.cattle.platform.storage.api.filter.ExternalTemplateInstanceFilter;
 import io.cattle.platform.systemstack.service.UpgradeManager;
@@ -501,6 +503,16 @@ public class ApiServerConfig {
     @Bean
     AccountDeactivateActionHandler AccountDeactivateActionHandler() {
         return new AccountDeactivateActionHandler();
+    }
+
+    @Bean
+    ServiceCertificateActionHandler ServiceCertificateActionHandler() {
+        return new ServiceCertificateActionHandler();
+    }
+
+    @Bean
+    CertificateServiceImpl CertificateServiceImpl() {
+        return new CertificateServiceImpl();
     }
 
     @Bean

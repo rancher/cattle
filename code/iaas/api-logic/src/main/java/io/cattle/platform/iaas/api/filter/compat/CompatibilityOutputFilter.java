@@ -7,6 +7,7 @@ import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.model.impl.ResourceImpl;
+import io.github.ibuildthecloud.gdapi.model.impl.WrappedResource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.response.ResourceOutputFilter;
 import io.github.ibuildthecloud.gdapi.url.UrlBuilder;
@@ -80,6 +81,15 @@ public class CompatibilityOutputFilter implements ResourceOutputFilter {
 
         convertURLs(converted, "/stacks/", "/environments/", converted.getLinks());
         convertURLs(converted, "/stacks/", "/environments/", converted.getActions());
+
+        if (ServiceConstants.KIND_SCALING_GROUP_SERVICE.equals(converted.getType())) {
+            if (converted instanceof WrappedResource) {
+                ((WrappedResource) converted).setType(ServiceConstants.KIND_SERVICE);
+            }
+            converted.getFields().put("kind", ServiceConstants.KIND_SERVICE);
+            convertURLs(converted, "/scalinggroups/", "/services/", converted.getLinks());
+            convertURLs(converted, "/scalinggroups/", "/services/", converted.getActions());
+        }
     }
 
     protected void convertURLs(Resource converted, String from, String to, Map<String, URL> links) {
