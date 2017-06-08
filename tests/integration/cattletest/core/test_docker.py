@@ -473,17 +473,14 @@ def test_docker_volumes(docker_client, super_client):
     assert len(volumes) == 1
 
     mounts = c.mounts_link()
-    assert len(mounts) == 2
-    foo_mount, bar_mount = None, None
-    foo_vol, bar_vol = None, None
+    assert len(mounts) == 1
+    foo_mount = None
+    foo_vol = None
     for mount in mounts:
         assert mount.instance().id == c.id
         if mount.path == '/foo':
             foo_mount = mount
             foo_vol = mount.volume()
-        elif mount.path == '/bar':
-            bar_mount = mount
-            bar_vol = mount.volume()
 
     foo_vol = wait_for_condition(
         docker_client, foo_vol, lambda x: x.state == 'active')
@@ -493,16 +490,8 @@ def test_docker_volumes(docker_client, super_client):
     assert not foo_vol.isHostPath
     assert _(foo_vol).attachedState == 'inactive'
 
-    bar_vol = wait_for_condition(
-        docker_client, bar_vol, lambda x: x.state == 'active')
-    assert bar_mount is not None
-    assert bar_mount.permissions == 'rw'
-    assert bar_vol is not None
-    assert _(bar_vol).attachedState == 'inactive'
-    assert bar_vol.isHostPath
     # We use 'in' instead of '==' because Docker uses the fully qualified
     # non-linked path and it might look something like: /mnt/sda1/<path>
-    assert bar_host_path in bar_vol.uri
 
     c2 = docker_client.create_container(name="volumes_from_test",
                                         networkMode='bridge',
@@ -515,14 +504,12 @@ def test_docker_volumes(docker_client, super_client):
 
     c2 = super_client.wait_success(c2.start())
     c2_mounts = c2.mounts_link()
-    assert len(c2_mounts) == 2
+    assert len(c2_mounts) == 1
 
     for mount in c2_mounts:
         assert mount.instance().id == c2.id
         if mount.path == '/foo':
             assert mount.volumeId == foo_vol.id
-        elif mount.path == '/bar':
-            assert mount.volumeId == bar_vol.id
 
     c = docker_client.wait_success(c.stop(timeout=0))
     c2 = docker_client.wait_success(c2.stop(timeout=0))
@@ -533,7 +520,6 @@ def test_docker_volumes(docker_client, super_client):
 
     # set it as false bc we delete volume as soon as we delete container
     _check_path(foo_vol, False, docker_client, super_client)
-    _check_path(bar_vol, True, docker_client, super_client)
 
 
 @if_docker
@@ -808,7 +794,7 @@ def test_cleanup_volume_strategy(docker_client):
 @if_docker
 def test_docker_volume_long(docker_client):
     a = 'a' * 200
-    v = '/tmp/{}:/tmp/{}'.format(a, a)
+    v = 'tmp:/tmp/{}'.format(a)
     uuid = TEST_IMAGE_UUID
     c = docker_client.create_container(imageUuid=uuid,
                                        networkMode='bridge',
@@ -837,15 +823,12 @@ def test_docker_mount_life_cycle(docker_client):
 
     c = docker_client.wait_success(c)
     c = docker_client.wait_success(c.start())
-    mounts = check_mounts(docker_client, c, 3)
+    mounts = check_mounts(docker_client, c, 2)
     v1 = mounts[0].volume()
     v2 = mounts[1].volume()
-    v3 = mounts[2].volume()
     wait_for_condition(docker_client, v1, lambda x: x.state == 'active',
                        lambda x: 'state is %s' % x)
     wait_for_condition(docker_client, v2, lambda x: x.state == 'active',
-                       lambda x: 'state is %s' % x)
-    wait_for_condition(docker_client, v3, lambda x: x.state == 'active',
                        lambda x: 'state is %s' % x)
 
     c = docker_client.wait_success(c.stop(timeout=0))
@@ -854,15 +837,12 @@ def test_docker_mount_life_cycle(docker_client):
                        lambda x: 'state is %s' % x)
     wait_for_condition(docker_client, v2, lambda x: x.state == 'active',
                        lambda x: 'state is %s' % x)
-    wait_for_condition(docker_client, v3, lambda x: x.state == 'active',
-                       lambda x: 'state is %s' % x)
 
     c = docker_client.wait_success(c.remove())
     check_mounts(docker_client, c, 0)
     # State can be either detached or removed depending on whether c got purged
     assert docker_client.wait_success(v1).state != 'active'
     assert docker_client.wait_success(v2).state != 'active'
-    assert docker_client.wait_success(v3).state != 'active'
 
 
 @if_docker
