@@ -24,10 +24,12 @@ import io.cattle.platform.core.model.tables.records.ProjectMemberRecord;
 import io.cattle.platform.core.model.tables.records.UserPreferenceRecord;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -39,6 +41,12 @@ import org.jooq.impl.DSL;
 
 @Named
 public class AccountDaoImpl extends AbstractCoreDao implements AccountDao {
+
+    private static final Set<String> GOOD_STATES = CollectionUtils.set(
+            CommonStatesConstants.REGISTERING,
+            CommonStatesConstants.ACTIVATING,
+            CommonStatesConstants.ACTIVE,
+            ServiceConstants.STATE_UPGRADING);
 
     @Inject
     ObjectProcessManager objectProcessManager;
@@ -120,9 +128,7 @@ public class AccountDaoImpl extends AbstractCoreDao implements AccountDao {
 
     @Override
     public boolean isActiveAccount(Account account) {
-        List<String> goodStates = Arrays.asList(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE,
-                ServiceConstants.STATE_UPGRADING);
-        return goodStates.contains(account.getState());
+        return GOOD_STATES.contains(account.getState());
     }
 
     @Override

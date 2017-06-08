@@ -23,8 +23,6 @@ public interface ProcessManager {
 
     void persistState(ProcessInstance process, boolean schedule);
 
-    ProcessDefinition getProcessDelegate(ProcessDefinition def);
-
     ProcessDefinition getProcessDefinition(String name);
 
 }

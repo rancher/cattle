@@ -1,6 +1,7 @@
 package io.cattle.platform.storage.simulator.process;
 
 import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
+
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -8,7 +9,6 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
-import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
 import io.cattle.platform.storage.simulator.lock.SimExtPoolCreateLock;
 
@@ -45,12 +45,12 @@ public class SimulatorPoolCreate extends AbstractObjectProcessHandler {
                     if (extPool == null) {
                         extPool = getObjectManager().create(StoragePool.class, ObjectMetaDataManager.UUID_FIELD, EXT_UUID, ObjectMetaDataManager.KIND_FIELD,
                                 KIND, STORAGE_POOL.ACCOUNT_ID, pool.getAccountId(), STORAGE_POOL.EXTERNAL, true);
-                        getObjectProcessManager().executeStandardProcess(StandardProcess.CREATE, extPool, null);
+                        createThenActivate(extPool, null);
                     }
                 }
             });
-        } else {
-            getObjectProcessManager().executeStandardProcess(StandardProcess.CREATE, extPool, null);
+        } else if (extPool.getRemoved() == null) {
+            createThenActivate(extPool, null);
         }
 
         return null;

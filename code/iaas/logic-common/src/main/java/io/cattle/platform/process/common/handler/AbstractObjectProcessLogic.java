@@ -85,8 +85,12 @@ public abstract class AbstractObjectProcessLogic extends AbstractProcessLogic {
         }
     }
 
-    protected ExitReason create(Object obj, Map<String, Object> data) {
-        return getObjectProcessManager().executeStandardProcess(StandardProcess.CREATE, obj, data);
+    protected ExitReason createIfNot(Object obj, Map<String, Object> data) {
+        String state = ObjectUtils.getState(obj);
+        if (CommonStatesConstants.REQUESTED.equals(state) || CommonStatesConstants.CREATING.equals(state)) {
+            return getObjectProcessManager().executeStandardProcess(StandardProcess.CREATE, obj, data);
+        }
+        return null;
     }
 
     protected ExitReason remove(Object obj, Map<String, Object> data) {

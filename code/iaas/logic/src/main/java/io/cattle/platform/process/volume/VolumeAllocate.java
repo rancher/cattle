@@ -24,15 +24,15 @@ public class VolumeAllocate extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Map<String, Object> result = new HashMap<String, Object>();
-        Map<String, Set<Long>> allocationData = new HashMap<String, Set<Long>>();
+        Map<String, Object> result = new HashMap<>();
+        Map<String, Set<Long>> allocationData = new HashMap<>();
         result.put("_allocationData", allocationData);
 
         Volume volume = (Volume) state.getResource();
 
         for (VolumeStoragePoolMap map : mapDao.findNonRemoved(VolumeStoragePoolMap.class, Volume.class, volume.getId())) {
             CollectionUtils.addToMap(allocationData, "volume:" + volume.getId(), map.getVolumeId(), HashSet.class);
-            create(map, state.getData());
+            createThenActivate(map, state.getData());
         }
 
         return new HandlerResult(result);

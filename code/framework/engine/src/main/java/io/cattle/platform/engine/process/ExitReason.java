@@ -8,7 +8,6 @@ public enum ExitReason {
     DELAY(true, false, false, null),
     STATE_CHANGED(false, false, false, null),
     DONE(SUCCESS),
-    DELEGATE(false, false, false, null),
     SCHEDULED(false, false, false, null),
     PROCESS_ALREADY_IN_PROGRESS(false, false, false, null),
     RESOURCE_BUSY(false, false, false, null),

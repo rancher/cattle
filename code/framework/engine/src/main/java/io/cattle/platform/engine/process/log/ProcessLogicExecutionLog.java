@@ -7,7 +7,6 @@ public class ProcessLogicExecutionLog extends AbstractParentLog implements Paren
     Long stopTime;
     ExceptionLog exception;
     boolean shouldContinue;
-    boolean shouldDelegate;
     String chainProcessName;
 
     public long getStartTime() {
@@ -49,14 +48,6 @@ public class ProcessLogicExecutionLog extends AbstractParentLog implements Paren
 
     public void setShouldContinue(boolean shouldContinue) {
         this.shouldContinue = shouldContinue;
-    }
-
-    public boolean isShouldDelegate() {
-        return shouldDelegate;
-    }
-
-    public void setShouldDelegate(boolean shouldDelegate) {
-        this.shouldDelegate = shouldDelegate;
     }
 
     public String getChainProcessName() {

@@ -47,8 +47,9 @@ public class RegisterTokenAccountCreate extends AbstractObjectProcessLogic imple
         }
 
         if (!found) {
-            resourceDao.createAndSchedule(Credential.class, CREDENTIAL.ACCOUNT_ID, account.getId(), CREDENTIAL.KIND,
-                    RegisterConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN);
+            resourceDao.createAndSchedule(Credential.class,
+                    CREDENTIAL.ACCOUNT_ID, account.getId(),
+                    CREDENTIAL.KIND, RegisterConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN);
         }
 
         return null;

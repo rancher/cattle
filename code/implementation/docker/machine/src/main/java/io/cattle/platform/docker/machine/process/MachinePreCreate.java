@@ -3,6 +3,7 @@ package io.cattle.platform.docker.machine.process;
 import static io.cattle.platform.core.constants.MachineConstants.*;
 import static io.cattle.platform.core.model.tables.PhysicalHostTable.*;
 
+import io.cattle.platform.core.constants.MachineConstants;
 import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPreListener;
@@ -33,7 +34,7 @@ public class MachinePreCreate extends AbstractObjectProcessLogic implements Proc
             return null;
         }
 
-        Map<Object, Object> newFields = new HashMap<Object, Object>();
+        Map<Object, Object> newFields = new HashMap<>();
 
         if (StringUtils.isEmpty(physHost.getExternalId())) {
             String externalId = UUID.randomUUID().toString();
@@ -47,7 +48,7 @@ public class MachinePreCreate extends AbstractObjectProcessLogic implements Proc
             newFields.put(FIELD_DRIVER, driver);
         }
 
-        return new HandlerResult(newFields);
+        return new HandlerResult(newFields).withChainProcessName(MachineConstants.PROCESS_BOOTSTRAP);
     }
 
     @Override

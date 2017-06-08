@@ -29,15 +29,6 @@ public class GenericResourceProcessDefinition extends AbstractProcessDefinition 
         return new GenericResourceProcessState(jsonMapper, statesDefinition, config, objectManager, processRecordDao);
     }
 
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
-    }
-
     public ResourceStatesDefinition getStatesDefinition() {
         return statesDefinition;
     }
@@ -45,15 +36,6 @@ public class GenericResourceProcessDefinition extends AbstractProcessDefinition 
     @Inject
     public void setStatesDefinition(ResourceStatesDefinition statesDefinition) {
         this.statesDefinition = statesDefinition;
-    }
-
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
-    }
-
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
     }
 
     @Override

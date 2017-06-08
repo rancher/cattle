@@ -12,7 +12,6 @@ import io.cattle.platform.engine.handler.ProcessHandler;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
-import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
@@ -62,7 +61,7 @@ public class RegisterCreate extends AbstractGenericObjectProcessLogic implements
             @Override
             public void run() {
                 try {
-                    objectProcessManager.scheduleStandardProcess(StandardProcess.CREATE, agentFinal, state.getData());
+                    objectProcessManager.createThenActivate(agentFinal, state.getData());
                 } catch (ProcessCancelException e) {
                 }
             }

@@ -50,7 +50,6 @@ import io.cattle.platform.util.exception.LoggableException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +64,6 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
     ProcessServiceContext context;
     ProcessInstanceContext instanceContext;
-    Stack<ProcessInstanceContext> instanceContextHistory = new Stack<>();
 
     ProcessRecord record;
     ProcessLog processLog;
@@ -187,13 +185,9 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
                 break;
             } catch (ProcessCancelException e) {
-                if (shouldAbort(e)) {
-                    if (!instanceContext.getState().shouldCancel(record) && instanceContext.getState().isTransitioning())
-                        throw new IllegalStateException("Attempt to cancel when process is still transitioning", e);
-                    throw e;
-                } else {
-                    execution.exit(DELEGATE);
-                }
+                if (!instanceContext.getState().shouldCancel(record) && instanceContext.getState().isTransitioning())
+                    throw new IllegalStateException("Attempt to cancel when process is still transitioning", e);
+                throw e;
             } catch (ProcessExecutionExitException e) {
                 e.log(log);
                 throw e;
@@ -214,28 +208,6 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                 closeLog(engineContext);
             }
         }
-    }
-
-    protected boolean shouldAbort(ProcessCancelException e) {
-        ProcessDefinition def = context.getProcessManager().getProcessDelegate(instanceContext.getProcessDefinition());
-        if (def == null) {
-            return true;
-        }
-
-        ProcessState state = def.constructProcessState(record);
-        if (state.shouldCancel(record)) {
-            return true;
-        }
-
-        ProcessInstanceContext newContext = new ProcessInstanceContext();
-        newContext.setProcessDefinition(def);
-        newContext.setState(state);
-        newContext.setPhase(ProcessPhase.STARTED);
-
-        instanceContextHistory.push(instanceContext);
-        instanceContext = newContext;
-
-        return false;
     }
 
     protected void acquireLockAndRun() {
@@ -395,8 +367,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         return null;
     }
 
-    protected boolean runHandlers(ProcessPhase phase, List<? extends ProcessLogic> handlers) {
-        boolean shouldDelegate = false;
+    protected void runHandlers(ProcessPhase phase, List<? extends ProcessLogic> handlers) {
         final ProcessDefinition processDefinition = instanceContext.getProcessDefinition();
         final ProcessState state = instanceContext.getState();
         ProcessPhase currentPhase = instanceContext.getPhase();
@@ -421,11 +392,11 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                     if (chainResult != null) {
                         if (chainProcess != null && !chainResult.equals(chainProcess)) {
                             log.error("Not chaining process to [{}] because [{}] already set", chainResult, chainProcess);
+                        } else {
+                            chainProcess = chainResult;
                         }
-                        chainProcess = chainResult;
                     }
 
-                    shouldDelegate |= result.shouldDelegate();
                     if (!result.shouldContinue(instanceContext.getPhase())) {
                         break;
                     }
@@ -439,8 +410,6 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
             instanceContext.setPhase(phase);
         }
-
-        return shouldDelegate;
     }
 
     protected String logicTypeString(ProcessLogic logic) {
@@ -471,7 +440,6 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
             Map<String, Object> resultData = state.convertData(handlerResult.getData());
 
-            processExecution.setShouldDelegate(handlerResult.shouldDelegate());
             processExecution.setShouldContinue(shouldContinue);
             processExecution.setChainProcessName(handlerResult.getChainProcessName());
 
@@ -501,20 +469,15 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
     protected void runLogic() {
         inLogic = true;
-        boolean shouldDelegate = false;
         try {
             instanceContext.setPhase(ProcessPhase.PRE_LISTENERS);
-            shouldDelegate |= runHandlers(ProcessPhase.PRE_LISTENERS_DONE, instanceContext.getProcessDefinition().getPreProcessListeners());
+            runHandlers(ProcessPhase.PRE_LISTENERS_DONE, instanceContext.getProcessDefinition().getPreProcessListeners());
 
             instanceContext.setPhase(ProcessPhase.HANDLERS);
-            shouldDelegate |= runHandlers(ProcessPhase.HANDLER_DONE, instanceContext.getProcessDefinition().getProcessHandlers());
+            runHandlers(ProcessPhase.HANDLER_DONE, instanceContext.getProcessDefinition().getProcessHandlers());
 
             instanceContext.setPhase(ProcessPhase.POST_LISTENERS);
-            shouldDelegate |= runHandlers(ProcessPhase.POST_LISTENERS_DONE, instanceContext.getProcessDefinition().getPostProcessListeners());
-
-            if (shouldDelegate) {
-                throw new ProcessCancelException("Process result triggered a delegation");
-            }
+            runHandlers(ProcessPhase.POST_LISTENERS_DONE, instanceContext.getProcessDefinition().getPostProcessListeners());
         } finally {
             inLogic = false;
         }
