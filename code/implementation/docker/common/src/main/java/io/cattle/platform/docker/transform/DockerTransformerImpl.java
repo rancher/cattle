@@ -119,6 +119,9 @@ public class DockerTransformerImpl implements DockerTransformer {
             }
 
             boolean isBindMount = (dr == null);
+            if (isBindMount) {
+                continue;
+            }
             // TODO When we implement proper volume deletion in py-agent, we can change this so that if the driver is explicitly, local, we don't
             // use 'file://'
             String uriPrefix = StringUtils.isEmpty(dr) || StringUtils.equals(dr, VolumeConstants.LOCAL_DRIVER) ? VolumeConstants.FILE_PREFIX : dr;
