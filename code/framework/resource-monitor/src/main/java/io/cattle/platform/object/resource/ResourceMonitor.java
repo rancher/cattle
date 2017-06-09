@@ -17,4 +17,6 @@ public interface ResourceMonitor {
     <T> T waitForNotTransitioning(T obj);
 
     <T> T waitForNotTransitioning(T obj, long timeout);
+
+    <T> T waitForState(T obj, String desiredState, long wait);
 }
