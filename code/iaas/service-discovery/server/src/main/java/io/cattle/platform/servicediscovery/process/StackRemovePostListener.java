@@ -1,9 +1,10 @@
 package io.cattle.platform.servicediscovery.process;
 
+import static io.cattle.platform.core.constants.CommonStatesConstants.*;
+import static io.cattle.platform.core.constants.VolumeConstants.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
-import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.constants.ExternalEventConstants;
+
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Volume;
@@ -14,18 +15,21 @@ import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.object.process.StandardProcess;
+import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
-import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.util.type.Priority;
 
-import java.util.HashMap;
 import java.util.List;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
 public class StackRemovePostListener extends AbstractObjectProcessLogic implements ProcessPostListener,
         Priority {
+
+    @Inject
+    ResourceMonitor resourceMonitor;
 
     @Override
     public String[] getProcessNames() {
@@ -54,16 +58,13 @@ public class StackRemovePostListener extends AbstractObjectProcessLogic implemen
                 stack.getAccountId(), VOLUME.REMOVED, null,
                 VOLUME.STACK_ID, stack.getId());
         for (Volume volume : volumes) {
-            if (!(volume.getState().equals(CommonStatesConstants.REMOVED) || volume.getState().equals(
-                    CommonStatesConstants.REMOVING))) {
+            String state = volume.getState();
+            if (!REMOVED.equals(state) && !REMOVING.equals(state)){
                 try {
-                    objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, volume,
-                            null);
+                    objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, volume, null);
                 } catch (ProcessCancelException e) {
-                    objectProcessManager.scheduleStandardProcessAsync(StandardProcess.DEACTIVATE,
-                            volume, ProcessUtils.chainInData(new HashMap<String, Object>(),
-                                            ExternalEventConstants.PROC_VOL_DEACTIVATE,
-                                            ExternalEventConstants.PROC_VOL_REMOVE));
+                    volume = resourceMonitor.waitForState(volume, STATE_DETACHED, 3000L);
+                    objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, volume, null);
                 }
             }
         }
