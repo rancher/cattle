@@ -488,7 +488,9 @@ public class DeploymentUnit {
         params.put(ServiceConstants.FIELD_VOLUME_TEMPLATE_ID, template.getId());
         params.put(VolumeConstants.FIELD_VOLUME_DRIVER_OPTS,
                 DataAccessor.fieldMap(template, VolumeConstants.FIELD_VOLUME_DRIVER_OPTS));
-        params.put(VolumeConstants.FIELD_VOLUME_DRIVER, template.getDriver());
+        String driver = StringUtils.isBlank(template.getDriver()) ? VolumeConstants.LOCAL_DRIVER : template.getDriver();
+        params.put(VolumeConstants.FIELD_VOLUME_DRIVER, driver);
+        params.put(VolumeConstants.FIELD_DEVICE_NUM, -1);
         return context.resourceDao.createAndSchedule(Volume.class, params);
     }
 
