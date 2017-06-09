@@ -35,6 +35,7 @@
         <filter-name>PreProxy</filter-name>
         <url-pattern>/v1/proxy/*</url-pattern>
         <url-pattern>/v2-beta/proxy/*</url-pattern>
+        <url-pattern>/v2/proxy/*</url-pattern>
         <dispatcher>REQUEST</dispatcher>
         <dispatcher>FORWARD</dispatcher>
     </filter-mapping>
