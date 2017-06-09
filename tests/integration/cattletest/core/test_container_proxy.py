@@ -1,4 +1,6 @@
 from common_fixtures import *  # NOQA
+import base64
+import json
 
 
 def test_service_proxy(client, context):
@@ -24,3 +26,23 @@ def test_container_proxy(context):
     assert access is not None
     assert access.url is not None
     assert access.token is not None
+
+
+def test_container_proxy_labels(context):
+    labels = {
+        'io.rancher.websocket.proxy.port': 1234,
+        'io.rancher.websocket.proxy.scheme': 'https',
+    }
+    c = context.create_container(name=random_str(), labels=labels)
+    access = c.proxy()
+    assert access is not None
+    assert access.url is not None
+    assert access.token is not None
+
+    s = access.token.split('.')[1]
+    s += '=' * (-len(s) % 4)
+    t = base64.decodestring(s)
+    o = json.loads(t)
+
+    assert o['proxy']['scheme'] == 'https'
+    assert o['proxy']['address'] == c.primaryIpAddress + ':1234'
