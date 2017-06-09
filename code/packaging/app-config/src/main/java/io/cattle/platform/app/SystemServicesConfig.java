@@ -32,13 +32,14 @@ import io.cattle.platform.docker.storage.dao.impl.DockerStorageDaoImpl;
 import io.cattle.platform.docker.storage.process.PullTaskCreate;
 import io.cattle.platform.docker.transform.DockerTransformerImpl;
 import io.cattle.platform.engine.eventing.impl.ProcessEventListenerImpl;
+import io.cattle.platform.engine.manager.LoopManager;
 import io.cattle.platform.engine.manager.impl.DefaultProcessManager;
+import io.cattle.platform.engine.manager.impl.LoopManagerImpl;
 import io.cattle.platform.engine.manager.impl.ProcessRecordDao;
 import io.cattle.platform.engine.manager.impl.jooq.JooqProcessRecordDao;
 import io.cattle.platform.engine.server.ProcessServer;
 import io.cattle.platform.engine.server.impl.ProcessInstanceDispatcherImpl;
-import io.cattle.platform.engine.server.impl.ProcessReplayTask;
-import io.cattle.platform.engine.server.impl.ProcessServerImpl;
+import io.cattle.platform.engine.task.ProcessReplayTask;
 import io.cattle.platform.eventing.annotation.AnnotatedListenerRegistration;
 import io.cattle.platform.eventing.memory.InMemoryEventService;
 import io.cattle.platform.extension.dynamic.DynamicExtensionHandler;
@@ -541,7 +542,12 @@ public class SystemServicesConfig {
 
     @Bean
     ProcessServer ProcessServer() {
-        return new ProcessServerImpl();
+        return new ProcessServer();
+    }
+
+    @Bean
+    LoopManager LoopManagerImpl() {
+        return new LoopManagerImpl();
     }
 
     @Bean

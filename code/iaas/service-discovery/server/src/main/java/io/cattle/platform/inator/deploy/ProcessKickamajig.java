@@ -1,11 +1,13 @@
 package io.cattle.platform.inator.deploy;
 
 import io.cattle.platform.engine.context.EngineContext;
-import io.cattle.platform.engine.process.impl.ProcessExecutionExitException;
+import io.cattle.platform.engine.process.ProcessInstanceException;
 import io.cattle.platform.inator.Unit.UnitState;
 import io.cattle.platform.inator.factory.InatorServices;
+import io.cattle.platform.inator.process.InatorReconcileHandler;
 import io.cattle.platform.util.type.CollectionUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class ProcessKickamajig {
@@ -39,8 +41,8 @@ public class ProcessKickamajig {
             String processName = svc.processManager.getProcessName(obj, process.toString());
             if (processName != null) {
                 try {
-                    svc.processManager.executeProcess(processName, obj, null);
-                } catch (ProcessExecutionExitException e) {
+                    svc.processManager.executeProcess(processName, obj, InatorReconcileHandler.setIgnore(new HashMap<>()));
+                } catch (ProcessInstanceException e) {
                 }
             }
         }

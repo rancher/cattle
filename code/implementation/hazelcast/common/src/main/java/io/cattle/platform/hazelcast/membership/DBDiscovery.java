@@ -28,6 +28,8 @@ import javax.inject.Inject;
 import org.apache.cloudstack.managed.context.NoExceptionRunnable;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,6 +73,7 @@ public class DBDiscovery extends NoExceptionRunnable implements DiscoveryStrateg
     Map<Long, Checkin> heartbeats = new HashMap<>();
     boolean initial = true;
     boolean logStartup = true;
+    Pair<Integer, Integer> countAndIndex = new ImmutablePair<>(0, 0);
 
     @PostConstruct
     public void init() {
@@ -212,14 +215,28 @@ public class DBDiscovery extends NoExceptionRunnable implements DiscoveryStrateg
     protected void setupMembers(Map<Long, ClusterMembership> activeSet, ClusterConfig config) throws IOException {
         Map<Long, ClusteredMember> members = new TreeMap<>();
 
+        int count = 0;
+        int selfIndex = 0;
         for (Map.Entry<Long, ClusterMembership> entry : activeSet.entrySet()) {
             Long id = entry.getKey();
             ClusterMembership member = entry.getValue();
             ClusterConfig memberConfig = jsonMapper.readValue(member.getConfig(), ClusterConfig.class);
-            members.put(id, new ClusteredMember(id, memberConfig, uuid.equals(member.getUuid()), member.getClustered()));
+            ClusteredMember clusteredMember = new ClusteredMember(id, memberConfig, uuid.equals(member.getUuid()), member.getClustered());
+            members.put(id, clusteredMember);
+
+            if (clusteredMember.isSelf()) {
+               selfIndex = count;
+            }
+            count++;
         }
 
+        this.countAndIndex = new ImmutablePair<>(count, selfIndex);
         this.members = members;
+    }
+
+    @Override
+    public Pair<Integer, Integer> getCountAndIndex() {
+        return countAndIndex;
     }
 
     protected void setupHz(Map<Long, ClusterMembership> activeSet, ClusterConfig selfConfig) {

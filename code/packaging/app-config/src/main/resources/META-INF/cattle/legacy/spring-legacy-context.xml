@@ -510,7 +510,7 @@
                             <property name="resources">
                                 <list>
                                     <value>classpath:schema/register/register-auth.json</value>
-                                    <value>classpath*:schema/register/register-auth.json.d/** /*.json</value>
+                                    <value>classpath*:schema/register/register-auth.json.d/**/*.json</value>
                                 </list>
                             </property>
                         </bean>

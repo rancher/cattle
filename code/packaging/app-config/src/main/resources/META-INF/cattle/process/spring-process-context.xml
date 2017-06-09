@@ -318,7 +318,7 @@
     <!-- Physical Host -->  
     <process:process name="physicalhost.create" resourceType="physicalHost" start="requested" transitioning="creating" done="created" delegate="physicalhost.bootstrap" />
     <process:process name="physicalhost.bootstrap" resourceType="physicalHost" start="created,creating" transitioning="bootstrapping" done="active" />
-    <process:process name="physicalhost.remove" resourceType="physicalHost" start="active,requested,bootstrapping,creating,updating,error,erroring" transitioning="removing" done="removed" />
+    <process:process name="physicalhost.remove" resourceType="physicalHost" start="created,active,requested,bootstrapping,creating,updating,error,erroring" transitioning="removing" done="removed" />
     <process:process name="physicalhost.update" resourceType="physicalHost" start="active" transitioning="updating" done="active" />
     <process:process name="physicalhost.error" resourceType="physicalHost" start="creating, bootstrapping, updating" transitioning="erroring" done="error" />
 

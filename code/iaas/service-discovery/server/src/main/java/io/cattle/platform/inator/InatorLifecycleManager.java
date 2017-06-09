@@ -1,16 +1,10 @@
 package io.cattle.platform.inator;
 
 import io.cattle.platform.activity.ActivityService;
-import io.cattle.platform.configitem.events.ConfigUpdate;
-import io.cattle.platform.configitem.model.Client;
-import io.cattle.platform.configitem.request.ConfigUpdateRequest;
-import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.engine.manager.OnDoneActions;
 import io.cattle.platform.engine.process.impl.ProcessDelayException;
 import io.cattle.platform.eventing.annotation.AnnotatedEventListener;
-import io.cattle.platform.eventing.annotation.EventHandler;
 import io.cattle.platform.inator.Unit.UnitState;
 import io.cattle.platform.inator.unit.InstanceUnit;
 import io.cattle.platform.object.ObjectManager;
@@ -25,7 +19,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -48,8 +41,6 @@ public class InatorLifecycleManager implements AnnotatedEventListener {
     List<ServiceLookup> serviceLookups;
     @Inject
     List<DeploymentUnitLookup> deploymentUnitLookups;
-    @Inject
-    ConfigItemStatusManager itemManager;
     @Inject
     ActivityService activityService;
     @Inject
@@ -83,56 +74,8 @@ public class InatorLifecycleManager implements AnnotatedEventListener {
                 throw new ExecutionException("Reconciling returned ERROR: " + result.getReason(), resource);
             }
 
-            throw new ProcessDelayException(null);
+            throw new ProcessDelayException(new Date(System.currentTimeMillis() + 120000L));
         });
-    }
-
-    protected void runUpdate(ConfigUpdate update, Class<?> clz) {
-        try {
-            if (!doRunUpdate(update, clz)) {
-                executorService.schedule(() -> runUpdate(update, clz), 1, TimeUnit.SECONDS);
-            }
-        } catch (ProcessDelayException e) {
-            Date date = e.getRunAfter();
-            if (date == null) {
-                throw e;
-            }
-            long delay = date.getTime() - System.currentTimeMillis();
-            if (delay <= 0) {
-                runUpdate(update, clz);
-                return;
-            }
-            executorService.schedule(() -> runUpdate(update, clz), delay, TimeUnit.MILLISECONDS);
-        }
-    }
-
-    protected boolean doRunUpdate(ConfigUpdate update, Class<?> clz) {
-        final Client client = new Client(clz, new Long(update.getResourceId()));
-        if (clz == Service.class) {
-            return itemManager.runUpdateForEvent(RECONCILE, update, client, () -> {
-                final Service service = objectManager.loadResource(Service.class, client.getResourceId());
-                activityService.run(service.getAccountId(), service.getId(), null, "service.trigger", "Re-evaluating state", () -> {
-                    reconcile(Service.class, client.getResourceId());
-                });
-            });
-        } else {
-            return itemManager.runUpdateForEvent(DU_RECONCILE, update, client, () -> {
-                DeploymentUnit unit = objectManager.loadResource(DeploymentUnit.class, client.getResourceId());
-                activityService.run(unit.getAccountId(), unit.getServiceId(), unit.getId(), "deploymentunit.trigger", "Re-evaluating state", () -> {
-                    reconcile(DeploymentUnit.class, client.getResourceId());
-                });
-            });
-        }
-    }
-
-    @EventHandler
-    public void serviceUpdate(ConfigUpdate update) {
-        runUpdate(update, Service.class);
-    }
-
-    @EventHandler
-    public void deploymentUnitUpdate(ConfigUpdate update) {
-        runUpdate(update, DeploymentUnit.class);
     }
 
     protected Result reconcile(Class<?> clz, Long resourceId) {
@@ -178,7 +121,7 @@ public class InatorLifecycleManager implements AnnotatedEventListener {
         }
     }
 
-    public void triggerServiceUpdate(Object resource) {
+    public Set<Long> impactedServices(Object resource) {
         Set<Long> services = new HashSet<>();
         for (ServiceLookup lookup : serviceLookups) {
             Collection<? extends Service> lookupSvs = lookup.getServices(resource);
@@ -189,12 +132,10 @@ public class InatorLifecycleManager implements AnnotatedEventListener {
             }
         }
 
-        if (services.size() > 0) {
-            OnDoneActions.add(() -> increment(RECONCILE, Service.class, services));
-        }
+        return services;
     }
 
-    public void triggerDeploymentUnitUpdate(Object resource) {
+    public Set<Long> impacetedDeploymentUnitUpdate(Object resource) {
         Set<Long> deploymentUnitIds = new HashSet<>();
         for (DeploymentUnitLookup lookup : deploymentUnitLookups) {
             Collection<? extends DeploymentUnit> deploymentUnits = lookup.getDeploymentUnits(resource);
@@ -205,18 +146,7 @@ public class InatorLifecycleManager implements AnnotatedEventListener {
             }
         }
 
-        if (deploymentUnitIds.size() > 0) {
-            OnDoneActions.add(() -> increment(DU_RECONCILE, DeploymentUnit.class, deploymentUnitIds));
-        }
-    }
-
-    private void increment(String item, Class<?> clz, Set<Long> resourceIds) {
-        for (Long serviceId : resourceIds) {
-            ConfigUpdateRequest request = ConfigUpdateRequest.forResource(clz, serviceId);
-            request.addItem(item);
-            request.withDeferredTrigger(true);
-            itemManager.updateConfig(request);
-        }
+        return deploymentUnitIds;
     }
 
 }
