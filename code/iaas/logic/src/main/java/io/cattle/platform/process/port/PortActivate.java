@@ -1,6 +1,7 @@
 package io.cattle.platform.process.port;
 
 import static io.cattle.platform.core.model.tables.PortTable.*;
+
 import io.cattle.platform.core.constants.PortConstants;
 import io.cattle.platform.core.dao.IpAddressDao;
 import io.cattle.platform.core.model.Host;
@@ -59,7 +60,7 @@ public class PortActivate extends AbstractDefaultProcessHandler {
             }
         }
 
-        return new HandlerResult(PORT.PUBLIC_IP_ADDRESS_ID, publicIpAddress, PORT.PRIVATE_IP_ADDRESS_ID, privateIpAddress).withShouldContinue(true);
+        return new HandlerResult(PORT.PUBLIC_IP_ADDRESS_ID, publicIpAddress, PORT.PRIVATE_IP_ADDRESS_ID, privateIpAddress);
     }
 
     public IpAddressDao getIpAddressDao() {

@@ -28,7 +28,7 @@ public class NetworkRemove extends AbstractDefaultProcessHandler {
         }
 
         resourcePoolManager.releaseResource(ResourcePoolManager.GLOBAL, network, new PooledResourceOptions().withQualifier(ResourcePoolConstants.MAC_PREFIX));
-        return new HandlerResult(NetworkConstants.FIELD_MAC_PREFIX, new Object[] { null }).withShouldContinue(true);
+        return new HandlerResult(NetworkConstants.FIELD_MAC_PREFIX, new Object[] { null });
     }
 
 }

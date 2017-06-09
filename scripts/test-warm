@@ -18,6 +18,8 @@ pull cjellick/rancher-test-tools
 pull ranchertest/volume-test:v0.1.0
 pull tianon/true:latest
 pull rancher/agent
+pull mysql:$MYSQL_VERSION
+pull postgres:$PGSQL_VERSION
 for i in bootstrap.required.image; do
     pull $(grep $i ../resources/content/cattle-global.properties | cut -f2 -d=)
 done

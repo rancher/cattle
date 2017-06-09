@@ -2,9 +2,9 @@ package io.cattle.platform.inator.deploy;
 
 import io.cattle.platform.core.dao.ServiceDao.VolumeData;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.Revision;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.ServiceIndex;
-import io.cattle.platform.core.model.Revision;
 import io.cattle.platform.inator.Inator;
 import io.cattle.platform.inator.InatorContext;
 import io.cattle.platform.inator.Result;
@@ -36,14 +36,12 @@ public class DeploymentUnitInator implements Inator {
     StackWrapper stack;
     InatorServices svc;
     Map<UnitRef, Unit> savedDesiredUnits;
-    ProcessKickamajig processKicker;
 
     public DeploymentUnitInator(DeploymentUnitWrapper unit, StackWrapper stack, InatorServices svc) {
         super();
         this.unit = unit;
         this.svc = svc;
         this.stack = stack;
-        this.processKicker = new ProcessKickamajig(svc);
     }
 
     @Override
@@ -163,7 +161,6 @@ public class DeploymentUnitInator implements Inator {
         if (result.getState() == UnitState.GOOD) {
             unit.setApplied();
         }
-        processKicker.kickProcess(unit.getInternal(), unit.getState(), result.getState());
         return result;
     }
 

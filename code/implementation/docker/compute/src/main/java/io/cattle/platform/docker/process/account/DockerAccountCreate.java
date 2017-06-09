@@ -64,7 +64,7 @@ public class DockerAccountCreate extends AbstractObjectProcessLogic implements P
             portRange = AccountConstants.getDefaultServicesPortRange();
         }
 
-        return new HandlerResult(AccountConstants.FIELD_PORT_RANGE, portRange).withShouldContinue(true);
+        return new HandlerResult(AccountConstants.FIELD_PORT_RANGE, portRange);
     }
 
     protected Network createNetwork(String kind, Account account, Map<String, Network> networksByKind,
@@ -73,7 +73,7 @@ public class DockerAccountCreate extends AbstractObjectProcessLogic implements P
         if (network != null) {
             return network;
         }
-        Map<String, Object> data = key == null ? new HashMap<String, Object>() :
+        Map<String, Object> data = key == null ? new HashMap<>() :
                 CollectionUtils.asMap(key, valueKeyValue);
 
         data.put(ObjectMetaDataManager.NAME_FIELD, name);

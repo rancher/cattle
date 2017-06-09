@@ -56,6 +56,9 @@ public class Result {
     }
 
     public String getLogLevel() {
+        if (state == UnitState.ERROR) {
+            return "error";
+        }
         return logLevel;
     }
 

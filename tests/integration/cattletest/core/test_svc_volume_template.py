@@ -211,10 +211,8 @@ def test_du_unhealthy_reuse_volume(new_context, super_client):
     super_client.update(c2, healthState='unhealthy')
     c2.restart()
     c2 = wait_for_condition(client, c2, lambda x: x.removed is not None)
-
-    c2 = wait_for_condition(client, c2, lambda x: x.removed is not None)
     svc = wait_state(client, svc, 'active')
-    assert len(svc.instanceIds) == 2
+    wait_for_condition(client, svc, lambda x: len(svc.instanceIds) == 2)
 
     c3 = None
     for i in svc.instanceIds:

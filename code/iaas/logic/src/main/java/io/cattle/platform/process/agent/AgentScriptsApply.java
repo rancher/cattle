@@ -8,7 +8,6 @@ import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.engine.handler.AbstractProcessLogic;
 import io.cattle.platform.engine.handler.HandlerResult;
-import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
@@ -20,7 +19,7 @@ import javax.inject.Named;
 import com.netflix.config.DynamicStringListProperty;
 
 @Named
-public class AgentScriptsApply extends AbstractProcessLogic implements ProcessPreListener, ProcessPostListener {
+public class AgentScriptsApply extends AbstractProcessLogic implements ProcessPreListener {
 
     private static final DynamicStringListProperty ITEMS = ArchaiusUtil.getList("agent.config.items");
 
@@ -41,15 +40,7 @@ public class AgentScriptsApply extends AbstractProcessLogic implements ProcessPr
 
         ConfigUpdateRequest request = ConfigUpdateRequestUtils.getRequest(jsonMapper, state, this);
 
-        switch (state.getPhase()) {
-        case PRE_LISTENERS:
-            request = before(request, agent);
-            break;
-        case POST_LISTENERS:
-            after(request, agent);
-            break;
-        default:
-        }
+        request = before(request, agent);
 
         ConfigUpdateRequestUtils.setRequest(request, state, this);
 
@@ -67,15 +58,6 @@ public class AgentScriptsApply extends AbstractProcessLogic implements ProcessPr
         statusManager.updateConfig(request);
 
         return request;
-    }
-
-    protected void after(ConfigUpdateRequest request, Agent agent) {
-        if (request == null) {
-            return;
-        }
-
-        // We don't want to wait anymore, we just assume it will eventually happen in the background
-        // statusManager.waitFor(request);
     }
 
     public ConfigItemStatusManager getStatusManager() {

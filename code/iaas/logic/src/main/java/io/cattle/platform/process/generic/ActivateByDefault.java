@@ -27,6 +27,13 @@ public class ActivateByDefault extends AbstractObjectProcessLogic implements Pro
             HandlerResult result = new HandlerResult(true, (Map<Object, Object>) null);
             result.setChainProcessName(chain);
             return result;
+        } else {
+            String val = ArchaiusUtil.getString("activate.by.default." + type).get();
+            if (val != null && val.contains(".")) {
+                HandlerResult result = new HandlerResult(true, (Map<Object, Object>) null);
+                result.setChainProcessName(val);
+                return result;
+            }
         }
 
         return null;

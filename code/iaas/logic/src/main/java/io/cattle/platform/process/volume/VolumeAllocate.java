@@ -32,7 +32,7 @@ public class VolumeAllocate extends AbstractDefaultProcessHandler {
 
         for (VolumeStoragePoolMap map : mapDao.findNonRemoved(VolumeStoragePoolMap.class, Volume.class, volume.getId())) {
             CollectionUtils.addToMap(allocationData, "volume:" + volume.getId(), map.getVolumeId(), HashSet.class);
-            createThenActivate(map, state.getData());
+            createIfNot(map, state.getData());
         }
 
         return new HandlerResult(result);

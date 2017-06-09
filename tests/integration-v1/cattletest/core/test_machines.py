@@ -414,11 +414,10 @@ def test_machine_lifecycle(super_client, machine_context,
     data = {scope: {}}
     data[scope]['addPhysicalHost'] = True
     data[scope]['externalId'] = external_id
-    account_id = get_plain_id(super_client, machine_context.project)
-    data[scope]['agentResourcesAccountId'] = account_id
-    data['agentResourcesAccountId'] = account_id
 
-    agent = super_client.create_agent(uri=uri, data=data)
+    account_id = machine_context.project.id
+    agent = super_client.create_agent(uri=uri, data=data,
+                                      resourceAccountId=account_id)
     agent = super_client.wait_success(agent)
 
     wait_for(lambda: len(agent.hosts()) == 1)

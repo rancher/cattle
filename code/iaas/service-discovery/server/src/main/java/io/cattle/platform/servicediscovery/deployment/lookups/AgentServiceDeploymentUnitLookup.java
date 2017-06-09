@@ -4,7 +4,6 @@ import static io.cattle.platform.core.model.tables.HostTable.*;
 
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Agent;
-import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.object.ObjectManager;
 
@@ -19,13 +18,15 @@ public class AgentServiceDeploymentUnitLookup implements DeploymentUnitLookup {
     ServiceDao svcDao;
 
     @Override
-    public Collection<? extends DeploymentUnit> getDeploymentUnits(Object obj) {
-        if (!(obj instanceof Agent)) {
-            return null;
+    public Collection<Long> getDeploymentUnits(Object obj) {
+        Host host = null;
+        if (obj instanceof Host) {
+            host = (Host) obj;
         }
-        Agent agent = (Agent) obj;
-        Host host = objMgr.findAny(Host.class,
-                HOST.AGENT_ID, agent.getId());
+        if (obj instanceof Agent) {
+            Agent agent = (Agent) obj;
+            host = objMgr.findAny(Host.class, HOST.AGENT_ID, agent.getId());
+        }
         if (host == null) {
             return null;
         }

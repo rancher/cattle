@@ -15,10 +15,6 @@
 
     <context:component-scan base-package="io.cattle.platform.process" />
 
-    <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler" />
-    <bean class="io.cattle.platform.process.common.handler.EventBasedProcessHandler" />
-    <bean class="io.cattle.platform.process.agent.AgentHostStateUpdate" />
-
     <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler"
         p:reportProgress="true"
         p:name="ImageStoragePoolMapActivate"
@@ -220,13 +216,14 @@
     <process:defaultProcesses resourceType="projectMember" />
     <process:defaultProcesses resourceType="storagePool" />
     <process:defaultProcesses resourceType="subnet" />
-    <process:defaultProcesses resourceType="serviceIndex" />
     <process:defaultProcesses resourceType="volumeTemplate" />
     <process:defaultProcesses resourceType="accountLink" />
 
     <!-- Account -->
     <process:defaultProcesses resourceType="account" />
     <process:process name="account.purge" resourceType="account" start="removed" transitioning="purging" done="purged" />
+
+    <process:process name="serviceindex.remove" resourceType="serviceIndex" start="inactive,active" transitioning="removing" done="removed" />
 
     <!-- Volume Storage Pool Map -->
     <process:defaultProcesses resourceType="volumeStoragePoolMap" />

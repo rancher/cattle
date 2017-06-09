@@ -1,51 +1,39 @@
 package io.cattle.platform.engine.handler;
 
-import io.cattle.platform.engine.process.ProcessPhase;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.common.util.concurrent.ListenableFuture;
+
 public class HandlerResult {
 
-    Boolean shouldContinue;
     String chainProcessName;
     Map<Object, Object> data;
+    ListenableFuture<?> future;
 
     public HandlerResult() {
-        this((Boolean) null, (Map<Object, Object>) null);
+        this((Map<Object, Object>) null);
     }
 
     public HandlerResult(Object key, Object... values) {
-        this(null, CollectionUtils.asMap(key, values));
+        this(CollectionUtils.asMap(key, values));
     }
 
-    @SuppressWarnings("unchecked")
     public HandlerResult(Map<?, Object> data) {
-        this(null, (Map<Object, Object>) data);
-    }
-
-    public HandlerResult(Boolean shouldContinue, Map<Object, Object> data) {
         super();
-        this.shouldContinue = shouldContinue;
         this.data = Collections.unmodifiableMap(data == null ? new HashMap<>() : data);
     }
 
-    public Boolean shouldContinue(ProcessPhase phase) {
-        if (shouldContinue == null) {
-            return phase != ProcessPhase.HANDLERS;
-        }
-        return shouldContinue;
+    public HandlerResult(Boolean ignored, Map<Object, Object> data) {
+        super();
+        this.data = Collections.unmodifiableMap(data == null ? new HashMap<>() : data);
     }
 
     public Map<Object, Object> getData() {
         return data;
-    }
-
-    public HandlerResult withShouldContinue(boolean shouldContinue) {
-        this.shouldContinue = shouldContinue;
-        return this;
     }
 
     public HandlerResult withChainProcessName(String processName) {
@@ -58,7 +46,6 @@ public class HandlerResult {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((data == null) ? 0 : data.hashCode());
-        result = prime * result + ((shouldContinue == null) ? 0 : shouldContinue.hashCode());
         return result;
     }
 
@@ -76,17 +63,12 @@ public class HandlerResult {
                 return false;
         } else if (!data.equals(other.data))
             return false;
-        if (shouldContinue == null) {
-            if (other.shouldContinue != null)
-                return false;
-        } else if (!shouldContinue.equals(other.shouldContinue))
-            return false;
         return true;
     }
 
     @Override
     public String toString() {
-        return "HandlerResult [shouldContinue=" + shouldContinue + ", data=" + data + "]";
+        return "HandlerResult [data=" + data + "]";
     }
 
     public String getChainProcessName() {
@@ -95,6 +77,19 @@ public class HandlerResult {
 
     public void setChainProcessName(String chainProcessName) {
         this.chainProcessName = chainProcessName;
+    }
+
+    public ListenableFuture<?> getFuture() {
+        return future;
+    }
+
+    public void setFuture(ListenableFuture<?> future) {
+        this.future = future;
+    }
+
+    public HandlerResult withFuture(ListenableFuture<?> future) {
+        this.future = future;
+        return this;
     }
 
 }

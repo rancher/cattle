@@ -18,7 +18,6 @@ import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.docker.client.DockerImage;
@@ -133,7 +132,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
     }
 
     @SuppressWarnings("unchecked")
-    protected boolean isLBSystemService(Service service) {
+    private boolean isLBSystemService(Service service) {
         if (!service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
             return false;
         }
@@ -165,12 +164,13 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
     }
 
     private boolean isSystem(Instance instance) {
-        List<? extends Service> services = instanceDao.findServicesNonRemovedLinksOnly(instance);
-        for (Service service : services) {
-            Stack stack = objectManager.loadResource(Stack.class, service.getStackId());
-            if (ServiceConstants.isSystem(stack) || isLBSystemService(service)) {
-                return true;
-            }
+        if (instance.getSystem()) {
+            return true;
+        }
+
+        Service service = objectManager.loadResource(Service.class, instance.getServiceId());
+        if (service != null && isLBSystemService(service)) {
+            return true;
         }
         return false;
     }
@@ -255,9 +255,6 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
             public Agent doWithLock() {
                 Agent agent = factoryDao.getAgentByUri(uri);
                 final Map<String, Object> data = new HashMap<>();
-                if (builder.getResourceAccountId() != null) {
-                    data.put(AgentConstants.DATA_AGENT_RESOURCES_ACCOUNT_ID, builder.getResourceAccountId());
-                }
 
                 if (builder.getRequestedRoles() != null) {
                     data.put(AgentConstants.DATA_REQUESTED_ROLES, new ArrayList<>(builder.getRequestedRoles()));
@@ -270,6 +267,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
                             return resourceDao.createAndSchedule(Agent.class,
                                     AGENT.DATA, data,
                                     AGENT.URI, uri,
+                                    AGENT.RESOURCE_ACCOUNT_ID, builder.getResourceAccountId(),
                                     AGENT.MANAGED_CONFIG, builder.isManagedConfig());
                         }
                     });

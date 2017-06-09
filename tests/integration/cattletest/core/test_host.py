@@ -168,7 +168,7 @@ def test_host_remove(super_client, new_context):
     pool = find_one(host.storagePools)
     agent = host.agent()
     agent_account = agent.account()
-    phy_host = host.physicalHost()
+    phy_host = new_context.client.wait_success(host.physicalHost())
     key = find_one(super_client.list_register, key=agent.data.registrationKey)
     instances = host.instances()
     assert len(instances) == 1

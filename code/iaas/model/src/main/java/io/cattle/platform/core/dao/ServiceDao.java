@@ -67,17 +67,13 @@ public interface ServiceDao {
 
     List<? extends HealthcheckInstance> findBadHealthcheckInstance(int limit);
 
-    List<? extends Service> getSkipServices(long accountId);
-
     Map<String, DeploymentUnit> getDeploymentUnits(Service service);
-
-    List<? extends Service> getServicesOnHost(long hostId);
 
     List<? extends Instance> getInstancesWithHealtcheckEnabled(long accountId);
 
     public Map<Long, List<Instance>> getServiceInstancesWithNoDeploymentUnit();
 
-    List<? extends DeploymentUnit> getServiceDeploymentUnitsOnHost(Host host);
+    List<Long> getServiceDeploymentUnitsOnHost(Host host);
 
     DeploymentUnit createDeploymentUnit(long accountId, Long serviceId,
             long stackId, Long hostId, String serviceIndex, Long revisionId, boolean active);

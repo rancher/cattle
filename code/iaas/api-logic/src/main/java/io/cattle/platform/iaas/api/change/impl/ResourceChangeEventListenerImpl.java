@@ -2,7 +2,6 @@ package io.cattle.platform.iaas.api.change.impl;
 
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 
-import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.eventing.EventService;
@@ -14,7 +13,6 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockDelegator;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
-import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.task.Task;
 import io.cattle.platform.task.TaskOptions;
 
@@ -28,7 +26,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 public class ResourceChangeEventListenerImpl implements ResourceChangeEventListener, Task, TaskOptions {
 
-    volatile Map<Pair<String, String>, Object> changed = new ConcurrentHashMap<Pair<String, String>, Object>();
+    volatile Map<Pair<String, String>, Object> changed = new ConcurrentHashMap<>();
     LockDelegator lockDelegator;
     EventService eventService;
     @Inject
@@ -63,9 +61,7 @@ public class ResourceChangeEventListenerImpl implements ResourceChangeEventListe
             return;
         }
 
-        Long resourceAccId = DataAccessor.fromDataFieldOf(agent)
-                .withKey(AgentConstants.DATA_AGENT_RESOURCES_ACCOUNT_ID)
-                .as(Long.class);
+        Long resourceAccId = agent.getResourceAccountId();
         if (resourceAccId == null) {
             return;
         }
@@ -89,7 +85,7 @@ public class ResourceChangeEventListenerImpl implements ResourceChangeEventListe
         }
 
         if (type != null && id != null) {
-            changed.put(new ImmutablePair<String, String>(type, id), accountId);
+            changed.put(new ImmutablePair<>(type, id), accountId);
         }
     }
 
@@ -101,7 +97,7 @@ public class ResourceChangeEventListenerImpl implements ResourceChangeEventListe
         }
 
         Map<Pair<String, String>, Object> changed = this.changed;
-        this.changed = new ConcurrentHashMap<Pair<String, String>, Object>();
+        this.changed = new ConcurrentHashMap<>();
 
         for (Map.Entry<Pair<String, String>, Object> entry : changed.entrySet()) {
             Pair<String, String> pair = entry.getKey();

@@ -2,7 +2,6 @@ package io.cattle.platform.process.externalevent;
 
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 
-import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.ExternalEventConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.ExternalEvent;
@@ -11,7 +10,6 @@ import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
-import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.util.type.Priority;
 
@@ -37,8 +35,8 @@ public class ExternalEventPreCreate extends AbstractObjectProcessLogic implement
         List<Agent> agents = objectManager.find(Agent.class, AGENT.ACCOUNT_ID, event.getAccountId());
         if (agents.size() == 1) {
             Agent agent = agents.get(0);
-            Long resourceAccId = DataAccessor.fromDataFieldOf(agent).withKey(AgentConstants.DATA_AGENT_RESOURCES_ACCOUNT_ID).as(Long.class);
-            Map<String, Object> data = new HashMap<String, Object>();
+            Long resourceAccId = agent.getResourceAccountId();
+            Map<String, Object> data = new HashMap<>();
             if (resourceAccId != null) {
                 data.put(ObjectMetaDataManager.ACCOUNT_FIELD, resourceAccId);
             }

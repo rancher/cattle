@@ -2,6 +2,7 @@ package io.cattle.platform.core.dao.impl;
 
 import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.AgentTable.*;
+import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.ImageStoragePoolMapTable.*;
 import static io.cattle.platform.core.model.tables.ImageTable.*;
@@ -12,6 +13,7 @@ import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
+import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
 
 import io.cattle.platform.core.addon.MountEntry;
 import io.cattle.platform.core.constants.AccountConstants;
@@ -46,6 +48,7 @@ import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -462,5 +465,20 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
             }
         }
         return toRemove;
+    }
+
+    @Override
+    public List<Long> findDeploymentUnitsForVolume(Volume volume) {
+        if (volume.getVolumeTemplateId() == null) {
+            return Collections.emptyList();
+        }
+        return create().select(DEPLOYMENT_UNIT.ID)
+            .from(DEPLOYMENT_UNIT)
+            .join(VOLUME_TEMPLATE)
+                .on(VOLUME_TEMPLATE.STACK_ID.eq(DEPLOYMENT_UNIT.STACK_ID))
+            .where(
+                    DEPLOYMENT_UNIT.REMOVED.isNull()
+                    .and(VOLUME_TEMPLATE.ID.eq(volume.getVolumeTemplateId())))
+            .fetch(DEPLOYMENT_UNIT.ID);
     }
 }

@@ -84,7 +84,7 @@ public class NetworkCreate extends AbstractDefaultProcessHandler {
         metadata.putAll(driverMetadata);
         metadata.put(NetworkDriverConstants.FIELD_CNI_CONFIG, cniConf);
 
-        return new HandlerResult(NetworkConstants.FIELD_METADATA, metadata).withShouldContinue(true);
+        return new HandlerResult(NetworkConstants.FIELD_METADATA, metadata);
     }
 
 }

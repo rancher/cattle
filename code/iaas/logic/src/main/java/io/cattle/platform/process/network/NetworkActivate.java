@@ -40,7 +40,7 @@ public class NetworkActivate extends AbstractObjectProcessLogic implements Proce
             field = mac.getName();
         }
 
-        return new HandlerResult(NetworkConstants.FIELD_MAC_PREFIX, field).withShouldContinue(true);
+        return new HandlerResult(NetworkConstants.FIELD_MAC_PREFIX, field);
     }
 
     @Override

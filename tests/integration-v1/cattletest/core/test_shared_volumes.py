@@ -29,14 +29,8 @@ def add_storage_pool(context, host_uuids=None, **kwargs):
 
 
 def create_new_agent(super_client, project):
-    scope = 'io.cattle.platform.agent.connection.simulator' \
-            '.AgentConnectionSimulator'
     uri = 'sim://{}'.format(random_str())
-    data = {scope: {}}
-    account_id = get_plain_id(super_client, project)
-    data[scope]['agentResourcesAccountId'] = account_id
-    data['agentResourcesAccountId'] = account_id
-    agent = super_client.create_agent(uri=uri, data=data)
+    agent = super_client.create_agent(uri=uri, resourceAccountId=project.id)
     agent = super_client.wait_success(agent)
 
     assert agent.state == "active"

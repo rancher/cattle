@@ -1,6 +1,7 @@
 package io.cattle.platform.docker.process.ipaddress;
 
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
+
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.docker.constants.DockerIpAddressConstants;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -20,7 +21,7 @@ public class DockerIpAddressDeactivate extends AbstractObjectProcessHandler {
         IpAddress ipAddress = (IpAddress) state.getResource();
 
         if (DockerIpAddressConstants.KIND_DOCKER.equals(ipAddress.getKind())) {
-            return new HandlerResult(IP_ADDRESS.ADDRESS, (Object) null).withShouldContinue(true);
+            return new HandlerResult(IP_ADDRESS.ADDRESS, (Object) null);
         }
 
         return null;

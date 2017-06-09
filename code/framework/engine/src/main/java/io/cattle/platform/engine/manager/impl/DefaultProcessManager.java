@@ -2,10 +2,11 @@ package io.cattle.platform.engine.manager.impl;
 
 import static io.cattle.platform.engine.process.ExitReason.*;
 
-import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.engine.context.EngineContext;
 import io.cattle.platform.engine.manager.ProcessManager;
 import io.cattle.platform.engine.manager.ProcessNotFoundException;
+import io.cattle.platform.engine.model.ProcessReference;
+import io.cattle.platform.engine.model.Trigger;
 import io.cattle.platform.engine.process.ExecutionExceptionHandler;
 import io.cattle.platform.engine.process.LaunchConfiguration;
 import io.cattle.platform.engine.process.ProcessDefinition;
@@ -15,7 +16,6 @@ import io.cattle.platform.engine.process.ProcessServiceContext;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.engine.process.StateChangeMonitor;
 import io.cattle.platform.engine.process.impl.DefaultProcessInstanceImpl;
-import io.cattle.platform.engine.server.ProcessInstanceReference;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.util.concurrent.DelayedObject;
@@ -28,18 +28,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.DelayQueue;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-import org.apache.cloudstack.managed.context.NoExceptionRunnable;
-
-import com.netflix.config.DynamicLongProperty;
-
 public class DefaultProcessManager implements ProcessManager, InitializationTask {
-
-    private static final DynamicLongProperty EXECUTION_DELAY = ArchaiusUtil.getLong("process.log.save.interval.ms");
 
     @Inject
     ProcessRecordDao processRecordDao;
@@ -50,13 +42,13 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
     LockManager lockManager;
     DelayQueue<DelayedObject<WeakReference<ProcessInstance>>> toPersist = new DelayQueue<>();
     @Inject
-    ScheduledExecutorService executor;
-    @Inject
     EventService eventService;
     @Inject
     ExecutionExceptionHandler exceptionHandler;
     @Inject
     List<StateChangeMonitor> changeMonitors;
+    @Inject
+    List<Trigger> triggers;
 
     @Override
     public ProcessInstance createProcessInstance(LaunchConfiguration config) {
@@ -97,11 +89,9 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
         if (record.getId() == null && (schedule || !EngineContext.hasParentProcess()))
             record = processRecordDao.insert(record);
 
-        ProcessServiceContext context = new ProcessServiceContext(lockManager, eventService, this, exceptionHandler, changeMonitors);
+        ProcessServiceContext context = new ProcessServiceContext(lockManager, eventService, this, exceptionHandler,
+                changeMonitors, triggers);
         DefaultProcessInstanceImpl process = new DefaultProcessInstanceImpl(context, record, processDef, state, schedule, replay);
-
-        if (record.getId() != null)
-            queue(process);
 
         return process;
     }
@@ -122,22 +112,8 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
     }
 
     @Override
-    public List<ProcessInstanceReference> pendingTasks() {
+    public List<ProcessReference> pendingTasks() {
         return processRecordDao.pendingTasks();
-    }
-
-
-    @Override
-    public Long getRemainingTask(ProcessInstance instance) {
-        if (!(instance instanceof DefaultProcessInstanceImpl)) {
-            return null;
-        }
-        ProcessRecord record = ((DefaultProcessInstanceImpl)instance).getProcessRecord();
-        if (record == null) {
-            return null;
-        }
-
-        return processRecordDao.nextTask(record.getResourceType(), record.getResourceId());
     }
 
     @Override
@@ -149,26 +125,6 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
         return createProcessInstance(record, false, true);
     }
 
-    protected void persistInProgress() throws InterruptedException {
-        while (true) {
-            ProcessInstance process = toPersist.take().getObject().get();
-            if (process == null) {
-                continue;
-            }
-
-            synchronized (process) {
-                if (process.isRunningLogic()) {
-                    persistState(process, false);
-                }
-            }
-        }
-    }
-
-    protected void queue(ProcessInstance process) {
-        WeakReference<ProcessInstance> ref = new WeakReference<>(process);
-        toPersist.put(new DelayedObject<>(System.currentTimeMillis() + EXECUTION_DELAY.get(), ref));
-    }
-
     @Override
     public ProcessDefinition getProcessDefinition(String name) {
         return definitions.get(name);
@@ -177,22 +133,6 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
     @Override
     public void start() {
         definitions = NamedUtils.createMapByName(definitionList);
-
-        executor.scheduleAtFixedRate(new NoExceptionRunnable() {
-            @Override
-            public void doRun() throws Exception {
-                /*
-                 * This really blocks forever, but just in case it fails we
-                 * restart
-                 */
-                persistInProgress();
-            }
-        }, EXECUTION_DELAY.get(), EXECUTION_DELAY.get(), TimeUnit.MILLISECONDS);
-    }
-
-    @Override
-    public ProcessInstanceReference loadReference(Long id) {
-        return processRecordDao.loadReference(id);
     }
 
 }

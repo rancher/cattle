@@ -1,16 +1,10 @@
 package io.cattle.platform.servicediscovery.service.impl;
 
-import static io.cattle.platform.core.model.tables.BackoffTable.*;
 import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
 
-import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.configitem.events.ConfigUpdate;
-import io.cattle.platform.configitem.model.Client;
-import io.cattle.platform.configitem.request.ConfigUpdateRequest;
-import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.addon.LbConfig;
 import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.addon.PublicEndpoint;
@@ -26,7 +20,6 @@ import io.cattle.platform.core.dao.ServiceConsumeMapDao;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.dao.ServiceExposeMapDao;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.core.model.Backoff;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
@@ -40,7 +33,6 @@ import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.deferred.util.DeferredUtils;
-import io.cattle.platform.engine.process.impl.ProcessDelayException;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.iaas.api.filter.apikey.ApiKeyFilter;
 import io.cattle.platform.json.JsonMapper;
@@ -64,7 +56,6 @@ import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -77,15 +68,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.netflix.config.DynamicLongProperty;
-
 public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
-
-    private static final String HOST_ENDPOINTS_UPDATE = "host-endpoints-update";
-    private static final String SERVICE_ENDPOINTS_UPDATE = "service-endpoints-update";
-
-    private static final DynamicLongProperty EXECUTION_TOKEN_INTERVAL = ArchaiusUtil.getLong("execution.token.every.millis");
-    private static final DynamicLongProperty EXECUTION_TOKENS_MAX = ArchaiusUtil.getLong("execution.tokens.max");
 
     @Inject
     ServiceConsumeMapDao consumeMapDao;
@@ -109,8 +92,6 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     EventService eventService;
     @Inject
     InstanceDao instanceDao;
-    @Inject
-    ConfigItemStatusManager itemManager;
     @Inject
     NetworkService networkService;
     @Inject
@@ -325,12 +306,14 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     }
 
     @Override
-    public void updateHealthState(final Stack stack) {
+    public void updateHealthState(Long stackId) {
+        Stack stack = objectManager.loadResource(Stack.class, stackId);
         if (stack == null) {
             return;
         }
+
         List<Service> services = objectManager.find(Service.class, SERVICE.STACK_ID,
-                stack.getId(), SERVICE.REMOVED, null);
+                stackId, SERVICE.REMOVED, null);
 
         setServiceHealthState(services);
 
@@ -578,54 +561,19 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     }
 
     @Override
-    public void serviceUpdate(ConfigUpdate update) {
-        if (update.getResourceId() == null) {
-            return;
+    public void serviceUpdate(Long serviceId) {
+        Service service = objectManager.loadResource(Service.class, serviceId);
+        if (service != null && service.getRemoved() == null) {
+            reconcileServiceEndpointsImpl(service);
         }
-
-        final Client client = new Client(Service.class, new Long(update.getResourceId()));
-        itemManager.runUpdateForEvent(SERVICE_ENDPOINTS_UPDATE, update, client, new Runnable() {
-            @Override
-            public void run() {
-                Service service = objectManager.loadResource(Service.class, client.getResourceId());
-                if (service != null && service.getRemoved() == null) {
-                    reconcileServiceEndpointsImpl(service);
-                }
-            }
-        });
     }
 
     @Override
-    public void hostEndpointsUpdate(ConfigUpdate update) {
-        if (update.getResourceId() == null) {
-            return;
+    public void hostEndpointsUpdate(Long hostId) {
+        Host host = objectManager.loadResource(Host.class, hostId);
+        if (host != null && host.getRemoved() == null) {
+            reconcileHostEndpointsImpl(host);
         }
-        final Client client = new Client(Host.class, new Long(update.getResourceId()));
-        itemManager.runUpdateForEvent(HOST_ENDPOINTS_UPDATE, update, client, new Runnable() {
-            @Override
-            public void run() {
-                Host host = objectManager.loadResource(Host.class, client.getResourceId());
-                if (host != null && host.getRemoved() == null) {
-                    reconcileHostEndpointsImpl(host);
-                }
-            }
-        });
-    }
-
-    @Override
-    public void reconcileServiceEndpoints(Service service) {
-        ConfigUpdateRequest request = ConfigUpdateRequest.forResource(Service.class, service.getId());
-        request.addItem(SERVICE_ENDPOINTS_UPDATE);
-        request.withDeferredTrigger(false);
-        itemManager.updateConfig(request);
-    }
-
-    @Override
-    public void reconcileHostEndpoints(Host host) {
-        ConfigUpdateRequest request = ConfigUpdateRequest.forResource(Host.class, host.getId());
-        request.addItem(HOST_ENDPOINTS_UPDATE);
-        request.withDeferredTrigger(false);
-        itemManager.updateConfig(request);
     }
 
     @Override
@@ -704,45 +652,6 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
                 return null;
             });
-        }
-    }
-
-    @Override
-    public void incrementExecutionCount(String type, Long id) {
-        Backoff backoff = objectManager.findAny(Backoff.class,
-                BACKOFF.RESOURCE_TYPE, type,
-                BACKOFF.RESOURCE_ID, id);
-
-        if (backoff == null) {
-            backoff = objectManager.newRecord(Backoff.class);
-            backoff.setPeriod(0L);
-            backoff.setCount(0L);
-            backoff.setResourceType(type);
-            backoff.setResourceId(id);
-        }
-
-        Date lastRun = new Date(backoff.getPeriod());
-        Date now = new Date();
-        long tokens = backoff.getCount();
-
-        tokens += (now.getTime() - lastRun.getTime())/EXECUTION_TOKEN_INTERVAL.get();
-
-        if (tokens > EXECUTION_TOKENS_MAX.get()) {
-            tokens = EXECUTION_TOKENS_MAX.get();
-        }
-
-        if (tokens == 0) {
-            throw new ProcessDelayException(null);
-        }
-
-        tokens--;
-
-        backoff.setPeriod(now.getTime());
-        backoff.setCount(tokens);
-        if (backoff.getId() == null) {
-            objectManager.create(backoff);
-        } else {
-            objectManager.persist(backoff);
         }
     }
 

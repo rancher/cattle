@@ -25,7 +25,6 @@ public class ServiceInator implements Inator {
     UnitPlanner planner;
     UpgradeInator upgrade;
     RestartInator restart;
-    ProcessKickamajig processKicker;
 
     public ServiceInator(Service service, UnitPlanner planner, InatorServices svc) {
         super();
@@ -34,7 +33,6 @@ public class ServiceInator implements Inator {
         this.planner = planner;
         this.upgrade = new UpgradeInator(this.service, svc);
         this.restart = new RestartInator(this.service, svc);
-        this.processKicker = new ProcessKickamajig(svc);
     }
 
     @Override
@@ -62,9 +60,7 @@ public class ServiceInator implements Inator {
     @Override
     public Result postProcess(InatorContext context, Result result) {
         result = upgrade.checkUpgrade(context, result);
-        result = restart.checkRestart(context, result);
-        processKicker.kickProcess(service.getInternal(), service.getState(), result.getState());
-        return result;
+        return restart.checkRestart(context, result);
     }
 
 }

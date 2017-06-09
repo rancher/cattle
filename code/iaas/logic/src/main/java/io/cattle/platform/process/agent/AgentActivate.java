@@ -53,7 +53,7 @@ public class AgentActivate extends AbstractDefaultProcessHandler {
         }
 
         if (PING_DISCONNECT_TIMEOUT.get() * 1000L < (System.currentTimeMillis() - startTime)) {
-            return new HandlerResult().withChainProcessName(AgentConstants.PROCESS_DECONNECT).withShouldContinue(false);
+            return new HandlerResult().withChainProcessName(AgentConstants.PROCESS_DECONNECT);
         }
 
         return null;

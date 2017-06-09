@@ -48,4 +48,6 @@ public interface VolumeDao {
 
     List<? extends Volume> getVolumesOnRemovedAndInactiveHosts(long deploymentUnitId, long accountId);
 
+    List<Long> findDeploymentUnitsForVolume(Volume volume);
+
 }

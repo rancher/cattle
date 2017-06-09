@@ -74,7 +74,7 @@ public class DockerInstancePreCreate extends AbstractObjectProcessLogic implemen
             data.put(InstanceConstants.FIELD_REQUESTED_IP_ADDRESS, ip.toString());
         }
 
-        return new HandlerResult(data).withShouldContinue(true);
+        return new HandlerResult(data);
     }
 
     @Override

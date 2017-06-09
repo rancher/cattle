@@ -1,6 +1,8 @@
 package io.cattle.platform.servicediscovery.service.lookups;
 
 import static io.cattle.platform.core.constants.ExternalEventConstants.*;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
+
 import io.cattle.platform.allocator.service.AllocationHelper;
 import io.cattle.platform.core.dao.ServiceExposeMapDao;
 import io.cattle.platform.core.model.ExternalEvent;
@@ -31,7 +33,7 @@ public class GlobalHostActivateServiceLookup implements ServiceLookup {
     ObjectManager objMgr;
 
     @Override
-    public Collection<? extends Service> getServices(Object obj) {
+    public Collection<Long> getServices(Object obj) {
         if (obj == null) {
             return null;
         }
@@ -54,11 +56,14 @@ public class GlobalHostActivateServiceLookup implements ServiceLookup {
             return null;
         }
 
-        List<? extends Service> services = expMapDao.getActiveServices(accountId);
-        List<Service> activeGlobalServices = new ArrayList<Service>();
-        for (Service service : services) {
+        List<? extends Service> allServices = objMgr.find(Service.class,
+                SERVICE.ACCOUNT_ID, accountId,
+                SERVICE.REMOVED, null);
+
+        List<Long> activeGlobalServices = new ArrayList<>();
+        for (Service service : allServices) {
             if (ServiceUtil.isGlobalService(service)) {
-                activeGlobalServices.add(service);
+                activeGlobalServices.add(service.getId());
             }
         }
         return activeGlobalServices;

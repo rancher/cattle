@@ -14,7 +14,8 @@ import org.springframework.context.annotation.ImportResource;
     ProcessConfig.class, HzCommonConfig.class, HzEventingConfig.class,
     HzLockingConfig.class})
 @ComponentScans({
-    @ComponentScan("io.cattle.platform.inator")
+    @ComponentScan("io.cattle.platform.inator"),
+    @ComponentScan("io.cattle.platform.loop"),
 })
 @ImportResource({"classpath:META-INF/cattle/legacy/spring-legacy-context.xml"})
 public class AppConfig {

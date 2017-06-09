@@ -15,6 +15,9 @@ import java.util.Set;
 
 public class StateUtil {
 
+    private static Set<String> ERROR_LIKE = set(
+            CommonStatesConstants.ERROR,
+            CommonStatesConstants.ERRORING);
     private static Set<String> PAUSED_LIKE = set(
             ServiceConstants.STATE_PAUSED,
             ServiceConstants.STATE_PAUSING);
@@ -46,7 +49,11 @@ public class StateUtil {
         }
 
         if (PAUSED_LIKE.contains(state)) {
-            return DesiredState.NONE;
+            return DesiredState.PAUSE;
+        }
+
+        if (ERROR_LIKE.contains(state)) {
+            return DesiredState.ERROR;
         }
 
         return DesiredState.ACTIVE;

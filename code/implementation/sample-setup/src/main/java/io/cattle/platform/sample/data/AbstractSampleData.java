@@ -73,13 +73,18 @@ public abstract class AbstractSampleData implements InitializationTask {
             return;
         }
 
-        List<Object> toCreate = new ArrayList<Object>();
+        List<Object> toCreate = new ArrayList<>();
 
         populatedData(system, toCreate);
 
         for (Object object : toCreate) {
             try {
                 processManager.executeStandardProcess(StandardProcess.CREATE, object, null);
+            } catch (ProcessCancelException e) {
+            }
+            object = objectManager.reload(object);
+            try {
+                processManager.executeStandardProcess(StandardProcess.ACTIVATE, object, null);
             } catch (ProcessCancelException e) {
             }
         }

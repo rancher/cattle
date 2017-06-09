@@ -8,9 +8,9 @@ import java.util.Collection;
 public class DeploymentUnitImplLookup implements DeploymentUnitLookup {
 
     @Override
-    public Collection<? extends DeploymentUnit> getDeploymentUnits(Object obj) {
+    public Collection<Long> getDeploymentUnits(Object obj) {
         if (obj instanceof DeploymentUnit) {
-            return Arrays.asList((DeploymentUnit)obj);
+            return Arrays.asList(((DeploymentUnit) obj).getId());
         }
         return null;
     }

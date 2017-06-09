@@ -7,7 +7,6 @@ import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.agent.server.ping.PingMonitor;
 import io.cattle.platform.agent.server.ping.dao.PingDao;
 import io.cattle.platform.agent.server.resource.impl.AgentResourcesMonitor;
-import io.cattle.platform.agent.server.util.AgentConnectionUtils;
 import io.cattle.platform.agent.util.AgentUtils;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AgentConstants;
@@ -16,11 +15,11 @@ import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.ProcessInstanceException;
 import io.cattle.platform.engine.process.util.ProcessEngineUtils;
+import io.cattle.platform.engine.server.Cluster;
 import io.cattle.platform.eventing.EventCallOptions;
 import io.cattle.platform.framework.event.Ping;
 import io.cattle.platform.ha.monitor.PingInstancesMonitor;
 import io.cattle.platform.lock.LockDelegator;
-import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.task.Task;
@@ -68,6 +67,8 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
     AgentLocator agentLocator;
     @Inject
     ListeningExecutorService executorService;
+    @Inject
+    Cluster cluster;
     LoadingCache<Long, PingStatus> status = CacheBuilder.newBuilder().expireAfterAccess(PING_SCHEDULE.get() * 3, TimeUnit.SECONDS).build(
             new CacheLoader<Long, PingStatus>() {
                 @Override
@@ -76,8 +77,8 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
                 }
             });
 
-    protected void handleOwned(Agent agent) {
-        Ping ping = AgentUtils.newPing(agent);
+    protected void handleOwned(Long agentId) {
+        Ping ping = AgentUtils.newPing(agentId);
 
         if (isInterval(PING_STATS_EVERY.get())) {
             ping.setOption(Ping.STATS, true);
@@ -91,55 +92,54 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
             ping.setOption(Ping.INSTANCES, true);
         }
 
-        doPing(agent, ping);
+        doPing(agentId, ping);
     }
 
     protected boolean isInterval(long every) {
         return interation % every == 0;
     }
 
-    protected void ping(Agent agent) {
-        LockDefinition lockDef = AgentConnectionUtils.getConnectionLock(agent);
-        if (!lockDelegator.isLocked(lockDef) && !lockDelegator.tryLock(lockDef)) {
+    protected void ping(Long agentId) {
+        if (!cluster.isInPartition(agentId)) {
             return;
         }
 
-        handleOwned(agent);
+        handleOwned(agentId);
     }
 
-    protected void doPing(final Agent agent, Ping ping) {
-        RemoteAgent remoteAgent = agentLocator.lookupAgent(agent);
+    protected void doPing(final Long agentId, Ping ping) {
+        RemoteAgent remoteAgent = agentLocator.lookupAgent(agentId);
 
         EventCallOptions options = new EventCallOptions(0, PING_TIMEOUT.get() * 1000);
         addCallback(remoteAgent.call(ping, Ping.class, options), new FutureCallback<Ping>() {
             @Override
             public void onSuccess(Ping pong) {
-                pingSuccess(agent, pong);
+                pingSuccess(agentId, pong);
             }
 
             @Override
             public void onFailure(Throwable t) {
-                pingFailure(agent);
+                pingFailure(agentId);
             }
         });
     }
 
-    protected void pingSuccess(Agent agent, Ping pong) {
-        status.getUnchecked(agent.getId()).success();
+    protected void pingSuccess(Long agentId, Ping pong) {
+        status.getUnchecked(agentId).success();
         agentResourceManager.processPingReply(pong);
         pingInstanceMonitor.pingReply(pong);
     }
 
-    protected void pingFailure(Agent agent) {
-        long count = status.getUnchecked(agent.getId()).failed();
+    protected void pingFailure(Long agentId) {
+        long count = status.getUnchecked(agentId).failed();
         if (count < 3) {
-            log.info("Missed ping from agent [{}] count [{}]", agent.getId(), count);
+            log.info("Missed ping from agent [{}] count [{}]", agentId, count);
         } else {
-            log.error("Failed to get ping from agent [{}] count [{}]", agent.getId(), count);
+            log.error("Failed to get ping from agent [{}] count [{}]", agentId, count);
         }
         if (count >= BAD_PINGS.get()) {
             try {
-                agent = objectManager.reload(agent);
+                Agent agent = objectManager.loadResource(Agent.class, agentId);
                 if (CommonStatesConstants.ACTIVE.equals(agent.getState())) {
                     log.error("Scheduling reconnect for [{}]", agent.getId());
                     processManager.scheduleProcessInstance(AgentConstants.PROCESS_RECONNECT, agent, null);
@@ -158,7 +158,7 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
             return;
         }
 
-        for (Agent agent : pingDao.findAgentsToPing()) {
+        for (Long agent : pingDao.findAgentsToPing()) {
             ping(agent);
         }
         interation++;

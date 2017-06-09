@@ -53,8 +53,7 @@ public class VolumeCreateUpdate extends AbstractObjectProcessHandler {
         Long hostId = volume.getHostId();
         if (storageDriver != null && hostId != null) {
             if (storagePoolDao.associateVolumeToPool(volume.getId(), storageDriver.getId(), hostId) != null) {
-                result.withShouldContinue(false)
-                .withChainProcessName(objectProcessManager.getStandardProcessName(StandardProcess.DEACTIVATE, volume));
+                result.withChainProcessName(objectProcessManager.getStandardProcessName(StandardProcess.DEACTIVATE, volume));
             }
         }
 

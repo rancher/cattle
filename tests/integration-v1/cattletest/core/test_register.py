@@ -30,10 +30,8 @@ def test_register_create(client, super_client):
     agent = get_by_plain_id(super_client, 'agent',
                             super_client.reload(r).data.agentId)
 
-    raw_account_id = get_plain_id(super_client, r.account())
-
     agent = super_client.reload(agent)
-    assert str(agent.data.agentResourcesAccountId) == raw_account_id
+    assert agent.resourceAccountId == r.account().id
 
     assert agent is not None
     agent.deactivate()
