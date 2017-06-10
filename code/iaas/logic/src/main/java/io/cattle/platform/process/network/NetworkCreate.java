@@ -7,7 +7,6 @@ import io.cattle.platform.core.constants.NetworkDriverConstants;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.NetworkDriver;
 import io.cattle.platform.core.model.Subnet;
-import io.cattle.platform.core.model.tables.records.SubnetRecord;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
@@ -15,6 +14,7 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.util.ProxyUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,14 +45,14 @@ public class NetworkCreate extends AbstractDefaultProcessHandler {
                 }
             }
 
-            List<? extends Subnet> subnets = jsonMapper.convertCollectionValue(obj, ArrayList.class, SubnetRecord.class);
+            List<? extends Map<String, Object>> subnets = jsonMapper.convertCollectionValue(obj, ArrayList.class, Map.class);
             for (int i = 0 ; i < subnets.size() ; i++) {
                 Long key = new Long(i);
                 if (existingSubnets.containsKey(key)) {
                     continue;
                 }
 
-                Subnet subnet = subnets.get(i);
+                Subnet subnet = ProxyUtils.proxy(subnets.get(i), Subnet.class);
                 subnet = objectManager.create(Subnet.class,
                         SUBNET.NAME, subnet.getName(),
                         SUBNET.DESCRIPTION, subnet.getDescription(),
