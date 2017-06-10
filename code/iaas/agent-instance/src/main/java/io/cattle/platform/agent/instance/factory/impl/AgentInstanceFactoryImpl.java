@@ -39,13 +39,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.netflix.config.DynamicStringProperty;
@@ -203,7 +203,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
 
     protected boolean shouldCreateAgent(Instance instance) {
         Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
-        return BooleanUtils.toBoolean(ObjectUtils.toString(labels.get(SystemLabels.LABEL_AGENT_CREATE), null));
+        return BooleanUtils.toBoolean(Objects.toString(labels.get(SystemLabels.LABEL_AGENT_CREATE), null));
     }
 
     protected Agent getAgent(AgentInstanceBuilderImpl builder) {

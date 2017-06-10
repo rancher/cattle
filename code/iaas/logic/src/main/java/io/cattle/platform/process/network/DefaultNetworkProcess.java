@@ -14,10 +14,10 @@ import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
 import io.cattle.platform.process.lock.DefaultNetworkLock;
 
+import java.util.Objects;
+
 import javax.inject.Inject;
 import javax.inject.Named;
-
-import org.apache.commons.lang3.ObjectUtils;
 
 @Named
 public class DefaultNetworkProcess extends AbstractObjectProcessHandler {
@@ -68,7 +68,7 @@ public class DefaultNetworkProcess extends AbstractObjectProcessHandler {
             }
         }
 
-        if (!ObjectUtils.equals(defaultNetworkId, newDefaultNetworkId)) {
+        if (!Objects.equals(defaultNetworkId, newDefaultNetworkId)) {
             objectManager.setFields(account, AccountConstants.FIELD_DEFAULT_NETWORK_ID, newDefaultNetworkId);
         }
     }

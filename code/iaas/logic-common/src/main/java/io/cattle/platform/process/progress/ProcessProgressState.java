@@ -2,8 +2,8 @@ package io.cattle.platform.process.progress;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 public class ProcessProgressState {
@@ -12,7 +12,7 @@ public class ProcessProgressState {
     int[] checkpointWeights;
     String currentCheckpoint;
     String subMessage = null;
-    List<String> checkPoints = new ArrayList<String>();
+    List<String> checkPoints = new ArrayList<>();
     Integer progress = null;
     Integer intermediateProgress = null;
 
@@ -62,7 +62,7 @@ public class ProcessProgressState {
     }
 
     public boolean setMessage(String message) {
-        if (!ObjectUtils.equals(this.subMessage, message)) {
+        if (!Objects.equals(this.subMessage, message)) {
             this.subMessage = message;
             return true;
         }

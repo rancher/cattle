@@ -3,6 +3,7 @@ package io.cattle.platform.logback;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 import javax.annotation.PostConstruct;
 
@@ -52,7 +53,7 @@ public class Startup {
         InputStream is = null;
         try {
             is = url.openStream();
-            if (!IOUtils.toString(is).contains(DEFAULT_TOKEN)) {
+            if (!IOUtils.toString(is, StandardCharsets.UTF_8).contains(DEFAULT_TOKEN)) {
                 return false;
             }
         } catch (IOException e) {

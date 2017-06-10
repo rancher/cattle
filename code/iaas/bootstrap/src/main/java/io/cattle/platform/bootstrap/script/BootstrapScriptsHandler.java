@@ -15,6 +15,7 @@ import javax.inject.Inject;
 import org.apache.commons.io.IOUtils;
 
 import com.netflix.config.DynamicStringProperty;
+import com.nimbusds.jose.util.StandardCharset;
 
 public class BootstrapScriptsHandler implements ScriptsHandler {
 
@@ -43,7 +44,7 @@ public class BootstrapScriptsHandler implements ScriptsHandler {
         Certificate cert = keyProvider.getCACertificate();
         byte[] pem = keyProvider.toBytes(cert);
         try (InputStream is = cl.getResourceAsStream(BOOTSTRAP_SOURCE.get())) {
-            String content = IOUtils.toString(is);
+            String content = IOUtils.toString(is, StandardCharset.UTF_8);
             content = content.replace("REQUIRED_IMAGE=", String.format("REQUIRED_IMAGE=\"%s\"", REQUIRED_IMAGE.get()));
             content = content.replace("DETECTED_CATTLE_AGENT_IP=", String.format("DETECTED_CATTLE_AGENT_IP=\"%s\"", apiRequest.getClientIp()));
             content = content.replace("%CERT%", new String(pem, "UTF-8"));

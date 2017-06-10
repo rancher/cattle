@@ -28,12 +28,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.EnumUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Record6;
@@ -216,9 +216,9 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
     protected void merge(ProcessInstanceRecord pi, ProcessRecord record) {
         pi.setStartTime(toTimestamp(record.getStartTime()));
         pi.setEndTime(toTimestamp(record.getEndTime()));
-        pi.setResult(ObjectUtils.toString(record.getResult(), null));
-        pi.setExitReason(ObjectUtils.toString(record.getExitReason(), null));
-        pi.setPhase(ObjectUtils.toString(record.getPhase(), null));
+        pi.setResult(Objects.toString(record.getResult(), null));
+        pi.setExitReason(Objects.toString(record.getExitReason(), null));
+        pi.setPhase(Objects.toString(record.getPhase(), null));
         pi.setStartProcessServerId(record.getStartProcessServerId());
         pi.setRunningProcessServerId(record.getRunningProcessServerId());
         pi.setExecutionCount(record.getExecutionCount());

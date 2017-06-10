@@ -23,6 +23,7 @@ import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.token.TokenService;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -36,7 +37,6 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.base.Joiner;
@@ -91,12 +91,8 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
         return stack;
     }
 
-    protected String toString(Object obj) {
-        return ObjectUtils.toString(obj, null);
-    }
-
     protected void setName(Instance instance, Map<String, Object> labels, Map<Object, Object> data) {
-        String name = toString(labels.get(SystemLabels.LABEL_DISPLAY_NAME));
+        String name = ObjectUtils.toString(labels.get(SystemLabels.LABEL_DISPLAY_NAME));
         if (StringUtils.isBlank(name)) {
             name = instance.getName();
         }

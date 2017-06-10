@@ -36,6 +36,7 @@ import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
 
 import com.netflix.config.DynamicStringProperty;
+import com.nimbusds.jose.util.StandardCharset;
 
 public class SecretsServiceImpl implements SecretsService {
 
@@ -69,7 +70,7 @@ public class SecretsServiceImpl implements SecretsService {
                     if (statusCode >= 300) {
                         throw new IOException("Failed to encrypt secret :" + response.getStatusLine().getReasonPhrase());
                     }
-                    return IOUtils.toString(response.getEntity().getContent());
+                    return IOUtils.toString(response.getEntity().getContent(), StandardCharset.UTF_8);
                 }
             });
     }
@@ -81,7 +82,7 @@ public class SecretsServiceImpl implements SecretsService {
             if (statusCode >= 300 && statusCode != 404) {
                 throw new IOException("Failed to delete secret :" + response.getStatusLine().getReasonPhrase());
             }
-            return IOUtils.toString(response.getEntity().getContent());
+            return IOUtils.toString(response.getEntity().getContent(), StandardCharset.UTF_8);
         });
     }
 
@@ -161,7 +162,7 @@ public class SecretsServiceImpl implements SecretsService {
                     if (statusCode >= 300) {
                         throw new IOException("Failed to rewrap secret :" + response.getStatusLine().getReasonPhrase());
                     }
-                    return IOUtils.toString(response.getEntity().getContent());
+                    return IOUtils.toString(response.getEntity().getContent(), StandardCharset.UTF_8);
                 }
             });
 

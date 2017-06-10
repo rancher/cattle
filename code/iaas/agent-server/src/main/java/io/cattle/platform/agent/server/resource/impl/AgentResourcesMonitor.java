@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -157,7 +158,7 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
                 continue;
             }
 
-            Host host = hosts.get(ObjectUtils.toString(data.get(HostConstants.FIELD_HOST_UUID), null));
+            Host host = hosts.get(Objects.toString(data.get(HostConstants.FIELD_HOST_UUID), null));
 
             if (host == null) {
                 continue;
@@ -174,7 +175,7 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
         for (Map.Entry<String, Map<String, Object>> ipData : resources.getIpAddresses().entrySet()) {
             String address = ipData.getKey();
             Map<String, Object> data = ipData.getValue();
-            Host host = hosts.get(ObjectUtils.toString(data.get(HostConstants.FIELD_HOST_UUID), null));
+            Host host = hosts.get(Objects.toString(data.get(HostConstants.FIELD_HOST_UUID), null));
 
             if (host == null) {
                 continue;
@@ -191,7 +192,7 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
                     ipAddressDao.updateIpAddress(ip, address);
                 }
                 String currentIp = DataAccessor.fieldString(host, HostConstants.FIELD_IP_ADDRESS);
-                if (!ObjectUtils.equals(currentIp, ip.getAddress())) {
+                if (!Objects.equals(currentIp, ip.getAddress())) {
                     try {
                         objectManager.setFields(host, HostConstants.FIELD_IP_ADDRESS, ip.getAddress());
                         publish = true;
@@ -222,7 +223,7 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
         for (Map.Entry<String, Map<String, Object>> hostData : resources.getHosts().entrySet()) {
             String uuid = hostData.getKey();
             Map<String, Object> data = hostData.getValue();
-            String physicalHostUuid = ObjectUtils.toString(data.get(HostConstants.FIELD_PHYSICAL_HOST_UUID), null);
+            String physicalHostUuid = Objects.toString(data.get(HostConstants.FIELD_PHYSICAL_HOST_UUID), null);
             Long physicalHostId = getPhysicalHost(agent, physicalHostUuid, new HashMap<String, Object>());
             boolean orchestrate = false;
 
@@ -406,8 +407,8 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
         }
 
         for (Map<String, Object> resource : pingData) {
-            final String type = ObjectUtils.toString(resource.get(ObjectMetaDataManager.TYPE_FIELD), null);
-            final String uuid = ObjectUtils.toString(resource.get(ObjectMetaDataManager.UUID_FIELD), null);
+            final String type = Objects.toString(resource.get(ObjectMetaDataManager.TYPE_FIELD), null);
+            final String uuid = Objects.toString(resource.get(ObjectMetaDataManager.UUID_FIELD), null);
 
             if (type == null || uuid == null) {
                 log.error("type [{}] or uuid [{}] is null for resource on pong from agent [{}]", type, uuid, ping.getResourceId());

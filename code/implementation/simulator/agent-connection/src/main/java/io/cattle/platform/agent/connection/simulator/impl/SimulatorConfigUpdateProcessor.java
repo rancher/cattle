@@ -18,6 +18,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.zip.GZIPInputStream;
 
 import javax.inject.Inject;
@@ -25,9 +26,10 @@ import javax.inject.Inject;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.nimbusds.jose.util.StandardCharset;
 
 public class SimulatorConfigUpdateProcessor implements AgentSimulatorEventProcessor {
 
@@ -51,7 +53,7 @@ public class SimulatorConfigUpdateProcessor implements AgentSimulatorEventProces
             return null;
         }
 
-        String auth = ObjectUtils.toString(authMap.get("CATTLE_AGENT_INSTANCE_AUTH"), null);
+        String auth = Objects.toString(authMap.get("CATTLE_AGENT_INSTANCE_AUTH"), null);
         if (auth == null) {
             throw new IllegalStateException("Failed to get auth for agent [" + agent.getId() + "]");
         }
@@ -91,7 +93,7 @@ public class SimulatorConfigUpdateProcessor implements AgentSimulatorEventProces
                 log.info("Simulator in [{}] file [{}]", item.getName(), entry.getName());
 
                 if (entry.getName().endsWith("/version")) {
-                    version = IOUtils.toString(tar).trim();
+                    version = IOUtils.toString(tar, StandardCharset.UTF_8).trim();
                     log.info("Simulator found version [{}] for [{}]", version, item.getName());
                 }
             }
@@ -106,7 +108,7 @@ public class SimulatorConfigUpdateProcessor implements AgentSimulatorEventProces
             IOUtils.closeQuietly(is);
             is = conn.getInputStream();
             /* Fully read response */
-            IOUtils.toString(is);
+            IOUtils.toString(is, StandardCharset.UTF_8);
         } finally {
             IOUtils.closeQuietly(tar);
             IOUtils.closeQuietly(is);

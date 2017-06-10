@@ -12,6 +12,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -102,7 +103,7 @@ public class DBDiscovery extends NoExceptionRunnable implements DiscoveryStrateg
         File f = new File(file);
         if (f.exists()) {
             try (FileInputStream fis = new FileInputStream(f)) {
-                uuid = IOUtils.toString(fis).trim();
+                uuid = IOUtils.toString(fis, StandardCharsets.UTF_8).trim();
             }
         } else {
             try (FileOutputStream fos = new FileOutputStream(f)) {

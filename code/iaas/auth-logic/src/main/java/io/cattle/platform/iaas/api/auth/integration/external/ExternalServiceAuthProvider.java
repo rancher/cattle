@@ -25,11 +25,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.fluent.Request;
@@ -57,7 +57,7 @@ public class ExternalServiceAuthProvider {
 
     public Token getToken(ApiRequest request) {
         Map<String, Object> requestBody = CollectionUtils.toMap(request.getRequestObject());
-        String code = ObjectUtils.toString(requestBody.get(SecurityConstants.CODE));
+        String code = Objects.toString(requestBody.get(SecurityConstants.CODE), null);
 
         //get the token from the auth service
         StringBuilder authUrl = new StringBuilder(ServiceAuthConstants.AUTH_SERVICE_URL.get());
@@ -65,7 +65,7 @@ public class ExternalServiceAuthProvider {
 
         HttpResponse response;
         try {
-            Map<String, String> data = new HashMap<String, String>();
+            Map<String, String> data = new HashMap<>();
             data.put("code", code);
             String jsonString = jsonMapper.writeValueAsString(data);
 
@@ -118,7 +118,7 @@ public class ExternalServiceAuthProvider {
 
         HttpResponse response;
         try {
-            Map<String, String> data = new HashMap<String, String>();
+            Map<String, String> data = new HashMap<>();
             data.put("accessToken", accessToken);
             String jsonString = jsonMapper.writeValueAsString(data);
 
@@ -165,7 +165,7 @@ public class ExternalServiceAuthProvider {
 
     public List<Identity> searchIdentities(String name, boolean exactMatch) {
         if (!isConfigured()) {
-            return new ArrayList<Identity>();
+            return new ArrayList<>();
         }
         List<Identity> identities = new ArrayList<>();
         StringBuilder authUrl = new StringBuilder(ServiceAuthConstants.AUTH_SERVICE_URL.get());

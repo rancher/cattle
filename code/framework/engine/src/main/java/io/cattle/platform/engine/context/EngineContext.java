@@ -1,16 +1,17 @@
 package io.cattle.platform.engine.context;
 
 import static io.cattle.platform.engine.process.util.ProcessMDC.*;
+
 import io.cattle.platform.engine.process.log.ParentLog;
 import io.cattle.platform.engine.process.log.ProcessExecutionLog;
 import io.cattle.platform.engine.process.log.ProcessLogicExecutionLog;
 import io.cattle.platform.server.context.ServerContext;
 
 import java.util.EmptyStackException;
+import java.util.Objects;
 import java.util.Stack;
 
 import org.apache.cloudstack.managed.threadlocal.ManagedThreadLocal;
-import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.MDC;
 
 public class EngineContext {
@@ -22,7 +23,7 @@ public class EngineContext {
         }
     };
 
-    Stack<ParentLog> currentLog = new Stack<ParentLog>();
+    Stack<ParentLog> currentLog = new Stack<>();
 
     public void pushLog(ParentLog log) {
         currentLog.push(log);
@@ -79,7 +80,7 @@ public class EngineContext {
         StringBuilder buffer = new StringBuilder();
         if (topResourceType != null) {
             buffer.append(topResourceType).append(":").append(topResourceId);
-            if (!ObjectUtils.equals(resourceId, topResourceId) || !ObjectUtils.equals(resourceType, topResourceType)) {
+            if (!Objects.equals(resourceId, topResourceId) || !Objects.equals(resourceType, topResourceType)) {
                 buffer.append("->").append(resourceType).append(":").append(resourceId);
             }
             prettyResource = buffer.toString();
@@ -88,7 +89,7 @@ public class EngineContext {
         buffer.setLength(0);
         if (topProcessName != null) {
             buffer.append(topProcessName);
-            if (!ObjectUtils.equals(topProcessName, processName)) {
+            if (!Objects.equals(topProcessName, processName)) {
                 buffer.append("->").append(processName);
             }
             prettyProcess = buffer.toString();

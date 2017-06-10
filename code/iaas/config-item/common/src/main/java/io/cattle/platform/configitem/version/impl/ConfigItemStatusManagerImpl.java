@@ -31,10 +31,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -252,7 +252,7 @@ public class ConfigItemStatusManagerImpl implements ConfigItemStatusManager {
             }
 
             if (item.isCheckInSyncOnly()) {
-                if (!checkVersions || !ObjectUtils.equals(status.getRequestedVersion(), status.getAppliedVersion())) {
+                if (!checkVersions || !Objects.equals(status.getRequestedVersion(), status.getAppliedVersion())) {
                     if (request.isMigration()) {
                         log.info("Waiting on [{}] on [{}], for migration", client, name);
                     } else {
