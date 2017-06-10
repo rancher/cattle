@@ -4,10 +4,10 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.util.exception.ExceptionUtils;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.cloudstack.managed.threadlocal.ManagedThreadLocal;
-import org.apache.commons.lang3.ObjectUtils;
 
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicIntProperty;
@@ -25,7 +25,7 @@ public class Idempotent {
             return new HashSet<>();
         }
     };
-    private static final ThreadLocal<Boolean> DISABLED = new ManagedThreadLocal<Boolean>();
+    private static final ThreadLocal<Boolean> DISABLED = new ManagedThreadLocal<>();
     private static final ThreadLocal<Long> LEVEL = new ManagedThreadLocal<Long>() {
         @Override
         protected Long initialValue() {
@@ -60,7 +60,7 @@ public class Idempotent {
                             return resultAgain;
                         }
 
-                        if (!ObjectUtils.equals(result, resultAgain)) {
+                        if (!Objects.equals(result, resultAgain)) {
                             throw new OperationNotIdemponent("Result [" + result + "] does not match second result [" + resultAgain + "]");
                         }
                         i+=j;

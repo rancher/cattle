@@ -13,11 +13,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -155,8 +155,8 @@ public class AzureRESTClient extends AzureConfigurable{
             }
 
             Map<String, Object> jsonData = jsonMapper.readValue(response.getEntity().getContent());
-            accessToken = ObjectUtils.toString(jsonData.get("access_token"));
-            refreshToken = ObjectUtils.toString(jsonData.get("refresh_token"));
+            accessToken = Objects.toString(jsonData.get("access_token"), null);
+            refreshToken = Objects.toString(jsonData.get("refresh_token"), null);
 
             ApiContext.getContext().getApiRequest().setAttribute(AzureConstants.AZURE_ACCESS_TOKEN, accessToken);
             ApiContext.getContext().getApiRequest().setAttribute(AzureConstants.AZURE_REFRESH_TOKEN, refreshToken);
@@ -201,8 +201,8 @@ public class AzureRESTClient extends AzureConfigurable{
 
             Map<String, Object> jsonData = jsonMapper.readValue(response.getEntity().getContent());
 
-            String newAccessToken = ObjectUtils.toString(jsonData.get("access_token"));
-            String newRefreshToken = ObjectUtils.toString(jsonData.get("refresh_token"));
+            String newAccessToken = Objects.toString(jsonData.get("access_token"), null);
+            String newRefreshToken = Objects.toString(jsonData.get("refresh_token"), null);
             ApiContext.getContext().getApiRequest().setAttribute(AzureConstants.AZURE_ACCESS_TOKEN, newAccessToken);
             ApiContext.getContext().getApiRequest().setAttribute(AzureConstants.AZURE_REFRESH_TOKEN, newRefreshToken);
             logger.debug("Storing the new Azure access token to the Account");
@@ -225,7 +225,7 @@ public class AzureRESTClient extends AzureConfigurable{
         {
             for(Object azureValue : azureValueList) {
                 Map<String, Object> result = CollectionUtils.toMap(azureValue);
-                String objectType = ObjectUtils.toString(result.get("objectType"));
+                String objectType = Objects.toString(result.get("objectType"), null);
                 if(objectType != null && (objectType.equalsIgnoreCase("User") || objectType.equalsIgnoreCase("Group"))) {
                     AzureAccountInfo userOrGroupInfo = jsonToAzureAccountInfo(result);
                     azureUserOrGroupList.add(userOrGroupInfo);
@@ -236,16 +236,16 @@ public class AzureRESTClient extends AzureConfigurable{
     }
 
     public AzureAccountInfo jsonToAzureAccountInfo(Map<String, Object> jsonData) {
-        String objectId = ObjectUtils.toString(jsonData.get("objectId"));
-        String objectType = ObjectUtils.toString(jsonData.get("objectType"));
-        String userPrincipalName = ObjectUtils.toString(jsonData.get("userPrincipalName"));
-        String accountName = ObjectUtils.toString(jsonData.get("mailNickname"));
+        String objectId = Objects.toString(jsonData.get("objectId"), null);
+        String objectType = Objects.toString(jsonData.get("objectType"), null);
+        String userPrincipalName = Objects.toString(jsonData.get("userPrincipalName"), null);
+        String accountName = Objects.toString(jsonData.get("mailNickname"), null);
 
         if("Group".equalsIgnoreCase(objectType)) {
-            accountName = ObjectUtils.toString(jsonData.get("displayName"));
+            accountName = Objects.toString(jsonData.get("displayName"), null);
         }
 
-        String name = ObjectUtils.toString(jsonData.get("displayName"));
+        String name = Objects.toString(jsonData.get("displayName"), null);
         if (StringUtils.isBlank(name)) {
             name = accountName;
         }
@@ -259,7 +259,7 @@ public class AzureRESTClient extends AzureConfigurable{
             //if token expired, refresh token.
             Map<String, Object> jsonData = jsonMapper.readValue(response.getEntity().getContent());
             Map<String, Object> azureError = CollectionUtils.toMap(jsonData.get("odata.error"));
-            String azureCode = ObjectUtils.toString(azureError.get("code"));
+            String azureCode = Objects.toString(azureError.get("code"), null);
             if("Authentication_ExpiredToken".equalsIgnoreCase(azureCode)) {
                 return true;
             }

@@ -10,8 +10,8 @@ import io.cattle.platform.util.type.CollectionUtils;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.netflix.config.DynamicBooleanProperty;
@@ -41,7 +41,7 @@ public class TransitioningUtils {
     }
 
     public static String getTransitioningError(Object obj) {
-        return ObjectUtils.toString(getTransitioningErrorData(obj).get(TRANSITIONING_MESSAGE_FIELD), null);
+        return Objects.toString(getTransitioningErrorData(obj).get(TRANSITIONING_MESSAGE_FIELD), null);
     }
 
     public static String getTransitioningMessage(Object obj) {
@@ -49,7 +49,7 @@ public class TransitioningUtils {
     }
 
     public static Map<String, Object> getTransitioningData(String message, String internalMessage) {
-        Map<String, Object> data = new HashMap<String, Object>();
+        Map<String, Object> data = new HashMap<>();
 
         String finalMessage = message == null ? "" : message;
 

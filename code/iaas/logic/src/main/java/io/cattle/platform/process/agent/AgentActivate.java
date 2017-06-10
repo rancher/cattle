@@ -99,7 +99,7 @@ public class AgentActivate extends AbstractDefaultProcessHandler {
                 } catch (Exception e) {
                 }
             }
-        }, MoreExecutors.sameThreadExecutor());
+        }, MoreExecutors.directExecutor());
 
 
         if (waitFor) {

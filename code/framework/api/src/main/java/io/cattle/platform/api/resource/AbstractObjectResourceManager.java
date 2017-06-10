@@ -47,10 +47,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -140,7 +140,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     protected Object updateInternal(String type, String id, Object obj, ApiRequest request) {
         Map<String, Object> updates = CollectionUtils.toMap(request.getRequestObject());
         Map<String, Object> existingValues = new HashMap<>();
-        Map<String, Object> filteredUpdates = new HashMap<String, Object>();
+        Map<String, Object> filteredUpdates = new HashMap<>();
         Map<String, Object> existing = createResource(obj, IDENTITY_FORMATTER, request).getFields();
         Schema schema = request.getSchemaFactory().getSchema(type);
         Map<String, Field> fields = schema.getResourceFields();
@@ -149,7 +149,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
         for (Map.Entry<String, Object> entry : updates.entrySet()) {
             String key = entry.getKey();
             Object existingValue = existing.get(key);
-            if (!ObjectUtils.equals(existingValue, entry.getValue())) {
+            if (!Objects.equals(existingValue, entry.getValue())) {
                 filteredUpdates.put(key, entry.getValue());
                 existingValues.put(key, existingValue);
                 Field field = fields.get(key);
@@ -237,7 +237,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
         }
 
         if (otherSchema.getCollectionMethods().contains(Method.POST.toString())) {
-            Map<String, Object> createDefaults = new HashMap<String, Object>();
+            Map<String, Object> createDefaults = new HashMap<>();
             IdFormatter idFormatter = ApiContext.getContext().getIdFormatter();
             createDefaults.put(relationship.getPropertyName(), idFormatter.formatId(type, id));
             request.setCreateDefaults(createDefaults);
@@ -282,7 +282,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
         if (include == null)
             return Collections.emptyMap();
 
-        Map<String, Relationship> result = new HashMap<String, Relationship>();
+        Map<String, Relationship> result = new HashMap<>();
         Map<String, Relationship> links = metaDataManager.getLinkRelationships(schemaFactory, type);
         for (String link : include.getLinks()) {
             link = link.toLowerCase();
@@ -470,8 +470,8 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
             return true;
         }
 
-        String capability = ObjectUtils.toString(attributes.get("capability"), null);
-        String state = ObjectUtils.toString(attributes.get(ObjectMetaDataManager.STATE_FIELD), null);
+        String capability = Objects.toString(attributes.get("capability"), null);
+        String state = Objects.toString(attributes.get(ObjectMetaDataManager.STATE_FIELD), null);
         String currentState = io.cattle.platform.object.util.ObjectUtils.getState(obj);
 
         if (!StringUtils.isBlank(capability) && !(ApiContext.getContext().getCapabilities(obj) != null ?
@@ -494,7 +494,7 @@ public abstract class AbstractObjectResourceManager extends AbstractBaseResource
     @Override
     public void start() {
         actionHandlersMap = NamedUtils.createMapByName(actionHandlers);
-        linkHandlersMap = new HashMap<String, List<LinkHandler>>();
+        linkHandlersMap = new HashMap<>();
 
         for (LinkHandler handler : linkHandlers) {
             for (String type : handler.getTypes()) {

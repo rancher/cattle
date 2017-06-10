@@ -1,7 +1,7 @@
 package io.cattle.platform.iaas.api.host;
 
-import static io.cattle.platform.core.constants.MachineConstants.CONFIG_FIELD_SUFFIX;
-import static io.github.ibuildthecloud.gdapi.util.ResponseCodes.UNPROCESSABLE_ENTITY;
+import static io.cattle.platform.core.constants.MachineConstants.*;
+import static io.github.ibuildthecloud.gdapi.util.ResponseCodes.*;
 
 import io.cattle.platform.core.model.HostTemplate;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
@@ -29,7 +29,6 @@ public class HostTemplateValidationFilter extends AbstractDefaultResourceManager
         Map<String, Object> obj = CollectionUtils.toMap(request.getRequestObject());
 
         String driver = validateStringField(obj, "driver");
-        String name = validateStringField(obj, "name");
         validateConfigKey(obj, driver);
 
         return super.create(type, request, next);

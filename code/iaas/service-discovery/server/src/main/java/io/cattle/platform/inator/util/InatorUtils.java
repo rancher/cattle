@@ -3,9 +3,8 @@ package io.cattle.platform.inator.util;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
-
-import org.apache.commons.lang3.ObjectUtils;
 
 public class InatorUtils {
 
@@ -17,7 +16,7 @@ public class InatorUtils {
         } else if (left instanceof List<?> && right == null) {
             return numListEquals((List<?>) left, Collections.emptyList());
         }
-        return ObjectUtils.equals(left, right);
+        return Objects.equals(left, right);
     }
 
     protected static boolean numListEquals(List<?> left, List<?> right) {

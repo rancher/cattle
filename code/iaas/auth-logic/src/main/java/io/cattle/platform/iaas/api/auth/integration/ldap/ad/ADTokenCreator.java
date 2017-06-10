@@ -15,10 +15,9 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.Map;
+import java.util.Objects;
 
 import javax.inject.Inject;
-
-import org.apache.commons.lang3.ObjectUtils;
 
 public class ADTokenCreator extends ADConfigurable implements TokenCreator {
 
@@ -53,7 +52,7 @@ public class ADTokenCreator extends ADConfigurable implements TokenCreator {
         if (!isConfigured()) {
             throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "ADConfig", "ADConfig is not Configured.", null);
         }
-        String code = ObjectUtils.toString(requestBody.get(SecurityConstants.CODE));
+        String code = Objects.toString(requestBody.get(SecurityConstants.CODE), null);
         String[] split = code.split(":", 2);
         if (split.length != 2) {
             throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "MalformedCode");

@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -166,10 +167,7 @@ public class ObjectUtils {
     }
 
     public static String toString(Object obj) {
-        if (obj == null) {
-            return null;
-        }
-        return obj.toString();
+        return Objects.toString(obj, null);
     }
 
     public static void publishChanged(EventService eventService, ObjectManager objectManager, Object obj) {

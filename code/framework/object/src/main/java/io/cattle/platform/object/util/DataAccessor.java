@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.beanutils.ConvertUtils;
 
@@ -69,7 +70,7 @@ public class DataAccessor {
         }
 
         for (Object item : (List<?>) list) {
-            result.add(org.apache.commons.lang3.ObjectUtils.toString(item, null));
+            result.add(Objects.toString(item, null));
         }
 
         return result;

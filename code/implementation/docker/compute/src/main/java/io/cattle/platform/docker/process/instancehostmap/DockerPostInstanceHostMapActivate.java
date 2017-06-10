@@ -52,10 +52,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -298,9 +298,9 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
             } else {
                 String bindAddress = DataAccessor.fields(port).withKey(PortConstants.FIELD_BIND_ADDR).as(String.class);
                 boolean bindAddressNull = bindAddress == null;
-                if (!ObjectUtils.equals(port.getPublicPort(), spec.getPublicPort())
-                        || !ObjectUtils.equals(port.getPrivateIpAddressId(), privateIpAddressId)
-                        || (bindAddressNull && !ObjectUtils.equals(port.getPublicIpAddressId(), publicIpAddressId))
+                if (!Objects.equals(port.getPublicPort(), spec.getPublicPort())
+                        || !Objects.equals(port.getPrivateIpAddressId(), privateIpAddressId)
+                        || (bindAddressNull && !Objects.equals(port.getPublicIpAddressId(), publicIpAddressId))
                         || (!bindAddressNull && !bindAddress.equals(spec.getIpAddress()))){
                     if (spec.getPublicPort() != null) {
                         port.setPublicPort(spec.getPublicPort());

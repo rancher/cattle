@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 import javax.annotation.PostConstruct;
 
@@ -73,7 +74,7 @@ public class DefaultHtmlTemplate implements HtmlTemplate {
             if (is == null) {
                 is = DefaultHtmlTemplate.class.getResourceAsStream("header.txt");
             }
-            header = IOUtils.toString(is);
+            header = IOUtils.toString(is, StandardCharsets.UTF_8);
         } finally {
             IOUtils.closeQuietly(is);
         }

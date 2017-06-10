@@ -16,11 +16,10 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.inject.Inject;
-
-import org.apache.commons.lang3.ObjectUtils;
 
 public class LocalAuthTokenCreator extends LocalAuthConfigurable implements TokenCreator {
 
@@ -39,7 +38,7 @@ public class LocalAuthTokenCreator extends LocalAuthConfigurable implements Toke
             throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "LocalAuthConfig", "LocalAuthConfig is not Configured.", null);
         }
 
-        String code = ObjectUtils.toString(requestBody.get(SecurityConstants.CODE));
+        String code = Objects.toString(requestBody.get(SecurityConstants.CODE), null);
         String[] split = code.split(":", 2);
 
         if (split.length != 2) {

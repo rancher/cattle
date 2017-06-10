@@ -43,11 +43,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.exception.DataChangedException;
 import org.slf4j.Logger;
@@ -199,7 +199,7 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
 
         boolean oldVm = DataAccessor.fieldBool(account, AccountConstants.FIELD_VIRTUAL_MACHINE);
         String oldOrch = DataAccessor.fieldString(account, AccountConstants.FIELD_ORCHESTRATION);
-        if (oldVm != virtualMachine || !ObjectUtils.equals(oldOrch, orchestration)) {
+        if (oldVm != virtualMachine || !Objects.equals(oldOrch, orchestration)) {
             objectManager.setFields(account,
                     AccountConstants.FIELD_ORCHESTRATION, orchestration,
                     AccountConstants.FIELD_VIRTUAL_MACHINE, virtualMachine);

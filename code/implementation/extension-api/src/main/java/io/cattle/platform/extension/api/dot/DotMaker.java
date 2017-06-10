@@ -14,15 +14,16 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.ObjectUtils;
 
 public class DotMaker {
 
@@ -31,11 +32,11 @@ public class DotMaker {
 
     public String getResourceDot(String resourceType) {
         StringBuilder buffer = new StringBuilder();
-        Set<String> nodes = new HashSet<String>();
+        Set<String> nodes = new HashSet<>();
         buffer.append("digraph \"").append(resourceType).append("\" {\n");
 
         for (ProcessDefinition def : processDefinitions) {
-            if (ObjectUtils.equals(resourceType, def.getResourceType())) {
+            if (Objects.equals(resourceType, def.getResourceType())) {
                 addTransitions(def, nodes, buffer);
             }
         }
@@ -110,7 +111,7 @@ public class DotMaker {
 
     public String getProcessDot(ProcessDefinition def) {
         StringBuilder buffer = new StringBuilder();
-        Set<String> nodes = new HashSet<String>();
+        Set<String> nodes = new HashSet<>();
 
         buffer.append("digraph \"").append(def.getName()).append("\" {\n");
         addTransitions(def, nodes, buffer);
@@ -177,7 +178,7 @@ public class DotMaker {
             }
 
             if (is != null) {
-                this.html = IOUtils.toString(is);
+                this.html = IOUtils.toString(is, StandardCharsets.UTF_8);
             }
         } finally {
             IOUtils.closeQuietly(is);

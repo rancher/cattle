@@ -11,10 +11,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.lang3.ObjectUtils;
 
 public class RequestUtils {
 
@@ -47,21 +46,21 @@ public class RequestUtils {
     public static String getSingularStringValue(String key, Map<String, Object> params) {
         Object obj = params.get(key);
         Object singleObj = makeSingular(obj);
-        return ObjectUtils.toString(singleObj, null);
+        return Objects.toString(singleObj, null);
     }
-    
+
     public static String getConditionValue(String key, Map<Object, Object> params) {
         Object value = params.get(key);
         if (value == null) {
             return null;
         }
-        
+
         value = makeSingular(value);
         if (value instanceof Condition) {
-            return ObjectUtils.toString(((Condition) value).getValue(), null);
+            return Objects.toString(((Condition) value).getValue(), null);
         }
 
-        return ObjectUtils.toString(value, null);
+        return Objects.toString(value, null);
     }
 
     public static Object makeSingular(Object input) {
@@ -132,13 +131,13 @@ public class RequestUtils {
     @SuppressWarnings("unchecked")
     public static <K, V> Map<K, V> toMap(Object obj) {
         if (obj == null) {
-            return new HashMap<K, V>();
+            return new HashMap<>();
         }
 
         if (obj instanceof Map) {
             return (Map<K, V>)obj;
         } else {
-            return new HashMap<K, V>();
+            return new HashMap<>();
         }
     }
 

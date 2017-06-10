@@ -9,10 +9,10 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.Map;
+import java.util.Objects;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 public class AzureTokenCreator extends AzureConfigurable implements TokenCreator {
@@ -32,7 +32,7 @@ public class AzureTokenCreator extends AzureConfigurable implements TokenCreator
     @Override
     public Token getToken(ApiRequest request) {
         Map<String, Object> requestBody = CollectionUtils.toMap(request.getRequestObject());
-        String code = ObjectUtils.toString(requestBody.get(SecurityConstants.CODE));
+        String code = Objects.toString(requestBody.get(SecurityConstants.CODE), null);
         String accessToken = azureClient.getAccessToken(code);
         if (StringUtils.isBlank(accessToken)){
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, getName(), "Failed to get accessToken.",

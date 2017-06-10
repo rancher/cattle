@@ -15,9 +15,9 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.Map;
-import javax.inject.Inject;
+import java.util.Objects;
 
-import org.apache.commons.lang3.ObjectUtils;
+import javax.inject.Inject;
 
 public class OpenLDAPTokenCreator extends OpenLDAPConfigurable implements TokenCreator {
 
@@ -52,7 +52,7 @@ public class OpenLDAPTokenCreator extends OpenLDAPConfigurable implements TokenC
         if (!isConfigured()) {
             throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, "OpenLDAPConfig", "OpenLDAPConfig is not Configured.", null);
         }
-        String code = ObjectUtils.toString(requestBody.get(SecurityConstants.CODE));
+        String code = Objects.toString(requestBody.get(SecurityConstants.CODE), null);
         String[] split = code.split(":", 2);
         if (split.length != 2) {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
