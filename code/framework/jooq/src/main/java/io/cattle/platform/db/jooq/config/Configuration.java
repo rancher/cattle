@@ -5,9 +5,7 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
-import javax.sql.DataSource;
 
-import org.jooq.ConnectionProvider;
 import org.jooq.ExecuteListener;
 import org.jooq.SQLDialect;
 import org.jooq.conf.RenderNameStyle;
@@ -20,13 +18,11 @@ public class Configuration extends DefaultConfiguration {
     private static final long serialVersionUID = -726368732372005280L;
 
     String name;
-    DataSource dataSource;
-    ConnectionProvider connectionProvider;
     List<ExecuteListener> listeners;
-    Settings settings = new Settings();
 
     @PostConstruct
     public void init() {
+        Settings settings = new Settings();
         String prop = "db." + name + ".database";
         String database = ArchaiusUtil.getString(prop).get();
         if (database == null) {
@@ -38,12 +34,6 @@ public class Configuration extends DefaultConfiguration {
             set(dialect);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid SQLDialect [" + database.toUpperCase() + "]", e);
-        }
-
-        if (connectionProvider == null) {
-            set(new AutoCommitConnectionProvider(dataSource));
-        } else {
-            set(connectionProvider);
         }
 
         settings.setRenderSchema(false);
@@ -61,14 +51,6 @@ public class Configuration extends DefaultConfiguration {
         }
     }
 
-    public DataSource getDataSource() {
-        return dataSource;
-    }
-
-    public void setDataSource(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
-
     public String getName() {
         return name;
     }
@@ -77,28 +59,12 @@ public class Configuration extends DefaultConfiguration {
         this.name = name;
     }
 
-    public ConnectionProvider getConnectionProvider() {
-        return connectionProvider;
-    }
-
-    public void setConnectionProvider(ConnectionProvider connectionProvider) {
-        this.connectionProvider = connectionProvider;
-    }
-
     public List<ExecuteListener> getListeners() {
         return listeners;
     }
 
     public void setListeners(List<ExecuteListener> listeners) {
         this.listeners = listeners;
-    }
-
-    public Settings getSettings() {
-        return settings;
-    }
-
-    public void setSettings(Settings settings) {
-        this.settings = settings;
     }
 
 }
