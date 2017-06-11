@@ -17,7 +17,7 @@ public interface ServiceConsumeMapDao {
 
     /**
      * Lists maps to remove referencing services consumed by passed serviceId
-     * 
+     *
      * @param serviceId
      * @return
      */
@@ -25,7 +25,7 @@ public interface ServiceConsumeMapDao {
 
     /**
      * Lists maps to remove consuming service passed by serviceId
-     * 
+     *
      * @param serviceId
      * @return
      */
@@ -61,8 +61,6 @@ public interface ServiceConsumeMapDao {
     List<String> findInstanceNamesForService(long serviceId);
 
     ServiceConsumeMap createServiceLink(Service service, ServiceLink serviceLink);
-
-    List<ServiceConsumeMap> createServiceLinks(List<ServiceLink> serviceLink);
 
     List<? extends Service> findLinkedServices(long serviceId);
 

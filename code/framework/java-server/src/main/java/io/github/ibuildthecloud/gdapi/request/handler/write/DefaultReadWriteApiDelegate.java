@@ -2,15 +2,19 @@ package io.github.ibuildthecloud.gdapi.request.handler.write;
 
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.handler.ApiRequestHandler;
+import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
 import java.io.IOException;
 import java.util.List;
 
+import javax.inject.Inject;
 import javax.servlet.ServletException;
 
 public class DefaultReadWriteApiDelegate implements ReadWriteApiDelegate {
 
     List<ApiRequestHandler> handlers;
+    @Inject
+    TransactionDelegate transactionDelegate;
 
     @Override
     public void read(ApiRequest request) throws IOException {
@@ -19,7 +23,9 @@ public class DefaultReadWriteApiDelegate implements ReadWriteApiDelegate {
 
     @Override
     public void write(ApiRequest request) throws IOException {
-        handle(request);
+        transactionDelegate.doInTransactionWithException(() -> {
+            handle(request);
+        });
     }
 
     protected void handle(ApiRequest request) throws IOException {

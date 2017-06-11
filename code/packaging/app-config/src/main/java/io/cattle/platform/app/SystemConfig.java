@@ -18,8 +18,12 @@ import java.util.concurrent.ThreadPoolExecutor;
 import javax.management.MalformedObjectNameException;
 import javax.sql.DataSource;
 
+import org.jooq.ConnectionProvider;
+import org.jooq.TransactionProvider;
 import org.jooq.conf.Settings;
 import org.jooq.impl.DataSourceConnectionProvider;
+import org.jooq.impl.DefaultTransactionProvider;
+import org.jooq.impl.ThreadLocalTransactionProvider;
 import org.jooq.tools.StopWatchListener;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -27,8 +31,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 import org.springframework.scheduling.concurrent.ScheduledExecutorFactoryBean;
 
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -61,19 +63,25 @@ public class SystemConfig {
     }
 
     @Bean
-    DataSourceConnectionProvider JooqConnectionProvider(@Qualifier("DataSource") DataSource ds) {
-        return new DataSourceConnectionProvider(new TransactionAwareDataSourceProxy(ds));
+    ConnectionProvider JooqConnectionProvider(@Qualifier("DataSource") DataSource ds) {
+        return new DataSourceConnectionProvider(ds);
+    }
+
+    @Bean
+    TransactionProvider TransactionProvider(ConnectionProvider cp) {
+        return new ThreadLocalTransactionProvider(cp, false);
     }
 
     @Bean
     @Primary
-    io.cattle.platform.db.jooq.config.Configuration JooqConfiguration(DataSourceConnectionProvider dscp) {
+    io.cattle.platform.db.jooq.config.Configuration JooqConfiguration(ConnectionProvider cp, TransactionProvider tp) {
         LoggerListener logger = new LoggerListener();
         logger.setMaxLength(1000);
 
         io.cattle.platform.db.jooq.config.Configuration config = new io.cattle.platform.db.jooq.config.Configuration();
         config.setName("cattle");
-        config.setConnectionProvider(dscp);
+        config.setConnectionProvider(cp);
+        config.setTransactionProvider(tp);
         config.setListeners(Arrays.asList(
                 logger,
                 new StopWatchListener()));
@@ -82,7 +90,23 @@ public class SystemConfig {
     }
 
     @Bean
-    io.cattle.platform.db.jooq.config.Configuration LockingJooqConfiguration(DataSourceConnectionProvider dscp) {
+    io.cattle.platform.db.jooq.config.Configuration NewConnectionJooqConfiguration(ConnectionProvider cp) {
+        LoggerListener logger = new LoggerListener();
+        logger.setMaxLength(1000);
+
+        io.cattle.platform.db.jooq.config.Configuration config = new io.cattle.platform.db.jooq.config.Configuration();
+        config.setName("cattle");
+        config.setConnectionProvider(cp);
+        config.setTransactionProvider(new DefaultTransactionProvider(cp, false));
+        config.setListeners(Arrays.asList(
+                logger,
+                new StopWatchListener()));
+
+        return config;
+    }
+
+    @Bean
+    io.cattle.platform.db.jooq.config.Configuration LockingJooqConfiguration(ConnectionProvider cp, TransactionProvider tp) {
         Settings settings = new Settings();
         settings.setExecuteWithOptimisticLocking(true);
 
@@ -91,20 +115,14 @@ public class SystemConfig {
 
         io.cattle.platform.db.jooq.config.Configuration config = new io.cattle.platform.db.jooq.config.Configuration();
         config.setName("cattle");
-        config.setConnectionProvider(dscp);
+        config.setConnectionProvider(cp);
+        config.setTransactionProvider(tp);
         config.setListeners(Arrays.asList(
                 logger,
                 new StopWatchListener()));
         config.setSettings(settings);
 
         return config;
-    }
-
-    @Bean
-    DataSourceTransactionManager CoreTransactionManager(@Qualifier("DataSource") DataSource ds) {
-        DataSourceTransactionManager dstm = new DataSourceTransactionManager();
-        dstm.setDataSource(ds);
-        return dstm;
     }
 
     @Bean

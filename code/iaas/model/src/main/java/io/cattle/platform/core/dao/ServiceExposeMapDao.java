@@ -6,21 +6,10 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang3.tuple.Pair;
 
 public interface ServiceExposeMapDao {
-
-    /**
-     * this method is wrapped up in transaction. All instances will get created and scheduled for create inside one
-     * transaction
-     *
-     * @param properties
-     * @param service
-     * @return
-     */
-    Pair<Instance, ServiceExposeMap> createServiceInstance(Map<String, Object> properties, Long serviceId, boolean system);
 
     List<? extends Instance> listServiceManagedInstances(Service service);
 

@@ -12,6 +12,7 @@ import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.UnmodifiableMap;
 import io.github.ibuildthecloud.gdapi.model.Schema;
+import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;

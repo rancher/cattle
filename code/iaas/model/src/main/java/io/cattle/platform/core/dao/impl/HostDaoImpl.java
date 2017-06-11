@@ -29,6 +29,7 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.util.resource.UUID;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
+import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,6 +53,8 @@ public class HostDaoImpl extends AbstractJooqDao implements HostDao {
     ObjectManager objectManager;
     @Inject
     GenericResourceDao genericResourceDao;
+    @Inject
+    TransactionDelegate transaction;
     Long startTime;
 
     @Override
@@ -141,27 +144,29 @@ public class HostDaoImpl extends AbstractJooqDao implements HostDao {
 
     @Override
     public PhysicalHost createMachineForHost(final Host host, String driver) {
-        String uuid = UUID.randomUUID().toString();
-        final Map<Object, Object> data = new HashMap<>(DataUtils.getFields(host));
-        data.put(PHYSICAL_HOST.KIND, MachineConstants.KIND_MACHINE);
-        data.put(PHYSICAL_HOST.NAME, DataAccessor.fieldString(host, HostConstants.FIELD_HOSTNAME));
-        data.put(PHYSICAL_HOST.DESCRIPTION, host.getDescription());
-        data.put(PHYSICAL_HOST.ACCOUNT_ID, host.getAccountId());
-        data.put(PHYSICAL_HOST.EXTERNAL_ID, uuid);
-        data.put(PHYSICAL_HOST.DRIVER, driver);
+        return transaction.doInTransactionResult(() -> {
+            String uuid = UUID.randomUUID().toString();
+            final Map<Object, Object> data = new HashMap<>(DataUtils.getFields(host));
+            data.put(PHYSICAL_HOST.KIND, MachineConstants.KIND_MACHINE);
+            data.put(PHYSICAL_HOST.NAME, DataAccessor.fieldString(host, HostConstants.FIELD_HOSTNAME));
+            data.put(PHYSICAL_HOST.DESCRIPTION, host.getDescription());
+            data.put(PHYSICAL_HOST.ACCOUNT_ID, host.getAccountId());
+            data.put(PHYSICAL_HOST.EXTERNAL_ID, uuid);
+            data.put(PHYSICAL_HOST.DRIVER, driver);
 
-        PhysicalHost phyHost = DeferredUtils.nest(new Callable<PhysicalHost>() {
-            @Override
-            public PhysicalHost call() throws Exception {
-                return genericResourceDao.createAndSchedule(PhysicalHost.class, objectManager.convertToPropertiesFor(PhysicalHost.class, data));
-            }
+            PhysicalHost phyHost = DeferredUtils.nest(new Callable<PhysicalHost>() {
+                @Override
+                public PhysicalHost call() throws Exception {
+                    return genericResourceDao.createAndSchedule(PhysicalHost.class, objectManager.convertToPropertiesFor(PhysicalHost.class, data));
+                }
+            });
+
+            objectManager.setFields(host,
+                    HOST.PHYSICAL_HOST_ID, phyHost.getId(),
+                    HostConstants.FIELD_REPORTED_UUID, uuid);
+
+            return phyHost;
         });
-
-        objectManager.setFields(host,
-                HOST.PHYSICAL_HOST_ID, phyHost.getId(),
-                HostConstants.FIELD_REPORTED_UUID, uuid);
-
-        return phyHost;
     }
 
     @Override

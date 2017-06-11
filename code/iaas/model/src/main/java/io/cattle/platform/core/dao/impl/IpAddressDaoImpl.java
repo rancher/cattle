@@ -25,6 +25,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -39,9 +40,10 @@ public class IpAddressDaoImpl extends AbstractJooqDao implements IpAddressDao {
 
     @Inject
     ObjectManager objectManager;
-
     @Inject
     ObjectProcessManager processManager;
+    @Inject
+    TransactionDelegate transaction;
 
     @Override
     public IpAddress getPrimaryIpAddress(Nic nic) {
@@ -100,50 +102,56 @@ public class IpAddressDaoImpl extends AbstractJooqDao implements IpAddressDao {
 
     @Override
     public IpAddress mapNewIpAddress(Nic nic, Object key, Object... values) {
-        if ( nic.getNetworkId() == null ) {
-            throw new IllegalStateException("Can not map new IP to nic with no network assigned to nic");
-        }
+        return transaction.doInTransactionResult(() -> {
+            if ( nic.getNetworkId() == null ) {
+                throw new IllegalStateException("Can not map new IP to nic with no network assigned to nic");
+            }
 
-        Map<Object,Object> inputProperties = key == null ? Collections.emptyMap() : CollectionUtils.asMap(key, values);
-        Map<Object,Object> properties = CollectionUtils.asMap((Object)IP_ADDRESS.ACCOUNT_ID, nic.getAccountId());
+            Map<Object,Object> inputProperties = key == null ? Collections.emptyMap() : CollectionUtils.asMap(key, values);
+            Map<Object,Object> properties = CollectionUtils.asMap((Object)IP_ADDRESS.ACCOUNT_ID, nic.getAccountId());
 
-        properties.putAll(inputProperties);
-        IpAddress ipAddress = objectManager.create(IpAddress.class, objectManager.convertToPropertiesFor(IpAddress.class, properties));
+            properties.putAll(inputProperties);
+            IpAddress ipAddress = objectManager.create(IpAddress.class, objectManager.convertToPropertiesFor(IpAddress.class, properties));
 
-        objectManager.create(IpAddressNicMap.class,
-                IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID, ipAddress.getId(),
-                IP_ADDRESS_NIC_MAP.NIC_ID, nic.getId());
+            objectManager.create(IpAddressNicMap.class,
+                    IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID, ipAddress.getId(),
+                    IP_ADDRESS_NIC_MAP.NIC_ID, nic.getId());
 
-        return ipAddress;
+            return ipAddress;
+        });
     }
 
     @Override
     public IpAddress assignAndActivateNewAddress(Host host, String ipAddress) {
-        IpAddress ipAddressObj = objectManager.create(IpAddress.class,
-                IP_ADDRESS.ADDRESS, ipAddress,
-                IP_ADDRESS.ACCOUNT_ID, host.getAccountId());
+        return transaction.doInTransactionResult(() -> {
+            IpAddress ipAddressObj = objectManager.create(IpAddress.class,
+                    IP_ADDRESS.ADDRESS, ipAddress,
+                    IP_ADDRESS.ACCOUNT_ID, host.getAccountId());
 
-        HostIpAddressMap map = objectManager.create(HostIpAddressMap.class,
-                HOST_IP_ADDRESS_MAP.IP_ADDRESS_ID, ipAddressObj.getId(),
-                HOST_IP_ADDRESS_MAP.HOST_ID, host.getId());
+            HostIpAddressMap map = objectManager.create(HostIpAddressMap.class,
+                    HOST_IP_ADDRESS_MAP.IP_ADDRESS_ID, ipAddressObj.getId(),
+                    HOST_IP_ADDRESS_MAP.HOST_ID, host.getId());
 
-        processManager.scheduleStandardProcess(StandardProcess.CREATE, ipAddressObj, null);
-        processManager.scheduleStandardProcess(StandardProcess.CREATE, map, null);
+            processManager.scheduleStandardProcess(StandardProcess.CREATE, ipAddressObj, null);
+            processManager.scheduleStandardProcess(StandardProcess.CREATE, map, null);
 
-        return ipAddressObj;
+            return ipAddressObj;
+        });
     }
 
     @Override
     public IpAddress updateIpAddress(IpAddress ipAddress, String newIpAddress) {
-        Map<String, Object> data = new HashMap<>();
-        if ( ipAddress.getAddress() != null ) {
-            Map<String, Object> old = new HashMap<>();
-            old.put(IpAddressConstants.FIELD_ADDRESS, ipAddress.getAddress());
-            data.put("old", old);
-        }
-        objectManager.setFields(ipAddress, IP_ADDRESS.ADDRESS, newIpAddress);
-        processManager.scheduleStandardProcess(StandardProcess.UPDATE, ipAddress, data);
-        return ipAddress;
+        return transaction.doInTransactionResult(() -> {
+            Map<String, Object> data = new HashMap<>();
+            if ( ipAddress.getAddress() != null ) {
+                Map<String, Object> old = new HashMap<>();
+                old.put(IpAddressConstants.FIELD_ADDRESS, ipAddress.getAddress());
+                data.put("old", old);
+            }
+            objectManager.setFields(ipAddress, IP_ADDRESS.ADDRESS, newIpAddress);
+            processManager.scheduleStandardProcess(StandardProcess.UPDATE, ipAddress, data);
+            return ipAddress;
+        });
     }
 
     @Override

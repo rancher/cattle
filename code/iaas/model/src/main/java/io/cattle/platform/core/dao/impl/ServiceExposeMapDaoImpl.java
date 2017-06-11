@@ -20,7 +20,6 @@ import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.core.model.tables.records.ServiceExposeMapRecord;
 import io.cattle.platform.core.model.tables.records.ServiceRecord;
 import io.cattle.platform.core.util.ServiceUtil;
-import io.cattle.platform.db.jooq.config.Configuration;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.object.ObjectManager;
@@ -35,61 +34,15 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.jooq.Condition;
 import org.jooq.impl.DSL;
 
+@Named
 public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceExposeMapDao {
     @Inject
     ObjectManager objectManager;
-
-    Configuration lockingConfiguration;
-
-    @Override
-    public Pair<Instance, ServiceExposeMap> createServiceInstance(final Map<String, Object> properties, Long serviceId, boolean system) {
-        Map<String, String> labels = CollectionUtils.toMap(properties.get(InstanceConstants.FIELD_LABELS));
-        String dnsPrefix = labels.get(ServiceConstants.LABEL_SERVICE_LAUNCH_CONFIG);
-        if (ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME.equalsIgnoreCase(dnsPrefix)) {
-            dnsPrefix = null;
-        }
-
-        Long next = null;
-
-        if (serviceId != null) {
-            Long index = create().select(SERVICE.CREATE_INDEX)
-                .from(SERVICE)
-                .where(SERVICE.ID.eq(serviceId))
-                .forUpdate()
-                .fetchAny().value1();
-            Condition cond = index == null ? SERVICE.CREATE_INDEX.isNull() : SERVICE.CREATE_INDEX.eq(index);
-            next = index == null ? 0L : index+1;
-
-            create().update(SERVICE)
-                .set(SERVICE.CREATE_INDEX, next)
-                .where(SERVICE.ID.eq(serviceId)
-                        .and(cond))
-                .execute();
-        }
-
-        properties.put(InstanceConstants.FIELD_CREATE_INDEX, next);
-        properties.put(ServiceConstants.FIELD_SYSTEM, system);
-
-        Instance instance = objectManager.create(Instance.class, properties);
-
-        ServiceExposeMap map = null;
-
-        if (serviceId != null ) {
-            map = objectManager.create(ServiceExposeMap.class,
-                SERVICE_EXPOSE_MAP.INSTANCE_ID, instance.getId(),
-                SERVICE_EXPOSE_MAP.SERVICE_ID, serviceId,
-                SERVICE_EXPOSE_MAP.ACCOUNT_ID, instance.getAccountId(),
-                SERVICE_EXPOSE_MAP.DNS_PREFIX, dnsPrefix,
-                SERVICE_EXPOSE_MAP.MANAGED, true);
-        }
-
-        return Pair.of(instance, map);
-    }
 
     @Override
     @SuppressWarnings("unchecked")
@@ -294,14 +247,6 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
                 .and(INSTANCE.REMOVED.isNull())
                 .and(INSTANCE.STATE.ne(CommonStatesConstants.REMOVING))
                 .fetchInto(InstanceRecord.class);
-    }
-
-    public Configuration getLockingConfiguration() {
-        return lockingConfiguration;
-    }
-
-    public void setLockingConfiguration(Configuration lockingConfiguration) {
-        this.lockingConfiguration = lockingConfiguration;
     }
 
     @SuppressWarnings("unchecked")
