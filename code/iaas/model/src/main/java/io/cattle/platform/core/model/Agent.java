@@ -177,6 +177,17 @@ public interface Agent extends Serializable {
     @Column(name = "managed_config", nullable = false, precision = 1)
     public Boolean getManagedConfig();
 
+    /**
+     * Setter for <code>cattle.agent.resource_account_id</code>.
+     */
+    public void setResourceAccountId(Long value);
+
+    /**
+     * Getter for <code>cattle.agent.resource_account_id</code>.
+     */
+    @Column(name = "resource_account_id", precision = 19)
+    public Long getResourceAccountId();
+
     // -------------------------------------------------------------------------
     // FROM and INTO
     // -------------------------------------------------------------------------

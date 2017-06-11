@@ -1496,9 +1496,6 @@ def test_svc_container_reg_cred_and_image(super_client, client):
     container = instances[0]
     container = super_client.wait_success(container)
     assert container.registryCredentialId == registry_credential.id
-    image = container.image()
-    assert image.name == name
-    assert image.registryCredentialId == registry_credential.id
 
 
 def test_network_from_service(client, context):

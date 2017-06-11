@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class VolumeTable extends TableImpl<VolumeRecord> {
 
-    private static final long serialVersionUID = 218900910;
+    private static final long serialVersionUID = 847616125;
 
     /**
      * The reference instance of <code>cattle.volume</code>
@@ -121,11 +121,6 @@ public class VolumeTable extends TableImpl<VolumeRecord> {
     public final TableField<VolumeRecord, Long> VIRTUAL_SIZE_MB = createField("virtual_size_mb", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
-     * The column <code>cattle.volume.device_number</code>.
-     */
-    public final TableField<VolumeRecord, Integer> DEVICE_NUMBER = createField("device_number", org.jooq.impl.SQLDataType.INTEGER, this, "");
-
-    /**
      * The column <code>cattle.volume.format</code>.
      */
     public final TableField<VolumeRecord, String> FORMAT = createField("format", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
@@ -134,21 +129,6 @@ public class VolumeTable extends TableImpl<VolumeRecord> {
      * The column <code>cattle.volume.allocation_state</code>.
      */
     public final TableField<VolumeRecord, String> ALLOCATION_STATE = createField("allocation_state", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
-
-    /**
-     * The column <code>cattle.volume.attached_state</code>.
-     */
-    public final TableField<VolumeRecord, String> ATTACHED_STATE = createField("attached_state", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
-
-    /**
-     * The column <code>cattle.volume.instance_id</code>.
-     */
-    public final TableField<VolumeRecord, Long> INSTANCE_ID = createField("instance_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
-
-    /**
-     * The column <code>cattle.volume.image_id</code>.
-     */
-    public final TableField<VolumeRecord, Long> IMAGE_ID = createField("image_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
      * The column <code>cattle.volume.uri</code>.
@@ -254,7 +234,7 @@ public class VolumeTable extends TableImpl<VolumeRecord> {
      */
     @Override
     public List<ForeignKey<VolumeRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<VolumeRecord, ?>>asList(Keys.FK_VOLUME__ACCOUNT_ID, Keys.FK_VOLUME__INSTANCE_ID, Keys.FK_VOLUME__IMAGE_ID, Keys.FK_VOLUME__HOST_ID, Keys.FK_VOLUME__DEPLOYMENT_UNIT_ID, Keys.FK_VOLUME__ENVIRONMENT_ID, Keys.FK_VOLUME__VOLUME_TEMPLATE_ID, Keys.FK_VOLUME__STORAGE_DRIVER_ID);
+        return Arrays.<ForeignKey<VolumeRecord, ?>>asList(Keys.FK_VOLUME__ACCOUNT_ID, Keys.FK_VOLUME__HOST_ID, Keys.FK_VOLUME__DEPLOYMENT_UNIT_ID, Keys.FK_VOLUME__ENVIRONMENT_ID, Keys.FK_VOLUME__VOLUME_TEMPLATE_ID, Keys.FK_VOLUME__STORAGE_DRIVER_ID);
     }
 
     /**

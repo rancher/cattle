@@ -9,7 +9,6 @@ import io.cattle.platform.core.model.tables.AccountTable;
 import io.cattle.platform.core.model.tables.AgentTable;
 import io.cattle.platform.core.model.tables.AuditLogTable;
 import io.cattle.platform.core.model.tables.AuthTokenTable;
-import io.cattle.platform.core.model.tables.BackoffTable;
 import io.cattle.platform.core.model.tables.CertificateTable;
 import io.cattle.platform.core.model.tables.ClusterHostMapTable;
 import io.cattle.platform.core.model.tables.ClusterMembershipTable;
@@ -34,8 +33,6 @@ import io.cattle.platform.core.model.tables.HostIpAddressMapTable;
 import io.cattle.platform.core.model.tables.HostLabelMapTable;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.HostTemplateTable;
-import io.cattle.platform.core.model.tables.ImageStoragePoolMapTable;
-import io.cattle.platform.core.model.tables.ImageTable;
 import io.cattle.platform.core.model.tables.InstanceHostMapTable;
 import io.cattle.platform.core.model.tables.InstanceLabelMapTable;
 import io.cattle.platform.core.model.tables.InstanceLinkTable;
@@ -101,7 +98,7 @@ import org.jooq.impl.SchemaImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class CattleTable extends SchemaImpl {
 
-    private static final long serialVersionUID = 10749764;
+    private static final long serialVersionUID = -1090629308;
 
     /**
      * The reference instance of <code>cattle</code>
@@ -132,11 +129,6 @@ public class CattleTable extends SchemaImpl {
      * The table <code>cattle.auth_token</code>.
      */
     public final AuthTokenTable AUTH_TOKEN = io.cattle.platform.core.model.tables.AuthTokenTable.AUTH_TOKEN;
-
-    /**
-     * The table <code>cattle.backoff</code>.
-     */
-    public final BackoffTable BACKOFF = io.cattle.platform.core.model.tables.BackoffTable.BACKOFF;
 
     /**
      * The table <code>cattle.certificate</code>.
@@ -262,16 +254,6 @@ public class CattleTable extends SchemaImpl {
      * The table <code>cattle.host_template</code>.
      */
     public final HostTemplateTable HOST_TEMPLATE = io.cattle.platform.core.model.tables.HostTemplateTable.HOST_TEMPLATE;
-
-    /**
-     * The table <code>cattle.image</code>.
-     */
-    public final ImageTable IMAGE = io.cattle.platform.core.model.tables.ImageTable.IMAGE;
-
-    /**
-     * The table <code>cattle.image_storage_pool_map</code>.
-     */
-    public final ImageStoragePoolMapTable IMAGE_STORAGE_POOL_MAP = io.cattle.platform.core.model.tables.ImageStoragePoolMapTable.IMAGE_STORAGE_POOL_MAP;
 
     /**
      * The table <code>cattle.instance</code>.
@@ -498,7 +480,6 @@ public class CattleTable extends SchemaImpl {
             AgentTable.AGENT,
             AuditLogTable.AUDIT_LOG,
             AuthTokenTable.AUTH_TOKEN,
-            BackoffTable.BACKOFF,
             CertificateTable.CERTIFICATE,
             ClusterHostMapTable.CLUSTER_HOST_MAP,
             ClusterMembershipTable.CLUSTER_MEMBERSHIP,
@@ -524,8 +505,6 @@ public class CattleTable extends SchemaImpl {
             HostIpAddressMapTable.HOST_IP_ADDRESS_MAP,
             HostLabelMapTable.HOST_LABEL_MAP,
             HostTemplateTable.HOST_TEMPLATE,
-            ImageTable.IMAGE,
-            ImageStoragePoolMapTable.IMAGE_STORAGE_POOL_MAP,
             InstanceTable.INSTANCE,
             InstanceHostMapTable.INSTANCE_HOST_MAP,
             InstanceLabelMapTable.INSTANCE_LABEL_MAP,

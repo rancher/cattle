@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AgentTable extends TableImpl<AgentRecord> {
 
-    private static final long serialVersionUID = -1378234204;
+    private static final long serialVersionUID = -334886271;
 
     /**
      * The reference instance of <code>cattle.agent</code>
@@ -121,6 +121,11 @@ public class AgentTable extends TableImpl<AgentRecord> {
     public final TableField<AgentRecord, Boolean> MANAGED_CONFIG = createField("managed_config", org.jooq.impl.SQLDataType.BIT.nullable(false).defaultValue(org.jooq.impl.DSL.inline("b'1'", org.jooq.impl.SQLDataType.BIT)), this, "");
 
     /**
+     * The column <code>cattle.agent.resource_account_id</code>.
+     */
+    public final TableField<AgentRecord, Long> RESOURCE_ACCOUNT_ID = createField("resource_account_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
      * Create a <code>cattle.agent</code> table reference
      */
     public AgentTable() {
@@ -179,7 +184,7 @@ public class AgentTable extends TableImpl<AgentRecord> {
      */
     @Override
     public List<ForeignKey<AgentRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<AgentRecord, ?>>asList(Keys.FK_AGENT__ACCOUNT_ID);
+        return Arrays.<ForeignKey<AgentRecord, ?>>asList(Keys.FK_AGENT__ACCOUNT_ID, Keys.FK_AGENT__RESOURCE_ACCOUNT_ID);
     }
 
     /**

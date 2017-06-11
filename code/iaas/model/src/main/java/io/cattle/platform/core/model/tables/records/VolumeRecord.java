@@ -38,7 +38,7 @@ import org.jooq.impl.UpdatableRecordImpl;
 @Table(name = "volume", schema = "cattle")
 public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements TableRecordJaxb, Volume {
 
-    private static final long serialVersionUID = 1535306620;
+    private static final long serialVersionUID = 967656819;
 
     /**
      * Setter for <code>cattle.volume.id</code>.
@@ -264,28 +264,11 @@ public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements T
     }
 
     /**
-     * Setter for <code>cattle.volume.device_number</code>.
-     */
-    @Override
-    public void setDeviceNumber(Integer value) {
-        set(13, value);
-    }
-
-    /**
-     * Getter for <code>cattle.volume.device_number</code>.
-     */
-    @Column(name = "device_number", precision = 10)
-    @Override
-    public Integer getDeviceNumber() {
-        return (Integer) get(13);
-    }
-
-    /**
      * Setter for <code>cattle.volume.format</code>.
      */
     @Override
     public void setFormat(String value) {
-        set(14, value);
+        set(13, value);
     }
 
     /**
@@ -294,7 +277,7 @@ public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements T
     @Column(name = "format", length = 255)
     @Override
     public String getFormat() {
-        return (String) get(14);
+        return (String) get(13);
     }
 
     /**
@@ -302,7 +285,7 @@ public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements T
      */
     @Override
     public void setAllocationState(String value) {
-        set(15, value);
+        set(14, value);
     }
 
     /**
@@ -311,58 +294,7 @@ public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements T
     @Column(name = "allocation_state", length = 255)
     @Override
     public String getAllocationState() {
-        return (String) get(15);
-    }
-
-    /**
-     * Setter for <code>cattle.volume.attached_state</code>.
-     */
-    @Override
-    public void setAttachedState(String value) {
-        set(16, value);
-    }
-
-    /**
-     * Getter for <code>cattle.volume.attached_state</code>.
-     */
-    @Column(name = "attached_state", length = 255)
-    @Override
-    public String getAttachedState() {
-        return (String) get(16);
-    }
-
-    /**
-     * Setter for <code>cattle.volume.instance_id</code>.
-     */
-    @Override
-    public void setInstanceId(Long value) {
-        set(17, value);
-    }
-
-    /**
-     * Getter for <code>cattle.volume.instance_id</code>.
-     */
-    @Column(name = "instance_id", precision = 19)
-    @Override
-    public Long getInstanceId() {
-        return (Long) get(17);
-    }
-
-    /**
-     * Setter for <code>cattle.volume.image_id</code>.
-     */
-    @Override
-    public void setImageId(Long value) {
-        set(18, value);
-    }
-
-    /**
-     * Getter for <code>cattle.volume.image_id</code>.
-     */
-    @Column(name = "image_id", precision = 19)
-    @Override
-    public Long getImageId() {
-        return (Long) get(18);
+        return (String) get(14);
     }
 
     /**
@@ -370,7 +302,7 @@ public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements T
      */
     @Override
     public void setUri(String value) {
-        set(19, value);
+        set(15, value);
     }
 
     /**
@@ -379,7 +311,7 @@ public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements T
     @Column(name = "uri", length = 255)
     @Override
     public String getUri() {
-        return (String) get(19);
+        return (String) get(15);
     }
 
     /**
@@ -387,7 +319,7 @@ public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements T
      */
     @Override
     public void setExternalId(String value) {
-        set(20, value);
+        set(16, value);
     }
 
     /**
@@ -396,7 +328,7 @@ public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements T
     @Column(name = "external_id", length = 128)
     @Override
     public String getExternalId() {
-        return (String) get(20);
+        return (String) get(16);
     }
 
     /**
@@ -404,7 +336,7 @@ public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements T
      */
     @Override
     public void setAccessMode(String value) {
-        set(21, value);
+        set(17, value);
     }
 
     /**
@@ -413,7 +345,7 @@ public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements T
     @Column(name = "access_mode", length = 255)
     @Override
     public String getAccessMode() {
-        return (String) get(21);
+        return (String) get(17);
     }
 
     /**
@@ -421,7 +353,7 @@ public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements T
      */
     @Override
     public void setHostId(Long value) {
-        set(22, value);
+        set(18, value);
     }
 
     /**
@@ -430,7 +362,7 @@ public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements T
     @Column(name = "host_id", precision = 19)
     @Override
     public Long getHostId() {
-        return (Long) get(22);
+        return (Long) get(18);
     }
 
     /**
@@ -438,7 +370,7 @@ public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements T
      */
     @Override
     public void setDeploymentUnitId(Long value) {
-        set(23, value);
+        set(19, value);
     }
 
     /**
@@ -447,7 +379,7 @@ public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements T
     @Column(name = "deployment_unit_id", precision = 19)
     @Override
     public Long getDeploymentUnitId() {
-        return (Long) get(23);
+        return (Long) get(19);
     }
 
     /**
@@ -455,7 +387,7 @@ public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements T
      */
     @Override
     public void setStackId(Long value) {
-        set(24, value);
+        set(20, value);
     }
 
     /**
@@ -464,7 +396,7 @@ public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements T
     @Column(name = "environment_id", precision = 19)
     @Override
     public Long getStackId() {
-        return (Long) get(24);
+        return (Long) get(20);
     }
 
     /**
@@ -472,7 +404,7 @@ public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements T
      */
     @Override
     public void setVolumeTemplateId(Long value) {
-        set(25, value);
+        set(21, value);
     }
 
     /**
@@ -481,7 +413,7 @@ public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements T
     @Column(name = "volume_template_id", precision = 19)
     @Override
     public Long getVolumeTemplateId() {
-        return (Long) get(25);
+        return (Long) get(21);
     }
 
     /**
@@ -489,7 +421,7 @@ public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements T
      */
     @Override
     public void setStorageDriverId(Long value) {
-        set(26, value);
+        set(22, value);
     }
 
     /**
@@ -498,7 +430,7 @@ public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements T
     @Column(name = "storage_driver_id", precision = 19)
     @Override
     public Long getStorageDriverId() {
-        return (Long) get(26);
+        return (Long) get(22);
     }
 
     /**
@@ -506,7 +438,7 @@ public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements T
      */
     @Override
     public void setSizeMb(Long value) {
-        set(27, value);
+        set(23, value);
     }
 
     /**
@@ -515,7 +447,7 @@ public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements T
     @Column(name = "size_mb", precision = 19)
     @Override
     public Long getSizeMb() {
-        return (Long) get(27);
+        return (Long) get(23);
     }
 
     // -------------------------------------------------------------------------
@@ -552,12 +484,8 @@ public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements T
         setData(from.getData());
         setPhysicalSizeMb(from.getPhysicalSizeMb());
         setVirtualSizeMb(from.getVirtualSizeMb());
-        setDeviceNumber(from.getDeviceNumber());
         setFormat(from.getFormat());
         setAllocationState(from.getAllocationState());
-        setAttachedState(from.getAttachedState());
-        setInstanceId(from.getInstanceId());
-        setImageId(from.getImageId());
         setUri(from.getUri());
         setExternalId(from.getExternalId());
         setAccessMode(from.getAccessMode());
@@ -592,7 +520,7 @@ public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements T
     /**
      * Create a detached, initialised VolumeRecord
      */
-    public VolumeRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Long physicalSizeMb, Long virtualSizeMb, Integer deviceNumber, String format, String allocationState, String attachedState, Long instanceId, Long imageId, String uri, String externalId, String accessMode, Long hostId, Long deploymentUnitId, Long environmentId, Long volumeTemplateId, Long storageDriverId, Long sizeMb) {
+    public VolumeRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Long physicalSizeMb, Long virtualSizeMb, String format, String allocationState, String uri, String externalId, String accessMode, Long hostId, Long deploymentUnitId, Long environmentId, Long volumeTemplateId, Long storageDriverId, Long sizeMb) {
         super(VolumeTable.VOLUME);
 
         set(0, id);
@@ -608,20 +536,16 @@ public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements T
         set(10, data);
         set(11, physicalSizeMb);
         set(12, virtualSizeMb);
-        set(13, deviceNumber);
-        set(14, format);
-        set(15, allocationState);
-        set(16, attachedState);
-        set(17, instanceId);
-        set(18, imageId);
-        set(19, uri);
-        set(20, externalId);
-        set(21, accessMode);
-        set(22, hostId);
-        set(23, deploymentUnitId);
-        set(24, environmentId);
-        set(25, volumeTemplateId);
-        set(26, storageDriverId);
-        set(27, sizeMb);
+        set(13, format);
+        set(14, allocationState);
+        set(15, uri);
+        set(16, externalId);
+        set(17, accessMode);
+        set(18, hostId);
+        set(19, deploymentUnitId);
+        set(20, environmentId);
+        set(21, volumeTemplateId);
+        set(22, storageDriverId);
+        set(23, sizeMb);
     }
 }

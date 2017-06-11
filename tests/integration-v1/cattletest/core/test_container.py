@@ -30,11 +30,11 @@ def test_container_build(super_client, context, client):
     assert container.build.remote == 'http://example.com'
     assert container.build.rm
 
-    image = super_client.reload(container).image()
-    assert image.data.fields.build.dockerfile == 'test/Dockerfile'
-    assert image.data.fields.build.remote == 'http://example.com'
-    assert image.data.fields.build.tag == context.image_uuid
-    assert image.data.fields.build.rm
+    container = super_client.reload(container)
+    assert container.data.fields.build.dockerfile == 'test/Dockerfile'
+    assert container.data.fields.build.remote == 'http://example.com'
+    assert container.data.fields.build.tag == context.image_uuid
+    assert container.data.fields.build.rm
 
 
 def test_container_create_only(super_client, client, context):
@@ -63,42 +63,10 @@ def test_container_create_only(super_client, client, context):
 
     container = super_client.reload(container)
 
-    assert container.imageId is not None
     assert container.instanceTriggeredStop == 'stop'
-
-    image = super_client.wait_success(container.image())
-    assert_fields(image, {
-        "state": "active"
-    })
-
-    volumes = container.volumes()
-    assert len(volumes) == 1
-
-    root_volume = super_client.wait_success(volumes[0])
-    assert_fields(root_volume, {
-        "allocationState": "inactive",
-        "attachedState": "active",
-        "state": "inactive",
-        "instanceId": container.id,
-        "deviceNumber": 0,
-    })
-
-    volume_mappings = root_volume.volumeStoragePoolMaps()
-    assert len(volume_mappings) == 0
 
     nics = container.nics()
     assert len(nics) == 1
-
-    image = super_client.wait_success(find_one(super_client.list_image,
-                                               name=uuid))
-    assert_fields(image, {
-        "state": "active",
-        "name": uuid,
-        "isPublic": False,
-    })
-    image_mappings = image.imageStoragePoolMaps()
-
-    assert len(image_mappings) == 0
 
     return client.reload(container)
 
@@ -111,37 +79,6 @@ def _assert_running(container):
         "hostId": NOT_NONE,
         "firstRunning": NOT_NONE
     })
-
-    root_volume = container.volumes()[0]
-    assert_fields(root_volume, {
-        "state": "active"
-    })
-
-    image = root_volume.image()
-    assert_fields(image, {
-        "state": "active"
-    })
-
-    volume_mappings = root_volume.volumeStoragePoolMaps()
-    assert len(volume_mappings) == 1
-
-    assert_fields(volume_mappings[0], {
-        "state": "active"
-    })
-
-    volume_pool = volume_mappings[0].storagePool()
-    assert_fields(volume_pool, {
-        "state": "active"
-    })
-
-    # image_mappings = image.imageStoragePoolMaps()
-    # assert len(image_mappings) == 2
-    # for image_mapping in image_mappings:
-    #    assert_fields(image_mapping, {
-    #        # TODO: why isn't this active?
-    #        # "state": "active",
-    #        "storagePoolId": volume_pool.id
-    #    })
 
     instance_host_mappings = container.instanceHostMaps()
     assert len(instance_host_mappings) == 1
@@ -238,37 +175,6 @@ def test_container_stop(client, super_client, context):
     })
 
     container = super_client.reload(container)
-    root_volume = container.volumes()[0]
-    assert_fields(root_volume, {
-        "state": "detached"
-    })
-
-    image = root_volume.image()
-    assert_fields(image, {
-        "state": "active"
-    })
-
-    volume_mappings = root_volume.volumeStoragePoolMaps()
-    assert len(volume_mappings) == 1
-
-    assert_fields(volume_mappings[0], {
-        "state": "inactive"
-    })
-
-    volume_pool = volume_mappings[0].storagePool()
-    assert_fields(volume_pool, {
-        "state": "active"
-    })
-
-    image_mappings = image.imageStoragePoolMaps()
-    assert len(image_mappings) == 1
-    # for image_mapping in image_mappings:
-    #    assert_fields(image_mapping, {
-    #        # TODO: Why isn't this active
-    #        # "state": "active",
-    #        "storagePoolId": volume_pool.id
-    #    })
-
     instance_host_mappings = container.instanceHostMaps()
     assert len(instance_host_mappings) == 1
     assert instance_host_mappings[0].state == 'inactive'
@@ -276,25 +182,11 @@ def test_container_stop(client, super_client, context):
 
 def _assert_removed(container):
     assert_removed_fields(container)
-
-    volumes = container.volumes()
-    assert len(volumes) == 0
-
     return container
 
 
 def _assert_error(container):
     assert container.state == "error"
-
-    volumes = container.volumes()
-    assert len(volumes) == 1
-
-    assert volumes[0].state != "removed"
-
-    volume_mappings = volumes[0].volumeStoragePoolMaps()
-    assert len(volume_mappings) == 1
-    assert volume_mappings[0].state == "inactive"
-
     return container
 
 
@@ -372,20 +264,6 @@ def test_container_compute_fail(super_client, context):
     assert container.transitioning == 'error'
     assert container.transitioningMessage == \
         'Failing [compute.instance.activate]'
-
-    _assert_error(super_client.reload(container))
-
-
-def test_container_storage_fail(super_client, context):
-    data = {
-        'storage.volume.activate::fail': True,
-    }
-
-    container = context.super_create_container_no_success(data=data)
-
-    assert container.transitioning == 'error'
-    assert container.transitioningMessage == \
-        'Failing [storage.volume.activate]'
 
     _assert_error(super_client.reload(container))
 

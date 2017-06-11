@@ -299,7 +299,6 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
         Long requestedHostId = null;
 
         for (Instance instance : instances) {
-            volumes.addAll(objectManager.children(instance, Volume.class));
             volumes.addAll(InstanceHelpers.extractVolumesFromMounts(instance, objectManager));
 
             Long rhid = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_REQUESTED_HOST_ID).as(Long.class);
@@ -350,7 +349,7 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
         for (Volume v : volsToLock) {
                 locks.add(new AllocateConstraintLock(AllocateConstraintLock.Type.VOLUME, v.getId().toString()));
         }
-        
+
         List<Volume> volumes = InstanceHelpers.extractVolumesFromMounts(origInstance, objectManager);
         for (Volume volume: volumes) {
             StorageDriver driver = objectManager.loadResource(StorageDriver.class, volume.getStorageDriverId());
@@ -400,7 +399,7 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
 
         if (attempt.getMatchedCandidate() == null) {
             if (finalFailedConstraints.size() > 0) {
-                throw new FailedToAllocate(String.format("%s and resource constraints: %s", 
+                throw new FailedToAllocate(String.format("%s and resource constraints: %s",
                         toErrorMessage(finalFailedConstraints), attempt.getResourceRequests()));
             }
             throw new FailedToAllocate("Failed to find placement");

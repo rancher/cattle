@@ -358,9 +358,6 @@ def test_container_event_image_and_reg_cred(client, host, agent_cli, user_id,
     assert container.state == 'running'
     container = super_client.wait_success(container)
     assert container.registryCredentialId == registry_credential.id
-    image = container.image()
-    assert image.name == name
-    assert image.registryCredentialId == registry_credential.id
 
 
 def create_native_container(client, host, external_id, user_agent_cli,

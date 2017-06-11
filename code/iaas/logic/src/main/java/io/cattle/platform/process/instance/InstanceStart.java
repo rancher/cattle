@@ -20,7 +20,6 @@ import io.cattle.platform.core.model.InstanceLink;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Port;
-import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
@@ -73,7 +72,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         Map<String, Object> resultData = new HashMap<>();
         HandlerResult result = new HandlerResult(resultData);
 
-        progress.init(state, 16, 16, 16, 16, 20, 16);
+        progress.init(state, 33, 33, 33);
 
         resultData.put(InstanceConstants.FIELD_STOP_SOURCE, null);
 
@@ -88,15 +87,11 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
             }
 
             try {
-                progress.checkPoint("Networking");
                 network(instance, state);
 
                 activatePorts(instance, state);
 
                 instanceDao.clearCacheInstanceData(instance.getId());
-
-                progress.checkPoint("Storage");
-                storage(instance, state);
             } catch (ResourceExhaustionException e) {
                 log.info("Failed to {} for instance [{}]", progress.getCurrentCheckpoint(), instance.getId());
                 return handleStartError(state, instance, e);
@@ -247,13 +242,6 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
 
     protected void allocate(Instance instance) {
         execute("instance.allocate", instance, null);
-    }
-
-    protected void storage(Instance instance, ProcessState state) {
-        List<Volume> volumes = getObjectManager().children(instance, Volume.class);
-        for (Volume volume : volumes) {
-            activate(volume, state.getData());
-        }
     }
 
     protected void compute(Instance instance, ProcessState state) {

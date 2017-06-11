@@ -289,9 +289,13 @@ public abstract class AbstractEventService implements EventService {
                 if (retryCallback == null) {
                     requestToSend = request;
                 } else {
-                    requestToSend = retryCallback.beforeRetry(request);
-                    if (requestToSend == null) {
-                        requestToSend = request;
+                    try {
+                        requestToSend = retryCallback.beforeRetry(request);
+                        if (requestToSend == null) {
+                            requestToSend = request;
+                        }
+                    } catch (Throwable t) {
+                        future.setException(t);
                     }
                 }
 

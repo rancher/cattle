@@ -1,12 +1,13 @@
 package io.cattle.platform.docker.process.instance;
 
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+
 import io.cattle.platform.core.constants.DockerInstanceConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.model.Image;
+import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.util.SystemLabels;
-import io.cattle.platform.docker.storage.dao.DockerStorageDao;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -16,6 +17,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
+import io.cattle.platform.storage.ImageCredentialLookup;
 import io.cattle.platform.util.exception.UserException;
 import io.cattle.platform.util.type.Priority;
 
@@ -32,9 +34,9 @@ public class DockerInstancePreCreate extends AbstractObjectProcessLogic implemen
     @Inject
     ObjectManager objectManager;
     @Inject
-    DockerStorageDao dockerStorageDao;
-    @Inject
     NetworkService networkService;
+    @Inject
+    ImageCredentialLookup credLookup;
 
     @Override
     public String[] getProcessNames() {
@@ -48,12 +50,17 @@ public class DockerInstancePreCreate extends AbstractObjectProcessLogic implemen
             return null;
         }
 
-        Image image = objectManager.loadResource(Image.class, instance.getImageId());
-        if (image == null) {
-            dockerStorageDao.createImageForInstance(instance);
-        }
-
         Map<Object, Object> data = new HashMap<>();
+
+        if (instance.getRegistryCredentialId() == null) {
+            String uuid = (String) DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_IMAGE_UUID).get();
+            Credential cred = credLookup.getDefaultCredential(uuid, instance.getAccountId());
+            if (cred != null && cred.getId() != null){
+                data.put(INSTANCE.REGISTRY_CREDENTIAL_ID, cred.getId());
+            }
+        } else {
+            data.put(INSTANCE.REGISTRY_CREDENTIAL_ID, instance.getRegistryCredentialId());
+        }
 
         String mode = networkService.getNetworkMode(DataUtils.getFields(instance));
         data.put(DockerInstanceConstants.FIELD_NETWORK_MODE, mode);

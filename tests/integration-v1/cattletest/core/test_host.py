@@ -98,9 +98,6 @@ def test_host_purge(super_client, new_context):
     c2 = super_client.wait_success(c2)
     assert c2.removed is not None
 
-    volumes = c1.volumes()
-    assert len(volumes) == 0
-
 
 def test_host_container_actions_inactive(new_context):
     host = new_context.host

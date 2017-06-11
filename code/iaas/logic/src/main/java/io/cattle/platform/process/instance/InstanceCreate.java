@@ -1,10 +1,8 @@
 package io.cattle.platform.process.instance;
 
 import static io.cattle.platform.core.model.tables.NicTable.*;
-import static io.cattle.platform.core.model.tables.VolumeTable.*;
 
 import io.cattle.iaas.labels.service.LabelsService;
-import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.InstanceDao;
@@ -53,16 +51,14 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
 
         Instance instance = (Instance) state.getResource();
 
-        List<Volume> volumes = objectManager.children(instance, Volume.class);
         List<String> dataVolumes = processManagedVolumes(instance);
         List<Nic> nics = objectManager.children(instance, Nic.class);
 
-        Set<Long> volumesIds = createVolumes(instance, volumes, state.getData());
         Set<Long> nicIds = createNics(instance, nics, state.getData());
 
         createLabels(instance);
 
-        HandlerResult result = new HandlerResult("_volumeIds", volumesIds, "_nicIds", nicIds, InstanceConstants.FIELD_DATA_VOLUMES,
+        HandlerResult result = new HandlerResult("_nicIds", nicIds, InstanceConstants.FIELD_DATA_VOLUMES,
                 dataVolumes);
         if (shouldStart(state, instance)) {
             result.setChainProcessName(InstanceConstants.PROCESS_START);
@@ -119,39 +115,6 @@ public class InstanceCreate extends AbstractDefaultProcessHandler {
 
             labelsService.createContainerLabel(instance.getAccountId(), instance.getId(), labelKey, labelValue);
         }
-    }
-
-    protected Set<Long> createVolumes(Instance instance, List<Volume> volumes, Map<String, Object> data) {
-        Set<Long> volumeIds = new TreeSet<>();
-        Volume root = createRoot(instance, volumes, data);
-        if (root != null) {
-            volumeIds.add(root.getId());
-        }
-        return volumeIds;
-    }
-
-    protected Volume createRoot(Instance instance, List<Volume> volumes, Map<String, Object> data) {
-        Volume root = getRoot(instance, volumes);
-        if (root == null) {
-            return null;
-        }
-        processManager.executeStandardProcess(StandardProcess.CREATE, root, data);
-        return root;
-    }
-
-    protected Volume getRoot(Instance instance, List<Volume> volumes) {
-        if (instance.getImageId() == null) {
-            return null;
-        }
-
-        for (Volume volume : volumes) {
-            if (volume.getDeviceNumber() != null && volume.getDeviceNumber().intValue() == 0) {
-                return volume;
-            }
-        }
-
-        return objectManager.create(Volume.class, VOLUME.ACCOUNT_ID, instance.getAccountId(), VOLUME.INSTANCE_ID, instance.getId(), VOLUME.IMAGE_ID, instance
-                .getImageId(), VOLUME.DEVICE_NUMBER, 0, VOLUME.ATTACHED_STATE, CommonStatesConstants.ACTIVE);
     }
 
     protected Set<Long> createNics(Instance instance, List<Nic> nics, Map<String, Object> data) {

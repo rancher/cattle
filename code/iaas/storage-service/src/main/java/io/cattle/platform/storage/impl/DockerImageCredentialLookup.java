@@ -1,7 +1,8 @@
-package io.cattle.platform.docker.storage;
+package io.cattle.platform.storage.impl;
 
-import static io.cattle.platform.core.model.tables.CredentialTable.CREDENTIAL;
-import static io.cattle.platform.core.model.tables.StoragePoolTable.STORAGE_POOL;
+import static io.cattle.platform.core.model.tables.CredentialTable.*;
+import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
+
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.constants.StoragePoolConstants;
@@ -19,7 +20,7 @@ public class DockerImageCredentialLookup extends AbstractJooqDao implements Imag
     @Override
     public Credential getDefaultCredential(String uuid, long currentAccount) {
         DockerImage image = DockerImage.parse(uuid);
-        if ( image == null){
+        if (image == null){
             return null;
         }
         String serverAddress = image.getServer();
@@ -37,13 +38,12 @@ public class DockerImageCredentialLookup extends AbstractJooqDao implements Imag
         if (registryId == null){
             return null;
         }
-        Credential credential = create().selectFrom(CREDENTIAL)
+        return create()
+                .selectFrom(CREDENTIAL)
                 .where(CREDENTIAL.STATE.eq(CommonStatesConstants.ACTIVE)
                         .and(CREDENTIAL.ACCOUNT_ID.eq(currentAccount))
                         .and(CREDENTIAL.REGISTRY_ID.eq(registryId))
                         .and(CREDENTIAL.KIND.eq(CredentialConstants.KIND_REGISTRY_CREDENTIAL)))
                         .orderBy(CREDENTIAL.ID.asc()).fetchAny();
-
-        return credential;
     }
 }

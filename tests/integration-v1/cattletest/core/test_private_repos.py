@@ -143,9 +143,6 @@ def test_container_image_and_registry_credential(client,
                                         startOnCreate=False)
     container = super_client.wait_success(container)
     assert container.registryCredentialId == registry_credential.id
-    image = container.image()
-    assert image.name == name
-    assert image.registryCredentialId == registry_credential.id
 
 
 def test_duplicate_server_addresses(client):

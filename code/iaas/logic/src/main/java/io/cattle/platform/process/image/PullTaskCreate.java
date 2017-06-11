@@ -1,4 +1,4 @@
-package io.cattle.platform.docker.storage.process;
+package io.cattle.platform.process.image;
 
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;

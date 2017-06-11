@@ -1,8 +1,6 @@
 package io.cattle.platform.core.dao;
 
 import io.cattle.platform.core.addon.MountEntry;
-import io.cattle.platform.core.model.Image;
-import io.cattle.platform.core.model.ImageStoragePoolMap;
 import io.cattle.platform.core.model.Mount;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
@@ -39,10 +37,6 @@ public interface VolumeDao {
     List<? extends Volume> identifyUnmappedVolumes(long accountId, Set<Long> volumeIds);
 
     List<? extends Volume> findNonRemovedVolumesOnPool(Long storagePoolId);
-
-    List<? extends Image> findBadImages(int count);
-
-    List<? extends ImageStoragePoolMap> findBadImageStoragePoolMaps(int count);
 
     List<? extends Volume> findBadNativeVolumes(int count);
 

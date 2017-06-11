@@ -16,19 +16,6 @@
     <context:component-scan base-package="io.cattle.platform.process" />
 
     <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler"
-        p:reportProgress="true"
-        p:name="ImageStoragePoolMapActivate"
-        p:commandName="storage.image.activate"
-        p:agentResourceRelationship="storagePool"
-        p:dataTypeClass="io.cattle.platform.core.model.ImageStoragePoolMap"
-        p:processNames="imagestoragepoolmap.activate"
-        p:processDataKeys="containerNoOpEvent" >
-        <property name="priority">
-            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
-        </property>
-    </bean>
-
-    <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler"
         p:name="VolumeStoragePoolMapActivate"
         p:commandName="storage.volume.activate"
         p:agentResourceRelationship="storagePool"
@@ -203,8 +190,6 @@
     <process:process name="genericobject.create" resourceType="genericObject" start="requested" transitioning="activating" done="active" />
     <process:process name="genericobject.remove" resourceType="genericObject" start="requested,active,activating" transitioning="removing" done="removed" />
     <process:defaultProcesses resourceType="hostIpAddressMap" />
-    <process:defaultProcesses resourceType="image" />
-    <process:defaultProcesses resourceType="imageStoragePoolMap" />
     <process:defaultProcesses resourceType="instanceHostMap" />
     <process:defaultProcesses resourceType="instanceLink" />
     <process:defaultProcesses resourceType="ipAddressNicMap" />
@@ -457,7 +442,6 @@
 
     <bean class="io.cattle.platform.extension.dynamic.process.ExternalHandlerActivate" />
 
-    <bean class="io.cattle.platform.vm.process.VirtualMachineMetadata" />
     <bean class="io.cattle.platform.vm.process.VirtualMachinePreCreate" />
     <bean class="io.cattle.platform.vm.process.ServiceVirtualMachinePreCreate" />
 </beans>

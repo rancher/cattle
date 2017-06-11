@@ -56,16 +56,11 @@ public class InstanceAllocate extends AbstractDefaultProcessHandler {
 
         result.put(InstanceConstants.FIELD_HOST_ID, hostId);
 
-        List<Volume> volumes = getObjectManager().children(instance, Volume.class);
-        List<Volume> dataMountVolumes = InstanceHelpers.extractVolumesFromMounts(instance, getObjectManager());
-        volumes.addAll(dataMountVolumes);
+        List<Volume> volumes = InstanceHelpers.extractVolumesFromMounts(instance, getObjectManager());
 
         for (Volume v : volumes) {
             allocate(v, state.getData());
         }
-
-        volumes = getObjectManager().children(instance, Volume.class);
-        volumes.addAll(dataMountVolumes);
 
         for (Volume v : volumes) {
             for (VolumeStoragePoolMap map : mapDao.findNonRemoved(VolumeStoragePoolMap.class, Volume.class, v.getId())) {

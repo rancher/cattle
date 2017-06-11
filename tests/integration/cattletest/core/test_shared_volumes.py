@@ -285,41 +285,10 @@ def test_storage_pool_agent_delete(new_context, super_client):
     original_agent = super_client.list_agent(accountId=new_context.agent.id)[0]
 
     original_agent = super_client.wait_success(original_agent.deactivate())
-    original_agent = super_client.wait_success(original_agent.remove())
+    super_client.wait_success(original_agent.remove())
 
     sp = client.reload(sp)
     assert sp.state == 'active'
-
-
-def test_multiple_sp_volume_schedule(new_context):
-    # Tests that when a host has more than one storage pool (one local, one
-    # shared), and a container is scheduled to it, the root volume can be
-    # properly scheduled.
-    client = new_context.client
-    add_storage_pool(new_context)
-
-    # The allocation bug that caused this issue is much more likely to occur
-    # when two containers are created back-to-back
-    c = client.create_container(imageUuid=new_context.image_uuid,
-                                networkMode=None)
-    c2 = client.create_container(imageUuid=new_context.image_uuid,
-                                 networkMode=None)
-
-    c = client.wait_success(c)
-    assert c is not None
-    vols = c.volumes()
-    assert len(vols) == 1
-    vol_pools = vols[0].storagePools()
-    assert len(vol_pools) == 1
-    assert vol_pools[0].kind == 'sim'
-
-    c2 = client.wait_success(c2)
-    assert c2 is not None
-    vols = c2.volumes()
-    assert len(vols) == 1
-    vol_pools = vols[0].storagePools()
-    assert len(vol_pools) == 1
-    assert vol_pools[0].kind == 'sim'
 
 
 def test_finding_shared_volumes(new_context):
@@ -513,7 +482,6 @@ def test_external_volume_event(super_client, new_context):
     assert volume.uri == uri
     assert volume.isHostPath is False
     super_volume = super_client.by_id('volume', volume.id)
-    assert super_volume.deviceNumber == -1
     assert super_volume.format == 'docker'
 
     # Send event again to ensure two volumes are not created

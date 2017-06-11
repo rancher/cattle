@@ -24,10 +24,6 @@ import io.cattle.platform.core.cache.DBCacheManager;
 import io.cattle.platform.core.cleanup.BadDataCleanup;
 import io.cattle.platform.core.cleanup.TableCleanup;
 import io.cattle.platform.docker.process.serializer.DockerContainerSerializer;
-import io.cattle.platform.docker.storage.DockerImageCredentialLookup;
-import io.cattle.platform.docker.storage.DockerStoragePoolDriver;
-import io.cattle.platform.docker.storage.dao.impl.DockerStorageDaoImpl;
-import io.cattle.platform.docker.storage.process.PullTaskCreate;
 import io.cattle.platform.docker.transform.DockerTransformerImpl;
 import io.cattle.platform.engine.eventing.impl.ProcessEventListenerImpl;
 import io.cattle.platform.engine.manager.LoopManager;
@@ -66,8 +62,6 @@ import io.cattle.platform.liquibase.Loader;
 import io.cattle.platform.lock.impl.LockDelegatorImpl;
 import io.cattle.platform.lock.impl.LockManagerImpl;
 import io.cattle.platform.lock.provider.impl.InMemoryLockProvider;
-import io.cattle.platform.metadata.dao.impl.MetadataDaoImpl;
-import io.cattle.platform.metadata.service.impl.MetadataServiceImpl;
 import io.cattle.platform.network.impl.NetworkServiceImpl;
 import io.cattle.platform.object.ObjectDefaultsProvider;
 import io.cattle.platform.object.defaults.JsonDefaultsProvider;
@@ -89,6 +83,7 @@ import io.cattle.platform.object.serialization.impl.DefaultObjectSerializerFacto
 import io.cattle.platform.object.util.CommonsConverterStartup;
 import io.cattle.platform.process.containerevent.ContainerEventCreate;
 import io.cattle.platform.process.host.HostRemoveMonitorImpl;
+import io.cattle.platform.process.image.PullTaskCreate;
 import io.cattle.platform.process.monitor.EventNotificationChangeMonitor;
 import io.cattle.platform.process.progress.ProcessProgressImpl;
 import io.cattle.platform.register.dao.impl.RegisterDaoImpl;
@@ -126,10 +121,8 @@ import io.cattle.platform.servicediscovery.service.lookups.InstanceServiceLookup
 import io.cattle.platform.servicediscovery.service.lookups.ServiceImplLookup;
 import io.cattle.platform.spring.resource.SpringUrlListFactory;
 import io.cattle.platform.storage.ImageCredentialLookup;
-import io.cattle.platform.storage.service.dao.impl.ImageDaoImpl;
+import io.cattle.platform.storage.impl.DockerImageCredentialLookup;
 import io.cattle.platform.storage.service.impl.StorageServiceImpl;
-import io.cattle.platform.storage.simulator.pool.SimulatorStoragePoolDriver;
-import io.cattle.platform.storage.simulator.process.SimulatorPoolCreate;
 import io.cattle.platform.systemstack.catalog.impl.CatalogServiceImpl;
 import io.cattle.platform.systemstack.listener.SystemStackUpdate;
 import io.cattle.platform.systemstack.service.ProjectTemplateService;
@@ -289,23 +282,13 @@ public class SystemServicesConfig {
     }
 
     @Bean
-    ImageCredentialLookup dockerImageCredentialLookup(ExtensionManagerImpl em) {
-        return EMUtils.add(em, ImageCredentialLookup.class, new DockerImageCredentialLookup(), "DockerImageCredentialLookup");
-    }
-
-    @Bean
-    DockerStoragePoolDriver dockerStoragePoolDriver() {
-        return new DockerStoragePoolDriver();
+    ImageCredentialLookup ImageCredentialLookup() {
+        return new DockerImageCredentialLookup();
     }
 
     @Bean
     PullTaskCreate PullTaskCreate(ExtensionManagerImpl em) {
         return new PullTaskCreate();
-    }
-
-    @Bean
-    DockerStorageDaoImpl DockerStorageDaoImpl() {
-        return new DockerStorageDaoImpl();
     }
 
     @Bean
@@ -425,16 +408,6 @@ public class SystemServicesConfig {
     @Bean
     LabelsServiceImpl LabelsServiceImpl() {
         return new LabelsServiceImpl();
-    }
-
-    @Bean
-    MetadataServiceImpl MetadataServiceImpl() {
-        return new MetadataServiceImpl();
-    }
-
-    @Bean
-    MetadataDaoImpl MetadataDaoImpl() {
-        return new MetadataDaoImpl();
     }
 
     @Bean
@@ -746,11 +719,6 @@ public class SystemServicesConfig {
     }
 
     @Bean
-    ImageDaoImpl ImageDaoImpl() {
-        return new ImageDaoImpl();
-    }
-
-    @Bean
     InMemoryLockProvider LockProvider() {
         return new InMemoryLockProvider();
     }
@@ -802,16 +770,6 @@ public class SystemServicesConfig {
     @Bean
     CleanupTaskInstances CleanupTaskInstances() {
         return new CleanupTaskInstances();
-    }
-
-    @Bean
-    SimulatorStoragePoolDriver SimulatorStoragePoolDriver() {
-        return new SimulatorStoragePoolDriver();
-    }
-
-    @Bean
-    SimulatorPoolCreate SimulatorPoolCreate() {
-        return new SimulatorPoolCreate();
     }
 
     @Bean
