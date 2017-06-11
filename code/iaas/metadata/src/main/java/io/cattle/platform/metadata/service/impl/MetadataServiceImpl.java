@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.inject.Inject;
 
@@ -50,7 +51,7 @@ public class MetadataServiceImpl implements MetadataService {
         data.put("public_keys", new HashMap<>());
         data.put("meta", new HashMap<>());
         data.put("uuid", instance.getUuid());
-        String hostname = org.apache.commons.lang3.ObjectUtils.toString(metadata.get("hostname"), null);
+        String hostname = Objects.toString(metadata.get("hostname"), null);
         if (hostname != null) {
             data.put("hostname", hostname);
             data.put("name", hostname.split("[.]")[0]);
@@ -161,7 +162,7 @@ public class MetadataServiceImpl implements MetadataService {
     protected void populateIps(IdFormatter idFormatter, Map<Long, String> primaryIps, Map<String, Object> instanceMetadata, Instance instance, Nic nic,
             Network network, Subnet subnet, IpAddress localIp) {
 
-        boolean firstNic = (org.apache.commons.lang3.ObjectUtils.equals(nic.getDeviceNumber(), 0));
+        boolean firstNic = Objects.equals(nic.getDeviceNumber(), 0);
         boolean primaryIp = localIp == null ? firstNic : IpAddressConstants.ROLE_PRIMARY.equals(localIp.getRole());
 
         String localIpAddress = localIp == null ? null : localIp.getAddress();
