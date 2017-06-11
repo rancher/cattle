@@ -16,10 +16,6 @@
         <name>logback.output.error</name>
     </define>
 
-    <define name="gelf" class="io.cattle.platform.logback.ArchaiusProperty" >
-        <name>logback.output.gelf</name>
-    </define>
-
     <define name="console" class="io.cattle.platform.logback.ArchaiusProperty" >
         <name>logback.output.console</name>
     </define>
@@ -121,12 +117,6 @@
     <if condition='property("events").equals("true")' >
         <then>
             <include resource="logback/logback-events.xml" />
-        </then>
-    </if>
-
-    <if condition='property("gelf").equals("true")' >
-        <then>
-            <include resource="logback/logback-gelf.xml" />
         </then>
     </if>
 
