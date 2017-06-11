@@ -45,6 +45,7 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
+import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -98,6 +99,8 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     ObjectManager objectManager;
     @Inject
     GenericMapDao mapDao;
+    @Inject
+    TransactionDelegate transaction;
 
     @Override
     public boolean isInstanceImageKind(long instanceId, String kind) {
@@ -209,45 +212,47 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
     @Override
     public boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate) {
-        Long newHost = candidate.getHost();
-        if (newHost != null) {
-            for (Instance instance : attempt.getInstances()) {
-                log.info("Associating instance [{}] to host [{}]", instance.getId(), newHost);
-                objectManager.create(InstanceHostMap.class,
-                        INSTANCE_HOST_MAP.HOST_ID, newHost,
-                        INSTANCE_HOST_MAP.INSTANCE_ID, instance.getId());
-            }
-
-            updateVolumeHostInfo(attempt, candidate, newHost);
-        }
-
-        Map<Long, Set<Long>> existingPools = attempt.getPoolIds();
-        Map<Long, Set<Long>> newPools = candidate.getPools();
-
-        if (!existingPools.keySet().equals(newPools.keySet())) {
-            throw new IllegalStateException(String.format("Volumes don't match. currently %s, new %s", existingPools.keySet(), newPools.keySet()));
-        }
-
-        for (Map.Entry<Long, Set<Long>> entry : newPools.entrySet()) {
-            long volumeId = entry.getKey();
-            Set<Long> existingPoolsForVol = existingPools.get(entry.getKey());
-            Set<Long> newPoolsForVol = entry.getValue();
-            if (existingPoolsForVol == null || existingPoolsForVol.size() == 0) {
-                for (long poolId : newPoolsForVol) {
-                    log.info("Associating volume [{}] to storage pool [{}]", volumeId, poolId);
-                    objectManager.create(VolumeStoragePoolMap.class,
-                            VOLUME_STORAGE_POOL_MAP.VOLUME_ID, volumeId,
-                            VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID, poolId);
+        return transaction.doInTransactionResult(() -> {
+            Long newHost = candidate.getHost();
+            if (newHost != null) {
+                for (Instance instance : attempt.getInstances()) {
+                    log.info("Associating instance [{}] to host [{}]", instance.getId(), newHost);
+                    objectManager.create(InstanceHostMap.class,
+                            INSTANCE_HOST_MAP.HOST_ID, newHost,
+                            INSTANCE_HOST_MAP.INSTANCE_ID, instance.getId());
                 }
-            } else if (!existingPoolsForVol.equals(newPoolsForVol)) {
-                throw new IllegalStateException(String.format("Can not move volume %s, currently: %s, new: %s", volumeId, existingPools, newPools));
-            }
-        }
-        if (attempt.getAllocatedIPs() != null) {
-            updateInstancePorts(attempt.getAllocatedIPs());
-        }
 
-        return true;
+                updateVolumeHostInfo(attempt, candidate, newHost);
+            }
+
+            Map<Long, Set<Long>> existingPools = attempt.getPoolIds();
+            Map<Long, Set<Long>> newPools = candidate.getPools();
+
+            if (!existingPools.keySet().equals(newPools.keySet())) {
+                throw new IllegalStateException(String.format("Volumes don't match. currently %s, new %s", existingPools.keySet(), newPools.keySet()));
+            }
+
+            for (Map.Entry<Long, Set<Long>> entry : newPools.entrySet()) {
+                long volumeId = entry.getKey();
+                Set<Long> existingPoolsForVol = existingPools.get(entry.getKey());
+                Set<Long> newPoolsForVol = entry.getValue();
+                if (existingPoolsForVol == null || existingPoolsForVol.size() == 0) {
+                    for (long poolId : newPoolsForVol) {
+                        log.info("Associating volume [{}] to storage pool [{}]", volumeId, poolId);
+                        objectManager.create(VolumeStoragePoolMap.class,
+                                VOLUME_STORAGE_POOL_MAP.VOLUME_ID, volumeId,
+                                VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID, poolId);
+                    }
+                } else if (!existingPoolsForVol.equals(newPoolsForVol)) {
+                    throw new IllegalStateException(String.format("Can not move volume %s, currently: %s, new: %s", volumeId, existingPools, newPools));
+                }
+            }
+            if (attempt.getAllocatedIPs() != null) {
+                updateInstancePorts(attempt.getAllocatedIPs());
+            }
+
+            return true;
+        });
     }
 
     void updateVolumeHostInfo(AllocationAttempt attempt, AllocationCandidate candidate, Long newHost) {
@@ -295,27 +300,31 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     }
 
     @Override
-    public void releaseAllocation(Instance instance,  InstanceHostMap map) {
-        //Reload for persisting
-        map = objectManager.loadResource(InstanceHostMap.class, map.getId());
-        DataAccessor data = getDeallocatedProp(map);
-        Boolean done = data.as(Boolean.class);
-        if ( done == null || ! done.booleanValue() ) {
-            data.set(true);
-            objectManager.persist(map);
-        }
+    public void releaseAllocation(Instance instance,  InstanceHostMap mapIn) {
+        transaction.doInTransaction(() -> {
+            //Reload for persisting
+            InstanceHostMap map = objectManager.loadResource(InstanceHostMap.class, mapIn.getId());
+            DataAccessor data = getDeallocatedProp(map);
+            Boolean done = data.as(Boolean.class);
+            if ( done == null || ! done.booleanValue() ) {
+                data.set(true);
+                objectManager.persist(map);
+            }
+        });
     }
 
     @Override
-    public void releaseAllocation(Volume volume) {
-        //Reload for persisting
-        volume = objectManager.reload(volume);
-        DataAccessor data = getDeallocatedProp(volume);
-        Boolean done = data.as(Boolean.class);
-        if ( done == null || ! done.booleanValue() ) {
-            data.set(true);
-            objectManager.persist(volume);
-        }
+    public void releaseAllocation(Volume volumeIn) {
+        transaction.doInTransaction(() -> {
+            //Reload for persisting
+            Volume volume = objectManager.reload(volumeIn);
+            DataAccessor data = getDeallocatedProp(volume);
+            Boolean done = data.as(Boolean.class);
+            if ( done == null || ! done.booleanValue() ) {
+                data.set(true);
+                objectManager.persist(volume);
+            }
+        });
     }
 
     @Override

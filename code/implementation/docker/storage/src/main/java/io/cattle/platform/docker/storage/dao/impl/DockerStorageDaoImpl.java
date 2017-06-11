@@ -12,6 +12,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.storage.ImageCredentialLookup;
 import io.cattle.platform.storage.service.StorageService;
+import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
 import java.util.List;
 
@@ -23,36 +24,40 @@ public class DockerStorageDaoImpl implements DockerStorageDao {
     ObjectManager objectManager;
     @Inject
     StorageService storageService;
+    @Inject
+    TransactionDelegate transaction;
 
     List<ImageCredentialLookup> imageCredentialLookups;
 
     @Override
     public Image createImageForInstance(Instance instance) {
-        String uuid = (String) DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_IMAGE_UUID).get();
-        Image image = storageService.registerRemoteImage(uuid);
-        if (image != null) {
-            objectManager.setFields(instance, INSTANCE.IMAGE_ID, image.getId());
-            long currentAccount = instance.getAccountId();
-            Long id = instance.getRegistryCredentialId();
-            image = objectManager.loadResource(Image.class, instance.getImageId());
-            if (id == null) {
-                for (ImageCredentialLookup imageLookup: imageCredentialLookups){
-                    Credential cred = imageLookup.getDefaultCredential(uuid, currentAccount);
-                    if (cred == null){
-                        continue;
-                    }
-                    if (cred.getId() != null){
-                        objectManager.setFields(instance, INSTANCE.REGISTRY_CREDENTIAL_ID, cred.getId());
-                        break;
+        return transaction.doInTransactionResult(() -> {
+            String uuid = (String) DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_IMAGE_UUID).get();
+            Image image = storageService.registerRemoteImage(uuid);
+            if (image != null) {
+                objectManager.setFields(instance, INSTANCE.IMAGE_ID, image.getId());
+                long currentAccount = instance.getAccountId();
+                Long id = instance.getRegistryCredentialId();
+                image = objectManager.loadResource(Image.class, instance.getImageId());
+                if (id == null) {
+                    for (ImageCredentialLookup imageLookup: imageCredentialLookups){
+                        Credential cred = imageLookup.getDefaultCredential(uuid, currentAccount);
+                        if (cred == null){
+                            continue;
+                        }
+                        if (cred.getId() != null){
+                            objectManager.setFields(instance, INSTANCE.REGISTRY_CREDENTIAL_ID, cred.getId());
+                            break;
+                        }
                     }
                 }
+                if (instance.getRegistryCredentialId() != null) {
+                    objectManager.setFields(image, IMAGE.REGISTRY_CREDENTIAL_ID, instance.getRegistryCredentialId());
+                }
             }
-            if (instance.getRegistryCredentialId() != null) {
-                objectManager.setFields(image, IMAGE.REGISTRY_CREDENTIAL_ID, instance.getRegistryCredentialId());
-            }
-        }
 
-        return image;
+            return image;
+        });
     }
 
     public List<ImageCredentialLookup> getImageCredentialLookups() {

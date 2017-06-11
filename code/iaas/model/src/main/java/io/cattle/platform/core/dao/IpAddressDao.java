@@ -12,7 +12,7 @@ public interface IpAddressDao {
 
     IpAddress getPrimaryIpAddress(Nic nic);
 
-    IpAddress mapNewIpAddress( Nic nic, Object key, Object... values);
+    IpAddress mapNewIpAddress(Nic nic, Object key, Object... values);
 
     IpAddress assignAndActivateNewAddress(Host host, String ipAddress);
 

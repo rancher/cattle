@@ -15,6 +15,7 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.docker.process.dao.DockerComputeDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
 import java.util.List;
 
@@ -26,6 +27,8 @@ import org.jooq.Condition;
 public class DockerComputeDaoImpl extends AbstractJooqDao implements DockerComputeDao {
 
     ObjectManager objectManager;
+    @Inject
+    TransactionDelegate transaction;
 
     @Override
     public Volume getDockerVolumeInPool(String volumeUri, String externalId, StoragePool storagePool) {
@@ -62,31 +65,33 @@ public class DockerComputeDaoImpl extends AbstractJooqDao implements DockerCompu
     @Override
     public Volume createDockerVolumeInPool(Long accountId, String name, String volumeUri, String externalId, String driver, StoragePool storagePool,
             boolean isHostPath, boolean isNative) {
-        Volume volume = getDockerVolumeInPool(volumeUri, externalId, storagePool);
-        if (volume != null) {
+        return transaction.doInTransactionResult(() -> {
+            Volume volume = getDockerVolumeInPool(volumeUri, externalId, storagePool);
+            if (volume != null) {
+                return volume;
+            }
+
+            volume = objectManager.create(Volume.class,
+                    VOLUME.ACCOUNT_ID, accountId,
+                    VOLUME.NAME, name,
+                    VOLUME.ATTACHED_STATE, CommonStatesConstants.INACTIVE,
+                    VOLUME.DEVICE_NUMBER, -1,
+                    VOLUME.ALLOCATION_STATE, CommonStatesConstants.ACTIVE,
+                    VOLUME.URI, volumeUri,
+                    VOLUME.EXTERNAL_ID, VolumeUtils.externalId(externalId));
+
+            DataAccessor.fields(volume).withKey(VolumeConstants.FIELD_DOCKER_IS_NATIVE).set(isNative);
+            DataAccessor.fields(volume).withKey(VolumeConstants.FIELD_DOCKER_IS_HOST_PATH).set(isHostPath);
+            DataAccessor.fields(volume).withKey(VolumeConstants.FIELD_VOLUME_DRIVER).set(driver);
+
+            objectManager.persist(volume);
+
+            objectManager.create(VolumeStoragePoolMap.class,
+                    VOLUME_STORAGE_POOL_MAP.VOLUME_ID, volume.getId(),
+                    VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID, storagePool.getId());
+
             return volume;
-        }
-
-        volume = objectManager.create(Volume.class,
-                VOLUME.ACCOUNT_ID, accountId,
-                VOLUME.NAME, name,
-                VOLUME.ATTACHED_STATE, CommonStatesConstants.INACTIVE,
-                VOLUME.DEVICE_NUMBER, -1,
-                VOLUME.ALLOCATION_STATE, CommonStatesConstants.ACTIVE,
-                VOLUME.URI, volumeUri,
-                VOLUME.EXTERNAL_ID, VolumeUtils.externalId(externalId));
-
-        DataAccessor.fields(volume).withKey(VolumeConstants.FIELD_DOCKER_IS_NATIVE).set(isNative);
-        DataAccessor.fields(volume).withKey(VolumeConstants.FIELD_DOCKER_IS_HOST_PATH).set(isHostPath);
-        DataAccessor.fields(volume).withKey(VolumeConstants.FIELD_VOLUME_DRIVER).set(driver);
-
-        objectManager.persist(volume);
-
-        objectManager.create(VolumeStoragePoolMap.class,
-                VOLUME_STORAGE_POOL_MAP.VOLUME_ID, volume.getId(),
-                VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID, storagePool.getId());
-
-        return volume;
+        });
     }
 
     public ObjectManager getObjectManager() {

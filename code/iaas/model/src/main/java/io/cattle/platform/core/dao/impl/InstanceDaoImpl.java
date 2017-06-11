@@ -59,6 +59,7 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
+import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -88,6 +89,8 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
     NetworkDao networkDao;
     @Inject
     ObjectProcessManager objectProcessManager;
+    @Inject
+    TransactionDelegate transaction;
 
     public static class IpAddressToServiceIndex {
         ServiceIndex index;
@@ -502,26 +505,28 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
     }
 
     @Override
-    public void updatePorts(Instance instance, List<String> newPorts) {
-        List<Port> toCreate = new ArrayList<>();
-        List<Port> toRemove = new ArrayList<>();
-        Map<String, Port> toRetain = new HashMap<>();
+    public void updatePorts(Instance instanceIn, List<String> newPorts) {
+        transaction.doInTransaction(() -> {
+            List<Port> toCreate = new ArrayList<>();
+            List<Port> toRemove = new ArrayList<>();
+            Map<String, Port> toRetain = new HashMap<>();
 
-        networkDao.updateInstancePorts(instance, newPorts, toCreate, toRemove, toRetain);
-        for (Port port : toCreate) {
-            port = objectManager.create(port);
-        }
+            networkDao.updateInstancePorts(instanceIn, newPorts, toCreate, toRemove, toRetain);
+            for (Port port : toCreate) {
+                port = objectManager.create(port);
+            }
 
-        // trigger instance/metadata update
-        instance = objectManager.setFields(instance, InstanceConstants.FIELD_PORTS, newPorts);
-        clearCacheInstanceData(instance.getId());
+            // trigger instance/metadata update
+            Instance instance = objectManager.setFields(instanceIn, InstanceConstants.FIELD_PORTS, newPorts);
+            clearCacheInstanceData(instance.getId());
 
-        for (Port port : toRetain.values()) {
-            objectProcessManager.createThenActivate(port, null);
-        }
+            for (Port port : toRetain.values()) {
+                objectProcessManager.createThenActivate(port, null);
+            }
 
-        for (Port port : toRemove) {
-            objectProcessManager.deactivateThenRemove(port, null);
-        }
+            for (Port port : toRemove) {
+                objectProcessManager.deactivateThenRemove(port, null);
+            }
+        });
     }
 }

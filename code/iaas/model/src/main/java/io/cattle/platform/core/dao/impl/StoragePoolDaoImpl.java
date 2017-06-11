@@ -26,6 +26,7 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
+import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,6 +61,9 @@ public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDa
     @Inject
     ObjectProcessManager objectProcessManager;
 
+    @Inject
+    TransactionDelegate transaction;
+
     @Override
     public List<? extends StoragePool> findExternalActivePools() {
         return create()
@@ -77,12 +81,14 @@ public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDa
 
     @Override
     public StoragePool mapNewPool(Long hostId, Map<String, Object> properties) {
-        StoragePool pool = resourceDao.createAndSchedule(StoragePool.class, properties);
-        resourceDao.createAndSchedule(StoragePoolHostMap.class,
-                STORAGE_POOL_HOST_MAP.HOST_ID, hostId,
-                STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID, pool.getId());
+        return transaction.doInTransactionResult(() -> {
+            StoragePool pool = resourceDao.createAndSchedule(StoragePool.class, properties);
+            resourceDao.createAndSchedule(StoragePoolHostMap.class,
+                    STORAGE_POOL_HOST_MAP.HOST_ID, hostId,
+                    STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID, pool.getId());
 
-        return pool;
+            return pool;
+        });
     }
 
     @Override

@@ -5,6 +5,7 @@ import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
@@ -22,6 +23,7 @@ import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,10 +32,12 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.jooq.Record2;
 import org.jooq.RecordHandler;
 
+@Named
 public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements ServiceConsumeMapDao {
 
     @Inject
@@ -44,6 +48,9 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
 
     @Inject
     LockManager lockManager;
+
+    @Inject
+    TransactionDelegate transaction;
 
     @Override
     public ServiceConsumeMap findMapToRemove(long serviceId, long consumedServiceId) {
@@ -167,12 +174,14 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
 
     @Override
     public ServiceConsumeMap createServiceLink(final Service service, final ServiceLink serviceLink) {
-        return lockManager.lock(new ServiceLinkLock(service.getId(), serviceLink.getServiceId()),
-                new LockCallback<ServiceConsumeMap>() {
-            @Override
-                    public ServiceConsumeMap doWithLock() {
-                return createServiceLinkImpl(service, serviceLink);
-            }
+        return transaction.doInTransactionResult(() -> {
+            return lockManager.lock(new ServiceLinkLock(service.getId(), serviceLink.getServiceId()),
+                    new LockCallback<ServiceConsumeMap>() {
+                @Override
+                        public ServiceConsumeMap doWithLock() {
+                    return createServiceLinkImpl(service, serviceLink);
+                }
+            });
         });
     }
 
@@ -208,24 +217,6 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
         }
 
         return map;
-    }
-
-    @Override
-    public List<ServiceConsumeMap> createServiceLinks(List<ServiceLink> serviceLinks) {
-        List<ServiceConsumeMap> result = new ArrayList<>();
-
-        for (ServiceLink serviceLink : serviceLinks) {
-            Service service = objectManager.loadResource(Service.class, serviceLink.getConsumingServiceId());
-            if (service == null) {
-                continue;
-            }
-            ServiceConsumeMap created = createServiceLink(service, serviceLink);
-            if (created != null) {
-                result.add(created);
-            }
-        }
-
-        return result;
     }
 
     @Override
@@ -304,7 +295,7 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
                         .and(SERVICE.REMOVED.isNull())
                         .and(SERVICE_CONSUME_MAP.ACCOUNT_ID.ne(accountId)))
                 .fetch().intoArray(SERVICE_CONSUME_MAP.SERVICE_ID));
-        
+
         Map<Long, Long> result = create().select(SERVICE.ID, SERVICE.STACK_ID)
                 .from(SERVICE)
                 .where(SERVICE.ID.in(serviceIds)

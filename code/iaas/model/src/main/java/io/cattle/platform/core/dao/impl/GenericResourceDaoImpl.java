@@ -5,6 +5,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
 import java.util.Map;
 
@@ -14,15 +15,21 @@ import javax.inject.Named;
 @Named
 public class GenericResourceDaoImpl implements GenericResourceDao {
 
+    @Inject
     ObjectManager objectManager;
+    @Inject
     ObjectProcessManager processManager;
+    @Inject
+    TransactionDelegate transaction;
 
     @Override
     public <T> T createAndSchedule(Class<T> clz, Map<String, Object> properties) {
-        T obj = objectManager.create(clz, properties);
-        processManager.scheduleStandardProcess(StandardProcess.CREATE, obj, properties);
+        return transaction.doInTransactionResult(() -> {
+            T obj = objectManager.create(clz, properties);
+            processManager.scheduleStandardProcess(StandardProcess.CREATE, obj, properties);
 
-        return objectManager.reload(obj);
+            return objectManager.reload(obj);
+        });
     }
 
     @Override
@@ -31,33 +38,42 @@ public class GenericResourceDaoImpl implements GenericResourceDao {
         return createAndSchedule(clz, objectManager.convertToPropertiesFor(clz, properties));
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public <T> T createAndSchedule(T obj, Map<String, Object> processData) {
-        obj = objectManager.create(obj);
-        processManager.scheduleStandardProcess(StandardProcess.CREATE, obj, processData);
-        return objectManager.reload(obj);
+    public <T> T createAndSchedule(T objIn, Map<String, Object> processData) {
+        return transaction.doInTransactionResult(() -> {
+            Object obj = objectManager.create(objIn);
+            processManager.scheduleStandardProcess(StandardProcess.CREATE, obj, processData);
+            return (T)objectManager.reload(obj);
+        });
     }
 
     @Override
     public <T> T createAndSchedule(T o) {
-        T obj = objectManager.create(o);
-        processManager.scheduleStandardProcess(StandardProcess.CREATE, obj, null);
-        return objectManager.reload(o);
+        return transaction.doInTransactionResult(() -> {
+            T obj = objectManager.create(o);
+            processManager.scheduleStandardProcess(StandardProcess.CREATE, obj, null);
+            return objectManager.reload(o);
+        });
     }
 
     @Override
     public <T> T updateAndSchedule(T o) {
-        T obj = objectManager.persist(o);
-        processManager.scheduleStandardProcess(StandardProcess.UPDATE, obj, null);
-        return objectManager.reload(o);
+        return transaction.doInTransactionResult(() -> {
+            T obj = objectManager.persist(o);
+            processManager.scheduleStandardProcess(StandardProcess.UPDATE, obj, null);
+            return objectManager.reload(o);
+        });
     }
 
     @Override
-    public <T> T updateAndSchedule(T o, Map<String, Object> fields) {
-        o = objectManager.reload(o);
-        T obj = objectManager.setFields(o, fields);
-        processManager.scheduleStandardProcess(StandardProcess.UPDATE, obj, null);
-        return objectManager.reload(o);
+    public <T> T updateAndSchedule(T oIn, Map<String, Object> fields) {
+        return transaction.doInTransactionResult(() -> {
+            Object o = objectManager.reload(oIn);
+            T obj = objectManager.setFields(o, fields);
+            processManager.scheduleStandardProcess(StandardProcess.UPDATE, obj, null);
+            return objectManager.reload(oIn);
+        });
     }
 
     @Override
@@ -68,28 +84,11 @@ public class GenericResourceDaoImpl implements GenericResourceDao {
 
     @Override
     public <T> T create(Class<T> clz, Map<String, Object> properties) {
-        T obj = objectManager.create(clz, properties);
-        processManager.executeStandardProcess(StandardProcess.CREATE, obj, properties);
+        return transaction.doInTransactionResult(() -> {
+            T obj = objectManager.create(clz, properties);
+            processManager.executeStandardProcess(StandardProcess.CREATE, obj, properties);
 
-        return objectManager.reload(obj);
+            return objectManager.reload(obj);
+        });
     }
-
-    public ObjectProcessManager getProcessManager() {
-        return processManager;
-    }
-
-    @Inject
-    public void setProcessManager(ObjectProcessManager processManager) {
-        this.processManager = processManager;
-    }
-
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
-    }
-
 }

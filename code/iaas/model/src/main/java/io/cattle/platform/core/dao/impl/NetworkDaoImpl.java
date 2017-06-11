@@ -31,6 +31,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.net.NetUtils;
+import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
 import java.util.HashMap;
 import java.util.List;
@@ -50,18 +51,16 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
 
     @Inject
     ObjectManager objectManager;
-
     @Inject
     AccountDao accountDao;
-
     @Inject
     GenericResourceDao resourceDao;
-
     @Inject
     ObjectProcessManager objectProcessManager;
-
     @Inject
     LockManager lockManager;
+    @Inject
+    TransactionDelegate transactionDelegate;
 
     @Override
     public Nic getPrimaryNic(long instanceId) {
@@ -215,33 +214,35 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
 
     @Override
     public void migrateToNetwork(Network network) {
-        Network hostOnly = objectManager.findAny(Network.class,
-                NETWORK.ACCOUNT_ID, network.getAccountId(),
-                NETWORK.KIND, "hostOnlyNetwork");
+        transactionDelegate.doInTransaction(() -> {
+            Network hostOnly = objectManager.findAny(Network.class,
+                    NETWORK.ACCOUNT_ID, network.getAccountId(),
+                    NETWORK.KIND, "hostOnlyNetwork");
 
-        if (hostOnly != null) {
-            create()
-                .update(SUBNET)
-                .set(SUBNET.NETWORK_ID, network.getId())
-                .where(SUBNET.NETWORK_ID.eq(hostOnly.getId()))
-                .execute();
-            create()
-                .update(IP_ADDRESS)
-                .set(IP_ADDRESS.NETWORK_ID, network.getId())
-                .where(IP_ADDRESS.NETWORK_ID.eq(hostOnly.getId()))
-                .execute();
-            create()
-                .update(NIC)
-                .set(NIC.NETWORK_ID, network.getId())
-                .where(NIC.NETWORK_ID.eq(hostOnly.getId()))
-                .execute();
-        }
+            if (hostOnly != null) {
+                create()
+                    .update(SUBNET)
+                    .set(SUBNET.NETWORK_ID, network.getId())
+                    .where(SUBNET.NETWORK_ID.eq(hostOnly.getId()))
+                    .execute();
+                create()
+                    .update(IP_ADDRESS)
+                    .set(IP_ADDRESS.NETWORK_ID, network.getId())
+                    .where(IP_ADDRESS.NETWORK_ID.eq(hostOnly.getId()))
+                    .execute();
+                create()
+                    .update(NIC)
+                    .set(NIC.NETWORK_ID, network.getId())
+                    .where(NIC.NETWORK_ID.eq(hostOnly.getId()))
+                    .execute();
+            }
 
-        create()
-            .update(ACCOUNT)
-            .set(ACCOUNT.DEFAULT_NETWORK_ID, network.getId())
-            .where(ACCOUNT.ID.eq(network.getAccountId()))
-            .execute();
+            create()
+                .update(ACCOUNT)
+                .set(ACCOUNT.DEFAULT_NETWORK_ID, network.getId())
+                .where(ACCOUNT.ID.eq(network.getAccountId()))
+                .execute();
+        });
     }
 
     @Override

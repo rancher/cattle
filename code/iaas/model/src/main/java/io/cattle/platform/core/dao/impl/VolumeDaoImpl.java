@@ -42,6 +42,7 @@ import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
+import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -76,6 +77,9 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
     @Inject
     ObjectProcessManager objectProcessManager;
 
+    @Inject
+    TransactionDelegate transaction;
+
     @Override
     public Volume findVolumeByExternalId(Long storagePoolId, String externalId) {
         Record record = create()
@@ -93,28 +97,30 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
 
     @Override
     public void createVolumeInStoragePool(Map<String, Object> volumeData, String volumeName, StoragePool storagePool) {
-        Record record = create()
-                .select(VOLUME.fields())
-                .from(VOLUME)
-                .join(VOLUME_STORAGE_POOL_MAP)
-                    .on(VOLUME_STORAGE_POOL_MAP.VOLUME_ID.eq(VOLUME.ID)
-                    .and(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID.eq(storagePool.getId())))
-                .join(STORAGE_POOL)
-                    .on(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID.eq(STORAGE_POOL.ID))
-                    .and(STORAGE_POOL.REMOVED.isNull())
-                .where(VOLUME.NAME.eq(volumeName)
-                    .and((VOLUME.REMOVED.isNull().or(VOLUME.STATE.eq(CommonStatesConstants.REMOVING)))))
-                    .and(VOLUME.ACCOUNT_ID.eq(storagePool.getAccountId()))
-                .fetchAny();
-        if (record != null) {
-            return;
-        }
+        transaction.doInTransaction(() -> {
+            Record record = create()
+                    .select(VOLUME.fields())
+                    .from(VOLUME)
+                    .join(VOLUME_STORAGE_POOL_MAP)
+                        .on(VOLUME_STORAGE_POOL_MAP.VOLUME_ID.eq(VOLUME.ID)
+                        .and(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID.eq(storagePool.getId())))
+                    .join(STORAGE_POOL)
+                        .on(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID.eq(STORAGE_POOL.ID))
+                        .and(STORAGE_POOL.REMOVED.isNull())
+                    .where(VOLUME.NAME.eq(volumeName)
+                        .and((VOLUME.REMOVED.isNull().or(VOLUME.STATE.eq(CommonStatesConstants.REMOVING)))))
+                        .and(VOLUME.ACCOUNT_ID.eq(storagePool.getAccountId()))
+                    .fetchAny();
+            if (record != null) {
+                return;
+            }
 
-        Volume volume = resourceDao.createAndSchedule(Volume.class, volumeData);
-        Map<String, Object> vspm = new HashMap<>();
-        vspm.put("volumeId", volume.getId());
-        vspm.put("storagePoolId", storagePool.getId());
-        resourceDao.createAndSchedule(VolumeStoragePoolMap.class, vspm);
+            Volume volume = resourceDao.createAndSchedule(Volume.class, volumeData);
+            Map<String, Object> vspm = new HashMap<>();
+            vspm.put("volumeId", volume.getId());
+            vspm.put("storagePoolId", storagePool.getId());
+            resourceDao.createAndSchedule(VolumeStoragePoolMap.class, vspm);
+        });
     }
 
     @Override

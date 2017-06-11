@@ -4,6 +4,7 @@ import static io.cattle.platform.core.model.tables.DataTable.*;
 
 import io.cattle.platform.core.dao.DataDao;
 import io.cattle.platform.core.model.Data;
+import io.cattle.platform.core.model.tables.records.DataRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
@@ -15,16 +16,28 @@ import java.util.concurrent.Callable;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.jooq.Configuration;
+import org.jooq.DSLContext;
+import org.jooq.impl.DefaultDSLContext;
+
 @Named
 public class DataDaoImpl extends AbstractJooqDao implements DataDao {
 
     LockManager lockManager;
     ObjectManager objectManager;
+    @Inject @Named("NewConnectionJooqConfiguration")
+    Configuration newConfiguration;
+
+    @Override
+    protected DSLContext create() {
+        return new DefaultDSLContext(newConfiguration);
+    }
 
     @Override
     public String getOrCreate(final String key, final boolean visible, final Callable<String> generator) {
-        Data data = objectManager.findAny(Data.class,
-                DATA.NAME, key);
+        Data data = create().selectFrom(DATA)
+            .where(DATA.NAME.eq(key))
+            .fetchAny();
 
         if ( data != null && data.getVisible() != null && data.getVisible() == visible ) {
             return data.getValue();
@@ -33,14 +46,16 @@ public class DataDaoImpl extends AbstractJooqDao implements DataDao {
         return lockManager.lock(new DataChangeLock(key), new LockCallback<String>() {
             @Override
             public String doWithLock() {
-                Data data = objectManager.findAny(Data.class,
-                        DATA.NAME, key);
+                DataRecord data = create().selectFrom(DATA)
+                        .where(DATA.NAME.eq(key))
+                        .fetchAny();
+
 
                 if ( data != null && data.getVisible() != null && data.getVisible() == visible ) {
                     return data.getValue();
                 } else if ( data != null ) {
                     data.setVisible(visible);
-                    objectManager.persist(data);
+                    data.update();
                     return data.getValue();
                 }
 
@@ -50,10 +65,13 @@ public class DataDaoImpl extends AbstractJooqDao implements DataDao {
                         return value;
                     }
 
-                    return objectManager.create(Data.class,
-                            DATA.NAME, key,
-                            DATA.VISIBLE, visible,
-                            DATA.VALUE, value).getValue();
+                    DataRecord record = new DataRecord();
+                    record.attach(newConfiguration);
+                    record.setName(key);
+                    record.setVisible(visible);
+                    record.setValue(value);
+                    record.insert();
+                    return record.getValue();
                 } catch (Exception e) {
                     ExceptionUtils.rethrowRuntime(e);
                     throw new RuntimeException("Failed to generate value for [" + key + "]", e);

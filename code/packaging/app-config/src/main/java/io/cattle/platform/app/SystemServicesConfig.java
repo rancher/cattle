@@ -23,8 +23,6 @@ import io.cattle.platform.configitem.version.impl.ConfigUpdatePublisher;
 import io.cattle.platform.core.cache.DBCacheManager;
 import io.cattle.platform.core.cleanup.BadDataCleanup;
 import io.cattle.platform.core.cleanup.TableCleanup;
-import io.cattle.platform.core.dao.impl.ServiceConsumeMapDaoImpl;
-import io.cattle.platform.core.dao.impl.ServiceExposeMapDaoImpl;
 import io.cattle.platform.docker.process.serializer.DockerContainerSerializer;
 import io.cattle.platform.docker.storage.DockerImageCredentialLookup;
 import io.cattle.platform.docker.storage.DockerStoragePoolDriver;
@@ -670,19 +668,6 @@ public class SystemServicesConfig {
     @Bean
     SampleDataStartupV14 SampleDataStartupV14() {
         return new SampleDataStartupV14();
-    }
-
-    @Bean
-    ServiceConsumeMapDaoImpl ServiceConsumeMapDaoImpl() {
-        return new ServiceConsumeMapDaoImpl();
-    }
-
-    @Bean
-    ServiceExposeMapDaoImpl ServiceExposeMapDaoImpl(
-            @Qualifier("LockingJooqConfiguration") io.cattle.platform.db.jooq.config.Configuration config) {
-        io.cattle.platform.core.dao.impl.ServiceExposeMapDaoImpl dao = new ServiceExposeMapDaoImpl();
-        dao.setLockingConfiguration(config);
-        return dao;
     }
 
     @Bean
