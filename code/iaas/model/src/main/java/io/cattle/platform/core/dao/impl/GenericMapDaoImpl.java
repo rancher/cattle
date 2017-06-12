@@ -20,7 +20,10 @@ import org.jooq.UpdatableRecord;
 @Named
 public class GenericMapDaoImpl extends AbstractCoreDao implements GenericMapDao {
 
+    @Inject
+    @Named("CoreSchemaFactory")
     SchemaFactory schemaFactory;
+    @Inject
     ObjectMetaDataManager metaDataManager;
 
     @SuppressWarnings("unchecked")
@@ -144,57 +147,6 @@ public class GenericMapDaoImpl extends AbstractCoreDao implements GenericMapDao 
         }
 
         return reference;
-    }
-
-    public SchemaFactory getSchemaFactory() {
-        return schemaFactory;
-    }
-
-    @Inject
-    @Named("CoreSchemaFactory")
-    public void setSchemaFactory(SchemaFactory schemaFactory) {
-        this.schemaFactory = schemaFactory;
-    }
-
-    public ObjectMetaDataManager getMetaDataManager() {
-        return metaDataManager;
-    }
-
-    @Inject
-    public void setMetaDataManager(ObjectMetaDataManager metaDataManager) {
-        this.metaDataManager = metaDataManager;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T> T findToRemove(Class<T> mapType, Class<?> leftResourceType, long leftResourceId,
-            Class<?> rightResourceType, long rightResourceId) {
-        String type = schemaFactory.getSchemaName(mapType);
-
-        Table<?> table = getTable(mapType);
-
-        Relationship leftReference = getRelationship(mapType, leftResourceType);
-        Relationship rightReference = getRelationship(mapType, rightResourceType);
-        TableField<?, Object> removed = JooqUtils.getTableField(metaDataManager, type,
-                ObjectMetaDataManager.REMOVED_FIELD);
-        TableField<?, Object> state = JooqUtils.getTableField(metaDataManager, type, ObjectMetaDataManager.STATE_FIELD);
-        TableField<?, Object> leftReferenceField = JooqUtils.getTableField(metaDataManager, type,
-                leftReference.getPropertyName());
-        TableField<?, Object> rightReferenceField = JooqUtils.getTableField(metaDataManager, type,
-                rightReference.getPropertyName());
-
-        if (removed == null || leftReferenceField == null || rightReferenceField == null) {
-            throw new IllegalArgumentException("Type [" + mapType
-                    + "] is missing required removed or references column");
-        }
-
-        return (T) create()
-                .selectFrom(table)
-                .where(
-                        (removed.isNull().or(state.eq(CommonStatesConstants.REMOVING)))
-                                .and(leftReferenceField.eq(leftResourceId))
-                                .and(rightReferenceField.eq(rightResourceId)))
-                .fetchOne();
     }
 
 }

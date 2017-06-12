@@ -2,7 +2,6 @@ package io.cattle.platform.core.dao;
 
 import io.cattle.platform.core.addon.PublicEndpoint;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.core.model.GenericObject;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
@@ -46,8 +45,6 @@ public interface InstanceDao {
     void clearCacheInstanceData(long instanceId);
 
     List<PublicEndpoint> getPublicEndpoints(long accountId, Long serviceId, Long hostId);
-
-    List<GenericObject> getImagePullTasks(long accountId, List<String> images, Map<String, String> labels);
 
     void updatePorts(Instance instance, List<String> ports);
 }

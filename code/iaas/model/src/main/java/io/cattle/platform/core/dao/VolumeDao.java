@@ -28,8 +28,6 @@ public interface VolumeDao {
 
     Set<? extends Volume> findNonremovedVolumesWithNoOtherMounts(long instanceId);
 
-    boolean isVolumeInUseByRunningInstance(long volumeId);
-
     Map<Long, List<MountEntry>> getMountsForInstances(List<Long> ids, IdFormatter idF);
 
     Map<Long, List<MountEntry>> getMountsForVolumes(List<Long> ids, IdFormatter idF);
@@ -39,8 +37,6 @@ public interface VolumeDao {
     List<? extends Volume> findNonRemovedVolumesOnPool(Long storagePoolId);
 
     List<? extends Volume> findBadNativeVolumes(int count);
-
-    List<? extends Volume> getVolumesOnRemovedAndInactiveHosts(long deploymentUnitId, long accountId);
 
     List<Long> findDeploymentUnitsForVolume(Volume volume);
 

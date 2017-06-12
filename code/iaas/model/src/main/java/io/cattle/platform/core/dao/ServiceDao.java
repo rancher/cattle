@@ -30,10 +30,6 @@ public interface ServiceDao {
 
     ServiceIndex createServiceIndex(Long serviceId, String launchConfigName, String serviceIndex);
 
-    Service getServiceByServiceIndexId(long serviceIndexId);
-
-    boolean isServiceManagedInstance(Instance instance);
-
     Map<Long, List<Object>> getServicesForInstances(List<Long> ids, IdFormatter idFormatter);
 
     Map<Long, List<Object>> getInstances(List<Long> ids, IdFormatter idFormatter);
@@ -71,8 +67,6 @@ public interface ServiceDao {
 
     List<? extends Instance> getInstancesWithHealtcheckEnabled(long accountId);
 
-    public Map<Long, List<Instance>> getServiceInstancesWithNoDeploymentUnit();
-
     List<Long> getServiceDeploymentUnitsOnHost(Host host);
 
     DeploymentUnit createDeploymentUnit(long accountId, Long serviceId,
@@ -82,19 +76,11 @@ public interface ServiceDao {
 
     List<Instance> getInstancesToGarbageCollect(Service service);
 
-    List<DeploymentUnit> getDeploymentUnitsForRevision(Service service, boolean currentRevision);
-
     Pair<Instance, ServiceExposeMap> createServiceInstance(Map<String, Object> properties, Long serviceId, Long nextId);
 
     Long getNextCreate(Long serviceId);
 
     List<? extends VolumeTemplate> getVolumeTemplates(Long stackId);
-
-    /**
-     * SERVICE REVISION MANAGEMENT
-     */
-
-    void cleanupRevisions(Service service);
 
     public class InstanceData {
         public Instance instance;

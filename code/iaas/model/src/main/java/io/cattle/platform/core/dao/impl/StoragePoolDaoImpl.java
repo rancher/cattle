@@ -42,7 +42,6 @@ import javax.inject.Named;
 import org.jooq.Record;
 import org.jooq.Record2;
 import org.jooq.RecordHandler;
-import org.jooq.Result;
 
 @Named
 public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDao {
@@ -63,16 +62,6 @@ public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDa
 
     @Inject
     TransactionDelegate transaction;
-
-    @Override
-    public List<? extends StoragePool> findExternalActivePools() {
-        return create()
-                .selectFrom(STORAGE_POOL)
-                .where(
-                        STORAGE_POOL.EXTERNAL.eq(true)
-                        .and(STORAGE_POOL.STATE.eq(CommonStatesConstants.ACTIVE))
-                        ).fetch();
-    }
 
     @Override
     public StoragePool mapNewPool(Host host, Map<String, Object> properties) {
@@ -300,22 +289,6 @@ public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDa
                         .and(HOST.STATE.eq(AccountConstants.STATE_PURGED).or(STORAGE_POOL.STATE.eq(AccountConstants.STATE_PURGED))))
                 .limit(limit)
                 .fetchInto(StoragePoolHostMapRecord.class);
-    }
-
-    @Override
-    public boolean isOnSharedStorage(Volume volume) {
-        Result<?> r = create().select(STORAGE_POOL.ID)
-            .from(STORAGE_POOL)
-            .join(VOLUME_STORAGE_POOL_MAP)
-                .on(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID.eq(STORAGE_POOL.ID))
-            .where(STORAGE_POOL.REMOVED.isNull()
-                    .and(VOLUME_STORAGE_POOL_MAP.REMOVED.isNull())
-                    .and(VOLUME_STORAGE_POOL_MAP.VOLUME_ID.eq(volume.getId()))
-                    .and(STORAGE_POOL.KIND.notIn(UNMANGED_STORAGE_POOLS)))
-            .limit(1)
-            .fetch();
-
-        return r.size() > 0;
     }
 
 }

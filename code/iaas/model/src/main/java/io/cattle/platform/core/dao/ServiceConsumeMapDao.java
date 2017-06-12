@@ -38,12 +38,6 @@ public interface ServiceConsumeMapDao {
     List<? extends ServiceConsumeMap> findConsumedServices(long serviceId);
 
     /**
-     * @param serviceId
-     * @return list of services consuming the service specified
-     */
-    List<? extends ServiceConsumeMap> findConsumingServices(long serviceId);
-
-    /**
      * @param instanceId
      * @param kind
      * @return list of services consumed by the instance specified
@@ -61,8 +55,6 @@ public interface ServiceConsumeMapDao {
     List<String> findInstanceNamesForService(long serviceId);
 
     ServiceConsumeMap createServiceLink(Service service, ServiceLink serviceLink);
-
-    List<? extends Service> findLinkedServices(long serviceId);
 
     Map<Long, Long> findConsumedServicesIdsToStackIdsFromOtherAccounts(long accountId);
 

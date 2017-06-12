@@ -194,51 +194,6 @@ public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSche
                 .execute();
     }
 
-    @Override
-    public boolean isUnique(String name, List<String> roles, Long accountId) {
-        List<DynamicSchemaWithRole> schemas;
-        if (accountId == null) {
-            schemas = create()
-                    .select()
-                    .from(DYNAMIC_SCHEMA).leftOuterJoin(DYNAMIC_SCHEMA_ROLE)
-                    .on(DYNAMIC_SCHEMA_ROLE.DYNAMIC_SCHEMA_ID.eq(DYNAMIC_SCHEMA.ID))
-                    .where(DYNAMIC_SCHEMA_ROLE.ROLE.in(roles))
-                    .and(DYNAMIC_SCHEMA.NAME.eq(name))
-                    .and(DYNAMIC_SCHEMA.STATE.in(CommonStatesConstants.CREATING, CommonStatesConstants.ACTIVE))
-                    .and(DYNAMIC_SCHEMA.ACCOUNT_ID.isNull())
-                    .fetch().into(DynamicSchemaWithRole.class);
-        } else if (roles == null || roles.isEmpty()) {
-            return null == create().select().from(DYNAMIC_SCHEMA)
-                    .leftOuterJoin(DYNAMIC_SCHEMA_ROLE)
-                    .on(DYNAMIC_SCHEMA_ROLE.DYNAMIC_SCHEMA_ID.eq(DYNAMIC_SCHEMA.ID))
-                    .where(DYNAMIC_SCHEMA.ACCOUNT_ID.eq(accountId))
-                    .and(DYNAMIC_SCHEMA.NAME.eq(name))
-                    .and(DYNAMIC_SCHEMA_ROLE.ROLE.isNull())
-                    .fetchAny();
-        } else {
-            schemas = create()
-                    .select()
-                    .from(DYNAMIC_SCHEMA).leftOuterJoin(DYNAMIC_SCHEMA_ROLE)
-                    .on(DYNAMIC_SCHEMA_ROLE.DYNAMIC_SCHEMA_ID.eq(DYNAMIC_SCHEMA.ID))
-                    .where(DYNAMIC_SCHEMA_ROLE.ROLE.in(roles))
-                    .and(DYNAMIC_SCHEMA.NAME.eq(name))
-                    .and(DYNAMIC_SCHEMA.ACCOUNT_ID.eq(accountId))
-                    .and(DYNAMIC_SCHEMA.STATE.in(CommonStatesConstants.CREATING, CommonStatesConstants.ACTIVE))
-                    .fetch().into(DynamicSchemaWithRole.class);
-        }
-        if (schemas.isEmpty()) {
-            return true;
-        }
-
-        for (DynamicSchemaWithRole schema: schemas) {
-            if (roles.contains(schema.getRole())) {
-                return false;
-            }
-        }
-        return true;
-
-    }
-
     class CacheKey {
         String name;
         long accountId;
