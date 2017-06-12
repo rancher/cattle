@@ -22,6 +22,7 @@ import io.cattle.platform.configitem.version.impl.ConfigItemStatusManagerImpl;
 import io.cattle.platform.configitem.version.impl.ConfigUpdatePublisher;
 import io.cattle.platform.core.cache.DBCacheManager;
 import io.cattle.platform.core.cleanup.BadDataCleanup;
+import io.cattle.platform.core.cleanup.CleanupTaskInstances;
 import io.cattle.platform.core.cleanup.TableCleanup;
 import io.cattle.platform.docker.process.serializer.DockerContainerSerializer;
 import io.cattle.platform.docker.transform.DockerTransformerImpl;
@@ -126,8 +127,6 @@ import io.cattle.platform.storage.service.impl.StorageServiceImpl;
 import io.cattle.platform.systemstack.catalog.impl.CatalogServiceImpl;
 import io.cattle.platform.systemstack.listener.SystemStackUpdate;
 import io.cattle.platform.systemstack.service.ProjectTemplateService;
-import io.cattle.platform.task.cleanup.CleanupTaskInstances;
-import io.cattle.platform.task.dao.impl.TaskDaoImpl;
 import io.cattle.platform.task.eventing.impl.TaskManagerEventListenerImpl;
 import io.cattle.platform.task.impl.TaskManagerImpl;
 import io.cattle.platform.token.impl.JwtTokenServiceImpl;
@@ -760,11 +759,6 @@ public class SystemServicesConfig {
     @Bean
     TaskManagerEventListenerImpl TaskManagerEventListenerImpl() {
         return new TaskManagerEventListenerImpl();
-    }
-
-    @Bean
-    TaskDaoImpl TaskDaoImpl() {
-        return new TaskDaoImpl();
     }
 
     @Bean
