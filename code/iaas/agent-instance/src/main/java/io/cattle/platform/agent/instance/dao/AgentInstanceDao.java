@@ -7,8 +7,6 @@ import java.util.List;
 
 public interface AgentInstanceDao {
 
-    Agent getAgentByUri(String uri);
-
     Instance getInstanceByAgent(Long agentId);
 
     boolean areAllCredentialsActive(Agent agent);

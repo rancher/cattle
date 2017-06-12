@@ -1,45 +1,20 @@
 package io.cattle.platform.agent.instance.factory.impl;
 
-import io.cattle.platform.agent.instance.factory.AgentInstanceBuilder;
-import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.object.util.DataAccessor;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import com.netflix.config.DynamicStringProperty;
+public class AgentBuilderRequest {
 
-public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
-
-    private static final DynamicStringProperty DEFAULT_IMAGE_UUID = ArchaiusUtil.getString("agent.instance.image.uuid");
-    private static final DynamicStringProperty DEFAULT_NAME = ArchaiusUtil.getString("agent.instance.name");
-
-    String instanceKind = InstanceConstants.KIND_CONTAINER;
-    Long vnetId;
-    Long accountId;
     Long resourceAccountId;
-    String imageUuid;
-    String name = DEFAULT_NAME.get();
-    boolean accountOwned = true;
-    boolean managedConfig = false;
-    boolean privileged = false;
-    AgentInstanceFactoryImpl factory;
     String uri;
-    Map<String, Object> params = new HashMap<>();
     Set<String> requestedRoles;
 
-    public AgentInstanceBuilderImpl(AgentInstanceFactoryImpl factory) {
-        super();
-        this.factory = factory;
-    }
-
-    public AgentInstanceBuilderImpl(AgentInstanceFactoryImpl factory, Instance instance, Set<String> roles) {
-        this(factory);
-        this.accountId = instance.getAccountId();
+    public AgentBuilderRequest(Instance instance, Set<String> roles) {
         String uriPrefix = "event";
         Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
         Object prefix = labels.get(SystemLabels.LABEL_AGENT_URI_PREFIX);
@@ -51,116 +26,8 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
         this.requestedRoles = roles;
     }
 
-    @Override
-    public AgentInstanceBuilder withImageUuid(String uuid) {
-        this.imageUuid = uuid;
-        return this;
-    }
-
-    @Override
-    public AgentInstanceBuilder withInstanceKind(String kind) {
-        this.instanceKind = kind;
-        return this;
-    }
-
-    @Override
-    public AgentInstanceBuilder withName(String name) {
-        this.name = name;
-        return this;
-    }
-
-    @Override
-    public Instance build() {
-        return factory.build(this);
-    }
-
-    public Long getVnetId() {
-        return vnetId;
-    }
-
-    public String getImageUuid() {
-        return imageUuid == null ? DEFAULT_IMAGE_UUID.get() : imageUuid;
-    }
-
-    @Override
-    public AgentInstanceBuilder withInstance(Instance instance) {
-        withAccountId(instance.getAccountId());
-
-        return this;
-    }
-
-    @Override
-    public AgentInstanceBuilder withAccountId(Long accountId) {
-        this.accountId = accountId;
-        return this;
-    }
-
-    @Override
-    public AgentInstanceBuilder withAccountOwned(boolean accountOwned) {
-        this.accountOwned = accountOwned;
-        return this;
-    }
-
-    @Override
-    public AgentInstanceBuilder withPrivileged(boolean privileged) {
-        this.privileged = privileged;
-        return this;
-    }
-
-    public Long getAccountId() {
-        return accountId;
-    }
-
-    public boolean isAccountOwned() {
-        return accountOwned;
-    }
-
-    public AgentInstanceFactoryImpl getFactory() {
-        return factory;
-    }
-
-    public String getInstanceKind() {
-        return instanceKind;
-    }
-
-    public boolean isManagedConfig() {
-        return managedConfig;
-    }
-
-    public boolean isPrivileged() {
-        return privileged;
-    }
-
-    public void setPrivileged(boolean privileged) {
-        this.privileged = privileged;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public AgentInstanceBuilder withUri(String uri) {
-        this.uri = uri;
-        return this;
-    }
-
     public String getUri() {
         return uri;
-    }
-
-    @Override
-    public AgentInstanceBuilder withParameters(Map<String, Object> params) {
-        this.params = params;
-        return this;
-    }
-
-    public Map<String, Object> getParams() {
-        return params;
     }
 
     public Set<String> getRequestedRoles() {
@@ -169,10 +36,6 @@ public class AgentInstanceBuilderImpl implements AgentInstanceBuilder {
 
     public Long getResourceAccountId() {
         return resourceAccountId;
-    }
-
-    public void setResourceAccountId(Long resourceAccountId) {
-        this.resourceAccountId = resourceAccountId;
     }
 
 }

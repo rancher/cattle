@@ -2,11 +2,11 @@ package io.cattle.platform.agent.instance.dao.impl;
 
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.CredentialTable.*;
+import static io.cattle.platform.core.model.tables.HostTable.*;
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceLabelMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.LabelTable.*;
-import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
-import static io.cattle.platform.core.model.tables.HostTable.*;
 
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.core.constants.AgentConstants;
@@ -43,18 +43,9 @@ public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstan
     private static final Logger log = LoggerFactory.getLogger(AgentInstanceDaoImpl.class);
 
     GenericResourceDao resourceDao;
-    
+
     @Inject
     ObjectManager objectManager;
-
-    @Override
-    public Agent getAgentByUri(String uri) {
-        return create()
-                .selectFrom(AGENT)
-                .where(AGENT.URI.eq(uri)
-                        .and(AGENT.REMOVED.isNull()))
-                .fetchAny();
-    }
 
     @Override
     public Instance getInstanceByAgent(Long agentId) {
@@ -136,18 +127,18 @@ public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstan
                 result.put(agentId, pVal);
             }
         });
-        
+
         List<Long> returnAgentIds = new ArrayList<>(result.keySet());
-        
+
         Collections.sort(returnAgentIds, new Comparator<Long>() {
             @Override
             public int compare(Long id1, Long id2) {
                 return result.get(id1).compareTo(result.get(id2));
             }
         });
-        
+
         return returnAgentIds;
-        
+
     }
 
     @Override
