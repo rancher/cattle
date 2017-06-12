@@ -55,11 +55,6 @@
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
-            <artifactId>cattle-framework-api-pub-sub-jetty</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.cattle</groupId>
             <artifactId>cattle-hazelcast-lock</artifactId>
             <version>${project.version}</version>
         </dependency>

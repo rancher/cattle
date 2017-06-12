@@ -12,7 +12,6 @@
         <module>resources</module>
         <module>code/framework/api</module>
         <module>code/framework/api-pub-sub</module>
-        <module>code/framework/api-pub-sub-jetty</module>
         <module>code/framework/archaius</module>
         <module>code/framework/async</module>
         <module>code/framework/auditing</module>
