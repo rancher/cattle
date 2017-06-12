@@ -83,7 +83,7 @@ public class AccountPurge extends AbstractDefaultProcessHandler {
 
         for (Instance instance : instanceDao.listNonRemovedNonStackInstances(account)) {
             deleteAgentAccount(instance.getAgentId(), state.getData());
-            objectProcessManager.stopAndRemove(instance, null);
+            objectProcessManager.stopThenRemove(instance, null);
         }
 
         for (PhysicalHost host : list(account, PhysicalHost.class)) {

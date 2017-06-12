@@ -47,7 +47,7 @@ public class UpgradeCleanupMonitorImpl extends AbstractJooqDao implements Task {
 
         for (Instance instance : instances) {
             try {
-                objectProcessManager.stopAndRemove(instance, null);
+                objectProcessManager.stopThenRemove(instance, null);
                 log.info("Scheduled remove for upgraded instance id [{}]", instance.getId());
             } catch (ProcessInstanceException e) {
                 // don't error out so we have a chance to schedule remove for the rest of the instances

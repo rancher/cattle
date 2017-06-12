@@ -47,21 +47,21 @@ public class StackRemove extends AbstractObjectProcessHandler {
         for (DeploymentUnit unit : objectManager.find(DeploymentUnit.class,
                 DEPLOYMENT_UNIT.STACK_ID, stack.getId(),
                 DEPLOYMENT_UNIT.REMOVED, null)) {
-            objectProcessManager.deactivateAndRemove(unit, null);
+            objectProcessManager.deactivateThenRemove(unit, null);
         }
     }
 
     private void removeStandaloneContainers(Stack stack) {
         for (Instance instance : objectManager.find(Instance.class, INSTANCE.STACK_ID, stack.getId(),
                 INSTANCE.REMOVED, null, INSTANCE.SERVICE_ID, null, INSTANCE.NATIVE_CONTAINER, false)) {
-            objectProcessManager.stopAndRemove(instance, null);
+            objectProcessManager.stopThenRemove(instance, null);
         }
     }
 
     private void removeHosts(Stack stack) {
         for (Host host : objectManager.find(Host.class, HOST.STACK_ID, stack.getId(),
                 HOST.REMOVED, null)) {
-            objectProcessManager.deactivateAndRemove(host, null);
+            objectProcessManager.deactivateThenRemove(host, null);
         }
     }
 }

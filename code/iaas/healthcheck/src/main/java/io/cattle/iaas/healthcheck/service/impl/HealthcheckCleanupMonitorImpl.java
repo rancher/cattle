@@ -50,7 +50,7 @@ public class HealthcheckCleanupMonitorImpl extends AbstractJooqDao implements Ta
                 continue;
             }
             try {
-                objectProcessManager.stopAndRemove(instance, null);
+                objectProcessManager.stopThenRemove(instance, null);
                 log.info("Scheduled remove for instance id [{}]", instance.getId());
             } catch (ProcessInstanceException e) {
                 // don't error out so we have a chance to schedule remove for the rest of the instances

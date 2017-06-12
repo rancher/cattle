@@ -64,14 +64,10 @@ public interface ObjectProcessManager {
         }
     }
 
-    default void stopAndRemove(Object resource, Map<String, Object> data) {
+    default void stopThenRemove(Object resource, Map<String, Object> data) {
         if (!StandardStates.REMOVING.equals(ObjectUtils.getState(resource))) {
             scheduleStandardChainedProcessAsync(StandardProcess.STOP, StandardProcess.REMOVE, resource, data);
         }
-    }
-
-    default void deactivateAndRemove(Object resource, Map<String, Object> data) {
-        scheduleStandardChainedProcessAsync(StandardProcess.DEACTIVATE, StandardProcess.REMOVE, resource, data);
     }
 
     default void deactivate(Object resource, Map<String, Object> data) {

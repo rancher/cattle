@@ -49,7 +49,7 @@ public class InstanceWrapper implements BasicStateWrapper {
             return true;
         }
         if (TO_STOP_STATES.contains(instance.getState())) {
-            svc.processManager.stopAndRemove(instance, null);
+            svc.processManager.stopThenRemove(instance, null);
             return false;
         }
         if (isTransitioning()) {

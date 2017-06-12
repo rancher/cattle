@@ -58,7 +58,7 @@ public class HostRemove extends AbstractDefaultProcessHandler {
 
     protected void removeInstances(Host host) {
         for (Instance instance : instanceDao.getNonRemovedInstanceOn(host.getId())) {
-            objectProcessManager.stopAndRemove(instance, null);
+            objectProcessManager.stopThenRemove(instance, null);
         }
     }
 
