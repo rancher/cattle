@@ -1,4 +1,4 @@
-package io.cattle.platform.api.settings.model;
+package io.cattle.platform.core.addon;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Setting;

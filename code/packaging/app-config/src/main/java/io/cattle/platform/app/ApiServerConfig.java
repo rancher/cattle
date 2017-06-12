@@ -11,8 +11,6 @@ import io.cattle.platform.api.pubsub.subscribe.jetty.JettyWebSocketSubcriptionHa
 import io.cattle.platform.api.resource.ExtensionResourceManagerLocator;
 import io.cattle.platform.api.resource.jooq.DefaultJooqResourceManager;
 import io.cattle.platform.api.schema.FileSchemaFactory;
-import io.cattle.platform.api.settings.manager.SettingManager;
-import io.cattle.platform.api.settings.model.ActiveSetting;
 import io.cattle.platform.api.utils.ApiSettings;
 import io.cattle.platform.configitem.api.manager.ConfigContentManager;
 import io.cattle.platform.configitem.api.model.ConfigContent;
@@ -33,6 +31,7 @@ import io.cattle.platform.configitem.server.template.impl.FreemarkerTemplateLoad
 import io.cattle.platform.configitem.server.template.impl.FreemarkerURLTemplateLoader;
 import io.cattle.platform.configitem.server.template.impl.TemplateFactoryImpl;
 import io.cattle.platform.configitem.spring.URLArrayFactory;
+import io.cattle.platform.core.addon.ActiveSetting;
 import io.cattle.platform.docker.api.ContainerLogsActionHandler;
 import io.cattle.platform.docker.api.ContainerProxyActionHandler;
 import io.cattle.platform.docker.api.DockerSocketProxyActionHandler;
@@ -73,6 +72,7 @@ import io.cattle.platform.iaas.api.auth.projects.Member;
 import io.cattle.platform.iaas.api.container.ContainerUpgradeActionHandler;
 import io.cattle.platform.iaas.api.credential.ApiKeyCertificateDownloadLinkHandler;
 import io.cattle.platform.iaas.api.credential.SshKeyPemDownloadLinkHandler;
+import io.cattle.platform.iaas.api.filter.settings.SettingManager;
 import io.cattle.platform.iaas.api.host.HostEvacuateActionHandler;
 import io.cattle.platform.iaas.api.host.HostTemplateLinkHandler;
 import io.cattle.platform.iaas.api.host.HostTemplateOutputFilter;

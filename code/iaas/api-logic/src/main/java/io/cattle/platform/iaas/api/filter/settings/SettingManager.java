@@ -1,11 +1,11 @@
-package io.cattle.platform.api.settings.manager;
+package io.cattle.platform.iaas.api.filter.settings;
 
 import static io.cattle.platform.core.model.tables.SettingTable.*;
 
 import io.cattle.platform.api.resource.jooq.AbstractJooqResourceManager;
-import io.cattle.platform.api.settings.model.ActiveSetting;
 import io.cattle.platform.archaius.sources.NamedConfigurationSource;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.addon.ActiveSetting;
 import io.cattle.platform.core.model.Setting;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
