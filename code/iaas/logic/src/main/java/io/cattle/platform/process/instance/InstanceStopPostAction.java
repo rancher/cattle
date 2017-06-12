@@ -81,7 +81,7 @@ public class InstanceStopPostAction extends AbstractObjectProcessLogic implement
         RestartPolicy rp = DataAccessor.field(instance, DockerInstanceConstants.FIELD_RESTART_POLICY, jsonMapper, RestartPolicy.class);
         if (isStartOnce(instance)) {
             rp = new RestartPolicy();
-            rp.setName(RestartPolicy.RESTART_ON_FAILURE);
+            rp.setName(RestartPolicy.RESTART_NEVER);
         }
 
         if (rp == null) {
