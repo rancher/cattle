@@ -18,7 +18,9 @@ import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,7 +35,7 @@ public class ContainerProxyActionHandler implements ActionHandler {
 
     private static final DynamicStringProperty HOST_PROXY_PATH = ArchaiusUtil.getString("host.proxy.path");
     private static final DynamicLongProperty EXPIRE_SECONDS = ArchaiusUtil.getLong("host.proxy.jwt.expiration.seconds");
-    private static final Set<String> VALID_SCHEMES = CollectionUtils.set("http", "https");
+    private static final Set<String> VALID_SCHEMES = new HashSet<>(Arrays.asList("http", "https"));
 
     @Inject
     HostApiService apiService;
@@ -67,7 +69,7 @@ public class ContainerProxyActionHandler implements ActionHandler {
             return null;
         }
 
-        Map<String, Object> labels = DataAccessor.fieldMapRO(container, InstanceConstants.FIELD_LABELS);
+        Map<String, Object> labels = DataAccessor.fieldMap(container, InstanceConstants.FIELD_LABELS);
         String port = ObjectUtils.toString(labels.get(SystemLabels.LABEL_PROXY_PORT));
         String scheme = ObjectUtils.toString(labels.get(SystemLabels.LABEL_PROXY_SCHEME));
         if (!VALID_SCHEMES.contains(scheme)) {
