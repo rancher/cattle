@@ -52,6 +52,7 @@
     </bean>
 
     <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler"
+        p:reportProgress="true"
         p:name="InstanceHostMapActivate"
         p:commandName="compute.instance.activate"
         p:agentResourceRelationship="host"
