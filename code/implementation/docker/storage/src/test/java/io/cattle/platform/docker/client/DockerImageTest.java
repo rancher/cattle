@@ -107,14 +107,6 @@ public class DockerImageTest {
     }
 
     @Test
-    public void testMalFormed() {
-        DockerImage image = DockerImage.parse("foo:port/garbage/stuff/to:much");
-        assertNull(image);
-        image = DockerImage.parse("garbage:bar/foo:1:2:3");
-        assertNull(image);
-    }
-
-    @Test
     public void testNoNamespaceWithShaTag() {
         DockerImage image = DockerImage.parse("ubuntu@" + sha);
         assertEquals("index.docker.io", image.getServer());

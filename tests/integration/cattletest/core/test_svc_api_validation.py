@@ -147,40 +147,6 @@ def test_no_circular_ref(client, context):
     assert svc.state == 'inactive'
 
 
-def test_validate_image(client, context):
-    env = _create_stack(client)
-
-    # 1. invalide image in primary config
-    image_uuid = context.image_uuid
-    launch_config = {"imageUuid": "ubuntu:14:04"}
-
-    secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
-
-    with pytest.raises(ApiError) as e:
-        client.create_service(name=random_str(),
-                              stackId=env.id,
-                              launchConfig=launch_config,
-                              secondaryLaunchConfigs=[secondary_lc])
-    assert e.value.error.status == 422
-    assert e.value.error.code == 'InvalidReference'
-    assert e.value.error.fieldName == 'imageUuid'
-
-    # 2. invalide image in secondary config
-    image_uuid = context.image_uuid
-    launch_config = {"imageUuid": image_uuid}
-
-    secondary_lc = {"imageUuid": "ubuntu:14:04", "name": "secondary"}
-
-    with pytest.raises(ApiError) as e:
-        client.create_service(name=random_str(),
-                              stackId=env.id,
-                              launchConfig=launch_config,
-                              secondaryLaunchConfigs=[secondary_lc])
-    assert e.value.error.status == 422
-    assert e.value.error.code == 'InvalidReference'
-    assert e.value.error.fieldName == 'imageUuid'
-
-
 def test_vip_requested_ip(client, context):
     env = _create_stack(client)
     image_uuid = context.image_uuid
