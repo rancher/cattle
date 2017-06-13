@@ -550,10 +550,8 @@ public class ApiServerConfig {
     }
 
     @Bean
-    ExternalTemplateInstanceFilter ExternalTemplateInstanceFilter(@Qualifier("CoreSchemaFactory") SchemaFactory schemaFactory) {
-        ExternalTemplateInstanceFilter filter = new ExternalTemplateInstanceFilter();
-        filter.setSchemaFactory(schemaFactory);
-        return filter;
+    ExternalTemplateInstanceFilter ExternalTemplateInstanceFilter() {
+        return new ExternalTemplateInstanceFilter();
     }
 
     @Bean

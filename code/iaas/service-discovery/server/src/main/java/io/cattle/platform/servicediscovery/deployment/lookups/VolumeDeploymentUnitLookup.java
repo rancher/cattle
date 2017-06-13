@@ -1,9 +1,7 @@
 package io.cattle.platform.servicediscovery.deployment.lookups;
 
-import io.cattle.platform.core.dao.ServiceDao;
-import io.cattle.platform.core.model.DeploymentUnit;
+import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Volume;
-import io.cattle.platform.object.ObjectManager;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -11,17 +9,21 @@ import java.util.Collection;
 import javax.inject.Inject;
 
 public class VolumeDeploymentUnitLookup implements DeploymentUnitLookup {
+
     @Inject
-    ObjectManager objMgr;
-    @Inject
-    ServiceDao svcDao;
+    VolumeDao volumeDao;
 
     @Override
-    public Collection<? extends DeploymentUnit> getDeploymentUnits(Object obj) {
-        if (!(obj instanceof Volume)) {
-            return null;
+    public Collection<Long> getDeploymentUnits(Object obj) {
+        if (obj instanceof Volume) {
+            Volume vol = (Volume) obj;
+            if (vol.getDeploymentUnitId() == null && vol.getVolumeTemplateId() != null) {
+                return volumeDao.findDeploymentUnitsForVolume(vol);
+            }
+            if (vol.getDeploymentUnitId() != null) {
+                return Arrays.asList(vol.getDeploymentUnitId());
+            }
         }
-        DeploymentUnit unit = objMgr.loadResource(DeploymentUnit.class, ((Volume) obj).getDeploymentUnitId());
-        return unit == null ? null : Arrays.asList(unit);
+        return null;
     }
 }

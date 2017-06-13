@@ -1,7 +1,6 @@
 package io.cattle.platform.core.dao;
 
 import io.cattle.platform.core.addon.PublicEndpoint;
-import io.cattle.platform.core.dao.impl.InstanceDaoImpl.IpAddressToServiceIndex;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.GenericObject;
 import io.cattle.platform.core.model.Host;
@@ -46,11 +45,7 @@ public interface InstanceDao {
 
     void clearCacheInstanceData(long instanceId);
 
-    List<IpAddressToServiceIndex> getIpToIndex(Service service);
-
     List<PublicEndpoint> getPublicEndpoints(long accountId, Long serviceId, Long hostId);
-
-    List<? extends Service> findServicesNonRemovedLinksOnly(Instance instance);
 
     List<GenericObject> getImagePullTasks(long accountId, List<String> images, Map<String, String> labels);
 

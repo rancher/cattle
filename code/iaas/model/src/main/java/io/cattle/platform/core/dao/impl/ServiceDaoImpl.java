@@ -5,7 +5,6 @@ import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
 import static io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
-import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.RevisionTable.*;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
@@ -49,7 +48,6 @@ import io.cattle.platform.core.model.tables.records.DeploymentUnitRecord;
 import io.cattle.platform.core.model.tables.records.HealthcheckInstanceRecord;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.core.model.tables.records.ServiceIndexRecord;
-import io.cattle.platform.core.model.tables.records.ServiceRecord;
 import io.cattle.platform.core.model.tables.records.StackRecord;
 import io.cattle.platform.core.model.tables.records.VolumeTemplateRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
@@ -67,13 +65,12 @@ import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -126,7 +123,8 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                 .fetchInto(ServiceIndexRecord.class);
         ServiceIndex index = null;
         if (serviceIndexes.isEmpty()) {
-            index = resourceDao.createAndSchedule(ServiceIndex.class,
+            index = objectManager.create(ServiceIndex.class,
+                    SERVICE_INDEX.STATE, CommonStatesConstants.ACTIVE,
                     SERVICE_INDEX.SERVICE_ID, serviceId,
                     SERVICE_INDEX.LAUNCH_CONFIG_NAME, launchConfigName,
                     SERVICE_INDEX.SERVICE_INDEX_, serviceIndex);
@@ -352,17 +350,6 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
     }
 
     @Override
-    public List<? extends Service> getSkipServices(long accountId) {
-        return create()
-                .select(SERVICE.fields())
-                .from(SERVICE)
-                .where(SERVICE.ACCOUNT_ID.eq(accountId)
-                        .and(SERVICE.REMOVED.isNull())
-                        .and(SERVICE.SKIP.isTrue()))
-                .fetchInto(ServiceRecord.class);
-    }
-
-    @Override
     public Map<String, DeploymentUnit> getDeploymentUnits(Service service) {
         List<? extends DeploymentUnit> units = create()
                 .select(DEPLOYMENT_UNIT.fields())
@@ -394,21 +381,6 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                 .and(DEPLOYMENT_UNIT.REMOVED.isNull())
                 .and(DEPLOYMENT_UNIT.STATE.notIn(CommonStatesConstants.REMOVING)))
                 .fetchInto(DeploymentUnitRecord.class);
-    }
-
-    @Override
-    public List<? extends Service> getServicesOnHost(long hostId) {
-        return create().select(SERVICE.fields())
-                .from(SERVICE)
-                .join(SERVICE_EXPOSE_MAP)
-                .on(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(SERVICE.ID))
-                .join(INSTANCE_HOST_MAP)
-                .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
-                .where(INSTANCE_HOST_MAP.HOST_ID.eq(hostId))
-                .and(INSTANCE_HOST_MAP.REMOVED.isNull())
-                .and(SERVICE_EXPOSE_MAP.REMOVED.isNull())
-                .and(SERVICE.REMOVED.isNull())
-                .fetchInto(ServiceRecord.class);
     }
 
     @Override
@@ -495,51 +467,16 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
     }
 
     @Override
-    public List<? extends DeploymentUnit> getServiceDeploymentUnitsOnHost(Host host) {
-        List<DeploymentUnit> toReturn = new ArrayList<>();
-        Set<Long> processed = new HashSet<>();
-
-        // 1. Get non empty units
-        List<? extends DeploymentUnit> nonEmptyUnits =
-                create().select(DEPLOYMENT_UNIT.fields())
+    public List<Long> getServiceDeploymentUnitsOnHost(Host host) {
+        if (host == null) {
+            return Collections.emptyList();
+        }
+        Long[] result = create().select(DEPLOYMENT_UNIT.ID)
                 .from(DEPLOYMENT_UNIT)
-                .join(INSTANCE)
-                        .on(INSTANCE.DEPLOYMENT_UNIT_ID.eq(DEPLOYMENT_UNIT.ID))
-                        .join(INSTANCE_HOST_MAP)
-                        .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
-                .and(INSTANCE.REMOVED.isNull())
-                        .and(INSTANCE_HOST_MAP.HOST_ID.eq(host.getId()))
-                .and(DEPLOYMENT_UNIT.REMOVED.isNull())
-                        .and(DEPLOYMENT_UNIT.SERVICE_ID.isNotNull())
-                        .and(INSTANCE.ACCOUNT_ID.eq(host.getAccountId()))
-                        .fetchInto(DeploymentUnitRecord.class);
-        for (DeploymentUnit unit : nonEmptyUnits) {
-            if (processed.contains(unit.getId())) {
-                continue;
-            }
-            processed.add(unit.getId());
-            toReturn.add(unit);
-        }
-
-        // 2. Get global units for the host
-        // (they can exist w/o instances present)
-        List<? extends DeploymentUnit> emptyUnits =
-                create().select(DEPLOYMENT_UNIT.fields())
-                        .from(DEPLOYMENT_UNIT)
-                        .where(DEPLOYMENT_UNIT.REMOVED.isNull())
-                        .and(DEPLOYMENT_UNIT.ACCOUNT_ID.eq(host.getAccountId()))
-                        .and(DEPLOYMENT_UNIT.SERVICE_ID.isNotNull())
-                        .and(DEPLOYMENT_UNIT.HOST_ID.eq(host.getId()))
-                        .fetchInto(DeploymentUnitRecord.class);
-        for (DeploymentUnit unit : emptyUnits) {
-            if (processed.contains(unit.getId())) {
-                continue;
-            }
-            processed.add(unit.getId());
-            toReturn.add(unit);
-        }
-
-        return toReturn;
+                .where(DEPLOYMENT_UNIT.HOST_ID.eq(host.getId())
+                    .and(DEPLOYMENT_UNIT.REMOVED.isNull()))
+                .fetchArray(DEPLOYMENT_UNIT.ID);
+        return Arrays.asList(result);
     }
 
     @Override
@@ -668,8 +605,7 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                         .and(instance.ID.eq(serviceExposeMap.INSTANCE_ID))
                         .and(serviceExposeMap.MANAGED.isTrue()))
             .where(instance.REMOVED.isNull()
-                .and(instance.DEPLOYMENT_UNIT_ID.eq(id)
-                        .or(instance.DEPLOYMENT_UNIT_UUID.eq(uuid))))
+                .and(instance.DEPLOYMENT_UNIT_ID.eq(id)))
             .fetch().map(mapper);
     }
 

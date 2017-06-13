@@ -5,14 +5,14 @@ import java.util.Map;
 
 public class LaunchConfiguration {
 
-    String processName;
-    String resourceType;
-    String resourceId;
-    Object accountId;
-    Integer priority;
-    Map<String, Object> data;
-    ProcessState parentProcessState;
-    Date runAfter;
+    protected String processName;
+    protected String resourceType;
+    protected String resourceId;
+    protected Object accountId;
+    protected Integer priority;
+    protected Map<String, Object> data;
+    protected ProcessState parentProcessState;
+    protected Date runAfter;
 
     public LaunchConfiguration() {
     }
@@ -41,32 +41,16 @@ public class LaunchConfiguration {
         return resourceType;
     }
 
-    public void setResourceType(String resourceType) {
-        this.resourceType = resourceType;
-    }
-
     public String getResourceId() {
         return resourceId;
-    }
-
-    public void setResourceId(String resourceId) {
-        this.resourceId = resourceId;
     }
 
     public Map<String, Object> getData() {
         return data;
     }
 
-    public void setData(Map<String, Object> data) {
-        this.data = data;
-    }
-
     public String getProcessName() {
         return processName;
-    }
-
-    public void setProcessName(String processName) {
-        this.processName = processName;
     }
 
     @Override
@@ -80,32 +64,35 @@ public class LaunchConfiguration {
         return parentProcessState;
     }
 
-    public void setParentProcessState(ProcessState parentProcessState) {
-        this.parentProcessState = parentProcessState;
-    }
-
     public Date getRunAfter() {
         return runAfter;
-    }
-
-    public void setRunAfter(Date runAfter) {
-        this.runAfter = runAfter;
     }
 
     public Object getAccountId() {
         return accountId;
     }
 
-    public void setAccountId(Object accountId) {
-        this.accountId = accountId;
+    public Long getAccountIdLong() {
+        if (accountId instanceof Long) {
+            return (Long)accountId;
+        } else if (accountId instanceof Number) {
+            return ((Number) accountId).longValue();
+        } else if (accountId instanceof String) {
+            return new Long((String) accountId);
+        }
+        return null;
     }
 
     public Integer getPriority() {
         return priority;
     }
 
-    public void setPriority(Integer priority) {
-        this.priority = priority;
+    public void setRunAfter(Date runAfter) {
+        this.runAfter = runAfter;
+    }
+
+    public void setParentProcessState(ProcessState parentProcessState) {
+        this.parentProcessState = parentProcessState;
     }
 
 }

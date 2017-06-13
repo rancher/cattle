@@ -3,7 +3,6 @@ package io.cattle.platform.process.volume;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Host;
-import io.cattle.platform.core.model.Image;
 import io.cattle.platform.core.model.Mount;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.VolumeStoragePoolMap;
@@ -62,11 +61,6 @@ public class VolumeRemove extends IgnoreReconnectionAgentHandler {
         for (Mount mount : mapDao.findToRemove(Mount.class, Volume.class, volume.getId())) {
             mounts = true;
             deactivateThenRemove(mount, null);
-        }
-
-        Image image = objectManager.loadResource(Image.class, volume.getImageId());
-        if (image != null) {
-            remove(image, null);
         }
 
         if (maps && !mounts && volume.getHostId() != null) {

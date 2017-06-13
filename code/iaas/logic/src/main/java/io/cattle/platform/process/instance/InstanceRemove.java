@@ -74,23 +74,13 @@ public class InstanceRemove extends AbstractDefaultProcessHandler {
 
 
     protected void storage(Instance instance, Map<String, Object> data) {
-        List<Volume> volumes = getObjectManager().children(instance, Volume.class);
+        List<Mount> mounts = getObjectManager().find(Mount.class,
+                        MOUNT.REMOVED, new Condition(ConditionType.NULL),
+                        MOUNT.STATE, new Condition(ConditionType.NOTIN, MountDeactivate.MOUNT_STATES),
+                        MOUNT.INSTANCE_ID, instance.getId());
 
-        for (Volume volume : volumes) {
-            if (volume.getDeviceNumber() == 0) {
-                remove(volume, data);
-            } else {
-                execute("volume.detach", volume, null);
-            }
-        }
-
-        Map<Object, Object> criteria = new HashMap<>();
-        criteria.put(MOUNT.REMOVED, new Condition(ConditionType.NULL));
-        criteria.put(MOUNT.STATE, new Condition(ConditionType.NOTIN, MountDeactivate.MOUNT_STATES));
-        criteria.put(MOUNT.INSTANCE_ID, instance.getId());
-        List<Mount> mounts = getObjectManager().find(Mount.class, criteria);
         for (Mount mount : mounts) {
-            objectProcessManager.scheduleStandardProcess(StandardProcess.DEACTIVATE, mount, data);
+            objectProcessManager.scheduleStandardProcess(StandardProcess.DEACTIVATE, mount, null);
         }
     }
 

@@ -33,8 +33,6 @@ public class SystemLabels {
 
     public static final String LABEL_VM = "io.rancher.vm";
     public static final String LABEL_VM_USERDATA = "io.rancher.vm.userdata";
-    public static final String LABEL_VM_METADATA = "io.rancher.vm.metadata";
-    public static final String LABEL_VM_OS_METADATA = "io.rancher.vm.os_metadata";
     public static final String LABEL_VM_MEMORY = "io.rancher.vm.memory";
     public static final String LABEL_VM_VCPU = "io.rancher.vm.vcpu";
 }

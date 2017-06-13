@@ -32,10 +32,6 @@ public interface AllocatorDao {
 
     void releaseAllocation(Volume volume);
 
-    boolean isInstanceImageKind(long instanceId, String kind);
-
-    boolean isVolumeInstanceImageKind(long volumeId, String kind);
-
     List<Port> getUsedPortsForHostExcludingInstance(long hostId, long instanceId);
 
     // key -> [value,mapping.state]
@@ -48,7 +44,7 @@ public interface AllocatorDao {
     List<? extends Host> getNonRemovedHosts(long accountId);
 
     boolean isVolumeInUseOnHost(long volumeId, long hostId);
-    
+
     Set<Long> findHostsWithVolumeInUse(long volumeId);
 
     List<Long> getInstancesWithVolumeMounted(long volumeId, long currentInstanceId);

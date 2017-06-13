@@ -3,7 +3,6 @@ package io.cattle.platform.iaas.api.filter.serviceevent;
 
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.utils.ApiUtils;
-import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.dao.AgentDao;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Agent;
@@ -13,7 +12,6 @@ import io.cattle.platform.core.model.ServiceEvent;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
-import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
@@ -77,9 +75,7 @@ public class ServiceEventFilter extends AbstractDefaultResourceManagerFilter {
         if (healthcheckInstance == null) {
             return null;
         }
-        Long resourceAccId = DataAccessor.fromDataFieldOf(agent)
-                .withKey(AgentConstants.DATA_AGENT_RESOURCES_ACCOUNT_ID)
-                .as(Long.class);
+        Long resourceAccId = agent.getResourceAccountId();
 
         if (!healthcheckInstanceHostMap.getAccountId().equals(resourceAccId)) {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN, VERIFY_AGENT);

@@ -5,7 +5,6 @@ import static io.cattle.platform.core.model.tables.AgentTable.*;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AccountConstants;
-import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
@@ -97,13 +96,11 @@ public class BasicAuthImpl implements AccountLookup, Priority {
             if (agentOwnerId != null) {
                 agent = objectManager.findAny(Agent.class, AGENT.ID, agentOwnerId);
             } else {
-                agent = objectManager.findAny(Agent.class, AGENT.ACCOUNT_ID, account.getId()); 
+                agent = objectManager.findAny(Agent.class, AGENT.ACCOUNT_ID, account.getId());
             }
 
             if (agent != null) {
-                Long resourceAccId = DataAccessor.fromDataFieldOf(agent)
-                        .withKey(AgentConstants.DATA_AGENT_RESOURCES_ACCOUNT_ID)
-                        .as(Long.class);
+                Long resourceAccId = agent.getResourceAccountId();
                 if (resourceAccId != null) {
                     List<Object> activeStates = new ArrayList<>();
                     activeStates.add(CommonStatesConstants.ACTIVE);

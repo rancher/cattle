@@ -7,20 +7,17 @@ import io.cattle.platform.core.constants.StorageDriverConstants;
 import io.cattle.platform.core.constants.StoragePoolConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.StoragePoolDao;
-import io.cattle.platform.core.model.Image;
 import io.cattle.platform.core.model.StorageDriver;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.StoragePoolHostMap;
+import io.cattle.platform.docker.client.DockerImage;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.storage.pool.StoragePoolDriver;
 import io.cattle.platform.storage.service.StorageService;
-import io.cattle.platform.storage.service.dao.ImageDao;
 import io.cattle.platform.util.type.CollectionUtils;
 
-import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -29,11 +26,8 @@ public class StorageServiceImpl implements StorageService {
 
     @Inject
     ObjectManager objectManager;
-    List<StoragePoolDriver> drivers;
     @Inject
     GenericResourceDao genericResourceDao;
-    @Inject
-    ImageDao imageDao;
     @Inject
     LockManager lockManager;
     @Inject
@@ -41,41 +35,9 @@ public class StorageServiceImpl implements StorageService {
 
 
     @Override
-    public Image registerRemoteImage(final String uuid) {
-        if (uuid == null) {
-            return null;
-        }
-        return populateNewRecord(uuid);
-    }
-
-    @Override
     public boolean isValidUUID(String uuid) {
-        Image image = objectManager.newRecord(Image.class);
-        for (StoragePoolDriver driver : drivers) {
-            if (driver.populateImage(uuid, image)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    protected Image populateNewRecord(String uuid) {
-        Image image = objectManager.newRecord(Image.class);
-        for (StoragePoolDriver driver : drivers) {
-            if (driver.populateImage(uuid, image)) {
-                break;
-            }
-        }
-        return genericResourceDao.createAndSchedule(image);
-    }
-
-    public List<StoragePoolDriver> getDrivers() {
-        return drivers;
-    }
-
-    @Inject
-    public void setDrivers(List<StoragePoolDriver> drivers) {
-        this.drivers = drivers;
+        DockerImage dockerImage = DockerImage.parse(uuid);
+        return dockerImage != null;
     }
 
     @Override

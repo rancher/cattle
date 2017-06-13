@@ -8,8 +8,8 @@ import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.inator.Inator;
-import io.cattle.platform.inator.Inator.DesiredState;
 import io.cattle.platform.inator.Result;
+import io.cattle.platform.inator.Inator.DesiredState;
 import io.cattle.platform.inator.UnitRef;
 import io.cattle.platform.inator.factory.InatorServices;
 import io.cattle.platform.inator.util.StateUtil;
@@ -154,6 +154,14 @@ public class DeploymentUnitWrapper implements BasicStateWrapper {
         }
         Object id = svc.idFormatter.formatId(HostConstants.TYPE, hostId);
         return new UnitRef(ServiceConstants.KIND_DEPLOYMENT_UNIT + "/" + id + "/" + index);
+    }
+
+    public static String getIndex(UnitRef ref) {
+        String refString = ref.toString();
+        if (refString.startsWith(ServiceConstants.KIND_DEPLOYMENT_UNIT + "/")) {
+            return refString.substring(ServiceConstants.KIND_DEPLOYMENT_UNIT.length() + 1);
+        }
+        return null;
     }
 
     public String getUuid() {

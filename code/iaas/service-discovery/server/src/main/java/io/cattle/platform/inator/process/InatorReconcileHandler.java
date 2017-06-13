@@ -1,32 +1,31 @@
 package io.cattle.platform.inator.process;
 
-import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
-import io.cattle.platform.core.addon.ServiceUpgrade;
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.constants.ServiceConstants;
+import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.engine.handler.CompletableLogic;
 import io.cattle.platform.engine.handler.HandlerResult;
+import io.cattle.platform.engine.manager.LoopManager;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
-import io.cattle.platform.inator.InatorLifecycleManager;
-import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.loop.LoopFactoryImpl;
+import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
 import io.cattle.platform.util.type.Priority;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import com.google.common.util.concurrent.ListenableFuture;
+
 @Named
-public class InatorReconcileHandler extends AbstractObjectProcessHandler implements Priority {
+public class InatorReconcileHandler extends AbstractObjectProcessHandler implements Priority, CompletableLogic {
 
     @Inject
-    InatorLifecycleManager lifecycleManager;
+    ObjectManager objectManager;
     @Inject
-    JsonMapper jsonMapper;
+    LoopManager loopManager;
 
     @Override
     public String[] getProcessNames() {
@@ -40,37 +39,23 @@ public class InatorReconcileHandler extends AbstractObjectProcessHandler impleme
             return null;
         }
 
-        if (state.getResource() instanceof Service) {
-            setBatchFields(state, process);
+        Object resource = state.getResource();
+        Long id = new Long(state.getResourceId());
+        String type = objectManager.getType(resource);
+
+        ListenableFuture<?> future = null;
+        if (resource instanceof Service) {
+            future = loopManager.kick(LoopFactoryImpl.RECONCILE, type, id, resource);
+        } else if (resource instanceof DeploymentUnit) {
+            future = loopManager.kick(LoopFactoryImpl.DU_RECONCILE, type, id, resource);
         }
 
-        lifecycleManager.handleProcess(process.getName(), state.getResource(), Long.parseLong(state.getResourceId()));
-        objectManager.reload(state.getResource());
-        return null;
+        return new HandlerResult().withFuture(future);
     }
 
-    protected void setBatchFields(ProcessState state, ProcessInstance process) {
-         ServiceUpgrade upgrade = jsonMapper.convertValue(state.getData(), ServiceUpgrade.class);
-         Service service = (Service)state.getResource();
-
-         Map<String, Object> updates = new HashMap<>();
-         if (upgrade == null) {
-             return;
-         }
-
-         InServiceUpgradeStrategy strategy = upgrade.getInServiceStrategy();
-         if (strategy == null) {
-             return;
-         }
-
-         updates.put(ServiceConstants.FIELD_START_FIRST_ON_UPGRADE, strategy.getStartFirst());
-         if (strategy.getBatchSize() != null) {
-             updates.put(ServiceConstants.FIELD_BATCHSIZE, strategy.getBatchSize());
-         }
-         if (strategy.getIntervalMillis() != null) {
-             updates.put(ServiceConstants.FIELD_INTERVAL_MILLISEC, strategy.getIntervalMillis());
-         }
-         objectManager.setFields(service, updates);
+    @Override
+    public HandlerResult complete(ListenableFuture<?> future, ProcessState state, ProcessInstance process) {
+        return null;
     }
 
     @Override

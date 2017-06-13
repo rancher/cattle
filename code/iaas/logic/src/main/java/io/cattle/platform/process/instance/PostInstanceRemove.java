@@ -8,11 +8,10 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.util.ObjectUtils;
-import io.cattle.platform.process.common.handler.AgentBasedProcessHandler;
 
 import javax.inject.Inject;
 
-public class PostInstanceRemove extends AgentBasedProcessHandler {
+public class PostInstanceRemove extends IgnoreReconnectionAgentHandler {
 
     @Inject
     GenericMapDao mapDao;

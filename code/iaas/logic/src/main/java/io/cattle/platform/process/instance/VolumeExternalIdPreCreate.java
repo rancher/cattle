@@ -8,9 +8,6 @@ import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
@@ -26,16 +23,12 @@ public class VolumeExternalIdPreCreate extends AbstractObjectProcessLogic implem
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Volume volume = (Volume)state.getResource();
-        if (volume.getImageId() != null || StringUtils.isEmpty(volume.getName())) {
-            return null;
-        }
 
-        Map<Object, Object> data = new HashMap<>();
         String externalId = volume.getExternalId();
         if (StringUtils.isEmpty(externalId)) {
             externalId = volume.getName();
         }
-        data.put("externalId", VolumeUtils.externalId(externalId));
-        return new HandlerResult(data);
+
+        return new HandlerResult("externalId", VolumeUtils.externalId(externalId));
     }
 }

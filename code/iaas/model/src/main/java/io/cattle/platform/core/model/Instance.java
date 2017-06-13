@@ -189,17 +189,6 @@ public interface Instance extends Serializable {
     public Long getMemoryMb();
 
     /**
-     * Setter for <code>cattle.instance.image_id</code>.
-     */
-    public void setImageId(Long value);
-
-    /**
-     * Getter for <code>cattle.instance.image_id</code>.
-     */
-    @Column(name = "image_id", precision = 19)
-    public Long getImageId();
-
-    /**
      * Setter for <code>cattle.instance.hostname</code>.
      */
     public void setHostname(String value);

@@ -26,10 +26,10 @@ import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.docker.constants.DockerIpAddressConstants;
+import io.cattle.platform.docker.constants.DockerStoragePoolConstants;
 import io.cattle.platform.docker.process.dao.DockerComputeDao;
 import io.cattle.platform.docker.process.lock.DockerStoragePoolVolumeCreateLock;
 import io.cattle.platform.docker.process.util.DockerProcessUtils;
-import io.cattle.platform.docker.storage.DockerStoragePoolDriver;
 import io.cattle.platform.docker.transform.DockerInspectTransformVolume;
 import io.cattle.platform.docker.transform.DockerTransformer;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -168,7 +168,7 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
         StoragePool dockerLocalStoragePool = null;
         Map<String, StoragePool> pools = new HashMap<>();
         for (StoragePool pool : objectManager.mappedChildren(host, StoragePool.class)) {
-            if (DockerStoragePoolDriver.isDockerPool(pool) &&
+            if (DockerStoragePoolConstants.DOCKER_KIND.equals(pool.getKind()) &&
                     (VolumeConstants.LOCAL_DRIVER.equals(pool.getDriverName()) || StringUtils.isEmpty(pool.getDriverName()))) {
                 dockerLocalStoragePool = pool;
             }

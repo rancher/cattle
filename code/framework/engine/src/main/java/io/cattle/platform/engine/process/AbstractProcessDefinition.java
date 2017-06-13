@@ -22,7 +22,6 @@ public abstract class AbstractProcessDefinition implements ProcessDefinition, Ex
     String postProcessListenersKey;
     ExtensionManager extensionManager;
     String name;
-    String processDelegateName;
 
     @PostConstruct
     public void init() {
@@ -82,15 +81,6 @@ public abstract class AbstractProcessDefinition implements ProcessDefinition, Ex
     @Inject
     public void setExtensionManager(ExtensionManager extensionManager) {
         this.extensionManager = extensionManager;
-    }
-
-    @Override
-    public String getProcessDelegateName() {
-        return processDelegateName;
-    }
-
-    public void setProcessDelegateName(String processDelegateName) {
-        this.processDelegateName = processDelegateName;
     }
 
 }

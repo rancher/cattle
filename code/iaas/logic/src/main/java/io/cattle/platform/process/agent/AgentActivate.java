@@ -9,6 +9,7 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.core.constants.AgentConstants;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -53,7 +54,7 @@ public class AgentActivate extends AbstractDefaultProcessHandler {
         }
 
         if (PING_DISCONNECT_TIMEOUT.get() * 1000L < (System.currentTimeMillis() - startTime)) {
-            return new HandlerResult().withChainProcessName(AgentConstants.PROCESS_DECONNECT).withShouldContinue(false);
+            return new HandlerResult().withChainProcessName(AgentConstants.PROCESS_DECONNECT);
         }
 
         return null;
@@ -87,7 +88,15 @@ public class AgentActivate extends AbstractDefaultProcessHandler {
         RemoteAgent remoteAgent = agentLocator.lookupAgent(agent);
         final ListenableFuture<? extends Event> future = remoteAgent.call(AgentUtils.newPing(agent)
                 .withOption(Ping.STATS, true)
-                .withOption(Ping.RESOURCES, true), new EventCallOptions(PING_RETRY.get(), PING_TIMEOUT.get()));
+                .withOption(Ping.RESOURCES, true), new EventCallOptions(PING_RETRY.get(), PING_TIMEOUT.get())
+                .withRetryCallback((event) -> {
+                    Agent newAgent = objectManager.reload(agent);
+                    if (AgentConstants.STATE_DISCONNECTING.equals(newAgent.getState()) ||
+                            CommonStatesConstants.DEACTIVATING.equals(newAgent.getState())) {
+                        throw new TimeoutException();
+                    }
+                    return event;
+                }));
         future.addListener(new NoExceptionRunnable() {
             @Override
             protected void doRun() {
@@ -116,7 +125,7 @@ public class AgentActivate extends AbstractDefaultProcessHandler {
         }
         HandlerResult result = new HandlerResult();
         if (process.getName().equalsIgnoreCase(AgentConstants.PROCESS_RECONNECT)) {
-            result.shouldDelegate(true);
+            result.setChainProcessName(AgentConstants.PROCESS_FINISH_RECONNECT);
         }
         return result;
     }

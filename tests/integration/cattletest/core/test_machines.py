@@ -462,14 +462,13 @@ def register_host_through_agent(client, host, machine_context, super_client):
     data = {scope: {}}
     data[scope]['addPhysicalHost'] = True
     data[scope]['externalId'] = external_id
-    account_id = get_plain_id(super_client, machine_context.project)
-    data[scope]['agentResourcesAccountId'] = account_id
-    data['agentResourcesAccountId'] = account_id
     # Set host resource fields
     data[scope]['milliCpu'] = 1000
     data[scope]['memory'] = 2000
     data[scope]['localStorageMb'] = 3000
-    agent = super_client.create_agent(uri=uri, data=data)
+    account_id = machine_context.project.id
+    agent = super_client.create_agent(uri=uri, data=data,
+                                      resourceAccountId=account_id)
     agent = super_client.wait_success(agent)
     wait_for(lambda: len(agent.hosts()) == 1)
     hosts = agent.hosts()
@@ -510,11 +509,9 @@ def bootstrap_machine(super_client, machine_context, external_id):
     data = {scope: {}}
     data[scope]['addPhysicalHost'] = True
     data[scope]['externalId'] = external_id
-    account_id = get_plain_id(super_client, machine_context.project)
-    data[scope]['agentResourcesAccountId'] = account_id
-    data['agentResourcesAccountId'] = account_id
-
-    agent = super_client.create_agent(uri=uri, data=data)
+    account_id = machine_context.project.id
+    agent = super_client.create_agent(uri=uri, data=data,
+                                      resourceAccountId=account_id)
     agent = super_client.wait_success(agent)
 
     wait_for(lambda: len(agent.hosts()) == 1)

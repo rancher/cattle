@@ -24,19 +24,16 @@ import io.cattle.platform.core.cache.DBCacheManager;
 import io.cattle.platform.core.cleanup.BadDataCleanup;
 import io.cattle.platform.core.cleanup.TableCleanup;
 import io.cattle.platform.docker.process.serializer.DockerContainerSerializer;
-import io.cattle.platform.docker.storage.DockerImageCredentialLookup;
-import io.cattle.platform.docker.storage.DockerStoragePoolDriver;
-import io.cattle.platform.docker.storage.dao.impl.DockerStorageDaoImpl;
-import io.cattle.platform.docker.storage.process.PullTaskCreate;
 import io.cattle.platform.docker.transform.DockerTransformerImpl;
 import io.cattle.platform.engine.eventing.impl.ProcessEventListenerImpl;
+import io.cattle.platform.engine.manager.LoopManager;
 import io.cattle.platform.engine.manager.impl.DefaultProcessManager;
+import io.cattle.platform.engine.manager.impl.LoopManagerImpl;
 import io.cattle.platform.engine.manager.impl.ProcessRecordDao;
 import io.cattle.platform.engine.manager.impl.jooq.JooqProcessRecordDao;
 import io.cattle.platform.engine.server.ProcessServer;
 import io.cattle.platform.engine.server.impl.ProcessInstanceDispatcherImpl;
-import io.cattle.platform.engine.server.impl.ProcessReplayTask;
-import io.cattle.platform.engine.server.impl.ProcessServerImpl;
+import io.cattle.platform.engine.task.ProcessReplayTask;
 import io.cattle.platform.eventing.annotation.AnnotatedListenerRegistration;
 import io.cattle.platform.eventing.memory.InMemoryEventService;
 import io.cattle.platform.extension.dynamic.DynamicExtensionHandler;
@@ -65,8 +62,6 @@ import io.cattle.platform.liquibase.Loader;
 import io.cattle.platform.lock.impl.LockDelegatorImpl;
 import io.cattle.platform.lock.impl.LockManagerImpl;
 import io.cattle.platform.lock.provider.impl.InMemoryLockProvider;
-import io.cattle.platform.metadata.dao.impl.MetadataDaoImpl;
-import io.cattle.platform.metadata.service.impl.MetadataServiceImpl;
 import io.cattle.platform.network.impl.NetworkServiceImpl;
 import io.cattle.platform.object.ObjectDefaultsProvider;
 import io.cattle.platform.object.defaults.JsonDefaultsProvider;
@@ -88,6 +83,7 @@ import io.cattle.platform.object.serialization.impl.DefaultObjectSerializerFacto
 import io.cattle.platform.object.util.CommonsConverterStartup;
 import io.cattle.platform.process.containerevent.ContainerEventCreate;
 import io.cattle.platform.process.host.HostRemoveMonitorImpl;
+import io.cattle.platform.process.image.PullTaskCreate;
 import io.cattle.platform.process.monitor.EventNotificationChangeMonitor;
 import io.cattle.platform.process.progress.ProcessProgressImpl;
 import io.cattle.platform.register.dao.impl.RegisterDaoImpl;
@@ -102,6 +98,8 @@ import io.cattle.platform.sample.data.SampleDataStartupV11;
 import io.cattle.platform.sample.data.SampleDataStartupV12;
 import io.cattle.platform.sample.data.SampleDataStartupV13;
 import io.cattle.platform.sample.data.SampleDataStartupV14;
+import io.cattle.platform.sample.data.SampleDataStartupV15;
+import io.cattle.platform.sample.data.SampleDataStartupV16;
 import io.cattle.platform.sample.data.SampleDataStartupV3;
 import io.cattle.platform.sample.data.SampleDataStartupV5;
 import io.cattle.platform.sample.data.SampleDataStartupV6;
@@ -112,7 +110,6 @@ import io.cattle.platform.service.account.SystemRoleObjectPostProcessor;
 import io.cattle.platform.service.launcher.ServiceAccountCreateStartup;
 import io.cattle.platform.servicediscovery.deployment.lookups.AgentServiceDeploymentUnitLookup;
 import io.cattle.platform.servicediscovery.deployment.lookups.DeploymentUnitImplLookup;
-import io.cattle.platform.servicediscovery.deployment.lookups.HostServiceDeploymentUnitLookup;
 import io.cattle.platform.servicediscovery.deployment.lookups.InstanceDeploymentUnitLookup;
 import io.cattle.platform.servicediscovery.deployment.lookups.VolumeDeploymentUnitLookup;
 import io.cattle.platform.servicediscovery.service.impl.ServiceDiscoveryServiceImpl;
@@ -120,16 +117,12 @@ import io.cattle.platform.servicediscovery.service.lookups.AgentServiceLookup;
 import io.cattle.platform.servicediscovery.service.lookups.DeploymentUnitServiceLookup;
 import io.cattle.platform.servicediscovery.service.lookups.GenericObjectLookup;
 import io.cattle.platform.servicediscovery.service.lookups.GlobalHostActivateServiceLookup;
-import io.cattle.platform.servicediscovery.service.lookups.HostServiceLookup;
 import io.cattle.platform.servicediscovery.service.lookups.InstanceServiceLookup;
 import io.cattle.platform.servicediscovery.service.lookups.ServiceImplLookup;
-import io.cattle.platform.servicediscovery.service.lookups.SkipServiceLookup;
 import io.cattle.platform.spring.resource.SpringUrlListFactory;
 import io.cattle.platform.storage.ImageCredentialLookup;
-import io.cattle.platform.storage.service.dao.impl.ImageDaoImpl;
+import io.cattle.platform.storage.impl.DockerImageCredentialLookup;
 import io.cattle.platform.storage.service.impl.StorageServiceImpl;
-import io.cattle.platform.storage.simulator.pool.SimulatorStoragePoolDriver;
-import io.cattle.platform.storage.simulator.process.SimulatorPoolCreate;
 import io.cattle.platform.systemstack.catalog.impl.CatalogServiceImpl;
 import io.cattle.platform.systemstack.listener.SystemStackUpdate;
 import io.cattle.platform.systemstack.service.ProjectTemplateService;
@@ -289,23 +282,13 @@ public class SystemServicesConfig {
     }
 
     @Bean
-    ImageCredentialLookup dockerImageCredentialLookup(ExtensionManagerImpl em) {
-        return EMUtils.add(em, ImageCredentialLookup.class, new DockerImageCredentialLookup(), "DockerImageCredentialLookup");
-    }
-
-    @Bean
-    DockerStoragePoolDriver dockerStoragePoolDriver() {
-        return new DockerStoragePoolDriver();
+    ImageCredentialLookup ImageCredentialLookup() {
+        return new DockerImageCredentialLookup();
     }
 
     @Bean
     PullTaskCreate PullTaskCreate(ExtensionManagerImpl em) {
         return new PullTaskCreate();
-    }
-
-    @Bean
-    DockerStorageDaoImpl DockerStorageDaoImpl() {
-        return new DockerStorageDaoImpl();
     }
 
     @Bean
@@ -428,16 +411,6 @@ public class SystemServicesConfig {
     }
 
     @Bean
-    MetadataServiceImpl MetadataServiceImpl() {
-        return new MetadataServiceImpl();
-    }
-
-    @Bean
-    MetadataDaoImpl MetadataDaoImpl() {
-        return new MetadataDaoImpl();
-    }
-
-    @Bean
     DefaultObjectMetaDataManager DefaultObjectMetaDataManager(ExtensionManagerImpl em) {
         return new DefaultObjectMetaDataManager();
     }
@@ -539,7 +512,12 @@ public class SystemServicesConfig {
 
     @Bean
     ProcessServer ProcessServer() {
-        return new ProcessServerImpl();
+        return new ProcessServer();
+    }
+
+    @Bean
+    LoopManager LoopManagerImpl() {
+        return new LoopManagerImpl();
     }
 
     @Bean
@@ -671,6 +649,16 @@ public class SystemServicesConfig {
     }
 
     @Bean
+    SampleDataStartupV15 SampleDataStartupV15() {
+        return new SampleDataStartupV15();
+    }
+
+    @Bean
+    SampleDataStartupV16 SampleDataStartupV16() {
+        return new SampleDataStartupV16();
+    }
+
+    @Bean
     ServiceDiscoveryServiceImpl ServiceDiscoveryServiceImpl() {
         return new ServiceDiscoveryServiceImpl();
     }
@@ -681,11 +669,6 @@ public class SystemServicesConfig {
     }
 
     @Bean
-    HostServiceLookup HostServiceLookup() {
-        return new HostServiceLookup();
-    }
-
-    @Bean
     DeploymentUnitServiceLookup DeploymentUnitServiceLookup() {
         return new DeploymentUnitServiceLookup();
     }
@@ -693,11 +676,6 @@ public class SystemServicesConfig {
     @Bean
     InstanceServiceLookup InstanceServiceLookup() {
         return new InstanceServiceLookup();
-    }
-
-    @Bean
-    SkipServiceLookup SkipServiceLookup() {
-        return new SkipServiceLookup();
     }
 
     @Bean
@@ -738,11 +716,6 @@ public class SystemServicesConfig {
     @Bean
     StorageServiceImpl StorageServiceImpl(ExtensionManagerImpl em) {
         return new StorageServiceImpl();
-    }
-
-    @Bean
-    ImageDaoImpl ImageDaoImpl() {
-        return new ImageDaoImpl();
     }
 
     @Bean
@@ -800,16 +773,6 @@ public class SystemServicesConfig {
     }
 
     @Bean
-    SimulatorStoragePoolDriver SimulatorStoragePoolDriver() {
-        return new SimulatorStoragePoolDriver();
-    }
-
-    @Bean
-    SimulatorPoolCreate SimulatorPoolCreate() {
-        return new SimulatorPoolCreate();
-    }
-
-    @Bean
     ServiceAccountCreateStartup ServiceAccountCreateStartup() {
         return new ServiceAccountCreateStartup();
     }
@@ -847,11 +810,6 @@ public class SystemServicesConfig {
     @Bean
     AgentServiceDeploymentUnitLookup AgentServiceDeploymentUnitLookup() {
         return new AgentServiceDeploymentUnitLookup();
-    }
-
-    @Bean
-    HostServiceDeploymentUnitLookup HostServiceDeploymentUnitLookup() {
-        return new HostServiceDeploymentUnitLookup();
     }
 
     @Bean

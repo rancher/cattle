@@ -75,7 +75,6 @@
                 <module>code/iaas/ha</module>
                 <module>code/iaas/logic</module>
                 <module>code/iaas/logic-common</module>
-                <module>code/iaas/metadata</module>
                 <module>code/iaas/model</module>
                 <module>code/iaas/resource-pool</module>
                 <module>code/iaas/ssh-common</module>
@@ -100,7 +99,6 @@
                 <module>code/implementation/docker/common</module>
                 <module>code/implementation/docker/compute</module>
                 <module>code/implementation/docker/machine</module>
-                <module>code/implementation/docker/storage</module>
                 <module>code/implementation/extension-api</module>
                 <module>code/implementation/hazelcast/common</module>
                 <module>code/implementation/hazelcast/eventing</module>
@@ -112,7 +110,6 @@
                 <module>code/implementation/sample-setup</module>
                 <module>code/implementation/settings-api</module>
                 <module>code/implementation/simulator/agent-connection</module>
-                <module>code/implementation/simulator/storage</module>
                 <module>code/implementation/system-stack</module>
                 <module>code/implementation/vm</module>
                 <module>code/packaging/app</module>

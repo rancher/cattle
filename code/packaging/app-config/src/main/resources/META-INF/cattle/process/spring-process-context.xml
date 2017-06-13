@@ -15,23 +15,6 @@
 
     <context:component-scan base-package="io.cattle.platform.process" />
 
-    <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler" />
-    <bean class="io.cattle.platform.process.common.handler.EventBasedProcessHandler" />
-    <bean class="io.cattle.platform.process.agent.AgentHostStateUpdate" />
-
-    <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler"
-        p:reportProgress="true"
-        p:name="ImageStoragePoolMapActivate"
-        p:commandName="storage.image.activate"
-        p:agentResourceRelationship="storagePool"
-        p:dataTypeClass="io.cattle.platform.core.model.ImageStoragePoolMap"
-        p:processNames="imagestoragepoolmap.activate"
-        p:processDataKeys="containerNoOpEvent" >
-        <property name="priority">
-            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
-        </property>
-    </bean>
-
     <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler"
         p:name="VolumeStoragePoolMapActivate"
         p:commandName="storage.volume.activate"
@@ -195,9 +178,9 @@
         The above XML is the equivalent as doing the below, 
         refer to cattle/code/iaas/logic-common/src/main/resources/META-INF/cattle/process/defaults.properties for the definitive list
 
-        <process:process name="agent.create" resourceType="agent" start="requested" transitioning="registering" done="inactive" delegate="agent.activate" />
+        <process:process name="agent.create" resourceType="agent" start="requested" transitioning="registering" done="inactive" />
         <process:process name="agent.activate" resourceType="agent" start="inactive,registering" transitioning="activating" done="active" />
-        <process:process name="agent.deactivate" resourceType="agent" start="requested,active,activating,updating-active,updating-inactive" transitioning="deactivating" done="inactive" delegate="agent.remove" />
+        <process:process name="agent.deactivate" resourceType="agent" start="requested,active,activating,updating-active,updating-inactive" transitioning="deactivating" done="inactive" />
         <process:process name="agent.remove" resourceType="agent" start="requested,inactive,activating,deactivating,registering,updating-active,updating-inactive" transitioning="removing" done="removed" />
         <process:process name="agent.update" resourceType="agent" start="inactive,active" transitioning="inactive=updating-inactive,active=updating-active" done="updating-inactive=inactive,updating-active=active" />
     -->
@@ -207,8 +190,6 @@
     <process:process name="genericobject.create" resourceType="genericObject" start="requested" transitioning="activating" done="active" />
     <process:process name="genericobject.remove" resourceType="genericObject" start="requested,active,activating" transitioning="removing" done="removed" />
     <process:defaultProcesses resourceType="hostIpAddressMap" />
-    <process:defaultProcesses resourceType="image" />
-    <process:defaultProcesses resourceType="imageStoragePoolMap" />
     <process:defaultProcesses resourceType="instanceHostMap" />
     <process:defaultProcesses resourceType="instanceLink" />
     <process:defaultProcesses resourceType="ipAddressNicMap" />
@@ -220,13 +201,14 @@
     <process:defaultProcesses resourceType="projectMember" />
     <process:defaultProcesses resourceType="storagePool" />
     <process:defaultProcesses resourceType="subnet" />
-    <process:defaultProcesses resourceType="serviceIndex" />
     <process:defaultProcesses resourceType="volumeTemplate" />
     <process:defaultProcesses resourceType="accountLink" />
 
     <!-- Account -->
     <process:defaultProcesses resourceType="account" />
     <process:process name="account.purge" resourceType="account" start="removed" transitioning="purging" done="purged" />
+
+    <process:process name="serviceindex.remove" resourceType="serviceIndex" start="inactive,active" transitioning="removing" done="removed" />
 
     <!-- Volume Storage Pool Map -->
     <process:defaultProcesses resourceType="volumeStoragePoolMap" />
@@ -249,7 +231,7 @@
                                             transitioning="removing" done="removed" />
     <process:process name="agent.deactivate" resourceType="agent" start="disconnecting,disconnected,active,activating,reconnecting,updating-active,updating-inactive,reconnected,finishing-reconnect"
                                             transitioning="deactivating" done="inactive" />
-    <process:process name="agent.reconnect" resourceType="agent" start="disconnecting,disconnected,active,activating" transitioning="reconnecting" done="reconnected" delegate="agent.finishreconnect" />
+    <process:process name="agent.reconnect" resourceType="agent" start="disconnecting,disconnected,active,activating" transitioning="reconnecting" done="reconnected" />
     <process:process name="agent.finishreconnect" resourceType="agent" start="reconnected,reconnecting" transitioning="finishing-reconnect" done="active" />
     <process:process name="agent.disconnect" resourceType="agent" start="reconnecting,active,reconnected,finishing-reconnect" transitioning="disconnecting" done="disconnected" />
 
@@ -314,9 +296,9 @@
     <process:process name="projecttemplate.remove" resourceType="projectTemplate" start="requested,activating,active" transitioning="removing" done="removed" />
 
     <!-- Physical Host -->  
-    <process:process name="physicalhost.create" resourceType="physicalHost" start="requested" transitioning="creating" done="created" delegate="physicalhost.bootstrap" />
+    <process:process name="physicalhost.create" resourceType="physicalHost" start="requested" transitioning="creating" done="created" />
     <process:process name="physicalhost.bootstrap" resourceType="physicalHost" start="created,creating" transitioning="bootstrapping" done="active" />
-    <process:process name="physicalhost.remove" resourceType="physicalHost" start="active,requested,bootstrapping,creating,updating,error,erroring" transitioning="removing" done="removed" />
+    <process:process name="physicalhost.remove" resourceType="physicalHost" start="created,active,requested,bootstrapping,creating,updating,error,erroring" transitioning="removing" done="removed" />
     <process:process name="physicalhost.update" resourceType="physicalHost" start="active" transitioning="updating" done="active" />
     <process:process name="physicalhost.error" resourceType="physicalHost" start="creating, bootstrapping, updating" transitioning="erroring" done="error" />
 
@@ -406,11 +388,11 @@
     <process:process name="storagepoolhostmap.remove" resourceType="storagePoolHostMap" start="requested,active,activating" transitioning="removing" done="removed" />
 
     <!-- Machine driver-->
-    <process:process name="machinedriver.create" resourceType="machineDriver" start="requested" transitioning="registering" done="inactive" delegate="machinedriver.activate" />
+    <process:process name="machinedriver.create" resourceType="machineDriver" start="requested" transitioning="registering" done="inactive" />
     <process:process name="machinedriver.activate" resourceType="machineDriver" start="inactive,registering" transitioning="activating" done="active" />
     <process:process name="machinedriver.reactivate" resourceType="machineDriver" start="active,error" transitioning="activating" done="active" />
     <process:process name="machinedriver.error" resourceType="machineDriver" start="active,activating,updating-active,updating-inactive" transitioning="erroring" done="error" />
-    <process:process name="machinedriver.deactivate" resourceType="machineDriver" start="active,activating,updating-active,updating-inactive" transitioning="deactivating" done="inactive" delegate="machinedriver.remove" />
+    <process:process name="machinedriver.deactivate" resourceType="machineDriver" start="active,activating,updating-active,updating-inactive" transitioning="deactivating" done="inactive" />
     <process:process name="machinedriver.remove" resourceType="machineDriver" start="requested,inactive,activating,deactivating,registering,updating-active,updating-inactive,active,error" transitioning="removing" done="removed" />
     <process:process name="machinedriver.update" resourceType="machineDriver" start="error,inactive,active" transitioning="error=updating-inactive,inactive=updating-inactive,active=updating-active" done="updating-inactive=inactive,updating-active=active" />
 
@@ -460,7 +442,6 @@
 
     <bean class="io.cattle.platform.extension.dynamic.process.ExternalHandlerActivate" />
 
-    <bean class="io.cattle.platform.vm.process.VirtualMachineMetadata" />
     <bean class="io.cattle.platform.vm.process.VirtualMachinePreCreate" />
     <bean class="io.cattle.platform.vm.process.ServiceVirtualMachinePreCreate" />
 </beans>

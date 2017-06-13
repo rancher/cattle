@@ -92,23 +92,13 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
                         restrictToUnmanagedPool = false;
                     }
                 }
-
-                Instance instance = objectManager.loadResource(Instance.class, volume.getInstanceId());
-                if (instance != null) {
-                    Host host = allocatorDao.getHost(instance);
-                    if (host != null) {
-                        for (StoragePool pool : allocatorDao.getAssociatedUnmanagedPools(host)) {
-                            storagePoolIds.add(pool.getId());
-                        }
-                    }
-                }
             }
 
             if (storagePoolIds.size() > 0) {
                 constraints.add(new VolumeValidStoragePoolConstraint(volume, alreadyMappedToPool, storagePoolIds));
             }
 
-            if (restrictToUnmanagedPool || volume.getImageId() != null) {
+            if (restrictToUnmanagedPool) {
                 constraints.add(new UnmanagedStoragePoolKindConstraint(volume));
             }
         }

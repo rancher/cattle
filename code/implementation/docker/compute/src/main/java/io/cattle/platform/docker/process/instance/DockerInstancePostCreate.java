@@ -2,7 +2,6 @@ package io.cattle.platform.docker.process.instance;
 
 import io.cattle.platform.core.constants.DockerInstanceConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.model.Image;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.docker.api.model.DockerBuild;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -34,11 +33,6 @@ public class DockerInstancePostCreate extends AbstractObjectProcessLogic impleme
             return null;
         }
 
-        Image image = objectManager.loadResource(Image.class, instance.getImageId());
-        if (image == null) {
-            return null;
-        }
-
         DockerBuild build = DataAccessor.field(instance, DockerInstanceConstants.FIELD_BUILD,
                 jsonMapper, DockerBuild.class);
 
@@ -52,8 +46,6 @@ public class DockerInstancePostCreate extends AbstractObjectProcessLogic impleme
             build.setTag(tag);
         }
 
-        objectManager.setFields(image, DockerInstanceConstants.FIELD_BUILD, build);
-
-        return null;
+        return new HandlerResult(DockerInstanceConstants.FIELD_BUILD, build);
     }
 }

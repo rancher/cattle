@@ -178,17 +178,6 @@ public interface Volume extends Serializable {
     public Long getVirtualSizeMb();
 
     /**
-     * Setter for <code>cattle.volume.device_number</code>.
-     */
-    public void setDeviceNumber(Integer value);
-
-    /**
-     * Getter for <code>cattle.volume.device_number</code>.
-     */
-    @Column(name = "device_number", precision = 10)
-    public Integer getDeviceNumber();
-
-    /**
      * Setter for <code>cattle.volume.format</code>.
      */
     public void setFormat(String value);
@@ -209,39 +198,6 @@ public interface Volume extends Serializable {
      */
     @Column(name = "allocation_state", length = 255)
     public String getAllocationState();
-
-    /**
-     * Setter for <code>cattle.volume.attached_state</code>.
-     */
-    public void setAttachedState(String value);
-
-    /**
-     * Getter for <code>cattle.volume.attached_state</code>.
-     */
-    @Column(name = "attached_state", length = 255)
-    public String getAttachedState();
-
-    /**
-     * Setter for <code>cattle.volume.instance_id</code>.
-     */
-    public void setInstanceId(Long value);
-
-    /**
-     * Getter for <code>cattle.volume.instance_id</code>.
-     */
-    @Column(name = "instance_id", precision = 19)
-    public Long getInstanceId();
-
-    /**
-     * Setter for <code>cattle.volume.image_id</code>.
-     */
-    public void setImageId(Long value);
-
-    /**
-     * Getter for <code>cattle.volume.image_id</code>.
-     */
-    @Column(name = "image_id", precision = 19)
-    public Long getImageId();
 
     /**
      * Setter for <code>cattle.volume.uri</code>.

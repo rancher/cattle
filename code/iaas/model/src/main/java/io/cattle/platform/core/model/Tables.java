@@ -9,7 +9,6 @@ import io.cattle.platform.core.model.tables.AccountTable;
 import io.cattle.platform.core.model.tables.AgentTable;
 import io.cattle.platform.core.model.tables.AuditLogTable;
 import io.cattle.platform.core.model.tables.AuthTokenTable;
-import io.cattle.platform.core.model.tables.BackoffTable;
 import io.cattle.platform.core.model.tables.CertificateTable;
 import io.cattle.platform.core.model.tables.ClusterHostMapTable;
 import io.cattle.platform.core.model.tables.ClusterMembershipTable;
@@ -34,8 +33,6 @@ import io.cattle.platform.core.model.tables.HostIpAddressMapTable;
 import io.cattle.platform.core.model.tables.HostLabelMapTable;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.HostTemplateTable;
-import io.cattle.platform.core.model.tables.ImageStoragePoolMapTable;
-import io.cattle.platform.core.model.tables.ImageTable;
 import io.cattle.platform.core.model.tables.InstanceHostMapTable;
 import io.cattle.platform.core.model.tables.InstanceLabelMapTable;
 import io.cattle.platform.core.model.tables.InstanceLinkTable;
@@ -117,11 +114,6 @@ public class Tables {
      * The table <code>cattle.auth_token</code>.
      */
     public static final AuthTokenTable AUTH_TOKEN = io.cattle.platform.core.model.tables.AuthTokenTable.AUTH_TOKEN;
-
-    /**
-     * The table <code>cattle.backoff</code>.
-     */
-    public static final BackoffTable BACKOFF = io.cattle.platform.core.model.tables.BackoffTable.BACKOFF;
 
     /**
      * The table <code>cattle.certificate</code>.
@@ -247,16 +239,6 @@ public class Tables {
      * The table <code>cattle.host_template</code>.
      */
     public static final HostTemplateTable HOST_TEMPLATE = io.cattle.platform.core.model.tables.HostTemplateTable.HOST_TEMPLATE;
-
-    /**
-     * The table <code>cattle.image</code>.
-     */
-    public static final ImageTable IMAGE = io.cattle.platform.core.model.tables.ImageTable.IMAGE;
-
-    /**
-     * The table <code>cattle.image_storage_pool_map</code>.
-     */
-    public static final ImageStoragePoolMapTable IMAGE_STORAGE_POOL_MAP = io.cattle.platform.core.model.tables.ImageStoragePoolMapTable.IMAGE_STORAGE_POOL_MAP;
 
     /**
      * The table <code>cattle.instance</code>.

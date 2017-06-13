@@ -47,8 +47,6 @@ public class DeployinatorImpl implements Deployinator {
 
 
     protected Result reconcile(String type, Long id) {
-        sdService.incrementExecutionCount(type, id);
-
         Inator inator = factory.buildInator(type, id);
         if (inator == null) {
             return Result.good();
@@ -74,9 +72,11 @@ public class DeployinatorImpl implements Deployinator {
         case REMOVED:
             result = remove(context);
             break;
-        case NONE:
+        case PAUSE:
             result = pause(context);
             break;
+        case ERROR:
+            return Result.good();
         default:
             break;
         }

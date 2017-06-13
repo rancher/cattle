@@ -41,10 +41,9 @@ def test_agent_create_for_container(context, super_client):
 
     c = super_client.reload(c)
     agent = c.agent()
-    account_id = get_plain_id(c.account())
 
     assert agent.state == 'active'
-    assert agent.data.agentResourcesAccountId == int(account_id)
+    assert agent.resourceAccountId == c.account().id
 
     client.delete(c)
     c = client.wait_success(c)

@@ -98,9 +98,6 @@ def test_host_purge(super_client, new_context):
     c2 = super_client.wait_success(c2)
     assert c2.removed is not None
 
-    volumes = c1.volumes()
-    assert len(volumes) == 0
-
 
 def test_host_container_actions_inactive(new_context):
     host = new_context.host
@@ -168,7 +165,7 @@ def test_host_remove(super_client, new_context):
     pool = find_one(host.storagePools)
     agent = host.agent()
     agent_account = agent.account()
-    phy_host = host.physicalHost()
+    phy_host = new_context.client.wait_success(host.physicalHost())
     key = find_one(super_client.list_register, key=agent.data.registrationKey)
     instances = host.instances()
     assert len(instances) == 1

@@ -32,18 +32,13 @@ public class ProcessParser implements BeanDefinitionParser {
         String transitioning = element.getAttribute("transitioning");
         String stateField = element.getAttribute("stateField");
         String done = element.getAttribute("done");
-        String delegate = element.getAttribute("delegate");
         String resourceType = element.getAttribute("resourceType");
 
-        if (StringUtils.isBlank(delegate)) {
-            delegate = null;
-        }
-
-        return parse(id, stateField, name, start, transitioning, done, resourceType, delegate, new HashMap<String, String>(), parserContext);
+        return parse(id, stateField, name, start, transitioning, done, resourceType, new HashMap<String, String>(), parserContext);
     }
 
     protected BeanDefinition parse(String id, String stateField, String name, String start, String transitioning, String done, String resourceType,
-            String delegate, Map<String, String> renames, ParserContext parserContext) {
+            Map<String, String> renames, ParserContext parserContext) {
         if (StringUtils.isBlank(id)) {
             if (StringUtils.isBlank(name)) {
                 id = "generated$" + GenericResourceProcessDefinition.class.getSimpleName() + "$" + COUNTER.incrementAndGet();
@@ -67,7 +62,6 @@ public class ProcessParser implements BeanDefinitionParser {
         BeanDefinitionBuilder processDefBuilder = BeanDefinitionBuilder.genericBeanDefinition(GenericResourceProcessDefinition.class);
         processDefBuilder.addPropertyValue("name", name);
         processDefBuilder.addPropertyValue("resourceType", resourceType);
-        processDefBuilder.addPropertyValue("processDelegateName", delegate);
         processDefBuilder.addPropertyReference("statesDefinition", childId);
 
         register(childId, statesBuilder, parserContext);
@@ -87,7 +81,7 @@ public class ProcessParser implements BeanDefinitionParser {
             return Collections.emptySet();
         }
 
-        Set<String> result = new LinkedHashSet<String>();
+        Set<String> result = new LinkedHashSet<>();
         for (String value : values.trim().split("\\s*,\\s*")) {
             String translated = renames.get(value);
             result.add(translated == null ? value : translated);
@@ -101,7 +95,7 @@ public class ProcessParser implements BeanDefinitionParser {
             return Collections.emptyMap();
         }
 
-        Map<String, String> result = new LinkedHashMap<String, String>();
+        Map<String, String> result = new LinkedHashMap<>();
         if (values.indexOf("=") == -1 && values.indexOf(",") == -1) {
             result.put(null, values.trim());
         } else {
@@ -119,7 +113,7 @@ public class ProcessParser implements BeanDefinitionParser {
     }
 
     protected Map<String, String> translate(Map<String, String> values, Map<String, String> renames) {
-        Map<String, String> result = new LinkedHashMap<String, String>();
+        Map<String, String> result = new LinkedHashMap<>();
 
         for (Map.Entry<String, String> entry : values.entrySet()) {
             String key = renames.get(entry.getKey());

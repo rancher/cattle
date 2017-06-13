@@ -44,17 +44,6 @@ def test_docker_create_only(docker_client, super_client):
 
         assert container is not None
         assert 'container' == container.type
-        image = super_client.reload(container).image()
-        assert image.instanceKind == 'container'
-
-        image_mapping = filter(
-            lambda m: m.storagePool().external,
-            image.imageStoragePoolMaps()
-        )
-
-        assert len(image_mapping) == 0
-
-        assert not image.isPublic
     finally:
         if container is not None:
             docker_client.delete(container)
@@ -74,17 +63,6 @@ def test_docker_create_only_from_sha(docker_client, super_client):
 
         assert container is not None
         assert 'container' == container.type
-        image = super_client.reload(container).image()
-        assert image.instanceKind == 'container'
-
-        image_mapping = filter(
-            lambda m: m.storagePool().external,
-            image.imageStoragePoolMaps()
-        )
-
-        assert len(image_mapping) == 0
-
-        assert not image.isPublic
     finally:
         if container is not None:
             docker_client.delete(container)
@@ -104,18 +82,6 @@ def test_docker_create_with_start(docker_client, super_client):
         assert container.state == 'running'
 
         assert container.data.dockerContainer.Image == TEST_IMAGE
-
-        assert len(container.volumes()) == 1
-
-        image = container.volumes()[0].image()
-        image = super_client.reload(image)
-        image_mapping = filter(
-            lambda m: not m.storagePool().external,
-            image.imageStoragePoolMaps()
-        )
-
-        assert len(image_mapping) == 1
-        assert image_mapping[0].imageId == image.id
     finally:
         if container is not None:
             docker_client.delete(container)
@@ -246,27 +212,6 @@ def test_docker_purge(docker_client):
 
     container = docker_client.wait_success(container)
     assert container.removed is not None
-
-    volumes = container.volumes()
-    assert len(volumes) == 0
-
-
-@if_docker
-def test_docker_image_format(docker_client, super_client):
-    uuid = TEST_IMAGE_UUID
-    container = docker_client.create_container(imageUuid=uuid,
-                                               networkMode='bridge')
-
-    try:
-        container = docker_client.wait_success(container)
-        container = super_client.reload(container)
-
-        assert container.image().format == 'docker'
-        assert container.volumes()[0].image().format == 'docker'
-        assert container.volumes()[0].format == 'docker'
-    finally:
-        if container is not None:
-            docker_client.delete(container)
 
 
 @if_docker
@@ -447,11 +392,6 @@ def test_no_port_override(docker_client, super_client):
 
 @if_docker
 def test_docker_volumes(docker_client, super_client):
-    def reload(x):
-        return super_client.reload(x)
-
-    _ = reload
-
     uuid = TEST_IMAGE_UUID
     bind_mount_uuid = py_uuid.uuid4().hex
     bar_host_path = '/tmp/bar%s' % bind_mount_uuid
@@ -469,9 +409,6 @@ def test_docker_volumes(docker_client, super_client):
 
     c = super_client.wait_success(c.start())
 
-    volumes = c.volumes()
-    assert len(volumes) == 1
-
     mounts = c.mounts_link()
     assert len(mounts) == 1
     foo_mount = None
@@ -488,10 +425,6 @@ def test_docker_volumes(docker_client, super_client):
     assert foo_mount.permissions == 'rw'
     assert foo_vol is not None
     assert not foo_vol.isHostPath
-    assert _(foo_vol).attachedState == 'inactive'
-
-    # We use 'in' instead of '==' because Docker uses the fully qualified
-    # non-linked path and it might look something like: /mnt/sda1/<path>
 
     c2 = docker_client.create_container(name="volumes_from_test",
                                         networkMode='bridge',
@@ -920,7 +853,13 @@ def test_container_bad_build(super_client, docker_client):
 
     assert c.state == 'running'
     assert c.pidMode is None
-    assert c.build == {'context': None, 'remote': None, 'type': 'dockerBuild'}
+    assert c.build == {'context': None,
+                       'dockerfile': None,
+                       'forcerm': False,
+                       'nocache': False,
+                       'rm': False,
+                       'remote': None,
+                       'type': 'dockerBuild'}
 
     c = super_client.reload(c)
 

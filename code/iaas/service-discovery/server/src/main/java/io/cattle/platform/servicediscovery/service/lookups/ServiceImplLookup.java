@@ -8,9 +8,9 @@ import java.util.Collection;
 public class ServiceImplLookup implements ServiceLookup {
 
     @Override
-    public Collection<? extends Service> getServices(Object obj) {
+    public Collection<Long> getServices(Object obj) {
         if (obj instanceof Service) {
-            return Arrays.asList((Service)obj);
+            return Arrays.asList(((Service) obj).getId());
         }
         return null;
     }

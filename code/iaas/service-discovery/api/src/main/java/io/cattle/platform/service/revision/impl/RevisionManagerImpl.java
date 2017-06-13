@@ -6,8 +6,6 @@ import static io.cattle.platform.core.model.tables.RevisionTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 
-import io.cattle.platform.configitem.request.ConfigUpdateRequest;
-import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
@@ -50,14 +48,10 @@ import org.apache.commons.lang3.StringUtils;
 @Named
 public class RevisionManagerImpl implements RevisionManager {
 
-    private static final String DU_RECONCILE = "deployment-unit-update";
-
     @Inject
     ObjectManager objectManager;
     @Inject
     ObjectProcessManager processManager;
-    @Inject
-    ConfigItemStatusManager itemManager;
     @Inject
     ServiceDao serviceDao;
     @Inject
@@ -158,16 +152,9 @@ public class RevisionManagerImpl implements RevisionManager {
 
         objectManager.setFields(unit,
                 DEPLOYMENT_UNIT.REQUESTED_REVISION_ID, newRevision.getId());
-        increment(unit);
+        processManager.update(unit, null);
 
         return newRevision;
-    }
-
-    private void increment(DeploymentUnit unit) {
-        ConfigUpdateRequest request = ConfigUpdateRequest.forResource(DeploymentUnit.class, unit.getId());
-        request.addItem(DU_RECONCILE);
-        request.withDeferredTrigger(true);
-        itemManager.updateConfig(request);
     }
 
     @Override

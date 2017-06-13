@@ -4,7 +4,6 @@ import static io.cattle.platform.core.model.tables.AgentTable.*;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AccountConstants;
-import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.GenericObject;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
@@ -36,8 +35,7 @@ public class RegisterDaoImpl extends AbstractJooqDao implements RegisterDao {
     public Agent createAgentForRegistration(String key, GenericObject obj) {
         return transaction.doInTransactionResult(() -> {
             Map<String,Object> data = CollectionUtils.asMap(
-                    RegisterConstants.AGENT_DATA_REGISTRATION_KEY, key,
-                    AgentConstants.DATA_AGENT_RESOURCES_ACCOUNT_ID, obj.getAccountId());
+                    RegisterConstants.AGENT_DATA_REGISTRATION_KEY, key);
 
             String format = DataAccessor.fieldString(obj, "agentUriFormat");
             if (format != null) {
@@ -58,6 +56,7 @@ public class RegisterDaoImpl extends AbstractJooqDao implements RegisterDao {
             Agent agent = objectManager.create(Agent.class,
                     AGENT.KIND, AccountConstants.REGISTERED_AGENT_KIND,
                     AGENT.URI, String.format(format, obj.getUuid()),
+                    AGENT.RESOURCE_ACCOUNT_ID, obj.getAccountId(),
                     AGENT.DATA, data,
                     AGENT.MANAGED_CONFIG, true);
 

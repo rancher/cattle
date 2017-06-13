@@ -51,7 +51,7 @@ public class DockerAccountCreate extends AbstractObjectProcessLogic implements P
             return null;
         }
 
-        Map<String, Network> networksByKind = getNetworksByUuid(account);
+        Map<String, Network> networksByKind = getNetworksByKind(account);
 
         createNetwork(NetworkConstants.KIND_DOCKER_HOST, account, networksByKind, "Docker Host Network Mode", null);
         createNetwork(NetworkConstants.KIND_DOCKER_NONE, account, networksByKind, "Docker None Network Mode", null);
@@ -64,7 +64,7 @@ public class DockerAccountCreate extends AbstractObjectProcessLogic implements P
             portRange = AccountConstants.getDefaultServicesPortRange();
         }
 
-        return new HandlerResult(AccountConstants.FIELD_PORT_RANGE, portRange).withShouldContinue(true);
+        return new HandlerResult(AccountConstants.FIELD_PORT_RANGE, portRange);
     }
 
     protected Network createNetwork(String kind, Account account, Map<String, Network> networksByKind,
@@ -73,7 +73,7 @@ public class DockerAccountCreate extends AbstractObjectProcessLogic implements P
         if (network != null) {
             return network;
         }
-        Map<String, Object> data = key == null ? new HashMap<String, Object>() :
+        Map<String, Object> data = key == null ? new HashMap<>() :
                 CollectionUtils.asMap(key, valueKeyValue);
 
         data.put(ObjectMetaDataManager.NAME_FIELD, name);
@@ -84,7 +84,7 @@ public class DockerAccountCreate extends AbstractObjectProcessLogic implements P
     }
 
 
-    protected Map<String, Network> getNetworksByUuid(Account account) {
+    protected Map<String, Network> getNetworksByKind(Account account) {
         Map<String, Network> result = new HashMap<>();
 
         for (Network network : objectManager.find(Network.class,

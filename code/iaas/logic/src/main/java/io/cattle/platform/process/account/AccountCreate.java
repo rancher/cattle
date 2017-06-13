@@ -14,8 +14,8 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
-import io.cattle.platform.process.util.ProcessHelpers;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -48,7 +48,7 @@ public class AccountCreate extends AbstractDefaultProcessHandler {
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Account account = (Account) state.getResource();
-        Map<Object, Object> result = new HashMap<Object, Object>();
+        Map<Object, Object> result = new HashMap<>();
         boolean createApiKey = DataAccessor.fromMap(state.getData()).withScope(AccountConstants.class).withKey(AccountConstants.OPTION_CREATE_APIKEY)
                 .withDefault(false).as(Boolean.class);
 
@@ -57,19 +57,24 @@ public class AccountCreate extends AbstractDefaultProcessHandler {
 
         if (shouldCreateCredentials(account, state)) {
             if (createApiKey || CREATE_CREDENTIAL.get()) {
-                List<Credential> creds = ProcessHelpers.createOneChild(getObjectManager(), processManager, account, Credential.class, CREDENTIAL.ACCOUNT_ID,
-                        account.getId(), CREDENTIAL.KIND, apiKeyKind);
+                List<Credential> creds = objectManager.children(account, Credential.class);
+                if (creds.size() == 0) {
+                    creds = Arrays.asList(objectManager.create(Credential.class,
+                            CREDENTIAL.ACCOUNT_ID, account.getId(),
+                            CREDENTIAL.KIND, apiKeyKind));
+                }
 
                 for (Credential cred : creds) {
+                    createThenActivate(cred, null);
                     result.put("_createdCredential" + cred.getId(), true);
                 }
             }
         }
-        
+
         List<? extends Long> accountLinks = DataAccessor.fromMap(state.getData()).withKey(
                 AccountConstants.FIELD_ACCOUNT_LINKS).withDefault(Collections.EMPTY_LIST)
             .asList(jsonMapper, Long.class);
-        
+
         accountDao.generateAccountLinks(account, accountLinks);
 
         return new HandlerResult(result);

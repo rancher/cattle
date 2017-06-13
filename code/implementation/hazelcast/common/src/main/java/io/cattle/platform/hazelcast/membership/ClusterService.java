@@ -1,6 +1,8 @@
 package io.cattle.platform.hazelcast.membership;
 
-public interface ClusterService {
+import io.cattle.platform.engine.server.Cluster;
+
+public interface ClusterService extends Cluster {
 
     boolean isMaster();
 

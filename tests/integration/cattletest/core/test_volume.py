@@ -8,20 +8,6 @@ from gdapi import ClientApiError
 VOLUME_CLEANUP_LABEL = 'io.rancher.container.volume_cleanup_strategy'
 
 
-def test_volume_cant_delete_active(client, context):
-    c = client.create_container(imageUuid=context.image_uuid)
-    c = client.wait_success(c)
-    assert c.state == 'running'
-
-    volume = c.volumes()[0]
-    assert volume.state == 'active'
-
-    # Assert an active volume cannot be deleted
-    with pytest.raises(ApiError) as e:
-        client.delete(volume)
-    assert e.value.error.status == 405
-
-
 def test_volume_create_state(client, context):
     name = random_str()
     c = client.create_volume(name=name, driver='local')
@@ -111,9 +97,6 @@ def test_create_container_with_volume(new_context, super_client):
     with pytest.raises(ApiError) as e:
         client.delete(v1)
     assert e.value.error.status == 405
-
-    assert len(c.volumes()) == 1
-    assert c.volumes()[0].id not in [v1.id, v2.id]
 
     vsp1 = super_client.list_volumeStoragePoolMap(volumeId=v1.id)
     vsp2 = super_client.list_volumeStoragePoolMap(volumeId=v2.id)

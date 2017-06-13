@@ -462,9 +462,6 @@ def test_health_state_stack(super_client, context, client):
     assert hcihm.externalTimestamp == ts
 
     wait_for(lambda: super_client.reload(c1).healthState == 'unhealthy')
-    wait_for(lambda: super_client.reload(service).healthState == 'unhealthy')
-    wait_for(lambda: c.reload(env).healthState == 'unhealthy')
-    remove_service(service)
 
 
 def test_health_state_start_once(super_client, context, client):

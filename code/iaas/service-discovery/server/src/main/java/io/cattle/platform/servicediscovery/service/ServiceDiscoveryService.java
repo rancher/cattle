@@ -1,18 +1,13 @@
 package io.cattle.platform.servicediscovery.service;
 
-import io.cattle.platform.configitem.events.ConfigUpdate;
 import io.cattle.platform.core.addon.PortRule;
-import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceIndex;
-import io.cattle.platform.core.model.Stack;
-import io.cattle.platform.eventing.annotation.AnnotatedEventListener;
-import io.cattle.platform.eventing.annotation.EventHandler;
 
 import java.util.List;
 
-public interface ServiceDiscoveryService extends AnnotatedEventListener {
+public interface ServiceDiscoveryService {
 
     /**
      * SERVICE LOGIC
@@ -35,16 +30,9 @@ public interface ServiceDiscoveryService extends AnnotatedEventListener {
      * ENDPOINTS UPDATE
      */
 
-    @EventHandler
-    void serviceUpdate(ConfigUpdate update);
+    void serviceUpdate(Long serviceId);
 
-    @EventHandler
-    void hostEndpointsUpdate(ConfigUpdate update);
-
-    void reconcileServiceEndpoints(Service service);
-
-    void reconcileHostEndpoints(Host host);
-
+    void hostEndpointsUpdate(Long hostId);
 
     /**
      * RANDOM
@@ -52,7 +40,7 @@ public interface ServiceDiscoveryService extends AnnotatedEventListener {
      */
     void releaseIpFromServiceIndex(Service service, ServiceIndex serviceIndex);
 
-    void updateHealthState(Stack stack);
+    void updateHealthState(Long stackId);
 
     void setServiceIndexIp(ServiceIndex serviceIndex, String ipAddress);
 
@@ -60,7 +48,5 @@ public interface ServiceDiscoveryService extends AnnotatedEventListener {
     void removeFromLoadBalancerServices(Instance instance);
 
     void addToBalancerService(Long serviceId, List<PortRule> rules);
-
-    void incrementExecutionCount(String type, Long id);
 
 }

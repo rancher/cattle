@@ -1,6 +1,7 @@
 package io.cattle.platform.engine.process;
 
 import io.cattle.platform.engine.manager.ProcessManager;
+import io.cattle.platform.engine.manager.impl.ProcessRecord;
 
 public interface ProcessInstance {
 
@@ -10,9 +11,13 @@ public interface ProcessInstance {
 
     String getResourceId();
 
+    Object getResource();
+
     ExitReason execute();
 
-    boolean isRunningLogic();
+    ExitReason resume();
+
+    ProcessRecord getProcessRecord();
 
     ExitReason getExitReason();
 

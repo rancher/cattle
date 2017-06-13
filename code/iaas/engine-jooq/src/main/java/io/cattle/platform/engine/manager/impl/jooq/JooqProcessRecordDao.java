@@ -4,17 +4,13 @@ import static io.cattle.platform.core.model.tables.ProcessExecutionTable.*;
 import static io.cattle.platform.core.model.tables.ProcessInstanceTable.*;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.model.ProcessInstance;
 import io.cattle.platform.core.model.tables.records.ProcessInstanceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
-import io.cattle.platform.engine.manager.OnDoneActions;
 import io.cattle.platform.engine.manager.impl.ProcessRecord;
 import io.cattle.platform.engine.manager.impl.ProcessRecordDao;
+import io.cattle.platform.engine.model.ProcessReference;
 import io.cattle.platform.engine.process.ExitReason;
-import io.cattle.platform.engine.process.ProcessPhase;
-import io.cattle.platform.engine.process.ProcessResult;
 import io.cattle.platform.engine.process.log.ProcessLog;
-import io.cattle.platform.engine.server.ProcessInstanceReference;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.jooq.utils.JooqUtils;
@@ -24,31 +20,27 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.EnumUtils;
-import org.jooq.Condition;
 import org.jooq.Field;
-import org.jooq.Record6;
+import org.jooq.Record5;
 import org.jooq.RecordHandler;
 import org.jooq.Table;
-import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicIntProperty;
 
 public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessRecordDao {
 
     private static final Logger log = LoggerFactory.getLogger(JooqProcessRecordDao.class);
     private static final DynamicIntProperty BATCH = ArchaiusUtil.getInt("process.replay.batch.size");
+    private static final DynamicBooleanProperty SAVE_TERMINATING = ArchaiusUtil.getBoolean("process.save.terminating");
 
     @Inject
     JsonMapper jsonMapper;
@@ -58,49 +50,27 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
     ObjectMetaDataManager metaData;
 
     @Override
-    public List<ProcessInstanceReference> pendingTasks() {
-        return pendingTasks(null, null);
-    }
-
-    @Override
-    public Long nextTask(String resourceType, String resourceId) {
-        List<ProcessInstanceReference> refs = pendingTasks(resourceType, resourceId);
-        return refs.size() == 0 ? null : refs.get(0).getProcessId();
-    }
-
-    protected List<ProcessInstanceReference> pendingTasks(String resourceType, String resourceId) {
-        final List<ProcessInstanceReference> result = new ArrayList<>();
-        final Set<String> seen = new HashSet<>();
+    public List<ProcessReference> pendingTasks() {
+        final List<ProcessReference> result = new ArrayList<>();
         create()
             .select(PROCESS_INSTANCE.ID,
                     PROCESS_INSTANCE.PROCESS_NAME,
                     PROCESS_INSTANCE.RESOURCE_TYPE,
                     PROCESS_INSTANCE.RESOURCE_ID,
-                    PROCESS_INSTANCE.ACCOUNT_ID,
-                    PROCESS_INSTANCE.PRIORITY)
+                    PROCESS_INSTANCE.ACCOUNT_ID)
             .from(PROCESS_INSTANCE)
-                .where(processCondition(resourceType, resourceId))
-                    .and(runAfterCondition(resourceType))
-                .limit(resourceType == null ? BATCH.get() : 1)
-                .fetchInto(new RecordHandler<Record6<Long, String, String, String, Long, Integer>>() {
+                .where(PROCESS_INSTANCE.END_TIME.isNull()
+                    .and(PROCESS_INSTANCE.RUN_AFTER.isNull().or(PROCESS_INSTANCE.RUN_AFTER.le(new Date()))))
+                .limit(BATCH.get())
+                .fetchInto(new RecordHandler<Record5<Long, String, String, String, Long>>() {
             @Override
-            public void next(Record6<Long, String, String, String, Long, Integer> record) {
-                String resource = String.format("%s:%s", record.getValue(PROCESS_INSTANCE.RESOURCE_TYPE),
-                        record.getValue(PROCESS_INSTANCE.RESOURCE_ID));
-                if (seen.contains(resource)) {
-                    return;
-                }
-
-                ProcessInstanceReference ref = new ProcessInstanceReference();
-                ref.setProcessId(record.getValue(PROCESS_INSTANCE.ID));
-                ref.setName(record.getValue(PROCESS_INSTANCE.PROCESS_NAME));
-
-                Integer priority = record.getValue(PROCESS_INSTANCE.PRIORITY);
-                if (priority != null) {
-                    ref.setPriority(priority);
-                }
-
-                seen.add(resource);
+            public void next(Record5<Long, String, String, String, Long> record) {
+                ProcessReference ref = new ProcessReference(
+                        record.getValue(PROCESS_INSTANCE.ID),
+                        record.getValue(PROCESS_INSTANCE.PROCESS_NAME),
+                        record.getValue(PROCESS_INSTANCE.RESOURCE_TYPE),
+                        record.getValue(PROCESS_INSTANCE.RESOURCE_ID),
+                        record.getValue(PROCESS_INSTANCE.ACCOUNT_ID));
                 result.add(ref);
             }
         });
@@ -108,52 +78,15 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
         return result;
     }
 
-    protected Condition runAfterCondition(String resourceType) {
-        if (resourceType == null) {
-            return PROCESS_INSTANCE.RUN_AFTER.isNull()
-                    .or(PROCESS_INSTANCE.RUN_AFTER.le(new Date()));
-        }
-        return DSL.trueCondition();
-    }
-
-    protected Condition processCondition(String resourceType, String resourceId) {
-        if (resourceType == null) {
-            return PROCESS_INSTANCE.END_TIME.isNull();
-        } else {
-            return PROCESS_INSTANCE.END_TIME.isNull().and(PROCESS_INSTANCE.RESOURCE_TYPE.eq(resourceType)).and(PROCESS_INSTANCE.RESOURCE_ID.eq(resourceId));
-        }
-    }
-
     @Override
     public ProcessRecord getRecord(Long id) {
-        io.cattle.platform.core.model.ProcessInstance record = create().selectFrom(PROCESS_INSTANCE).where(PROCESS_INSTANCE.ID.eq(id)).fetchOne();
+        ProcessInstanceRecord record = create().selectFrom(PROCESS_INSTANCE).where(PROCESS_INSTANCE.ID.eq(id)).fetchOne();
 
         if (record == null) {
             return null;
         }
 
-        ProcessRecord result = new ProcessRecord();
-
-        result.setId(record.getId());
-        result.setStartTime(toTimestamp(record.getStartTime()));
-        result.setEndTime(toTimestamp(record.getEndTime()));
-        result.setProcessLog(new ProcessLog());
-        result.setResult(EnumUtils.getEnum(ProcessResult.class, record.getResult()));
-        result.setExitReason(EnumUtils.getEnum(ExitReason.class, record.getExitReason()));
-        result.setPhase(EnumUtils.getEnum(ProcessPhase.class, record.getPhase()));
-        result.setStartProcessServerId(record.getStartProcessServerId());
-        result.setRunningProcessServerId(record.getRunningProcessServerId());
-        result.setExecutionCount(record.getExecutionCount());
-        result.setRunAfter(record.getRunAfter());
-
-        result.setAccountId(record.getAccountId());
-        result.setPriority(record.getPriority());
-        result.setResourceType(record.getResourceType());
-        result.setResourceId(record.getResourceId());
-        result.setProcessName(record.getProcessName());
-        result.setData(new HashMap<>(record.getData()));
-
-        return result;
+        return new JooqProcessRecord(record);
     }
 
     @Override
@@ -165,7 +98,7 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
         merge(pi, record);
         pi.insert();
 
-        ProcessRecord newRecord = getRecord(pi.getId());
+        JooqProcessRecord newRecord = new JooqProcessRecord(pi);
         newRecord.setParentProcessState(record.getParentProcessState());
 
         return newRecord;
@@ -173,16 +106,11 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
 
     @Override
     public void update(ProcessRecord record, boolean schedule) {
-        ProcessInstanceRecord pi = create()
-                .selectFrom(PROCESS_INSTANCE)
-                .where(PROCESS_INSTANCE.ID.eq(record.getId()))
-                .fetchOne();
-
-        if (pi == null) {
-            throw new IllegalStateException("Failed to find process instance for [" + record.getId() + "]");
+        if (!(record instanceof JooqProcessRecord)) {
+            throw new IllegalStateException("Can not persist type [" + record.getClass() + "]");
         }
 
-        merge(pi, record);
+        ProcessInstanceRecord pi = ((JooqProcessRecord) record).getProcessInstance();
 
         pi.update();
 
@@ -191,25 +119,26 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
             return;
         }
 
+        if (!SAVE_TERMINATING.get() && (record.getExitReason() == null ||
+                record.getExitReason().isTerminating() || record.getExitReason() == ExitReason.WAITING)) {
+            return;
+        }
+
         ProcessLog processLog = record.getProcessLog();
 
         if (record.getId() != null && processLog != null && processLog.getUuid() != null) {
             String uuid = processLog.getUuid();
-            Map<String, Object> log = convertToMap(record, processLog);
-
-            int result = create()
-                    .update(PROCESS_EXECUTION)
-                        .set(PROCESS_EXECUTION.LOG, log)
-                    .where(PROCESS_EXECUTION.UUID.eq(uuid))
-                    .execute();
-
-            if (result == 0) {
-                create()
-                    .insertInto(PROCESS_EXECUTION, PROCESS_EXECUTION.PROCESS_INSTANCE_ID, PROCESS_EXECUTION.UUID,
-                            PROCESS_EXECUTION.LOG, PROCESS_EXECUTION.CREATED)
-                    .values(record.getId(), uuid, log, new Timestamp(System.currentTimeMillis()))
-                    .execute();
-            }
+            create()
+                .insertInto(PROCESS_EXECUTION,
+                        PROCESS_EXECUTION.PROCESS_INSTANCE_ID,
+                        PROCESS_EXECUTION.UUID,
+                        PROCESS_EXECUTION.LOG,
+                        PROCESS_EXECUTION.CREATED)
+                .values(record.getId(),
+                        uuid,
+                        convertToMap(record, processLog),
+                        new Timestamp(System.currentTimeMillis()))
+                .execute();
         }
     }
 
@@ -218,7 +147,6 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
         pi.setEndTime(toTimestamp(record.getEndTime()));
         pi.setResult(Objects.toString(record.getResult(), null));
         pi.setExitReason(Objects.toString(record.getExitReason(), null));
-        pi.setPhase(Objects.toString(record.getPhase(), null));
         pi.setStartProcessServerId(record.getStartProcessServerId());
         pi.setRunningProcessServerId(record.getRunningProcessServerId());
         pi.setExecutionCount(record.getExecutionCount());
@@ -266,21 +194,6 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
     }
 
     @Override
-    public ProcessInstanceReference loadReference(Long id) {
-        ProcessInstance record = objectManager.loadResource(ProcessInstance.class, id);
-        if (record == null || record.getEndTime() != null) {
-            return null;
-        }
-
-        ProcessInstanceReference ref = new ProcessInstanceReference();
-        ref.setName(record.getProcessName());
-        ref.setPriority(record.getPriority() == null ? 0 : record.getPriority());
-        ref.setProcessId(record.getId());
-
-        return ref;
-    }
-
-    @Override
     public void setDone(Object obj, String stateField, String state) {
         String type = objectManager.getType(obj);
         Class<?> clz = objectManager.getSchemaFactory().getSchemaClass(type);
@@ -292,8 +205,6 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
             .set(field, state)
             .where(idField.eq(io.cattle.platform.object.util.ObjectUtils.getId(obj)))
             .execute();
-
-        OnDoneActions.runAndClear();
     }
 
 }

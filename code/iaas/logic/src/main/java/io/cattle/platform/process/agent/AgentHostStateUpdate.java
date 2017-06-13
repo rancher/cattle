@@ -19,7 +19,7 @@ import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.framework.event.FrameworkEvents;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.process.common.handler.AbstractObjectProcessPrePostListener;
+import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.util.type.InitializationTask;
 import io.cattle.platform.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
@@ -35,7 +35,7 @@ import javax.inject.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AgentHostStateUpdate extends AbstractObjectProcessPrePostListener implements InitializationTask, Priority {
+public abstract class AgentHostStateUpdate extends AbstractObjectProcessLogic implements InitializationTask, Priority {
 
     private static final Logger log = LoggerFactory.getLogger(AgentHostStateUpdate.class);
 
@@ -57,7 +57,6 @@ public class AgentHostStateUpdate extends AbstractObjectProcessPrePostListener i
         return new String[] {"agent.*"};
     }
 
-    @Override
     protected HandlerResult preHandle(ProcessState state, ProcessInstance process) {
         for (Host host : objectManager.children(state.getResource(), Host.class)) {
             log.debug("Setting host [{}] agentState to [{}] on pre", host.getId(), state.getState());
@@ -67,7 +66,6 @@ public class AgentHostStateUpdate extends AbstractObjectProcessPrePostListener i
         return null;
     }
 
-    @Override
     protected HandlerResult postHandle(ProcessState state, ProcessInstance process) {
         Agent agent = (Agent)state.getResource();
         String newState = transitioningToDone.get(state.getState());

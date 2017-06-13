@@ -21,8 +21,8 @@ import javax.persistence.Table;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record13;
-import org.jooq.Row13;
+import org.jooq.Record14;
+import org.jooq.Row14;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -39,9 +39,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "agent", schema = "cattle")
-public class AgentRecord extends UpdatableRecordImpl<AgentRecord> implements TableRecordJaxb, Record13<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Boolean>, Agent {
+public class AgentRecord extends UpdatableRecordImpl<AgentRecord> implements TableRecordJaxb, Record14<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Boolean, Long>, Agent {
 
-    private static final long serialVersionUID = 715321649;
+    private static final long serialVersionUID = 1147977277;
 
     /**
      * Setter for <code>cattle.agent.id</code>.
@@ -266,6 +266,23 @@ public class AgentRecord extends UpdatableRecordImpl<AgentRecord> implements Tab
         return (Boolean) get(12);
     }
 
+    /**
+     * Setter for <code>cattle.agent.resource_account_id</code>.
+     */
+    @Override
+    public void setResourceAccountId(Long value) {
+        set(13, value);
+    }
+
+    /**
+     * Getter for <code>cattle.agent.resource_account_id</code>.
+     */
+    @Column(name = "resource_account_id", precision = 19)
+    @Override
+    public Long getResourceAccountId() {
+        return (Long) get(13);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -279,23 +296,23 @@ public class AgentRecord extends UpdatableRecordImpl<AgentRecord> implements Tab
     }
 
     // -------------------------------------------------------------------------
-    // Record13 type implementation
+    // Record14 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row13<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Boolean> fieldsRow() {
-        return (Row13) super.fieldsRow();
+    public Row14<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Boolean, Long> fieldsRow() {
+        return (Row14) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row13<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Boolean> valuesRow() {
-        return (Row13) super.valuesRow();
+    public Row14<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Boolean, Long> valuesRow() {
+        return (Row14) super.valuesRow();
     }
 
     /**
@@ -406,6 +423,14 @@ public class AgentRecord extends UpdatableRecordImpl<AgentRecord> implements Tab
      * {@inheritDoc}
      */
     @Override
+    public Field<Long> field14() {
+        return AgentTable.AGENT.RESOURCE_ACCOUNT_ID;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Long value1() {
         return getId();
     }
@@ -504,6 +529,14 @@ public class AgentRecord extends UpdatableRecordImpl<AgentRecord> implements Tab
     @Override
     public Boolean value13() {
         return getManagedConfig();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Long value14() {
+        return getResourceAccountId();
     }
 
     /**
@@ -627,7 +660,16 @@ public class AgentRecord extends UpdatableRecordImpl<AgentRecord> implements Tab
      * {@inheritDoc}
      */
     @Override
-    public AgentRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, String value12, Boolean value13) {
+    public AgentRecord value14(Long value) {
+        setResourceAccountId(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AgentRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, String value12, Boolean value13, Long value14) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -641,6 +683,7 @@ public class AgentRecord extends UpdatableRecordImpl<AgentRecord> implements Tab
         value11(value11);
         value12(value12);
         value13(value13);
+        value14(value14);
         return this;
     }
 
@@ -666,6 +709,7 @@ public class AgentRecord extends UpdatableRecordImpl<AgentRecord> implements Tab
         setData(from.getData());
         setUri(from.getUri());
         setManagedConfig(from.getManagedConfig());
+        setResourceAccountId(from.getResourceAccountId());
     }
 
     /**
@@ -691,7 +735,7 @@ public class AgentRecord extends UpdatableRecordImpl<AgentRecord> implements Tab
     /**
      * Create a detached, initialised AgentRecord
      */
-    public AgentRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String uri, Boolean managedConfig) {
+    public AgentRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String uri, Boolean managedConfig, Long resourceAccountId) {
         super(AgentTable.AGENT);
 
         set(0, id);
@@ -707,5 +751,6 @@ public class AgentRecord extends UpdatableRecordImpl<AgentRecord> implements Tab
         set(10, data);
         set(11, uri);
         set(12, managedConfig);
+        set(13, resourceAccountId);
     }
 }

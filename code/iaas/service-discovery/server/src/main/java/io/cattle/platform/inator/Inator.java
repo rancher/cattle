@@ -7,7 +7,8 @@ import java.util.Set;
 public interface Inator {
 
     enum DesiredState {
-        NONE,
+        PAUSE,
+        ERROR,
         ACTIVE,
         INACTIVE,
         REMOVED

@@ -386,7 +386,7 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
         properties.put(HostConstants.FIELD_REPORTED_UUID, uuid);
         properties.remove(ObjectMetaDataManager.UUID_FIELD);
 
-        Long accountId = DataAccessor.fromDataFieldOf(agent).withKey(AgentConstants.DATA_AGENT_RESOURCES_ACCOUNT_ID).as(Long.class);
+        Long accountId = agent.getResourceAccountId();
 
         if (accountId == null) {
             accountId = agent.getAccountId();

@@ -44,7 +44,7 @@ public class NicRemove extends AbstractDefaultProcessHandler {
             poolManager.releaseResource(network, nic, new PooledResourceOptions().withQualifier(ResourcePoolConstants.MAC));
         }
 
-        return new HandlerResult(NIC.MAC_ADDRESS, new Object[] { null }).withShouldContinue(true);
+        return new HandlerResult(NIC.MAC_ADDRESS, new Object[] { null });
     }
 
 }

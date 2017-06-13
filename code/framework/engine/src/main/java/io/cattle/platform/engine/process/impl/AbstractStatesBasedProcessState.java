@@ -2,7 +2,6 @@ package io.cattle.platform.engine.process.impl;
 
 import io.cattle.platform.engine.manager.impl.ProcessRecord;
 import io.cattle.platform.engine.process.ExitReason;
-import io.cattle.platform.engine.process.ProcessPhase;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.json.JsonMapper;
 
@@ -12,7 +11,6 @@ public abstract class AbstractStatesBasedProcessState implements ProcessState {
 
     ResourceStatesDefinition statesDefinition;
     JsonMapper jsonMapper;
-    ProcessPhase phase;
 
     public AbstractStatesBasedProcessState(JsonMapper jsonMapper, ResourceStatesDefinition statesDef) {
         this.statesDefinition = statesDef;
@@ -112,16 +110,6 @@ public abstract class AbstractStatesBasedProcessState implements ProcessState {
 
     public JsonMapper getJsonMapper() {
         return jsonMapper;
-    }
-
-    @Override
-    public ProcessPhase getPhase() {
-        return phase;
-    }
-
-    @Override
-    public void setPhase(ProcessPhase phase) {
-        this.phase = phase;
     }
 
 }

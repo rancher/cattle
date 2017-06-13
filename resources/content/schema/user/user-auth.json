@@ -1049,6 +1049,8 @@
         "deploymentUnit.serviceId": "r",
         "deploymentUnit.cleanup": "r",
         "deploymentUnit.revisionId": "r",
+        "deploymentUnit.requestedRevisionId": "r",
+        "deploymentUnit.hostId": "r",
 
         "selectorService" : "r",
         "selectorService.externalIpAddresses" : "",

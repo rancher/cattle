@@ -13,7 +13,6 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.util.type.CollectionUtils;
-import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,18 +39,19 @@ public class ServiceUtil {
 
     public static Set<String> getLaunchConfigExternalNames(Map<String, Object> data) {
         Set<String> names = new HashSet<>();
+        names.addAll(getLaunchConfigNames(data));
         String name = ObjectUtils.toString(data.get(ObjectMetaDataManager.NAME_FIELD));
         names.add(name);
-        for (Object o : CollectionUtils.toList(data.get(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS))) {
-            names.add(ObjectUtils.toString(CollectionUtils.toMap(o)));
-        }
+        names.remove(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
         return names;
     }
 
-    @SuppressWarnings("unchecked")
     public static List<String> getLaunchConfigNames(Service service) {
-        Map<String, Object> originalData = new HashMap<>();
-        originalData.putAll(DataUtils.getFields(service));
+        return getLaunchConfigNames(DataUtils.getFields(service));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<String> getLaunchConfigNames(Map<String, Object> originalData) {
         List<String> launchConfigNames = new ArrayList<>();
 
         // put the primary config in
@@ -112,43 +112,37 @@ public class ServiceUtil {
         }
         Map<String, Object> launchConfigData = new HashMap<>();
         if (launchConfigName.equalsIgnoreCase(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME)) {
-            launchConfigData = DataAccessor.fields(service)
-                    .withKey(ServiceConstants.FIELD_LAUNCH_CONFIG).withDefault(Collections.EMPTY_MAP)
-                    .as(Map.class);
-            // if the value is empty, do not export
-            ArrayList<String> deletedKeys = new ArrayList<>();
-            for (String key: launchConfigData.keySet()) {
-                if (launchConfigData.get(key) == null) {
-                    deletedKeys.add(key);
+            for (Map.Entry<String, Object> entry : DataAccessor.fieldMapRO(service, ServiceConstants.FIELD_LAUNCH_CONFIG).entrySet()) {
+                if (entry.getValue() != null) {
+                    launchConfigData.put(entry.getKey(), entry.getValue());
                 }
-            }
-            for (String key: deletedKeys) {
-                launchConfigData.remove(key);
             }
         } else {
             List<Map<String, Object>> secondaryLaunchConfigs = DataAccessor.fields(service)
                     .withKey(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS)
-                    .withDefault(Collections.EMPTY_LIST).as(
-                            List.class);
+                    .withDefault(Collections.EMPTY_LIST)
+                    .as(List.class);
             for (Map<String, Object> secondaryLaunchConfig : secondaryLaunchConfigs) {
                 if (secondaryLaunchConfig.get("name").toString().equalsIgnoreCase(launchConfigName)) {
-                    launchConfigData = secondaryLaunchConfig;
+                    for (Map.Entry<String, Object> entry : secondaryLaunchConfig.entrySet()) {
+                        if (entry.getValue() != null) {
+                            launchConfigData.put(entry.getKey(), entry.getValue());
+                        }
+                    }
                     break;
                 }
             }
         }
-        Map<String, Object> data = new HashMap<>();
-        data.putAll(launchConfigData);
 
-        Object labels = data.get(InstanceConstants.FIELD_LABELS);
+        Object labels = launchConfigData.get(InstanceConstants.FIELD_LABELS);
         if (labels != null) {
             Map<String, String> labelsMap = new HashMap<>();
             labelsMap.putAll((Map<String, String>) labels);
 
             // overwrite with a copy of the map
-            data.put(InstanceConstants.FIELD_LABELS, labelsMap);
+            launchConfigData.put(InstanceConstants.FIELD_LABELS, labelsMap);
         }
-        return data;
+        return launchConfigData;
     }
 
     public static Object getLaunchConfigObject(Service service, String launchConfigName, String objectName) {
@@ -220,28 +214,7 @@ public class ServiceUtil {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public static void validateScaleSwitch(Object newLaunchConfig, Object currentLaunchConfig) {
-        if (isGlobalService((Map<Object, Object>) currentLaunchConfig) != isGlobalService((Map<Object, Object>) newLaunchConfig)) {
-            ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION,
-                    "Switching from global scale to fixed (and vice versa)");
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    protected static boolean isGlobalService(Map<Object, Object> launchConfig) {
-        // set labels
-        Object labelsObj = launchConfig.get(InstanceConstants.FIELD_LABELS);
-        if (labelsObj == null) {
-            return false;
-
-        }
-        Map<String, String> labels = (Map<String, String>) labelsObj;
-        String globalService = labels.get(ServiceConstants.LABEL_SERVICE_GLOBAL);
-        return Boolean.valueOf(globalService);
-    }
-
-    protected static String getGlobalNamespace() {
+    private static String getGlobalNamespace() {
         return NetworkConstants.INTERNAL_DNS_SEARCH_DOMAIN;
     }
 

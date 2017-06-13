@@ -74,8 +74,6 @@ public class DockerComputeDaoImpl extends AbstractJooqDao implements DockerCompu
             volume = objectManager.create(Volume.class,
                     VOLUME.ACCOUNT_ID, accountId,
                     VOLUME.NAME, name,
-                    VOLUME.ATTACHED_STATE, CommonStatesConstants.INACTIVE,
-                    VOLUME.DEVICE_NUMBER, -1,
                     VOLUME.ALLOCATION_STATE, CommonStatesConstants.ACTIVE,
                     VOLUME.URI, volumeUri,
                     VOLUME.EXTERNAL_ID, VolumeUtils.externalId(externalId));

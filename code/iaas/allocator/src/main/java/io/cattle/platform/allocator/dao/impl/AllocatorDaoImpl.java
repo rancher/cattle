@@ -3,8 +3,6 @@ package io.cattle.platform.allocator.dao.impl;
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.HostLabelMapTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
-import static io.cattle.platform.core.model.tables.ImageStoragePoolMapTable.*;
-import static io.cattle.platform.core.model.tables.ImageTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceLabelMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
@@ -101,31 +99,6 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     GenericMapDao mapDao;
     @Inject
     TransactionDelegate transaction;
-
-    @Override
-    public boolean isInstanceImageKind(long instanceId, String kind) {
-        return create().select(STORAGE_POOL.fields())
-                .from(STORAGE_POOL)
-                .join(IMAGE_STORAGE_POOL_MAP)
-                    .on(STORAGE_POOL.ID.eq(IMAGE_STORAGE_POOL_MAP.STORAGE_POOL_ID))
-                .join(IMAGE)
-                    .on(IMAGE.ID.eq(IMAGE_STORAGE_POOL_MAP.IMAGE_ID))
-                .join(INSTANCE)
-                    .on(INSTANCE.IMAGE_ID.eq(IMAGE.ID))
-                .where(
-                    INSTANCE.ID.eq(instanceId)
-                    .and(IMAGE_STORAGE_POOL_MAP.REMOVED.isNull())
-                    .and(STORAGE_POOL.KIND.eq(kind)))
-                .fetch().size() > 0;
-    }
-
-    @Override
-    public boolean isVolumeInstanceImageKind(long volumeId, String kind) {
-        Volume volume = objectManager.loadResource(Volume.class, volumeId);
-        Long instanceId = volume.getInstanceId();
-
-        return instanceId == null ? false : isInstanceImageKind(instanceId, kind);
-    }
 
     @Override
     public List<? extends StoragePool> getAssociatedPools(Volume volume) {

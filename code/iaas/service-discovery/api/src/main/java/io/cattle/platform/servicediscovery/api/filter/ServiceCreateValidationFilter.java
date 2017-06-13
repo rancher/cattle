@@ -421,8 +421,6 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         if (launchConfig == null) {
             return;
         }
-
-        ServiceUtil.validateScaleSwitch(newLaunchConfig, launchConfig);
     }
 
 

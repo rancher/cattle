@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class InstanceTable extends TableImpl<InstanceRecord> {
 
-    private static final long serialVersionUID = 1627696014;
+    private static final long serialVersionUID = 1068141085;
 
     /**
      * The reference instance of <code>cattle.instance</code>
@@ -124,11 +124,6 @@ public class InstanceTable extends TableImpl<InstanceRecord> {
      * The column <code>cattle.instance.memory_mb</code>.
      */
     public final TableField<InstanceRecord, Long> MEMORY_MB = createField("memory_mb", org.jooq.impl.SQLDataType.BIGINT, this, "");
-
-    /**
-     * The column <code>cattle.instance.image_id</code>.
-     */
-    public final TableField<InstanceRecord, Long> IMAGE_ID = createField("image_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
      * The column <code>cattle.instance.hostname</code>.
@@ -329,7 +324,7 @@ public class InstanceTable extends TableImpl<InstanceRecord> {
      */
     @Override
     public List<ForeignKey<InstanceRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<InstanceRecord, ?>>asList(Keys.FK_INSTANCE__ACCOUNT_ID, Keys.FK_INSTANCE__IMAGE_ID, Keys.FK_INSTANCE__AGENT_ID, Keys.FK_INSTANCE__REGISTRY_CREDENTIAL_ID, Keys.FK_INSTANCE__INSTANCE_ID, Keys.FK_INSTANCE__SERVICE_INDEX_ID, Keys.FK_INSTANCE__SERVICE_ID, Keys.FK_INSTANCE__ENVIRONMENT_ID, Keys.FK_INSTANCE__DEPLOYMENT_UNIT_ID, Keys.FK_INSTANCE__REVISION_ID);
+        return Arrays.<ForeignKey<InstanceRecord, ?>>asList(Keys.FK_INSTANCE__ACCOUNT_ID, Keys.FK_INSTANCE__AGENT_ID, Keys.FK_INSTANCE__REGISTRY_CREDENTIAL_ID, Keys.FK_INSTANCE__INSTANCE_ID, Keys.FK_INSTANCE__SERVICE_INDEX_ID, Keys.FK_INSTANCE__SERVICE_ID, Keys.FK_INSTANCE__ENVIRONMENT_ID, Keys.FK_INSTANCE__DEPLOYMENT_UNIT_ID, Keys.FK_INSTANCE__REVISION_ID);
     }
 
     /**

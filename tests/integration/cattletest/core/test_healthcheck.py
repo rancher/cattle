@@ -482,9 +482,6 @@ def test_health_state_stack(super_client, context, client):
     assert hcihm.externalTimestamp == ts
 
     wait_for(lambda: super_client.reload(c1).healthState == 'unhealthy')
-    wait_for(lambda: super_client.reload(service).healthState == 'unhealthy')
-    wait_for(lambda: c.reload(env).healthState == 'unhealthy')
-    _remove_service(service)
 
 
 def test_health_state_start_once(super_client, context, client):
@@ -948,15 +945,22 @@ def test_health_check_host_disconnected_reconcile(super_client, new_context):
     wait_for(lambda: super_client.reload(c).healthState == 'healthy')
 
     # Cause the simulator to stop responding to pings
-    client.create_container(name='simDisconnectAgent',
-                            imageUuid=new_context.image_uuid)
+    cd = client.create_container(name='simDisconnectAgent',
+                                 imageUuid=new_context.image_uuid)
+    wait_for_condition(client, cd, lambda x: x.state == 'starting' or
+                       x.state == 'running')
 
     # Forcibly move through reconnect and disconnect so we don't have to wait
-    super_agent = super_client.reload(
-        new_context.agent.agents()[0].reconnect())
-    wait_for(lambda: super_client.reload(super_agent).state == 'reconnecting')
-    super_agent = super_client.wait_success(super_agent.disconnect())
-    assert super_agent.state == 'disconnected'
+    for i in range(20):
+        super_agent = super_client.reload(
+            new_context.agent.agents()[0].reconnect())
+        wait_for(lambda: super_client.reload(super_agent).state ==
+                 'reconnecting')
+        super_agent = super_client.wait_success(super_agent.disconnect())
+        if super_agent.state == 'active':
+            continue
+        assert super_agent.state == 'disconnected'
+        break
     wait_for(lambda: len(c.healthcheckInstanceHostMaps()) == 0)
 
     # instance should stay as healthy

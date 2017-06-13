@@ -1,7 +1,8 @@
 package io.cattle.platform.extension.dynamic.process;
 
-import static io.cattle.platform.core.model.tables.ExternalHandlerExternalHandlerProcessMapTable.EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP;
-import static io.cattle.platform.core.model.tables.ExternalHandlerProcessTable.EXTERNAL_HANDLER_PROCESS;
+import static io.cattle.platform.core.model.tables.ExternalHandlerExternalHandlerProcessMapTable.*;
+import static io.cattle.platform.core.model.tables.ExternalHandlerProcessTable.*;
+
 import io.cattle.platform.core.constants.ExternalHandlerConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.ExternalHandler;
@@ -14,7 +15,6 @@ import io.cattle.platform.extension.dynamic.api.addon.ExternalHandlerProcessConf
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
-import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 
@@ -40,7 +40,7 @@ public class ExternalHandlerActivate extends AbstractDefaultProcessHandler {
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         ExternalHandler externalHandler = (ExternalHandler) state.getResource();
 
-        Map<String, Config> processConfigs = new HashMap<String, Config>();
+        Map<String, Config> processConfigs = new HashMap<>();
         DataAccessor accessor = DataAccessor.fields(externalHandler).withKey(ExternalHandlerConstants.FIELD_PROCESS_CONFIGS);
 
         List<? extends ExternalHandlerProcessConfig> list = accessor.asList(jsonMapper, ExternalHandlerProcessConfig.class);
@@ -97,7 +97,7 @@ public class ExternalHandlerActivate extends AbstractDefaultProcessHandler {
 
         for (ExternalHandlerExternalHandlerProcessMap map : mapDao.findNonRemoved(ExternalHandlerExternalHandlerProcessMap.class, ExternalHandler.class,
                 externalHandler.getId())) {
-            getObjectProcessManager().executeStandardProcess(StandardProcess.CREATE, map, state.getData());
+            createThenActivate(map, state.getData());
         }
 
         accessor.set(null);
@@ -117,7 +117,7 @@ public class ExternalHandlerActivate extends AbstractDefaultProcessHandler {
             process = processes.get(0);
         }
 
-        getObjectProcessManager().executeStandardProcess(StandardProcess.CREATE, process, null);
+        createThenActivate(process, null);
 
         return getObjectManager().reload(process);
     }

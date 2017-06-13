@@ -8,7 +8,7 @@ import java.util.List;
 public class ProcessLog {
 
     String uuid = io.cattle.platform.util.resource.UUID.randomUUID().toString();
-    List<ProcessExecutionLog> executions = new ArrayList<ProcessExecutionLog>();
+    List<ProcessExecutionLog> executions = new ArrayList<>();
 
     public ProcessExecutionLog newExecution() {
         ProcessExecutionLog execution = new ProcessExecutionLog();
@@ -24,6 +24,11 @@ public class ProcessLog {
 
     public void setExecutions(List<ProcessExecutionLog> executions) {
         this.executions = executions;
+    }
+
+    public void resume() {
+        uuid = io.cattle.platform.util.resource.UUID.randomUUID().toString();
+        executions = new ArrayList<>();
     }
 
     public String getUuid() {

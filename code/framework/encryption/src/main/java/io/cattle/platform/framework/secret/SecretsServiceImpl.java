@@ -29,6 +29,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.ResponseHandler;
@@ -77,6 +78,9 @@ public class SecretsServiceImpl implements SecretsService {
 
     @Override
     public void delete(long accountId, String value) throws IOException {
+        if (StringUtils.isBlank(value)) {
+            return;
+        }
         Request.Post(SECRETS_URL.get() + PURGE_PATH).bodyString(value, ContentType.APPLICATION_JSON).execute().handleResponse((response) -> {
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode >= 300 && statusCode != 404) {

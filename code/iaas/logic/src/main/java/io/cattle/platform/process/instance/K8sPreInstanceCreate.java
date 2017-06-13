@@ -53,7 +53,7 @@ public class K8sPreInstanceCreate extends AbstractObjectProcessLogic implements 
             labels.put(SystemLabels.LABEL_DISPLAY_NAME, containerName);
         }
 
-        return new HandlerResult(InstanceConstants.FIELD_LABELS, labels).withShouldContinue(true);
+        return new HandlerResult(InstanceConstants.FIELD_LABELS, labels);
     }
 
     @Override

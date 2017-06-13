@@ -138,7 +138,7 @@ public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSche
         }
 
         if (records.size() == 1) {
-            return records.get(0).into(DynamicSchema.class);
+            return records.get(0).into(DynamicSchemaRecord.class);
         } else if (records.size() == 0) {
             return NULL;
         } else {
@@ -148,7 +148,7 @@ public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSche
 
     private DynamicSchema pickRecordOnPriority(List<Record> records, long accountId, String role) {
         if (records.size() == 1) {
-            return records.get(0).into(DynamicSchema.class);
+            return records.get(0).into(DynamicSchemaRecord.class);
         }
         Record record = null;
         int lastPriority = 0;
@@ -171,7 +171,7 @@ public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSche
                 record = r;
             }
         }
-        return record == null ? NULL : record.into(DynamicSchema.class);
+        return record == null ? NULL : record.into(DynamicSchemaRecord.class);
     }
 
     @SuppressWarnings("unchecked")

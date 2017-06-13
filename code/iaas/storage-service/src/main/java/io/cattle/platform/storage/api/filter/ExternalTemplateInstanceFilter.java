@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -27,12 +28,14 @@ import com.netflix.config.DynamicStringProperty;
 
 public class ExternalTemplateInstanceFilter extends AbstractResourceManagerFilter {
 
+    public static final DynamicStringProperty DEFAULT_REGISTRY = ArchaiusUtil.getString("registry.default");
+    public static final DynamicStringListProperty WHITELIST_REGISTRIES = ArchaiusUtil.getList("registry.whitelist");
+
+    @Inject @Named("CoreSchemaFactory")
     SchemaFactory schemaFactory;
     @Inject
     StorageService storageService;
 
-    public static final DynamicStringProperty DEFAULT_REGISTRY = ArchaiusUtil.getString("registry.default");
-    public static final DynamicStringListProperty WHITELIST_REGISTRIES = ArchaiusUtil.getList("registry.whitelist");
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
         Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
@@ -121,13 +124,5 @@ public class ExternalTemplateInstanceFilter extends AbstractResourceManagerFilte
     public String[] getTypes() {
         List<String> types = schemaFactory.getSchemaNames(Instance.class);
         return types.toArray(new String[types.size()]);
-    }
-
-    public SchemaFactory getSchemaFactory() {
-        return schemaFactory;
-    }
-
-    public void setSchemaFactory(SchemaFactory schemaFactory) {
-        this.schemaFactory = schemaFactory;
     }
 }

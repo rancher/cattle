@@ -39,8 +39,8 @@ def test_container_ha_default(super_client, new_context):
             for pe in process_executions(super_client, p.id):
                 logging.warn('ProcessExecution: %s' % pe)
 
-    assert _process_names(processes) == {'instance.create', 'instance.stop',
-                                         'instance.remove'}
+    assert _process_names(processes) == {'instance.create', 'instance.start',
+                                         'instance.stop', 'instance.remove'}
 
 
 def test_container_discovery(super_client, new_context):

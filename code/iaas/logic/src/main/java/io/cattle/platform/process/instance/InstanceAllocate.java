@@ -38,11 +38,11 @@ public class InstanceAllocate extends AbstractDefaultProcessHandler {
         if (mapDao.findNonRemoved(InstanceHostMap.class, Instance.class, instance.getId()).size() == 0) {
             allocatorService.instanceAllocate(instance);
         }
-        return afterAllocate(state, process, new HashMap<Object, Object>());
+        return afterAllocate(state, process, new HashMap<>());
     }
 
     protected HandlerResult afterAllocate(ProcessState state, ProcessInstance process, Map<Object, Object> result) {
-        Map<String, Set<Long>> allocationData = new HashMap<String, Set<Long>>();
+        Map<String, Set<Long>> allocationData = new HashMap<>();
         result.put("_allocationData", allocationData);
 
         Instance instance = (Instance) state.getResource();
@@ -50,27 +50,22 @@ public class InstanceAllocate extends AbstractDefaultProcessHandler {
 
         for (InstanceHostMap map : mapDao.findNonRemoved(InstanceHostMap.class, Instance.class, instance.getId())) {
             CollectionUtils.addToMap(allocationData, "instance:" + instance.getId(), map.getHostId(), HashSet.class);
-            create(map, state.getData());
+            createIfNot(map, state.getData());
             hostId = map.getHostId();
         }
 
         result.put(InstanceConstants.FIELD_HOST_ID, hostId);
 
-        List<Volume> volumes = getObjectManager().children(instance, Volume.class);
-        List<Volume> dataMountVolumes = InstanceHelpers.extractVolumesFromMounts(instance, getObjectManager());
-        volumes.addAll(dataMountVolumes);
+        List<Volume> volumes = InstanceHelpers.extractVolumesFromMounts(instance, getObjectManager());
 
         for (Volume v : volumes) {
             allocate(v, state.getData());
         }
 
-        volumes = getObjectManager().children(instance, Volume.class);
-        volumes.addAll(dataMountVolumes);
-
         for (Volume v : volumes) {
             for (VolumeStoragePoolMap map : mapDao.findNonRemoved(VolumeStoragePoolMap.class, Volume.class, v.getId())) {
                 CollectionUtils.addToMap(allocationData, "volume:" + v.getId(), map.getVolumeId(), HashSet.class);
-                create(map, state.getData());
+                createIfNot(map, state.getData());
             }
         }
 

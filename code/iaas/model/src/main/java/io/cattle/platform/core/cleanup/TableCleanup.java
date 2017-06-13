@@ -32,8 +32,6 @@ import io.cattle.platform.core.model.tables.HealthcheckInstanceTable;
 import io.cattle.platform.core.model.tables.HostIpAddressMapTable;
 import io.cattle.platform.core.model.tables.HostLabelMapTable;
 import io.cattle.platform.core.model.tables.HostTable;
-import io.cattle.platform.core.model.tables.ImageStoragePoolMapTable;
-import io.cattle.platform.core.model.tables.ImageTable;
 import io.cattle.platform.core.model.tables.InstanceHostMapTable;
 import io.cattle.platform.core.model.tables.InstanceLabelMapTable;
 import io.cattle.platform.core.model.tables.InstanceLinkTable;
@@ -444,8 +442,6 @@ public class TableCleanup extends AbstractJooqDao implements Task {
                 CleanableTable.from(HealthcheckInstanceHostMapTable.HEALTHCHECK_INSTANCE_HOST_MAP),
                 CleanableTable.from(HostTable.HOST),
                 CleanableTable.from(HostIpAddressMapTable.HOST_IP_ADDRESS_MAP),
-                CleanableTable.from(ImageTable.IMAGE),
-                CleanableTable.from(ImageStoragePoolMapTable.IMAGE_STORAGE_POOL_MAP),
                 CleanableTable.from(InstanceTable.INSTANCE),
                 CleanableTable.from(InstanceHostMapTable.INSTANCE_HOST_MAP),
                 CleanableTable.from(InstanceLinkTable.INSTANCE_LINK),

@@ -51,8 +51,7 @@ public class ActivityLogImpl implements ActivityLog {
             auditLog.setEventType(parentLog.getEventType() + "." + type);
             auditLog.setTransactionId(parentLog.getTransactionId());
         }
-        EntryImpl impl = new EntryImpl(this, serviceId, deploymentUnitId, objectManager.create(auditLog));
-        ObjectUtils.publishChanged(eventService, objectManager, impl.auditLog);
+        EntryImpl impl = new EntryImpl(this, serviceId, deploymentUnitId, auditLog);
         entries.push(impl);
         return impl;
     }
@@ -70,11 +69,7 @@ public class ActivityLogImpl implements ActivityLog {
     }
 
     protected void close(EntryImpl entry) {
-        entry.auditLog.setEndTime(new Date());
         entries.pop();
-        objectManager.persist(entry.auditLog);
-        ObjectUtils.publishChanged(eventService, objectManager, entry.auditLog);
-
         if (entries.size() == 0) {
             String transitioning = null;
             String message = null;

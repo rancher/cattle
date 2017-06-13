@@ -33,7 +33,7 @@ public class ServiceCreate extends AbstractObjectProcessHandler {
         boolean system = ServiceConstants.isSystem(stack);
 
         if (DataAccessor.fieldBool(service, ServiceConstants.FIELD_START_ON_CREATE)) {
-            return new HandlerResult(ServiceConstants.FIELD_SYSTEM, system).withShouldContinue(true)
+            return new HandlerResult(ServiceConstants.FIELD_SYSTEM, system)
                     .withChainProcessName(ServiceConstants.PROCESS_SERVICE_ACTIVATE);
         }
 

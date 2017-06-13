@@ -1,6 +1,5 @@
 package io.cattle.platform.process.instance;
 
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
@@ -23,8 +22,12 @@ public class InstanceStartFirstRunning extends AbstractObjectProcessLogic implem
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Date running = ((Instance) state.getResource()).getFirstRunning();
-        return new HandlerResult(INSTANCE.FIRST_RUNNING, running == null ? new Date() : running);
+        Instance instance = (Instance) state.getResource();
+        if (instance.getFirstRunning() == null) {
+            instance.setFirstRunning(new Date());
+            objectManager.persist(instance);
+        }
+        return null;
     }
 
     @Override
