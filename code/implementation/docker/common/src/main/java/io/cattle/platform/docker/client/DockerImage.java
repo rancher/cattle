@@ -36,6 +36,9 @@ public class DockerImage {
         if (uuid.startsWith("sim:") && !flag) {
             uuid = uuid.substring(4);
         }
+        if (!StringUtils.isAlphanumeric(uuid.substring(uuid.length()-1))) {
+            return null;
+        }
         String[] subMatches = findAllSubMatches(uuid, Regexp.REFERENCE_REGEXP);
         if (subMatches.length == 0) {
             if (StringUtils.isBlank(uuid)) {
