@@ -25,6 +25,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
+import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.resource.ServiceDiscoveryConfigItem;
 import io.cattle.platform.servicediscovery.api.service.RancherConfigToComposeFormatter;
@@ -215,9 +216,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                 translateRancherToCompose(forDockerCompose, cattleVolumeData, composeVolumeData, cattleVolume,
                         null, true);
             }
-            if (!composeVolumeData.isEmpty()) {
-                volumesData.put(volume.getName(), composeVolumeData);
-            }
+            volumesData.put(volume.getName(), composeVolumeData);
         }
 
         Map<String, Object> data = new HashMap<String, Object>();
@@ -309,9 +308,9 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
     private void translateV1VolumesToV2(Map<String, Object> cattleServiceData,
             Map<String, Object> composeServiceData, Map<String, Object> volumesData) {
         // volume driver presence defines the v1 format for the volumes
-        String volumeDriver = String.valueOf(cattleServiceData.get(ServiceDiscoveryConfigItem.VOLUME_DRIVER
-                .getCattleName()));
-        if (StringUtils.isEmpty(volumeDriver)) {
+        String volumeDriver = ObjectUtils.toString((cattleServiceData.get(ServiceDiscoveryConfigItem.VOLUME_DRIVER
+                .getCattleName())));
+        if (StringUtils.isBlank(volumeDriver)) {
             return;
         }
         composeServiceData.remove(ServiceDiscoveryConfigItem.VOLUME_DRIVER
