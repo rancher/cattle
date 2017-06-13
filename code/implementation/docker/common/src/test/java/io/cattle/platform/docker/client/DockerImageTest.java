@@ -27,5 +27,19 @@ public class DockerImageTest {
             DockerImage image = DockerImage.parse(key);
             assertEquals(image.getServer(), testCase.get(key));
         }
+        Map<String, String> invalidTestCase = new HashMap<>();
+        invalidTestCase.put("IamAbadImageWithalonglonglonglonglonglonglonglonglonglonglonglonglonglonglongNameAndColonEnd:", "index.docker.io");
+        invalidTestCase.put("IamAbadImageWithalonglonglonglonglonglonglonglonglonglonglonglonglonglonglongNameAndQuestionMarkEnd?", "index.docker.io");
+        invalidTestCase.put("IamAbadImageWithalonglonglonglonglonglonglonglonglonglonglonglonglonglonglongNameAndCommaEnd,", "index.docker.io");
+        invalidTestCase.put("IamAbadImageWithalonglonglonglonglonglonglonglonglonglonglonglonglonglonglongNameAndSemicolonEnd;", "index.docker.io");
+        invalidTestCase.put("IamAbadImageWithalonglonglonglonglonglonglonglonglonglonglonglonglonglonglongNameAndPeriodEnd.", "index.docker.io");
+        invalidTestCase.put("IamAbadImageWithalonglonglonglonglonglonglonglonglonglonglonglonglonglonglongNameAndApostropheEnd`", "index.docker.io");
+        invalidTestCase.put("IamAbadImageWithalonglonglonglonglonglonglonglonglonglonglonglonglonglonglongNameAndAtEnd@", "index.docker.io");
+        invalidTestCase.put("IamAbadImageWithalonglonglonglonglonglonglonglonglonglonglonglonglonglonglongNameAndSpaceEnd ", "index.docker.io");
+        invalidTestCase.put("IamAbadImageWithalonglonglonglonglonglonglonglonglonglonglonglonglonglonglongNameAndDoubleSemicolon::tag", "index.docker.io");
+        for (String key : invalidTestCase.keySet()) {
+            DockerImage image = DockerImage.parse(key);
+            assertEquals(image.getServer(), invalidTestCase.get(key));
+        }
     }
 }
