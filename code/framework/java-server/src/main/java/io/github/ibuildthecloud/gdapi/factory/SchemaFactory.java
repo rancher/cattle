@@ -37,5 +37,4 @@ public interface SchemaFactory {
     List<String> getSchemaNames(Class<?> clz);
 
     boolean typeStringMatches(Class<?> clz, String type);
-
 }

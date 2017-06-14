@@ -12,6 +12,7 @@ public interface Policy {
     public static final String PLAIN_ID = "plain.id";
     public static final String PLAIN_ID_OPTION = "plain.id.option";
     public static final String ASSIGNED_ROLE = "assigned.role";
+    public static final String MODIFY_INFRA = "modify.infrastructure";
     public static final long NO_ACCOUNT = -1L;
 
     boolean isOption(String optionName);

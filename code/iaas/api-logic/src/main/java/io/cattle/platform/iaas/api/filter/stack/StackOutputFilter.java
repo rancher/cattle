@@ -1,10 +1,14 @@
 package io.cattle.platform.iaas.api.filter.stack;
 
+import io.cattle.platform.api.auth.Policy;
+import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.StackDao;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.iaas.api.filter.common.CachedOutputFilter;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
+import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -34,7 +38,16 @@ public class StackOutputFilter extends CachedOutputFilter<Map<Long, List<Object>
 
     @Override
     public Resource filter(ApiRequest request, Object original, Resource converted) {
-        if (request == null || "v1".equals(request.getVersion())) {
+        if (request == null) {
+            return converted;
+        }
+
+        if (DataAccessor.fromMap(converted.getFields()).withKey(ObjectMetaDataManager.SYSTEM_FIELD).as(Boolean.class) &&
+                !ApiUtils.getPolicy().isOption(Policy.MODIFY_INFRA)) {
+            converted.getActions().clear();
+        }
+
+        if ("v1".equals(request.getVersion())) {
             return converted;
         }
 
@@ -42,6 +55,7 @@ public class StackOutputFilter extends CachedOutputFilter<Map<Long, List<Object>
             converted.getFields().put(ServiceConstants.STACK_FIELD_SERVICE_IDS,
                     getCached(request).get(((Stack) original).getId()));
         }
+
         return converted;
     }
 
