@@ -1,6 +1,7 @@
 package io.cattle.platform.docker.client;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,9 +24,23 @@ public class DockerImageTest {
         testCase.put("foo/foo_bar.com:8080", "index.docker.io");
         testCase.put("foo/foo_bar.com", "index.docker.io");
         testCase.put("xn--7o8h.com/myimage:xn--7o8h.com@sha512:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "xn--7o8h.com");
+        testCase.put("foo.com/iamalongimagenameeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee:tag", "foo.com");
         for (String key : testCase.keySet()) {
             DockerImage image = DockerImage.parse(key);
             assertEquals(image.getServer(), testCase.get(key));
+        }
+        Map<String, String> invalidTestCase = new HashMap<>();
+        invalidTestCase.put("IamAbadImageWithalonglonglonglonglonglonglonglonglonglonglonglonglonglonglongNameAndColonEnd:", "none");
+        invalidTestCase.put("IamAbadImageWithalonglonglonglonglonglonglonglonglonglonglonglonglonglonglongNameAndQuestionMarkEnd?", "none");
+        invalidTestCase.put("IamAbadImageWithalonglonglonglonglonglonglonglonglonglonglonglonglonglonglongNameAndCommaEnd,", "none");
+        invalidTestCase.put("IamAbadImageWithalonglonglonglonglonglonglonglonglonglonglonglonglonglonglongNameAndSemicolonEnd;", "none");
+        invalidTestCase.put("IamAbadImageWithalonglonglonglonglonglonglonglonglonglonglonglonglonglonglongNameAndPeriodEnd.", "none");
+        invalidTestCase.put("IamAbadImageWithalonglonglonglonglonglonglonglonglonglonglonglonglonglonglongNameAndApostropheEnd`", "none");
+        invalidTestCase.put("IamAbadImageWithalonglonglonglonglonglonglonglonglonglonglonglonglonglonglongNameAndAtEnd@", "none");
+        invalidTestCase.put("IamAbadImageWithalonglonglonglonglonglonglonglonglonglonglonglonglonglonglongNameAndSpaceEnd ", "none");
+        for (String key : invalidTestCase.keySet()) {
+            DockerImage image = DockerImage.parse(key);
+            assertNull(image);
         }
     }
 }
