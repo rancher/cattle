@@ -8,8 +8,8 @@ import io.cattle.platform.core.util.SettingsUtils;
 import io.cattle.platform.docker.api.transform.TransformInspect;
 import io.cattle.platform.docker.machine.api.MachineLinkFilter;
 import io.cattle.platform.docker.machine.api.addon.BaseMachineConfig;
-import io.cattle.platform.docker.machine.api.filter.MachineValidationFilter;
 import io.cattle.platform.docker.machine.api.filter.MachineOutputFilter;
+import io.cattle.platform.docker.machine.api.filter.MachineValidationFilter;
 import io.cattle.platform.docker.machine.launch.SecretsApiLauncher;
 import io.cattle.platform.docker.machine.launch.WebsocketProxyLauncher;
 import io.cattle.platform.extension.impl.EMUtils;
@@ -74,25 +74,27 @@ import io.cattle.platform.iaas.api.filter.containerevent.ContainerEventFilter;
 import io.cattle.platform.iaas.api.filter.dynamic.schema.DynamicSchemaFilter;
 import io.cattle.platform.iaas.api.filter.externalevent.ExternalEventFilter;
 import io.cattle.platform.iaas.api.filter.hosts.HostsFilter;
-import io.cattle.platform.iaas.api.filter.instance.InstanceAgentValidationFilter;
 import io.cattle.platform.iaas.api.filter.instance.InstanceImageValidationFilter;
 import io.cattle.platform.iaas.api.filter.instance.InstanceOutputFilter;
 import io.cattle.platform.iaas.api.filter.instance.InstancePortsValidationFilter;
+import io.cattle.platform.iaas.api.filter.instance.InstanceValidationFilter;
 import io.cattle.platform.iaas.api.filter.instance.InstanceVolumeCleanupStrategyValidationFilter;
 import io.cattle.platform.iaas.api.filter.machinedriver.MachineDriverFilter;
 import io.cattle.platform.iaas.api.filter.registry.RegistryServerAddressFilter;
 import io.cattle.platform.iaas.api.filter.secret.SecretValidationFilter;
-import io.cattle.platform.iaas.api.filter.service.ServiceMappingsOutputFilter;
+import io.cattle.platform.iaas.api.filter.service.ServiceOutputFilter;
 import io.cattle.platform.iaas.api.filter.serviceevent.ServiceEventFilter;
 import io.cattle.platform.iaas.api.filter.snapshot.SnapshotValidationFilter;
 import io.cattle.platform.iaas.api.filter.ssl.CertificateCreateValidationFilter;
 import io.cattle.platform.iaas.api.filter.stack.StackOutputFilter;
 import io.cattle.platform.iaas.api.filter.storagepool.StoragePoolOutputFilter;
 import io.cattle.platform.iaas.api.filter.volume.VolumeOutputFilter;
+import io.cattle.platform.iaas.api.infrastructure.InfrastructureAccessManager;
+import io.cattle.platform.iaas.api.infrastructure.InfrastructureAccessManagerImpl;
 import io.cattle.platform.iaas.api.manager.DataManager;
 import io.cattle.platform.iaas.api.manager.HaConfigManager;
-import io.cattle.platform.iaas.api.manager.InstanceManager;
 import io.cattle.platform.iaas.api.manager.HostTemplateManager;
+import io.cattle.platform.iaas.api.manager.InstanceManager;
 import io.cattle.platform.iaas.api.manager.ProcessPoolManager;
 import io.cattle.platform.iaas.api.manager.ProcessSummaryManager;
 import io.cattle.platform.iaas.api.manager.SecretManager;
@@ -325,8 +327,8 @@ public class IaasApiConfig {
     }
 
     @Bean
-    InstanceAgentValidationFilter InstanceAgentValidationFilter() {
-        return new InstanceAgentValidationFilter();
+    InstanceValidationFilter InstanceAgentValidationFilter() {
+        return new InstanceValidationFilter();
     }
 
     @Bean
@@ -455,8 +457,8 @@ public class IaasApiConfig {
     }
 
     @Bean
-    ServiceMappingsOutputFilter ServiceMappingsOutputFilter() {
-        return new ServiceMappingsOutputFilter();
+    ServiceOutputFilter ServiceMappingsOutputFilter() {
+        return new ServiceOutputFilter();
     }
 
     @Bean
@@ -942,6 +944,11 @@ public class IaasApiConfig {
     @Bean
     VolumeCreateValidationFilter VolumeCreateValidationFilter() {
         return new VolumeCreateValidationFilter();
+    }
+
+    @Bean
+    InfrastructureAccessManager InfrastructureAccessManager() {
+        return new InfrastructureAccessManagerImpl();
     }
 
 }
