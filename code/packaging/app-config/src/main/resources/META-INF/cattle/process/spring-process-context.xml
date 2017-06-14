@@ -52,6 +52,7 @@
     </bean>
 
     <bean class="io.cattle.platform.process.common.handler.AgentBasedProcessHandler"
+        p:reportProgress="true"
         p:name="InstanceHostMapActivate"
         p:commandName="compute.instance.activate"
         p:agentResourceRelationship="host"
@@ -227,7 +228,7 @@
 
     <!-- Agent -->
     <process:defaultProcesses resourceType="agent" exclude="agent.deactivate,agent.remove" />
-    <process:process name="agent.remove" resourceType="agent" start="disconnecting,disconnected,requested,inactive,registering,updating-active,updating-inactive,reconnected,finishing-reconnect"
+    <process:process name="agent.remove" resourceType="agent" start="active,disconnecting,disconnected,requested,inactive,registering,updating-active,updating-inactive,reconnected,finishing-reconnect"
                                             transitioning="removing" done="removed" />
     <process:process name="agent.deactivate" resourceType="agent" start="disconnecting,disconnected,active,activating,reconnecting,updating-active,updating-inactive,reconnected,finishing-reconnect"
                                             transitioning="deactivating" done="inactive" />

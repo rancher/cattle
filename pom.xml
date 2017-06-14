@@ -12,7 +12,6 @@
         <module>resources</module>
         <module>code/framework/api</module>
         <module>code/framework/api-pub-sub</module>
-        <module>code/framework/api-pub-sub-jetty</module>
         <module>code/framework/archaius</module>
         <module>code/framework/async</module>
         <module>code/framework/auditing</module>
@@ -79,7 +78,6 @@
                 <module>code/iaas/resource-pool</module>
                 <module>code/iaas/ssh-common</module>
                 <module>code/iaas/storage-service</module>
-                <module>code/iaas/task-jooq</module>
                 <module>code/iaas/service-discovery/server</module>
                 <module>code/iaas/service-discovery/api</module>
                 <module>code/iaas/labels</module>
@@ -105,10 +103,8 @@
                 <module>code/implementation/hazelcast/lock</module>
                 <module>code/implementation/host-api</module>
                 <module>code/implementation/host-stats</module>
-                <module>code/implementation/inator</module>
                 <module>code/implementation/register</module>
                 <module>code/implementation/sample-setup</module>
-                <module>code/implementation/settings-api</module>
                 <module>code/implementation/simulator/agent-connection</module>
                 <module>code/implementation/system-stack</module>
                 <module>code/implementation/vm</module>

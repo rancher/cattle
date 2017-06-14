@@ -47,7 +47,7 @@ public class InstanceManager extends AbstractJooqResourceManager {
             return super.deleteInternal(type, id, obj, request);
         } catch (ClientVisibleException e) {
             if (ResponseCodes.METHOD_NOT_ALLOWED == e.getStatus() ) {
-                getObjectProcessManager().stopAndRemove(obj, null);
+                getObjectProcessManager().stopThenRemove(obj, null);
                 return getObjectManager().reload(obj);
             } else {
                 throw e;

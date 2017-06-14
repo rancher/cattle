@@ -2,7 +2,6 @@ package io.cattle.platform.core.dao;
 
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
-import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.core.model.StoragePool;
 
@@ -20,10 +19,6 @@ public interface AgentDao {
     Map<String, PhysicalHost> getPhysicalHosts(long agentId);
 
     Agent getHostAgentForDelegate(long agentId);
-
-    Host getHost(Agent agent);
-
-    Instance getInstance(Agent agent);
 
     String getAgentState(long agentId);
 

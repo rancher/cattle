@@ -27,7 +27,7 @@ public class ServiceFinishupgrade extends AbstractDefaultProcessHandler {
         Service service = (Service)state.getResource();
 
         for (Instance instance : svcDao.getInstancesToGarbageCollect(service)) {
-            objectProcessManager.stopAndRemove(instance, null);
+            objectProcessManager.stopThenRemove(instance, null);
         }
 
         return null;

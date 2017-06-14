@@ -8,14 +8,11 @@ import static io.cattle.platform.core.model.tables.PhysicalHostTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 
 import io.cattle.platform.core.constants.AgentConstants;
-import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HostConstants;
-import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.AgentDao;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
-import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.tables.records.AgentRecord;
@@ -33,7 +30,6 @@ import java.util.Map;
 import javax.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jooq.Record;
 import org.jooq.Record1;
 
 @Named
@@ -48,7 +44,7 @@ public class AgentDaoImpl extends AbstractCoreDao implements AgentDao {
                 .where(
                         AGENT.URI.eq(uri)
                         .and(AGENT.REMOVED.isNull()))
-                .fetchOne();
+                .fetchAny();
     }
 
     @Override
@@ -144,37 +140,6 @@ public class AgentDaoImpl extends AbstractCoreDao implements AgentDao {
                     .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
                 .where(INSTANCE.AGENT_ID.eq(agentId)).fetchInto(AgentRecord.class);
         return result.size() == 0 ? null : result.get(0);
-    }
-
-    @Override
-    public Host getHost(Agent agent) {
-        Record record = create()
-                .select(HOST.fields())
-                    .from(INSTANCE)
-                    .join(INSTANCE_HOST_MAP)
-                        .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID)
-                                .and(INSTANCE_HOST_MAP.REMOVED.isNull()))
-                    .join(HOST)
-                        .on(INSTANCE_HOST_MAP.HOST_ID.eq(HOST.ID))
-                    .where(INSTANCE.AGENT_ID.eq(agent.getId())
-                        .and(INSTANCE.REMOVED.isNull().and(
-                                INSTANCE.STATE.notIn(InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING,
-                                        CommonStatesConstants.REMOVING)))
-                            .and(HOST.REMOVED.isNull()))
-                    .fetchAny();
-
-        return record == null ? null : record.into(Host.class);
-    }
-
-    @Override
-    public Instance getInstance(Agent agent) {
-        return create()
-                .selectFrom(INSTANCE)
-                .where(INSTANCE.AGENT_ID.eq(agent.getId())
-                        .and(INSTANCE.REMOVED.isNull())
-                        .and(INSTANCE.STATE.notIn(InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING,
-                                CommonStatesConstants.REMOVING)))
-                .fetchOne();
     }
 
     @Override

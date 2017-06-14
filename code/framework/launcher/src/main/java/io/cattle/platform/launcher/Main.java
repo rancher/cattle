@@ -92,7 +92,7 @@ public class Main {
         }
 
         File dir = new File(url.getPath());
-        List<URL> urls = new ArrayList<URL>();
+        List<URL> urls = new ArrayList<>();
 
         for (String name : URL_PATHS) {
             File path = new File(dir, name);
@@ -113,7 +113,7 @@ public class Main {
     }
 
     protected List<URL> collectJarUrls(URL jarUrl) throws IOException {
-        List<URL> jarsInJar = new ArrayList<URL>();
+        List<URL> jarsInJar = new ArrayList<>();
 
         InputStream is = null;
         JarInputStream jis = null;
@@ -175,6 +175,8 @@ public class Main {
          */
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 
+        System.setProperty("org.jooq.no-logo", "true");
+
         setupHome();
 
         try {
@@ -205,7 +207,7 @@ public class Main {
 
         String[] paths = pathStrings.trim().split("\\s*[,;:]\\s*");
 
-        final List<URL> result = new ArrayList<URL>();
+        final List<URL> result = new ArrayList<>();
 
         for (String path : paths) {
             if (path.length() == 0)

@@ -16,7 +16,6 @@ import static io.cattle.platform.core.model.tables.StackTable.*;
 import io.cattle.platform.core.addon.PublicEndpoint;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.constants.GenericObjectConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.PortConstants;
 import io.cattle.platform.core.dao.InstanceDao;
@@ -47,7 +46,6 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
@@ -357,29 +355,6 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
                 .where(INSTANCE.STATE.eq(AccountConstants.STATE_PURGED))
                 .limit(count)
                 .fetchInto(InstanceLinkRecord.class);
-    }
-
-    @Override
-    public List<GenericObject> getImagePullTasks(long accountId, List<String> images, Map<String, String> labels) {
-        List<GenericObject> taskList = new ArrayList<>();
-        for (String image : images) {
-            GenericObject pullTask = getPullTask(accountId, image, labels);
-            if (pullTask != null) {
-                if (pullTask.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE)) {
-                    continue;
-                }
-            } else {
-                Map<String, Object> data = new HashMap<>();
-                data.put(ObjectMetaDataManager.KIND_FIELD, GenericObjectConstants.KIND_PULL_TASK);
-                data.put("image", image);
-                data.put("pullTaskUuid", getPullTaskUuid(accountId, image, labels));
-                data.put(ObjectMetaDataManager.ACCOUNT_FIELD, accountId);
-                data.put(InstanceConstants.FIELD_LABELS, labels);
-                pullTask = objectManager.create(GenericObject.class, data);
-            }
-            taskList.add(pullTask);
-        }
-        return taskList;
     }
 
     GenericObject getPullTask(long accountId, String image, Map<String, String> labels) {

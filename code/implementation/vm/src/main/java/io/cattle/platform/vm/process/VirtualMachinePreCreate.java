@@ -109,14 +109,13 @@ public class VirtualMachinePreCreate extends AbstractObjectProcessLogic implemen
         Object objectDisks = DataAccessor.field(instance, InstanceConstants.FIELD_DISKS, Object.class);
         if (objectDisks instanceof List<?>) {
             String namePrefix = instance.getName();
-            Long svcIndexId = instance.getServiceIndexId();
 
             String uuidPart = null;
-            if (svcIndexId != null) {
-                Service svc = serviceDao.getServiceByServiceIndexId(svcIndexId);
-                uuidPart = svc.getUuid().substring(0, 7);
-            } else {
+            if (instance.getServiceId() == null) {
                 uuidPart = instance.getUuid().substring(0, 7);
+            } else {
+                Service svc = objectManager.loadResource(Service.class, instance.getServiceId());
+                uuidPart = svc.getUuid().substring(0, 7);
             }
 
             if (StringUtils.isBlank(namePrefix) || !NAME_PATTERN.matcher(namePrefix).matches()) {

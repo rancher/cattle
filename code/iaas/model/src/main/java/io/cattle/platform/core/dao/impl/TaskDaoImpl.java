@@ -1,12 +1,16 @@
-package io.cattle.platform.task.dao.impl;
+package io.cattle.platform.core.dao.impl;
 
 import static io.cattle.platform.core.model.tables.TaskInstanceTable.*;
 import static io.cattle.platform.core.model.tables.TaskTable.*;
+
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Task;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.task.dao.TaskDao;
+
 import java.util.Date;
+
+import javax.inject.Named;
 
 import org.jooq.exception.DataAccessException;
 import org.slf4j.Logger;
@@ -14,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import com.netflix.config.DynamicLongProperty;
 
+@Named
 public class TaskDaoImpl extends AbstractJooqDao implements TaskDao {
 
     private static Logger log = LoggerFactory.getLogger(TaskDaoImpl.class);

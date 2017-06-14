@@ -4,7 +4,6 @@ import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
-import static io.cattle.platform.core.model.tables.NicTable.*;
 
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -16,11 +15,8 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.IpAddressNicMap;
 import io.cattle.platform.core.model.Nic;
-import io.cattle.platform.core.model.tables.IpAddressTable;
-import io.cattle.platform.core.model.tables.NicTable;
 import io.cattle.platform.core.model.tables.records.IpAddressRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
-import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
@@ -67,37 +63,6 @@ public class IpAddressDaoImpl extends AbstractJooqDao implements IpAddressDao {
         }
 
         return null;
-    }
-
-    @Override
-    public Map<Long, IpAddress> getNicIdToPrimaryIpAddress(long accountId) {
-        final Map<Long, IpAddress> result = new HashMap<>();
-
-        MultiRecordMapper<List<Object>> mapper = new MultiRecordMapper<List<Object>>() {
-            @Override
-            protected List<Object> map(List<Object> input) {
-                result.put(((Nic) input.get(0)).getId(), (IpAddress) input.get(1));
-                return input;
-            }
-        };
-
-        NicTable nic = mapper.add(NIC);
-        IpAddressTable ipAddress = mapper.add(IP_ADDRESS);
-        create()
-                .select(mapper.fields())
-                .from(nic)
-                .join(IP_ADDRESS_NIC_MAP)
-                .on(IP_ADDRESS_NIC_MAP.NIC_ID.eq(nic.ID))
-                .join(ipAddress)
-                .on(ipAddress.ID.eq(IP_ADDRESS_NIC_MAP.IP_ADDRESS_ID))
-                .where(ipAddress.NETWORK_ID.eq(nic.NETWORK_ID)
-                        .and(IP_ADDRESS_NIC_MAP.REMOVED.isNull())
-                        .and(ipAddress.REMOVED.isNull())
-                        .and(nic.REMOVED.isNull()))
-                .and(nic.ACCOUNT_ID.eq(accountId))
-                .fetch().map(mapper);
-
-        return result;
     }
 
     @Override

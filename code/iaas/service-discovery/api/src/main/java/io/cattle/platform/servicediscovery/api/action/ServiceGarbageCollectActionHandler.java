@@ -33,7 +33,7 @@ public class ServiceGarbageCollectActionHandler implements ActionHandler {
         Service service = (Service) obj;
 
         for (Instance instance : svcDao.getInstancesToGarbageCollect(service)) {
-            objectProcessManager.stopAndRemove(instance, null);
+            objectProcessManager.stopThenRemove(instance, null);
         }
 
         return service;

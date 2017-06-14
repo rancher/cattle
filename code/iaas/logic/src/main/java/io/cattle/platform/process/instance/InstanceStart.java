@@ -152,7 +152,7 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
         }
 
         if (reconnecting && (healthCheck != null || instance.getFirstRunning() == null)) {
-            getObjectProcessManager().stopAndRemove(instance, null);
+            getObjectProcessManager().stopThenRemove(instance, null);
         }
     }
 

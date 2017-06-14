@@ -1,7 +1,7 @@
-package io.cattle.platform.task.cleanup;
+package io.cattle.platform.core.cleanup;
 
+import io.cattle.platform.core.dao.impl.TaskDaoImpl;
 import io.cattle.platform.task.Task;
-import io.cattle.platform.task.dao.impl.TaskDaoImpl;
 
 import javax.inject.Inject;
 

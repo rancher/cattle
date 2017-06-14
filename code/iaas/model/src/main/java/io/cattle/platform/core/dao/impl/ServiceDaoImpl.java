@@ -6,7 +6,6 @@ import static io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTab
 import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
-import static io.cattle.platform.core.model.tables.RevisionTable.*;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
@@ -30,7 +29,6 @@ import io.cattle.platform.core.model.HealthcheckInstance;
 import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.Revision;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.ServiceIndex;
@@ -58,7 +56,6 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
@@ -67,7 +64,6 @@ import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,7 +73,6 @@ import javax.inject.Named;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.jooq.Condition;
-import org.jooq.Record;
 import org.jooq.Record2;
 import org.jooq.Record3;
 import org.jooq.Record6;
@@ -132,23 +127,6 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
             index = serviceIndexes.get(0);
         }
         return index;
-    }
-
-    @Override
-    public Service getServiceByServiceIndexId(long serviceIndexId) {
-        Record record = create()
-                .select(SERVICE.fields())
-                .from(SERVICE)
-                .join(SERVICE_INDEX).on(SERVICE.ID.eq(SERVICE_INDEX.SERVICE_ID))
-                .where(SERVICE_INDEX.ID.eq(serviceIndexId))
-                .fetchAny();
-
-        return record == null ? null : record.into(Service.class);
-    }
-
-    @Override
-    public boolean isServiceManagedInstance(Instance instance) {
-        return instance.getServiceId() != null;
     }
 
     @Override
@@ -366,24 +344,6 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
     }
 
     @Override
-    public List<DeploymentUnit> getDeploymentUnitsForRevision(Service service, boolean currentRevision) {
-        Condition condition = null;
-        if (currentRevision) {
-            condition = DEPLOYMENT_UNIT.REVISION_ID.eq(service.getRevisionId());
-        } else {
-            condition = DEPLOYMENT_UNIT.REVISION_ID.ne(service.getRevisionId());
-        }
-        return create()
-                .select(DEPLOYMENT_UNIT.fields())
-                .from(DEPLOYMENT_UNIT)
-                .where(DEPLOYMENT_UNIT.SERVICE_ID.eq(service.getId())
-                .and(condition)
-                .and(DEPLOYMENT_UNIT.REMOVED.isNull())
-                .and(DEPLOYMENT_UNIT.STATE.notIn(CommonStatesConstants.REMOVING)))
-                .fetchInto(DeploymentUnitRecord.class);
-    }
-
-    @Override
     public List<? extends Instance> getInstancesWithHealtcheckEnabled(long accountId) {
         return create().select(INSTANCE.fields())
                 .from(INSTANCE)
@@ -394,76 +354,6 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                 .and(INSTANCE.STATE.in(InstanceConstants.STATE_STARTING, InstanceConstants.STATE_RUNNING)
                         .and(INSTANCE.ACCOUNT_ID.eq(accountId)))
                 .fetchInto(InstanceRecord.class);
-    }
-
-    private static class ServiceInstance {
-        Instance instance;
-        Long serviceId;
-
-        public ServiceInstance(Instance instance, Long serviceId) {
-            super();
-            this.instance = instance;
-            this.serviceId = serviceId;
-        }
-
-        public Instance getInstance() {
-            return instance;
-        }
-
-        public Long getServiceId() {
-            return serviceId;
-        }
-    }
-
-    @Override
-    public Map<Long, List<Instance>> getServiceInstancesWithNoDeploymentUnit() {
-        final Map<Long, List<Instance>> serviceToInstances = new HashMap<>();
-
-        MultiRecordMapper<ServiceInstance> mapper = new MultiRecordMapper<ServiceInstance>() {
-            @Override
-            protected ServiceInstance map(List<Object> input) {
-                return new ServiceInstance((Instance) input.get(0),
-                        ((ServiceExposeMap) input.get(1)).getServiceId());
-            }
-        };
-
-        InstanceTable instance = mapper.add(INSTANCE);
-        ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP);
-
-        // fetch service instances having null du
-        List<ServiceInstance> serviceInstances = create()
-                .select(mapper.fields())
-                .from(instance)
-                .join(exposeMap)
-                .on(exposeMap.INSTANCE_ID.eq(instance.ID))
-                .where(exposeMap.REMOVED.isNull())
-                .and(instance.REMOVED.isNull())
-                .and(instance.DEPLOYMENT_UNIT_UUID.isNull())
-                .fetch().map(mapper);
-
-        serviceInstances.addAll(create().select(mapper.fields())
-                .from(instance)
-                .join(exposeMap)
-                .on(exposeMap.INSTANCE_ID.eq(instance.ID))
-                .leftOuterJoin(DEPLOYMENT_UNIT)
-                .on(DEPLOYMENT_UNIT.UUID.eq(instance.DEPLOYMENT_UNIT_UUID))
-                .where(exposeMap.REMOVED.isNull())
-                .and(instance.REMOVED.isNull())
-                .and(instance.DEPLOYMENT_UNIT_UUID.isNotNull())
-                .and(DEPLOYMENT_UNIT.UUID.isNull())
-                .fetch().map(mapper));
-
-        for (ServiceInstance si : serviceInstances) {
-            List<Instance> instances = new ArrayList<>();
-            Long svcId = si.getServiceId();
-            if (serviceToInstances.containsKey(svcId)) {
-                instances = serviceToInstances.get(svcId);
-            }
-            instances.add(si.getInstance());
-            serviceToInstances.put(svcId, instances);
-        }
-
-        return serviceToInstances;
     }
 
     @Override
@@ -548,34 +438,6 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                         .and(SERVICE_EXPOSE_MAP.UPGRADE.eq(true))
                         .and(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(service.getId()))
                         .fetchInto(InstanceRecord.class);
-    }
-
-    @Override
-    public void cleanupRevisions(Service service) {
-        List<Revision> revisions = objectManager.find(Revision.class, REVISION.SERVICE_ID,
-                service.getId());
-        for (Revision revision : revisions) {
-            if (revision.getId().equals(service.getPreviousRevisionId())
-                    || revision.getId().equals(service.getRevisionId())) {
-                // only mark as removed; they will be delete as a part of
-                // service record removal
-                Map<String, Object> params = new HashMap<>();
-                params.put(ObjectMetaDataManager.REMOVED_FIELD, new Date());
-                params.put(ObjectMetaDataManager.REMOVE_TIME_FIELD, new Date());
-                params.put(ObjectMetaDataManager.STATE_FIELD, CommonStatesConstants.REMOVED);
-                objectManager.setFields(revision, params);
-            } else {
-                List<DeploymentUnit> units = objectManager.find(DeploymentUnit.class, DEPLOYMENT_UNIT.SERVICE_ID,
-                        service.getId(),
-                        DEPLOYMENT_UNIT.REVISION_ID, revision.getId());
-                for (DeploymentUnit unit : units) {
-                    objectManager.setFields(unit, InstanceConstants.FIELD_REVISION_ID,
-                            (Object) null);
-                }
-                objectManager.delete(revision);
-            }
-
-        }
     }
 
     @Override

@@ -1,4 +1,4 @@
-package io.cattle.platform.task.action;
+package io.cattle.platform.iaas.api.task;
 
 import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.core.model.Task;

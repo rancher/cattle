@@ -193,7 +193,7 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
                                 instance = resourceMonitor.waitForNotTransitioning(instance, 3000L);
                                 objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, instance, data);
                             } else {
-                                objectProcessManager.stopAndRemove(instance, data);
+                                objectProcessManager.stopThenRemove(instance, data);
                             }
                         }
                     }

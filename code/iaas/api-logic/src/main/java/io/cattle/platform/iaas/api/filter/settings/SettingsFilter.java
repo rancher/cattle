@@ -1,8 +1,8 @@
-package io.cattle.platform.api.settings.manager;
+package io.cattle.platform.iaas.api.filter.settings;
 
 import io.cattle.platform.api.auth.Policy;
-import io.cattle.platform.api.settings.model.ActiveSetting;
 import io.cattle.platform.api.utils.ApiUtils;
+import io.cattle.platform.core.addon.ActiveSetting;
 import io.cattle.platform.core.model.Setting;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.RequestUtils;
