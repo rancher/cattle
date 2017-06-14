@@ -122,7 +122,7 @@ def test_create_container_with_volume(new_context, super_client):
                                     dataVolumeMounts=dataVolumeMounts)
         client.wait_success(c)
 
-    assert 'must have exactly these pool(s)' in e.value.message
+    assert 'valid host' in e.value.message
 
 
 def create_resources(context, client, super_client, labels={}):

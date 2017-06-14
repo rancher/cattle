@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class VolumeTable extends TableImpl<VolumeRecord> {
 
-    private static final long serialVersionUID = 847616125;
+    private static final long serialVersionUID = 1597241697;
 
     /**
      * The reference instance of <code>cattle.volume</code>
@@ -124,11 +124,6 @@ public class VolumeTable extends TableImpl<VolumeRecord> {
      * The column <code>cattle.volume.format</code>.
      */
     public final TableField<VolumeRecord, String> FORMAT = createField("format", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
-
-    /**
-     * The column <code>cattle.volume.allocation_state</code>.
-     */
-    public final TableField<VolumeRecord, String> ALLOCATION_STATE = createField("allocation_state", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
     /**
      * The column <code>cattle.volume.uri</code>.

@@ -1,10 +1,10 @@
 package io.cattle.platform.app;
 
-import io.cattle.platform.allocator.constraint.AccountConstraintsProvider;
-import io.cattle.platform.allocator.constraint.AffinityConstraintsProvider;
-import io.cattle.platform.allocator.constraint.BaseConstraintsProvider;
-import io.cattle.platform.allocator.constraint.PortsConstraintProvider;
-import io.cattle.platform.allocator.constraint.VolumeAccessModeConstraintProvider;
+import io.cattle.platform.allocator.constraint.provider.AccountConstraintsProvider;
+import io.cattle.platform.allocator.constraint.provider.AffinityConstraintsProvider;
+import io.cattle.platform.allocator.constraint.provider.BaseConstraintsProvider;
+import io.cattle.platform.allocator.constraint.provider.PortsConstraintProvider;
+import io.cattle.platform.allocator.constraint.provider.VolumeAccessModeConstraintProvider;
 import io.cattle.platform.allocator.dao.impl.AllocatorDaoImpl;
 import io.cattle.platform.allocator.service.AllocationHelperImpl;
 import io.cattle.platform.allocator.service.impl.AllocatorServiceImpl;

@@ -6,11 +6,11 @@ import static io.cattle.platform.core.model.tables.PortTable.*;
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
-import io.cattle.platform.allocator.constraint.AllocationConstraintsProvider;
 import io.cattle.platform.allocator.constraint.Constraint;
 import io.cattle.platform.allocator.constraint.PortsConstraint;
-import io.cattle.platform.allocator.constraint.PortsConstraintProvider;
 import io.cattle.platform.allocator.constraint.ValidHostsConstraint;
+import io.cattle.platform.allocator.constraint.provider.AllocationConstraintsProvider;
+import io.cattle.platform.allocator.constraint.provider.PortsConstraintProvider;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.dao.impl.QueryOptions;
 import io.cattle.platform.allocator.exception.FailedToAllocate;
@@ -35,7 +35,6 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.StorageDriver;
-import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.util.InstanceHelpers;
 import io.cattle.platform.core.util.PortSpec;
@@ -195,16 +194,6 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
     }
 
     @Override
-    public void volumeDeallocate(Volume volume) {
-        log.info("Deallocating volume [{}]", volume.getId());
-        if (!allocatorDao.isAllocationReleased(volume)) {
-            allocatorDao.releaseAllocation(volume);
-            callExternalSchedulerToRelease(volume);
-        }
-        log.info("Handled request for volume [{}]", volume.getId());
-    }
-
-    @Override
     @SuppressWarnings("unchecked")
     public List<String> callExternalSchedulerForHostsSatisfyingLabels(Long accountId, Map<String, String> labels) {
         List<Long> agentIds = agentInstanceDao.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_SCHEDULING_PROVIDER, accountId);
@@ -295,7 +284,6 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
         Long hostId = host != null ? host.getId() : null;
 
         Set<Volume> volumes = new HashSet<>();
-        Map<Volume, Set<StoragePool>> pools = new HashMap<>();
         Long requestedHostId = null;
 
         for (Instance instance : instances) {
@@ -314,11 +302,7 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
             }
         }
 
-        for (Volume v : volumes) {
-            pools.put(v, new HashSet<StoragePool>(allocatorDao.getAssociatedPools(v)));
-        }
-
-        doAllocate(new AllocationAttempt(origInstance.getAccountId(), instances, hostId, requestedHostId, volumes, pools));
+        doAllocate(new AllocationAttempt(origInstance.getAccountId(), instances, hostId, requestedHostId, volumes));
     }
 
     protected LockDefinition getInstanceLockDef(Instance origInstance, List<Instance> instances, Set<Long> volumeIds) {
@@ -356,9 +340,7 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
             if (driver != null) {
                 String accessMode = DataAccessor.fieldString(driver, StorageDriverConstants.FIELD_VOLUME_ACCESS_MODE);
                 if (VolumeConstants.ACCESS_MODE_SINGLE_HOST_RW.equals(accessMode) || VolumeConstants.ACCESS_MODE_SINGLE_INSTANCE_RW.equals(accessMode)) {
-                    if (!CommonStatesConstants.ACTIVE.equals(volume.getAllocationState())) {
-                        locks.add(new AllocateConstraintLock(AllocateConstraintLock.Type.VOLUME, volume.getId().toString()));
-                    }
+                    locks.add(new AllocateConstraintLock(AllocateConstraintLock.Type.VOLUME, volume.getId().toString()));
                 }
             }
         }
@@ -510,15 +492,6 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
         if (candidate.getHost() != null) {
             candidateLog.append(String.format("  %s   host [%s]\n", prefix, candidate.getHost()));
         }
-        for (Map.Entry<Long, Set<Long>> entry : candidate.getPools().entrySet()) {
-            candidateLog.append(String.format("  %s   volume [%s]\n", prefix, entry.getKey()));
-            for (long poolId : entry.getValue()) {
-                candidateLog.append(String.format("  %s   pool [%s]\n", prefix, poolId));
-            }
-        }
-        for (Map.Entry<Long, Long> entry : candidate.getSubnetIds().entrySet()) {
-            candidateLog.append(String.format("  %s   nic [%s] subnet [%s]\n", prefix, entry.getKey(), entry.getValue()));
-        }
         candidateLog.deleteCharAt(candidateLog.length() - 1); // Remove trailing newline
         log.info(candidateLog.toString());
     }
@@ -533,12 +506,9 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
             }
             candidateLog.append(String.format("  [%s] instance [%s]\n", id, instanceIds));
         }
-        for (Map.Entry<Volume, Set<StoragePool>> entry : attempt.getPools().entrySet()) {
-            long volumeId = entry.getKey().getId();
+        for (Volume volume : attempt.getVolumes()) {
+            long volumeId = volume.getId();
             candidateLog.append(String.format("  [%s] volume [%s]\n", id, volumeId));
-            for (StoragePool pool : entry.getValue()) {
-                candidateLog.append(String.format("  [%s] pool [%s]\n", id, pool.getId()));
-            }
         }
 
         candidateLog.append(String.format("  [%s] constraints:\n", id));
@@ -713,23 +683,6 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
                     instances.add(instance);
                     reqData.put(CONTEXT, instances);
                 }
-                RemoteAgent agent = agentLocator.lookupAgent(agentId);
-                callScheduler("Error releasing resources: %s", schedulerEvent, agent);
-            }
-        }
-    }
-
-    private void callExternalSchedulerToRelease(Volume volume) {
-        String hostUuid = allocatorDao.getAllocatedHostUuid(volume);
-        if (StringUtils.isEmpty(hostUuid)) {
-            return;
-        }
-        List<Long> agentIds = getAgentResource(volume);
-        for (Long agentId : agentIds) {
-            EventVO<Map<String, Object>> schedulerEvent = buildReleaseEvent(VolumeConstants.PROCESS_DEALLOCATE, volume, agentId);
-            if (schedulerEvent != null) {
-                Map<String, Object> reqData = CollectionUtils.toMap(schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME));
-                reqData.put(HOST_ID, hostUuid);
                 RemoteAgent agent = agentLocator.lookupAgent(agentId);
                 callScheduler("Error releasing resources: %s", schedulerEvent, agent);
             }

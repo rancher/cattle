@@ -48,8 +48,6 @@ public class VolumeRemove extends IgnoreReconnectionAgentHandler {
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Volume volume = (Volume)state.getResource();
 
-        deallocate(volume, state.getData());
-
         boolean maps = false;
         boolean mounts = false;
 

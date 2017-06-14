@@ -1,5 +1,6 @@
-package io.cattle.platform.allocator.constraint;
+package io.cattle.platform.allocator.constraint.provider;
 
+import io.cattle.platform.allocator.constraint.Constraint;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationLog;
 

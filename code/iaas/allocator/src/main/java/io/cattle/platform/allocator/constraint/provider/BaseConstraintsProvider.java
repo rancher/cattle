@@ -1,29 +1,24 @@
-package io.cattle.platform.allocator.constraint;
+package io.cattle.platform.allocator.constraint.provider;
 
+import io.cattle.platform.allocator.constraint.Constraint;
+import io.cattle.platform.allocator.constraint.ValidHostsConstraint;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationLog;
-import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.StoragePoolDao;
 import io.cattle.platform.core.model.Host;
-import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.Priority;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class BaseConstraintsProvider implements AllocationConstraintsProvider, Priority {
 
@@ -67,49 +62,10 @@ public class BaseConstraintsProvider implements AllocationConstraintsProvider, P
     }
 
     protected void addStorageConstraints(AllocationAttempt attempt, List<Constraint> constraints) {
-        for (Map.Entry<Volume, Set<StoragePool>> entry : attempt.getPools().entrySet()) {
-            Volume volume = entry.getKey();
-            boolean alreadyMappedToPool = entry.getValue().size() > 0;
-            Set<Long> storagePoolIds = new HashSet<>();
-            for (StoragePool pool : entry.getValue()) {
-                storagePoolIds.add(pool.getId());
-                storagePoolToHostConstraint(constraints, pool);
-            }
-
-            boolean restrictToUnmanagedPool = false;
-            if (!alreadyMappedToPool) {
-                String driver = DataAccessor.fieldString(volume, VolumeConstants.FIELD_VOLUME_DRIVER);
-                restrictToUnmanagedPool = true;
-                if (StringUtils.isNotEmpty(driver) && !VolumeConstants.LOCAL_DRIVER.equals(driver)) {
-                    List<? extends StoragePool> pools = storagePoolDao.findStoragePoolByDriverName(volume.getAccountId(), driver);
-                    if (pools.size() > 0) {
-                        Set<Long> poolIds = new HashSet<>();
-                        for (StoragePool pool : pools) {
-                            poolIds.add(pool.getId());
-                        }
-                        constraints.add(new VolumeValidStoragePoolConstraint(volume, false, poolIds));
-                        storagePoolToHostConstraint(constraints, pools);
-                        restrictToUnmanagedPool = false;
-                    }
-                }
-            }
-
-            if (storagePoolIds.size() > 0) {
-                constraints.add(new VolumeValidStoragePoolConstraint(volume, alreadyMappedToPool, storagePoolIds));
-            }
-
-            if (restrictToUnmanagedPool) {
-                constraints.add(new UnmanagedStoragePoolKindConstraint(volume));
-            }
-        }
-
-        for (Instance instance : attempt.getInstances()) {
-            String driver = DataAccessor.fieldString(instance, InstanceConstants.FIELD_VOLUME_DRIVER);
-            if (StringUtils.isNotEmpty(driver) && !VolumeConstants.LOCAL_DRIVER.equals(driver)) {
-                List<? extends StoragePool> pools = storagePoolDao.findStoragePoolByDriverName(instance.getAccountId(), driver);
-                if (pools.size() > 0) {
-                    storagePoolToHostConstraint(constraints, pools.get(0));
-                }
+        for (Volume volume : attempt.getVolumes()) {
+            Long hostId = allocatorDao.getHostAffinityForVolume(volume);
+            if (hostId != null) {
+                constraints.add(new ValidHostsConstraint(hostId));
             }
         }
     }

@@ -50,7 +50,7 @@ public class VolumeManager extends AbstractJooqResourceManager {
             Object aId = ObjectUtils.getAccountId(v);
             if (aId != null) {
                 List<? extends StoragePool> pools = storagePoolDao.findStoragePoolByDriverName((Long)aId, driver);
-                if (pools.size() > 0) {
+                if (pools.size() == 1) {
                     StoragePool sp = pools.get(0);
                     VolumeStoragePoolMap vspm = getObjectManager().newRecord(VolumeStoragePoolMap.class);
                     vspm.setStoragePoolId(sp.getId());

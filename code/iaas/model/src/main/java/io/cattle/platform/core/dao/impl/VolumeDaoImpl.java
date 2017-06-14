@@ -5,6 +5,7 @@ import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.MountTable.*;
 import static io.cattle.platform.core.model.tables.StorageDriverTable.*;
+import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
@@ -14,6 +15,7 @@ import io.cattle.platform.core.addon.MountEntry;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.StoragePoolConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.VolumeDao;
@@ -30,6 +32,7 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
@@ -46,6 +49,7 @@ import java.util.concurrent.Callable;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jooq.Record;
 import org.jooq.Record6;
 import org.jooq.RecordHandler;
@@ -348,5 +352,35 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
                     DEPLOYMENT_UNIT.REMOVED.isNull()
                     .and(VOLUME_TEMPLATE.ID.eq(volume.getVolumeTemplateId())))
             .fetch(DEPLOYMENT_UNIT.ID);
+    }
+
+    @Override
+    public Long findPoolForVolumeAndHost(Volume volume, long hostId) {
+        String storageDriver = DataAccessor.fieldString(volume, VolumeConstants.FIELD_VOLUME_DRIVER);
+        Long storageDriverId = volume.getStorageDriverId();
+
+        if (storageDriverId != null) {
+            return create().select(STORAGE_POOL.ID)
+                .from(STORAGE_POOL)
+                .join(STORAGE_POOL_HOST_MAP)
+                    .on(STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID.eq(STORAGE_POOL.ID))
+                .where(STORAGE_POOL.STORAGE_DRIVER_ID.eq(storageDriverId)
+                        .and(STORAGE_POOL_HOST_MAP.REMOVED.isNull())
+                        .and(STORAGE_POOL.REMOVED.isNull())
+                        .and(STORAGE_POOL_HOST_MAP.HOST_ID.eq(hostId)))
+                .fetchAny(STORAGE_POOL.ID);
+        } else if (StringUtils.isBlank(storageDriver) || VolumeConstants.LOCAL_DRIVER.equalsIgnoreCase(storageDriver)) {
+            return create().select(STORAGE_POOL.ID)
+                .from(STORAGE_POOL)
+                .join(STORAGE_POOL_HOST_MAP)
+                    .on(STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID.eq(STORAGE_POOL.ID))
+                .where(STORAGE_POOL.KIND.in(StoragePoolConstants.UNMANGED_STORAGE_POOLS)
+                        .and(STORAGE_POOL_HOST_MAP.REMOVED.isNull())
+                        .and(STORAGE_POOL.REMOVED.isNull())
+                        .and(STORAGE_POOL_HOST_MAP.HOST_ID.eq(hostId)))
+                .fetchAny(STORAGE_POOL.ID);
+        }
+
+        return null;
     }
 }

@@ -3,11 +3,11 @@ package io.cattle.platform.allocator.service;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition;
-import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.AffinityOps;
 import io.cattle.platform.allocator.constraint.Constraint;
 import io.cattle.platform.allocator.constraint.ContainerAffinityConstraint;
 import io.cattle.platform.allocator.constraint.ContainerLabelAffinityConstraint;
 import io.cattle.platform.allocator.constraint.HostAffinityConstraint;
+import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.AffinityOps;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.lock.AllocateConstraintLock;
 import io.cattle.platform.core.constants.InstanceConstants;

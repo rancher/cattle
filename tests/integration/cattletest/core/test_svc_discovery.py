@@ -3542,7 +3542,7 @@ def test_host_remove_error_state(new_context, super_client):
     opts = {'foo': 'true', 'bar': 'true'}
     stack = _create_stack(client)
 
-    client.create_volumeTemplate(name="foo", driver="nfs",
+    client.create_volumeTemplate(name="foo", driver="local",
                                  driverOpts=opts,
                                  stackId=stack.id,
                                  perContainer=True)
@@ -3564,7 +3564,7 @@ def test_host_remove_error_state(new_context, super_client):
     volumes = client.list_volume(name_like=name + "_%")
     assert len(volumes) == 1
     v = volumes[0]
-    assert v.driver == 'nfs'
+    assert v.driver == 'local'
     assert v.driverOpts == opts
 
     # remove host and validate the volume is gone
