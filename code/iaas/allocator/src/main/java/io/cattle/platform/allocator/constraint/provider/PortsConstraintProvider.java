@@ -1,6 +1,9 @@
-package io.cattle.platform.allocator.constraint;
+package io.cattle.platform.allocator.constraint.provider;
 
 import static io.cattle.platform.core.model.tables.PortTable.*;
+
+import io.cattle.platform.allocator.constraint.Constraint;
+import io.cattle.platform.allocator.constraint.PortsConstraint;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.service.AllocationAttempt;

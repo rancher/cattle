@@ -398,8 +398,7 @@ def test_volume_create(new_context):
 
     v2 = client.wait_success(v2)
     sps = v2.storagePools()
-    assert len(sps) == 1
-    assert sps[0].kind == 'sim'
+    assert len(sps) == 0
 
     # Create a new, unmapped volume, assign to container via dataVolumes
     # Should be translated to a dataVolumeMount entry.
@@ -447,7 +446,7 @@ def test_volume_create_failed_allocation(new_context):
                                     requestedHostId=new_host.id,
                                     dataVolumeMounts=data_volume_mounts)
         client.wait_success(c)
-    assert 'must have exactly these pool' in e.value.message
+    assert 'valid host' in e.value.message
 
     # Put two volumes from mutually exclusive storage pools onto a container
     # and it should fail to find placement

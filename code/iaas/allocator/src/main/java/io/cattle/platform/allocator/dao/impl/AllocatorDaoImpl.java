@@ -19,12 +19,10 @@ import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
-import io.cattle.platform.allocator.util.AllocatorUtils;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.constants.StorageDriverConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Host;
@@ -34,11 +32,9 @@ import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.StorageDriver;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
-import io.cattle.platform.core.model.VolumeStoragePoolMap;
 import io.cattle.platform.core.model.tables.records.HostRecord;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.core.model.tables.records.PortRecord;
-import io.cattle.platform.core.model.tables.records.StoragePoolRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
@@ -99,33 +95,6 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     GenericMapDao mapDao;
     @Inject
     TransactionDelegate transaction;
-
-    @Override
-    public List<? extends StoragePool> getAssociatedPools(Volume volume) {
-        return create()
-                .select(STORAGE_POOL.fields())
-                .from(STORAGE_POOL)
-                .join(VOLUME_STORAGE_POOL_MAP)
-                    .on(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID.eq(STORAGE_POOL.ID))
-                .where(
-                    VOLUME_STORAGE_POOL_MAP.REMOVED.isNull()
-                    .and(VOLUME_STORAGE_POOL_MAP.VOLUME_ID.eq(volume.getId())))
-                .fetchInto(StoragePoolRecord.class);
-    }
-
-    @Override
-    public List<? extends StoragePool> getAssociatedUnmanagedPools(Host host) {
-        return create()
-                .select(STORAGE_POOL.fields())
-                .from(STORAGE_POOL)
-                .join(STORAGE_POOL_HOST_MAP)
-                    .on(STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID.eq(STORAGE_POOL.ID))
-                .where(
-                    STORAGE_POOL_HOST_MAP.REMOVED.isNull()
-                    .and(STORAGE_POOL_HOST_MAP.HOST_ID.eq(host.getId())
-                    .and(STORAGE_POOL.KIND.in(AllocatorUtils.UNMANGED_STORAGE_POOLS))))
-                .fetchInto(StoragePoolRecord.class);
-    }
 
     @Override
     public Host getHost(Instance instance) {
@@ -198,28 +167,6 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                 updateVolumeHostInfo(attempt, candidate, newHost);
             }
 
-            Map<Long, Set<Long>> existingPools = attempt.getPoolIds();
-            Map<Long, Set<Long>> newPools = candidate.getPools();
-
-            if (!existingPools.keySet().equals(newPools.keySet())) {
-                throw new IllegalStateException(String.format("Volumes don't match. currently %s, new %s", existingPools.keySet(), newPools.keySet()));
-            }
-
-            for (Map.Entry<Long, Set<Long>> entry : newPools.entrySet()) {
-                long volumeId = entry.getKey();
-                Set<Long> existingPoolsForVol = existingPools.get(entry.getKey());
-                Set<Long> newPoolsForVol = entry.getValue();
-                if (existingPoolsForVol == null || existingPoolsForVol.size() == 0) {
-                    for (long poolId : newPoolsForVol) {
-                        log.info("Associating volume [{}] to storage pool [{}]", volumeId, poolId);
-                        objectManager.create(VolumeStoragePoolMap.class,
-                                VOLUME_STORAGE_POOL_MAP.VOLUME_ID, volumeId,
-                                VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID, poolId);
-                    }
-                } else if (!existingPoolsForVol.equals(newPoolsForVol)) {
-                    throw new IllegalStateException(String.format("Can not move volume %s, currently: %s, new: %s", volumeId, existingPools, newPools));
-                }
-            }
             if (attempt.getAllocatedIPs() != null) {
                 updateInstancePorts(attempt.getAllocatedIPs());
             }
@@ -247,11 +194,6 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
         for (Volume v : attempt.getVolumes()) {
             boolean persist = false;
-            StorageDriver d = v.getStorageDriverId() != null ? storageDrivers.get(v.getStorageDriverId()) : null;
-            if (d != null && StorageDriverConstants.SCOPE_LOCAL.equals(DataAccessor.fieldString(d, StorageDriverConstants.FIELD_SCOPE))) {
-                persist = true;
-                getAllocatedHostUuidProp(v).set(candidate.getHostUuid());
-            }
             if (VolumeConstants.ACCESS_MODE_SINGLE_HOST_RW.equals(v.getAccessMode())) {
                 persist = true;
                 DataAccessor.fromDataFieldOf(v).withKey(VolumeConstants.FIELD_LAST_ALLOCATED_HOST_ID).set(newHost);
@@ -287,20 +229,6 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     }
 
     @Override
-    public void releaseAllocation(Volume volumeIn) {
-        transaction.doInTransaction(() -> {
-            //Reload for persisting
-            Volume volume = objectManager.reload(volumeIn);
-            DataAccessor data = getDeallocatedProp(volume);
-            Boolean done = data.as(Boolean.class);
-            if ( done == null || ! done.booleanValue() ) {
-                data.set(true);
-                objectManager.persist(volume);
-            }
-        });
-    }
-
-    @Override
     public boolean isAllocationReleased(Object resource) {
         DataAccessor done = getDeallocatedProp(resource);
         return done.withDefault(false).as(Boolean.class);
@@ -310,17 +238,6 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
         return DataAccessor.fromDataFieldOf(resource)
                 .withScope(AllocatorDao.class)
                 .withKey("deallocated");
-    }
-
-    @Override
-    public String getAllocatedHostUuid(Volume volume) {
-        return getAllocatedHostUuidProp(volume).as(String.class);
-    }
-
-    protected DataAccessor getAllocatedHostUuidProp(Volume v) {
-        return DataAccessor.fromDataFieldOf(v)
-        .withScope(AllocatorDao.class)
-        .withKey("allocatedHostUuid");
     }
 
     @Override
@@ -396,27 +313,6 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                 }
             });
         return result;
-    }
-
-    @Override
-    public List<Port> getUsedPortsForHostExcludingInstance(long hostId, long instanceId) {
-        return create()
-                .select(PORT.fields())
-                    .from(PORT)
-                    .join(INSTANCE_HOST_MAP)
-                        .on(PORT.INSTANCE_ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
-                    .join(INSTANCE)
-                        .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
-                .leftOuterJoin(SERVICE_EXPOSE_MAP)
-                .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID))
-                    .where(INSTANCE_HOST_MAP.HOST_ID.eq(hostId)
-                        .and(INSTANCE.REMOVED.isNull())
-                        .and(INSTANCE.ID.ne(instanceId))
-                        .and(INSTANCE.STATE.in(InstanceConstants.STATE_STARTING, InstanceConstants.STATE_RESTARTING, InstanceConstants.STATE_RUNNING))
-                        .and(INSTANCE_HOST_MAP.REMOVED.isNull())
-                        .and(PORT.REMOVED.isNull())
-                        .and(SERVICE_EXPOSE_MAP.UPGRADE.eq(false).or(SERVICE_EXPOSE_MAP.UPGRADE.isNull())))
-                .fetchInto(Port.class);
     }
 
     @Override
@@ -716,5 +612,20 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
         } else {
             return base.and(next);
         }
+    }
+
+    @Override
+    public Long getHostAffinityForVolume(Volume volume) {
+        Result<Record1<Long>> result = create().select(STORAGE_POOL_HOST_MAP.HOST_ID)
+            .from(STORAGE_POOL_HOST_MAP)
+            .join(VOLUME_STORAGE_POOL_MAP)
+                .on(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID.eq(STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID))
+            .where(VOLUME_STORAGE_POOL_MAP.VOLUME_ID.eq(volume.getId())
+                    .and(VOLUME_STORAGE_POOL_MAP.REMOVED.isNull()
+                            .and(STORAGE_POOL_HOST_MAP.REMOVED.isNull())))
+            .limit(2)
+            .fetch();
+
+        return result.size() == 1 ? result.get(0).getValue(STORAGE_POOL_HOST_MAP.HOST_ID) : null;
     }
 }

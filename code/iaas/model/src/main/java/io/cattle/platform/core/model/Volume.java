@@ -189,17 +189,6 @@ public interface Volume extends Serializable {
     public String getFormat();
 
     /**
-     * Setter for <code>cattle.volume.allocation_state</code>.
-     */
-    public void setAllocationState(String value);
-
-    /**
-     * Getter for <code>cattle.volume.allocation_state</code>.
-     */
-    @Column(name = "allocation_state", length = 255)
-    public String getAllocationState();
-
-    /**
      * Setter for <code>cattle.volume.uri</code>.
      */
     public void setUri(String value);

@@ -40,4 +40,6 @@ public interface VolumeDao {
 
     List<Long> findDeploymentUnitsForVolume(Volume volume);
 
+    Long findPoolForVolumeAndHost(Volume volume, long hostId);
+
 }

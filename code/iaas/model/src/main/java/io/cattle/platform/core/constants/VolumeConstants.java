@@ -10,8 +10,6 @@ public class VolumeConstants {
 
     public static final String STATE_DETACHED = "detached";
 
-    public static final String REMOVE_OPTION = "remove";
-
     public static final String FILE_PREFIX = "file";
 
     public static final String URI_FORMAT = "%s://%s";
@@ -68,10 +66,10 @@ public class VolumeConstants {
     public static final String SECRETS_PATH = "/run/secrets";
 
     public static final String SECRETS_OPT_KEY = "io.rancher.secrets.token";
-    
+
     public static final String EC2_AZ = "ec2_az";
-    
+
     public static final String HOST_ZONE_LABEL_KEY = "io.rancher.host.zone";
-    
+
     public static final String FIELD_LAST_ALLOCATED_HOST_ID = "lastAllocatedHostID";
 }

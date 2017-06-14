@@ -1,5 +1,8 @@
-package io.cattle.platform.allocator.constraint;
+package io.cattle.platform.allocator.constraint.provider;
 
+import io.cattle.platform.allocator.constraint.Constraint;
+import io.cattle.platform.allocator.constraint.VolumeAccessModeSingleHostConstraint;
+import io.cattle.platform.allocator.constraint.VolumeAccessModeSingleInstanceConstraint;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.service.AllocationAttempt;

@@ -7,7 +7,16 @@ import java.util.Set;
 
 public class ValidHostsConstraint extends HardConstraint implements Constraint {
 
-    Set<Long> hosts = new HashSet<Long>();
+    Set<Long> hosts = new HashSet<>();
+
+
+    public ValidHostsConstraint() {
+    }
+
+    public ValidHostsConstraint(Long hostId) {
+        super();
+        this.hosts.add(hostId);
+    }
 
     public Set<Long> getHosts() {
         return hosts;
