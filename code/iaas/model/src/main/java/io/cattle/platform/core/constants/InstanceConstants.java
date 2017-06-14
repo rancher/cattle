@@ -19,6 +19,14 @@ public class InstanceConstants {
     public static final String TYPE = "instance";
     public static final String TYPE_CONTAINER = "container";
 
+    public static final String ACTION_START = "start";
+    public static final String ACTION_STOP = "stop";
+    public static final String ACTION_RESTART = "restart";
+    public static final String ACTION_REMOVE = "remove";
+    public static final String ACTION_EXEC = "execute";
+    public static final String ACTION_LOGS = "logs";
+    public static final String ACTION_PROXY = "proxy";
+
     public static final String FIELD_AGENT_INSTANCE = "agentInstance";
     public static final String FIELD_COUNT = "count";
     public static final String FIELD_CREDENTIAL_IDS = "credentialIds";
