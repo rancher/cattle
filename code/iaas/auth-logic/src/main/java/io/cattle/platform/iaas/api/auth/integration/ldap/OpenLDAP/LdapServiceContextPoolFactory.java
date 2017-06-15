@@ -1,4 +1,4 @@
-package io.cattle.platform.iaas.api.auth.integration.ldap.ad;
+package io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP;
 
 import io.cattle.platform.iaas.api.auth.integration.ldap.ServiceContextCreationException;
 import io.cattle.platform.iaas.api.auth.integration.ldap.interfaces.LDAPConstants;
