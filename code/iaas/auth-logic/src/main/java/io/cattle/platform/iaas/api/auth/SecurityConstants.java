@@ -3,7 +3,6 @@ package io.cattle.platform.iaas.api.auth;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.iaas.api.auth.integration.azure.AzureConstants;
 import io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP.OpenLDAPConstants;
-import io.cattle.platform.iaas.api.auth.integration.ldap.ad.ADConstants;
 import io.cattle.platform.iaas.api.auth.integration.local.LocalAuthConstants;
 
 import java.util.Arrays;
@@ -32,5 +31,5 @@ public class SecurityConstants {
     public static final String AUTH_ENABLER = "api.auth.enabler";
     public static final DynamicStringProperty AUTH_ENABLER_SETTING = ArchaiusUtil.getString(AUTH_ENABLER);
     public static final List<String> INTERNAL_AUTH_PROVIDERS = Collections.unmodifiableList(
-            Arrays.asList(new String[] {AzureConstants.CONFIG, ADConstants.CONFIG, OpenLDAPConstants.CONFIG, LocalAuthConstants.CONFIG}));
+            Arrays.asList(new String[] {AzureConstants.CONFIG, OpenLDAPConstants.CONFIG, LocalAuthConstants.CONFIG}));
 }
