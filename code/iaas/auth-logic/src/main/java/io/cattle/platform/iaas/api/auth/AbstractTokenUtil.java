@@ -1,6 +1,7 @@
 package io.cattle.platform.iaas.api.auth;
 
 import io.cattle.platform.api.auth.Identity;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.dao.AccountDao;
@@ -39,6 +40,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.netflix.config.DynamicBooleanProperty;
+
 public abstract class AbstractTokenUtil implements TokenUtil {
 
     public static final String ACCESSMODE = "accessMode";
@@ -54,6 +57,7 @@ public abstract class AbstractTokenUtil implements TokenUtil {
     public static final String UNRESTRICTED_ACCESSMODE = "unrestricted";
 
     private static final Logger log = LoggerFactory.getLogger(AbstractTokenUtil.class);
+    private static final DynamicBooleanProperty CREATE_PROJECT = ArchaiusUtil.getBoolean("project.create.default");
 
     @Inject
     protected AuthDao authDao;
@@ -303,8 +307,9 @@ public abstract class AbstractTokenUtil implements TokenUtil {
                         user.getExternalIdType());
             }
             Object hasLoggedIn = DataAccessor.fields(account).withKey(SecurityConstants.HAS_LOGGED_IN).get();
-            if ((hasLoggedIn == null || !((Boolean) hasLoggedIn)) &&
-                    !authDao.hasAccessToAnyProject(identities, false, null)) {
+            if (((hasLoggedIn == null || !((Boolean) hasLoggedIn)) &&
+                    !authDao.hasAccessToAnyProject(identities, false, null)) && 
+                    (CREATE_PROJECT.get())) {
                 projectResourceManager.createProjectForUser(user);
             }
         } else {
