@@ -11,7 +11,6 @@ import static io.cattle.platform.core.model.tables.SubnetTable.*;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.constants.PortConstants;
 import io.cattle.platform.core.constants.SubnetConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
@@ -20,27 +19,21 @@ import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Nic;
-import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.model.tables.records.NetworkRecord;
-import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
-import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.net.NetUtils;
 import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.netflix.config.DynamicStringListProperty;
@@ -160,56 +153,6 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
                 .where(NETWORK.ACCOUNT_ID.eq(accountId)
                     .and(NETWORK.STATE.in(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE)))
                 .fetchInto(NetworkRecord.class);
-    }
-
-    @Override
-    public void updateInstancePorts(Instance instance, List<String> newPortDefs, List<Port> toCreate,
-            List<Port> toRemove, Map<String, Port> toRetain) {
-
-        Map<String, Port> existingPorts = new HashMap<>();
-        for (Port port : objectManager.children(instance, Port.class)) {
-            if (port.getRemoved() != null || port.getState().equalsIgnoreCase(CommonStatesConstants.REMOVING)) {
-                continue;
-            }
-            existingPorts.put(toKey(port), port);
-        }
-
-        for (String port : newPortDefs) {
-            PortSpec spec = new PortSpec(port);
-
-            if (existingPorts.containsKey(toKey(spec))) {
-                toRetain.put(toKey(spec), existingPorts.get(toKey(spec)));
-                continue;
-            }
-
-            Port portObj = objectManager.newRecord(Port.class);
-            portObj.setAccountId(instance.getAccountId());
-            portObj.setKind(PortConstants.KIND_USER);
-            portObj.setInstanceId(instance.getId());
-            portObj.setPublicPort(spec.getPublicPort());
-            portObj.setPrivatePort(spec.getPrivatePort());
-            portObj.setProtocol(spec.getProtocol());
-            if (StringUtils.isNotEmpty(spec.getIpAddress())) {
-                DataAccessor.fields(portObj).withKey(PortConstants.FIELD_BIND_ADDR).set(spec.getIpAddress());
-            }
-            toCreate.add(portObj);
-            toRetain.put(toKey(portObj), portObj);
-        }
-
-        // remove extra ports
-        for (String existing : existingPorts.keySet()) {
-            if (!toRetain.containsKey(existing)) {
-                toRemove.add(existingPorts.get(existing));
-            }
-        }
-    }
-
-    protected String toKey(PortSpec spec) {
-        return String.format("%d:%d/%s", spec.getPublicPort(), spec.getPrivatePort(), spec.getProtocol());
-    }
-
-    protected String toKey(Port port) {
-        return String.format("%d:%d/%s", port.getPublicPort(), port.getPrivatePort(), port.getProtocol());
     }
 
     @Override

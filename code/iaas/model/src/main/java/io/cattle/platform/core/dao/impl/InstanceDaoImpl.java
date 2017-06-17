@@ -1,23 +1,18 @@
 package io.cattle.platform.core.dao.impl;
 
 import static io.cattle.platform.core.model.tables.GenericObjectTable.*;
-import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceLinkTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
-import static io.cattle.platform.core.model.tables.IpAddressTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
-import static io.cattle.platform.core.model.tables.PortTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 
-import io.cattle.platform.core.addon.PublicEndpoint;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.constants.PortConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Account;
@@ -26,16 +21,8 @@ import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.InstanceLink;
-import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Nic;
-import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.core.model.ServiceExposeMap;
-import io.cattle.platform.core.model.tables.HostTable;
-import io.cattle.platform.core.model.tables.InstanceTable;
-import io.cattle.platform.core.model.tables.IpAddressTable;
-import io.cattle.platform.core.model.tables.PortTable;
-import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
 import io.cattle.platform.core.model.tables.records.HostRecord;
 import io.cattle.platform.core.model.tables.records.InstanceHostMapRecord;
 import io.cattle.platform.core.model.tables.records.InstanceLinkRecord;
@@ -43,7 +30,6 @@ import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.core.model.tables.records.NicRecord;
 import io.cattle.platform.core.model.tables.records.ServiceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
-import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
@@ -52,7 +38,6 @@ import io.cattle.platform.object.util.DataUtils;
 import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -220,94 +205,6 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
     }
 
     @Override
-    public List<PublicEndpoint> getPublicEndpoints(long accountId, Long serviceId, Long hostId) {
-        List<PublicEndpoint> toReturn = new ArrayList<>();
-        for (PublicEndpoint ep : getPublicEndpointsInternal(accountId, serviceId, hostId)) {
-            if (ep.getHostId() != null && ep.getInstanceId() != null && !StringUtils.isEmpty(ep.getIpAddress())) {
-                toReturn.add(ep);
-            }
-        }
-        return toReturn;
-    }
-
-    private List<PublicEndpoint> getPublicEndpointsInternal(long accountId, Long serviceId, Long hostId) {
-        MultiRecordMapper<PublicEndpoint> mapper = new MultiRecordMapper<PublicEndpoint>() {
-            @Override
-            protected PublicEndpoint map(List<Object> input) {
-                Instance instance = (Instance) input.get(0);
-                Port port = (Port) input.get(1);
-                Host host = (Host) input.get(2);
-
-                String address = "";
-                address = DataAccessor.fieldString(port, PortConstants.FIELD_BIND_ADDR);
-                if (StringUtils.isEmpty(address) || "0.0.0.0".equals(address)) {
-                    IpAddress ip = (IpAddress) input.get(3);
-                    if (ip != null) {
-                        address = ip.getAddress();
-                    } else {
-                        IpAddress hostIp = (IpAddress) input.get(4);
-                        if (hostIp != null) {
-                            address = hostIp.getAddress();
-                        }
-                    }
-                }
-
-                ServiceExposeMap exposeMap = (ServiceExposeMap) input.get(5);
-                Long serviceId = exposeMap != null ? exposeMap.getServiceId() : null;
-                PublicEndpoint data = new PublicEndpoint(address, port.getPublicPort(), host.getId(),
-                        instance.getId(), serviceId);
-                return data;
-            }
-        };
-
-        InstanceTable instance = mapper.add(INSTANCE, INSTANCE.ID, INSTANCE.ACCOUNT_ID);
-        PortTable port = mapper.add(PORT);
-        HostTable host = mapper.add(HOST, HOST.ID);
-        IpAddressTable ipAddress = mapper.add(IP_ADDRESS, IP_ADDRESS.ID, IP_ADDRESS.ADDRESS);
-        IpAddressTable hostIp = mapper.add(IP_ADDRESS, IP_ADDRESS.ID, IP_ADDRESS.ADDRESS);
-        ServiceExposeMapTable exposeMap = mapper.add(SERVICE_EXPOSE_MAP, SERVICE_EXPOSE_MAP.INSTANCE_ID,
-                SERVICE_EXPOSE_MAP.SERVICE_ID);
-
-        Condition condition = null;
-        if (serviceId != null && hostId != null) {
-            condition = host.ID.eq(hostId).and(exposeMap.SERVICE_ID.eq(serviceId));
-        } else if (hostId != null) {
-            condition = host.ID.eq(hostId);
-        } else if (serviceId != null) {
-            condition = (exposeMap.SERVICE_ID.eq(serviceId));
-        }
-
-        return create()
-                .select(mapper.fields())
-                .from(instance)
-                .join(port)
-                .on(port.INSTANCE_ID.eq(instance.ID))
-                .join(INSTANCE_HOST_MAP)
-                .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(instance.ID))
-                .join(host)
-                .on(INSTANCE_HOST_MAP.HOST_ID.eq(host.ID))
-                .leftOuterJoin(ipAddress)
-                .on(port.PUBLIC_IP_ADDRESS_ID.eq(ipAddress.ID))
-                .leftOuterJoin(exposeMap)
-                .on(exposeMap.INSTANCE_ID.eq(instance.ID))
-                .leftOuterJoin(HOST_IP_ADDRESS_MAP)
-                .on(host.ID.eq(HOST_IP_ADDRESS_MAP.HOST_ID))
-                .leftOuterJoin(hostIp)
-                .on(HOST_IP_ADDRESS_MAP.IP_ADDRESS_ID.eq(hostIp.ID))
-                .where(instance.ACCOUNT_ID.eq(accountId))
-                .and(instance.REMOVED.isNull())
-                .and(port.REMOVED.isNull())
-                .and(host.REMOVED.isNull())
-                .and(ipAddress.REMOVED.isNull())
-                .and(exposeMap.REMOVED.isNull())
-                .and(port.PUBLIC_PORT.isNotNull())
-                .and(port.STATE.in(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE,
-                        CommonStatesConstants.UPDATING_ACTIVE))
-                .and(condition)
-                .fetch().map(mapper);
-    }
-
-    @Override
     public List<? extends Instance> findBadInstances(int count) {
         return create().select(INSTANCE.fields())
             .from(INSTANCE)
@@ -380,29 +277,4 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
         }
     }
 
-    @Override
-    public void updatePorts(Instance instanceIn, List<String> newPorts) {
-        transaction.doInTransaction(() -> {
-            List<Port> toCreate = new ArrayList<>();
-            List<Port> toRemove = new ArrayList<>();
-            Map<String, Port> toRetain = new HashMap<>();
-
-            networkDao.updateInstancePorts(instanceIn, newPorts, toCreate, toRemove, toRetain);
-            for (Port port : toCreate) {
-                port = objectManager.create(port);
-            }
-
-            // trigger instance/metadata update
-            Instance instance = objectManager.setFields(instanceIn, InstanceConstants.FIELD_PORTS, newPorts);
-            clearCacheInstanceData(instance.getId());
-
-            for (Port port : toRetain.values()) {
-                objectProcessManager.createThenActivate(port, null);
-            }
-
-            for (Port port : toRemove) {
-                objectProcessManager.deactivateThenRemove(port, null);
-            }
-        });
-    }
 }

@@ -127,4 +127,12 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
         }
         return versions;
     }
+
+    @Override
+    public void deleteServiceExposeMaps(Instance instance) {
+        create().deleteFrom(SERVICE_EXPOSE_MAP)
+            .where(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(instance.getId()))
+            .execute();
+    }
+
 }

@@ -42,4 +42,8 @@ public interface VolumeDao {
 
     Long findPoolForVolumeAndHost(Volume volume, long hostId);
 
+    Volume getVolumeInPoolByExternalId(String externalId, StoragePool storagePool);
+
+    Volume createVolumeInPool(Long accountId, String name, String externalId, String driver, StoragePool storagePool, boolean isNative);
+
 }

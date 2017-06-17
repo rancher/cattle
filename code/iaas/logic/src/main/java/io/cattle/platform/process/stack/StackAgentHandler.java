@@ -1,6 +1,6 @@
 package io.cattle.platform.process.stack;
 
-import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
+import io.cattle.platform.core.cache.EnvironmentResourceManager;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
@@ -16,7 +16,7 @@ import javax.inject.Inject;
 public class StackAgentHandler extends AgentBasedProcessHandler {
 
     @Inject
-    AgentInstanceDao agentInstanceDao;
+    EnvironmentResourceManager envResourceManager;
     String agentService;
     String stackKind;
 
@@ -28,7 +28,7 @@ public class StackAgentHandler extends AgentBasedProcessHandler {
         }
 
         Long accountId = env.getAccountId();
-        List<Long> agentIds = agentInstanceDao.getAgentProvider(agentService, accountId);
+        List<Long> agentIds = envResourceManager.getAgentProvider(agentService, accountId);
         return agentIds.size() == 0 ? null : agentIds.get(0);
     }
 
@@ -46,7 +46,6 @@ public class StackAgentHandler extends AgentBasedProcessHandler {
         return stackKind;
     }
 
-    @Inject
     public void setStackKind(String environmentKind) {
         this.stackKind = environmentKind;
     }
@@ -55,7 +54,6 @@ public class StackAgentHandler extends AgentBasedProcessHandler {
         return agentService;
     }
 
-    @Inject
     public void setAgentService(String agentService) {
         this.agentService = agentService;
     }

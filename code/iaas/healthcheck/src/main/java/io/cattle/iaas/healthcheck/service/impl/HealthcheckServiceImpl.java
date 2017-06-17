@@ -3,9 +3,9 @@ package io.cattle.iaas.healthcheck.service.impl;
 import static io.cattle.platform.core.constants.HealthcheckConstants.*;
 import static io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.*;
-import static io.cattle.platform.core.util.SystemLabels.*;
+
 import io.cattle.iaas.healthcheck.service.HealthcheckService;
-import io.cattle.platform.allocator.dao.AllocatorDao;
+import io.cattle.platform.core.cache.EnvironmentResourceManager;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
@@ -22,22 +22,20 @@ import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
-import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
-import org.apache.commons.collections.TransformerUtils;
-
 public class HealthcheckServiceImpl implements HealthcheckService {
-    
+
     @Inject
     GenericMapDao mapDao;
-    
+
     @Inject
     ObjectManager objectManager;
 
@@ -51,7 +49,7 @@ public class HealthcheckServiceImpl implements HealthcheckService {
     LockManager lockManager;
 
     @Inject
-    AllocatorDao allocatorDao;
+    EnvironmentResourceManager envResourceManager;
 
     @Inject
     HostDao hostDao;
@@ -75,7 +73,7 @@ public class HealthcheckServiceImpl implements HealthcheckService {
                 hcihmNewState = HealthcheckConstants.HEALTH_STATE_REINITIALIZING;
             }
         }
-        
+
         final HealthcheckInstanceHostMap updatedHcihm = objectManager.setFields(hcihm,
                 HEALTHCHECK_INSTANCE_HOST_MAP.EXTERNAL_TIMESTAMP, externalTimestamp,
                 HEALTHCHECK_INSTANCE_HOST_MAP.HEALTH_STATE, hcihmNewState);
@@ -203,7 +201,7 @@ public class HealthcheckServiceImpl implements HealthcheckService {
         if (accountId == null) {
             return;
         }
-        
+
         lockManager.lock(new HealthcheckRegisterLock(id, instanceType), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
@@ -221,7 +219,7 @@ public class HealthcheckServiceImpl implements HealthcheckService {
                 HEALTHCHECK_INSTANCE.ACCOUNT_ID, accountId,
                 HEALTHCHECK_INSTANCE.INSTANCE_ID, id,
                 HEALTHCHECK_INSTANCE.REMOVED, null);
-        
+
         if (healthInstance == null) {
             healthInstance = resourceDao.createAndSchedule(HealthcheckInstance.class,
                     HEALTHCHECK_INSTANCE.ACCOUNT_ID, accountId,
@@ -251,28 +249,15 @@ public class HealthcheckServiceImpl implements HealthcheckService {
     }
 
 
-    @SuppressWarnings("unchecked")
     private List<Long> getHealthCheckHostIds(HealthcheckInstance healthInstance, Long inferiorHostId) {
         int requiredNumber = 3;
 
         List<? extends HealthcheckInstanceHostMap> existingHostMaps = mapDao.findNonRemoved(
                 HealthcheckInstanceHostMap.class,
                 HealthcheckInstance.class, healthInstance.getId());
-        List<? extends Host> availableActiveHosts = allocatorDao.getActiveHosts(healthInstance.getAccountId());
-        
-        // skip hosts labeled accordingly
-        Iterator<? extends Host> it = availableActiveHosts.iterator();
-        while (it.hasNext()) {
-            String skip = (String) CollectionUtils.getNestedValue(it.next().getData(), "fields", "labels", LABEL_HEALTHCHECK_SKIP);
-            if (skip != null && "true".equals(skip)) {
-               it.remove();
-            }
-        }
-        
-        List<Long> availableActiveHostIds = (List<Long>) org.apache.commons.collections.CollectionUtils.collect(availableActiveHosts,
-                TransformerUtils.invokerTransformer("getId"));
-        List<Long> allocatedActiveHostIds = (List<Long>) org.apache.commons.collections.CollectionUtils.collect(existingHostMaps,
-                TransformerUtils.invokerTransformer("getHostId"));
+
+        List<Long> availableActiveHostIds = envResourceManager.getAvailableHealthCheckHosts(healthInstance.getAccountId());
+        List<Long> allocatedActiveHostIds = existingHostMaps.stream().map((x) -> x.getHostId()).collect(Collectors.toList());
 
         // skip the host that if not active (being removed, reconnecting, etc)
         Iterator<Long> it2 = allocatedActiveHostIds.iterator();

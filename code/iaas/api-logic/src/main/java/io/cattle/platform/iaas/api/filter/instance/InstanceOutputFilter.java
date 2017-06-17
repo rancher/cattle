@@ -3,7 +3,6 @@ package io.cattle.platform.iaas.api.filter.instance;
 import io.cattle.platform.core.addon.HealthcheckState;
 import io.cattle.platform.core.addon.MountEntry;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Instance;
@@ -11,7 +10,6 @@ import io.cattle.platform.docker.transform.DockerTransformer;
 import io.cattle.platform.iaas.api.filter.common.CachedOutputFilter;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
-import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
@@ -67,12 +65,6 @@ public class InstanceOutputFilter extends CachedOutputFilter<Map<Long, Map<Strin
             if (actions != null) {
                 actions.remove("converttoservice");
             }
-        }
-
-        List<Long> networkIds = DataAccessor.fieldLongList(original, InstanceConstants.FIELD_NETWORK_IDS);
-        if (networkIds.size() > 0) {
-            IdFormatter idF = ApiContext.getContext().getIdFormatter();
-            converted.getFields().put(InstanceConstants.FIELD_PRIMARY_NETWORK_ID, idF.formatId(NetworkConstants.KIND_NETWORK, networkIds.get(0)));
         }
 
         Map<String, Object> labels = CollectionUtils.toMap(converted.getFields().get(InstanceConstants.FIELD_LABELS));

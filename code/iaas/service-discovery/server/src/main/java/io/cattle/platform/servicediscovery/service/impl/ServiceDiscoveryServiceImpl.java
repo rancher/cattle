@@ -5,9 +5,6 @@ import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
 
-import io.cattle.platform.core.addon.LbConfig;
-import io.cattle.platform.core.addon.PortRule;
-import io.cattle.platform.core.addon.PublicEndpoint;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -20,7 +17,6 @@ import io.cattle.platform.core.dao.ServiceConsumeMapDao;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.dao.ServiceExposeMapDao;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Service;
@@ -50,19 +46,14 @@ import io.cattle.platform.resource.pool.PooledResourceOptions;
 import io.cattle.platform.resource.pool.ResourcePoolManager;
 import io.cattle.platform.resource.pool.util.ResourcePoolConstants;
 import io.cattle.platform.servicediscovery.api.util.selector.SelectorUtils;
-import io.cattle.platform.servicediscovery.deployment.impl.lock.LoadBalancerServiceLock;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.function.BiFunction;
 
 import javax.inject.Inject;
 
@@ -224,54 +215,6 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         }
 
         return SelectorUtils.isSelectorMatch(selector, instanceLabels);
-    }
-
-    protected void updateObjectEndPoints(final Object object, List<PublicEndpoint> newData) {
-        // have to reload the object to get the latest update for publicEndpoint
-        // if don't reload, its possible that n concurrent updates would lack information.
-        // update would be performed on the original object
-        Object reloaded = objectManager.reload(object);
-        List<PublicEndpoint> oldData = new ArrayList<>();
-        oldData.addAll(DataAccessor.fields(reloaded)
-                .withKey(ServiceConstants.FIELD_PUBLIC_ENDPOINTS)
-                .withDefault(Collections.EMPTY_LIST)
-                .asList(jsonMapper, PublicEndpoint.class));
-
-        Set<String> newPortToIp = new HashSet<>();
-        Set<String> oldPortToIp = new HashSet<>();
-        for (PublicEndpoint newD : newData) {
-            newPortToIp.add(new StringBuilder().append(newD.getPort()).append("_").append(newD.getIpAddress())
-                    .toString());
-        }
-
-        for (PublicEndpoint oldD : oldData) {
-            oldPortToIp.add(new StringBuilder().append(oldD.getPort()).append("_").append(oldD.getIpAddress())
-                    .toString());
-        }
-
-        if (oldPortToIp.contains(newPortToIp) && newPortToIp.contains(oldPortToIp)) {
-            return;
-        }
-
-        objectManager.reload(object);
-        objectManager.setFields(object, ServiceConstants.FIELD_PUBLIC_ENDPOINTS, newData);
-        publishEvent(object);
-    }
-
-    protected void reconcileHostEndpointsImpl(final Host host) {
-        final List<PublicEndpoint> newData = instanceDao.getPublicEndpoints(host.getAccountId(), null, host.getId());
-
-        if (host != null && host.getRemoved() == null) {
-            updateObjectEndPoints(host, newData);
-        }
-    }
-
-    protected void reconcileServiceEndpointsImpl(final Service service) {
-        final List<PublicEndpoint> newData = instanceDao.getPublicEndpoints(service.getAccountId(), service.getId(),
-                null);
-        if (service != null && service.getRemoved() == null && !ServiceUtil.isNoopLBService(service)) {
-            updateObjectEndPoints(service, newData);
-        }
     }
 
     protected void setToken(Service service) {
@@ -561,101 +504,6 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     }
 
     @Override
-    public void serviceUpdate(Long serviceId) {
-        Service service = objectManager.loadResource(Service.class, serviceId);
-        if (service != null && service.getRemoved() == null) {
-            reconcileServiceEndpointsImpl(service);
-        }
-    }
-
-    @Override
-    public void hostEndpointsUpdate(Long hostId) {
-        Host host = objectManager.loadResource(Host.class, hostId);
-        if (host != null && host.getRemoved() == null) {
-            reconcileHostEndpointsImpl(host);
-        }
-    }
-
-    @Override
-    public void removeFromLoadBalancerServices(Service service) {
-        String serviceId = service.getId().toString();
-        removeFromLoadBalancer(service.getAccountId(), (rule, balancer) -> {
-            if (serviceId.equals(rule.getServiceId())) {
-                return null;
-            }
-            return rule;
-        });
-    }
-
-    @Override
-    public void removeFromLoadBalancerServices(Instance instance) {
-        String instanceId = instance.getId().toString();
-        removeFromLoadBalancer(instance.getAccountId(), (rule, balancer) -> {
-            if (instanceId.equals(rule.getInstanceId())) {
-                if (instance.getServiceId() == null) {
-                    Map<String, Object> portRules = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LB_RULES_ON_REMOVE);
-                    PortRule newRule = new PortRule(rule);
-                    newRule.setInstanceId(null);
-
-                    Object list = portRules.get(balancer.getId().toString());
-                    if (list == null) {
-                        list = Arrays.asList(newRule);
-                    } else {
-                        List<PortRule> ruleList = jsonMapper.convertCollectionValue(list, List.class, PortRule.class);
-                        if (!ruleList.contains(newRule)) {
-                            ruleList.add(newRule);
-                        }
-                        list = ruleList;
-                    }
-                    portRules.put(balancer.getId().toString(), list);
-                    objectManager.setFields(instance,
-                            InstanceConstants.FIELD_LB_RULES_ON_REMOVE, portRules);
-                }
-                return null;
-            }
-            return rule;
-        });
-    }
-
-    protected void removeFromLoadBalancer(long accountId, BiFunction<PortRule, Service, PortRule> fun) {
-        List<? extends Service> balancers = objectManager.find(Service.class,
-                SERVICE.KIND, ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
-                SERVICE.REMOVED, null,
-                SERVICE.ACCOUNT_ID, accountId);
-        for (Service i : balancers) {
-            lockManager.lock(new LoadBalancerServiceLock(i.getId()), () -> {
-                Service balancer = objectManager.loadResource(Service.class, i.getId());
-                LbConfig lbConfig = DataAccessor.field(balancer, ServiceConstants.FIELD_LB_CONFIG,
-                        jsonMapper, LbConfig.class);
-                if (lbConfig.getPortRules() == null) {
-                    return null;
-                }
-
-                boolean changed = false;
-                List<PortRule> newRules = new ArrayList<>();
-                for (PortRule rule : lbConfig.getPortRules()) {
-                    PortRule newRule = fun.apply(rule, balancer);
-                    if (newRule == null) {
-                        changed = true;
-                    } else if (newRule != rule) {
-                        newRules.add(newRule);
-                        changed = true;
-                    } else {
-                        newRules.add(newRule);
-                    }
-                }
-
-                if (changed) {
-                    lbConfig.setPortRules(newRules);
-                    objectManager.setFields(balancer, ServiceConstants.FIELD_LB_CONFIG, lbConfig);
-                }
-
-                return null;
-            });
-        }
-    }
-
-    @Override
     public void remove(Service service) {
         List<? extends ServiceExposeMap> unmanagedMaps = exposeMapDao
                 .getUnmanagedServiceInstanceMapsToRemove(service.getId());
@@ -681,31 +529,6 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     public void create(Service service) {
         setVIP(service);
         setToken(service);
-    }
-
-    @Override
-    public void addToBalancerService(Long serviceId, List<PortRule> rules) {
-        lockManager.lock(new LoadBalancerServiceLock(serviceId), () -> {
-            Service balancer = objectManager.loadResource(Service.class, serviceId);
-            LbConfig lbConfig = DataAccessor.field(balancer, ServiceConstants.FIELD_LB_CONFIG,
-                        jsonMapper, LbConfig.class);
-            List<PortRule> newRules = new ArrayList<>();
-            if (lbConfig.getPortRules() != null) {
-                newRules.addAll(lbConfig.getPortRules());
-            }
-            boolean changed = false;
-            for (PortRule newRule : rules) {
-                if (!newRules.contains(newRule)) {
-                    newRules.add(newRule);
-                    changed = true;
-                }
-            }
-            if (changed) {
-                lbConfig.setPortRules(newRules);
-                objectManager.setFields(balancer, ServiceConstants.FIELD_LB_CONFIG, lbConfig);
-            }
-            return null;
-        });
     }
 
 }

@@ -1,25 +1,20 @@
 package io.cattle.platform.allocator.dao.impl;
 
-import static io.cattle.platform.core.model.tables.AgentTable.*;
-import static io.cattle.platform.core.model.tables.HostLabelMapTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
-import static io.cattle.platform.core.model.tables.InstanceLabelMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
-import static io.cattle.platform.core.model.tables.LabelTable.*;
 import static io.cattle.platform.core.model.tables.MountTable.*;
 import static io.cattle.platform.core.model.tables.PortTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.StorageDriverTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
-import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
 
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
-import io.cattle.platform.core.constants.AgentConstants;
+import io.cattle.platform.core.cache.EnvironmentResourceManager;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -28,13 +23,11 @@ import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
-import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.StorageDriver;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.tables.records.HostRecord;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
-import io.cattle.platform.core.model.tables.records.PortRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
@@ -44,7 +37,6 @@ import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -53,18 +45,16 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
+import javax.sound.sampled.Port;
 
 import org.apache.commons.lang.StringUtils;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Record1;
-import org.jooq.Record3;
 import org.jooq.RecordHandler;
 import org.jooq.Result;
-import org.jooq.SelectConditionStep;
 import org.jooq.exception.InvalidResultException;
-import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,6 +85,8 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     GenericMapDao mapDao;
     @Inject
     TransactionDelegate transaction;
+    @Inject
+    EnvironmentResourceManager envResourceManager;
 
     @Override
     public Host getHost(Instance instance) {
@@ -161,6 +153,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                     log.info("Associating instance [{}] to host [{}]", instance.getId(), newHost);
                     objectManager.create(InstanceHostMap.class,
                             INSTANCE_HOST_MAP.HOST_ID, newHost,
+                            INSTANCE_HOST_MAP.STATE, CommonStatesConstants.INACTIVE,
                             INSTANCE_HOST_MAP.INSTANCE_ID, instance.getId());
                 }
 
@@ -202,16 +195,6 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                 objectManager.persist(v);
             }
         }
-    }
-
-    protected boolean isEmtpy(Map<Long,Set<Long>> set) {
-        for ( Set<Long> value : set.values() ) {
-            if ( value.size() > 0 ) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     @Override
@@ -316,85 +299,6 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     }
 
     @Override
-    public Map<String, String[]> getLabelsForHost(long hostId) {
-        final Map<String, String[]> labelKeyValueStatusMap = new HashMap<>();
-
-        create()
-            .select(LABEL.KEY, LABEL.VALUE, HOST_LABEL_MAP.STATE)
-                .from(LABEL)
-                .join(HOST_LABEL_MAP)
-                    .on(LABEL.ID.eq(HOST_LABEL_MAP.LABEL_ID))
-                .where(HOST_LABEL_MAP.HOST_ID.eq(hostId))
-                    .and(LABEL.REMOVED.isNull())
-                    .and(HOST_LABEL_MAP.REMOVED.isNull())
-            .fetchInto(new RecordHandler<Record3<String, String, String>>() {
-                @Override
-                public void next(Record3<String, String, String> record) {
-                    labelKeyValueStatusMap.put(StringUtils.lowerCase(record.value1()),
-                            new String[] {
-                                StringUtils.lowerCase(record.value2()),
-                                record.value3()
-                                });
-                }
-            });
-
-        return labelKeyValueStatusMap;
-    }
-
-    @Override
-    public List<? extends Host> getNonRemovedHosts(long accountId) {
-        return create()
-                .select(HOST.fields())
-                .from(HOST)
-                .where(HOST.ACCOUNT_ID.eq(accountId)
-                .and(HOST.REMOVED.isNull()))
-                .fetchInto(Host.class);
-    }
-
-    @Override
-    public List<? extends Host> getActiveHosts(long accountId) {
-        return create()
-                .select(HOST.fields())
-                .from(HOST)
-                .leftOuterJoin(AGENT)
-                    .on(AGENT.ID.eq(HOST.AGENT_ID))
-                .where(
-                AGENT.ID.isNull()
-                .or(AGENT.STATE.in(CommonStatesConstants.ACTIVE, AgentConstants.STATE_FINISHING_RECONNECT, AgentConstants.STATE_RECONNECTED))
-                .and(HOST.REMOVED.isNull())
-                .and(HOST.ACCOUNT_ID.eq(accountId))
-                .and(HOST.STATE.in(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE)))
-                .fetchInto(Host.class);
-    }
-
-    @Override
-    public boolean hostHasContainerLabel(long hostId, String labelKey,
-            String labelValue) {
-        return create()
-                .select(LABEL.ID)
-                    .from(LABEL)
-                    .join(INSTANCE_LABEL_MAP)
-                        .on(LABEL.ID.eq(INSTANCE_LABEL_MAP.LABEL_ID))
-                    .join(INSTANCE_HOST_MAP)
-                        .on(INSTANCE_LABEL_MAP.INSTANCE_ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
-                    .join(INSTANCE)
-                        .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
-                .leftOuterJoin(SERVICE_EXPOSE_MAP)
-                .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID))
-                    .where(INSTANCE_HOST_MAP.HOST_ID.eq(hostId))
-                        .and(LABEL.REMOVED.isNull())
-                        .and(INSTANCE_LABEL_MAP.REMOVED.isNull())
-                        .and(INSTANCE_HOST_MAP.REMOVED.isNull())
-                        .and(INSTANCE.REMOVED.isNull())
-                .and(INSTANCE.STATE.notIn(InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING))
-                        .and(LABEL.KEY.equalIgnoreCase(labelKey))
-                        .and(LABEL.VALUE.equalIgnoreCase(labelValue))
-                .and(SERVICE_EXPOSE_MAP.UPGRADE.eq(false).or(SERVICE_EXPOSE_MAP.UPGRADE.isNull()))
-                .fetchInto(Long.class).size() > 0;
-
-    }
-
-    @Override
     public List<Instance> getUnmappedDeploymentUnitInstances(Long deploymentUnitId) {
         List<? extends Instance> instanceRecords = create()
                 .select(INSTANCE.fields())
@@ -474,144 +378,9 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
     @Override
     public Iterator<AllocationCandidate> iteratorHosts(List<String> orderedHostUuids, List<Long> volumes, QueryOptions options) {
-        List<CandidateHostInfo> hostInfos = new ArrayList<>();
-        Set<Long> hostIds = new HashSet<>();
-        if (orderedHostUuids == null) {
-            Result<Record3<String, Long, Long>> result = getHostQuery(null, options).fetch();
-            Collections.shuffle(result);
-
-            Map<Long, CandidateHostInfo> infoMap = new HashMap<>();
-            for (Record3<String, Long, Long> r : result) {
-                Long hostId = r.value2();
-                hostIds.add(hostId);
-                CandidateHostInfo hostInfo = infoMap.get(hostId);
-                if (hostInfo == null) {
-                    hostInfo = new CandidateHostInfo(hostId, r.value1());
-                    infoMap.put(hostId, hostInfo);
-                    hostInfos.add(hostInfo);
-                }
-                hostInfo.getPoolIds().add(r.value3());
-            }
-        } else {
-            Map<String, Result<Record3<String, Long, Long>>> result = getHostQuery(orderedHostUuids, options).fetchGroups(HOST.UUID);
-            for (String uuid : orderedHostUuids) {
-                Result<Record3<String, Long, Long>>val = result.get(uuid);
-                if (val != null) {
-                    Set<Long>poolIds = new HashSet<>();
-                    Long hostId = null;
-                    for (Record3<String, Long, Long>r : val) {
-                        poolIds.add(r.value3());
-                        // host id is same in all records for this group
-                        if (hostId == null) {
-                            hostId = r.value2();
-                        }
-                    }
-
-                    CandidateHostInfo hostInfo = new CandidateHostInfo(hostId, uuid);
-                    hostInfo.getPoolIds().addAll(poolIds);
-                    hostInfos.add(hostInfo);
-                    hostIds.add(hostId);
-                }
-            }
-        }
-
-        if (options.isIncludeUsedPorts()) {
-            updateHostsWithUsedPorts(hostIds, hostInfos);
-        }
-
-        return new AllocationCandidateIterator(objectManager, hostInfos, volumes);
-    }
-
-    private void updateHostsWithUsedPorts(Set<Long> hostIds, List<CandidateHostInfo> hostInfos) {
-        Map<Long, Result<Record>> results = create()
-                .select(hostAndPortFields)
-                    .from(PORT)
-                    .join(INSTANCE_HOST_MAP)
-                        .on(PORT.INSTANCE_ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
-                    .join(INSTANCE)
-                        .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
-                .leftOuterJoin(SERVICE_EXPOSE_MAP)
-                .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID))
-                    .where(INSTANCE_HOST_MAP.HOST_ID.in(hostIds)
-                        .and(INSTANCE.REMOVED.isNull())
-                        .and(INSTANCE.STATE.in(InstanceConstants.STATE_STARTING, InstanceConstants.STATE_RESTARTING, InstanceConstants.STATE_RUNNING))
-                        .and(INSTANCE_HOST_MAP.REMOVED.isNull())
-                        .and(PORT.REMOVED.isNull())
-                        .and(SERVICE_EXPOSE_MAP.UPGRADE.eq(false).or(SERVICE_EXPOSE_MAP.UPGRADE.isNull())))
-                .fetchGroups(INSTANCE_HOST_MAP.HOST_ID);
-
-        Map<Long, List<Port>> hostToPorts = new HashMap<>();
-        for (Map.Entry<Long, Result<Record>> entry : results.entrySet()) {
-            List<Port> ports = new ArrayList<>();
-            hostToPorts.put(entry.getKey(), ports);
-            for (Record rec : entry.getValue()) {
-                PortRecord port = rec.into(PortRecord.class);
-                ports.add(port);
-            }
-        }
-
-        for (CandidateHostInfo hostInfo : hostInfos) {
-            List<Port> ports = hostToPorts.get(hostInfo.getHostId()) != null ? hostToPorts.get(hostInfo.getHostId()) : new ArrayList<>();
-            hostInfo.setUsedPorts(ports);
-        }
-    }
-
-    protected SelectConditionStep<Record3<String, Long, Long>> getHostQuery(List<String> orderedHostUUIDs, QueryOptions options) {
-        return create()
-                .select(HOST.UUID, HOST.ID, STORAGE_POOL.ID)
-                .from(HOST)
-                .leftOuterJoin(STORAGE_POOL_HOST_MAP)
-                    .on(STORAGE_POOL_HOST_MAP.HOST_ID.eq(HOST.ID)
-                        .and(STORAGE_POOL_HOST_MAP.REMOVED.isNull()))
-                .join(STORAGE_POOL)
-                    .on(STORAGE_POOL.ID.eq(STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID))
-                .leftOuterJoin(AGENT)
-                    .on(AGENT.ID.eq(HOST.AGENT_ID))
-                .where(getQueryOptionCondition(options, orderedHostUUIDs));
-    }
-
-    protected Condition inHostList(List<String> hostUUIDs) {
-        if (hostUUIDs == null || hostUUIDs.isEmpty()) {
-            return DSL.trueCondition();
-        }
-        return HOST.UUID.in(hostUUIDs);
-    }
-
-    protected Condition getQueryOptionCondition(QueryOptions options, List<String> orderedHostUUIDs) {
-        Condition condition = null;
-
-        if (options.getAccountId() != null) {
-            condition = append(condition, HOST.ACCOUNT_ID.eq(options.getAccountId()));
-        }
-
-        if (options.getRequestedHostId() != null) {
-            condition = append(condition, HOST.ID.eq(options.getRequestedHostId()));
-            return condition;
-        }
-
-        condition = append(condition, AGENT.ID.isNull().or(AGENT.STATE.eq(CommonStatesConstants.ACTIVE))
-        .and(HOST.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE))
-        .and(STORAGE_POOL.STATE.eq(CommonStatesConstants.ACTIVE))
-        .and(inHostList(orderedHostUUIDs)));
-
-        if ( options.getHosts().size() > 0 ) {
-            condition = append(condition, HOST.ID.in(options.getHosts()));
-        }
-
-        if ( options.getKind() != null ) {
-            condition = append(condition,
-                    HOST.KIND.eq(options.getKind()).and(STORAGE_POOL.KIND.eq(options.getKind())));
-        }
-
-        return condition == null ? DSL.trueCondition() : condition;
-    }
-
-    protected Condition append(Condition base, Condition next) {
-        if ( base == null ) {
-            return next;
-        } else {
-            return base.and(next);
-        }
+        return envResourceManager.iterateHosts(options, orderedHostUuids).map((x) -> {
+            return new AllocationCandidate(x.getId(), x.getUuid(), x.getPorts(), options.getAccountId());
+        }).iterator();
     }
 
     @Override

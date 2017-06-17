@@ -15,6 +15,12 @@ public class ExecutionException extends RuntimeException {
         super(message, cause);
     }
 
+    public ExecutionException(Throwable cause, Object resource) {
+        super(cause.getMessage(), cause);
+        this.transitioningMessage = cause.getMessage();
+        this.resources = new Object[] { resource };
+    }
+
     public ExecutionException(String message, Throwable cause, String transitioningMessage, Object... resources) {
         super(message, cause);
         this.transitioningMessage = transitioningMessage;

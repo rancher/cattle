@@ -8,7 +8,6 @@ import io.cattle.platform.core.addon.LogConfig;
 import io.cattle.platform.core.addon.Ulimit;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
-import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.constants.DockerVolumeConstants;
@@ -23,10 +22,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -42,7 +39,6 @@ import com.github.dockerjava.api.model.LxcConf;
 import com.github.dockerjava.api.model.Ports;
 import com.github.dockerjava.api.model.Ports.Binding;
 import com.github.dockerjava.api.model.RestartPolicy;
-import com.github.dockerjava.api.model.VolumeBind;
 
 public class DockerTransformerImpl implements DockerTransformer {
 
@@ -50,8 +46,6 @@ public class DockerTransformerImpl implements DockerTransformer {
     private static final String CONFIG = "Config";
     private static final String IMAGE_PREFIX = "docker:";
     private static final String IMAGE_KIND_PATTERN = "^(sim|docker):.*";
-    private static final String READ_WRITE = "rw";
-    private static final String READ_ONLY = "ro";
     private static final String ACCESS_MODE = "RW";
     private static final String DRIVER = "Driver";
     private static final String DEST = "Destination";
@@ -63,39 +57,15 @@ public class DockerTransformerImpl implements DockerTransformer {
     private static final String READ_BPS= "BlkioDeviceReadBps";
     private static final String WRITE_BPS= "BlkioDeviceWriteBps";
     private static final String WEIGHT = "BlkioWeightDevice";
-    
+
     private static final String RANCHER_VOLUME_PREFIX = "/var/lib/rancher/volumes";
 
     @Inject
     JsonMapper jsonMapper;
 
     @Override
-    @SuppressWarnings("unchecked")
     public List<DockerInspectTransformVolume> transformVolumes(Map<String, Object> fromInspect, List<Object> mounts) {
-        List<DockerInspectTransformVolume> volumes = transformMounts(mounts);
-        if (volumes != null) {
-            return volumes;
-        }
-
-        volumes = new ArrayList<>();
-        InspectContainerResponse inspect = transformInspect(fromInspect);
-        HostConfig hostConfig = inspect.getHostConfig();
-        VolumeBind[] volumeBinds = null;
-        try {
-            volumeBinds = inspect.getVolumes();
-        } catch (NullPointerException e) {
-            // A bug in docker-java can cause this.
-            volumeBinds = new VolumeBind[0];
-        }
-        Set<String> binds = bindSet(hostConfig.getBinds());
-        Map<String, String> rw = rwMap((Map<String, Boolean>) fromInspect.get("VolumesRW"));
-        for (VolumeBind vb : volumeBinds) {
-            String am = rw.containsKey(vb.getContainerPath()) ? rw.get(vb.getContainerPath()) : READ_WRITE;
-            boolean isBindMound = binds.contains(vb.getContainerPath());
-            String uri = String.format(VolumeConstants.URI_FORMAT, VolumeConstants.FILE_PREFIX, vb.getHostPath());
-            volumes.add(new DockerInspectTransformVolume(vb.getContainerPath(), uri, am, isBindMound, null, vb.getContainerPath(), null));
-        }
-        return volumes;
+        return transformMounts(mounts);
     }
 
     @SuppressWarnings("unchecked")
@@ -126,47 +96,13 @@ public class DockerTransformerImpl implements DockerTransformer {
                 continue;
             }
 
-            boolean isBindMount = (dr == null);
-            if (isBindMount) {
+            if (dr == null) {
                 continue;
             }
-            // TODO When we implement proper volume deletion in py-agent, we can change this so that if the driver is explicitly, local, we don't
-            // use 'file://'
-            String uriPrefix = StringUtils.isEmpty(dr) || StringUtils.equals(dr, VolumeConstants.LOCAL_DRIVER) ? VolumeConstants.FILE_PREFIX : dr;
-            String uri = String.format(VolumeConstants.URI_FORMAT, uriPrefix, hostPath);
-            volumes.add(new DockerInspectTransformVolume(containerPath, uri, am, isBindMount, dr, name, externalId));
+
+            volumes.add(new DockerInspectTransformVolume(containerPath, am, dr, name, externalId));
         }
         return volumes;
-    }
-
-    Map<String, String> rwMap(Map<String, Boolean> volumeRws) {
-        // TODO When this bug is fixed, switch to using java-docker's volumesRW
-        // https://github.com/docker-java/docker-java/issues/205
-        Map<String, String> rwMap = new HashMap<>();
-
-        if (volumeRws == null) {
-            return rwMap;
-        }
-
-        for (Map.Entry<String, Boolean> volume : volumeRws.entrySet()) {
-            Boolean readWrite = volume.getValue();
-            String perms = readWrite ? READ_WRITE : READ_ONLY;
-            rwMap.put(volume.getKey(), perms);
-        }
-
-        return rwMap;
-    }
-
-    Set<String> bindSet(String[] binds) {
-        Set<String> hostBindMounts = new HashSet<>();
-        if (binds == null)
-            return hostBindMounts;
-
-        for (String bindMount : binds) {
-            String[] parts = bindMount.split(":");
-            hostBindMounts.add(parts[1]);
-        }
-        return hostBindMounts;
     }
 
     @Override

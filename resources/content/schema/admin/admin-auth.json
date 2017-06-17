@@ -11,6 +11,7 @@
         "account.externalId" : "cru",
         "account.externalIdType" : "cru",
         "account.kind" : "cru",
+        "account.metadata" : "cru",
         "account.uuid" : "cr",
         "account.projectId" : "r",
         "account.identity" : "r",

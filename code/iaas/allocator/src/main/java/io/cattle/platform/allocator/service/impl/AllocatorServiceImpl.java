@@ -33,7 +33,6 @@ import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
-import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.StorageDriver;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.util.InstanceHelpers;
@@ -63,8 +62,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
+import javax.sound.sampled.Port;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -233,7 +234,16 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
 
     protected List<Instance> getInstancesToAllocate(Instance instance) {
         if (instance.getDeploymentUnitUuid() != null) {
-            return allocatorDao.getUnmappedDeploymentUnitInstances(instance.getDeploymentUnitId());
+            return allocatorDao.getUnmappedDeploymentUnitInstances(instance.getDeploymentUnitId()).stream()
+                    .map((i) -> {
+                        /* We want to use the in memory instance, not the one read from the DB
+                         * As as this point some data may not be committed
+                         */
+                        if (i.getId().equals(instance.getId())) {
+                            return instance;
+                        }
+                        return i;
+                    }).collect(Collectors.toList());
         } else {
             List<Instance> instances = new ArrayList<>();
             instances.add(instance);

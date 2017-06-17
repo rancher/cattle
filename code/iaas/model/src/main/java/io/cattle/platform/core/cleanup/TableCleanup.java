@@ -2,11 +2,6 @@ package io.cattle.platform.core.cleanup;
 
 import static io.cattle.platform.core.model.tables.ExternalHandlerExternalHandlerProcessMapTable.*;
 import static io.cattle.platform.core.model.tables.ExternalHandlerTable.*;
-import static io.cattle.platform.core.model.tables.HostLabelMapTable.*;
-import static io.cattle.platform.core.model.tables.HostTable.*;
-import static io.cattle.platform.core.model.tables.InstanceLabelMapTable.*;
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
-import static io.cattle.platform.core.model.tables.LabelTable.*;
 import static io.cattle.platform.core.model.tables.ServiceEventTable.*;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
@@ -30,22 +25,18 @@ import io.cattle.platform.core.model.tables.GenericObjectTable;
 import io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable;
 import io.cattle.platform.core.model.tables.HealthcheckInstanceTable;
 import io.cattle.platform.core.model.tables.HostIpAddressMapTable;
-import io.cattle.platform.core.model.tables.HostLabelMapTable;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.InstanceHostMapTable;
-import io.cattle.platform.core.model.tables.InstanceLabelMapTable;
 import io.cattle.platform.core.model.tables.InstanceLinkTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
 import io.cattle.platform.core.model.tables.IpAddressNicMapTable;
 import io.cattle.platform.core.model.tables.IpAddressTable;
-import io.cattle.platform.core.model.tables.LabelTable;
 import io.cattle.platform.core.model.tables.MachineDriverTable;
 import io.cattle.platform.core.model.tables.MountTable;
 import io.cattle.platform.core.model.tables.NetworkDriverTable;
 import io.cattle.platform.core.model.tables.NetworkTable;
 import io.cattle.platform.core.model.tables.NicTable;
 import io.cattle.platform.core.model.tables.PhysicalHostTable;
-import io.cattle.platform.core.model.tables.PortTable;
 import io.cattle.platform.core.model.tables.ProcessExecutionTable;
 import io.cattle.platform.core.model.tables.ProcessInstanceTable;
 import io.cattle.platform.core.model.tables.ProjectMemberTable;
@@ -123,7 +114,6 @@ public class TableCleanup extends AbstractJooqDao implements Task {
         long current = new Date().getTime();
 
         Date otherCutoff = new Date(current - MAIN_TABLES_AGE_LIMIT_SECONDS.getValue() * SECOND_MILLIS);
-        cleanupLabelTables(otherCutoff);
         cleanupExternalHandlerExternalHandlerProcessMapTables(otherCutoff);
 
         Date processInstanceCutoff = new Date(current - PROCESS_INSTANCE_AGE_LIMIT_SECONDS.get() * SECOND_MILLIS);
@@ -180,64 +170,6 @@ public class TableCleanup extends AbstractJooqDao implements Task {
 
         if (rowsDeleted > 0) {
             log.info("[Rows Deleted] external_handler_external_handler_process_map={}", rowsDeleted);
-        }
-    }
-
-    private void cleanupLabelTables(Date cutoff) {
-        ResultQuery<Record1<Long>> ids = create()
-                .select(INSTANCE_LABEL_MAP.ID)
-                .from(INSTANCE_LABEL_MAP)
-                .join(INSTANCE).on(INSTANCE_LABEL_MAP.INSTANCE_ID.eq(INSTANCE.ID))
-                .where(INSTANCE.REMOVED.lt(cutoff))
-                .limit(QUERY_LIMIT_ROWS.getValue());
-        List<Long> toDelete = null;
-        int ilmRowsDeleted = 0;
-        while ((toDelete = ids.fetch().into(Long.class)).size() > 0) {
-            ilmRowsDeleted += create().delete(INSTANCE_LABEL_MAP)
-            .where(INSTANCE_LABEL_MAP.ID.in(toDelete)).execute();
-        }
-
-        ids = create()
-                .select(HOST_LABEL_MAP.ID)
-                .from(HOST_LABEL_MAP)
-                .join(HOST).on(HOST_LABEL_MAP.HOST_ID.eq(HOST.ID))
-                .where(HOST.REMOVED.lt(cutoff))
-                .limit(QUERY_LIMIT_ROWS.getValue());
-
-        int hlmRowsDeleted = 0;
-        while ((toDelete = ids.fetch().into(Long.class)).size() > 0) {
-            hlmRowsDeleted += create().delete(HOST_LABEL_MAP)
-            .where(HOST_LABEL_MAP.ID.in(toDelete)).execute();
-        }
-
-        ids = create()
-                .select(LABEL.ID)
-                .from(LABEL)
-                .leftOuterJoin(INSTANCE_LABEL_MAP).on(LABEL.ID.eq(INSTANCE_LABEL_MAP.LABEL_ID))
-                .leftOuterJoin(HOST_LABEL_MAP).on(LABEL.ID.eq(HOST_LABEL_MAP.LABEL_ID))
-                .where(INSTANCE_LABEL_MAP.ID.isNull())
-                .and(HOST_LABEL_MAP.ID.isNull())
-                .and(LABEL.CREATED.lt(cutoff))
-                .limit(QUERY_LIMIT_ROWS.getValue());
-
-        int labelRowsDeleted = 0;
-        while ((toDelete = ids.fetch().into(Long.class)).size() > 0) {
-            labelRowsDeleted += create().delete(LABEL)
-            .where(LABEL.ID.in(toDelete)).execute();
-        }
-
-        StringBuilder lg = new StringBuilder("[Rows Deleted] ");
-        if (ilmRowsDeleted > 0) {
-            lg.append("instance_label_map=").append(ilmRowsDeleted);
-        }
-        if (hlmRowsDeleted > 0) {
-            lg.append("host_label_map=").append(hlmRowsDeleted);
-        }
-        if (labelRowsDeleted > 0) {
-            lg.append(" label=").append(labelRowsDeleted);
-        }
-        if (ilmRowsDeleted > 0 || labelRowsDeleted > 0 || hlmRowsDeleted > 0) {
-            log.info(lg.toString());
         }
     }
 
@@ -447,14 +379,12 @@ public class TableCleanup extends AbstractJooqDao implements Task {
                 CleanableTable.from(InstanceLinkTable.INSTANCE_LINK),
                 CleanableTable.from(IpAddressTable.IP_ADDRESS),
                 CleanableTable.from(IpAddressNicMapTable.IP_ADDRESS_NIC_MAP),
-                CleanableTable.from(LabelTable.LABEL),
                 CleanableTable.from(MachineDriverTable.MACHINE_DRIVER),
                 CleanableTable.from(MountTable.MOUNT),
                 CleanableTable.from(NetworkTable.NETWORK),
                 CleanableTable.from(NetworkDriverTable.NETWORK_DRIVER),
                 CleanableTable.from(NicTable.NIC),
                 CleanableTable.from(PhysicalHostTable.PHYSICAL_HOST),
-                CleanableTable.from(PortTable.PORT),
                 CleanableTable.from(ProjectMemberTable.PROJECT_MEMBER),
                 CleanableTable.from(ResourcePoolTable.RESOURCE_POOL),
                 CleanableTable.from(ServiceTable.SERVICE),
@@ -473,8 +403,6 @@ public class TableCleanup extends AbstractJooqDao implements Task {
                 // These tables are cleaned through specialized logic but we need to keep them in the "other" list so that they
                 // are picked up for foreign key references.
                 CleanableTable.from(ExternalHandlerExternalHandlerProcessMapTable.EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP),
-                CleanableTable.from(HostLabelMapTable.HOST_LABEL_MAP),
-                CleanableTable.from(InstanceLabelMapTable.INSTANCE_LABEL_MAP),
                 CleanableTable.from(ServiceEventTable.SERVICE_EVENT),
                 CleanableTable.from(ScheduledUpgradeTable.SCHEDULED_UPGRADE),
                 CleanableTable.from(SecretTable.SECRET));

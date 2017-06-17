@@ -22,8 +22,6 @@ public class LoopFactoryImpl implements LoopFactory {
     public static final String RECONCILE = "service-reconcile";
     public static final String DU_RECONCILE = "deployment-unit-reconcile";
     public static final String STACK_HEALTH = "stack-health";
-    public static final String HOST_ENDPOINTS = "host-endpoints";
-    public static final String SERVICE_ENDPOINTS = "service-endpoints";
 
     @Inject
     Deployinator deployinator;
@@ -59,10 +57,6 @@ public class LoopFactoryImpl implements LoopFactory {
                     unit.getServiceId(), id, unit.getAccountId(), ServiceConstants.KIND_DEPLOYMENT_UNIT);
         case STACK_HEALTH:
             return new StackHealthLoop(sdService, id);
-        case HOST_ENDPOINTS:
-            return new HostEndpointLoop(sdService, id);
-        case SERVICE_ENDPOINTS:
-            return new ServiceEndpointLoop(sdService, id);
         default:
             break;
         }

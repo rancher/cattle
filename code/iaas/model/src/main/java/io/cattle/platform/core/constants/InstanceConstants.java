@@ -3,20 +3,15 @@ package io.cattle.platform.core.constants;
 
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class InstanceConstants {
 
-    public static final String SYSTEM_CONTAINER_NETWORK_AGENT = "NetworkAgent";
-    public static final String SYSTEM_CONTAINER_LB_AGENT = "LoadBalancerAgent";
-    public static final String SYSTEM_CONTAINER_BALANCER_AGENT = "BalancerAgent";
-    public static final String SYSTEM_CONTAINER_CLUSTER_AGENT = "ClusterAgent";
     public static final String ACTION_SOURCE_USER = "user";
     public static final String ACTION_SOURCE_EXTERNAL = "external";
 
@@ -32,8 +27,10 @@ public class InstanceConstants {
     public static final String FIELD_NETWORK_IDS = "networkIds";
     public static final String FIELD_PORTS = "ports";
     public static final String FIELD_USER_PORTS = "userPorts";
+    public static final String FIELD_MANAGED_IP = "managedIp";
     public static final String FIELD_PRIMARY_IP_ADDRESS = "primaryIpAddress";
     public static final String FIELD_PRIMARY_NETWORK_ID = "primaryNetworkId";
+    public static final String FIELD_PRIMARY_MAC_ADDRESSS = "primaryMacAddress";
     public static final String FIELD_PRIVILEGED = "privileged";
     public static final String FIELD_REQUESTED_HOST_ID = "requestedHostId";
     public static final String FIELD_REQUESTED_IP_ADDRESS = "requestedIpAddress";
@@ -55,7 +52,7 @@ public class InstanceConstants {
     public static final String FIELD_SERVICE_INSTANCE_SERVICE_INDEX_ID = "serviceIndexId";
     public static final String FIELD_SERVICE_INSTANCE_SERVICE_INDEX = "serviceIndex";
     public static final String FIELD_METADATA = "metadata";
-    public static final String FIELD_HOST_ID = "hostId";
+//    public static final String FIELD_HOST_ID = "hostId";
     public static final String FIELD_DNS_INTERNAL = "dnsInternal";
     public static final String FIELD_DNS_SEARCH_INTERNAL = "dnsSearchInternal";
     public static final String FIELD_LOG_CONFIG = "logConfig";
@@ -118,13 +115,13 @@ public class InstanceConstants {
 
     public static final String EVENT_INSTANCE_FORCE_STOP = "compute.instance.force.stop";
 
-    public static final Set<String> CONTAINER_LIKE = new HashSet<>(Arrays.asList(KIND_CONTAINER, KIND_VIRTUAL_MACHINE));
-
     public static final String VOLUME_CLEANUP_STRATEGY_NONE = "none";
     public static final String VOLUME_CLEANUP_STRATEGY_UNNAMED = "unnamed";
     public static final String VOLUME_CLEANUP_STRATEGY_ALL = "all";
-    public static final Set<String> VOLUME_REMOVE_STRATEGIES = new HashSet<>(Arrays.asList(VOLUME_CLEANUP_STRATEGY_NONE, VOLUME_CLEANUP_STRATEGY_UNNAMED,
-            VOLUME_CLEANUP_STRATEGY_ALL));
+    public static final Set<String> VOLUME_REMOVE_STRATEGIES = CollectionUtils.set(
+            VOLUME_CLEANUP_STRATEGY_NONE,
+            VOLUME_CLEANUP_STRATEGY_UNNAMED,
+            VOLUME_CLEANUP_STRATEGY_ALL);
 
     public static boolean isSystem(Instance instance) {
         return instance.getSystem() || isRancherAgent(instance);

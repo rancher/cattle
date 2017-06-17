@@ -1,87 +1,55 @@
 package io.cattle.platform.process.instance;
 
-import static io.cattle.platform.core.model.tables.VolumeTable.*;
-
-import io.cattle.platform.allocator.constraint.HostAffinityConstraint;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.constants.VolumeConstants;
-import io.cattle.platform.core.dao.StoragePoolDao;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.StoragePool;
-import io.cattle.platform.core.model.Volume;
-import io.cattle.platform.core.util.InstanceHelpers;
 import io.cattle.platform.engine.handler.HandlerResult;
-import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
-import io.cattle.platform.lock.LockCallbackNoReturn;
-import io.cattle.platform.lock.LockManager;
-import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
-import io.cattle.platform.process.lock.InstanceVolumeAccessModeLock;
+import io.cattle.platform.lifecycle.InstanceLifecycleManager;
+import io.cattle.platform.lifecycle.util.LifecycleException;
+import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
+import io.cattle.platform.process.common.util.ProcessUtils;
+import io.cattle.platform.process.containerevent.ContainerEventCreate;
+import io.cattle.platform.util.exception.ExecutionException;
 
-import java.util.List;
-import java.util.Map;
+import java.util.HashMap;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.apache.commons.lang3.StringUtils;
-
 @Named
-public class InstancePreStart extends AbstractObjectProcessLogic implements ProcessPreListener {
+public class InstancePreStart extends AbstractDefaultProcessHandler {
 
     @Inject
-    LockManager lockManager;
-
-    @Inject
-    StoragePoolDao storagePoolDao;
-
+    InstanceLifecycleManager instanceLifecycle;
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        final Instance instance = (Instance)state.getResource();
-        Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
+        final Instance instance = (Instance) state.getResource();
 
-        List<Volume> volumes = InstanceHelpers.extractVolumesFromMounts(instance, objectManager);
-        for (final Volume v : volumes) {
-            String driver = DataAccessor.fieldString(v, VolumeConstants.FIELD_VOLUME_DRIVER);
-            if (StringUtils.isNotEmpty(driver) && !VolumeConstants.LOCAL_DRIVER.equals(driver)) {
-                List<? extends StoragePool> pools = storagePoolDao.findStoragePoolByDriverName(v.getAccountId(), driver);
-                if (pools.size() == 0) {
-                    continue;
-                }
-                StoragePool sp = pools.get(0);
-
-                final String accessMode = sp.getVolumeAccessMode();
-                if (StringUtils.isNotEmpty(accessMode) && StringUtils.isEmpty(v.getAccessMode()) && !accessMode.equals(v.getAccessMode())) {
-                    lockManager.lock(new InstanceVolumeAccessModeLock(v.getId()), new LockCallbackNoReturn() {
-                        @Override
-                        public void doWithLockNoResult() {
-                            objectManager.setFields(v, VOLUME.ACCESS_MODE, accessMode);
-                        }
-                    });
-                }
-            }
-            Map<String, Object> driver_opts = DataAccessor.fieldMap(v, VolumeConstants.FIELD_VOLUME_DRIVER_OPTS);
-            if (driver_opts.containsKey(VolumeConstants.EC2_AZ)) {
-                String zone = driver_opts.get(VolumeConstants.EC2_AZ).toString();
-                String label = String.format("%s=%s", VolumeConstants.HOST_ZONE_LABEL_KEY, zone);
-                Object originalLabel = labels.get(HostAffinityConstraint.LABEL_HEADER_AFFINITY_HOST_LABEL);
-                if (originalLabel != null && !StringUtils.isEmpty(originalLabel.toString())) {
-                    label = originalLabel.toString() + "," + label;
-                }
-                labels.put(HostAffinityConstraint.LABEL_HEADER_AFFINITY_HOST_LABEL, label);
-                
-                objectManager.setFields(instance, InstanceConstants.FIELD_LABELS, labels);
-            }
+        try {
+            instanceLifecycle.preStart(instance);
+        } catch (LifecycleException e) {
+            handleStartError(objectProcessManager, state, instance, new ExecutionException(e, instance));
         }
 
         return null;
     }
 
-    @Override
-    public String[] getProcessNames() {
-        return new String[] { "instance.start" };
+    public static HandlerResult handleStartError(ObjectProcessManager objectProcessManager, ProcessState state, Instance instance, ExecutionException e) {
+        if ((InstanceCreate.isCreateStart(state) || instance.getFirstRunning() == null) && !ContainerEventCreate.isNativeDockerStart(state)) {
+            HashMap<String, Object> data = new HashMap<>();
+            data.put(InstanceConstants.PROCESS_DATA_ERROR, true);
+            objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance,
+                    ProcessUtils.chainInData(data, InstanceConstants.PROCESS_STOP,
+                            InstanceConstants.PROCESS_ERROR));
+        } else {
+            objectProcessManager.stop(instance, null);
+        }
+
+        e.setResources(state.getResource());
+        throw e;
     }
+
 }

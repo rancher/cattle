@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ServiceExposeMapTable extends TableImpl<ServiceExposeMapRecord> {
 
-    private static final long serialVersionUID = -1399733001;
+    private static final long serialVersionUID = -1681210809;
 
     /**
      * The reference instance of <code>cattle.service_expose_map</code>
@@ -119,11 +119,6 @@ public class ServiceExposeMapTable extends TableImpl<ServiceExposeMapRecord> {
      * The column <code>cattle.service_expose_map.account_id</code>.
      */
     public final TableField<ServiceExposeMapRecord, Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
-
-    /**
-     * The column <code>cattle.service_expose_map.ip_address</code>.
-     */
-    public final TableField<ServiceExposeMapRecord, String> IP_ADDRESS = createField("ip_address", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
     /**
      * The column <code>cattle.service_expose_map.dns_prefix</code>.

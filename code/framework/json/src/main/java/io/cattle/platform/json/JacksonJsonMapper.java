@@ -15,10 +15,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.CollectionType;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 /**
  * Default implementation of JsonMapper that uses Jackson for marshaling and
@@ -35,10 +33,7 @@ public class JacksonJsonMapper implements JsonMapper {
         mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
 
         AnnotationIntrospector primary = new JacksonAnnotationIntrospector();
-        AnnotationIntrospector secondary = new JaxbAnnotationIntrospector(mapper.getTypeFactory());
-
-        AnnotationIntrospector pair = AnnotationIntrospectorPair.create(primary, secondary);
-        mapper.setAnnotationIntrospector(pair);
+        mapper.setAnnotationIntrospector(primary);
     }
 
     @PostConstruct

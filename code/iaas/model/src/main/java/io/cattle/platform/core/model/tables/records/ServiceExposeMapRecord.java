@@ -21,8 +21,8 @@ import javax.persistence.Table;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record19;
-import org.jooq.Row19;
+import org.jooq.Record18;
+import org.jooq.Row18;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -39,9 +39,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "service_expose_map", schema = "cattle")
-public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMapRecord> implements TableRecordJaxb, Record19<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, Long, Long, String, String, String, Boolean, Boolean, Date>, ServiceExposeMap {
+public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMapRecord> implements TableRecordJaxb, Record18<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, Long, Long, String, String, Boolean, Boolean, Date>, ServiceExposeMap {
 
-    private static final long serialVersionUID = -526865022;
+    private static final long serialVersionUID = 1806664416;
 
     /**
      * Setter for <code>cattle.service_expose_map.id</code>.
@@ -267,28 +267,11 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
     }
 
     /**
-     * Setter for <code>cattle.service_expose_map.ip_address</code>.
-     */
-    @Override
-    public void setIpAddress(String value) {
-        set(13, value);
-    }
-
-    /**
-     * Getter for <code>cattle.service_expose_map.ip_address</code>.
-     */
-    @Column(name = "ip_address", length = 255)
-    @Override
-    public String getIpAddress() {
-        return (String) get(13);
-    }
-
-    /**
      * Setter for <code>cattle.service_expose_map.dns_prefix</code>.
      */
     @Override
     public void setDnsPrefix(String value) {
-        set(14, value);
+        set(13, value);
     }
 
     /**
@@ -297,7 +280,7 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
     @Column(name = "dns_prefix", length = 128)
     @Override
     public String getDnsPrefix() {
-        return (String) get(14);
+        return (String) get(13);
     }
 
     /**
@@ -305,7 +288,7 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
      */
     @Override
     public void setHostName(String value) {
-        set(15, value);
+        set(14, value);
     }
 
     /**
@@ -314,7 +297,7 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
     @Column(name = "host_name", length = 255)
     @Override
     public String getHostName() {
-        return (String) get(15);
+        return (String) get(14);
     }
 
     /**
@@ -322,7 +305,7 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
      */
     @Override
     public void setManaged(Boolean value) {
-        set(16, value);
+        set(15, value);
     }
 
     /**
@@ -331,7 +314,7 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
     @Column(name = "managed", nullable = false, precision = 1)
     @Override
     public Boolean getManaged() {
-        return (Boolean) get(16);
+        return (Boolean) get(15);
     }
 
     /**
@@ -339,7 +322,7 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
      */
     @Override
     public void setUpgrade(Boolean value) {
-        set(17, value);
+        set(16, value);
     }
 
     /**
@@ -348,7 +331,7 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
     @Column(name = "upgrade", nullable = false, precision = 1)
     @Override
     public Boolean getUpgrade() {
-        return (Boolean) get(17);
+        return (Boolean) get(16);
     }
 
     /**
@@ -356,7 +339,7 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
      */
     @Override
     public void setUpgradeTime(Date value) {
-        set(18, value);
+        set(17, value);
     }
 
     /**
@@ -365,7 +348,7 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
     @Column(name = "upgrade_time")
     @Override
     public Date getUpgradeTime() {
-        return (Date) get(18);
+        return (Date) get(17);
     }
 
     // -------------------------------------------------------------------------
@@ -381,23 +364,23 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
     }
 
     // -------------------------------------------------------------------------
-    // Record19 type implementation
+    // Record18 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row19<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, Long, Long, String, String, String, Boolean, Boolean, Date> fieldsRow() {
-        return (Row19) super.fieldsRow();
+    public Row18<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, Long, Long, String, String, Boolean, Boolean, Date> fieldsRow() {
+        return (Row18) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row19<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, Long, Long, String, String, String, Boolean, Boolean, Date> valuesRow() {
-        return (Row19) super.valuesRow();
+    public Row18<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, Long, Long, String, String, Boolean, Boolean, Date> valuesRow() {
+        return (Row18) super.valuesRow();
     }
 
     /**
@@ -509,14 +492,6 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
      */
     @Override
     public Field<String> field14() {
-        return ServiceExposeMapTable.SERVICE_EXPOSE_MAP.IP_ADDRESS;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<String> field15() {
         return ServiceExposeMapTable.SERVICE_EXPOSE_MAP.DNS_PREFIX;
     }
 
@@ -524,7 +499,7 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field16() {
+    public Field<String> field15() {
         return ServiceExposeMapTable.SERVICE_EXPOSE_MAP.HOST_NAME;
     }
 
@@ -532,7 +507,7 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
      * {@inheritDoc}
      */
     @Override
-    public Field<Boolean> field17() {
+    public Field<Boolean> field16() {
         return ServiceExposeMapTable.SERVICE_EXPOSE_MAP.MANAGED;
     }
 
@@ -540,7 +515,7 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
      * {@inheritDoc}
      */
     @Override
-    public Field<Boolean> field18() {
+    public Field<Boolean> field17() {
         return ServiceExposeMapTable.SERVICE_EXPOSE_MAP.UPGRADE;
     }
 
@@ -548,7 +523,7 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
      * {@inheritDoc}
      */
     @Override
-    public Field<Date> field19() {
+    public Field<Date> field18() {
         return ServiceExposeMapTable.SERVICE_EXPOSE_MAP.UPGRADE_TIME;
     }
 
@@ -661,14 +636,6 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
      */
     @Override
     public String value14() {
-        return getIpAddress();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String value15() {
         return getDnsPrefix();
     }
 
@@ -676,7 +643,7 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
      * {@inheritDoc}
      */
     @Override
-    public String value16() {
+    public String value15() {
         return getHostName();
     }
 
@@ -684,7 +651,7 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
      * {@inheritDoc}
      */
     @Override
-    public Boolean value17() {
+    public Boolean value16() {
         return getManaged();
     }
 
@@ -692,7 +659,7 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
      * {@inheritDoc}
      */
     @Override
-    public Boolean value18() {
+    public Boolean value17() {
         return getUpgrade();
     }
 
@@ -700,7 +667,7 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
      * {@inheritDoc}
      */
     @Override
-    public Date value19() {
+    public Date value18() {
         return getUpgradeTime();
     }
 
@@ -826,15 +793,6 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
      */
     @Override
     public ServiceExposeMapRecord value14(String value) {
-        setIpAddress(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ServiceExposeMapRecord value15(String value) {
         setDnsPrefix(value);
         return this;
     }
@@ -843,7 +801,7 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
      * {@inheritDoc}
      */
     @Override
-    public ServiceExposeMapRecord value16(String value) {
+    public ServiceExposeMapRecord value15(String value) {
         setHostName(value);
         return this;
     }
@@ -852,7 +810,7 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
      * {@inheritDoc}
      */
     @Override
-    public ServiceExposeMapRecord value17(Boolean value) {
+    public ServiceExposeMapRecord value16(Boolean value) {
         setManaged(value);
         return this;
     }
@@ -861,7 +819,7 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
      * {@inheritDoc}
      */
     @Override
-    public ServiceExposeMapRecord value18(Boolean value) {
+    public ServiceExposeMapRecord value17(Boolean value) {
         setUpgrade(value);
         return this;
     }
@@ -870,7 +828,7 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
      * {@inheritDoc}
      */
     @Override
-    public ServiceExposeMapRecord value19(Date value) {
+    public ServiceExposeMapRecord value18(Date value) {
         setUpgradeTime(value);
         return this;
     }
@@ -879,7 +837,7 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
      * {@inheritDoc}
      */
     @Override
-    public ServiceExposeMapRecord values(Long value1, String value2, String value3, String value4, String value5, String value6, Date value7, Date value8, Date value9, Map<String,Object> value10, Long value11, Long value12, Long value13, String value14, String value15, String value16, Boolean value17, Boolean value18, Date value19) {
+    public ServiceExposeMapRecord values(Long value1, String value2, String value3, String value4, String value5, String value6, Date value7, Date value8, Date value9, Map<String,Object> value10, Long value11, Long value12, Long value13, String value14, String value15, Boolean value16, Boolean value17, Date value18) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -898,7 +856,6 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
         value16(value16);
         value17(value17);
         value18(value18);
-        value19(value19);
         return this;
     }
 
@@ -924,7 +881,6 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
         setServiceId(from.getServiceId());
         setInstanceId(from.getInstanceId());
         setAccountId(from.getAccountId());
-        setIpAddress(from.getIpAddress());
         setDnsPrefix(from.getDnsPrefix());
         setHostName(from.getHostName());
         setManaged(from.getManaged());
@@ -955,7 +911,7 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
     /**
      * Create a detached, initialised ServiceExposeMapRecord
      */
-    public ServiceExposeMapRecord(Long id, String name, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Long serviceId, Long instanceId, Long accountId, String ipAddress, String dnsPrefix, String hostName, Boolean managed, Boolean upgrade, Date upgradeTime) {
+    public ServiceExposeMapRecord(Long id, String name, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Long serviceId, Long instanceId, Long accountId, String dnsPrefix, String hostName, Boolean managed, Boolean upgrade, Date upgradeTime) {
         super(ServiceExposeMapTable.SERVICE_EXPOSE_MAP);
 
         set(0, id);
@@ -971,11 +927,10 @@ public class ServiceExposeMapRecord extends UpdatableRecordImpl<ServiceExposeMap
         set(10, serviceId);
         set(11, instanceId);
         set(12, accountId);
-        set(13, ipAddress);
-        set(14, dnsPrefix);
-        set(15, hostName);
-        set(16, managed);
-        set(17, upgrade);
-        set(18, upgradeTime);
+        set(13, dnsPrefix);
+        set(14, hostName);
+        set(15, managed);
+        set(16, upgrade);
+        set(17, upgradeTime);
     }
 }

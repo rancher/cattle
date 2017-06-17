@@ -3,8 +3,13 @@ package io.cattle.platform.process.common.handler;
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.async.utils.TimeoutException;
+import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.model.Agent;
+import io.cattle.platform.engine.context.EngineContext;
+import io.cattle.platform.engine.handler.CompletableLogic;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
@@ -36,9 +41,10 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import com.netflix.config.DynamicStringProperty;
 
-public class AgentBasedProcessLogic extends AbstractObjectProcessLogic implements InitializationTask, Priority {
+public class AgentBasedProcessLogic extends AbstractObjectProcessLogic implements InitializationTask, Priority, CompletableLogic {
 
     private static final String DEFAULT_NAME = "AgentBased";
 
@@ -48,7 +54,6 @@ public class AgentBasedProcessLogic extends AbstractObjectProcessLogic implement
     ProcessProgress progress;
 
     boolean reportProgress = false;
-    boolean shouldContinue;
     boolean sendNoOp;
     String errorChainProcess;
     String configPrefix = "event.data.";
@@ -61,6 +66,7 @@ public class AgentBasedProcessLogic extends AbstractObjectProcessLogic implement
     String eventResourceRelationship;
     Integer eventRetry;
 
+    boolean ignoreReconnecting;
     boolean shortCircuitIfAgentRemoved;
     boolean timeoutIsError;
     List<String> processDataKeys = new ArrayList<>();
@@ -68,7 +74,7 @@ public class AgentBasedProcessLogic extends AbstractObjectProcessLogic implement
     String expression;
     int priority = Priority.SPECIFIC;
 
-    Map<String, ObjectSerializer> serializers = new ConcurrentHashMap<String, ObjectSerializer>();
+    Map<String, ObjectSerializer> serializers = new ConcurrentHashMap<>();
 
     public AgentBasedProcessLogic() {
         if (this.getClass() == AgentBasedProcessLogic.class) {
@@ -88,7 +94,7 @@ public class AgentBasedProcessLogic extends AbstractObjectProcessLogic implement
     }
 
     @Override
-    public HandlerResult handle(ProcessState state, ProcessInstance process) {
+    public final HandlerResult handle(ProcessState state, ProcessInstance process) {
         Object eventResource = getEventResource(state, process);
         Object dataResource = getDataResource(state, process);
         Object agentResource = getAgentResource(state, process, dataResource);
@@ -107,14 +113,34 @@ public class AgentBasedProcessLogic extends AbstractObjectProcessLogic implement
             return new HandlerResult(true, CollectionUtils.asMap((Object) "_noAgent", true));
         }
 
+        ListenableFuture<?> future = handleEvent(state, process, eventResource, dataResource, agentResource, agent);
+        if (EngineContext.isNestedExecution() || future.isDone()) {
+            return complete(future, state, process);
+        }
+
+        return new HandlerResult().withFuture(future);
+    }
+
+    @Override
+    public HandlerResult complete(ListenableFuture<?> future, ProcessState state, ProcessInstance process) {
+        Context context = (Context) state.getData().get(getName()+".context");
+        Event reply = null;
         try {
-            Event reply = handleEvent(state, process, eventResource, dataResource, agentResource, agent);
-
-            if (reply == null) {
+            reply = (Event) AsyncUtils.get(future);
+            postProcessEvent(context.request, reply, state, process,
+                context.eventResource, context.dataResource, context.agentResource);
+        } catch (AgentRemovedException e) {
+            if (shortCircuitIfAgentRemoved) {
                 return null;
+            } else {
+                throw e;
             }
-
-            return new HandlerResult(shouldContinue, getResourceDataMap(getObjectManager().getType(eventResource), reply.getData()));
+        } catch (TimeoutException e) {
+            if (timeoutIsError) {
+                throw new ExecutionException(e);
+            } else {
+                throw e;
+            }
         } catch (EventExecutionException e) {
             if (StringUtils.isNotBlank(errorChainProcess)) {
                 getObjectProcessManager().scheduleProcessInstance(errorChainProcess, state.getResource(), null);
@@ -122,15 +148,17 @@ public class AgentBasedProcessLogic extends AbstractObjectProcessLogic implement
             }
             throw e;
         }
+
+        return new HandlerResult(getResourceDataMap(getObjectManager().getType(context.eventResource), reply.getData()));
     }
 
-    protected Event handleEvent(ProcessState state, ProcessInstance process, Object eventResource, Object dataResource, Object agentResource,
+    protected ListenableFuture<?> handleEvent(ProcessState state, ProcessInstance process, Object eventResource, Object dataResource, Object agentResource,
             RemoteAgent agent) {
         ObjectSerializer serializer = getObjectSerializer(dataResource);
         Map<String, Object> data = serializer == null ? null : serializer.serialize(dataResource);
 
         boolean shortCircuit = false;
-        Map<String, Object> processData = new HashMap<String, Object>();
+        Map<String, Object> processData = new HashMap<>();
         for (String key : processDataKeys) {
             Object value = state.getData().get(key);
             if (value != null) {
@@ -141,6 +169,14 @@ public class AgentBasedProcessLogic extends AbstractObjectProcessLogic implement
 
         if (sendNoOp) {
             shortCircuit = false;
+        }
+
+        if (ignoreReconnecting && !shortCircuit) {
+            Agent agentObj = loadResource(Agent.class, agent.getAgentId());
+            if (agentObj != null && (AgentConstants.STATE_RECONNECTING.equals(agentObj.getState()) ||
+                    AgentConstants.STATE_DISCONNECTED.equals(agentObj.getState()))) {
+                shortCircuit = true;
+            }
         }
 
         if (processData.size() > 0) {
@@ -175,33 +211,11 @@ public class AgentBasedProcessLogic extends AbstractObjectProcessLogic implement
             });
         }
 
-        Event reply;
-        try {
-            if (shortCircuit) {
-                reply = EventVO.reply(event);
-            } else {
-                reply = callSync(agent, event, options);
-            }
-        } catch (AgentRemovedException e) {
-            if (shortCircuitIfAgentRemoved) {
-                return null;
-            } else {
-                throw e;
-            }
-        } catch (TimeoutException e) {
-            if (timeoutIsError) {
-                throw new ExecutionException(e);
-            } else {
-                throw e;
-            }
+        if (shortCircuit) {
+            return AsyncUtils.done(EventVO.reply(event));
+        } else {
+            return agent.call(event, options);
         }
-
-        postProcessEvent(event, reply, state, process, eventResource, dataResource, agentResource);
-        return reply;
-    }
-
-    protected Event callSync(RemoteAgent agent, Event event, EventCallOptions options) {
-        return agent.callSync(event, options);
     }
 
     protected Map<Object, Object> getResourceDataMap(String type, Object data) {
@@ -386,7 +400,7 @@ public class AgentBasedProcessLogic extends AbstractObjectProcessLogic implement
         this.commandName = commandName;
     }
 
-    public void setProcessNames(String[] processNames) {
+    public void setProcessNames(String... processNames) {
         this.processNames = processNames;
     }
 
@@ -443,19 +457,10 @@ public class AgentBasedProcessLogic extends AbstractObjectProcessLogic implement
         this.priority = priority;
     }
 
-    public boolean isShouldContinue() {
-        return shouldContinue;
-    }
-
-    public void setShouldContinue(boolean shouldContinue) {
-        this.shouldContinue = shouldContinue;
-    }
-
     public ProcessProgress getProgress() {
         return progress;
     }
 
-    @Inject
     public void setProgress(ProcessProgress progress) {
         this.progress = progress;
     }
@@ -514,6 +519,21 @@ public class AgentBasedProcessLogic extends AbstractObjectProcessLogic implement
 
     public void setSendNoOp(boolean sendNoOp) {
         this.sendNoOp = sendNoOp;
+    }
+
+    public boolean isIgnoreReconnecting() {
+        return ignoreReconnecting;
+    }
+
+    public void setIgnoreReconnecting(boolean ignoreReconnecting) {
+        this.ignoreReconnecting = ignoreReconnecting;
+    }
+
+    private static class Context {
+        EventVO<?> request;
+        Object eventResource;
+        Object dataResource;
+        Object agentResource;
     }
 
 }

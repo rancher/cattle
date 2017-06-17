@@ -29,24 +29,14 @@ import io.cattle.platform.core.model.tables.ExternalHandlerTable;
 import io.cattle.platform.core.model.tables.GenericObjectTable;
 import io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable;
 import io.cattle.platform.core.model.tables.HealthcheckInstanceTable;
-import io.cattle.platform.core.model.tables.HostIpAddressMapTable;
-import io.cattle.platform.core.model.tables.HostLabelMapTable;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.HostTemplateTable;
-import io.cattle.platform.core.model.tables.InstanceHostMapTable;
-import io.cattle.platform.core.model.tables.InstanceLabelMapTable;
-import io.cattle.platform.core.model.tables.InstanceLinkTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
-import io.cattle.platform.core.model.tables.IpAddressNicMapTable;
-import io.cattle.platform.core.model.tables.IpAddressTable;
-import io.cattle.platform.core.model.tables.LabelTable;
 import io.cattle.platform.core.model.tables.MachineDriverTable;
 import io.cattle.platform.core.model.tables.MountTable;
 import io.cattle.platform.core.model.tables.NetworkDriverTable;
 import io.cattle.platform.core.model.tables.NetworkTable;
-import io.cattle.platform.core.model.tables.NicTable;
 import io.cattle.platform.core.model.tables.PhysicalHostTable;
-import io.cattle.platform.core.model.tables.PortTable;
 import io.cattle.platform.core.model.tables.ProcessExecutionTable;
 import io.cattle.platform.core.model.tables.ProcessInstanceTable;
 import io.cattle.platform.core.model.tables.ProjectMemberTable;
@@ -70,7 +60,6 @@ import io.cattle.platform.core.model.tables.SubnetTable;
 import io.cattle.platform.core.model.tables.TaskInstanceTable;
 import io.cattle.platform.core.model.tables.TaskTable;
 import io.cattle.platform.core.model.tables.UserPreferenceTable;
-import io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable;
 import io.cattle.platform.core.model.tables.VolumeTable;
 import io.cattle.platform.core.model.tables.VolumeTemplateTable;
 
@@ -98,7 +87,7 @@ import org.jooq.impl.SchemaImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class CattleTable extends SchemaImpl {
 
-    private static final long serialVersionUID = -1090629308;
+    private static final long serialVersionUID = -256352036;
 
     /**
      * The reference instance of <code>cattle</code>
@@ -241,16 +230,6 @@ public class CattleTable extends SchemaImpl {
     public final HostTable HOST = io.cattle.platform.core.model.tables.HostTable.HOST;
 
     /**
-     * The table <code>cattle.host_ip_address_map</code>.
-     */
-    public final HostIpAddressMapTable HOST_IP_ADDRESS_MAP = io.cattle.platform.core.model.tables.HostIpAddressMapTable.HOST_IP_ADDRESS_MAP;
-
-    /**
-     * The table <code>cattle.host_label_map</code>.
-     */
-    public final HostLabelMapTable HOST_LABEL_MAP = io.cattle.platform.core.model.tables.HostLabelMapTable.HOST_LABEL_MAP;
-
-    /**
      * The table <code>cattle.host_template</code>.
      */
     public final HostTemplateTable HOST_TEMPLATE = io.cattle.platform.core.model.tables.HostTemplateTable.HOST_TEMPLATE;
@@ -259,36 +238,6 @@ public class CattleTable extends SchemaImpl {
      * The table <code>cattle.instance</code>.
      */
     public final InstanceTable INSTANCE = io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
-
-    /**
-     * The table <code>cattle.instance_host_map</code>.
-     */
-    public final InstanceHostMapTable INSTANCE_HOST_MAP = io.cattle.platform.core.model.tables.InstanceHostMapTable.INSTANCE_HOST_MAP;
-
-    /**
-     * The table <code>cattle.instance_label_map</code>.
-     */
-    public final InstanceLabelMapTable INSTANCE_LABEL_MAP = io.cattle.platform.core.model.tables.InstanceLabelMapTable.INSTANCE_LABEL_MAP;
-
-    /**
-     * The table <code>cattle.instance_link</code>.
-     */
-    public final InstanceLinkTable INSTANCE_LINK = io.cattle.platform.core.model.tables.InstanceLinkTable.INSTANCE_LINK;
-
-    /**
-     * The table <code>cattle.ip_address</code>.
-     */
-    public final IpAddressTable IP_ADDRESS = io.cattle.platform.core.model.tables.IpAddressTable.IP_ADDRESS;
-
-    /**
-     * The table <code>cattle.ip_address_nic_map</code>.
-     */
-    public final IpAddressNicMapTable IP_ADDRESS_NIC_MAP = io.cattle.platform.core.model.tables.IpAddressNicMapTable.IP_ADDRESS_NIC_MAP;
-
-    /**
-     * The table <code>cattle.label</code>.
-     */
-    public final LabelTable LABEL = io.cattle.platform.core.model.tables.LabelTable.LABEL;
 
     /**
      * The table <code>cattle.machine_driver</code>.
@@ -311,19 +260,9 @@ public class CattleTable extends SchemaImpl {
     public final NetworkDriverTable NETWORK_DRIVER = io.cattle.platform.core.model.tables.NetworkDriverTable.NETWORK_DRIVER;
 
     /**
-     * The table <code>cattle.nic</code>.
-     */
-    public final NicTable NIC = io.cattle.platform.core.model.tables.NicTable.NIC;
-
-    /**
      * The table <code>cattle.physical_host</code>.
      */
     public final PhysicalHostTable PHYSICAL_HOST = io.cattle.platform.core.model.tables.PhysicalHostTable.PHYSICAL_HOST;
-
-    /**
-     * The table <code>cattle.port</code>.
-     */
-    public final PortTable PORT = io.cattle.platform.core.model.tables.PortTable.PORT;
 
     /**
      * The table <code>cattle.process_execution</code>.
@@ -441,11 +380,6 @@ public class CattleTable extends SchemaImpl {
     public final VolumeTable VOLUME = io.cattle.platform.core.model.tables.VolumeTable.VOLUME;
 
     /**
-     * The table <code>cattle.volume_storage_pool_map</code>.
-     */
-    public final VolumeStoragePoolMapTable VOLUME_STORAGE_POOL_MAP = io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP;
-
-    /**
      * The table <code>cattle.volume_template</code>.
      */
     public final VolumeTemplateTable VOLUME_TEMPLATE = io.cattle.platform.core.model.tables.VolumeTemplateTable.VOLUME_TEMPLATE;
@@ -502,23 +436,13 @@ public class CattleTable extends SchemaImpl {
             HealthcheckInstanceTable.HEALTHCHECK_INSTANCE,
             HealthcheckInstanceHostMapTable.HEALTHCHECK_INSTANCE_HOST_MAP,
             HostTable.HOST,
-            HostIpAddressMapTable.HOST_IP_ADDRESS_MAP,
-            HostLabelMapTable.HOST_LABEL_MAP,
             HostTemplateTable.HOST_TEMPLATE,
             InstanceTable.INSTANCE,
-            InstanceHostMapTable.INSTANCE_HOST_MAP,
-            InstanceLabelMapTable.INSTANCE_LABEL_MAP,
-            InstanceLinkTable.INSTANCE_LINK,
-            IpAddressTable.IP_ADDRESS,
-            IpAddressNicMapTable.IP_ADDRESS_NIC_MAP,
-            LabelTable.LABEL,
             MachineDriverTable.MACHINE_DRIVER,
             MountTable.MOUNT,
             NetworkTable.NETWORK,
             NetworkDriverTable.NETWORK_DRIVER,
-            NicTable.NIC,
             PhysicalHostTable.PHYSICAL_HOST,
-            PortTable.PORT,
             ProcessExecutionTable.PROCESS_EXECUTION,
             ProcessInstanceTable.PROCESS_INSTANCE,
             ProjectMemberTable.PROJECT_MEMBER,
@@ -542,7 +466,6 @@ public class CattleTable extends SchemaImpl {
             TaskInstanceTable.TASK_INSTANCE,
             UserPreferenceTable.USER_PREFERENCE,
             VolumeTable.VOLUME,
-            VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP,
             VolumeTemplateTable.VOLUME_TEMPLATE);
     }
 }

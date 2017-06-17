@@ -118,6 +118,16 @@ public class DataAccessor {
         return result;
     }
 
+    public static void setLabel(Object obj, String key, String value) {
+        Map<String, Object> labels = fieldMap(obj, "labels");
+        labels.put(key, value);
+        setField(obj, "labels", labels);
+    }
+
+    public static String getLabel(Object obj, String key) {
+        return ObjectUtils.toString(fieldMapRO(obj, "labels").get(key));
+    }
+
     public static Integer fieldInteger(Object obj, String key) {
         return fields(obj).withKey(key).as(Integer.class);
     }

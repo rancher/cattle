@@ -17,10 +17,15 @@ public class SystemLabels {
     public static final String LABEL_HEALTHCHECK_SKIP = "io.rancher.host.healthcheck.skip";
     public static final String LABEL_CONTAINER_SYSTEM = "io.rancher.container.system";
     public static final String LABEL_PULL_IMAGE = "io.rancher.container.pull_image";
-    public static final String COMPOSE_SERVICE_LABEL = "com.docker.compose.service";
-    public static final String COMPOSE_PROJECT_LABEL = "com.docker.compose.project";
     public static final String LABEL_PROXY_PORT = "io.rancher.websocket.proxy.port";
     public static final String LABEL_PROXY_SCHEME = "io.rancher.websocket.proxy.scheme";
+    public static final String LABEL_STACK_NAME = "io.rancher.stack.name";
+    public static final String LABEL_STACK_SERVICE_NAME = "io.rancher.stack_service.name";
+    public static final String LABEL_SERVICE_LAUNCH_CONFIG = "io.rancher.service.launch.config";
+    public static final String PRIMARY_LAUNCH_CONFIG_NAME = "io.rancher.service.primary.launch.config";
+    public static final String CNI_WAIT = "io.rancher.cni.wait";
+    public static final String IP_ADDRESS = "io.rancher.container.ip";
+    public static final String MAC_ADDRESS = "io.rancher.container.mac_address";
 
     /**
      * Indicates an instance runs an agent that provides the labels provider service

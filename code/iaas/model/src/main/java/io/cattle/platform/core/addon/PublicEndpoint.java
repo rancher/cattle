@@ -6,10 +6,18 @@ import io.github.ibuildthecloud.gdapi.annotation.Type;
 @Type(list = false)
 public class PublicEndpoint {
     String ipAddress;
+    String agentIpAddress;
+    String bindAddress;
+    String protocol;
+    String fqdn;
     Integer port;
-    String serviceId;
-    String hostId;
-    String instanceId;
+    Integer privatePort;
+    Long serviceId;
+    Long hostId;
+    Long instanceId;
+
+    public PublicEndpoint() {
+    }
 
     public String getIpAddress() {
         return ipAddress;
@@ -28,77 +36,70 @@ public class PublicEndpoint {
     }
 
     @Field(typeString = "reference[service]")
-    public String getServiceId() {
+    public Long getServiceId() {
         return serviceId;
     }
 
-    public void setServiceId(String serviceId) {
+    public void setServiceId(Long serviceId) {
         this.serviceId = serviceId;
     }
 
     @Field(typeString = "reference[host]")
-    public String getHostId() {
+    public Long getHostId() {
         return hostId;
     }
 
-    public void setHostId(String hostId) {
+    public void setHostId(Long hostId) {
         this.hostId = hostId;
     }
 
     @Field(typeString = "reference[instance]")
-    public String getInstanceId() {
+    public Long getInstanceId() {
         return instanceId;
     }
 
-    public void setInstanceId(String instanceId) {
+    public void setInstanceId(Long instanceId) {
         this.instanceId = instanceId;
     }
 
-    public PublicEndpoint(String ipAddress, Integer port, Long hostId, Long instanceId, Long serviceId) {
-        this.ipAddress = ipAddress;
-        this.port = port;
-        if (hostId != null) {
-            this.hostId = hostId.toString();
-        }
-        if (instanceId != null) {
-            this.instanceId = instanceId.toString();
-        }
-
-        if (serviceId != null) {
-            this.serviceId = serviceId.toString();
-        }
+    public Integer getPrivatePort() {
+        return privatePort;
     }
 
-    public PublicEndpoint() {
+    public void setPrivatePort(Integer privatePort) {
+        this.privatePort = privatePort;
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((ipAddress == null) ? 0 : ipAddress.hashCode());
-        result = prime * result + ((port == null) ? 0 : port.hashCode());
-        return result;
+    public String getBindAddress() {
+        return bindAddress;
     }
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        PublicEndpoint other = (PublicEndpoint) obj;
-        if (ipAddress == null) {
-            if (other.ipAddress != null)
-                return false;
-        } else if (!ipAddress.equals(other.ipAddress))
-            return false;
-        if (port == null) {
-            if (other.port != null)
-                return false;
-        } else if (!port.equals(other.port))
-            return false;
-        return true;
+
+    public void setBindAddress(String bindAddress) {
+        this.bindAddress = bindAddress;
     }
+
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
+
+    public String getAgentIpAddress() {
+        return agentIpAddress;
+    }
+
+    public void setAgentIpAddress(String agentIpAddress) {
+        this.agentIpAddress = agentIpAddress;
+    }
+
+    public String getFqdn() {
+        return fqdn;
+    }
+
+    public void setFqdn(String fqdn) {
+        this.fqdn = fqdn;
+    }
+
 }

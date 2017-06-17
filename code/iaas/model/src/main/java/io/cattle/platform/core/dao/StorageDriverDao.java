@@ -10,4 +10,6 @@ public interface StorageDriverDao {
 
     Volume createSecretsVolume(Instance instance, StorageDriver storageDriver, String token);
 
+    void assignSecretsVolume(Instance instance, Volume volume);
+
 }

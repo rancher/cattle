@@ -16,4 +16,6 @@ public interface ServiceExposeMapDao {
 
     ServiceExposeMap createServiceInstanceMap(Service service, Instance instance, boolean managed, String dnsPrefix);
 
+    void deleteServiceExposeMaps(Instance instance);
+
 }

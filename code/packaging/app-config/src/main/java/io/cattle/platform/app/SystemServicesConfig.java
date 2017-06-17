@@ -7,10 +7,8 @@ import io.cattle.iaas.healthcheck.service.impl.HealthcheckServiceImpl;
 import io.cattle.iaas.healthcheck.service.impl.HostHealthcheckHostLookup;
 import io.cattle.iaas.healthcheck.service.impl.HostMapHealthcheckInstancesLookup;
 import io.cattle.iaas.healthcheck.service.impl.UpgradeCleanupMonitorImpl;
-import io.cattle.iaas.labels.service.impl.LabelsServiceImpl;
 import io.cattle.platform.activity.ActivityService;
 import io.cattle.platform.agent.impl.AgentLocatorImpl;
-import io.cattle.platform.agent.instance.dao.impl.AgentInstanceDaoImpl;
 import io.cattle.platform.agent.instance.factory.impl.AgentInstanceFactoryImpl;
 import io.cattle.platform.agent.instance.serialization.AgentInstanceAuthObjectPostProcessor;
 import io.cattle.platform.agent.instance.service.AgentMetadataService;
@@ -101,10 +99,10 @@ import io.cattle.platform.sample.data.SampleDataStartupV13;
 import io.cattle.platform.sample.data.SampleDataStartupV14;
 import io.cattle.platform.sample.data.SampleDataStartupV15;
 import io.cattle.platform.sample.data.SampleDataStartupV16;
+import io.cattle.platform.sample.data.SampleDataStartupV17;
 import io.cattle.platform.sample.data.SampleDataStartupV3;
 import io.cattle.platform.sample.data.SampleDataStartupV5;
 import io.cattle.platform.sample.data.SampleDataStartupV6;
-import io.cattle.platform.sample.data.SampleDataStartupV7;
 import io.cattle.platform.sample.data.SampleDataStartupV8;
 import io.cattle.platform.sample.data.SampleDataStartupV9;
 import io.cattle.platform.service.account.SystemRoleObjectPostProcessor;
@@ -164,11 +162,6 @@ public class SystemServicesConfig {
     @Bean
     ActivityService activityService() {
         return new ActivityService();
-    }
-
-    @Bean
-    AgentInstanceDaoImpl agentInstanceDaoImpl() {
-        return new AgentInstanceDaoImpl();
     }
 
     @Bean
@@ -405,11 +398,6 @@ public class SystemServicesConfig {
     }
 
     @Bean
-    LabelsServiceImpl LabelsServiceImpl() {
-        return new LabelsServiceImpl();
-    }
-
-    @Bean
     DefaultObjectMetaDataManager DefaultObjectMetaDataManager(ExtensionManagerImpl em) {
         return new DefaultObjectMetaDataManager();
     }
@@ -608,8 +596,8 @@ public class SystemServicesConfig {
     }
 
     @Bean
-    SampleDataStartupV7 SampleDataStartupV7() {
-        return new SampleDataStartupV7();
+    SampleDataStartupV17 SampleDataStartupV17() {
+        return new SampleDataStartupV17();
     }
 
     @Bean

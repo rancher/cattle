@@ -2,6 +2,7 @@ package io.cattle.platform.core.dao;
 
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
+import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.core.model.StoragePool;
 
@@ -23,5 +24,9 @@ public interface AgentDao {
     String getAgentState(long agentId);
 
     List<? extends Agent> findAgentsToRemove();
+
+    Instance getInstanceByAgent(Long agentId);
+
+    boolean areAllCredentialsActive(Agent agent);
 
 }

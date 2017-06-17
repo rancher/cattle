@@ -19,6 +19,9 @@
                 "scheduleUpdate" : true
             }
         },
+        "metadata": {
+            "type": "map[json]"
+        },
         "createdStackIds": {
             "type": "array[reference[stack]]"
         },

@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class InstanceTable extends TableImpl<InstanceRecord> {
 
-    private static final long serialVersionUID = 1068141085;
+    private static final long serialVersionUID = -2115818722;
 
     /**
      * The reference instance of <code>cattle.instance</code>
@@ -109,11 +109,6 @@ public class InstanceTable extends TableImpl<InstanceRecord> {
      * The column <code>cattle.instance.data</code>.
      */
     public final TableField<InstanceRecord, Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB, this, "", new DataConverter());
-
-    /**
-     * The column <code>cattle.instance.allocation_state</code>.
-     */
-    public final TableField<InstanceRecord, String> ALLOCATION_STATE = createField("allocation_state", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
     /**
      * The column <code>cattle.instance.compute</code>.
@@ -266,6 +261,11 @@ public class InstanceTable extends TableImpl<InstanceRecord> {
     public final TableField<InstanceRecord, Boolean> DESIRED = createField("desired", org.jooq.impl.SQLDataType.BIT.nullable(false).defaultValue(org.jooq.impl.DSL.inline("b'1'", org.jooq.impl.SQLDataType.BIT)), this, "");
 
     /**
+     * The column <code>cattle.instance.host_id</code>.
+     */
+    public final TableField<InstanceRecord, Long> HOST_ID = createField("host_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
      * Create a <code>cattle.instance</code> table reference
      */
     public InstanceTable() {
@@ -324,7 +324,7 @@ public class InstanceTable extends TableImpl<InstanceRecord> {
      */
     @Override
     public List<ForeignKey<InstanceRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<InstanceRecord, ?>>asList(Keys.FK_INSTANCE__ACCOUNT_ID, Keys.FK_INSTANCE__AGENT_ID, Keys.FK_INSTANCE__REGISTRY_CREDENTIAL_ID, Keys.FK_INSTANCE__INSTANCE_ID, Keys.FK_INSTANCE__SERVICE_INDEX_ID, Keys.FK_INSTANCE__SERVICE_ID, Keys.FK_INSTANCE__ENVIRONMENT_ID, Keys.FK_INSTANCE__DEPLOYMENT_UNIT_ID, Keys.FK_INSTANCE__REVISION_ID);
+        return Arrays.<ForeignKey<InstanceRecord, ?>>asList(Keys.FK_INSTANCE__ACCOUNT_ID, Keys.FK_INSTANCE__AGENT_ID, Keys.FK_INSTANCE__REGISTRY_CREDENTIAL_ID, Keys.FK_INSTANCE__INSTANCE_ID, Keys.FK_INSTANCE__SERVICE_INDEX_ID, Keys.FK_INSTANCE__SERVICE_ID, Keys.FK_INSTANCE__ENVIRONMENT_ID, Keys.FK_INSTANCE__DEPLOYMENT_UNIT_ID, Keys.FK_INSTANCE__REVISION_ID, Keys.FK_INSTANCE__HOST_ID);
     }
 
     /**

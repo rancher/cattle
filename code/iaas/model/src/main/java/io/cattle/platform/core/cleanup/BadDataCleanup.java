@@ -4,7 +4,6 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.InstanceDao;
-import io.cattle.platform.core.dao.IpAddressDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.dao.StoragePoolDao;
@@ -54,8 +53,6 @@ public class BadDataCleanup extends AbstractJooqDao implements Task {
     @Inject
     VolumeDao volumeDao;
     @Inject
-    IpAddressDao ipAddressDao;
-    @Inject
     ServiceDao serviceDao;
     @Inject
     @Named("CoreExecutorService")
@@ -104,7 +101,6 @@ public class BadDataCleanup extends AbstractJooqDao implements Task {
         removeAll(accountDao.findBadGO(LIMIT.get()));
         removeAll(accountDao.findBadUserPreference(LIMIT.get()));
         removeAll(accountDao.findBadProjectMembers(LIMIT.get()));
-        removeAll(ipAddressDao.findBadHostIpAddress(LIMIT.get()));
         removeAll(serviceDao.findBadHealthcheckInstance(LIMIT.get()));
         removeAll(volumeDao.findBadMounts(LIMIT.get()));
         removeAll(volumeDao.findBandVolumeStoragePoolMap(LIMIT.get()));

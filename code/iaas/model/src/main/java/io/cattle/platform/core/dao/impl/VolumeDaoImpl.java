@@ -24,6 +24,7 @@ import io.cattle.platform.core.model.StorageDriver;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.VolumeStoragePoolMap;
+import io.cattle.platform.core.model.tables.VolumeTable;
 import io.cattle.platform.core.model.tables.records.MountRecord;
 import io.cattle.platform.core.model.tables.records.VolumeRecord;
 import io.cattle.platform.core.model.tables.records.VolumeStoragePoolMapRecord;
@@ -60,15 +61,58 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
 
     @Inject
     GenericResourceDao resourceDao;
-
     @Inject
     ObjectManager objectManager;
-
     @Inject
     ObjectProcessManager objectProcessManager;
-
     @Inject
     TransactionDelegate transaction;
+
+    @Override
+    public Volume getVolumeInPoolByExternalId(String externalId, StoragePool storagePool) {
+        if (StringUtils.isEmpty(externalId) || storagePool == null )
+            throw new IllegalArgumentException("External ID and storage pool must have values.");
+
+        List<VolumeRecord> volumes = create()
+                .select(VolumeTable.VOLUME.fields())
+                    .from(VOLUME)
+                    .where(VOLUME.STORAGE_POOL_ID.eq(storagePool.getId())
+                        .and(VOLUME.REMOVED.isNull())
+                        .and(VOLUME.STATE.ne(CommonStatesConstants.REMOVING))
+                        .and(VOLUME.EXTERNAL_ID.eq(externalId).or(VOLUME.NAME.eq(externalId))))
+                .fetchInto(VolumeRecord.class);
+
+        if ( volumes.isEmpty() )
+            return null;
+        else if ( volumes.size() == 1 )
+            return volumes.get(0);
+        else
+            throw new IllegalStateException(String.format(
+                    "More than one volume exists for name/externalId [%s] and storage pool [%s].", externalId, storagePool.getId()));
+    }
+
+    @Override
+    public Volume createVolumeInPool(Long accountId, String name, String externalId, String driver, StoragePool storagePool, boolean isNative) {
+        return transaction.doInTransactionResult(() -> {
+            Volume volume = getVolumeInPoolByExternalId(externalId, storagePool);
+            if (volume != null) {
+                return volume;
+            }
+
+            volume = objectManager.create(Volume.class,
+                    VOLUME.ACCOUNT_ID, accountId,
+                    VOLUME.NAME, name,
+                    VOLUME.STORAGE_POOL_ID, storagePool.getId(),
+                    VOLUME.EXTERNAL_ID, externalId,
+
+            objectManager.setFields(volume,
+                VolumeConstants.FIELD_DOCKER_IS_NATIVE, isNative,
+                VolumeConstants.FIELD_VOLUME_DRIVER, driver);
+
+            return volume;
+        });
+    }
+
 
     @Override
     public Volume findVolumeByExternalId(Long storagePoolId, String externalId) {
