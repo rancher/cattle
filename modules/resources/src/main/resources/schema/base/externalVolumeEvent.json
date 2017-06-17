@@ -1,0 +1,8 @@
+{
+  "resourceFields": {
+    "volume": {
+      "type": "volume",
+      "required": true
+    }
+  }
+}

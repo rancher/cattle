@@ -1,0 +1,125 @@
+{
+  "resourceFields": {
+    "info": {
+      "type": "json"
+    },
+    "agentState": {
+      "type": "string"
+    },
+    "hostname": {
+      "type": "string",
+      "required": true
+    },
+    "driver": {
+      "type": "string"
+    },
+    "agentIpAddress": {
+      "type": "string",
+      "nullable": true
+    },
+    "instanceIds": {
+      "type": "array[reference[instance]]"
+    },
+    "reportedUuid": {
+      "type": "string"
+    },
+    "labels": {
+      "type": "map[string]",
+      "create": true,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "publicEndpoints": {
+      "type": "array[publicEndpoint]",
+      "required": false,
+      "nullable": true
+    },
+    "localStorageMb": {
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "memory": {
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "milliCpu": {
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "authCertificateAuthority": {
+      "type": "string",
+      "nullable": true
+    },
+    "authKey": {
+      "type": "string",
+      "nullable": true
+    },
+    "extractedConfig": {
+      "type": "string",
+      "nullable": true
+    },
+    "engineInstallUrl": {
+      "type": "string",
+      "nullable": true
+    },
+    "dockerVersion": {
+      "type": "string",
+      "nullable": true
+    },
+    "engineOpt": {
+      "type": "map[string]",
+      "nullable": true
+    },
+    "engineInsecureRegistry": {
+      "type": "array[string]",
+      "nullable": true
+    },
+    "engineRegistryMirror": {
+      "type": "array[string]",
+      "nullable": true
+    },
+    "engineLabel": {
+      "type": "map[string]",
+      "nullable": true
+    },
+    "engineStorageDriver": {
+      "type": "string",
+      "nullable": true
+    },
+    "engineEnv": {
+      "type": "map[string]",
+      "nullable": true
+    },
+    "nodeName": {
+      "type": "string",
+      "nullable": true
+    }
+  },
+  "resourceActions": {
+    "evacuate": {
+      "output": "host",
+      "attributes": {
+        "states": [
+          "active",
+          "inactive"
+        ]
+      }
+    },
+    "dockersocket": {
+      "input": null,
+      "output": "hostAccess",
+      "attributes": {
+        "states": [
+          "active",
+          "inactive",
+          "activating",
+          "deactivating"
+        ]
+      }
+    }
+  }
+}

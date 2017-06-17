@@ -1,0 +1,19 @@
+{
+    "resourceFields": {
+        "orchestration": {
+            "type": "enum",
+            "options": [
+                "cattle",
+                "kubernetes"
+            ],
+            "nullable": true
+        }
+    },
+    "collectionFilters": {
+        "key": {
+            "modifiers": [
+                "eq"
+            ]
+        }
+    }
+}

@@ -1,0 +1,7 @@
+{
+  "resourceFields": {
+    "dockerInspect": {
+      "type": "json"
+    }
+  }
+}

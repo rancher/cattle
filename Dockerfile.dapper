@@ -39,9 +39,8 @@ RUN cp /usr/lib/jvm/zulu-8-amd64/jre/lib/security/US_export_policy.jar /usr/lib/
 RUN cd /tmp && \
     git clone https://github.com/ibuildthecloud/cattle.git && \
     cd cattle && \
-    git checkout mvnw && \
-    ./scripts/checkstyle && \
-    ./mvnw package && \
+    git checkout in-progress && \
+    ./gradlew build && \
     cd .. && \
     rm -rf cattle
 
@@ -50,7 +49,7 @@ RUN curl -o /usr/bin/docker -sL -f https://get.docker.com/builds/Linux/x86_64/do
     chmod +x /usr/bin/docker
 
 # Cache binaries
-COPY ./resources/content/cattle-global.properties ${DAPPER_SOURCE}/resources/content/
+COPY ./modules/resources/src/main/resources/cattle-global.properties ${DAPPER_SOURCE}/resources/content/
 RUN bash -x cattle-binary-pull
 
 VOLUME /var/lib/docker

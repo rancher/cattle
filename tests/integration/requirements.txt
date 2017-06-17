@@ -6,7 +6,7 @@ PyJWT==1.4.0
 flake8==2.5.1
 pytest==3.0.2
 pytest-repeat
-pytest-xdist==v1.14
+pytest-xdist
 pyyaml
 netaddr
 requests

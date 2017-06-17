@@ -1,0 +1,52 @@
+{
+  "resourceFields": {
+    "name": {
+      "required": true,
+      "validChars": "a-zA-Z0-9-",
+      "minLength": 1,
+      "maxLength": 63,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "answers": {
+      "type": "map[json]"
+    },
+    "templates": {
+      "type": "map[string]",
+      "nullable": true
+    },
+    "labels": {
+      "type": "map[string]",
+      "nullable": true
+    },
+    "outputs": {
+      "type": "map[string]",
+      "nullable": true
+    },
+    "workingConfiguration": {
+      "type": "stackConfiguration",
+      "nullabled": true
+    },
+    "serviceIds": {
+      "type": "array[reference[service]]",
+      "nullable": true
+    }
+  },
+  "resourceActions": {
+    "addoutputs": {
+      "input": "addOutputsInput",
+      "output": "stack"
+    },
+    "exportconfig": {
+      "input": "composeConfigInput",
+      "output": "composeConfig"
+    },
+    "activateservices": {
+      "output": "stack"
+    },
+    "deactivateservices": {
+      "output": "stack"
+    }
+  }
+}

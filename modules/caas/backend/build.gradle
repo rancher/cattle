@@ -1,0 +1,6 @@
+dependencies {
+  compile project(':cattle-framework')
+  compile project(':cattle-model')
+  compile project(':cattle-caas-common')
+  compile project(':cattle-hazelcast')
+}

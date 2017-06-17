@@ -1,0 +1,13 @@
+{
+  "resourceFields": {
+    "maxLength": {
+      "required": true
+    },
+    "timeout": {
+      "required": true
+    },
+    "cookie": {
+      "required": true
+    }
+  }
+}

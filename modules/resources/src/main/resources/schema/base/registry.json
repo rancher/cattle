@@ -1,0 +1,11 @@
+{
+  "pluralName": "registries",
+  "resourceFields": {
+    "serverAddress": {
+      "required": true,
+      "nullable": false,
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

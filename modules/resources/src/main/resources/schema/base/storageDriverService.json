@@ -1,0 +1,12 @@
+{
+  "resourceFields": {
+    "storageDriver": {
+      "type": "storageDriver",
+      "required": true,
+      "nullable": false,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    }
+  }
+}

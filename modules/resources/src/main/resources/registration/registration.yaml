@@ -1,0 +1,143 @@
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cattle-system
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: rancher
+  namespace: cattle-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: rancher
+  namespace: cattle-system
+subjects:
+- kind: ServiceAccount
+  name: rancher
+  namespace: cattle-system
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rancher-credentials-${RANDOM}
+  namespace: cattle-system
+type: Opaque
+data:
+  url: "${CATTLE_URL_ENCODED}"
+  access-key: "${CATTLE_REGISTRATION_ACCESS_KEY_ENCODED}"
+  secret-key: "${CATTLE_REGISTRATION_SECRET_KEY_ENCODED}"
+
+---
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: credential-reporter-${RANDOM}
+  namespace: cattle-system
+spec:
+  serviceAccountName: rancher
+  restartPolicy: Never
+  containers:
+    - name: credential-reporter
+      image: joshwget/credential-reporter
+      volumeMounts:
+      - name: rancher-credentials
+        mountPath: /rancher-credentials
+        readOnly: true
+  volumes:
+  - name: rancher-credentials
+    secret:
+      secretName: rancher-credentials-${RANDOM}
+
+---
+
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: rancher-agent
+  namespace: cattle-system
+spec:
+  template:
+    metadata:
+      labels:
+        app: rancher
+        type: agent
+    spec:
+      containers:
+      - name: rancher-agent
+        command:
+        - /run.sh
+        - k8srun
+        env:
+        - name: CATTLE_ORCHESTRATION
+          value: "kubernetes"
+        - name: CATTLE_SCRIPT_DEBUG
+          value: "true"
+        - name: CATTLE_SKIP_UPGRADE
+          value: "true"
+        - name: CATTLE_REGISTRATION_URL
+          value: ${CATTLE_REGISTRATION_URL}
+        - name: CATTLE_URL
+          value: "${CATTLE_URL}"
+        - name: CATTLE_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        image: ${CATTLE_AGENT_IMAGE}
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: rancher
+          mountPath: /var/lib/rancher
+        - name: rancher-storage
+          mountPath: /var/run/rancher/storage
+        - name: rancher-agent-state
+          mountPath: /var/lib/cattle
+        - name: docker-socket
+          mountPath: /var/run/docker.sock
+        - name: lib-modules
+          mountPath: /lib/modules
+          readOnly: true
+        - name: proc
+          mountPath: /host/proc
+        - name: dev
+          mountPath: /host/dev
+      hostNetwork: true
+      hostPID: true
+      volumes:
+      - name: rancher
+        hostPath:
+          path: /var/lib/rancher
+      - name: rancher-storage
+        hostPath:
+          path: /var/run/rancher/storage
+      - name: rancher-agent-state
+        hostPath:
+          path: /var/lib/cattle
+      - name: docker-socket
+        hostPath:
+          path: /var/run/docker.sock
+      - name: lib-modules
+        hostPath:
+          path: /lib/modules
+      - name: proc
+        hostPath:
+          path: /proc
+      - name: dev
+        hostPath:
+          path: /dev

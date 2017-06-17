@@ -1,8 +1,10 @@
 .dapper
-**/target*
+**/target/**/*
+**/build/**/*
+out
 resources/local
-resources/content/db/mysql/*.gz
-runtime
+scripts/mysql/cattle_dump*
+**/runtime/**/*
 tests/integration*/.tox
 tests/integration*/.venv
 **/*.pyc

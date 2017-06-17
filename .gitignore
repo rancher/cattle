@@ -3,6 +3,7 @@
 
 /.cache
 /.dapper
+/.gradle
 /.idea
 /.m2
 
@@ -16,17 +17,17 @@ code/framework/encryption/keys.properties
 code/packaging/app/DATA
 code/packaging/app/repo.json
 dist
-docs/build
-resources/content/db/mysql/cattle_dump*.sql
-resources/content/db/mysql/cattle_dump*.sql.gz
-resources/content/db/dump-*.xml
 resources/local
 runtime
+scripts/mysql/cattle_dump*.sql
+scripts/mysql/cattle_dump*.sql.gz
+scripts/mysql/dump-*.xml
+build
 target
+out
 tests/integration*/.idea/
 tests/integration*/.tox/
 tests/integration*/MANIFEST
-tests/integration-v1/.cache/
 tests/integration/.cache/
 .venv
 .idea

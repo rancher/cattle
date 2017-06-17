@@ -3,29 +3,16 @@ set -e
 
 cd $(dirname $0)/..
 
-check_schemas()
-{
-    for i in resources/content/db/core*xml; do
-        if ! grep -q http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd $i; then
-            echo 'ERROR: Please use 3.1 xsd for changelog schema on file:' $i
-            echo 'ERROR:    Currently using' $(head -n2 $i | grep databaseChangeLog)
-            exit 1
-        fi
-    done
-}
-
-check_schemas
-
-if [ -z "$API_VERSION" ] || [ "$API_VERSION" = "v2" ]; then
+if [ -z "$API_VERSION" ] || [ "$API_VERSION" = "v3" ]; then
     cd tests/integration
 else
     cd tests/integration-${API_VERSION}
 fi
 
-export CATTLE_URL=${CATTLE_TEST_URL:-http://localhost:8081/v1/schemas}
+export CATTLE_URL=http://localhost:8080/v3/schemas
 
 if [ -e .tox ] && [ ! -e .tox/py27/include/python2.7 ]; then
     rm -rf .tox
 fi
 
-tox "$@"
+echo TODO: tox "$@"

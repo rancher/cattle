@@ -1,6 +1,7 @@
-from cattle import ApiError
-from common_fixtures import *  # NOQA
 import requests
+from cattle import ApiError
+
+from common_fixtures import *  # NOQA
 
 
 def test_agent_unique(super_client):
@@ -20,21 +21,22 @@ def test_agent_unique(super_client):
         pass
 
 
-def test_list_sort(super_client, context):
+def test_list_sort(new_context):
+    client = new_context.client
     name = random_str()
     containers = []
     for i in range(2):
-        c = context.create_container_no_success(name=name + random_str(),
-                                                startOnCreate=False,
-                                                description='test1')
+        c = new_context.create_container_no_success(name=name + random_str(),
+                                                    startOnCreate=False,
+                                                    description='test1')
         containers.append(c)
 
-    r = super_client.list_container(description='test1')
+    r = client.list_container(description='test1')
     for i in range(len(r)):
         assert containers[i].id == r[i].id
 
-    r = super_client.list_container(description='test1', sort='created',
-                                    order='desc')
+    r = client.list_container(description='test1', sort='created',
+                              order='desc')
     containers.reverse()
     for i in range(len(r)):
         assert containers[i].id == r[i].id
@@ -83,176 +85,6 @@ def test_pagination(context):
     assert len(collected) == 4
 
 
-def test_pagination_include(super_client, new_context):
-    context = new_context
-    client = new_context.client
-    host = context.host
-    name = random_str()
-    container_ids = []
-    containers = []
-    for i in range(5):
-        c = client.create_container(imageUuid=context.image_uuid,
-                                    name=name + random_str(),
-                                    requestedHostId=host.id,
-                                    description='test3')
-        c = super_client.reload(c)
-        containers.append(c)
-        container_ids.append(c.id)
-
-    for c in containers:
-        client.wait_success(c)
-
-    assert len(containers[0].instanceHostMaps()) == 1
-    assert host.id == containers[0].instanceHostMaps()[0].host().id
-    r = super_client.list_container(description='test3')
-
-    assert len(r) == 5
-    for c in r:
-        assert len(c.instanceHostMaps()) == 1
-        assert c.instanceHostMaps()[0].hostId == host.id
-
-    collected = {}
-    r = super_client.list_container(description='test3',
-                                    include='instanceHostMaps',
-                                    limit=2)
-    assert len(r) == 2
-    for c in r:
-        collected[c.id] = True
-        assert len(c.instanceHostMaps) == 1
-        assert c.instanceHostMaps[0].hostId == host.id
-
-    r = r.next()
-
-    assert len(r) == 2
-    for c in r:
-        collected[c.id] = True
-        assert len(c.instanceHostMaps) == 1
-        assert c.instanceHostMaps[0].hostId == host.id
-
-    r = r.next()
-
-    assert len(r) == 1
-    for c in r:
-        collected[c.id] = True
-        assert len(c.instanceHostMaps) == 1
-        assert c.instanceHostMaps[0].hostId == host.id
-
-    assert not r.pagination.partial
-
-    maps = []
-    for id in container_ids:
-        maps.extend(super_client.list_instanceHostMap(hostId=host.id,
-                                                      instanceId=id))
-
-    assert len(maps) == 5
-
-    maps_from_include = []
-    r = super_client.list_host(include='instanceHostMaps', limit=2,
-                               accountId=host.accountId)
-
-    while True:
-        for h in r:
-            if h.id == host.id:
-                assert len(h.instanceHostMaps) <= 2
-                for m in h.instanceHostMaps:
-                    if m.instanceId in container_ids and \
-                       m.instanceId not in maps_from_include:
-                        maps_from_include.append(m.instanceId)
-                        for c in containers:
-                            if c.id == m.instanceId:
-                                client.wait_success(c.stop())
-
-        try:
-            r = r.next()
-        except AttributeError:
-            break
-
-    assert len(maps) == len(maps_from_include)
-
-    del maps_from_include[:]
-    r = super_client.list_host(include='instances', limit=2,
-                               accountId=host.accountId)
-
-    while True:
-        for h in r:
-            if h.id == host.id:
-                for c in h.instances:
-                    if c.id in container_ids and \
-                       c.id not in maps_from_include:
-                        maps_from_include.append(c.id)
-                        client.wait_success(c.start())
-        try:
-            r = r.next()
-        except AttributeError:
-            break
-
-    assert len(maps) == len(maps_from_include)
-
-
-def test_include_left_join(super_client, context):
-    container = context.create_container_no_success(startOnCreate=False)
-    container = context.wait_for_state(container, 'stopped')
-    c = super_client.by_id('container', container.id,
-                           include='instanceHostMaps')
-
-    assert container.id == c.id
-
-
-def test_include_left_join_sort(super_client, context):
-    client = context.client
-    containers = []
-    for i in range(2):
-        c = client.create_container(imageUuid=context.image_uuid,
-                                    name="test" + random_str(),
-                                    description='test4')
-        containers.append(c)
-
-    for c in containers:
-        client.wait_success(c)
-
-    r = super_client.list_container(include='instanceHostMaps',
-                                    sort='created', order='asc',
-                                    description='test4')
-    for i in range(len(r)):
-        assert containers[i].id == r[i].id
-
-    r = super_client.list_container(description='test4',
-                                    include='instanceHostMaps',
-                                    sort='created', order='desc')
-    containers.reverse()
-    for i in range(len(r)):
-        assert containers[i].id == r[i].id
-
-
-def test_include(super_client, context):
-    container = context.create_container(name='include_test')
-    container = super_client.reload(container)
-
-    for link_name in ['instanceHostMaps', 'instancehostmaps']:
-        found = False
-        for c in super_client.list_container(name_like='include_test%'):
-            if c.id == container.id:
-                found = True
-                assert len(c.instanceHostMaps()) == 1
-                assert callable(c.instanceHostMaps)
-
-        assert found
-
-        found = False
-        for c in super_client.list_container(include=link_name,
-                                             name_like='include_test%'):
-            if c.id == container.id:
-                found = True
-                assert len(c.instanceHostMaps) == 1
-
-        assert found
-
-        c = super_client.by_id('container', container.id)
-        assert callable(c.instanceHostMaps)
-        c = super_client.by_id('container', container.id, include=link_name)
-        assert len(c.instanceHostMaps) == 1
-
-
 def test_limit(super_client):
     result = super_client.list_container()
     assert result.pagination.limit == 100
@@ -275,58 +107,17 @@ def test_schema_self_link(client):
     assert con_schema.links.self.startswith("http")
 
 
-def test_child_map_include(super_client, context):
-    container = context.create_container()
-
-    cs = super_client.list_container(uuid=container.uuid, include='hosts')
-
-    assert cs[0].hosts[0].uuid is not None
-    assert len(cs[0].hosts) == 1
-
-    hs = super_client.list_host(uuid=cs[0].hosts[0].uuid,
-                                include='instances')
-
-    found = False
-    for i in hs[0].instances:
-        if i.uuid == cs[0].uuid:
-            found = True
-
-    assert found
-
-
 def test_child_map(super_client, context):
     container = context.create_container()
 
-    hosts = super_client.reload(container).hosts()
-    assert len(hosts) == 1
-    assert hosts[0].type == 'host'
-
-
-def test_fields_on_include(super_client, context):
-    c = context.create_container()
-    host = super_client.by_id_host(context.host.id,
-                                   include='instances')
-
-    assert host is not None
-
-    found = False
-    for instance in host.instances:
-        if instance.id == c.id:
-            assert instance.transitioning == 'no'
-            assert 'stop' in instance
-            assert callable(instance.stop)
-            assert len(instance.links) > 1
-            found = True
-            break
-
-    assert found
+    host = super_client.reload(container).host()
+    assert host.type == 'host'
 
 
 def test_state_enum(super_client):
     container_schema = super_client.schema.types['container']
     states = set([
         'creating',
-        'migrating',
         'removed',
         'removing',
         'requested',
@@ -347,19 +138,14 @@ def test_state_enum(super_client):
 
 def test_actions_based_on_state(context):
     c = context.create_container()
-    assert set(c.actions.keys()) == set(['migrate', 'restart', 'stop',
-                                         'update', 'execute', 'logs',
-                                         'proxy', 'converttoservice',
-                                         'upgrade'])
-
-
-def test_include_user_not_auth_map(client):
-    client.list_host(include='instances')
+    assert set(c.actions.keys()) == set(['restart', 'stop', 'update',
+                                         'execute', 'logs', 'proxy',
+                                         'converttoservice', 'upgrade'])
 
 
 def test_map_user_not_auth_map(context):
     c = context.create_container()
-    assert len(c.hosts()) == 1
+    assert c.hostId is not None
 
 
 def test_query_length(admin_user_client):

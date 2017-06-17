@@ -1,0 +1,22 @@
+<included>
+    <define name="logstashSyslogHost" class="io.cattle.platform.logback.ArchaiusProperty" >
+        <name>logback.output.logstash.syslog.host</name>
+    </define>
+
+    <define name="logstashSyslogPort" class="io.cattle.platform.logback.ArchaiusProperty" >
+        <name>logback.output.logstash.syslog.port</name>
+    </define>
+
+    <appender name="LOGSTASH_SYSLOG" class="net.logstash.logback.appender.LogstashSocketAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${aggregationLevel}</level>
+        </filter>
+        <syslogHost>${logstashSyslogHost}</syslogHost>
+        <port>${logstashSyslogPort}</port>
+        <facility>USER</facility>
+    </appender>
+
+    <root>
+        <appender-ref ref="LOGSTASH_SYSLOG" />
+    </root>
+</included>
