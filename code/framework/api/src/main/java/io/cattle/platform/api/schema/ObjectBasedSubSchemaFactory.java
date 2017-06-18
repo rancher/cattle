@@ -3,6 +3,7 @@ package io.cattle.platform.api.schema;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.meta.Relationship;
 import io.cattle.platform.util.type.Named;
+import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.factory.impl.SubSchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.impl.SchemaImpl;
 
@@ -13,6 +14,13 @@ import javax.inject.Inject;
 public class ObjectBasedSubSchemaFactory extends SubSchemaFactory implements Named {
 
     ObjectMetaDataManager metaDataManager;
+
+    public ObjectBasedSubSchemaFactory() {
+    }
+
+    public ObjectBasedSubSchemaFactory(SchemaFactory schemaFactory) {
+        setSchemaFactory(schemaFactory);
+    }
 
     @Override
     protected void prune(SchemaImpl schema) {

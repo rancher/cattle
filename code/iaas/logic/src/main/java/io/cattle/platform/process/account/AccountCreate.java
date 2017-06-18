@@ -32,9 +32,7 @@ import com.netflix.config.DynamicStringProperty;
 public class AccountCreate extends AbstractDefaultProcessHandler {
 
     public static final DynamicBooleanProperty CREATE_CREDENTIAL = ArchaiusUtil.getBoolean("process.account.create.create.credential");
-
     public static final DynamicStringProperty CREDENTIAL_TYPE = ArchaiusUtil.getString("process.account.create.create.credential.default.kind");
-
     public static final DynamicStringListProperty ACCOUNT_KIND_CREDENTIALS = ArchaiusUtil.getList("process.account.create.create.credential.account.kinds");
 
     ObjectProcessManager processManager;

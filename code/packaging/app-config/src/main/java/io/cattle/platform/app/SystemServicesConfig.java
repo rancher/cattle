@@ -22,6 +22,15 @@ import io.cattle.platform.core.cache.DBCacheManager;
 import io.cattle.platform.core.cleanup.BadDataCleanup;
 import io.cattle.platform.core.cleanup.CleanupTaskInstances;
 import io.cattle.platform.core.cleanup.TableCleanup;
+import io.cattle.platform.docker.machine.launch.AuthServiceLauncher;
+import io.cattle.platform.docker.machine.launch.CatalogLauncher;
+import io.cattle.platform.docker.machine.launch.ComposeExecutorLauncher;
+import io.cattle.platform.docker.machine.launch.MachineDriverLoader;
+import io.cattle.platform.docker.machine.launch.MachineLauncher;
+import io.cattle.platform.docker.machine.launch.TelemetryLauncher;
+import io.cattle.platform.docker.machine.launch.WebhookServiceLauncher;
+import io.cattle.platform.docker.machine.process.MachinePreCreate;
+import io.cattle.platform.docker.process.account.DockerAccountCreate;
 import io.cattle.platform.docker.process.serializer.DockerContainerSerializer;
 import io.cattle.platform.docker.transform.DockerTransformerImpl;
 import io.cattle.platform.engine.eventing.impl.ProcessEventListenerImpl;
@@ -38,6 +47,7 @@ import io.cattle.platform.eventing.memory.InMemoryEventService;
 import io.cattle.platform.extension.dynamic.DynamicExtensionHandler;
 import io.cattle.platform.extension.dynamic.dao.impl.ExternalHandlerDaoImpl;
 import io.cattle.platform.extension.dynamic.impl.ExternalDynamicExtensionHandlerImpl;
+import io.cattle.platform.extension.dynamic.process.ExternalHandlerActivate;
 import io.cattle.platform.extension.impl.EMUtils;
 import io.cattle.platform.extension.impl.ExtensionManagerImpl;
 import io.cattle.platform.framework.encryption.EncryptionUtils;
@@ -80,6 +90,7 @@ import io.cattle.platform.object.purge.impl.PurgeMonitorImpl;
 import io.cattle.platform.object.purge.impl.RemoveMonitorImpl;
 import io.cattle.platform.object.serialization.impl.DefaultObjectSerializerFactoryImpl;
 import io.cattle.platform.object.util.CommonsConverterStartup;
+import io.cattle.platform.process.common.spring.GenericResourceProcessDefinitionCollector;
 import io.cattle.platform.process.containerevent.ContainerEventCreate;
 import io.cattle.platform.process.host.HostRemoveMonitorImpl;
 import io.cattle.platform.process.image.PullTaskCreate;
@@ -128,6 +139,7 @@ import io.cattle.platform.systemstack.service.ProjectTemplateService;
 import io.cattle.platform.task.eventing.impl.TaskManagerEventListenerImpl;
 import io.cattle.platform.task.impl.TaskManagerImpl;
 import io.cattle.platform.token.impl.JwtTokenServiceImpl;
+import io.cattle.platform.vm.process.ServiceVirtualMachinePreCreate;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.json.JacksonMapper;
 import io.github.ibuildthecloud.gdapi.model.Transformer;
@@ -155,7 +167,8 @@ import org.springframework.context.annotation.Configuration;
     @ComponentScan("io.cattle.platform.service.revision"),
     @ComponentScan("io.cattle.platform.servicediscovery.process"),
     @ComponentScan("io.cattle.platform.compose"),
-    @ComponentScan("io.cattle.platform.systemstack.process")
+    @ComponentScan("io.cattle.platform.systemstack.process"),
+    @ComponentScan("io.cattle.platform.process")
 })
 public class SystemServicesConfig {
 
@@ -808,4 +821,65 @@ public class SystemServicesConfig {
     VolumeDeploymentUnitLookup VolumeDeploymentUnitLookup() {
         return new VolumeDeploymentUnitLookup();
     }
+
+    @Bean
+    GenericResourceProcessDefinitionCollector GenericResourceProcessDefinitionCollector() {
+        return GenericResourceProcessDefinitionCollector();
+    }
+
+    @Bean
+    DockerAccountCreate DockerAccountCreate() {
+        return new DockerAccountCreate();
+    }
+
+    @Bean
+    MachinePreCreate MachinePreCreate() {
+        return new MachinePreCreate();
+    }
+
+    @Bean
+    MachineDriverLoader MachineDriverLoader() {
+        return new MachineDriverLoader();
+    }
+
+    @Bean
+    MachineLauncher MachineLauncher() {
+        return new MachineLauncher();
+    }
+
+    @Bean
+    ComposeExecutorLauncher ComposeExecutorLauncher() {
+        return new ComposeExecutorLauncher();
+    }
+
+    @Bean
+    CatalogLauncher CatalogLauncher() {
+        return new CatalogLauncher();
+    }
+
+    @Bean
+    TelemetryLauncher TelemetryLauncher() {
+        return new TelemetryLauncher();
+    }
+
+    @Bean
+    AuthServiceLauncher AuthServiceLauncher() {
+        return new AuthServiceLauncher();
+    }
+
+    @Bean
+    WebhookServiceLauncher WebhookServiceLauncher() {
+        return new WebhookServiceLauncher();
+    }
+
+    @Bean
+    ExternalHandlerActivate ExternalHandlerActivate() {
+        return new ExternalHandlerActivate();
+    }
+
+    @Bean
+    ServiceVirtualMachinePreCreate ServiceVirtualMachinePreCreate() {
+        return new ServiceVirtualMachinePreCreate();
+    }
+
 }

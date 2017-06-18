@@ -13,103 +13,6 @@
         http://cattle.io/schemas/spring/extension http://cattle.io/schemas/spring/extension-1.0.xsd
         http://cattle.io/schemas/spring/process/generic-process http://cattle.io/schemas/spring/process/generic-process-1.0.xsd">
 
-    <context:component-scan base-package="io.cattle.platform.process" />
-
-    <bean class="io.cattle.platform.process.volume.VolumeStoragePoolMapRemove"
-        p:name="VolumeStoragePoolMapRemove"
-        p:commandName="storage.volume.remove"
-        p:agentResourceRelationship="storagePool"
-        p:dataTypeClass="io.cattle.platform.core.model.VolumeStoragePoolMap"
-        p:processNames="volumestoragepoolmap.remove"
-        p:shortCircuitIfAgentRemoved="true" >
-        <property name="priority">
-            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
-        </property>
-    </bean>
-
-    <bean class="io.cattle.platform.process.mount.MountRemove"
-        p:name="MountRemove"
-        p:commandName="storage.volume.remove"
-        p:dataTypeClass="io.cattle.platform.core.model.VolumeStoragePoolMap"
-        p:dataResourceRelationship="none"
-        p:processNames="mount.remove"
-        p:shortCircuitIfAgentRemoved="true" >
-        <property name="priority">
-            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
-        </property>
-    </bean>
-
-    <bean class="io.cattle.platform.process.stack.StackAgentHandler"
-        p:name="StackAgentHandler"
-        p:commandName="kubernetesStack.create"
-        p:dataTypeClass="io.cattle.platform.core.model.Stack"
-        p:processNames="stack.create"
-        p:stackKind="kubernetesStack"
-        p:agentService="io.rancher.container.agent_service.kubernetes_stack"
-        p:errorChainProcess="stack.error" >
-        <property name="priority">
-            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
-        </property>
-    </bean>
-
-    <bean class="io.cattle.platform.process.stack.StackAgentHandler"
-        p:name="StackAgentHandler"
-        p:commandName="kubernetesStack.rollback"
-        p:dataTypeClass="io.cattle.platform.core.model.Stack"
-        p:stackKind="kubernetesStack"
-        p:agentService="io.rancher.container.agent_service.kubernetes_stack"
-        p:processNames="stack.rollback" >
-        <property name="priority">
-            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
-        </property>
-    </bean>
-
-    <bean class="io.cattle.platform.process.stack.StackAgentHandler"
-        p:name="StackAgentHandler"
-        p:commandName="kubernetesStack.finishupgrade"
-        p:dataTypeClass="io.cattle.platform.core.model.Stack"
-        p:stackKind="kubernetesStack"
-        p:agentService="io.rancher.container.agent_service.kubernetes_stack"
-        p:processNames="stack.finishupgrade" >
-        <property name="priority">
-            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
-        </property>
-    </bean>
-
-    <bean class="io.cattle.platform.process.stack.StackAgentHandler"
-        p:name="StackAgentHandler"
-        p:commandName="kubernetesStack.upgrade"
-        p:dataTypeClass="io.cattle.platform.core.model.Stack"
-        p:stackKind="kubernetesStack"
-        p:agentService="io.rancher.container.agent_service.kubernetes_stack"
-        p:processNames="stack.upgrade"
-        p:errorChainProcess="stack.cancelupgrade" >
-        <property name="processDataKeys" >
-            <list>
-                <value>templates</value>
-                <value>environment</value>
-                <value>externalId</value>
-            </list>
-        </property>
-        <property name="priority">
-            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
-        </property>
-    </bean>
-
-    <bean class="io.cattle.platform.process.stack.StackAgentHandler"
-        p:name="StackAgentHandler"
-        p:commandName="kubernetesStack.remove"
-        p:dataTypeClass="io.cattle.platform.core.model.Stack"
-        p:stackKind="kubernetesStack"
-        p:agentService="io.rancher.container.agent_service.kubernetes_stack"
-        p:processNames="stack.remove" >
-        <property name="priority">
-            <util:constant static-field="io.cattle.platform.util.type.Priority.DEFAULT"/>
-        </property>
-    </bean>
-
-    <bean class="io.cattle.platform.process.common.spring.GenericResourceProcessDefinitionCollector" />
-    <bean id="processFactory" abstract="true" class="io.cattle.platform.process.common.spring.GenericProcessFactory" />
 
     <!-- 
         <process:defaultProcesses resourceType="agent" />
@@ -128,14 +31,7 @@
     <process:defaultProcesses resourceType="account" />
     <process:process name="genericobject.create" resourceType="genericObject" start="requested" transitioning="activating" done="active" />
     <process:process name="genericobject.remove" resourceType="genericObject" start="requested,active,activating" transitioning="removing" done="removed" />
-    <process:defaultProcesses resourceType="hostIpAddressMap" />
-    <process:defaultProcesses resourceType="instanceHostMap" />
-    <process:defaultProcesses resourceType="instanceLink" />
-    <process:defaultProcesses resourceType="ipAddressNicMap" />
-    <process:defaultProcesses resourceType="ipAssociation" />
-    <process:defaultProcesses resourceType="ipPool" />
     <process:defaultProcesses resourceType="network" />
-    <process:defaultProcesses resourceType="nic" />
     <process:defaultProcesses resourceType="projectMember" />
     <process:defaultProcesses resourceType="storagePool" />
     <process:defaultProcesses resourceType="subnet" />
@@ -148,20 +44,12 @@
 
     <process:process name="serviceindex.remove" resourceType="serviceIndex" start="inactive,active" transitioning="removing" done="removed" />
 
-    <!-- Volume Storage Pool Map -->
-    <process:defaultProcesses resourceType="volumeStoragePoolMap" />
-
     <!-- Host -->
     <process:defaultProcesses resourceType="host" />
     <process:process name="host.activate" resourceType="host" start="inactive,registering,provisioned" transitioning="activating" done="active" />
     <process:process name="host.provision" resourceType="host" start="inactive" transitioning="provisioning" done="provisioned" />
     <process:process name="host.error" resourceType="host" start="provisioning" transitioning="erroring" done="error" />
     <process:process name="host.remove" resourceType="host" start="erroring,error,requested,inactive,activating,deactivating,registering,updating-active,updating-inactive,provisioning" transitioning="removing" done="removed" />
-
-    <!-- IP Address -->
-    <process:defaultProcesses resourceType="ipAddress" />
-    <process:process name="ipaddress.associate" resourceType="ipAddress" start="active" transitioning="associating" done="associated" />
-    <process:process name="ipaddress.disassociate" resourceType="ipAddress" start="associating,associated" transitioning="disassociating" done="active" />
 
     <!-- Agent -->
     <process:defaultProcesses resourceType="agent" exclude="agent.deactivate,agent.remove" />
@@ -354,30 +242,10 @@
     <process:process name="deploymentunit.error" resourceType="deploymentUnit" start="active,activating,pausing,paused" transitioning="erroring" done="error" />
     <process:process name="deploymentunit.pause" resourceType="deploymentUnit" start="requested,registering,activating,active,deactivating,inactive,error,erroring" transitioning="pausing" done="paused" />
 
-    <bean class="io.cattle.platform.docker.process.dao.impl.DockerComputeDaoImpl" />
+    <bean id="processFactory" abstract="true" class="io.cattle.platform.process.common.spring.GenericProcessFactory" />
 
-    <bean class="io.cattle.platform.docker.process.instance.DockerInstancePreCreate" />
-    <bean class="io.cattle.platform.docker.process.instance.DockerInstancePostCreate" />
-    <bean class="io.cattle.platform.docker.process.account.DockerAccountCreate" />
-    <bean class="io.cattle.platform.docker.process.instancehostmap.DockerPostInstanceHostMapActivate" />
-    <bean class="io.cattle.platform.service.account.SystemRoleObjectPostProcessor" />
-    <bean class="io.cattle.platform.docker.process.ipaddress.DockerIpAddressDeactivate" />
-
-    <bean class="io.cattle.platform.docker.machine.process.MachinePreCreate" />
-    <bean class="io.cattle.platform.docker.machine.launch.MachineDriverLoader" />
-    <bean class="io.cattle.platform.docker.machine.launch.MachineLauncher" />
-    <bean class="io.cattle.platform.docker.machine.launch.ComposeExecutorLauncher" />
-    <bean class="io.cattle.platform.docker.machine.launch.CatalogLauncher" />
-    <bean class="io.cattle.platform.docker.machine.launch.TelemetryLauncher" />
-    <bean class="io.cattle.platform.docker.machine.launch.AuthServiceLauncher" />
-    <bean class="io.cattle.platform.docker.machine.launch.WebhookServiceLauncher" />
-    
     <process:defaultProcesses resourceType="externalHandler" />
     <process:defaultProcesses resourceType="externalHandlerProcess" />
     <process:defaultProcesses resourceType="externalHandlerExternalHandlerProcessMap" />
 
-    <bean class="io.cattle.platform.extension.dynamic.process.ExternalHandlerActivate" />
-
-    <bean class="io.cattle.platform.vm.process.VirtualMachinePreCreate" />
-    <bean class="io.cattle.platform.vm.process.ServiceVirtualMachinePreCreate" />
 </beans>

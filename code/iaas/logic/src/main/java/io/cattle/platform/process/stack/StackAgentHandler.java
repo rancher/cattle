@@ -13,7 +13,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-public class StackAgentHandler extends AgentBasedProcessHandler {
+public abstract class StackAgentHandler extends AgentBasedProcessHandler {
 
     @Inject
     EnvironmentResourceManager envResourceManager;

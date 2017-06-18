@@ -19,10 +19,6 @@
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
 
-    <listener>
-        <listener-class>com.ryantenney.metrics.spring.servlets.MetricsServletsContextListener</listener-class>
-    </listener>
-
    <listener>
         <listener-class>io.cattle.platform.spring.web.StartupListener</listener-class>
     </listener>
@@ -165,22 +161,5 @@
         <dispatcher>REQUEST</dispatcher>
         <dispatcher>FORWARD</dispatcher>
     </filter-mapping>
-
-    <servlet>
-        <servlet-name>HealthCheck</servlet-name>
-        <servlet-class>com.codahale.metrics.servlets.HealthCheckServlet</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>Ping</servlet-name>
-        <servlet-class>com.codahale.metrics.servlets.PingServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>Ping</servlet-name>
-        <url-pattern>/ping</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>HealthCheck</servlet-name>
-        <url-pattern>/healthcheck</url-pattern>
-    </servlet-mapping>
 
 </web-app>
