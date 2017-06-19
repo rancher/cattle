@@ -29,6 +29,7 @@ import org.apache.cloudstack.managed.context.ManagedContextRunnable;
 import org.apache.commons.lang3.StringUtils;
 
 import com.codahale.metrics.Timer;
+import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicStringListProperty;
 import com.netflix.config.DynamicStringProperty;
 
@@ -36,6 +37,7 @@ public class ApiRequestFilter extends SpringFilter {
 
     private static final DynamicStringListProperty IGNORE = ArchaiusUtil.getList("api.ignore.paths");
     private static final DynamicStringProperty PL_SETTING = ArchaiusUtil.getString("ui.pl");
+    private static final String TOKEN = "token";
     private static final String PL = "PL";
     private static final String LANG = "LANG";
     private static final String VERSION = "X-Rancher-Version";
@@ -43,6 +45,7 @@ public class ApiRequestFilter extends SpringFilter {
     private static final String DENY = "DENY";
     private static final DynamicStringProperty LOCALIZATION = ArchaiusUtil.getString("localization");
     private static final DynamicStringProperty SERVER_VERSION = ArchaiusUtil.getString("rancher.server.version");
+    private static final DynamicBooleanProperty SECURITY_SETTING = ArchaiusUtil.getBoolean("api.security.enabled");
 
     ApiRequestFilterDelegate delegate;
     Versions versions;
@@ -73,6 +76,7 @@ public class ApiRequestFilter extends SpringFilter {
             return;
         }
 
+        addToken(httpRequest, (HttpServletResponse) response);
         addPLCookie(httpRequest, (HttpServletResponse) response);
         addDefaultLanguageCookie(httpRequest, (HttpServletResponse) response);
         addVersionHeader(httpRequest, (HttpServletResponse) response);
@@ -210,6 +214,28 @@ public class ApiRequestFilter extends SpringFilter {
             plCookie = new Cookie(PL, PL_SETTING.getValue());
             plCookie.setPath("/");
             response.addCookie(plCookie);
+        }
+    }
+
+    private void addToken(HttpServletRequest httpRequest, HttpServletResponse response) {
+        if (SECURITY_SETTING.get()) {
+            return;
+        }
+
+        Cookie tokenCookie = null;
+        if (httpRequest.getCookies() != null) {
+            for (Cookie c : httpRequest.getCookies()) {
+                if (TOKEN.equals(c.getName())) {
+                    tokenCookie = c;
+                    break;
+                }
+            }
+        }
+
+        if (tokenCookie == null || StringUtils.isBlank(tokenCookie.getValue())) {
+            tokenCookie = new Cookie(TOKEN, "unauthorized");
+            tokenCookie.setPath("/");
+            response.addCookie(tokenCookie);
         }
     }
 
