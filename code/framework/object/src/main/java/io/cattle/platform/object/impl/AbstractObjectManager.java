@@ -1,8 +1,6 @@
 package io.cattle.platform.object.impl;
 
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.lifecycle.ObjectLifeCycleHandler;
-import io.cattle.platform.object.lifecycle.ObjectLifeCycleHandler.LifeCycleEvent;
 import io.cattle.platform.object.meta.MapRelationship;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.meta.Relationship;
@@ -13,20 +11,24 @@ import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.Schema;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 public abstract class AbstractObjectManager implements ObjectManager {
 
     SchemaFactory schemaFactory;
-    List<ObjectPostInstantiationHandler> postInitHandlers;
-    List<ObjectLifeCycleHandler> lifeCycleHandlers;
+    List<ObjectPostInstantiationHandler> postInitHandlers = new ArrayList<>();
     ObjectMetaDataManager metaDataManager;
+
+    public AbstractObjectManager(SchemaFactory schemaFactory, ObjectMetaDataManager metaDataManager) {
+        super();
+        this.schemaFactory = schemaFactory;
+        this.metaDataManager = metaDataManager;
+    }
 
     @Override
     public <T> T create(T instance) {
@@ -48,22 +50,14 @@ public abstract class AbstractObjectManager implements ObjectManager {
             instance = handler.postProcess(instance, clz, properties);
         }
 
-        instance = insert(instance, clz, properties);
-
-        instance = callLifeCycleHandlers(LifeCycleEvent.CREATE, instance, clz, properties);
-
-        return instance;
+        return insert(instance, clz, properties);
     }
 
     @Override
     public <T> T create(Class<T> clz, Map<String, Object> properties) {
         T instance = construct(clz, properties);
 
-        instance = insert(instance, clz, properties);
-
-        instance = callLifeCycleHandlers(LifeCycleEvent.CREATE, instance, clz, properties);
-
-        return instance;
+        return insert(instance, clz, properties);
     }
 
     @Override
@@ -79,17 +73,6 @@ public abstract class AbstractObjectManager implements ObjectManager {
             instance = handler.postProcess(instance, clz, properties);
         }
 
-        return instance;
-    }
-
-    protected <T> T callLifeCycleHandlers(LifeCycleEvent event, T instance, Class<T> clz, Map<String, Object> properties) {
-        if (lifeCycleHandlers == null) {
-            return instance;
-        }
-
-        for (ObjectLifeCycleHandler handler : lifeCycleHandlers) {
-            instance = handler.onEvent(event, instance, clz, properties);
-        }
         return instance;
     }
 
@@ -229,34 +212,12 @@ public abstract class AbstractObjectManager implements ObjectManager {
         return schemaFactory;
     }
 
-    public void setSchemaFactory(SchemaFactory schemaFactory) {
-        this.schemaFactory = schemaFactory;
-    }
-
     public List<ObjectPostInstantiationHandler> getPostInitHandlers() {
         return postInitHandlers;
     }
 
-    @Inject
-    public void setPostInitHandlers(List<ObjectPostInstantiationHandler> postInitHandlers) {
-        this.postInitHandlers = CollectionUtils.orderList(ObjectPostInstantiationHandler.class, postInitHandlers);
-    }
-
-    public List<ObjectLifeCycleHandler> getLifeCycleHandlers() {
-        return lifeCycleHandlers;
-    }
-
-    public void setLifeCycleHandlers(List<ObjectLifeCycleHandler> lifeCycleHandlers) {
-        this.lifeCycleHandlers = lifeCycleHandlers;
-    }
-
     public ObjectMetaDataManager getMetaDataManager() {
         return metaDataManager;
-    }
-
-    @Inject
-    public void setMetaDataManager(ObjectMetaDataManager metaDataManager) {
-        this.metaDataManager = metaDataManager;
     }
 
 }

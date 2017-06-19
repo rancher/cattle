@@ -12,8 +12,9 @@ public class NamedDynamicConfiguration extends DynamicConfiguration implements N
         super();
     }
 
-    public NamedDynamicConfiguration(PolledConfigurationSource source, AbstractPollingScheduler scheduler) {
+    public NamedDynamicConfiguration(PolledConfigurationSource source, AbstractPollingScheduler scheduler, String sourceName) {
         super(source, scheduler);
+        this.sourceName = sourceName;
     }
 
     @Override

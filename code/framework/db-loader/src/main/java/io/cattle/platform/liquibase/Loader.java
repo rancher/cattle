@@ -2,14 +2,19 @@ package io.cattle.platform.liquibase;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.datasource.DataSourceFactory;
+import liquibase.Liquibase;
+import liquibase.database.Database;
+import liquibase.database.DatabaseFactory;
+import liquibase.database.jvm.JdbcConnection;
+import liquibase.exception.LiquibaseException;
+import liquibase.resource.ClassLoaderResourceAccessor;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.EnumSet;
 import java.util.Set;
 
-import javax.inject.Inject;
-
-import liquibase.exception.LiquibaseException;
-import liquibase.integration.spring.SpringLiquibase;
+import javax.sql.DataSource;
 
 import org.jooq.Configuration;
 import org.jooq.SQLDialect;
@@ -19,33 +24,31 @@ import org.slf4j.LoggerFactory;
 
 import com.netflix.config.DynamicStringProperty;
 
-public class Loader extends SpringLiquibase {
+public class Loader {
 
     private static final Set<SQLDialect> EMBEDDED = EnumSet.of(SQLDialect.H2, SQLDialect.HSQLDB, SQLDialect.DERBY);
-
-    private static final String LOG_OPTION = "liquibase.databaseChangeLogTableName";
-    private static final String LOCK_OPTION = "liquibase.databaseChangeLogLockTableName";
+    private static final String lockTable = "DATABASECHANGELOGLOCK";
 
     private static final DynamicStringProperty RELEASE_LOCK = ArchaiusUtil.getString("db.release.change.lock");
     private static final Logger log = LoggerFactory.getLogger("ConsoleStatus");
 
     Configuration configuration;
-    String lockTable = "DATABASECHANGELOGLOCK";
-    String changeLogTable = "DATABASECHANGELOG";
     DataSourceFactory dataSourceFactory;
+    String changeLog;
 
-    @Override
-    public void afterPropertiesSet() throws LiquibaseException {
-        if (getDataSource() == null && dataSourceFactory != null) {
-            setDataSource(dataSourceFactory.createDataSource("liquibase"));
-        }
+    public Loader(Configuration configuration, DataSourceFactory dataSourceFactory, String changeLog) {
+        super();
+        this.configuration = configuration;
+        this.dataSourceFactory = dataSourceFactory;
+        this.changeLog = changeLog;
+        init();
+    }
 
-        String oldLockTable = System.getProperty(LOCK_OPTION);
-        String oldLogTable = System.getProperty(LOG_OPTION);
+    public void init() {
+        DataSource dataSource = dataSourceFactory.createDataSource("liquibase");
+
         try {
             try {
-                System.setProperty(LOG_OPTION, changeLogTable);
-                System.setProperty(LOCK_OPTION, lockTable);
                 boolean release = false;
                 if ("true".equals(RELEASE_LOCK.get())) {
                     release = true;
@@ -56,60 +59,51 @@ public class Loader extends SpringLiquibase {
                 }
 
                 if (release) {
-                    DSL.using(getConfiguration()).delete(DSL.table(lockTable)).execute();
+                    DSL.using(configuration).delete(DSL.table(lockTable)).execute();
                 }
             } catch (Throwable t) {
                 // ignore errors
             }
 
             log.info("Starting DB migration");
-            super.afterPropertiesSet();
+            Connection c = null;
+            Liquibase liquibase = null;
+            try {
+            log.info("1 Starting DB migration");
+                c = dataSource.getConnection();
+            log.info("2 Starting DB migration");
+                liquibase = createLiquibase(c);
+            log.info("3 Starting DB migration");
+                liquibase.update((String)null);
+            log.info("4 Starting DB migration");
+            } catch (SQLException|LiquibaseException e) {
+                throw new IllegalStateException("Failed to migrate DB", e);
+            } finally {
+                if (c != null) {
+                    try {
+                        if (!c.getAutoCommit()) {
+                            c.rollback();
+                        }
+                    } catch (SQLException e) {
+                        // nothing to do
+                    }
+                    try {
+                        c.close();
+                    } catch (SQLException e) {
+                        // nothing to do
+                    }
+                }
+            }
+
             log.info("DB migration done");
         } finally {
-            if (oldLogTable == null) {
-                System.clearProperty(LOG_OPTION);
-            } else {
-                System.setProperty(LOG_OPTION, oldLogTable);
-            }
-            if (oldLockTable == null) {
-                System.clearProperty(LOCK_OPTION);
-            } else {
-                System.setProperty(LOCK_OPTION, oldLockTable);
-            }
         }
     }
 
-    @Inject
-    public void setConfiguration(Configuration configuration) {
-        this.configuration = configuration;
-    }
-
-    public Configuration getConfiguration() {
-        return configuration;
-    }
-
-    public String getLockTable() {
-        return lockTable;
-    }
-
-    public void setLockTable(String lockTable) {
-        this.lockTable = lockTable;
-    }
-
-    public String getChangeLogTable() {
-        return changeLogTable;
-    }
-
-    public void setChangeLogTable(String changeLogTable) {
-        this.changeLogTable = changeLogTable;
-    }
-
-    public DataSourceFactory getDataSourceFactory() {
-        return dataSourceFactory;
-    }
-
-    public void setDataSourceFactory(DataSourceFactory dataSourceFactory) {
-        this.dataSourceFactory = dataSourceFactory;
+    protected Liquibase createLiquibase(Connection c) throws LiquibaseException {
+		Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(c));
+        Liquibase liquibase = new Liquibase(changeLog, new ClassLoaderResourceAccessor(), database);
+        return liquibase;
     }
 
 }

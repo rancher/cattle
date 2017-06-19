@@ -46,9 +46,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.inject.Named;
 import javax.persistence.Column;
 
 import org.apache.commons.beanutils.PropertyUtils;
@@ -64,20 +61,24 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Init
 
     SchemaFactory schemaFactory;
     List<TypeSet> typeSets;
-    Map<Class<?>, Map<String, List<Relationship>>> relationships = new HashMap<Class<?>, Map<String, List<Relationship>>>();
-    Map<Class<?>, Map<String, List<Relationship>>> relationshipsBothCase = new HashMap<Class<?>, Map<String, List<Relationship>>>();
-    List<ProcessDefinition> processDefinitions;
+    Map<Class<?>, Map<String, List<Relationship>>> relationships = new HashMap<>();
+    Map<Class<?>, Map<String, List<Relationship>>> relationshipsBothCase = new HashMap<>();
+    List<ProcessDefinition> processDefinitions = new ArrayList<>();
 
-    Map<String, Set<String>> validStates = new HashMap<String, Set<String>>();
-    Map<String, Set<String>> transitioningStates = new HashMap<String, Set<String>>();
-    Map<String, Set<String>> actions = new HashMap<String, Set<String>>();
+    Map<String, Set<String>> validStates = new HashMap<>();
+    Map<String, Set<String>> transitioningStates = new HashMap<>();
+    Map<String, Set<String>> actions = new HashMap<>();
     Map<String, Map<String, String>> linksCache = Collections.synchronizedMap(new WeakHashMap<String, Map<String, String>>());
     Map<FieldCacheKey, String> propertyCache = Collections.synchronizedMap(new WeakHashMap<FieldCacheKey, String>());
-    Map<String, Map<String, ActionDefinition>> actionDefinitions = new HashMap<String, Map<String, ActionDefinition>>();
-    Map<FieldCacheKey, TableField<?, ?>> tableFields = new HashMap<FieldCacheKey, TableField<?, ?>>();
+    Map<String, Map<String, ActionDefinition>> actionDefinitions = new HashMap<>();
+    Map<FieldCacheKey, TableField<?, ?>> tableFields = new HashMap<>();
 
-    @PostConstruct
-    public void init() {
+    public DefaultObjectMetaDataManager(SchemaFactory schemaFactory) {
+        this.schemaFactory = schemaFactory;
+        init();
+    }
+
+    private void init() {
         if (schemaFactory instanceof SchemaFactoryImpl) {
             ((SchemaFactoryImpl) schemaFactory).getPostProcessors().add(0, new SchemaPostProcessor() {
                 @Override
@@ -116,7 +117,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Init
 
             if (def.getName().startsWith(resourceType.toLowerCase() + ".")) {
                 if (actions == null) {
-                    actions = new LinkedHashSet<String>();
+                    actions = new LinkedHashSet<>();
                     this.actions.put(resourceType, actions);
                 }
 
@@ -134,12 +135,12 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Init
 
             for (StateTransition transition : def.getStateTransitions()) {
                 if (states == null) {
-                    states = new HashSet<String>();
+                    states = new HashSet<>();
                     transitioningStates.put(def.getResourceType(), states);
                 }
 
                 if (validStates == null) {
-                    validStates = new TreeSet<String>();
+                    validStates = new TreeSet<>();
                     this.validStates.put(def.getResourceType(), validStates);
                 }
 
@@ -175,7 +176,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Init
             Map<String, ActionDefinition> actionDefs = actionDefinitions.get(type);
 
             if (actionDefs == null) {
-                actionDefs = new HashMap<String, ActionDefinition>();
+                actionDefs = new HashMap<>();
                 actionDefinitions.put(type, actionDefs);
             }
 
@@ -212,7 +213,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Init
     }
 
     protected void findMappings() {
-        Map<Class<?>, List<Pair<Class<?>, Relationship>>> foundRelationship = new HashMap<Class<?>, List<Pair<Class<?>, Relationship>>>();
+        Map<Class<?>, List<Pair<Class<?>, Relationship>>> foundRelationship = new HashMap<>();
 
         for (Map.Entry<Class<?>, Map<String, List<Relationship>>> entry : relationships.entrySet()) {
             for (Map.Entry<String, List<Relationship>> relEntry : entry.getValue().entrySet()) {
@@ -311,7 +312,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Init
     }
 
     protected List<Schema> registerTypes() {
-        List<Schema> schemas = new ArrayList<Schema>();
+        List<Schema> schemas = new ArrayList<>();
 
         for (TypeSet typeSet : typeSets) {
             for (Class<?> type : typeSet.getTypeClasses()) {
@@ -330,8 +331,8 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Init
     }
 
     protected void parseSchemas(List<Schema> schemas) {
-        Set<String> done = new HashSet<String>();
-        List<Schema> todo = new ArrayList<Schema>(schemas);
+        Set<String> done = new HashSet<>();
+        List<Schema> todo = new ArrayList<>(schemas);
 
         do {
             int todoSize = todo.size();
@@ -394,7 +395,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Init
     protected void register(Map<Class<?>, Map<String, List<Relationship>>> relationshipsMap, Class<?> type, Relationship relationship, boolean bothCase) {
         Map<String, List<Relationship>> relationships = relationshipsMap.get(type);
         if (relationships == null) {
-            relationships = new HashMap<String, List<Relationship>>();
+            relationships = new HashMap<>();
             relationshipsMap.put(type, relationships);
         }
 
@@ -485,7 +486,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Init
 
         if (validStates != null && stateField instanceof FieldImpl) {
             FieldImpl field = (FieldImpl) stateField;
-            field.setOptions(new ArrayList<String>(validStates));
+            field.setOptions(new ArrayList<>(validStates));
             field.setTypeEnum(FieldType.ENUM);
         }
     }
@@ -498,7 +499,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Init
 
         Map<String, Action> resourceActions = schema.getResourceActions();
         if (resourceActions == null) {
-            resourceActions = new LinkedHashMap<String, Action>();
+            resourceActions = new LinkedHashMap<>();
             schema.setResourceActions(resourceActions);
         }
 
@@ -548,7 +549,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Init
         Map<String, List<Relationship>> relationships = this.relationships.get(factory.getSchemaClass(schema.getId()));
 
         if (relationships != null) {
-            List<Relationship> allRelationships = new ArrayList<Relationship>();
+            List<Relationship> allRelationships = new ArrayList<>();
             for (List<Relationship> relationshipList : relationships.values()) {
                 allRelationships.addAll(relationshipList);
             }
@@ -601,7 +602,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Init
             return Collections.emptyList();
         }
 
-        List<String> conditions = new ArrayList<String>(type.getModifiers().size() + 2);
+        List<String> conditions = new ArrayList<>(type.getModifiers().size() + 2);
         for (ConditionType conditionType : type.getModifiers()) {
             conditions.add(conditionType.getExternalForm());
         }
@@ -623,7 +624,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Init
         if (schemaFactory == null) {
             schemaFactory = this.schemaFactory;
         }
-        Map<String, Relationship> result = new HashMap<String, Relationship>();
+        Map<String, Relationship> result = new HashMap<>();
         Schema schema = schemaFactory.getSchema(type);
 
         if (null == schema) {
@@ -664,7 +665,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Init
         if (links != null)
             return links;
 
-        links = new TreeMap<String, String>();
+        links = new TreeMap<>();
         Schema schema = schemaFactory.getSchema(type);
 
         Map<String, List<Relationship>> relationships = this.relationships.get(schemaFactory.getSchemaClass(schema.getId(), true));
@@ -672,7 +673,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Init
             linksCache.put(key, links);
             return links;
         }
-        List<Relationship> allRelationships = new ArrayList<Relationship>();
+        List<Relationship> allRelationships = new ArrayList<>();
         for (List<Relationship> relationshipList : relationships.values()) {
             allRelationships.addAll(relationshipList);
         }
@@ -773,7 +774,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Init
             }
         }
 
-        Map<String, Object> result = new LinkedHashMap<String, Object>();
+        Map<String, Object> result = new LinkedHashMap<>();
         result.put(TRANSITIONING_FIELD, TRANSITIONING_NO);
         result.put(TRANSITIONING_MESSAGE_FIELD, null);
         result.put(TRANSITIONING_PROGRESS_FIELD, null);
@@ -783,7 +784,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Init
 
         String state = DataUtils.getState(obj);
         if (TRANSITIONING_ERROR_OVERRIDE.equals(DataAccessor.fieldString(obj, TRANSITIONING_FIELD))) {
-            Map<String, Object> errorResult = new LinkedHashMap<String, Object>();
+            Map<String, Object> errorResult = new LinkedHashMap<>();
             errorResult.put(TRANSITIONING_FIELD, TRANSITIONING_ERROR);
             return errorResult;
         } else if (state != null && states.contains(state)) {
@@ -829,8 +830,6 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Init
         return schemaFactory;
     }
 
-    @Inject
-    @Named("CoreSchemaFactory")
     public void setSchemaFactory(SchemaFactory schemaFactory) {
         this.schemaFactory = schemaFactory;
     }
@@ -839,16 +838,14 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Init
         return typeSets;
     }
 
-    @Inject
     public void setTypeSets(List<TypeSet> typeSets) {
-        this.typeSets = CollectionUtils.orderList(TypeSet.class, typeSets);
+        this.typeSets = typeSets;
     }
 
     public List<ProcessDefinition> getProcessDefinitions() {
         return processDefinitions;
     }
 
-    @Inject
     public void setProcessDefinitions(List<ProcessDefinition> processDefinitions) {
         this.processDefinitions = processDefinitions;
     }

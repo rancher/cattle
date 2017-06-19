@@ -5,12 +5,11 @@ import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.postinit.ObjectPostInstantiationHandler;
 import io.cattle.platform.object.util.ObjectUtils;
-import io.cattle.platform.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 
 import java.util.Map;
 
-public class AccountFieldPostInitHandler implements ObjectPostInstantiationHandler, Priority {
+public class AccountFieldPostInitHandler implements ObjectPostInstantiationHandler {
 
     @Override
     public <T> T postProcess(T obj, Class<T> clz, Map<String, Object> properties) {
@@ -32,11 +31,6 @@ public class AccountFieldPostInitHandler implements ObjectPostInstantiationHandl
         }
 
         return obj;
-    }
-
-    @Override
-    public int getPriority() {
-        return Priority.DEFAULT;
     }
 
 }

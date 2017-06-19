@@ -9,12 +9,14 @@ public class NamedMapConfiguration extends MapConfiguration implements NamedConf
 
     String sourceName;
 
-    public NamedMapConfiguration(Map<String, Object> map) {
+    public NamedMapConfiguration(Map<String, Object> map, String sourceName) {
         super(map);
+        this.sourceName = sourceName;
     }
 
-    public NamedMapConfiguration(Properties props) {
+    public NamedMapConfiguration(Properties props, String sourceName) {
         super(props);
+        this.sourceName = sourceName;
     }
 
     @Override

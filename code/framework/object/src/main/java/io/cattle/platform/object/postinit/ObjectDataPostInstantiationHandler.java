@@ -1,8 +1,8 @@
 package io.cattle.platform.object.postinit;
 
 import static io.cattle.platform.object.util.DataUtils.*;
+
 import io.cattle.platform.json.JsonMapper;
-import io.cattle.platform.util.type.Priority;
 
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
@@ -11,14 +11,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.inject.Inject;
-
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 
-public class ObjectDataPostInstantiationHandler implements ObjectPostInstantiationHandler, Priority {
+public class ObjectDataPostInstantiationHandler implements ObjectPostInstantiationHandler {
 
     JsonMapper jsonMapper;
+
+    public ObjectDataPostInstantiationHandler(JsonMapper jsonMapper) {
+        super();
+        this.jsonMapper = jsonMapper;
+    }
 
     @Override
     public <T> T postProcess(T obj, Class<T> clz, Map<String, Object> properties) {
@@ -75,7 +78,7 @@ public class ObjectDataPostInstantiationHandler implements ObjectPostInstantiati
         } catch (NoSuchMethodException e) {
         }
 
-        Map<String, Object> finalData = new TreeMap<String, Object>();
+        Map<String, Object> finalData = new TreeMap<>();
 
         if (objectData != null) {
             finalData.putAll(objectData);
@@ -89,7 +92,7 @@ public class ObjectDataPostInstantiationHandler implements ObjectPostInstantiati
     }
 
     protected Map<String, Object> getFieldData(Object instance, Map<String, Object> properties) {
-        Map<String, Object> fields = new HashMap<String, Object>();
+        Map<String, Object> fields = new HashMap<>();
         for (String name : properties.keySet()) {
             try {
                 if (PropertyUtils.getPropertyDescriptor(instance, name) != null)
@@ -123,21 +126,11 @@ public class ObjectDataPostInstantiationHandler implements ObjectPostInstantiati
         if (obj instanceof Map) {
             return (Map<String, Object>) obj;
         }
-        return new HashMap<String, Object>();
+        return new HashMap<>();
     }
 
     public JsonMapper getJsonMapper() {
         return jsonMapper;
-    }
-
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
-    }
-
-    @Override
-    public int getPriority() {
-        return Priority.DEFAULT;
     }
 
 }

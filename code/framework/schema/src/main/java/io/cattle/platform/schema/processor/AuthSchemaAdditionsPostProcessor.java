@@ -8,13 +8,13 @@ import io.github.ibuildthecloud.gdapi.factory.impl.SchemaPostProcessor;
 import io.github.ibuildthecloud.gdapi.model.Field;
 import io.github.ibuildthecloud.gdapi.model.impl.FieldImpl;
 import io.github.ibuildthecloud.gdapi.model.impl.SchemaImpl;
+
 import com.netflix.config.DynamicStringListProperty;
 
 public class AuthSchemaAdditionsPostProcessor extends AbstractSchemaPostProcessor implements SchemaPostProcessor, Priority {
 
     private static final DynamicStringListProperty AUTH_SERVICE_EXTERNAL_ID_TYPES = ArchaiusUtil.getList("auth.service.external.id.types");
 
-    
     @Override
     public SchemaImpl postProcess(SchemaImpl schema, SchemaFactory factory) {
       if(schema.getId().equals("projectMember")) {

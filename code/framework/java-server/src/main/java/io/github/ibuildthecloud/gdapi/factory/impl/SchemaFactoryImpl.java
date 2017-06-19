@@ -25,9 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -39,15 +36,15 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
 
     String id = "base";
     boolean includeDefaultTypes = true, writableByDefault = false;
-    Map<String, SchemaImpl> schemasByName = new TreeMap<String, SchemaImpl>();
-    Map<Class<?>, SchemaImpl> schemasByClass = new HashMap<Class<?>, SchemaImpl>();
-    Map<String, Class<?>> typeToClass = new HashMap<String, Class<?>>();
-    List<Class<?>> types = new ArrayList<Class<?>>();
-    List<String> typeNames = new ArrayList<String>();
-    Map<SchemaImpl, Class<?>> parentClasses = new HashMap<SchemaImpl, Class<?>>();
+    Map<String, SchemaImpl> schemasByName = new TreeMap<>();
+    Map<Class<?>, SchemaImpl> schemasByClass = new HashMap<>();
+    Map<String, Class<?>> typeToClass = new HashMap<>();
+    List<Class<?>> types = new ArrayList<>();
+    List<String> typeNames = new ArrayList<>();
+    Map<SchemaImpl, Class<?>> parentClasses = new HashMap<>();
 
-    List<Schema> schemasList = new ArrayList<Schema>();
-    List<SchemaPostProcessor> postProcessors = new ArrayList<SchemaPostProcessor>();
+    List<Schema> schemasList = new ArrayList<>();
+    List<SchemaPostProcessor> postProcessors = new ArrayList<>();
 
     public SchemaFactoryImpl() {
         try {
@@ -189,7 +186,7 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
     }
 
     protected Map<String, Action> getActions(Class<?> clz, boolean collection) {
-        Map<String, Action> result = new LinkedHashMap<String, Action>();
+        Map<String, Action> result = new LinkedHashMap<>();
 
         if (clz == null) {
             return result;
@@ -326,9 +323,9 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
     }
 
     protected Map<String, Field> sortFields(List<Field> fields) {
-        Map<Integer, Field> indexed = new TreeMap<Integer, Field>();
-        Map<String, Field> named = new TreeMap<String, Field>();
-        Map<String, Field> result = new LinkedHashMap<String, Field>();
+        Map<Integer, Field> indexed = new TreeMap<>();
+        Map<String, Field> named = new TreeMap<>();
+        Map<String, Field> result = new LinkedHashMap<>();
 
         for (Field field : fields) {
             Integer displayIndex = field.getDisplayIndex();
@@ -352,7 +349,7 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
     }
 
     protected List<Field> getFields(Class<?> clz) {
-        List<Field> result = new ArrayList<Field>();
+        List<Field> result = new ArrayList<>();
 
         if (clz == null)
             return result;
@@ -418,7 +415,7 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
             return;
         }
 
-        List<String> options = new ArrayList<String>(clz.getEnumConstants().length);
+        List<String> options = new ArrayList<>(clz.getEnumConstants().length);
         for (Object o : clz.getEnumConstants()) {
             options.add(o.toString());
         }
@@ -489,7 +486,7 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
 
         assignSimpleType(prop.getPropertyType(), field);
 
-        List<TypeAndName> types = new ArrayList<FieldType.TypeAndName>();
+        List<TypeAndName> types = new ArrayList<>();
         Method readMethod = prop.getReadMethod();
         if (readMethod != null) {
             getTypes(readMethod.getGenericReturnType(), types);
@@ -621,7 +618,6 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
         return f;
     }
 
-    @PostConstruct
     public void init() {
         if (includeDefaultTypes) {
             registerSchema(Schema.class);
@@ -675,7 +671,6 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
         return postProcessors;
     }
 
-    @Inject
     public void setPostProcessors(List<SchemaPostProcessor> postProcessors) {
         this.postProcessors = CollectionUtils.orderList(SchemaPostProcessor.class, postProcessors);
     }

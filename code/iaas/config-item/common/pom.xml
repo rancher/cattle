@@ -29,11 +29,5 @@
             <artifactId>cattle-iaas-events</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>io.cattle</groupId>
-            <artifactId>cattle-framework-spring</artifactId>
-            <version>${project.version}</version>
-            <optional>true</optional>
-        </dependency>
     </dependencies>
 </project>

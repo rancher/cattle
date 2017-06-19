@@ -2,7 +2,6 @@ package io.cattle.platform.object.defaults;
 
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectDefaultsProvider;
-import io.cattle.platform.util.type.InitializationTask;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.Schema;
 
@@ -17,7 +16,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JsonDefaultsProvider implements ObjectDefaultsProvider, InitializationTask {
+public class JsonDefaultsProvider implements ObjectDefaultsProvider {
 
     private static final Logger log = LoggerFactory.getLogger(JsonDefaultsProvider.class);
 
@@ -25,14 +24,21 @@ public class JsonDefaultsProvider implements ObjectDefaultsProvider, Initializat
     JsonMapper jsonMapper;
     String defaultPath;
     String defaultOverridePath;
-    Map<Class<?>, Map<String, Object>> defaults = new HashMap<Class<?>, Map<String, Object>>();
+    Map<Class<?>, Map<String, Object>> defaults = new HashMap<>();
+
+    public JsonDefaultsProvider(SchemaFactory schemaFactory, JsonMapper jsonMapper, String defaultPath, String defaultOverridePath) {
+        super();
+        this.schemaFactory = schemaFactory;
+        this.jsonMapper = jsonMapper;
+        this.defaultPath = defaultPath;
+        this.defaultOverridePath = defaultOverridePath;
+    }
 
     @Override
     public Map<? extends Class<?>, ? extends Map<String, Object>> getDefaults() {
         return defaults;
     }
 
-    @Override
     public void start() {
         for (Schema schema : schemaFactory.listSchemas()) {
             Class<?> clz = schemaFactory.getSchemaClass(schema.getId());

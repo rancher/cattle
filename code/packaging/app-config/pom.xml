@@ -11,18 +11,6 @@
     <dependencies>
         <dependency>
             <groupId>io.cattle</groupId>
-            <artifactId>cattle-framework-spring-module</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.cattle</groupId>
-            <artifactId>cattle-framework-spring</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.cattle</groupId>
             <artifactId>cattle-vm</artifactId>
             <version>${project.version}</version>
         </dependency>

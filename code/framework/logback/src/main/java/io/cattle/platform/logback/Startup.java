@@ -5,8 +5,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-import javax.annotation.PostConstruct;
-
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +20,6 @@ public class Startup {
 
     final static Logger log = LoggerFactory.getLogger(Startup.class);
 
-    @PostConstruct
     public void init() {
         if (shouldConfigure()) {
             try {

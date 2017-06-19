@@ -8,9 +8,6 @@ import io.cattle.platform.extension.ExtensionPoint;
 
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-
 public abstract class AbstractProcessDefinition implements ProcessDefinition, ExtensionBasedProcessDefinition {
 
     public static final String PRE = "process.%s.pre.listeners";
@@ -23,12 +20,9 @@ public abstract class AbstractProcessDefinition implements ProcessDefinition, Ex
     ExtensionManager extensionManager;
     String name;
 
-    @PostConstruct
-    public void init() {
-        if (name == null) {
-            throw new IllegalStateException("name is required on [" + this + "]");
-        }
-
+    public AbstractProcessDefinition(String name, ExtensionManager extensionManager) {
+        this.name = name;
+        this.extensionManager = extensionManager;
         preProcessListenersKey = String.format(PRE, getName());
         processHandlersKey = String.format(HANDLER, getName());
         postProcessListenersKey = String.format(POST, getName());
@@ -69,18 +63,8 @@ public abstract class AbstractProcessDefinition implements ProcessDefinition, Ex
         return name;
     }
 
-    @Inject
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public ExtensionManager getExtensionManager() {
         return extensionManager;
-    }
-
-    @Inject
-    public void setExtensionManager(ExtensionManager extensionManager) {
-        this.extensionManager = extensionManager;
     }
 
 }

@@ -6,23 +6,29 @@ import io.cattle.platform.engine.process.LaunchConfiguration;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.engine.process.StateTransition;
 import io.cattle.platform.engine.process.impl.ResourceStatesDefinition;
+import io.cattle.platform.extension.ExtensionManager;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 
 import java.util.List;
 
-import javax.inject.Inject;
-
 public class GenericResourceProcessDefinition extends AbstractProcessDefinition {
 
     String resourceType;
     ResourceStatesDefinition statesDefinition;
-    @Inject
     ObjectManager objectManager;
-    @Inject
     JsonMapper jsonMapper;
-    @Inject
     ProcessRecordDao processRecordDao;
+
+    public GenericResourceProcessDefinition(String name, ExtensionManager em, String resourceType, ResourceStatesDefinition statesDefinition, ObjectManager objectManager, JsonMapper jsonMapper,
+            ProcessRecordDao processRecordDao) {
+        super(name, em);
+        this.resourceType = resourceType;
+        this.statesDefinition = statesDefinition;
+        this.objectManager = objectManager;
+        this.jsonMapper = jsonMapper;
+        this.processRecordDao = processRecordDao;
+    }
 
     @Override
     public ProcessState constructProcessState(LaunchConfiguration config) {
@@ -33,19 +39,9 @@ public class GenericResourceProcessDefinition extends AbstractProcessDefinition 
         return statesDefinition;
     }
 
-    @Inject
-    public void setStatesDefinition(ResourceStatesDefinition statesDefinition) {
-        this.statesDefinition = statesDefinition;
-    }
-
     @Override
     public String getResourceType() {
         return resourceType;
-    }
-
-    @Inject
-    public void setResourceType(String resourceType) {
-        this.resourceType = resourceType;
     }
 
     @Override

@@ -1,20 +1,30 @@
 package io.cattle.platform.object.meta;
 
-import io.cattle.platform.util.type.Named;
-import io.cattle.platform.util.type.Priority;
-
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class TypeSet implements Priority, Named {
+public class TypeSet {
 
     List<Class<?>> typeClasses = Collections.emptyList();
     List<String> typeNames = Collections.emptyList();
-    int priority = Priority.DEFAULT;
-    String name;
 
-    public TypeSet(String name) {
-        this.name = name;
+    public static TypeSet ofClasses(List<Class<?>> typeClasses) {
+        TypeSet typeSet = new TypeSet();
+        typeSet.setTypeClasses(typeClasses);
+        return typeSet;
+    }
+
+    public static TypeSet ofClasses(Class<?>... typeClasses) {
+        TypeSet typeSet = new TypeSet();
+        typeSet.setTypeClasses(Arrays.asList(typeClasses));
+        return typeSet;
+    }
+
+    public static TypeSet ofNames(String... typeNames) {
+        TypeSet typeSet = new TypeSet();
+        typeSet.setTypeNames(Arrays.asList(typeNames));
+        return typeSet;
     }
 
     public List<Class<?>> getTypeClasses() {
@@ -31,24 +41,6 @@ public class TypeSet implements Priority, Named {
 
     public void setTypeNames(List<String> typeNames) {
         this.typeNames = typeNames;
-    }
-
-    @Override
-    public int getPriority() {
-        return priority;
-    }
-
-    public void setPriority(int priority) {
-        this.priority = priority;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
 }

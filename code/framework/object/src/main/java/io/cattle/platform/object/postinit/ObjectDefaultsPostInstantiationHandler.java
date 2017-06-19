@@ -2,10 +2,9 @@ package io.cattle.platform.object.postinit;
 
 import io.cattle.platform.object.ObjectDefaultsProvider;
 import io.cattle.platform.object.util.ObjectUtils;
-import io.cattle.platform.util.type.InitializationTask;
-import io.cattle.platform.util.type.Priority;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,12 +13,17 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ObjectDefaultsPostInstantiationHandler implements ObjectPostInstantiationHandler, InitializationTask, Priority {
+public class ObjectDefaultsPostInstantiationHandler implements ObjectPostInstantiationHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ObjectDefaultsPostInstantiationHandler.class);
 
     List<ObjectDefaultsProvider> defaultProviders;
-    Map<Class<?>, Map<String, Object>> defaults = new HashMap<Class<?>, Map<String, Object>>();
+    Map<Class<?>, Map<String, Object>> defaults = new HashMap<>();
+
+    public ObjectDefaultsPostInstantiationHandler(ObjectDefaultsProvider... defaultProviders) {
+        super();
+        this.defaultProviders = Arrays.asList(defaultProviders);
+    }
 
     @Override
     public <T> T postProcess(T obj, Class<T> clz, Map<String, Object> properties) {
@@ -44,12 +48,6 @@ public class ObjectDefaultsPostInstantiationHandler implements ObjectPostInstant
         BeanUtils.copyProperties(instance, defaultValues);
     }
 
-    @Override
-    public int getPriority() {
-        return Priority.PRE;
-    }
-
-    @Override
     public void start() {
         for (ObjectDefaultsProvider provider : defaultProviders) {
             defaults.putAll(provider.getDefaults());
@@ -58,10 +56,6 @@ public class ObjectDefaultsPostInstantiationHandler implements ObjectPostInstant
 
     public List<ObjectDefaultsProvider> getDefaultProviders() {
         return defaultProviders;
-    }
-
-    public void setDefaultProviders(List<ObjectDefaultsProvider> defaultProviders) {
-        this.defaultProviders = defaultProviders;
     }
 
 }

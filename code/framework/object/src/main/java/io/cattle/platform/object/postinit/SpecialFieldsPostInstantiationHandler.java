@@ -1,6 +1,5 @@
 package io.cattle.platform.object.postinit;
 
-import io.cattle.platform.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.Schema;
 
@@ -8,12 +7,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.apache.commons.beanutils.BeanUtils;
 
-public class SpecialFieldsPostInstantiationHandler implements ObjectPostInstantiationHandler, Priority {
+public class SpecialFieldsPostInstantiationHandler implements ObjectPostInstantiationHandler {
 
     public static final String ZONE_ID = "zoneId";
     public static final String CREATED = "created";
@@ -21,6 +17,11 @@ public class SpecialFieldsPostInstantiationHandler implements ObjectPostInstanti
     public static final String KIND = "kind";
 
     SchemaFactory schemaFactory;
+
+    public SpecialFieldsPostInstantiationHandler(SchemaFactory schemaFactory) {
+        super();
+        this.schemaFactory = schemaFactory;
+    }
 
     @Override
     public <T> T postProcess(T obj, Class<T> clz, Map<String, Object> properties) {
@@ -48,19 +49,8 @@ public class SpecialFieldsPostInstantiationHandler implements ObjectPostInstanti
         }
     }
 
-    @Override
-    public int getPriority() {
-        return Priority.PRE;
-    }
-
     public SchemaFactory getSchemaFactory() {
         return schemaFactory;
-    }
-
-    @Inject
-    @Named("CoreSchemaFactory")
-    public void setSchemaFactory(SchemaFactory schemaFactory) {
-        this.schemaFactory = schemaFactory;
     }
 
 }

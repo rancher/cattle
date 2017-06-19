@@ -11,6 +11,7 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.UnmodifiableMap;
+import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
@@ -21,8 +22,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-
-import javax.inject.Inject;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -39,14 +38,19 @@ import org.jooq.impl.DefaultDSLContext;
 
 public class JooqObjectManager extends AbstractObjectManager {
 
-    // private static final Logger log =
-    // LoggerFactory.getLogger(JooqObjectManager.class);
-
     Map<ChildReferenceCacheKey, ForeignKey<?, ?>> childReferenceCache = Collections
             .synchronizedMap(new WeakHashMap<ChildReferenceCacheKey, ForeignKey<?, ?>>());
     Configuration configuration;
     Configuration lockingConfiguration;
     TransactionDelegate transactionDelegate;
+
+    public JooqObjectManager(SchemaFactory schemaFactory, ObjectMetaDataManager metaDataManager, Configuration configuration,
+            Configuration lockingConfiguration, TransactionDelegate transactionDelegate) {
+        super(schemaFactory, metaDataManager);
+        this.configuration = configuration;
+        this.lockingConfiguration = lockingConfiguration;
+        this.transactionDelegate = transactionDelegate;
+    }
 
     @SuppressWarnings("unchecked")
     @Override
@@ -473,26 +477,12 @@ public class JooqObjectManager extends AbstractObjectManager {
         return configuration;
     }
 
-    @Inject
-    public void setConfiguration(Configuration configuration) {
-        this.configuration = configuration;
-    }
-
     public Configuration getLockingConfiguration() {
         return lockingConfiguration;
     }
 
-    public void setLockingConfiguration(Configuration lockingConfiguration) {
-        this.lockingConfiguration = lockingConfiguration;
-    }
-
     public TransactionDelegate getTransactionDelegate() {
         return transactionDelegate;
-    }
-
-    @Inject
-    public void setTransactionDelegate(TransactionDelegate transactionDelegate) {
-        this.transactionDelegate = transactionDelegate;
     }
 
 }

@@ -7,8 +7,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -36,7 +34,6 @@ public class JacksonJsonMapper implements JsonMapper {
         mapper.setAnnotationIntrospector(primary);
     }
 
-    @PostConstruct
     public void init() {
         if (modules != null) {
             for (Module module : modules) {

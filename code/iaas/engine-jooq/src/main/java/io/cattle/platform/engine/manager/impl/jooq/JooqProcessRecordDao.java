@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.inject.Inject;
-
 import org.jooq.Field;
 import org.jooq.Record5;
 import org.jooq.RecordHandler;
@@ -42,12 +40,16 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
     private static final DynamicIntProperty BATCH = ArchaiusUtil.getInt("process.replay.batch.size");
     private static final DynamicBooleanProperty SAVE_TERMINATING = ArchaiusUtil.getBoolean("process.save.terminating");
 
-    @Inject
     JsonMapper jsonMapper;
-    @Inject
     ObjectManager objectManager;
-    @Inject
     ObjectMetaDataManager metaData;
+
+    public JooqProcessRecordDao(JsonMapper jsonMapper, ObjectManager objectManager, ObjectMetaDataManager metaData) {
+        super();
+        this.jsonMapper = jsonMapper;
+        this.objectManager = objectManager;
+        this.metaData = metaData;
+    }
 
     @Override
     public List<ProcessReference> pendingTasks() {

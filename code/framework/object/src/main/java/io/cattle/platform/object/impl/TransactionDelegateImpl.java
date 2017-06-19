@@ -5,19 +5,13 @@ import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
 import java.util.function.Supplier;
 
-import javax.inject.Inject;
-
 import org.jooq.Configuration;
 import org.jooq.DSLContext;
 import org.jooq.impl.DefaultDSLContext;
 
 public class TransactionDelegateImpl implements TransactionDelegate {
 
-    @Inject
     Configuration configuration;
-
-    public TransactionDelegateImpl() {
-    }
 
     public TransactionDelegateImpl(Configuration configuration) {
         super();

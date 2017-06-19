@@ -21,8 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.inject.Inject;
-
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.io.IOUtils;
@@ -36,9 +34,7 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
 
     public static final String REMOVE = "-";
 
-    @Inject
     JsonMapper jsonMapper;
-    @Inject
     io.github.ibuildthecloud.gdapi.json.JsonMapper schemasMarshaller;
     boolean explicitByDefault = false;
     boolean whiteList = false;
@@ -46,19 +42,20 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
     Map<String, List<URL>> resources = new HashMap<>();
 
     String path;
-    @Inject
     ResourceLoader resourceLoader;
 
-    public JsonFileOverlayPostProcessor() {
+    private JsonFileOverlayPostProcessor() {
         ignoreTypes.add("schema");
         ignoreTypes.add("error");
     }
 
-    public JsonFileOverlayPostProcessor(ResourceLoader resourceLoader, JsonMapper jsonMapper, io.github.ibuildthecloud.gdapi.json.JsonMapper schemasMarshaller) {
-        super();
+    public JsonFileOverlayPostProcessor(ResourceLoader resourceLoader, JsonMapper jsonMapper, io.github.ibuildthecloud.gdapi.json.JsonMapper schemasMarshaller,
+            String path) {
+        this();
         this.resourceLoader = resourceLoader;
         this.jsonMapper = jsonMapper;
         this.schemasMarshaller = schemasMarshaller;
+        this.path = path;
     }
 
     @Override

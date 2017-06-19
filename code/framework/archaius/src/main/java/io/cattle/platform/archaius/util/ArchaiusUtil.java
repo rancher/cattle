@@ -2,9 +2,6 @@ package io.cattle.platform.archaius.util;
 
 import io.cattle.platform.archaius.polling.RefreshableFixedDelayPollingScheduler;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.commons.configuration.Configuration;
 
 import com.netflix.config.DynamicBooleanProperty;
@@ -18,7 +15,7 @@ import com.netflix.config.DynamicStringProperty;
 
 public class ArchaiusUtil {
 
-    private static List<RefreshableFixedDelayPollingScheduler> schedulers = new ArrayList<RefreshableFixedDelayPollingScheduler>();
+    private static RefreshableFixedDelayPollingScheduler scheduler;
 
     public static DynamicLongProperty getLong(String key) {
         return DynamicPropertyFactory.getInstance().getLongProperty(key, 0);
@@ -59,16 +56,12 @@ public class ArchaiusUtil {
         return new DynamicStringListProperty(key, (String) null);
     }
 
-    public static void addSchedulers(List<RefreshableFixedDelayPollingScheduler> schedulers) {
-        for (RefreshableFixedDelayPollingScheduler scheduler : schedulers) {
-            if (!ArchaiusUtil.schedulers.contains(scheduler)) {
-                ArchaiusUtil.schedulers.add(scheduler);
-            }
-        }
+    public static void setScheduler(RefreshableFixedDelayPollingScheduler scheduler) {
+        ArchaiusUtil.scheduler = scheduler;
     }
 
     public static void refresh() {
-        for (RefreshableFixedDelayPollingScheduler scheduler : schedulers) {
+        if (scheduler != null) {
             scheduler.refresh();
         }
     }
