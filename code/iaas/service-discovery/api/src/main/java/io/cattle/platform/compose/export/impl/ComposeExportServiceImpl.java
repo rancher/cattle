@@ -27,7 +27,6 @@ import io.cattle.platform.object.util.ObjectUtils;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -65,8 +64,8 @@ public class ComposeExportServiceImpl implements ComposeExportService {
     private final static String COMPOSE_PREFIX = "version: '2'\r\n";
 
     @Override
-    public Map.Entry<String, String> buildComposeConfig(List<? extends Service> services, Stack stack) {
-        return new SimpleEntry<>(buildDockerComposeConfig(services, stack), buildRancherComposeConfig(services));
+    public String buildComposeConfig(List<? extends Service> services, Stack stack) {
+        return buildDockerComposeConfig(services, stack);
     }
 
     @Override
@@ -76,16 +75,6 @@ public class ComposeExportServiceImpl implements ComposeExportService {
                 VOLUME_TEMPLATE.REMOVED, null);
 
         Map<String, Object> dockerComposeData = createComposeData(services, true, volumes);
-        if (dockerComposeData.isEmpty()) {
-            return COMPOSE_PREFIX;
-        } else {
-            return COMPOSE_PREFIX + convertToYml(dockerComposeData);
-        }
-    }
-
-    @Override
-    public String buildRancherComposeConfig(List<? extends Service> services) {
-        Map<String, Object> dockerComposeData = createComposeData(services, false, new ArrayList<VolumeTemplate>());
         if (dockerComposeData.isEmpty()) {
             return COMPOSE_PREFIX;
         } else {
@@ -138,23 +127,22 @@ public class ComposeExportServiceImpl implements ComposeExportService {
                 formatLBConfig(service, cattleServiceData);
                 setupServiceType(service, cattleServiceData);
                 for (String cattleService : cattleServiceData.keySet()) {
-                    translateRancherToCompose(forDockerCompose, cattleServiceData, composeServiceData, cattleService,
+                    translateRancherToCompose(cattleServiceData, composeServiceData, cattleService,
                             service, false);
                 }
 
-                if (forDockerCompose) {
-                    populateLinksForService(service, servicesToExportIds, composeServiceData);
-                    populateNetworkForService(service, launchConfigName, composeServiceData);
-                    populateVolumesForService(service, launchConfigName, composeServiceData);
-                    addExtraComposeParameters(service, launchConfigName, composeServiceData);
-                    populateSidekickLabels(service, composeServiceData, isPrimaryConfig);
-                    populateSelectorServiceLabels(service, launchConfigName, composeServiceData);
-                    populateLogConfig(cattleServiceData, composeServiceData);
-                    populateTmpfs(cattleServiceData, composeServiceData);
-                    populateUlimit(cattleServiceData, composeServiceData);
-                    populateBlkioOptions(cattleServiceData, composeServiceData);
-                    translateV1VolumesToV2(cattleServiceData, composeServiceData, volumesData);
-                }
+                populateLinksForService(service, servicesToExportIds, composeServiceData);
+                populateNetworkForService(service, launchConfigName, composeServiceData);
+                populateVolumesForService(service, launchConfigName, composeServiceData);
+                addExtraComposeParameters(service, launchConfigName, composeServiceData);
+                populateSidekickLabels(service, composeServiceData, isPrimaryConfig);
+                populateSelectorServiceLabels(service, launchConfigName, composeServiceData);
+                populateLogConfig(cattleServiceData, composeServiceData);
+                populateTmpfs(cattleServiceData, composeServiceData);
+                populateUlimit(cattleServiceData, composeServiceData);
+                populateBlkioOptions(cattleServiceData, composeServiceData);
+                translateV1VolumesToV2(cattleServiceData, composeServiceData, volumesData);
+                
                 if (!composeServiceData.isEmpty()) {
                     servicesData.put(isPrimaryConfig ? service.getName() : launchConfigName, composeServiceData);
                 }
@@ -169,7 +157,7 @@ public class ComposeExportServiceImpl implements ComposeExportService {
             cattleVolumeData.put(ServiceConstants.FIELD_VOLUME_PER_CONTAINER, volume.getPerContainer());
             Map<String, Object> composeVolumeData = new HashMap<>();
             for (String cattleVolume : cattleVolumeData.keySet()) {
-                translateRancherToCompose(forDockerCompose, cattleVolumeData, composeVolumeData, cattleVolume,
+                translateRancherToCompose(cattleVolumeData, composeVolumeData, cattleVolume,
                         null, true);
             }
             volumesData.put(volume.getName(), composeVolumeData);
@@ -418,11 +406,11 @@ public class ComposeExportServiceImpl implements ComposeExportService {
         }
     }
 
-    protected void translateRancherToCompose(boolean forDockerCompose, Map<String, Object> rancherServiceData,
+    protected void translateRancherToCompose(Map<String, Object> rancherServiceData,
             Map<String, Object> composeServiceData, String cattleName, Service service, boolean isVolume) {
         ComposeExportConfigItem item = ComposeExportConfigItem.getServiceConfigItemByCattleName(cattleName,
                 service, isVolume);
-        if (item != null && item.isDockerComposeProperty() == forDockerCompose) {
+        if (item != null) {
             Object value = rancherServiceData.get(cattleName);
             boolean export = false;
             if (value instanceof List) {
@@ -533,7 +521,7 @@ public class ComposeExportServiceImpl implements ComposeExportService {
             cattleVolumeData.put(ServiceConstants.FIELD_VOLUME_DRIVER, volumeDriver);
             Map<String, Object> composeVolumeData = new HashMap<>();
             for (String cattleVolume : cattleVolumeData.keySet()) {
-                translateRancherToCompose(true, cattleVolumeData, composeVolumeData, cattleVolume,
+                translateRancherToCompose(cattleVolumeData, composeVolumeData, cattleVolume,
                         null, true);
             }
             if (!composeVolumeData.isEmpty()) {

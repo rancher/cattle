@@ -14,7 +14,6 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -54,9 +53,9 @@ public class StackExportConfigActionHandler implements ActionHandler {
                 }
             }
         }
-        Map.Entry<String, String> composeConfig = composeExportService.buildComposeConfig(toExport, stack);
+        String composeConfig = composeExportService.buildComposeConfig(toExport, stack);
 
-        return new ComposeConfig(composeConfig.getKey(), composeConfig.getValue());
+        return new ComposeConfig(composeConfig);
 
     }
 }
