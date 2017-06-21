@@ -1,8 +1,13 @@
 package io.cattle.platform.allocator.constraint;
 
 import io.cattle.platform.allocator.service.AllocationCandidate;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
+
+import javax.inject.Inject;
 
 public class VolumeAccessModeSingleHostConstraint implements Constraint {
+    @Inject
+    IdFormatter idFormatter;
 
     Long hostId;
     Long volumeId;
@@ -21,7 +26,8 @@ public class VolumeAccessModeSingleHostConstraint implements Constraint {
 
     @Override
     public String toString() {
-        return String.format("Volume %s(%s) can only be used on host %s(%s)", volumeName, volumeId, hostName, hostId);
+        return String.format("Volume %s(id: %s) can only be used on host %s(id: %s)", volumeName, idFormatter.formatId("volume", volumeId), 
+                hostName, idFormatter.formatId("host", hostId));
     }
 
     @Override
