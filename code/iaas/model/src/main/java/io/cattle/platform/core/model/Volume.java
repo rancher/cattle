@@ -287,6 +287,17 @@ public interface Volume extends Serializable {
     @Column(name = "size_mb", precision = 19)
     public Long getSizeMb();
 
+    /**
+     * Setter for <code>cattle.volume.storage_pool_id</code>.
+     */
+    public void setStoragePoolId(Long value);
+
+    /**
+     * Getter for <code>cattle.volume.storage_pool_id</code>.
+     */
+    @Column(name = "storage_pool_id", precision = 19)
+    public Long getStoragePoolId();
+
     // -------------------------------------------------------------------------
     // FROM and INTO
     // -------------------------------------------------------------------------

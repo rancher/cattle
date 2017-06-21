@@ -156,17 +156,6 @@ public interface Instance extends Serializable {
     public Map<String,Object> getData();
 
     /**
-     * Setter for <code>cattle.instance.allocation_state</code>.
-     */
-    public void setAllocationState(String value);
-
-    /**
-     * Getter for <code>cattle.instance.allocation_state</code>.
-     */
-    @Column(name = "allocation_state", length = 255)
-    public String getAllocationState();
-
-    /**
      * Setter for <code>cattle.instance.compute</code>.
      */
     public void setCompute(Long value);
@@ -495,6 +484,17 @@ public interface Instance extends Serializable {
      */
     @Column(name = "desired", nullable = false, precision = 1)
     public Boolean getDesired();
+
+    /**
+     * Setter for <code>cattle.instance.host_id</code>.
+     */
+    public void setHostId(Long value);
+
+    /**
+     * Getter for <code>cattle.instance.host_id</code>.
+     */
+    @Column(name = "host_id", precision = 19)
+    public Long getHostId();
 
     // -------------------------------------------------------------------------
     // FROM and INTO

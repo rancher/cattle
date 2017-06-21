@@ -1,6 +1,7 @@
 package io.cattle.platform.core.dao.impl;
 
 import static io.cattle.platform.core.model.tables.AgentTable.*;
+import static io.cattle.platform.core.model.tables.CredentialTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
@@ -8,25 +9,34 @@ import static io.cattle.platform.core.model.tables.PhysicalHostTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 
 import io.cattle.platform.core.constants.AgentConstants;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HostConstants;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.AgentDao;
+import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.model.Agent;
+import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.Host;
+import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.tables.records.AgentRecord;
 import io.cattle.platform.core.model.tables.records.HostRecord;
 import io.cattle.platform.core.model.tables.records.PhysicalHostRecord;
 import io.cattle.platform.core.model.tables.records.StoragePoolRecord;
+import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
@@ -35,7 +45,56 @@ import org.jooq.Record1;
 @Named
 public class AgentDaoImpl extends AbstractCoreDao implements AgentDao {
 
+    @Inject
+    GenericResourceDao resourceDao;
+    @Inject
+    ObjectManager objectManager;
+
     Long startTime = null;
+
+    @Override
+    public Instance getInstanceByAgent(Long agentId) {
+        if (agentId == null) {
+            return null;
+        }
+
+        return create()
+                .selectFrom(INSTANCE)
+                .where(INSTANCE.AGENT_ID.eq(agentId)
+                        .and(INSTANCE.REMOVED.isNull())
+                        .and(INSTANCE.STATE.notIn(InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING,
+                                CommonStatesConstants.REMOVING)))
+                .fetchAny();
+    }
+
+    @Override
+    public boolean areAllCredentialsActive(Agent agent) {
+        List<Long> authedRoleAccountIds = DataAccessor.fieldLongList(agent, AgentConstants.FIELD_AUTHORIZED_ROLE_ACCOUNTS);
+
+        if (agent.getAccountId() == null) {
+            return false;
+        }
+
+        Set<Long> accountIds = new HashSet<>();
+        accountIds.add(agent.getAccountId());
+
+        for (Long aId : authedRoleAccountIds) {
+            accountIds.add(aId);
+        }
+
+        List<? extends Credential> creds = create()
+                .selectFrom(CREDENTIAL)
+                .where(CREDENTIAL.STATE.eq(CommonStatesConstants.ACTIVE)
+                        .and(CREDENTIAL.ACCOUNT_ID.in(accountIds)))
+                .fetch();
+
+        Set<Long> credAccountIds = new HashSet<>();
+        for (Credential cred : creds) {
+            credAccountIds.add(cred.getAccountId());
+        }
+
+        return accountIds.equals(credAccountIds);
+    }
 
     @Override
     public Agent findNonRemovedByUri(String uri) {

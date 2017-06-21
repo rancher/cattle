@@ -31,7 +31,6 @@
         <module>code/framework/lock</module>
         <module>code/framework/logback</module>
         <module>code/framework/managed-context</module>
-        <module>code/framework/metrics</module>
         <module>code/framework/module</module>
         <module>code/framework/object</module>
         <module>code/framework/pool</module>
@@ -80,7 +79,6 @@
                 <module>code/iaas/storage-service</module>
                 <module>code/iaas/service-discovery/server</module>
                 <module>code/iaas/service-discovery/api</module>
-                <module>code/iaas/labels</module>
                 <module>code/iaas/healthcheck</module>
             </modules>
         </profile>

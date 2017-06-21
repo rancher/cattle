@@ -4,6 +4,8 @@ import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.core.dao.AgentDao;
 import io.cattle.platform.core.model.Agent;
+import io.cattle.platform.core.model.Host;
+import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
@@ -62,6 +64,10 @@ public class AgentLocatorImpl implements AgentLocator {
 
         if (agentId == null) {
             agentId = getAgentId(resource);
+        }
+
+        if (agentId == null && resource instanceof Instance) {
+            agentId = getAgentId(objectManager.loadResource(Host.class, ((Instance) resource).getHostId()));
         }
 
         if (agentId == null) {

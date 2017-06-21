@@ -1,8 +1,6 @@
 package io.cattle.platform.core.util;
 
-import io.cattle.platform.core.constants.PortConstants;
-import io.cattle.platform.core.model.Port;
-import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.core.addon.PublicEndpoint;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
@@ -31,9 +29,9 @@ public class PortSpec {
     public PortSpec() {
     }
 
-    public PortSpec(Port port) {
-        this.ipAddress = DataAccessor.fieldString(port, PortConstants.FIELD_BIND_ADDR);
-        this.publicPort = port.getPublicPort();
+    public PortSpec(PublicEndpoint port) {
+        this.ipAddress = port.getIpAddress();
+        this.publicPort = port.getPort();
         this.privatePort = port.getPrivatePort();
         this.protocol = port.getProtocol();
     }

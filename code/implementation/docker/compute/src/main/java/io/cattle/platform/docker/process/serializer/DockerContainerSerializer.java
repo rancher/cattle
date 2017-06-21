@@ -37,9 +37,6 @@ public class DockerContainerSerializer implements ObjectTypeSerializerPostProces
             return;
 
         Instance instance = (Instance) obj;
-        if (!InstanceConstants.CONTAINER_LIKE.contains(instance.getKind()))
-            return;
-
         List volumesFromContainerIds = DataAccessor.fields(instance).withKey(DockerInstanceConstants.FIELD_VOLUMES_FROM).as(jsonMapper, List.class);
         List<Instance> containers = null;
         if (volumesFromContainerIds != null && !volumesFromContainerIds.isEmpty()) {

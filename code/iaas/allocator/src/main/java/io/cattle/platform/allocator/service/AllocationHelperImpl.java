@@ -3,23 +3,24 @@ package io.cattle.platform.allocator.service;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition;
+import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.AffinityOps;
 import io.cattle.platform.allocator.constraint.Constraint;
 import io.cattle.platform.allocator.constraint.ContainerAffinityConstraint;
 import io.cattle.platform.allocator.constraint.ContainerLabelAffinityConstraint;
 import io.cattle.platform.allocator.constraint.HostAffinityConstraint;
-import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.AffinityOps;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.lock.AllocateConstraintLock;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.LabelsDao;
-import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.resource.service.EnvironmentResourceManager;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -36,16 +37,6 @@ public class AllocationHelperImpl implements AllocationHelper {
 
     private static final String SERVICE_NAME_MACRO = "${service_name}";
     private static final String STACK_NAME_MACRO = "${stack_name}";
-
-    // LEGACY: Temporarily support ${project_name} but this has become ${stack_name} now
-    private static final String PROJECT_NAME_MACRO = "${project_name}";
-
-    // TODO: We should refactor since these are defined in ServiceDiscoveryConstants too
-    private static final String LABEL_STACK_NAME = "io.rancher.stack.name";
-    private static final String LABEL_STACK_SERVICE_NAME = "io.rancher.stack_service.name";
-    private static final String LABEL_PROJECT_SERVICE_NAME = "io.rancher.project_service.name";
-    private static final String LABEL_SERVICE_LAUNCH_CONFIG = "io.rancher.service.launch.config";
-    private static final String PRIMARY_LAUNCH_CONFIG_NAME = "io.rancher.service.primary.launch.config";
 
     @Inject
     LabelsDao labelsDao;
@@ -65,6 +56,9 @@ public class AllocationHelperImpl implements AllocationHelper {
     @Inject
     AllocatorService allocatorService;
 
+    @Inject
+    EnvironmentResourceManager envResourceManager;
+
     @Override
     public List<Long> getAllHostsSatisfyingHostAffinity(Long accountId, Map<String, String> labelConstraints) {
         return getHostsSatisfyingHostAffinityInternal(true, accountId, labelConstraints);
@@ -76,14 +70,14 @@ public class AllocationHelperImpl implements AllocationHelper {
     }
 
     protected List<Long> getHostsSatisfyingHostAffinityInternal(boolean includeRemoved, Long accountId, Map<String, String> labelConstraints) {
-        List<? extends Host> hosts = includeRemoved ? allocatorDao.getNonRemovedHosts(accountId) : allocatorDao.getActiveHosts(accountId);
+        List<? extends Long> hosts = includeRemoved ? envResourceManager.getHosts(accountId) : envResourceManager.getActiveHosts(accountId);
 
         List<Constraint> hostAffinityConstraints = getHostAffinityConstraintsFromLabels(labelConstraints);
 
-        List<Long> acceptableHostIds = new ArrayList<Long>();
-        for (Host host : hosts) {
-            if (hostSatisfiesHostAffinity(host.getId(), hostAffinityConstraints)) {
-                acceptableHostIds.add(host.getId());
+        List<Long> acceptableHostIds = new ArrayList<>();
+        for (Long hostId : hosts) {
+            if (hostSatisfiesHostAffinity(hostId, hostAffinityConstraints)) {
+                acceptableHostIds.add(hostId);
             }
         }
         return acceptableHostIds;
@@ -114,9 +108,9 @@ public class AllocationHelperImpl implements AllocationHelper {
 
     @Override
     public void normalizeLabels(long stackId, Map<String, String> systemLabels, Map<String, String> serviceUserLabels) {
-        String stackName = systemLabels.get(LABEL_STACK_NAME);
-        String stackServiceNameWithLaunchConfig = systemLabels.get(LABEL_STACK_SERVICE_NAME);
-        String launchConfig = systemLabels.get(LABEL_SERVICE_LAUNCH_CONFIG);
+        String stackName = systemLabels.get(SystemLabels.LABEL_STACK_NAME);
+        String stackServiceNameWithLaunchConfig = systemLabels.get(SystemLabels.LABEL_STACK_SERVICE_NAME);
+        String launchConfig = systemLabels.get(SystemLabels.LABEL_SERVICE_LAUNCH_CONFIG);
 
         Set<String> serviceNamesInStack = getServiceNamesInStack(stackId);
 
@@ -125,10 +119,8 @@ public class AllocationHelperImpl implements AllocationHelper {
             if (entry.getKey().startsWith(ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL) &&
                     labelValue != null) {
                 String userEnteredServiceName = null;
-                if (labelValue.startsWith(LABEL_STACK_SERVICE_NAME)) {
-                    userEnteredServiceName = labelValue.substring(LABEL_STACK_SERVICE_NAME.length() + 1);
-                } else if (labelValue.startsWith(LABEL_PROJECT_SERVICE_NAME)) {
-                    userEnteredServiceName = labelValue.substring(LABEL_PROJECT_SERVICE_NAME.length() + 1);
+                if (labelValue.startsWith(SystemLabels.LABEL_STACK_SERVICE_NAME)) {
+                    userEnteredServiceName = labelValue.substring(SystemLabels.LABEL_STACK_SERVICE_NAME.length() + 1);
                 }
                 if (userEnteredServiceName != null) {
                     String[] components = userEnteredServiceName.split("/");
@@ -139,12 +131,12 @@ public class AllocationHelperImpl implements AllocationHelper {
                             userEnteredServiceName = stackName + "/" + userEnteredServiceName;
                         }
                     }
-                    if (!PRIMARY_LAUNCH_CONFIG_NAME.equals(launchConfig) &&
+                    if (!SystemLabels.PRIMARY_LAUNCH_CONFIG_NAME.equals(launchConfig) &&
                             stackServiceNameWithLaunchConfig.startsWith(userEnteredServiceName)) {
                         // automatically append secondary launchConfig
                         userEnteredServiceName = userEnteredServiceName + "/" + launchConfig;
                     }
-                    entry.setValue(LABEL_STACK_SERVICE_NAME + "=" + userEnteredServiceName);
+                    entry.setValue(SystemLabels.LABEL_STACK_SERVICE_NAME + "=" + userEnteredServiceName);
                 }
             }
         }
@@ -184,14 +176,14 @@ public class AllocationHelperImpl implements AllocationHelper {
                     affinityDef = affinityDef.substring(HostAffinityConstraint.ENV_HEADER_AFFINITY_HOST_LABEL.length());
                     AffinityConstraintDefinition def = extractAffinitionConstraintDefinitionFromEnv(affinityDef);
                     if (def != null && !StringUtils.isEmpty(def.getKey())) {
-                        constraints.add(new HostAffinityConstraint(def, allocatorDao));
+                        constraints.add(new HostAffinityConstraint(def, envResourceManager));
                     }
 
                 } else if (affinityDef.startsWith(ContainerLabelAffinityConstraint.ENV_HEADER_AFFINITY_CONTAINER_LABEL)) {
                     affinityDef = affinityDef.substring(ContainerLabelAffinityConstraint.ENV_HEADER_AFFINITY_CONTAINER_LABEL.length());
                     AffinityConstraintDefinition def = extractAffinitionConstraintDefinitionFromEnv(affinityDef);
                     if (def != null && !StringUtils.isEmpty(def.getKey())) {
-                        constraints.add(new ContainerLabelAffinityConstraint(def, allocatorDao));
+                        constraints.add(new ContainerLabelAffinityConstraint(def, envResourceManager));
                     }
                 }
             }
@@ -224,7 +216,7 @@ public class AllocationHelperImpl implements AllocationHelper {
                 opStr = key.substring(ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL.length());
                 List<AffinityConstraintDefinition> defs = extractAffinityConstraintDefinitionFromLabel(opStr, valueStr, true);
                 for (AffinityConstraintDefinition def: defs) {
-                    constraints.add(new ContainerLabelAffinityConstraint(def, allocatorDao));
+                    constraints.add(new ContainerLabelAffinityConstraint(def, envResourceManager));
                 }
 
             } else if (key.startsWith(ContainerAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER)) {
@@ -238,7 +230,7 @@ public class AllocationHelperImpl implements AllocationHelper {
                 opStr = key.substring(HostAffinityConstraint.LABEL_HEADER_AFFINITY_HOST_LABEL.length());
                 List<AffinityConstraintDefinition> defs = extractAffinityConstraintDefinitionFromLabel(opStr, valueStr, true);
                 for (AffinityConstraintDefinition def: defs) {
-                    constraints.add(new HostAffinityConstraint(def, allocatorDao));
+                    constraints.add(new HostAffinityConstraint(def, envResourceManager));
                 }
             }
         }
@@ -251,7 +243,6 @@ public class AllocationHelperImpl implements AllocationHelper {
      * ${service_name}
      * ${stack_name}
      * LEGACY:
-     * ${project_name}
      *
      * @param valueStr
      * @param instance
@@ -260,17 +251,16 @@ public class AllocationHelperImpl implements AllocationHelper {
     @SuppressWarnings("unchecked")
     private String evaluateMacros(String valueStr, Instance instance) {
         if (valueStr.indexOf(SERVICE_NAME_MACRO) != -1 ||
-                valueStr.indexOf(STACK_NAME_MACRO) != -1 ||
-                valueStr.indexOf(PROJECT_NAME_MACRO) != -1) {
+                valueStr.indexOf(STACK_NAME_MACRO) != -1) {
 
             Map<String, String> labels = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_LABELS).as(Map.class);
             String serviceLaunchConfigName = "";
             String stackName = "";
             if (labels != null && !labels.isEmpty()) {
                 for (Map.Entry<String, String> label : labels.entrySet()) {
-                    if (LABEL_STACK_NAME.equals(label.getKey())) {
+                    if (SystemLabels.LABEL_STACK_NAME.equals(label.getKey())) {
                         stackName = label.getValue();
-                    } else if (LABEL_STACK_SERVICE_NAME.equals(label.getKey())) {
+                    } else if (SystemLabels.LABEL_STACK_SERVICE_NAME.equals(label.getKey())) {
                         if (label.getValue() != null) {
                             int i = label.getValue().indexOf('/');
                             if (i != -1) {
@@ -282,9 +272,6 @@ public class AllocationHelperImpl implements AllocationHelper {
             }
             if (!StringUtils.isBlank(stackName)) {
                 valueStr = valueStr.replace(STACK_NAME_MACRO, stackName);
-
-                // LEGACY: ${project_name} rename ${stack_name}
-                valueStr = valueStr.replace(PROJECT_NAME_MACRO, stackName);
             }
 
             if (!StringUtils.isBlank(serviceLaunchConfigName)) {
@@ -358,7 +345,7 @@ public class AllocationHelperImpl implements AllocationHelper {
                 Map.Entry affinityDef = it.next();
                 String key = ((String)affinityDef.getKey()).toLowerCase();
                 String valueStr = (String)affinityDef.getValue();
-                if (key.startsWith(ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL) || 
+                if (key.startsWith(ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL) ||
                         key.startsWith(ContainerAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER)) {
                         labels.put(key, valueStr);
                 }

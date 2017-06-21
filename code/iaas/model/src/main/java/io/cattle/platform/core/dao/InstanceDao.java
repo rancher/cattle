@@ -1,6 +1,5 @@
 package io.cattle.platform.core.dao;
 
-import io.cattle.platform.core.addon.PublicEndpoint;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -44,7 +43,4 @@ public interface InstanceDao {
 
     void clearCacheInstanceData(long instanceId);
 
-    List<PublicEndpoint> getPublicEndpoints(long accountId, Long serviceId, Long hostId);
-
-    void updatePorts(Instance instance, List<String> ports);
 }

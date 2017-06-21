@@ -178,17 +178,6 @@ public interface ServiceExposeMap extends Serializable {
     public Long getAccountId();
 
     /**
-     * Setter for <code>cattle.service_expose_map.ip_address</code>.
-     */
-    public void setIpAddress(String value);
-
-    /**
-     * Getter for <code>cattle.service_expose_map.ip_address</code>.
-     */
-    @Column(name = "ip_address", length = 255)
-    public String getIpAddress();
-
-    /**
      * Setter for <code>cattle.service_expose_map.dns_prefix</code>.
      */
     public void setDnsPrefix(String value);

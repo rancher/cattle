@@ -25,15 +25,6 @@ public interface AllocatorDao {
 
     void releaseAllocation(Instance instance, InstanceHostMap map);
 
-    // key -> [value,mapping.state]
-    Map<String, String[]> getLabelsForHost(long hostId);
-
-    boolean hostHasContainerLabel(long hostId, String labelKey, String labelValue);
-
-    List<? extends Host> getActiveHosts(long accountId);
-
-    List<? extends Host> getNonRemovedHosts(long accountId);
-
     boolean isVolumeInUseOnHost(long volumeId, long hostId);
 
     Set<Long> findHostsWithVolumeInUse(long volumeId);

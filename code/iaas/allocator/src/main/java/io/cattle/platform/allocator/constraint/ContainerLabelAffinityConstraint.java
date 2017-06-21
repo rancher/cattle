@@ -1,25 +1,25 @@
 package io.cattle.platform.allocator.constraint;
 
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.AffinityOps;
-import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.service.AllocationCandidate;
+import io.cattle.platform.resource.service.EnvironmentResourceManager;
 
 public class ContainerLabelAffinityConstraint implements Constraint {
     public static final String ENV_HEADER_AFFINITY_CONTAINER_LABEL = "affinity:";
     public static final String LABEL_HEADER_AFFINITY_CONTAINER_LABEL = "io.rancher.scheduler.affinity:container_label";
 
-    AllocatorDao allocatorDao;
+    EnvironmentResourceManager envResourceManager;
 
     AffinityOps op;
     String labelKey;
     String labelValue;
 
-    public ContainerLabelAffinityConstraint(AffinityConstraintDefinition def, AllocatorDao allocatorDao) {
+    public ContainerLabelAffinityConstraint(AffinityConstraintDefinition def, EnvironmentResourceManager envResourceManager) {
         this.op = def.op;
         this.labelKey = def.key;
         this.labelValue = def.value;
 
-        this.allocatorDao = allocatorDao;
+        this.envResourceManager = envResourceManager;
     }
 
     // If necessary we can do additional optimizations to allow multiple container label or host label
@@ -31,10 +31,10 @@ public class ContainerLabelAffinityConstraint implements Constraint {
         }
 
         if (op == AffinityOps.SOFT_EQ || op == AffinityOps.EQ) {
-            return allocatorDao.hostHasContainerLabel(candidate.getHost(), labelKey, labelValue);
+            return envResourceManager.hostHasContainerLabel(candidate.getAccountId(), candidate.getHost(), labelKey, labelValue);
         } else {
             // Anti-affinity
-            return !allocatorDao.hostHasContainerLabel(candidate.getHost(), labelKey, labelValue);
+            return !envResourceManager.hostHasContainerLabel(candidate.getAccountId(), candidate.getHost(), labelKey, labelValue);
         }
     }
 

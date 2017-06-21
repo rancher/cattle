@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class VolumeTable extends TableImpl<VolumeRecord> {
 
-    private static final long serialVersionUID = 1597241697;
+    private static final long serialVersionUID = -2099959639;
 
     /**
      * The reference instance of <code>cattle.volume</code>
@@ -171,6 +171,11 @@ public class VolumeTable extends TableImpl<VolumeRecord> {
     public final TableField<VolumeRecord, Long> SIZE_MB = createField("size_mb", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
+     * The column <code>cattle.volume.storage_pool_id</code>.
+     */
+    public final TableField<VolumeRecord, Long> STORAGE_POOL_ID = createField("storage_pool_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
      * Create a <code>cattle.volume</code> table reference
      */
     public VolumeTable() {
@@ -229,7 +234,7 @@ public class VolumeTable extends TableImpl<VolumeRecord> {
      */
     @Override
     public List<ForeignKey<VolumeRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<VolumeRecord, ?>>asList(Keys.FK_VOLUME__ACCOUNT_ID, Keys.FK_VOLUME__HOST_ID, Keys.FK_VOLUME__DEPLOYMENT_UNIT_ID, Keys.FK_VOLUME__ENVIRONMENT_ID, Keys.FK_VOLUME__VOLUME_TEMPLATE_ID, Keys.FK_VOLUME__STORAGE_DRIVER_ID);
+        return Arrays.<ForeignKey<VolumeRecord, ?>>asList(Keys.FK_VOLUME__ACCOUNT_ID, Keys.FK_VOLUME__HOST_ID, Keys.FK_VOLUME__DEPLOYMENT_UNIT_ID, Keys.FK_VOLUME__ENVIRONMENT_ID, Keys.FK_VOLUME__VOLUME_TEMPLATE_ID, Keys.FK_VOLUME__STORAGE_DRIVER_ID, Keys.FK_VOLUME__STORAGE_POOL_ID);
     }
 
     /**

@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportResource;
 
 @Configuration
-@Import({ConfigConfig.class, MetricsConfig.class, ContextConfig.class,
+@Import({ConfigConfig.class, ContextConfig.class,
     SystemConfig.class, CoreModelConfig.class, TypesConfig.class,
     SystemServicesConfig.class, AgentServerConfig.class,
     ArchaiusConfig.class, AllocatorServerConfig.class, ApiServerConfig.class, IaasApiConfig.class,

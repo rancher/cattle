@@ -12,19 +12,11 @@ public class VolumeConstants {
 
     public static final String FILE_PREFIX = "file";
 
-    public static final String URI_FORMAT = "%s://%s";
-
     public static final String FIELD_VOLUME_DRIVER = "driver";
 
     public static final String FIELD_STORAGE_DRIVER_ID = "storageDriverId";
 
     public static final String FIELD_VOLUME_DRIVER_OPTS = "driverOpts";
-
-    public static final String FIELD_URI = "uri";
-
-    public static final String FIELD_DEVICE_NUM = "deviceNumber";
-
-    public static final String FIELD_DOCKER_IS_HOST_PATH = "isHostPath";
 
     public static final String FIELD_DOCKER_IS_NATIVE = "isNative";
 

@@ -1,15 +1,10 @@
 package io.cattle.platform.process.metadata;
 
-import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.agent.instance.service.AgentMetadataService;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.core.model.HostIpAddressMap;
-import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.InstanceHostMap;
-import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.ServiceExposeMap;
@@ -37,8 +32,6 @@ public class MetadataProcessHandler extends AbstractObjectProcessLogic implement
     private static DynamicStringListProperty PROCESSES = ArchaiusUtil.getList("metadata.increment.processes");
     private static Logger log = LoggerFactory.getLogger(MetadataProcessHandler.class);
 
-    @Inject
-    AgentInstanceDao agentInstanceDao;
     @Inject
     ConfigItemStatusManager statusManager;
     @Inject
@@ -77,11 +70,7 @@ public class MetadataProcessHandler extends AbstractObjectProcessLogic implement
     }
 
     protected Object getAccountObject(Object obj) {
-        if (obj instanceof HostIpAddressMap) {
-            return objectManager.loadResource(IpAddress.class, ((HostIpAddressMap) obj).getIpAddressId());
-        } else if (obj instanceof InstanceHostMap) {
-            return objectManager.loadResource(Instance.class, ((InstanceHostMap) obj).getInstanceId());
-        } else if (obj instanceof ServiceConsumeMap) {
+        if (obj instanceof ServiceConsumeMap) {
             return objectManager.loadResource(Service.class, ((ServiceConsumeMap) obj).getServiceId());
         } else if (obj instanceof ServiceExposeMap) {
             return objectManager.loadResource(Service.class, ((ServiceExposeMap) obj).getServiceId());

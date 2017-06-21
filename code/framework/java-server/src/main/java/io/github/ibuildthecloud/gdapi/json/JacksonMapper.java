@@ -25,7 +25,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 
 public class JacksonMapper implements JsonMapper {
 
@@ -41,7 +40,6 @@ public class JacksonMapper implements JsonMapper {
 
         mapper = new ObjectMapper();
         mapper.setDateFormat(df);
-        mapper.registerModule(new JaxbAnnotationModule());
         mapper.registerModule(module);
         mapper.getFactory().configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

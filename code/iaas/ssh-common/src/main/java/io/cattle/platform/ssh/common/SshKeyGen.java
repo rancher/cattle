@@ -3,10 +3,7 @@ package io.cattle.platform.ssh.common;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigInteger;
@@ -19,7 +16,6 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -55,12 +51,9 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 
 import com.netflix.config.DynamicLongProperty;
-import com.netflix.config.DynamicStringProperty;
 
 public class SshKeyGen {
 
-    private static final byte[] HEADER = new byte[] { 's', 's', 'h', '-', 'r', 's', 'a' };
-    private static final DynamicStringProperty SSH_FORMAT = ArchaiusUtil.getString("ssh.key.text.format");
     private static final DynamicLongProperty EXPIRATION = ArchaiusUtil.getLong("cert.expiry.days");
     private static final JcaPEMKeyConverter CONVERTER = new JcaPEMKeyConverter().setProvider("BC");
     private static final Random RANDOM = new Random();
@@ -76,14 +69,6 @@ public class SshKeyGen {
                 throw new RuntimeException(e);
             }
         }
-    }
-
-    public static String[] generateKeys() throws Exception {
-        KeyPair pair = generateKeyPair();
-
-        String publicString = sshRsaTextFormat((RSAPublicKey) pair.getPublic());
-
-        return new String[] { publicString, toPEM(pair) };
     }
 
     public static X509Certificate createRootCACert(KeyPair keyPair) throws Exception {
@@ -142,7 +127,7 @@ public class SshKeyGen {
         return new JcaX509CertificateConverter().setProvider("BC").getCertificate(certBldr.build(signer));
     }
 
-    public static KeyPair generateKeyPair(int keySize) throws Exception {
+    private static KeyPair generateKeyPair(int keySize) throws Exception {
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", BOUNCY_CASTLE);
         generator.initialize(keySize);
         return generator.generateKeyPair();
@@ -199,26 +184,6 @@ public class SshKeyGen {
         IOUtils.closeQuietly(w);
 
         return stringWriter.toString();
-    }
-
-    public static String sshRsaTextFormat(RSAPublicKey key) throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        write(out, HEADER);
-        write(out, key.getPublicExponent().toByteArray());
-        write(out, key.getModulus().toByteArray());
-
-        return String.format(SSH_FORMAT.get(), Base64.encodeBase64String(out.toByteArray()));
-    }
-
-    protected static void write(OutputStream os, byte[] content) throws IOException {
-        byte[] length = new byte[4];
-        length[0] = (byte) ((content.length >>> 24) & 0xff);
-        length[1] = (byte) ((content.length >>> 16) & 0xff);
-        length[2] = (byte) ((content.length >>> 8) & 0xff);
-        length[3] = (byte) (content.length & 0xff);
-
-        os.write(length);
-        os.write(content);
     }
 
 }

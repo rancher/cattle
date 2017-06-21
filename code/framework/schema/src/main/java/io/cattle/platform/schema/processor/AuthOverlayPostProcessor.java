@@ -32,11 +32,21 @@ public class AuthOverlayPostProcessor implements SchemaPostProcessor {
 
     private static final Logger log = LoggerFactory.getLogger(AuthOverlayPostProcessor.class);
 
-    Map<String, Perm> perms = new LinkedHashMap<String, Perm>();
-    List<Pair<Pattern, Perm>> wildcards = new ArrayList<Pair<Pattern, Perm>>();
+    Map<String, Perm> perms = new LinkedHashMap<>();
+    List<Pair<Pattern, Perm>> wildcards = new ArrayList<>();
 
     List<URL> resources;
     JsonMapper jsonMapper;
+
+    public AuthOverlayPostProcessor() {
+    }
+
+    public AuthOverlayPostProcessor(List<URL> resources, JsonMapper jsonMapper) throws IOException {
+        super();
+        this.resources = resources;
+        this.jsonMapper = jsonMapper;
+        init();
+    }
 
     @Override
     public SchemaImpl postProcessRegister(SchemaImpl schema, SchemaFactory factory) {
@@ -128,7 +138,7 @@ public class AuthOverlayPostProcessor implements SchemaPostProcessor {
     }
 
     protected Perm getPerm(String name, boolean wildcard) {
-        List<Perm> result = new ArrayList<Perm>();
+        List<Perm> result = new ArrayList<>();
 
         if (wildcard) {
             for (Pair<Pattern, Perm> entry : wildcards) {
@@ -171,7 +181,7 @@ public class AuthOverlayPostProcessor implements SchemaPostProcessor {
             Perm perm = new Perm(entry.getValue().toString());
 
             if (key.contains("*")) {
-                wildcards.add(new ImmutablePair<Pattern, Perm>(Pattern.compile(key), perm));
+                wildcards.add(new ImmutablePair<>(Pattern.compile(key), perm));
             } else {
                 perms.put(key, perm);
             }

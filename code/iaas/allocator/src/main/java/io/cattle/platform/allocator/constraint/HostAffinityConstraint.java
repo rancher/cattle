@@ -4,6 +4,7 @@ import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.Affi
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.resource.service.EnvironmentResourceManager;
 
 import java.util.Map;
 
@@ -16,14 +17,14 @@ public class HostAffinityConstraint implements Constraint {
     AffinityOps op;
     String labelKey;
     String labelValue;
+    EnvironmentResourceManager envResourceManager;
 
     // TODO: Might actually do an early lookup for host lists as an optimization
-    public HostAffinityConstraint(AffinityConstraintDefinition def, AllocatorDao allocatorDao) {
+    public HostAffinityConstraint(AffinityConstraintDefinition def, EnvironmentResourceManager envResourceManager) {
         this.op = def.op;
         this.labelKey = def.key;
         this.labelValue = def.value;
-
-        this.allocatorDao = allocatorDao;
+        this.envResourceManager = envResourceManager;
     }
 
     @Override
@@ -33,7 +34,7 @@ public class HostAffinityConstraint implements Constraint {
         }
 
         if (op == AffinityOps.SOFT_EQ || op == AffinityOps.EQ) {
-            Map<String, String[]> labelsForHost = allocatorDao.getLabelsForHost(candidate.getHost());
+            Map<String, String[]> labelsForHost = envResourceManager.getLabelsForHost(candidate.getAccountId(), candidate.getHost());
             if (labelsForHost.get(labelKey) == null) { // key doesn't exist
                 return false;
             }
@@ -43,7 +44,7 @@ public class HostAffinityConstraint implements Constraint {
                 return false;
             }
         } else {
-            Map<String, String[]> labelsForHost = allocatorDao.getLabelsForHost(candidate.getHost());
+            Map<String, String[]> labelsForHost = envResourceManager.getLabelsForHost(candidate.getAccountId(), candidate.getHost());
             if (labelsForHost.get(labelKey) != null
                     && labelValue.equals(labelsForHost.get(labelKey)[0])
                     && (CommonStatesConstants.CREATING.equals(labelsForHost.get(labelKey)[1])

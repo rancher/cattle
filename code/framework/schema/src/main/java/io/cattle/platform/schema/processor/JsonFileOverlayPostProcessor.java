@@ -36,19 +36,29 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
 
     public static final String REMOVE = "-";
 
+    @Inject
     JsonMapper jsonMapper;
-    io.github.ibuildthecloud.gdapi.json.JsonMapper schemaMashaller;
+    @Inject
+    io.github.ibuildthecloud.gdapi.json.JsonMapper schemasMarshaller;
     boolean explicitByDefault = false;
     boolean whiteList = false;
-    Set<String> ignoreTypes = new HashSet<String>();
-    Map<String, List<URL>> resources = new HashMap<String, List<URL>>();
+    Set<String> ignoreTypes = new HashSet<>();
+    Map<String, List<URL>> resources = new HashMap<>();
 
     String path;
+    @Inject
     ResourceLoader resourceLoader;
 
     public JsonFileOverlayPostProcessor() {
         ignoreTypes.add("schema");
         ignoreTypes.add("error");
+    }
+
+    public JsonFileOverlayPostProcessor(ResourceLoader resourceLoader, JsonMapper jsonMapper, io.github.ibuildthecloud.gdapi.json.JsonMapper schemasMarshaller) {
+        super();
+        this.resourceLoader = resourceLoader;
+        this.jsonMapper = jsonMapper;
+        this.schemasMarshaller = schemasMarshaller;
     }
 
     @Override
@@ -70,7 +80,7 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
     }
 
     protected List<URL> lookUpResource(String id) throws IOException {
-        List<URL> result = new ArrayList<URL>();
+        List<URL> result = new ArrayList<>();
         String base = String.format("%s/%s.json", path, id);
         String override = String.format("%s/%s.json.d/**/*.json", path, id);
 
@@ -115,9 +125,9 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
                 Map<String, Object> mapData = jsonMapper.readValue(bytes);
                 SchemaOverlayImpl data = null;
                 if (explicitByDefault) {
-                    data = schemaMashaller.readValue(bytes, ExplicitByDefaultSchemaOverlayImpl.class);
+                    data = schemasMarshaller.readValue(bytes, ExplicitByDefaultSchemaOverlayImpl.class);
                 } else {
-                    data = schemaMashaller.readValue(bytes, SchemaOverlayImpl.class);
+                    data = schemasMarshaller.readValue(bytes, SchemaOverlayImpl.class);
                 }
 
                 processSchema(schema, data, mapData);
@@ -167,7 +177,7 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
         }
 
         if (Boolean.TRUE.equals(value)) {
-            for (String key : new HashSet<String>(oldValues.keySet())) {
+            for (String key : new HashSet<>(oldValues.keySet())) {
                 if (newValues == null || !newValues.containsKey(key)) {
                     oldValues.remove(key);
                 }
@@ -207,15 +217,6 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
         return Priority.DEFAULT;
     }
 
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
-    }
-
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
-    }
-
     public boolean isExplicitByDefault() {
         return explicitByDefault;
     }
@@ -232,15 +233,6 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
         this.path = path;
     }
 
-    public io.github.ibuildthecloud.gdapi.json.JsonMapper getSchemaMashaller() {
-        return schemaMashaller;
-    }
-
-    @Inject
-    public void setSchemaMashaller(io.github.ibuildthecloud.gdapi.json.JsonMapper schemaMashaller) {
-        this.schemaMashaller = schemaMashaller;
-    }
-
     public boolean isWhiteList() {
         return whiteList;
     }
@@ -255,15 +247,6 @@ public class JsonFileOverlayPostProcessor extends AbstractSchemaPostProcessor im
 
     public void setIgnoreTypes(Set<String> ignoreTypes) {
         this.ignoreTypes = ignoreTypes;
-    }
-
-    public ResourceLoader getResourceLoader() {
-        return resourceLoader;
-    }
-
-    @Inject
-    public void setResourceLoader(ResourceLoader resourceLoader) {
-        this.resourceLoader = resourceLoader;
     }
 
 }

@@ -17,7 +17,6 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
-import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
 import java.io.IOException;
 import java.util.List;
@@ -40,8 +39,6 @@ public class StorageDriverDaoImpl extends AbstractJooqDao implements StorageDriv
     GenericResourceDao resourceDao;
     @Inject
     JsonMapper jsonMapper;
-    @Inject
-    TransactionDelegate transaction;
 
     @Override
     public StorageDriver findSecretsDriver(long accountId) {
@@ -59,36 +56,36 @@ public class StorageDriverDaoImpl extends AbstractJooqDao implements StorageDriv
 
     @Override
     public Volume createSecretsVolume(Instance instance, StorageDriver storageDriver, String token) {
-        return transaction.doInTransactionResult(() -> {
-            Map<String, Object> dataVolumesMounts = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_DATA_VOLUME_MOUNTS);
-            Object volumeId = dataVolumesMounts.get(VolumeConstants.SECRETS_PATH);
-            if (volumeId != null) {
-                return objectManager.loadResource(Volume.class, volumeId.toString());
-            }
+        Map<String, Object> dataVolumesMounts = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_DATA_VOLUME_MOUNTS);
+        Object volumeId = dataVolumesMounts.get(VolumeConstants.SECRETS_PATH);
+        if (volumeId != null) {
+            return null;
+        }
 
-            byte[] bytes = new byte[32];
-            ThreadLocalRandom.current().nextBytes(bytes);
-            String name = Hex.encodeHexString(bytes);
+        byte[] bytes = new byte[32];
+        ThreadLocalRandom.current().nextBytes(bytes);
+        String name = Hex.encodeHexString(bytes);
 
-            Map<String, Object> tokenMap = CollectionUtils.asMap("value", token);
-            Volume volume;
-            try {
-                volume = resourceDao.create(Volume.class,
-                        VOLUME.NAME, name,
-                        VOLUME.ACCOUNT_ID, instance.getAccountId(),
-                        VOLUME.STORAGE_DRIVER_ID, storageDriver.getId(),
-                        VolumeConstants.FIELD_VOLUME_DRIVER, storageDriver.getName(),
-                        VolumeConstants.FIELD_VOLUME_DRIVER_OPTS, CollectionUtils.asMap(
-                                VolumeConstants.SECRETS_OPT_KEY, jsonMapper.writeValueAsString(tokenMap)));
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
-            }
+        Map<String, Object> tokenMap = CollectionUtils.asMap("value", token);
+        try {
+            return objectManager.create(Volume.class,
+                    VOLUME.NAME, name,
+                    VOLUME.ACCOUNT_ID, instance.getAccountId(),
+                    VOLUME.STORAGE_DRIVER_ID, storageDriver.getId(),
+                    VolumeConstants.FIELD_VOLUME_DRIVER, storageDriver.getName(),
+                    VolumeConstants.FIELD_VOLUME_DRIVER_OPTS, CollectionUtils.asMap(
+                            VolumeConstants.SECRETS_OPT_KEY, jsonMapper.writeValueAsString(tokenMap)));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
 
-            dataVolumesMounts.put(VolumeConstants.SECRETS_PATH, volume.getId());
-            objectManager.setFields(instance, InstanceConstants.FIELD_DATA_VOLUME_MOUNTS, dataVolumesMounts);
+    @Override
+    public void assignSecretsVolume(Instance instance, Volume volume) {
+        Map<String, Object> dataVolumesMounts = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_DATA_VOLUME_MOUNTS);
 
-            return volume;
-        });
+        dataVolumesMounts.put(VolumeConstants.SECRETS_PATH, volume.getId());
+        objectManager.setFields(instance, InstanceConstants.FIELD_DATA_VOLUME_MOUNTS, dataVolumesMounts);
     }
 
 }

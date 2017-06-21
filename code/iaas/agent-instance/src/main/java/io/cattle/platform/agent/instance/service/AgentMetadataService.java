@@ -3,6 +3,7 @@ package io.cattle.platform.agent.instance.service;
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
+import io.cattle.platform.core.cache.EnvironmentResourceManager;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.util.SystemLabels;
@@ -19,10 +20,12 @@ public class AgentMetadataService {
     ConfigItemStatusManager statusManager;
     @Inject
     AccountDao accountDao;
+    @Inject
+    EnvironmentResourceManager envResourceManager;
 
     public void updateMetadata(Long accountId) {
         long revision = accountDao.incrementRevision(accountId);
-        List<Long> agentIds = agentInstanceDao.getAgentProviderIgnoreHealth(SystemLabels.LABEL_AGENT_SERVICE_METADATA,
+        List<Long> agentIds = envResourceManager.getAgentProviderIgnoreHealth(SystemLabels.LABEL_AGENT_SERVICE_METADATA,
                 accountId);
         for (long agentId : agentIds) {
             ConfigUpdateRequest request = ConfigUpdateRequest.forResource(Agent.class, agentId);

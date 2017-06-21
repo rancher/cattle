@@ -1,19 +1,13 @@
 package io.cattle.platform.api.servlet;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.metrics.util.MetricsUtil;
 import io.cattle.platform.spring.web.SpringFilter;
 import io.cattle.platform.util.exception.ExceptionUtils;
-import io.github.ibuildthecloud.gdapi.context.ApiContext;
-import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.servlet.ApiRequestFilterDelegate;
 import io.github.ibuildthecloud.gdapi.util.RequestUtils;
 import io.github.ibuildthecloud.gdapi.version.Versions;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 import javax.servlet.FilterChain;
@@ -28,7 +22,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.cloudstack.managed.context.ManagedContextRunnable;
 import org.apache.commons.lang3.StringUtils;
 
-import com.codahale.metrics.Timer;
 import com.netflix.config.DynamicStringListProperty;
 import com.netflix.config.DynamicStringProperty;
 
@@ -46,7 +39,6 @@ public class ApiRequestFilter extends SpringFilter {
 
     ApiRequestFilterDelegate delegate;
     Versions versions;
-    Map<String, Timer> timers = new ConcurrentHashMap<>();
     IndexFile indexFile = new IndexFile();
 
     @Override
@@ -92,18 +84,12 @@ public class ApiRequestFilter extends SpringFilter {
             new ManagedContextRunnable() {
                 @Override
                 protected void runInContext() {
-                    long start = System.currentTimeMillis();
-                    boolean success = false;
-                    ApiContext context = null;
                     try {
-                        context = delegate.doFilter(request, response, chain);
-                        success = true;
+                        delegate.doFilter(request, response, chain);
                     } catch (IOException e) {
                         throw new WrappedException(e);
                     } catch (ServletException e) {
                         throw new WrappedException(e);
-                    } finally {
-                        done(context, start, success);
                     }
                 }
             }.run();
@@ -121,33 +107,6 @@ public class ApiRequestFilter extends SpringFilter {
 
     protected void addVersionHeader(HttpServletRequest httpRequest, HttpServletResponse response) {
         response.setHeader(VERSION, SERVER_VERSION.get());
-    }
-
-    protected void done(ApiContext context, long start, boolean success) {
-        if (context == null) {
-            return;
-        }
-
-        ApiRequest request = context.getApiRequest();
-        if (request == null) {
-            return;
-        }
-
-        if (request.getResponseCode() >= 400) {
-            success = false;
-        }
-
-        long duration = System.currentTimeMillis() - start;
-        if (request != null) {
-            String key = String.format("api.%s.%s.%s", success ? "success" : "failed", request.getType(), request.getMethod().toLowerCase());
-
-            Timer timer = timers.get(key);
-            if (timer == null) {
-                timer = MetricsUtil.getRegistry().timer(key);
-                timers.put(key, timer);
-            }
-            timer.update(duration, TimeUnit.MILLISECONDS);
-        }
     }
 
     protected boolean isUIRequest(HttpServletRequest request, String path) {
