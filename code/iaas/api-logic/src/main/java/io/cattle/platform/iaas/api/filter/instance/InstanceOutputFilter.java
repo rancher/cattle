@@ -1,17 +1,23 @@
 package io.cattle.platform.iaas.api.filter.instance;
 
+import io.cattle.platform.api.auth.Policy;
+import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.core.addon.HealthcheckState;
 import io.cattle.platform.core.addon.MountEntry;
+import io.cattle.platform.core.constants.DockerInstanceConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.transform.DockerTransformer;
 import io.cattle.platform.iaas.api.filter.common.CachedOutputFilter;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
@@ -20,6 +26,7 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -34,6 +41,8 @@ public class InstanceOutputFilter extends CachedOutputFilter<Map<Long, Map<Strin
     VolumeDao volumeDao;
     @Inject
     DockerTransformer transformer;
+    @Inject
+    JsonMapper jsonMapper;
 
 
     @Override
@@ -75,16 +84,38 @@ public class InstanceOutputFilter extends CachedOutputFilter<Map<Long, Map<Strin
             converted.getFields().put(InstanceConstants.FIELD_PRIMARY_NETWORK_ID, idF.formatId(NetworkConstants.KIND_NETWORK, networkIds.get(0)));
         }
 
+        Map<String, URL> actions = converted.getActions();
+
+        if (actions == null || actions.isEmpty()) {
+            return converted;
+        }
+
+        boolean infraRestricted = !ApiUtils.getPolicy().isOption(Policy.MODIFY_INFRA);
+
         Map<String, Object> labels = CollectionUtils.toMap(converted.getFields().get(InstanceConstants.FIELD_LABELS));
         if ("rancher-agent".equals(labels.get("io.rancher.container.system")) &&
                 "rancher-agent".equals(converted.getFields().get(ObjectMetaDataManager.NAME_FIELD))) {
-            Map<String, URL> actions = converted.getActions();
-            if (actions != null) {
-                actions.remove("remove");
-                actions.remove("stop");
-                actions.remove("start");
-                actions.remove("restart");
-            }
+            actions.remove(InstanceConstants.ACTION_REMOVE);
+            actions.remove(InstanceConstants.ACTION_STOP);
+            actions.remove(InstanceConstants.ACTION_START);
+            actions.remove(InstanceConstants.ACTION_RESTART);
+        }
+
+        List<?> capAdd = DataAccessor.fromMap(converted.getFields()).withKey(DockerInstanceConstants.FIELD_CAP_ADD).asList(jsonMapper, String.class);
+        if (infraRestricted && (labels.containsKey(SystemLabels.LABEL_AGENT_CREATE)
+                || DataAccessor.fromMap(converted.getFields()).withKey(InstanceConstants.FIELD_PRIVILEGED).as(Boolean.class)
+                || (capAdd != null && !capAdd.isEmpty()))) {
+            actions.remove(InstanceConstants.ACTION_EXEC);
+            actions.remove(InstanceConstants.ACTION_PROXY);
+        }
+
+        if (infraRestricted && ObjectUtils.isSystem(converted.getFields())) {
+            for(Iterator<Map.Entry<String, URL>> it = actions.entrySet().iterator(); it.hasNext(); ) {
+                Map.Entry<String, URL> entry = it.next();
+                if(!entry.getKey().equals(InstanceConstants.ACTION_LOGS)) {
+                  it.remove();
+                }
+              }
         }
 
         return converted;

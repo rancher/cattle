@@ -172,6 +172,7 @@
         <property name="id" value="member" />
         <property name="schemaFactory" ref="Project" />
     </bean>
+
     <bean id="Restricted" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" depends-on="CoreSchemaFactory" >
         <property name="id" value="restricted" />
         <property name="schemaFactory" ref="Project" />
