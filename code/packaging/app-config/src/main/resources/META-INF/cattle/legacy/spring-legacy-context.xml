@@ -171,6 +171,22 @@
     <bean id="MemberSchema" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" depends-on="CoreSchemaFactory" >
         <property name="id" value="member" />
         <property name="schemaFactory" ref="Project" />
+        <property name="postProcessors">
+            <list>
+                <bean class="io.cattle.platform.schema.processor.AuthOverlayPostProcessor" >
+                    <property name="resources" >
+                        <bean class="io.cattle.platform.spring.resource.SpringUrlListFactory" >
+                            <property name="resources">
+                                <list>
+                                    <value>classpath*:schema/member-auth/member-auth.json</value>
+                                    <value>classpath*:schema/member-auth/member-auth.json.d/**/*.json</value>
+                                </list>
+                            </property>
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </property>
     </bean>
     <bean id="Restricted" class="io.cattle.platform.api.schema.ObjectBasedSubSchemaFactory" depends-on="CoreSchemaFactory" >
         <property name="id" value="restricted" />
