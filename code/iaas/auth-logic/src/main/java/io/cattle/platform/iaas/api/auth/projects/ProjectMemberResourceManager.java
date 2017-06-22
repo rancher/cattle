@@ -7,8 +7,8 @@ import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.ProjectMember;
-import io.cattle.platform.iaas.api.auth.identity.IdentityManager;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
+import io.cattle.platform.iaas.api.auth.identity.IdentityManager;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
@@ -104,7 +105,7 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
         throw new ClientVisibleException(ResponseCodes.METHOD_NOT_ALLOWED);
     }
 
-    public List<ProjectMember> setMembers(Account project, List<Map<String, String>> members) {
+    public List<ProjectMember> setMembers(Account project, List<Map<String, String>> members, boolean forProjectCreate) {
         List<ProjectMember> membersCreated = new ArrayList<>();
         Set<Member> membersTransformed = new HashSet<>();
 
@@ -141,16 +142,37 @@ public class ProjectMemberResourceManager extends AbstractObjectResourceManager 
 
 
         boolean hasOwner = false;
+        Set<Member> newOwners = new HashSet<>();
         for (Member member : membersTransformed) {
             if (member.getRole().equalsIgnoreCase(ProjectConstants.OWNER)) {
                 hasOwner = true;
+                newOwners.add(member);
             }
         }
 
         if (!hasOwner) {
-            throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidFormat", "Members list does not have an owner.", null);
+            throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidFormat", "Members list does not have an owner", null);
 
         }
+
+        Policy policy = (Policy) ApiContext.getContext().getPolicy();
+        boolean isOwner = authDao.isProjectOwner(project.getId(), policy.getAccountId(), policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy
+                .getIdentities());
+        // Can only change project owners if you're an owner or this is part of initial project create (to assign yourself as owner)
+        if (!isOwner && !forProjectCreate) {
+            List<? extends ProjectMember>currentMembers = authDao.getActiveProjectMembers(project.getId());
+            Set<Member> currentOwners = new HashSet<>();
+            String projectId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), project.getId());
+            for (ProjectMember m : currentMembers) {
+                if (ProjectConstants.OWNER.equalsIgnoreCase(m.getRole())) {
+                    currentOwners.add(new Member(m, projectId));
+                }
+            }
+            if (!newOwners.equals(currentOwners)) {
+                throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidFormat", "Cannot change project owners", null);
+            }
+        }
+
         membersCreated.addAll(authDao.setProjectMembers(project, membersTransformed, ApiContext.getContext()
                 .getIdFormatter()));
 
