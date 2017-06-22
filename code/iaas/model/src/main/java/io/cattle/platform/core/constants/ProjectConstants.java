@@ -14,6 +14,7 @@ public class ProjectConstants {
     public static final String NAME = "rancher";
 
     public static final String OWNER = "owner";
+    public static final String SET_MEMBERS = "setMembers";
 
 
     public static final String AUTH_HEADER = "Authorization";

@@ -36,6 +36,7 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.util.TransformationService;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -55,6 +56,9 @@ import org.jooq.impl.DSL;
 import com.netflix.config.DynamicStringListProperty;
 
 public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
+
+    private static final List<String> OWNER_ROLE_LIST = Arrays.asList("owner");
+    private static final DynamicStringListProperty SET_MEMBER_ROLES = ArchaiusUtil.getList("project.set.member.roles");
 
     @Inject
     GenericResourceDao resourceDao;
@@ -421,7 +425,16 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
     }
 
     @Override
+    public boolean canSetProjectMembers(long projectId, Long usingAccount, boolean isAdmin, Set<Identity> identities) {
+        return hasProjectRole(projectId, usingAccount, isAdmin, identities, SET_MEMBER_ROLES.get());
+    }
+
+    @Override
     public boolean isProjectOwner(long projectId, Long usingAccount, boolean isAdmin, Set<Identity> identities) {
+        return hasProjectRole(projectId, usingAccount, isAdmin, identities, OWNER_ROLE_LIST);
+    }
+
+    public boolean hasProjectRole(long projectId, Long usingAccount, boolean isAdmin, Set<Identity> identities, List<String> roles) {
         if (identities == null) {
             return false;
         }
@@ -436,7 +449,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         for (Identity id : identities) {
             allMembers = allMembers.or(PROJECT_MEMBER.EXTERNAL_ID.eq(id.getExternalId())
                     .and(PROJECT_MEMBER.EXTERNAL_ID_TYPE.eq(id.getExternalIdType()))
-                    .and(PROJECT_MEMBER.ROLE.eq(ProjectConstants.OWNER))
+                    .and(PROJECT_MEMBER.ROLE.in(roles))
                     .and(PROJECT_MEMBER.PROJECT_ID.eq(projectId))
                     .and(PROJECT_MEMBER.STATE.eq(CommonStatesConstants.ACTIVE))
                     .and(PROJECT_MEMBER.REMOVED.isNull()));
