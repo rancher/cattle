@@ -118,11 +118,13 @@ public class ProjectResourceManager extends AbstractObjectResourceManager {
         }
         boolean isOwner = authDao.isProjectOwner(project.getId(), policy.getAccountId(), policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy
                 .getIdentities());
+
         if (!accountDao.isActiveAccount(project) && !isOwner) {
             return null;
         }
         if (isOwner) {
             ApiContext.getContext().addCapability(project, ProjectConstants.OWNER);
+            ApiContext.getContext().addCapability(project, ProjectConstants.SET_MEMBERS);
         } else {
             ApiContext.getContext().setCapabilities(project, new ArrayList<String>());
         }
