@@ -4,7 +4,7 @@
       "input": "setProjectMembersInput",
       "output": "setProjectMembersInput",
       "attributes" : {
-        "capability" : "owner"
+        "capability" : "setMembers"
       }
     },
     "deactivate" : {
