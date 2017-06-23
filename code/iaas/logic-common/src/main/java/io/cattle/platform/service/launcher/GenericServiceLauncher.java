@@ -24,6 +24,7 @@ import io.cattle.platform.util.type.InitializationTask;
 
 import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
+import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,7 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 import org.apache.cloudstack.managed.context.NoExceptionRunnable;
+import org.apache.commons.lang3.StringUtils;
 
 import com.netflix.config.DynamicStringProperty;
 
@@ -198,6 +200,7 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
         Map<String, String> env = pb.environment();
 
         setEnvironment(env);
+        setParentPIDEnv(env);
         prepareProcess(pb);
 
         pb.redirectOutput(Redirect.INHERIT);
@@ -211,5 +214,15 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
     }
 
     protected void prepareProcess(ProcessBuilder pb) throws IOException {
+    }
+    
+    protected void setParentPIDEnv(Map<String, String> env) {
+        String processName = ManagementFactory.getRuntimeMXBean().getName();
+        if (processName != null) {
+            String[] parts = processName.split("@");
+            if (parts.length > 0 && StringUtils.isNotEmpty(parts[0])) {
+                env.put("CATTLE_PARENT_PID", parts[0]);
+            }
+        }
     }
 }
