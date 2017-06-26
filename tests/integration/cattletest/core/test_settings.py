@@ -126,3 +126,10 @@ def test_settings_admin_user_list(admin_user_client):
     assert len(settings) != 0
     assert len(settings) < 16
     assert 'rancher.compose.linux.url' in names
+
+
+def test_settings_list_install_uuid(admin_user_client):
+    id = 'install.uuid'
+    s = admin_user_client.by_id_setting(id)
+    assert s is not None
+    assert s.value

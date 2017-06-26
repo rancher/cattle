@@ -395,7 +395,9 @@
         },
         "name": {
             "type": "string",
-            "unique": true
+            "unique": true,
+            "minLength": 1,
+            "maxLength": 50
         },
         "sidekickTo" : {
             "type" : "reference[container]",

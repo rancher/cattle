@@ -1,13 +1,14 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
-
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ServiceDao;
+import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.PortSpec;
@@ -539,6 +540,12 @@ public class ServiceValidationFilter extends AbstractDefaultResourceManagerFilte
             for (String usedLcName : ServiceUtil.getLaunchConfigNames(existingSvc)) {
                 usedNames.add(usedLcName.toLowerCase());
             }
+        }
+
+        List<? extends Instance> existingContainers = objectManager.find(Instance.class, INSTANCE.STACK_ID,
+                service.getStackId(), INSTANCE.REMOVED, null, INSTANCE.SERVICE_ID, null);
+        for (Instance existingContainer : existingContainers) {
+            usedNames.add(existingContainer.getName().toLowerCase());
         }
 
         List<String> namesToValidate = new ArrayList<>();

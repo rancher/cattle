@@ -225,12 +225,12 @@ def test_include_left_join_sort(super_client, context):
 
 
 def test_include(super_client, context):
-    container = context.create_container(name='include_test')
+    container = context.create_container(name='include-test')
     container = super_client.reload(container)
 
     for link_name in ['instanceHostMaps', 'instancehostmaps']:
         found = False
-        for c in super_client.list_container(name_like='include_test%'):
+        for c in super_client.list_container(name_like='include-test%'):
             if c.id == container.id:
                 found = True
                 assert len(c.instanceHostMaps()) == 1
@@ -240,7 +240,7 @@ def test_include(super_client, context):
 
         found = False
         for c in super_client.list_container(include=link_name,
-                                             name_like='include_test%'):
+                                             name_like='include-test%'):
             if c.id == container.id:
                 found = True
                 assert len(c.instanceHostMaps) == 1
