@@ -16,6 +16,7 @@ import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.util.InstanceHelpers;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.Arrays;
 import java.util.List;
@@ -33,6 +34,9 @@ public class VolumeAccessModeConstraintProvider implements AllocationConstraints
 
     @Inject
     ObjectManager objectManager;
+    
+    @Inject
+    IdFormatter idFormatter;
 
     @Override
     public void appendConstraints(AllocationAttempt attempt, AllocationLog log, List<Constraint> constraints) {
@@ -60,12 +64,15 @@ public class VolumeAccessModeConstraintProvider implements AllocationConstraints
                     if (hostID != null) {
                         Host host = objectManager.loadResource(Host.class, hostID);
                         String hostName = DataAccessor.fieldString(host, HostConstants.FIELD_HOSTNAME);
-                        constraints.add(new VolumeAccessModeSingleHostConstraint(hostID, v.getId(), v.getName(), hostName, hardConstraint));
+                        String hID = idFormatter.formatId(HostConstants.TYPE, hostID).toString();
+                        String vID = idFormatter.formatId(VolumeConstants.TYPE, v.getId()).toString();
+                        constraints.add(new VolumeAccessModeSingleHostConstraint(hID, vID, v.getName(), hostName, hardConstraint));
                     }
                 } else if (VolumeConstants.ACCESS_MODE_SINGLE_INSTANCE_RW.equals(v.getAccessMode())) {
                     List<Long> currentlyUsedBy = allocatorDao.getInstancesWithVolumeMounted(v.getId(), instance.getId());
                     if (currentlyUsedBy.size() > 0) {
-                        constraints.add(new VolumeAccessModeSingleInstanceConstraint(v.getId(), v.getAccessMode(), currentlyUsedBy));
+                        String vID = idFormatter.formatId(VolumeConstants.TYPE, v.getId()).toString();
+                        constraints.add(new VolumeAccessModeSingleInstanceConstraint(v.getName(), vID, v.getAccessMode(), currentlyUsedBy));
                     }
                 }
             }
