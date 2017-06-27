@@ -29,6 +29,10 @@ import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.eventing.EventService;
+import io.cattle.platform.eventing.model.Event;
+import io.cattle.platform.eventing.model.EventVO;
+import io.cattle.platform.iaas.event.IaasEvents;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
@@ -81,6 +85,9 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
 
     @Inject
     InstanceDao instanceDao;
+
+    @Inject
+    EventService eventService;
 
     GenericMapDao mapDao;
     IpAddressDao ipAddressDao;
@@ -137,7 +144,10 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
 
                 activatePorts(instance, state);
 
-                instanceDao.clearCacheInstanceData(instance.getId());
+                Event event = EventVO.newEvent(IaasEvents.INVALIDATE_INSTANCE_DATA_CACHE)
+                        .withResourceType(instance.getKind())
+                        .withResourceId(instance.getId().toString());
+                eventService.publish(event);
 
                 progress.checkPoint("Storage");
                 storage(instance, state);
@@ -178,7 +188,10 @@ public class InstanceStart extends AbstractDefaultProcessHandler {
 
         assignPrimaryIpAddress(instance, resultData);
 
-        instanceDao.clearCacheInstanceData(instance.getId());
+        Event event = EventVO.newEvent(IaasEvents.INVALIDATE_INSTANCE_DATA_CACHE)
+                .withResourceType(instance.getKind())
+                .withResourceId(instance.getId().toString());
+        eventService.publish(event);
 
         return result;
     }

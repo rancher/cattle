@@ -1,7 +1,7 @@
 package io.cattle.platform.core.dao.impl;
 
-import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.HostIpAddressMapTable.*;
+import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceLinkTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
@@ -14,6 +14,7 @@ import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
+
 import io.cattle.platform.core.addon.PublicEndpoint;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -47,6 +48,10 @@ import io.cattle.platform.core.model.tables.records.NicRecord;
 import io.cattle.platform.core.model.tables.records.ServiceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
+import io.cattle.platform.eventing.annotation.AnnotatedEventListener;
+import io.cattle.platform.eventing.annotation.EventHandler;
+import io.cattle.platform.eventing.model.Event;
+import io.cattle.platform.iaas.event.IaasEvents;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
@@ -63,13 +68,17 @@ import javax.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.Condition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
 @Named
-public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
+public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao, AnnotatedEventListener {
+    private static final Logger log = LoggerFactory.getLogger(InstanceDaoImpl.class);
+
     @Inject
     ObjectManager objectManager;
 
@@ -111,7 +120,7 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
     }
 
     LoadingCache<Long, Map<String, Object>> instanceData = CacheBuilder.newBuilder()
-            .expireAfterAccess(24, TimeUnit.HOURS)
+            .expireAfterWrite(8, TimeUnit.HOURS)
             .build(new CacheLoader<Long, Map<String, Object>>() {
                 @Override
                 public Map<String, Object> load(Long key) throws Exception {
@@ -295,8 +304,13 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
     }
 
     @Override
-    public void clearCacheInstanceData(long instanceId) {
-        instanceData.invalidate(instanceId);
+    @EventHandler(name=IaasEvents.INVALIDATE_INSTANCE_DATA_CACHE)
+    public void clearCacheInstanceData(Event event) {
+        try {
+            instanceData.invalidate(Long.parseLong(event.getResourceId()));
+        } catch (NumberFormatException e) {
+            log.error("Problem parsing instance id [{}]", event.getResourceId(), e);
+        }
     }
 
     @Override

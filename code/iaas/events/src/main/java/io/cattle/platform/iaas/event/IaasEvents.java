@@ -14,6 +14,7 @@ public class IaasEvents {
     public static final String RESOURCE_CHANGE = "resource.change";
     public static final String STACK_UPDATE = "stack.update";
     public static final String CLEAR_CACHE = "clear.cache";
+    public static final String INVALIDATE_INSTANCE_DATA_CACHE = "invalidate.instance.data.cache";
     public static final String HOST_ENDPOINTS_UPDATE = "host.endpoints.update";
 
     public static final String ACCOUNT_QUALIFIER = "account";

@@ -9,6 +9,7 @@ import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.InstanceLink;
 import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.eventing.model.Event;
 
 import java.util.List;
 import java.util.Map;
@@ -47,7 +48,7 @@ public interface InstanceDao {
 
     Map<String, Object> getCacheInstanceData(long instanceId);
 
-    void clearCacheInstanceData(long instanceId);
+    void clearCacheInstanceData(Event event);
 
     List<IpAddressToServiceIndex> getIpToIndex(Service service);
 

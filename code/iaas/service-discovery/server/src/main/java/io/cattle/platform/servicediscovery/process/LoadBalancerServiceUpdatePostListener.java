@@ -2,7 +2,6 @@ package io.cattle.platform.servicediscovery.process;
 
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
-import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Port;
@@ -11,6 +10,10 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.eventing.EventService;
+import io.cattle.platform.eventing.model.Event;
+import io.cattle.platform.eventing.model.EventVO;
+import io.cattle.platform.iaas.event.IaasEvents;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
@@ -42,7 +45,7 @@ public class LoadBalancerServiceUpdatePostListener extends AbstractObjectProcess
     NetworkDao ntwkDao;
 
     @Inject
-    InstanceDao instanceDao;
+    EventService eventService;
 
     @Override
     public String[] getProcessNames() {
@@ -102,7 +105,10 @@ public class LoadBalancerServiceUpdatePostListener extends AbstractObjectProcess
 
             // trigger instance/metadata update
             instance = objectManager.setFields(instance, InstanceConstants.FIELD_PORTS, newPortDefs);
-            instanceDao.clearCacheInstanceData(instance.getId());
+            Event event = EventVO.newEvent(IaasEvents.INVALIDATE_INSTANCE_DATA_CACHE)
+                    .withResourceType(instance.getKind())
+                    .withResourceId(instance.getId().toString());
+            eventService.publish(event);
 
             for (Port port : toRetain.values()) {
                 createThenActivate(port, new HashMap<String, Object>());
