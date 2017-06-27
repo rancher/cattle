@@ -1,6 +1,6 @@
 package io.cattle.platform.iaas.api.auth.dao.impl;
 
-import static io.cattle.platform.core.model.tables.AuthTokenTable.AUTH_TOKEN;
+import static io.cattle.platform.core.model.tables.AuthTokenTable.*;
 
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.AuthToken;
@@ -16,19 +16,23 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.Date;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jooq.Configuration;
 
 
 public class AuthTokenDaoImpl extends AbstractJooqDao implements AuthTokenDao{
 
-    @Inject
     GenericResourceDao resourceDao;
-    @Inject
     ObjectManager objectManager;
-    @Inject
     ObjectProcessManager objectProcessManager;
+
+    public AuthTokenDaoImpl(Configuration configuration, GenericResourceDao resourceDao, ObjectManager objectManager,
+            ObjectProcessManager objectProcessManager) {
+        super(configuration);
+        this.resourceDao = resourceDao;
+        this.objectManager = objectManager;
+        this.objectProcessManager = objectProcessManager;
+    }
 
     @Override
     public AuthTokenRecord getTokenByKey(String key) {

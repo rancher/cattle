@@ -14,8 +14,6 @@ import io.cattle.platform.object.meta.TypeSet;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.util.type.CollectionUtils;
-import io.cattle.platform.util.type.InitializationTask;
-import io.cattle.platform.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.factory.impl.SchemaFactoryImpl;
@@ -57,7 +55,7 @@ import org.jooq.TableField;
 
 import com.google.common.collect.Lists;
 
-public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, InitializationTask, Priority {
+public class DefaultObjectMetaDataManager implements ObjectMetaDataManager {
 
     SchemaFactory schemaFactory;
     List<TypeSet> typeSets;
@@ -94,7 +92,6 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Init
         }
     }
 
-    @Override
     public void start() {
         List<Schema> schemas = registerTypes();
         registerActions();
@@ -554,10 +551,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Init
                 allRelationships.addAll(relationshipList);
             }
             for (Relationship relationship : allRelationships) {
-                String linkName = relationship.getName();
-
                 if (relationship.getRelationshipType() != REFERENCE) {
-                    schema.getIncludeableLinks().add(linkName);
                     continue;
                 }
 
@@ -568,8 +562,6 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Init
 
                 FieldImpl fieldImpl = (FieldImpl) field;
                 fieldImpl.setType(FieldType.toString(FieldType.REFERENCE, factory.getSchema(relationship.getObjectType()).getId()));
-
-                schema.getIncludeableLinks().add(linkName);
             }
         }
 
@@ -830,10 +822,6 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Init
         return schemaFactory;
     }
 
-    public void setSchemaFactory(SchemaFactory schemaFactory) {
-        this.schemaFactory = schemaFactory;
-    }
-
     public List<TypeSet> getTypeSets() {
         return typeSets;
     }
@@ -850,8 +838,4 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager, Init
         this.processDefinitions = processDefinitions;
     }
 
-    @Override
-    public int getPriority() {
-        return Priority.PRE;
-    }
 }

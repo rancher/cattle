@@ -1,6 +1,5 @@
 package io.cattle.platform.iaas.api.credential;
 
-import io.cattle.platform.api.link.LinkHandler;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.model.Account;
@@ -14,6 +13,7 @@ import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.LinkHandler;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.io.IOException;
@@ -21,7 +21,6 @@ import java.net.URL;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
@@ -32,14 +31,13 @@ public class ApiKeyCertificateDownloadLinkHandler implements LinkHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ApiKeyCertificateDownloadLinkHandler.class);
 
-    @Inject
     RSAKeyProvider keyProvider;
-    @Inject
     ObjectManager objectManager;
 
-    @Override
-    public String[] getTypes() {
-        return new String[] { "apiKey", CredentialConstants.TYPE };
+    public ApiKeyCertificateDownloadLinkHandler(RSAKeyProvider keyProvider, ObjectManager objectManager) {
+        super();
+        this.keyProvider = keyProvider;
+        this.objectManager = objectManager;
     }
 
     @Override

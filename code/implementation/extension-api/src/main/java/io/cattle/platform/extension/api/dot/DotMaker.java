@@ -20,15 +20,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-
 import org.apache.commons.io.IOUtils;
 
 public class DotMaker {
 
     List<ProcessDefinition> processDefinitions;
     String html;
+
+    public DotMaker() throws IOException {
+        init();
+    }
 
     public String getResourceDot(String resourceType) {
         StringBuilder buffer = new StringBuilder();
@@ -168,8 +169,7 @@ public class DotMaker {
         }
     }
 
-    @PostConstruct
-    public void init() throws IOException {
+    private void init() throws IOException {
         InputStream is = null;
         try {
             is = getClass().getResourceAsStream("html-override.txt");
@@ -183,15 +183,6 @@ public class DotMaker {
         } finally {
             IOUtils.closeQuietly(is);
         }
-    }
-
-    public List<ProcessDefinition> getProcessDefinitions() {
-        return processDefinitions;
-    }
-
-    @Inject
-    public void setProcessDefinitions(List<ProcessDefinition> processDefinitions) {
-        this.processDefinitions = processDefinitions;
     }
 
 }

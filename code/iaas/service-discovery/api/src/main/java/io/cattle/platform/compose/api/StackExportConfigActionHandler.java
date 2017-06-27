@@ -1,6 +1,5 @@
 package io.cattle.platform.compose.api;
 
-import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.compose.export.ComposeExportService;
 import io.cattle.platform.core.addon.ComposeConfig;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -11,28 +10,23 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.ActionHandler;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
-@Named
 public class StackExportConfigActionHandler implements ActionHandler {
-    @Inject
+
     ObjectManager objectManager;
-
-    @Inject
     JsonMapper jsonMapper;
-
-    @Inject
     ComposeExportService composeExportService;
 
-    @Override
-    public String getName() {
-        return ServiceConstants.PROCESS_STACK_EXPORT_CONFIG;
+    public StackExportConfigActionHandler(ObjectManager objectManager, JsonMapper jsonMapper, ComposeExportService composeExportService) {
+        super();
+        this.objectManager = objectManager;
+        this.jsonMapper = jsonMapper;
+        this.composeExportService = composeExportService;
     }
 
     @Override

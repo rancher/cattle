@@ -20,12 +20,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jooq.Configuration;
 import org.jooq.InsertValuesStep2;
 import org.jooq.Record;
 import org.jooq.SelectConditionStep;
@@ -37,19 +34,23 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
-@Named
 public class DynamicSchemaDaoImpl extends AbstractJooqDao implements DynamicSchemaDao {
 
     private static final Logger log = LoggerFactory.getLogger(DynamicSchemaDaoImpl.class);
     private static final DynamicSchemaRecord NULL = new DynamicSchemaRecord();
 
-    @Inject
     DBCacheManager dbCacheManager;
     LoadingCache<Pair<Long, String>, List<? extends DynamicSchema>> schemasListCache;
     LoadingCache<CacheKey, DynamicSchema> schemaCache;
 
-    @PostConstruct
-    public void init() {
+
+    public DynamicSchemaDaoImpl(Configuration configuration, DBCacheManager dbCacheManager) {
+        super(configuration);
+        this.dbCacheManager = dbCacheManager;
+        init();
+    }
+
+    private void init() {
         schemasListCache = CacheBuilder.newBuilder()
                 .expireAfterWrite(15, TimeUnit.MINUTES)
                 .build(new CacheLoader<Pair<Long, String>, List<? extends DynamicSchema>>() {

@@ -1,6 +1,5 @@
 package io.cattle.platform.agent.instance.service;
 
-import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.cache.EnvironmentResourceManager;
@@ -10,18 +9,18 @@ import io.cattle.platform.core.util.SystemLabels;
 
 import java.util.List;
 
-import javax.inject.Inject;
-
 public class AgentMetadataService {
 
-    @Inject
-    AgentInstanceDao agentInstanceDao;
-    @Inject
     ConfigItemStatusManager statusManager;
-    @Inject
     AccountDao accountDao;
-    @Inject
     EnvironmentResourceManager envResourceManager;
+
+    public AgentMetadataService(ConfigItemStatusManager statusManager, AccountDao accountDao, EnvironmentResourceManager envResourceManager) {
+        super();
+        this.statusManager = statusManager;
+        this.accountDao = accountDao;
+        this.envResourceManager = envResourceManager;
+    }
 
     public void updateMetadata(Long accountId) {
         long revision = accountDao.incrementRevision(accountId);

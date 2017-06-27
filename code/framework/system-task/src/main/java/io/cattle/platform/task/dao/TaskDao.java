@@ -4,4 +4,6 @@ public interface TaskDao {
 
     void register(String name);
 
+    void purgeOld();
+
 }

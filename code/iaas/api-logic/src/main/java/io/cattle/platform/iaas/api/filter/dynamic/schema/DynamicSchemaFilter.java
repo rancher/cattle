@@ -2,29 +2,31 @@ package io.cattle.platform.iaas.api.filter.dynamic.schema;
 
 import static io.cattle.platform.object.meta.ObjectMetaDataManager.*;
 
-import io.cattle.platform.core.model.DynamicSchema;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
 import io.github.ibuildthecloud.gdapi.json.JsonMapper;
 import io.github.ibuildthecloud.gdapi.model.impl.SchemaImpl;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
-import io.github.ibuildthecloud.gdapi.request.resource.AbstractResourceManagerFilter;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.List;
 import java.util.Map;
-import javax.inject.Inject;
 
-public class DynamicSchemaFilter extends AbstractResourceManagerFilter {
+public class DynamicSchemaFilter extends AbstractValidationFilter {
 
     private static final String DEFINITION_FIELD = "definition";
 
-    @Inject
     JsonMapper jsonMapper;
-    @Inject
     LockManager lockManager;
+
+    public DynamicSchemaFilter(JsonMapper jsonMapper, LockManager lockManager) {
+        super();
+        this.jsonMapper = jsonMapper;
+        this.lockManager = lockManager;
+    }
 
     @SuppressWarnings("unchecked")
     @Override
@@ -36,7 +38,6 @@ public class DynamicSchemaFilter extends AbstractResourceManagerFilter {
         }
         final Long accountId = requestObject.get(ACCOUNT_FIELD) == null ? null : Long.valueOf(String.valueOf(requestObject.get(ACCOUNT_FIELD)));
         final List<String> roles = (List<String>) requestObject.get("roles");
-        final DynamicSchemaFilter filter = this;
         return lockManager.lock(new DynamicSchemaFilterLock(name), new LockCallback<Object>() {
 
             @Override
@@ -50,18 +51,9 @@ public class DynamicSchemaFilter extends AbstractResourceManagerFilter {
                 } catch (Exception e) {
                     throw new ValidationErrorException(ValidationErrorCodes.INVALID_FORMAT, DEFINITION_FIELD);
                 }
-                return filter.callSuperCreate(type, request, next);
+                return DynamicSchemaFilter.super.create(type, request, next);
             }
         });
-
     }
 
-    private Object callSuperCreate(final String type, final ApiRequest request, final ResourceManager next) {
-        return super.create(type, request, next);
-    }
-
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { DynamicSchema.class };
-    }
 }

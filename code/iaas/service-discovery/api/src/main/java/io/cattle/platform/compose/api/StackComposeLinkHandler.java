@@ -2,13 +2,13 @@ package io.cattle.platform.compose.api;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 
-import io.cattle.platform.api.link.LinkHandler;
 import io.cattle.platform.compose.export.ComposeExportService;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.LinkHandler;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -16,23 +16,19 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 
-@Named
 public class StackComposeLinkHandler implements LinkHandler {
-    @Inject
-    ComposeExportService composeExportService;
 
-    @Inject
+    ComposeExportService composeExportService;
     ObjectManager objectManager;
 
-    @Override
-    public String[] getTypes() {
-        return new String[] { "stack" };
+    public StackComposeLinkHandler(ComposeExportService composeExportService, ObjectManager objectManager) {
+        super();
+        this.composeExportService = composeExportService;
+        this.objectManager = objectManager;
     }
 
     @Override

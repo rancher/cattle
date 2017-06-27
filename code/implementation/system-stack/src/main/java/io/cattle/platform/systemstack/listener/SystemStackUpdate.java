@@ -46,9 +46,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jooq.Configuration;
 import org.jooq.exception.DataChangedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,22 +69,27 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
             );
     public static final Set<String> ORCS = new HashSet<>(ORC_PRIORITY);
 
-    @Inject
     ConfigItemStatusManager itemManager;
-    @Inject
     EventService eventService;
-    @Inject
     ObjectManager objectManager;
-    @Inject
     HostDao hostDao;
-    @Inject
     ObjectProcessManager processManager;
-    @Inject
     JsonMapper jsonMapper;
-    @Inject
     CatalogService catalogService;
-    @Inject
     ResourceMonitor resourceMonitor;
+
+    public SystemStackUpdate(Configuration configuration, ConfigItemStatusManager itemManager, EventService eventService, ObjectManager objectManager,
+            HostDao hostDao, ObjectProcessManager processManager, JsonMapper jsonMapper, CatalogService catalogService, ResourceMonitor resourceMonitor) {
+        super(configuration);
+        this.itemManager = itemManager;
+        this.eventService = eventService;
+        this.objectManager = objectManager;
+        this.hostDao = hostDao;
+        this.processManager = processManager;
+        this.jsonMapper = jsonMapper;
+        this.catalogService = catalogService;
+        this.resourceMonitor = resourceMonitor;
+    }
 
     @EventHandler(lock=EventLock.class)
     public void globalServiceUpdate(ConfigUpdate update) {

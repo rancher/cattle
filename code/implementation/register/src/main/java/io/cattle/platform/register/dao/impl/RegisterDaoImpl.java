@@ -16,9 +16,8 @@ import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jooq.Configuration;
 
 import com.netflix.config.DynamicStringListProperty;
 
@@ -27,9 +26,13 @@ public class RegisterDaoImpl extends AbstractJooqDao implements RegisterDao {
     private static DynamicStringListProperty ALLOWED_URIS = ArchaiusUtil.getList("allowed.user.agent.uri.prefix");
 
     ObjectManager objectManager;
-
-    @Inject
     TransactionDelegate transaction;
+
+    public RegisterDaoImpl(Configuration configuration, ObjectManager objectManager, TransactionDelegate transaction) {
+        super(configuration);
+        this.objectManager = objectManager;
+        this.transaction = transaction;
+    }
 
     @Override
     public Agent createAgentForRegistration(String key, GenericObject obj) {
@@ -68,15 +71,6 @@ public class RegisterDaoImpl extends AbstractJooqDao implements RegisterDao {
 
             return agent;
         });
-    }
-
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
     }
 
 }

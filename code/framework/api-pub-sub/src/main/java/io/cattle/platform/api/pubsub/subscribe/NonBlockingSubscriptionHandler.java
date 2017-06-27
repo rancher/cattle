@@ -27,8 +27,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,18 +42,26 @@ public abstract class NonBlockingSubscriptionHandler implements SubscriptionHand
     public static final DynamicLongProperty API_SUB_PING_INVERVAL = ArchaiusUtil.getLong("api.sub.ping.interval.millis");
     public static final DynamicIntProperty API_MAX_PINGS = ArchaiusUtil.getInt("api.sub.max.pings");
     private static final Map<String, Object> LOGOUT_MESSAGE = new HashMap<>();
-    
+
     static {
         LOGOUT_MESSAGE.put("name", "logout");
     }
-    @Inject
+
     JsonMapper jsonMapper;
-    @Inject
     EventService eventService;
-    @Inject
     RetryTimeoutService retryTimeout;
     ExecutorService executorService;
     List<ApiPubSubEventPostProcessor> eventProcessors;
+
+    public NonBlockingSubscriptionHandler(JsonMapper jsonMapper, EventService eventService, RetryTimeoutService retryTimeout, ExecutorService executorService,
+            List<ApiPubSubEventPostProcessor> eventProcessors) {
+        super();
+        this.jsonMapper = jsonMapper;
+        this.eventService = eventService;
+        this.retryTimeout = retryTimeout;
+        this.executorService = executorService;
+        this.eventProcessors = eventProcessors;
+    }
 
     @Override
     public boolean subscribe(Collection<String> eventNames, final ApiRequest apiRequest, final boolean strip) throws IOException {
@@ -76,7 +82,7 @@ public abstract class NonBlockingSubscriptionHandler implements SubscriptionHand
             @Override
             public void onEvent(Event event) {
                 try {
-                    EventVO<Object> modified = new EventVO<Object>(event);
+                    EventVO<Object> modified = new EventVO<>(event);
 
                     ApiRequest request = new ApiRequest(apiRequest);
                     if (!postProcess(modified, idFormatter, request, policy)) {
@@ -127,7 +133,7 @@ public abstract class NonBlockingSubscriptionHandler implements SubscriptionHand
 
     protected void write(Event event, MessageWriter writer, Object writeLock, boolean strip, EventListener listener, final AtomicBoolean disconnect)
             throws IOException {
-        EventVO<Object> newEvent = new EventVO<Object>(event);
+        EventVO<Object> newEvent = new EventVO<>(event);
         if (strip) {
             String name = newEvent.getName();
             if (name != null) {
@@ -202,23 +208,6 @@ public abstract class NonBlockingSubscriptionHandler implements SubscriptionHand
         disconnect.set(true);
         writer.close();
         eventService.unsubscribe(listener);
-    }
-
-    public List<ApiPubSubEventPostProcessor> getEventProcessors() {
-        return eventProcessors;
-    }
-
-    @Inject
-    public void setEventProcessors(List<ApiPubSubEventPostProcessor> eventProcessors) {
-        this.eventProcessors = eventProcessors;
-    }
-
-    public ExecutorService getExecutorService() {
-        return executorService;
-    }
-
-    public void setExecutorService(ExecutorService executorService) {
-        this.executorService = executorService;
     }
 
 }

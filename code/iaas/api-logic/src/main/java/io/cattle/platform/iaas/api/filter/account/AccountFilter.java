@@ -3,20 +3,23 @@ package io.cattle.platform.iaas.api.filter.account;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.Map;
-import javax.inject.Inject;
 
-public class AccountFilter extends AbstractDefaultResourceManagerFilter {
+public class AccountFilter extends AbstractValidationFilter {
 
-    @Inject
     AccountDao accountDao;
+
+    public AccountFilter(AccountDao accountDao) {
+        super();
+        this.accountDao = accountDao;
+    }
 
     @Override
     public Object update(String type, String id, ApiRequest request, ResourceManager next) {
@@ -45,10 +48,5 @@ public class AccountFilter extends AbstractDefaultResourceManagerFilter {
                     "Cannot delete the last admin account.", AccountConstants.ADMIN_REQUIRED_MESSAGE);
         }
         return super.delete(type, id, request, next);
-    }
-
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { Account.class };
     }
 }

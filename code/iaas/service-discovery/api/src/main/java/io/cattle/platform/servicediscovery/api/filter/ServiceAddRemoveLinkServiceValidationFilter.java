@@ -5,31 +5,22 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ServiceConsumeMapDao;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+public class ServiceAddRemoveLinkServiceValidationFilter extends AbstractValidationFilter {
 
-@Named
-public class ServiceAddRemoveLinkServiceValidationFilter extends AbstractDefaultResourceManagerFilter {
-
-    @Inject
     ServiceConsumeMapDao consumeMapDao;
-
-    @Inject
     ObjectManager objectManager;
-
-    @Inject
     JsonMapper jsonMapper;
 
     private enum Operation {
@@ -45,18 +36,11 @@ public class ServiceAddRemoveLinkServiceValidationFilter extends AbstractDefault
         ACTIONS.put(ServiceConstants.ACTION_SERVICE_REMOVE_SERVICE_LINK.toLowerCase(), Operation.REMOVE);
     }
 
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { Service.class };
-    }
-
-    @Override
-    public String[] getTypes() {
-        return new String[] {
-                ServiceConstants.KIND_SERVICE,
-                ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
-                ServiceConstants.KIND_DNS_SERVICE,
-                ServiceConstants.KIND_SCALING_GROUP_SERVICE };
+    public ServiceAddRemoveLinkServiceValidationFilter(ServiceConsumeMapDao consumeMapDao, ObjectManager objectManager, JsonMapper jsonMapper) {
+        super();
+        this.consumeMapDao = consumeMapDao;
+        this.objectManager = objectManager;
+        this.jsonMapper = jsonMapper;
     }
 
     @Override

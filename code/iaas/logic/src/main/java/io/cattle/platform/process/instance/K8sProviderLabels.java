@@ -1,19 +1,22 @@
 package io.cattle.platform.process.instance;
 
+import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.core.cache.EnvironmentResourceManager;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.util.SystemLabels;
-import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.lifecycle.impl.K8sLifecycleManagerImpl;
+import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.serialization.ObjectSerializerFactory;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.process.common.handler.AgentBasedProcessLogic;
+import io.cattle.platform.process.common.handler.AgentBasedProcessHandler;
 import io.cattle.platform.util.exception.ExecutionErrorException;
 import io.cattle.platform.util.exception.ExecutionException;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -21,20 +24,19 @@ import io.cattle.platform.util.type.CollectionUtils;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
+public class K8sProviderLabels extends AgentBasedProcessHandler {
 
-public class K8sProviderLabels extends AgentBasedProcessLogic implements ProcessPostListener {
-
-    @Inject
     EnvironmentResourceManager envResourceManager;
 
-    public K8sProviderLabels() {
-        setCommandName("compute.instance.providelables");
-        setDataTypeClass(Instance.class);
-        setTimeoutIsError(true);
-        setEventRetry(1);
-        setProcessNames(InstanceConstants.PROCESS_START);
-        setPriority(DEFAULT);
+    public K8sProviderLabels(AgentLocator agentLocator, ObjectSerializerFactory factory, ObjectManager objectManager, ObjectProcessManager processManager,
+            EnvironmentResourceManager envResourceManager) {
+        super(agentLocator, factory, objectManager, processManager);
+        this.envResourceManager = envResourceManager;
+
+        commandName = "compute.instance.providelables";
+        dataTypeClass = Instance.class;
+        timeoutIsError = true;
+        eventRetry = 1;
     }
 
     @Override
@@ -80,11 +82,7 @@ public class K8sProviderLabels extends AgentBasedProcessLogic implements Process
     }
 
     protected Instance getInstance(ProcessState state) {
-        Object instance = state.getResource();
-        if (!(instance instanceof Instance)) {
-            instance = getObjectByRelationship("instance", instance);
-        }
-        return (Instance)instance;
+        return (Instance) state.getResource();
     }
 
     @Override

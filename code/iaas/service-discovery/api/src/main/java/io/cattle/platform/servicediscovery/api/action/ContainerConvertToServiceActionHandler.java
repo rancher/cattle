@@ -2,33 +2,26 @@ package io.cattle.platform.servicediscovery.api.action;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 
-import io.cattle.platform.api.action.ActionHandler;
-import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.iaas.api.service.RevisionManager;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.ActionHandler;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 
-
-@Named
 public class ContainerConvertToServiceActionHandler implements ActionHandler {
 
-    @Inject
     ObjectManager objMgr;
-    @Inject
     JsonMapper jsonMapper;
-    @Inject
     RevisionManager svcDataManager;
 
-    @Override
-    public String getName() {
-        return InstanceConstants.ACTION_CONVERT_TO_SERVICE;
+    public ContainerConvertToServiceActionHandler(ObjectManager objMgr, JsonMapper jsonMapper, RevisionManager svcDataManager) {
+        this.objMgr = objMgr;
+        this.jsonMapper = jsonMapper;
+        this.svcDataManager = svcDataManager;
     }
 
     @Override

@@ -11,16 +11,18 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 
 public class AzureTokenCreator extends AzureConfigurable implements TokenCreator {
 
-    @Inject
     AzureTokenUtil azureTokenUtils;
-    @Inject
     AzureRESTClient azureClient;
+
+    public AzureTokenCreator(AzureTokenUtil azureTokenUtils, AzureRESTClient azureClient) {
+        super();
+        this.azureTokenUtils = azureTokenUtils;
+        this.azureClient = azureClient;
+    }
 
     public Token getAzureToken(String accessToken) {
         if (!isConfigured()) {

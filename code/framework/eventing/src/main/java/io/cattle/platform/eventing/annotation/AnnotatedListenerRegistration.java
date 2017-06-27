@@ -14,14 +14,20 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 public class AnnotatedListenerRegistration implements InitializationTask {
 
     List<AnnotatedEventListener> listeners;
     EventService eventService;
     JsonMapper jsonMapper;
     LockManager lockManager;
+
+    public AnnotatedListenerRegistration(List<AnnotatedEventListener> listeners, EventService eventService, JsonMapper jsonMapper, LockManager lockManager) {
+        super();
+        this.listeners = listeners;
+        this.eventService = eventService;
+        this.jsonMapper = jsonMapper;
+        this.lockManager = lockManager;
+    }
 
     @Override
     public void start() {
@@ -59,7 +65,7 @@ public class AnnotatedListenerRegistration implements InitializationTask {
     }
 
     protected Map<String, EventListener> parseListener(AnnotatedEventListener listener) {
-        Map<String, EventListener> result = new LinkedHashMap<String, EventListener>();
+        Map<String, EventListener> result = new LinkedHashMap<>();
 
         for (Class<?> clz : getClasses(listener.getClass())) {
             for (Method m : clz.getMethods()) {
@@ -78,7 +84,7 @@ public class AnnotatedListenerRegistration implements InitializationTask {
     }
 
     protected List<Class<?>> getClasses(Class<?> clz) {
-        List<Class<?>> result = new ArrayList<Class<?>>();
+        List<Class<?>> result = new ArrayList<>();
 
         if (clz == null || clz.getPackage().getName().startsWith("java.lang")) {
             return result;
@@ -92,42 +98,6 @@ public class AnnotatedListenerRegistration implements InitializationTask {
         result.addAll(getClasses(clz.getSuperclass()));
 
         return result;
-    }
-
-    public List<AnnotatedEventListener> getListeners() {
-        return listeners;
-    }
-
-    @Inject
-    public void setListeners(List<AnnotatedEventListener> listeners) {
-        this.listeners = listeners;
-    }
-
-    public EventService getEventService() {
-        return eventService;
-    }
-
-    @Inject
-    public void setEventService(EventService eventService) {
-        this.eventService = eventService;
-    }
-
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
-    }
-
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
-    }
-
-    public LockManager getLockManager() {
-        return lockManager;
-    }
-
-    @Inject
-    public void setLockManager(LockManager lockManager) {
-        this.lockManager = lockManager;
     }
 
 }

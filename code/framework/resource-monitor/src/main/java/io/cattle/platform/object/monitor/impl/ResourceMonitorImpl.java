@@ -21,8 +21,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import javax.inject.Inject;
-
 import com.netflix.config.DynamicLongProperty;
 
 public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListener, Task, TaskOptions {
@@ -30,12 +28,17 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
     private static final DynamicLongProperty DEFAULT_WAIT = ArchaiusUtil.getLong("resource.monitor.default.wait.millis");
 
     ObjectManager objectManager;
-    ConcurrentMap<String, Object> waiters = new ConcurrentHashMap<String, Object>();
-    @Inject
+    ConcurrentMap<String, Object> waiters = new ConcurrentHashMap<>();
     ObjectMetaDataManager objectMetaDataManger;
-    @Inject
     IdFormatter idFormatter;
     Set<String> seen = new HashSet<>();
+
+    public ResourceMonitorImpl(ObjectManager objectManager, ObjectMetaDataManager objectMetaDataManger, IdFormatter idFormatter) {
+        super();
+        this.objectManager = objectManager;
+        this.objectMetaDataManger = objectMetaDataManger;
+        this.idFormatter = idFormatter;
+    }
 
     @EventHandler
     public void stateChanged(Event event) {
@@ -115,7 +118,7 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
     public void run() {
         Set<String> previouslySeen = this.seen;
         this.seen = new HashSet<>();
-        Map<String, Object> copy = new HashMap<String, Object>(waiters);
+        Map<String, Object> copy = new HashMap<>(waiters);
 
         for (Map.Entry<String, Object> entry : copy.entrySet()) {
             String key = entry.getKey();
@@ -184,15 +187,6 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
     @Override
     public boolean isShouldLock() {
         return false;
-    }
-
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
     }
 
 }

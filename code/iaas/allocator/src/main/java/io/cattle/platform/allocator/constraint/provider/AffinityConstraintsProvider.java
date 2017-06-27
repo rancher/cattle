@@ -2,8 +2,8 @@ package io.cattle.platform.allocator.constraint.provider;
 
 import io.cattle.platform.allocator.constraint.Constraint;
 import io.cattle.platform.allocator.service.AllocationAttempt;
-import io.cattle.platform.allocator.service.AllocationLog;
 import io.cattle.platform.allocator.service.AllocationHelper;
+import io.cattle.platform.allocator.service.AllocationLog;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.json.JsonMapper;
@@ -12,22 +12,21 @@ import io.cattle.platform.object.util.DataAccessor;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 /**
  * Future optimization: For hard constraints, we might be able to update the DB query to do
  * the lookup.
  *
- * @author sonchang
- *
  */
 public class AffinityConstraintsProvider implements AllocationConstraintsProvider {
 
-    @Inject
     JsonMapper jsonMapper;
-
-    @Inject
     AllocationHelper allocationHelper;
+
+    public AffinityConstraintsProvider(JsonMapper jsonMapper, AllocationHelper allocationHelper) {
+        super();
+        this.jsonMapper = jsonMapper;
+        this.allocationHelper = allocationHelper;
+    }
 
     @SuppressWarnings("rawtypes")
     @Override

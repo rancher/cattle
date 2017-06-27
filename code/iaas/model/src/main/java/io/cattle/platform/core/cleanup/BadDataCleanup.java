@@ -9,7 +9,6 @@ import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.dao.StoragePoolDao;
 import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.InstanceLink;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.engine.manager.ProcessNotFoundException;
@@ -24,10 +23,8 @@ import io.cattle.platform.task.Task;
 import java.util.Collection;
 import java.util.concurrent.ExecutorService;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.apache.cloudstack.managed.context.NoExceptionRunnable;
+import org.jooq.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,25 +35,30 @@ public class BadDataCleanup extends AbstractJooqDao implements Task {
     private static final DynamicIntProperty LIMIT = ArchaiusUtil.getInt("bad.data.batch.size");
     private static final Logger log = LoggerFactory.getLogger(BadDataCleanup.class);
 
-    @Inject
     ObjectManager objectManager;
-    @Inject
     ObjectProcessManager processManager;
-    @Inject
     InstanceDao instanceDao;
-    @Inject
     NetworkDao networkDao;
-    @Inject
     StoragePoolDao storagePoolDao;
-    @Inject
     AccountDao accountDao;
-    @Inject
     VolumeDao volumeDao;
-    @Inject
     ServiceDao serviceDao;
-    @Inject
-    @Named("CoreExecutorService")
     ExecutorService executorService;
+
+    public BadDataCleanup(Configuration configuration, ObjectManager objectManager, ObjectProcessManager processManager, InstanceDao instanceDao,
+            NetworkDao networkDao, StoragePoolDao storagePoolDao, AccountDao accountDao, VolumeDao volumeDao, ServiceDao serviceDao,
+            ExecutorService executorService) {
+        super(configuration);
+        this.objectManager = objectManager;
+        this.processManager = processManager;
+        this.instanceDao = instanceDao;
+        this.networkDao = networkDao;
+        this.storagePoolDao = storagePoolDao;
+        this.accountDao = accountDao;
+        this.volumeDao = volumeDao;
+        this.serviceDao = serviceDao;
+        this.executorService = executorService;
+    }
 
     @Override
     public void run() {
@@ -93,8 +95,6 @@ public class BadDataCleanup extends AbstractJooqDao implements Task {
             });
         }
 
-        removeAll(instanceDao.findBadNics(LIMIT.get()));
-        removeAll(instanceDao.findBadInstanceHostMaps(LIMIT.get()));
         removeAll(networkDao.findBadNetworks(LIMIT.get()));
         removeAll(storagePoolDao.findBadPools(LIMIT.get()));
         removeAll(storagePoolDao.findBadDockerPools(LIMIT.get()));
@@ -103,14 +103,7 @@ public class BadDataCleanup extends AbstractJooqDao implements Task {
         removeAll(accountDao.findBadProjectMembers(LIMIT.get()));
         removeAll(serviceDao.findBadHealthcheckInstance(LIMIT.get()));
         removeAll(volumeDao.findBadMounts(LIMIT.get()));
-        removeAll(volumeDao.findBandVolumeStoragePoolMap(LIMIT.get()));
         removeAll(storagePoolDao.findBadPoolMapss(LIMIT.get()));
-
-        for (InstanceLink link : instanceDao.findBadInstanceLinks(LIMIT.get())) {
-            log.warn("Removing invalid resource [{}]", ObjectUtils.toStringWrapper(link));
-            link.setTargetInstanceId(null);
-            objectManager.persist(link);
-        }
     }
 
     protected void removeAll(Collection<?> objects) {

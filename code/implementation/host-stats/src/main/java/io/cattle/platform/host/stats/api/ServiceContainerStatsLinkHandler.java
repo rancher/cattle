@@ -1,8 +1,5 @@
 package io.cattle.platform.host.stats.api;
 
-import io.cattle.platform.api.link.LinkHandler;
-import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ServiceExposeMapDao;
 import io.cattle.platform.core.dao.StackDao;
 import io.cattle.platform.core.model.Instance;
@@ -13,12 +10,12 @@ import io.cattle.platform.host.model.HostApiAccess;
 import io.cattle.platform.host.service.HostApiService;
 import io.cattle.platform.host.stats.utils.StatsConstants;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.token.TokenService;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.LinkHandler;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,30 +25,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 public class ServiceContainerStatsLinkHandler implements LinkHandler {
-
-    @Inject
-    HostApiService hostApiService;
-    @Inject
-    ObjectManager objectManager;
-    @Inject
-    TokenService tokenService;
-    @Inject
-    ServiceExposeMapDao exposeDao;
-    @Inject
-    StackDao stackDao;
 
     private static final String SERVICE_PATH = "/service/";
 
-    @Override
-    public String[] getTypes() {
-        return new String[] {
-                ServiceConstants.KIND_SERVICE,
-                ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
-                ServiceConstants.KIND_SCALING_GROUP_SERVICE,
-                "stack" };
+    HostApiService hostApiService;
+    ObjectManager objectManager;
+    TokenService tokenService;
+    ServiceExposeMapDao exposeDao;
+    StackDao stackDao;
+
+    public ServiceContainerStatsLinkHandler(HostApiService hostApiService, ObjectManager objectManager, TokenService tokenService,
+            ServiceExposeMapDao exposeDao, StackDao stackDao) {
+        super();
+        this.hostApiService = hostApiService;
+        this.objectManager = objectManager;
+        this.tokenService = tokenService;
+        this.exposeDao = exposeDao;
+        this.stackDao = stackDao;
     }
 
     @Override
@@ -74,7 +65,7 @@ public class ServiceContainerStatsLinkHandler implements LinkHandler {
 
         for (Service service : services) {
             for (Instance instance : exposeDao.listServiceManagedInstances(service)) {
-                Long hostId = DataAccessor.fieldLong(instance, InstanceConstants.FIELD_HOST_ID);
+                Long hostId = instance.getHostId();
                 if (hostId == null) {
                     continue;
                 }

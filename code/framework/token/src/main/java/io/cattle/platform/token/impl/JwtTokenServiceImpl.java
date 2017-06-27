@@ -10,8 +10,6 @@ import java.text.ParseException;
 import java.util.Date;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang.StringUtils;
 
 import com.netflix.config.DynamicLongProperty;
@@ -43,6 +41,10 @@ public class JwtTokenServiceImpl implements TokenService {
     private static final DynamicLongProperty EXPIRATION = ArchaiusUtil.getLong("jwt.default.expiration.seconds");
 
     RSAKeyProvider keyProvider;
+
+    public JwtTokenServiceImpl(RSAKeyProvider keyProvider) {
+        this.keyProvider = keyProvider;
+    }
 
     @Override
     public String generateToken(Map<String, Object> payload) {
@@ -151,11 +153,6 @@ public class JwtTokenServiceImpl implements TokenService {
             throw new TokenException("Expired Token");
         }
         return jose.getPayload().toJSONObject();
-    }
-
-    @Inject
-    public void setKeyProvider(RSAKeyProvider keyProvider) {
-        this.keyProvider = keyProvider;
     }
 
 }

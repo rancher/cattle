@@ -15,10 +15,15 @@ public class TypeIdFormatter implements IdFormatter {
 
     String globalPrefix = "1";
     SchemaFactory schemaFactory;
-    Set<String> plainTypes = new HashSet<String>();
+    Set<String> plainTypes = new HashSet<>();
     Map<String, String> typeMappings = new HashMap<>();
 
     protected TypeIdFormatter() {
+    }
+
+    public TypeIdFormatter(SchemaFactory schemaFactory) {
+        super();
+        this.schemaFactory = schemaFactory;
     }
 
     @Override

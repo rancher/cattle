@@ -30,7 +30,6 @@ import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +38,7 @@ public class AgentQualifierAuthorizationProvider implements AuthorizationProvide
 
     private static final Logger log = LoggerFactory.getLogger(AgentQualifierAuthorizationProvider.class);
 
-    private static final Set<String> STATES = new HashSet<String>(Arrays.asList(
+    private static final Set<String> STATES = new HashSet<>(Arrays.asList(
             CommonStatesConstants.ACTIVATING,
             CommonStatesConstants.ACTIVE,
             AgentConstants.STATE_RECONNECTING,
@@ -48,15 +47,21 @@ public class AgentQualifierAuthorizationProvider implements AuthorizationProvide
             AgentConstants.STATE_FINISHING_RECONNECT,
             AgentConstants.STATE_RECONNECTED
     ));
-    private static final Set<String> DISCONNECTED = new HashSet<String>(Arrays.asList(
+    private static final Set<String> DISCONNECTED = new HashSet<>(Arrays.asList(
             AgentConstants.STATE_DISCONNECTED,
             AgentConstants.STATE_DISCONNECTING
     ));
 
     AchaiusPolicyOptionsFactory optionsFactory;
     ResourceManagerLocator locator;
-    @Inject
     ObjectProcessManager processManager;
+
+    public AgentQualifierAuthorizationProvider(AchaiusPolicyOptionsFactory optionsFactory, ResourceManagerLocator locator,
+            ObjectProcessManager processManager) {
+        this.optionsFactory = optionsFactory;
+        this.locator = locator;
+        this.processManager = processManager;
+    }
 
     @Override
     public Policy getPolicy(final Account account, Account authenticatedAsAccount, Set<Identity> identities, ApiRequest request) {
@@ -139,7 +144,7 @@ public class AgentQualifierAuthorizationProvider implements AuthorizationProvide
         }
 
         String type = request.getSchemaFactory().getSchemaName(Agent.class);
-        ResourceManager rm = getLocator().getResourceManagerByType(type);
+        ResourceManager rm = locator.getResourceManagerByType(type);
         Long id = null;
 
         /*  This really isn't the best logic.  Basically we are looking for agents with state in STATES */
@@ -173,24 +178,6 @@ public class AgentQualifierAuthorizationProvider implements AuthorizationProvide
     @Override
     public String getRole(Account account, Policy policy, ApiRequest request) {
         return null;
-    }
-
-    public AchaiusPolicyOptionsFactory getOptionsFactory() {
-        return optionsFactory;
-    }
-
-    @Inject
-    public void setOptionsFactory(AchaiusPolicyOptionsFactory optionsFactory) {
-        this.optionsFactory = optionsFactory;
-    }
-
-    public ResourceManagerLocator getLocator() {
-        return locator;
-    }
-
-    @Inject
-    public void setLocator(ResourceManagerLocator locator) {
-        this.locator = locator;
     }
 
 }

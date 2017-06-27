@@ -8,8 +8,6 @@ import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.task.TaskManager;
 import io.cattle.platform.task.eventing.TaskManagerEventListener;
 
-import javax.inject.Inject;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +17,11 @@ public class TaskManagerEventListenerImpl implements TaskManagerEventListener {
 
     TaskManager taskManager;
     LockManager lockManager;
+
+    public TaskManagerEventListenerImpl(TaskManager taskManager, LockManager lockManager) {
+        this.taskManager = taskManager;
+        this.lockManager = lockManager;
+    }
 
     @Override
     public void executeTask(ExecuteTask event) {
@@ -42,24 +45,6 @@ public class TaskManagerEventListenerImpl implements TaskManagerEventListener {
         } else {
             return null;
         }
-    }
-
-    public TaskManager getTaskManager() {
-        return taskManager;
-    }
-
-    @Inject
-    public void setTaskManager(TaskManager taskManager) {
-        this.taskManager = taskManager;
-    }
-
-    public LockManager getLockManager() {
-        return lockManager;
-    }
-
-    @Inject
-    public void setLockManager(LockManager lockManager) {
-        this.lockManager = lockManager;
     }
 
 }

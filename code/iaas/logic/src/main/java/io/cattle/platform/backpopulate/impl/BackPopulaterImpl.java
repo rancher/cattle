@@ -12,7 +12,6 @@ import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.PortConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
-import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Host;
@@ -43,7 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.inject.Inject;
 import javax.sound.sampled.Port;
 
 import org.apache.commons.lang3.StringUtils;
@@ -54,22 +52,25 @@ public class BackPopulaterImpl implements BackPopulater {
 
     private static final Logger log = LoggerFactory.getLogger(BackPopulaterImpl.class);
 
-    @Inject
     JsonMapper jsonMapper;
-    @Inject
     VolumeDao volumeDao;
-    @Inject
     LockManager lockManager;
-    @Inject
-    HostDao hostDao;
-    @Inject
     DockerTransformer transformer;
-    @Inject
     InstanceDao instanceDao;
-    @Inject
     ObjectManager objectManager;
-    @Inject
     ObjectProcessManager processManager;
+
+    public BackPopulaterImpl(JsonMapper jsonMapper, VolumeDao volumeDao, LockManager lockManager, DockerTransformer transformer, InstanceDao instanceDao,
+            ObjectManager objectManager, ObjectProcessManager processManager) {
+        super();
+        this.jsonMapper = jsonMapper;
+        this.volumeDao = volumeDao;
+        this.lockManager = lockManager;
+        this.transformer = transformer;
+        this.instanceDao = instanceDao;
+        this.objectManager = objectManager;
+        this.processManager = processManager;
+    }
 
     @Override
     public void update(Instance instance) {
@@ -292,6 +293,11 @@ public class BackPopulaterImpl implements BackPopulater {
         }
         DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_PORTS).set(publishedPorts);
         objectManager.persist(instance);
+    }
+
+    @Override
+    public int getExitCode(Instance instance) {
+        return transformer.getExitCode(instance);
     }
 
 }

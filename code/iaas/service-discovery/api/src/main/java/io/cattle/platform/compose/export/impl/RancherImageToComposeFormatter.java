@@ -1,8 +1,5 @@
 package io.cattle.platform.compose.export.impl;
 
-import javax.inject.Named;
-
-@Named
 public class RancherImageToComposeFormatter implements RancherConfigToComposeFormatter {
     private static final String IMAGE_PREFIX = "docker:";
 

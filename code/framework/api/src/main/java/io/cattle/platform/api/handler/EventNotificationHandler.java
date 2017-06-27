@@ -18,8 +18,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 import javax.servlet.ServletException;
 
 import com.netflix.config.DynamicStringListProperty;
@@ -27,8 +25,14 @@ import com.netflix.config.DynamicStringListProperty;
 public class EventNotificationHandler implements ApiRequestHandler {
 
     private static final DynamicStringListProperty EXCLUDE = ArchaiusUtil.getList("api.event.change.exclude.types");
+
     EventService eventService;
-    Set<String> excludeTypes = new HashSet<String>();
+    Set<String> excludeTypes = new HashSet<>();
+
+    public EventNotificationHandler(EventService eventService) {
+        this.eventService = eventService;
+        init();
+    }
 
     @Override
     public void handle(ApiRequest request) throws IOException {
@@ -42,7 +46,7 @@ public class EventNotificationHandler implements ApiRequestHandler {
             return;
         }
 
-        Map<String, Object> data = new HashMap<String, Object>();
+        Map<String, Object> data = new HashMap<>();
         data.put("method", request.getMethod().toString());
         data.put("id", request.getId());
         data.put("type", type);
@@ -60,7 +64,7 @@ public class EventNotificationHandler implements ApiRequestHandler {
             return false;
         }
 
-        Map<String, Object> data = new HashMap<String, Object>();
+        Map<String, Object> data = new HashMap<>();
         data.put("method", request.getMethod().toString());
         data.put("id", request.getId());
         data.put("type", request.getType());
@@ -74,8 +78,7 @@ public class EventNotificationHandler implements ApiRequestHandler {
         return false;
     }
 
-    @PostConstruct
-    public void init() {
+    private void init() {
         load();
         EXCLUDE.addCallback(new Runnable() {
             @Override
@@ -86,17 +89,8 @@ public class EventNotificationHandler implements ApiRequestHandler {
     }
 
     public void load() {
-        excludeTypes = new HashSet<String>();
+        excludeTypes = new HashSet<>();
         excludeTypes.addAll(EXCLUDE.get());
-    }
-
-    public EventService getEventService() {
-        return eventService;
-    }
-
-    @Inject
-    public void setEventService(EventService eventService) {
-        this.eventService = eventService;
     }
 
 }

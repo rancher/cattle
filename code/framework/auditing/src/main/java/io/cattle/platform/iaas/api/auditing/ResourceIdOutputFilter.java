@@ -1,7 +1,5 @@
 package io.cattle.platform.iaas.api.auditing;
 
-import io.cattle.platform.core.model.AuditLog;
-import io.cattle.platform.core.model.ProcessInstance;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -33,13 +31,4 @@ public class ResourceIdOutputFilter implements ResourceOutputFilter {
         return converted;
     }
 
-    @Override
-    public String[] getTypes() {
-        return new String[0];
-    }
-
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { AuditLog.class , ProcessInstance.class };
-    }
 }

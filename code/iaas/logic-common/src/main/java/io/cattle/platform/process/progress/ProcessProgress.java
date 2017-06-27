@@ -6,12 +6,8 @@ public interface ProcessProgress {
 
     ProcessProgressInstance get();
 
-    void init(ProcessState state, int... checkpointWeights);
+    void init(ProcessState state);
 
     void checkPoint(String name);
-
-    void progress(Integer progress);
-
-    String getCurrentCheckpoint();
 
 }

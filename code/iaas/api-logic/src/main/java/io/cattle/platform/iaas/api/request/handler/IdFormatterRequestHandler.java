@@ -5,14 +5,13 @@ import io.cattle.platform.api.utils.ApiUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.id.IdentityFormatter;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
-import io.github.ibuildthecloud.gdapi.request.handler.AbstractApiRequestHandler;
 import io.github.ibuildthecloud.gdapi.request.handler.ApiRequestHandler;
 
 import java.io.IOException;
 
-public class IdFormatterRequestHandler extends AbstractApiRequestHandler implements ApiRequestHandler {
+public class IdFormatterRequestHandler implements ApiRequestHandler {
 
-    IdentityFormatter plainFormatter;
+    IdentityFormatter plainFormatter = new IdentityFormatter();
 
     @Override
     public void handle(ApiRequest request) throws IOException {
@@ -23,14 +22,6 @@ public class IdFormatterRequestHandler extends AbstractApiRequestHandler impleme
             ApiContext.getContext().setIdFormatter(plainFormatter);
         }
         ApiContext.getContext().setIdFormatter(ApiContext.getContext().getIdFormatter().withSchemaFactory(request.getSchemaFactory()));
-    }
-
-    public IdentityFormatter getPlainFormatter() {
-        return plainFormatter;
-    }
-
-    public void setPlainFormatter(IdentityFormatter plainFormatter) {
-        this.plainFormatter = plainFormatter;
     }
 
 }

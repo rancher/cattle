@@ -34,9 +34,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.TransformerUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -48,20 +45,25 @@ import org.yaml.snakeyaml.nodes.NodeTuple;
 import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.representer.Representer;
 
-@Named
 public class ComposeExportServiceImpl implements ComposeExportService {
-    @Inject
-    ObjectManager objectManager;
-    @Inject
-    ServiceConsumeMapDao consumeMapDao;
-    @Inject
-    List<RancherConfigToComposeFormatter> formatters;
-    @Inject
-    JsonMapper jsonMapper;
-    @Inject
-    LoadBalancerInfoDao lbInfoDao;
 
     private final static String COMPOSE_PREFIX = "version: '2'\r\n";
+
+    ObjectManager objectManager;
+    ServiceConsumeMapDao consumeMapDao;
+    List<RancherConfigToComposeFormatter> formatters;
+    JsonMapper jsonMapper;
+    LoadBalancerInfoDao lbInfoDao;
+
+    public ComposeExportServiceImpl(ObjectManager objectManager, ServiceConsumeMapDao consumeMapDao, JsonMapper jsonMapper,
+            LoadBalancerInfoDao lbInfoDao, List<RancherConfigToComposeFormatter> formatters) {
+        super();
+        this.objectManager = objectManager;
+        this.consumeMapDao = consumeMapDao;
+        this.formatters = formatters;
+        this.jsonMapper = jsonMapper;
+        this.lbInfoDao = lbInfoDao;
+    }
 
     @Override
     public Map.Entry<String, String> buildComposeConfig(List<? extends Service> services, Stack stack) {

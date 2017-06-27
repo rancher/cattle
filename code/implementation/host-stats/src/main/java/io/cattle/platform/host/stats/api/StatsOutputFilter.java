@@ -1,10 +1,6 @@
 package io.cattle.platform.host.stats.api;
 
 import io.cattle.platform.core.constants.AccountConstants;
-import io.cattle.platform.core.constants.HostConstants;
-import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.constants.ProjectConstants;
-import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -16,9 +12,6 @@ import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.response.ResourceOutputFilter;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class StatsOutputFilter implements ResourceOutputFilter {
 
@@ -33,7 +26,7 @@ public class StatsOutputFilter implements ResourceOutputFilter {
             add = true;
             hostStats = true;
             containerStats = true;
-        } else if (original instanceof Instance && InstanceConstants.CONTAINER_LIKE.contains(((Instance) original).getKind())) {
+        } else if (original instanceof Instance) {
             containerStats = true;
             add = true;
         } else if (original instanceof Account && AccountConstants.PROJECT_KIND.equals(((Account) original).getKind())) {
@@ -59,23 +52,6 @@ public class StatsOutputFilter implements ResourceOutputFilter {
         }
 
         return converted;
-    }
-
-    @Override
-    public String[] getTypes() {
-        List<String> types = new ArrayList<>(InstanceConstants.CONTAINER_LIKE);
-        types.add(HostConstants.TYPE);
-        types.add(ProjectConstants.TYPE);
-        types.add(ServiceConstants.TYPE_STACK);
-        types.add(ServiceConstants.KIND_SERVICE);
-        types.add(ServiceConstants.KIND_LOAD_BALANCER_SERVICE);
-        types.add(ServiceConstants.KIND_SCALING_GROUP_SERVICE);
-        return types.toArray(new String[types.size()]);
-    }
-
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] {};
     }
 
 }

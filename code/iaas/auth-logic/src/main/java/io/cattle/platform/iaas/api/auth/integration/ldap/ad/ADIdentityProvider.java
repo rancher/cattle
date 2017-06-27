@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 
-import javax.inject.Inject;
 import javax.naming.InvalidNameException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -48,14 +47,20 @@ import org.slf4j.LoggerFactory;
 public class ADIdentityProvider extends LDAPIdentityProvider implements IdentityProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(ADIdentityProvider.class);
-    @Inject
+
     ADTokenUtils adTokenUtils;
     GenericObjectPool<LdapContext> contextPool;
     ExecutorService executorService;
-    @Inject
-    ADConstantsConfig adConfig;
-    @Inject
+    ADConstantsConfig adConfig = new ADConstantsConfig();
     AuthTokenDao authTokenDao;
+
+    public ADIdentityProvider(ADTokenUtils adTokenUtils, ExecutorService executorService, AuthTokenDao authTokenDao) {
+        super();
+        this.adTokenUtils = adTokenUtils;
+        this.executorService = executorService;
+        this.authTokenDao = authTokenDao;
+        init();
+    }
 
     @Override
     public Set<Identity> getIdentities(Account account) {

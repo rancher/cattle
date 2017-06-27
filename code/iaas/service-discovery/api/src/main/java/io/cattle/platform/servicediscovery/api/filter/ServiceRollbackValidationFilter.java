@@ -3,38 +3,24 @@ package io.cattle.platform.servicediscovery.api.filter;
 import io.cattle.platform.core.addon.ServiceRollback;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.iaas.api.service.RevisionManager;
 import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+public class ServiceRollbackValidationFilter extends AbstractValidationFilter {
 
-@Named
-public class ServiceRollbackValidationFilter extends AbstractDefaultResourceManagerFilter {
-
-    @Inject
     ObjectManager objectManager;
-    @Inject
     RevisionManager serviceDataMgr;
 
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { Service.class };
-    }
-
-    @Override
-    public String[] getTypes() {
-        return new String[] { ServiceConstants.KIND_SERVICE,
-                ServiceConstants.KIND_DNS_SERVICE,
-                ServiceConstants.KIND_EXTERNAL_SERVICE,
-                ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
-                ServiceConstants.KIND_SCALING_GROUP_SERVICE };
+    public ServiceRollbackValidationFilter(ObjectManager objectManager, RevisionManager serviceDataMgr) {
+        super();
+        this.objectManager = objectManager;
+        this.serviceDataMgr = serviceDataMgr;
     }
 
     @Override

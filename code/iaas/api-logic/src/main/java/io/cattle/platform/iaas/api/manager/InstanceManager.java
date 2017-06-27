@@ -1,12 +1,14 @@
 package io.cattle.platform.iaas.api.manager;
 
-import io.cattle.platform.api.resource.jooq.AbstractJooqResourceManager;
+import io.cattle.platform.api.resource.DefaultResourceManager;
+import io.cattle.platform.api.resource.DefaultResourceManagerSupport;
 import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.iaas.api.service.RevisionManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.model.impl.ValidationErrorImpl;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -18,46 +20,38 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
+public class InstanceManager extends DefaultResourceManager {
 
-public class InstanceManager extends AbstractJooqResourceManager {
-
-    @Inject
     RevisionManager revisionManager;
-    @Inject
     ReferenceValidator validator;
 
-    @Override
-    public String[] getTypes() {
-        return new String[] { "instance", "container", "virtualMachine" };
+    public InstanceManager(DefaultResourceManagerSupport support, RevisionManager revisionManager, ReferenceValidator validator) {
+        super(support);
+        this.revisionManager = revisionManager;
+        this.validator = validator;
     }
 
     @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { Instance.class };
-    }
-
-    @Override
-    protected Object deleteInternal(String type, String id, Object obj, ApiRequest request) {
+    public Object deleteObject(String type, String id, Object obj, ApiRequest request) {
         if (!(obj instanceof Instance)) {
-            return super.deleteInternal(type, id, obj, request);
+            return super.deleteObject(type, id, obj, request);
         }
 
         try {
-            return super.deleteInternal(type, id, obj, request);
+            return super.deleteObject(type, id, obj, request);
         } catch (ClientVisibleException e) {
             if (ResponseCodes.METHOD_NOT_ALLOWED == e.getStatus() ) {
-                getObjectProcessManager().stopThenRemove(obj, null);
-                return getObjectManager().reload(obj);
+                objectResourceManagerSupport.getObjectProcessManager().stopThenRemove(obj, null);
+                return objectResourceManagerSupport.getObjectManager().reload(obj);
             } else {
                 throw e;
             }
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    protected <T> T createAndScheduleObject(Class<T> clz, Map<String, Object> properties) {
+    public Object create(String type, ApiRequest request) {
+        Map<String, Object> properties = CollectionUtils.toMap(request.getRequestObject());
         Object count = properties.get(InstanceConstants.FIELD_COUNT);
 
         if (count instanceof Number && ((Number) count).intValue() > 1) {
@@ -76,18 +70,19 @@ public class InstanceManager extends AbstractJooqResourceManager {
                 }
 
                 createRevision(properties);
-                Instance instance = super.createAndScheduleObject(Instance.class, properties);
+                request.setRequestObject(properties);
+                Object instance = super.create(type, request);
                 result.add(instance);
 
-                if (baseName == null) {
-                    baseName = instance.getName();
+                if (baseName == null && instance instanceof Instance) {
+                    baseName = ((Instance) instance).getName();
                 }
             }
 
-            return (T) result;
+            return result;
         } else {
             createRevision(properties);
-            return super.createAndScheduleObject(clz, properties);
+            return super.create(type, request);
         }
     }
 

@@ -10,13 +10,17 @@ import io.cattle.platform.object.util.DataUtils;
 
 import java.util.HashMap;
 import java.util.Map;
-import javax.inject.Inject;
 
+import org.jooq.Configuration;
 
 public class AuditLogDaoImpl extends AbstractJooqDao implements AuditLogDao {
 
-    @Inject
     ObjectManager objectManager;
+
+    public AuditLogDaoImpl(Configuration configuration, ObjectManager objectManager) {
+        super(configuration);
+        this.objectManager = objectManager;
+    }
 
     @Override
     public AuditLog create(String resourceType, Long resourceId, Map<String, Object> data, Identity identity,

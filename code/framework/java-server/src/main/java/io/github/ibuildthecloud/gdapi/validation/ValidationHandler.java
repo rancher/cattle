@@ -33,8 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.PostConstruct;
-
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -46,6 +44,11 @@ public class ValidationHandler extends AbstractResponseGenerator {
 
     ReferenceValidator referenceValidator;
     Set<String> supportedMethods;
+
+    public ValidationHandler(ReferenceValidator referenceValidator) {
+        this.referenceValidator = referenceValidator;
+        init();
+    }
 
     @Override
     public void generate(ApiRequest request) throws IOException {
@@ -498,8 +501,7 @@ public class ValidationHandler extends AbstractResponseGenerator {
         throw new ClientVisibleException(code);
     }
 
-    @PostConstruct
-    public void init() {
+    private void init() {
         if (supportedMethods == null) {
             supportedMethods = new HashSet<>();
             for (Method m : Method.values()) {

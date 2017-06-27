@@ -7,7 +7,6 @@ import io.cattle.platform.iaas.api.auth.integration.external.ExternalServiceToke
 import io.cattle.platform.iaas.api.auth.integration.interfaces.AccountLookup;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.TokenUtil;
 import io.cattle.platform.util.type.NamedUtils;
-import io.cattle.platform.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
@@ -16,27 +15,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 
-public class TokenAuthLookup implements AccountLookup, Priority {
+public class TokenAuthLookup implements AccountLookup {
 
-    Map<String, TokenUtil> tokenUtilsMap = new HashMap<String, TokenUtil>();
-    @Inject
+    Map<String, TokenUtil> tokenUtilsMap = new HashMap<>();
     List<TokenUtil> tokenUtils;
-
-    @Inject
     ExternalServiceTokenUtil externalTokenUtil;
 
-    @Override
-    public int getPriority() {
-        return Priority.PRE;
+    public TokenAuthLookup(List<TokenUtil> tokenUtils, ExternalServiceTokenUtil externalTokenUtil) {
+        super();
+        this.tokenUtils = tokenUtils;
+        this.externalTokenUtil = externalTokenUtil;
+        init();
     }
 
-    @PostConstruct
-    public void init() {
+    private void init() {
         for (TokenUtil tu : tokenUtils) {
             tokenUtilsMap.put(NamedUtils.getName(tu), tu);
         }

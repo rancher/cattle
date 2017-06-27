@@ -13,9 +13,7 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.util.type.CollectionUtils;
 
-import javax.inject.Inject;
-
-public class ProcessProgressContext implements ProcessProgressInstance {
+class ProcessProgressContext implements ProcessProgressInstance {
 
     ProcessState processState;
     ProcessProgressState progressState;
@@ -32,13 +30,13 @@ public class ProcessProgressContext implements ProcessProgressInstance {
     }
 
     @Override
-    public void init(ProcessState state, int... checkpointWeights) {
+    public void init(ProcessState state) {
         DataAccessor value = DataAccessor.fromMap(state.getData()).withKey("progress");
 
         progressState = value.as(jsonMapper, ProcessProgressState.class);
 
         if (progressState == null) {
-            progressState = new ProcessProgressState(checkpointWeights);
+            progressState = new ProcessProgressState();
             value.set(progressState);
         }
     }
@@ -46,13 +44,6 @@ public class ProcessProgressContext implements ProcessProgressInstance {
     @Override
     public void checkPoint(String name) {
         if (progressState.checkPoint(name)) {
-            update();
-        }
-    }
-
-    @Override
-    public void progress(Integer progress) {
-        if (progressState.setIntermediateProgress(progress)) {
             update();
         }
     }
@@ -66,12 +57,10 @@ public class ProcessProgressContext implements ProcessProgressInstance {
 
     protected void update() {
         String message = progressState.getMessage();
-        Integer progress = progressState.getProgress();
 
         final Object resource = objectManager.reload(processState.getResource());
 
-        objectManager.setFields(resource, ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD, message, ObjectMetaDataManager.TRANSITIONING_PROGRESS_FIELD,
-                progress);
+        objectManager.setFields(resource, ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD, message);
 
         DeferredUtils.nest(new Runnable() {
             @Override
@@ -80,45 +69,15 @@ public class ProcessProgressContext implements ProcessProgressInstance {
                 Object id = ObjectUtils.getId(resource);
                 Object accountId = ObjectUtils.getAccountId(resource);
                 if (id != null) {
-                    Event event = EventVO.newEvent(FrameworkEvents.RESOURCE_PROGRESS).withResourceType(type).withResourceId(id.toString()).withData(
-                            CollectionUtils.asMap(ObjectMetaDataManager.ACCOUNT_FIELD, accountId));
+                    Event event = EventVO.newEvent(FrameworkEvents.RESOURCE_PROGRESS)
+                            .withResourceType(type)
+                            .withResourceId(id.toString())
+                            .withData(CollectionUtils.asMap(ObjectMetaDataManager.ACCOUNT_FIELD, accountId));
 
                     eventService.publish(event);
                 }
             }
         });
-    }
-
-    @Override
-    public String getCurrentCheckpoint() {
-        return progressState.getCurrentCheckpoint();
-    }
-
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
-    }
-
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
-    }
-
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
-    }
-
-    public EventService getEventService() {
-        return eventService;
-    }
-
-    @Inject
-    public void setEventService(EventService eventService) {
-        this.eventService = eventService;
     }
 
 }

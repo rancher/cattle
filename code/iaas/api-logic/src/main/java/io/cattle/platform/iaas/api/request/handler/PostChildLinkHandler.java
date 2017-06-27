@@ -5,17 +5,19 @@ import io.cattle.platform.object.meta.Relationship;
 import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.gdapi.model.Schema.Method;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
-import io.github.ibuildthecloud.gdapi.request.handler.AbstractApiRequestHandler;
+import io.github.ibuildthecloud.gdapi.request.handler.ApiRequestHandler;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import javax.inject.Inject;
-
-public class PostChildLinkHandler extends AbstractApiRequestHandler {
+public class PostChildLinkHandler implements ApiRequestHandler {
 
     ObjectMetaDataManager metaDataManager;
+
+    public PostChildLinkHandler(ObjectMetaDataManager metaDataManager) {
+        this.metaDataManager = metaDataManager;
+    }
 
     @Override
     public void handle(ApiRequest request) throws IOException {
@@ -41,7 +43,7 @@ public class PostChildLinkHandler extends AbstractApiRequestHandler {
 
         Map<String, Object> requestParams = request.getRequestParams();
         if (!requestParams.containsKey(rel.getPropertyName())) {
-            requestParams = new LinkedHashMap<String, Object>(requestParams);
+            requestParams = new LinkedHashMap<>(requestParams);
             requestParams.put(rel.getPropertyName(), request.getId());
             request.setRequestParams(requestParams);
         }
@@ -49,15 +51,6 @@ public class PostChildLinkHandler extends AbstractApiRequestHandler {
         request.setType(childSchema.getId());
         request.setId(null);
         request.setLink(null);
-    }
-
-    public ObjectMetaDataManager getMetaDataManager() {
-        return metaDataManager;
-    }
-
-    @Inject
-    public void setMetaDataManager(ObjectMetaDataManager metaDataManager) {
-        this.metaDataManager = metaDataManager;
     }
 
 }

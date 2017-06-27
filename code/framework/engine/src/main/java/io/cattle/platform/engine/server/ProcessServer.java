@@ -16,29 +16,30 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
 public class ProcessServer implements ProcessInstanceExecutor {
 
-    @Inject
     ScheduledExecutorService scheduledExecutor;
-    @Inject @Named("ProcessBlockingExecutorService")
     ExecutorService blockingExecutor;
-    @Inject @Named("ProcessNonBlockingExecutorService")
     ExecutorService nonBlockingExecutor;
-    @Inject
     ProcessInstanceExecutor processInstanceExecutor;
-    @Inject
     ProcessManager repository;
-    @Inject
     Cluster cluster;
-    @Inject
     List<Trigger> triggers;
 
     Map<String, Queue<Long>> queuedByResource = new HashMap<>();
     Map<Long, ProcessReference> refs = new HashMap<>();
     Map<String, ProcessInstanceWrapper> inflightByResource = new HashMap<>();
+
+    public ProcessServer(ScheduledExecutorService scheduledExecutor, ExecutorService blockingExecutor, ExecutorService nonBlockingExecutor,
+            ProcessInstanceExecutor processInstanceExecutor, ProcessManager repository, Cluster cluster, List<Trigger> triggers) {
+        this.scheduledExecutor = scheduledExecutor;
+        this.blockingExecutor = blockingExecutor;
+        this.nonBlockingExecutor = nonBlockingExecutor;
+        this.processInstanceExecutor = processInstanceExecutor;
+        this.repository = repository;
+        this.cluster = cluster;
+        this.triggers = triggers;
+    }
 
     public void runOutstandingJobs() {
         for (ProcessReference ref : repository.pendingTasks()) {

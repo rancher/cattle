@@ -13,11 +13,10 @@ import io.cattle.platform.resource.pool.ResourcePoolManager;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.exception.DataAccessException;
@@ -30,6 +29,12 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
 
     ObjectManager objectManager;
     List<PooledResourceItemGeneratorFactory> factories;
+
+    public ResourcePoolManagerImpl(ObjectManager objectManager, PooledResourceItemGeneratorFactory... factories) {
+        super();
+        this.objectManager = objectManager;
+        this.factories = Arrays.asList(factories);
+    }
 
     @Override
     public List<PooledResource> allocateResource(Object pool, Object owner, PooledResourceOptions options) {
@@ -172,24 +177,6 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
         }
 
         throw new IllegalStateException("Failed to find resource id for [" + obj + "]");
-    }
-
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
-    }
-
-    public List<PooledResourceItemGeneratorFactory> getFactories() {
-        return factories;
-    }
-
-    @Inject
-    public void setFactories(List<PooledResourceItemGeneratorFactory> factories) {
-        this.factories = factories;
     }
 
 }

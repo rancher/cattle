@@ -22,9 +22,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,9 +33,18 @@ public class PurgeMonitorImpl implements PurgeMonitor, Task {
     ObjectProcessManager objectProcessManager;
     ObjectManager objectManager;
     ObjectMetaDataManager objectMetaDataManager;
-    List<String> purgeTypes = null;
     String removedState = "removed";
     ProcessManager processManager;
+
+    public PurgeMonitorImpl(SchemaFactory schemaFactory, ObjectProcessManager objectProcessManager, ObjectManager objectManager,
+            ObjectMetaDataManager objectMetaDataManager, ProcessManager processManager) {
+        super();
+        this.schemaFactory = schemaFactory;
+        this.objectProcessManager = objectProcessManager;
+        this.objectManager = objectManager;
+        this.objectMetaDataManager = objectMetaDataManager;
+        this.processManager = processManager;
+    }
 
     @Override
     public String getName() {
@@ -80,7 +86,7 @@ public class PurgeMonitorImpl implements PurgeMonitor, Task {
     }
 
     protected synchronized Set<String> findPurgableTypes() {
-        Set<String> types = new HashSet<String>();
+        Set<String> types = new HashSet<>();
         for (Schema schema : schemaFactory.listSchemas()) {
             while (schema.getParent() != null) {
                 schema = schemaFactory.getSchema(schema.getParent());
@@ -107,60 +113,6 @@ public class PurgeMonitorImpl implements PurgeMonitor, Task {
         }
 
         return types;
-    }
-
-    public SchemaFactory getSchemaFactory() {
-        return schemaFactory;
-    }
-
-    @Inject
-    @Named("CoreSchemaFactory")
-    public void setSchemaFactory(SchemaFactory schemaFactory) {
-        this.schemaFactory = schemaFactory;
-    }
-
-    public ObjectMetaDataManager getObjectMetaDataManager() {
-        return objectMetaDataManager;
-    }
-
-    @Inject
-    public void setObjectMetaDataManager(ObjectMetaDataManager objectMetaDataManager) {
-        this.objectMetaDataManager = objectMetaDataManager;
-    }
-
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
-    }
-
-    public String getRemovedState() {
-        return removedState;
-    }
-
-    public void setRemovedState(String removedState) {
-        this.removedState = removedState;
-    }
-
-    public ObjectProcessManager getObjectProcessManager() {
-        return objectProcessManager;
-    }
-
-    @Inject
-    public void setObjectProcessManager(ObjectProcessManager objectProcessManager) {
-        this.objectProcessManager = objectProcessManager;
-    }
-
-    public ProcessManager getProcessManager() {
-        return processManager;
-    }
-
-    @Inject
-    public void setProcessManager(ProcessManager processManager) {
-        this.processManager = processManager;
     }
 
 }

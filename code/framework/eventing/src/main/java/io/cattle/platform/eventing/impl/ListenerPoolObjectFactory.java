@@ -7,8 +7,6 @@ import java.util.Random;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import javax.inject.Inject;
-
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
@@ -18,9 +16,6 @@ public class ListenerPoolObjectFactory implements PooledObjectFactory<FutureEven
     String prefix = Event.REPLY_PREFIX;
     AbstractEventService eventService;
     Random random = new Random();
-
-    public ListenerPoolObjectFactory() {
-    }
 
     public ListenerPoolObjectFactory(AbstractEventService eventService) {
         super();
@@ -33,7 +28,7 @@ public class ListenerPoolObjectFactory implements PooledObjectFactory<FutureEven
         FutureEventListener listener = new FutureEventListener(eventService, key);
         Future<?> future = eventService.subscribe(key, listener);
         AsyncUtils.get(future, 10, TimeUnit.SECONDS);
-        return new DefaultPooledObject<FutureEventListener>(listener);
+        return new DefaultPooledObject<>(listener);
     }
 
     @Override
@@ -62,15 +57,6 @@ public class ListenerPoolObjectFactory implements PooledObjectFactory<FutureEven
 
     public void setPrefix(String prefix) {
         this.prefix = prefix;
-    }
-
-    public AbstractEventService getEventService() {
-        return eventService;
-    }
-
-    @Inject
-    public void setEventService(AbstractEventService eventService) {
-        this.eventService = eventService;
     }
 
 }

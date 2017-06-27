@@ -21,18 +21,21 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import javax.inject.Inject;
-
 public class VolumeAccessModeConstraintProvider implements AllocationConstraintsProvider {
 
-    static final List<Object> IHM_STATES = Arrays.asList(new Object[] { CommonStatesConstants.INACTIVE, CommonStatesConstants.DEACTIVATING,
-            CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING });
+    static final List<Object> IHM_STATES = Arrays.asList(new Object[] {
+            CommonStatesConstants.INACTIVE,
+            CommonStatesConstants.DEACTIVATING,
+            CommonStatesConstants.REMOVED,
+            CommonStatesConstants.REMOVING });
 
-    @Inject
     AllocatorDao allocatorDao;
-
-    @Inject
     ObjectManager objectManager;
+
+    public VolumeAccessModeConstraintProvider(AllocatorDao allocatorDao, ObjectManager objectManager) {
+        this.allocatorDao = allocatorDao;
+        this.objectManager = objectManager;
+    }
 
     @Override
     public void appendConstraints(AllocationAttempt attempt, AllocationLog log, List<Constraint> constraints) {

@@ -1,6 +1,5 @@
 package io.cattle.platform.core.dao.impl;
 
-import static io.cattle.platform.core.model.tables.InstanceLinkTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
@@ -11,10 +10,8 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ServiceConsumeMapDao;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.InstanceLink;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
-import io.cattle.platform.core.model.tables.records.InstanceLinkRecord;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.core.model.tables.records.ServiceConsumeMapRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
@@ -31,26 +28,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
+import org.jooq.Configuration;
 import org.jooq.Record2;
 import org.jooq.RecordHandler;
 
-@Named
 public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements ServiceConsumeMapDao {
 
-    @Inject
     ObjectManager objectManager;
-
-    @Inject
     ObjectProcessManager objectProcessManager;
-
-    @Inject
     LockManager lockManager;
-
-    @Inject
     TransactionDelegate transaction;
+
+    public ServiceConsumeMapDaoImpl(Configuration configuration, ObjectManager objectManager, ObjectProcessManager objectProcessManager,
+            LockManager lockManager, TransactionDelegate transaction) {
+        super(configuration);
+        this.objectManager = objectManager;
+        this.objectProcessManager = objectProcessManager;
+        this.lockManager = lockManager;
+        this.transaction = transaction;
+    }
 
     @Override
     public ServiceConsumeMap findMapToRemove(long serviceId, long consumedServiceId) {
@@ -120,17 +116,6 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
                                 .and(SERVICE_CONSUME_MAP.SERVICE_ID.ne(SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID))
                                 .and(SERVICE_EXPOSE_MAP.REMOVED.isNull()))
                 .fetchInto(ServiceConsumeMapRecord.class);
-    }
-
-    @Override
-    public List<? extends InstanceLink> findServiceBasedInstanceLinks(long instanceId) {
-        return create()
-                .select(INSTANCE_LINK.fields())
-                .from(INSTANCE_LINK)
-                .where(INSTANCE_LINK.INSTANCE_ID.eq(instanceId)
-                        .and(INSTANCE_LINK.SERVICE_CONSUME_MAP_ID.isNotNull())
-                        .and(INSTANCE_LINK.REMOVED.isNull()))
-                .fetchInto(InstanceLinkRecord.class);
     }
 
     @Override

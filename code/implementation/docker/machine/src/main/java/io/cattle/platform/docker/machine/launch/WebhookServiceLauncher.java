@@ -1,20 +1,24 @@
 package io.cattle.platform.docker.machine.launch;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.dao.AccountDao;
+import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Credential;
+import io.cattle.platform.lock.LockDelegator;
+import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.lock.definition.LockDefinition;
+import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.server.context.ServerContext;
 import io.cattle.platform.server.context.ServerContext.BaseProtocol;
 import io.cattle.platform.service.launcher.GenericServiceLauncher;
 import io.cattle.platform.ssh.common.SshKeyGen;
 import io.cattle.platform.token.impl.RSAKeyProvider;
 import io.cattle.platform.token.impl.RSAPrivateKeyHolder;
-import io.cattle.platform.util.type.InitializationTask;
 
 import java.security.PublicKey;
 import java.util.Map;
-
-import javax.inject.Inject;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,14 +26,19 @@ import org.slf4j.LoggerFactory;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicStringProperty;
 
-public class WebhookServiceLauncher extends GenericServiceLauncher implements InitializationTask {
-    @Inject
-    RSAKeyProvider keyProvider;
+public class WebhookServiceLauncher extends GenericServiceLauncher {
 
     private static final Logger log = LoggerFactory.getLogger(WebhookServiceLauncher.class);
-
     private static final DynamicStringProperty WEBHOOK_SERVICE_BINARY = ArchaiusUtil.getString("webhook.service.executable");
     private static final DynamicBooleanProperty LAUNCH_WEBHOOK_SERVICE = ArchaiusUtil.getBoolean("webhook.service.execute");
+
+    RSAKeyProvider keyProvider;
+
+    public WebhookServiceLauncher(LockManager lockManager, LockDelegator lockDelegator, ScheduledExecutorService executor, AccountDao accountDao,
+            GenericResourceDao resourceDao, ResourceMonitor resourceMonitor, ObjectProcessManager processManager, RSAKeyProvider keyProvider) {
+        super(lockManager, lockDelegator, executor, accountDao, resourceDao, resourceMonitor, processManager);
+        this.keyProvider = keyProvider;
+    }
 
     @Override
     protected boolean shouldRun() {

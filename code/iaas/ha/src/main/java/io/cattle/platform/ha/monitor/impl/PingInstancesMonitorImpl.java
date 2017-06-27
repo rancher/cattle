@@ -22,10 +22,8 @@ import io.cattle.platform.ha.monitor.PingInstancesMonitor;
 import io.cattle.platform.ha.monitor.dao.PingInstancesMonitorDao;
 import io.cattle.platform.ha.monitor.event.InstanceForceStop;
 import io.cattle.platform.ha.monitor.model.KnownInstance;
-import io.cattle.platform.lock.LockDelegator;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
-import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.process.containerevent.ContainerEventCreate;
@@ -36,8 +34,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -60,25 +56,13 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
     private static final String UKNOWN_OUT_OF_SYNC_WARNING = "Instance out of sync and can't determine action to take. Uuid [{}]. Docker id [{}]. "
             + "State in rancher [{}]. State on host [{}]";
 
-    @Inject
     AgentDao agentDao;
-    @Inject
     ObjectMetaDataManager objectMetaDataManager;
-    @Inject
     AgentLocator agentLocator;
-    @Inject
-    LockDelegator lockDelegator;
-    @Inject
     PingInstancesMonitorDao monitorDao;
-    @Inject
     ObjectManager objectManager;
-    @Inject
-    ObjectProcessManager processManager;
-    @Inject
     ContainerEventCreate containerEventCreate;
-    @Inject
     ContainerEventDao containerEventDao;
-
 
     LoadingCache<Long, Map<String, KnownInstance>> instanceCache = CacheBuilder.newBuilder().expireAfterWrite(CACHE_TIME.get(), TimeUnit.MILLISECONDS)
             .build(new CacheLoader<Long, Map<String, KnownInstance>>() {
@@ -96,6 +80,17 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
                 }
             });
 
+    public PingInstancesMonitorImpl(AgentDao agentDao, ObjectMetaDataManager objectMetaDataManager, AgentLocator agentLocator,
+            PingInstancesMonitorDao monitorDao, ObjectManager objectManager, ContainerEventCreate containerEventCreate, ContainerEventDao containerEventDao) {
+        this.agentDao = agentDao;
+        this.objectMetaDataManager = objectMetaDataManager;
+        this.agentLocator = agentLocator;
+        this.monitorDao = monitorDao;
+        this.objectManager = objectManager;
+        this.containerEventCreate = containerEventCreate;
+        this.containerEventDao = containerEventDao;
+    }
+
     @Override
     public void pingReply(Ping ping) {
         ReportedInstances reportedInstances = getInstances(ping);
@@ -108,7 +103,7 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
 
         AgentAndHost agentAndHost = null;
         try {
-            agentAndHost = hostCache.getUnchecked(new ImmutablePair<Long, String>(agentId, reportedInstances.hostUuid));
+            agentAndHost = hostCache.getUnchecked(new ImmutablePair<>(agentId, reportedInstances.hostUuid));
         } catch (UncheckedExecutionException e) {
             // CantFindAgentAndHostException can be ignored because the host may not exist yet. Rethrow all other exceptions.
             if (!(e.getCause() instanceof CantFindAgentAndHostException)) {
@@ -143,8 +138,8 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
      */
     void syncContainers(Map<String, KnownInstance> knownInstances, ReportedInstances reportedInstances, long agentAccountId, long agentId, long hostId,
             boolean checkOnly) {
-        Map<String, ReportedInstance> needsSynced = new HashMap<String, ReportedInstance>();
-        Map<String, String> syncActions = new HashMap<String, String>();
+        Map<String, ReportedInstance> needsSynced = new HashMap<>();
+        Map<String, String> syncActions = new HashMap<>();
 
         determineSyncActions(knownInstances, reportedInstances, needsSynced, syncActions, checkOnly);
 
@@ -161,8 +156,8 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
 
     void determineSyncActions(Map<String, KnownInstance> knownInstances, ReportedInstances reportedInstances, Map<String, ReportedInstance> needsSynced,
             Map<String, String> syncActions, boolean checkOnly) {
-        Map<String, KnownInstance> inRancher = new HashMap<String, KnownInstance>(knownInstances);
-        Map<String, ReportedInstance> onHost = new HashMap<String, ReportedInstance>(reportedInstances.byExternalId);
+        Map<String, KnownInstance> inRancher = new HashMap<>(knownInstances);
+        Map<String, ReportedInstance> onHost = new HashMap<>(reportedInstances.byExternalId);
         for (Map.Entry<String, ReportedInstance> reported : reportedInstances.byUuid.entrySet()) {
             KnownInstance ki = knownInstances.get(reported.getKey());
             if (ki != null) {
@@ -172,7 +167,7 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
         }
 
         if (!onHost.isEmpty() || !inRancher.isEmpty()) {
-            Map<String, KnownInstance> knownByExternalId = new HashMap<String, KnownInstance>();
+            Map<String, KnownInstance> knownByExternalId = new HashMap<>();
             for (KnownInstance ki : knownInstances.values()) {
                 if (StringUtils.isNotEmpty(ki.getExternalId()))
                     knownByExternalId.put(ki.getExternalId(), ki);
@@ -274,7 +269,7 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
         ce.setExternalTimestamp(ri.getCreated());
         ce.setKind(CONTAINER_EVENT_KIND);
         ce.setHostId(hostId);
-        Map<String, Object> data = new HashMap<String, Object>();
+        Map<String, Object> data = new HashMap<>();
         data.put(CONTAINER_EVENT_SYNC_NAME, ri.getUuid());
         data.put(CONTAINER_EVENT_SYNC_LABELS, ri.getLabels());
         if (!containerEventDao.createContainerEvent(ce, data)) {
@@ -344,7 +339,7 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
 
     protected Map<String, KnownInstance> load(Long agentId) {
         if (agentId == null) {
-            return new HashMap<String, KnownInstance>();
+            return new HashMap<>();
         }
         return monitorDao.getInstances(agentId.longValue());
     }

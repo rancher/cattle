@@ -8,28 +8,22 @@ import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.engine.handler.HandlerResult;
-import io.cattle.platform.engine.handler.ProcessPostListener;
-import io.cattle.platform.engine.handler.ProcessPreListener;
+import io.cattle.platform.engine.handler.ProcessHandler;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
-@Named
-public class SystemStackTrigger extends AbstractObjectProcessLogic implements ProcessPostListener, ProcessPreListener {
+public class SystemStackTrigger implements ProcessHandler {
     public static final String STACKS = "system-stacks";
 
-    @Inject
     ConfigItemStatusManager itemManager;
+    ObjectManager objectManager;
 
-    @Override
-    public String[] getProcessNames() {
-        return new String[]{
-            "stack.*", "host.*"
-        };
+    public SystemStackTrigger(ConfigItemStatusManager itemManager, ObjectManager objectManager) {
+        super();
+        this.itemManager = itemManager;
+        this.objectManager = objectManager;
     }
 
     @Override

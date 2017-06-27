@@ -15,16 +15,17 @@ import io.cattle.platform.util.type.CollectionUtils;
 import java.util.Date;
 import java.util.List;
 
-import javax.inject.Inject;
-
 public class SecretsLifecycleManagerImpl implements SecretsLifecycleManager {
 
-    @Inject
     TokenService tokenService;
-    @Inject
     StorageDriverDao storageDriverDao;
-    @Inject
     JsonMapper jsonMapper;
+
+    public SecretsLifecycleManagerImpl(TokenService tokenService, StorageDriverDao storageDriverDao, JsonMapper jsonMapper) {
+        this.tokenService = tokenService;
+        this.storageDriverDao = storageDriverDao;
+        this.jsonMapper = jsonMapper;
+    }
 
     @Override
     public Object create(Instance instance) {

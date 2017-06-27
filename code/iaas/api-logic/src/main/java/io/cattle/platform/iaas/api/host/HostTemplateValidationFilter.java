@@ -3,26 +3,20 @@ package io.cattle.platform.iaas.api.host;
 import static io.cattle.platform.core.constants.MachineConstants.*;
 import static io.github.ibuildthecloud.gdapi.util.ResponseCodes.*;
 
-import io.cattle.platform.core.model.HostTemplate;
-import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 
 import java.util.Map;
 
-public class HostTemplateValidationFilter extends AbstractDefaultResourceManagerFilter {
+public class HostTemplateValidationFilter extends AbstractValidationFilter {
 
     static final String DRIVER_CONFIG_EXACTLY_ONE_REQUIRED = "DriverConfigExactlyOneRequired";
     static final String DRIVER_CONFIG_FOR_WRONG_DRIVER = "DriverConfigForWrongDriver";
     static final String STRING_FIELD_EMPTY = "StringFieldEmpty";
     static final String STRING_FIELD_ILL_FORMED = "StringFieldIllFormed";
-
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[]{HostTemplate.class};
-    }
 
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {

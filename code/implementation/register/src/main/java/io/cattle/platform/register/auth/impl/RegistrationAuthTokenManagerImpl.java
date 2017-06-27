@@ -10,14 +10,17 @@ import io.cattle.platform.register.util.RegistrationToken;
 
 import java.util.Date;
 
-import javax.inject.Inject;
-
 public class RegistrationAuthTokenManagerImpl implements RegistrationAuthTokenManager {
 
     RegistrationTokenAuthDao authDao;
     ObjectManager objectManager;
-    @Inject
     AccountDao accountDao;
+
+    public RegistrationAuthTokenManagerImpl(RegistrationTokenAuthDao authDao, ObjectManager objectManager, AccountDao accountDao) {
+        this.authDao = authDao;
+        this.objectManager = objectManager;
+        this.accountDao = accountDao;
+    }
 
     @Override
     public Account validateToken(String password) {
@@ -60,24 +63,6 @@ public class RegistrationAuthTokenManagerImpl implements RegistrationAuthTokenMa
         }
 
         return account;
-    }
-
-    public RegistrationTokenAuthDao getAuthDao() {
-        return authDao;
-    }
-
-    @Inject
-    public void setAuthDao(RegistrationTokenAuthDao authDao) {
-        this.authDao = authDao;
-    }
-
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
     }
 
 }

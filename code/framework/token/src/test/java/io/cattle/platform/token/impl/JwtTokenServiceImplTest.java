@@ -32,8 +32,7 @@ public class JwtTokenServiceImplTest {
 
     @Before
     public void setUp() {
-        impl = new JwtTokenServiceImpl();
-        impl.setKeyProvider(new RSAKeyProvider() {
+        impl = new JwtTokenServiceImpl(new RSAKeyProvider() {
 
             KeyFactory kf;
             EncodedKeySpec spec = new PKCS8EncodedKeySpec(new Base64(KEY).decode());

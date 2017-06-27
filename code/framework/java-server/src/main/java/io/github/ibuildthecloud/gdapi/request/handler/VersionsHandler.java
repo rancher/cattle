@@ -12,11 +12,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
-
 public class VersionsHandler extends AbstractResponseGenerator {
 
     Versions versions;
+
+    public VersionsHandler(Versions versions) {
+        this.versions = versions;
+    }
 
     @Override
     protected void generate(ApiRequest request) throws IOException {
@@ -25,7 +27,7 @@ public class VersionsHandler extends AbstractResponseGenerator {
 
         UrlBuilder urlBuilder = ApiContext.getUrlBuilder();
 
-        List<Resource> apiVersions = new ArrayList<Resource>();
+        List<Resource> apiVersions = new ArrayList<>();
         for (String version : versions.getVersions()) {
             apiVersions.add(new VersionImpl(version));
         }
@@ -39,12 +41,4 @@ public class VersionsHandler extends AbstractResponseGenerator {
         request.setResponseObject(collection);
     }
 
-    @Inject
-    public void setVersions(Versions versions) {
-        this.versions = versions;
-    }
-
-    public Versions getVersions() {
-        return versions;
-    }
 }

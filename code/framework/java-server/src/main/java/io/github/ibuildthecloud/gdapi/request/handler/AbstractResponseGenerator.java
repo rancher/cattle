@@ -5,7 +5,7 @@ import io.github.ibuildthecloud.gdapi.util.RequestUtils;
 
 import java.io.IOException;
 
-public abstract class AbstractResponseGenerator extends AbstractApiRequestHandler {
+public abstract class AbstractResponseGenerator implements ApiRequestHandler {
 
     @Override
     public void handle(ApiRequest request) throws IOException {
@@ -15,4 +15,5 @@ public abstract class AbstractResponseGenerator extends AbstractApiRequestHandle
     }
 
     protected abstract void generate(ApiRequest request) throws IOException;
+
 }

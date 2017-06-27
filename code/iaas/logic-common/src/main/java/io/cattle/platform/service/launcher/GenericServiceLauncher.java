@@ -20,7 +20,6 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.process.common.util.ProcessUtils;
-import io.cattle.platform.util.type.InitializationTask;
 
 import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
@@ -32,37 +31,39 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import javax.inject.Inject;
-
 import org.apache.cloudstack.managed.context.NoExceptionRunnable;
 
 import com.netflix.config.DynamicStringProperty;
 
-public abstract class GenericServiceLauncher extends NoExceptionRunnable implements InitializationTask, Runnable {
+public abstract class GenericServiceLauncher extends NoExceptionRunnable implements Runnable {
 
     private static final String SERVICE_USER_UUID = "machineServiceAccount";
     private static final String SERVICE_USER_NAME = "System Service";
     private static final int WAIT = 2000;
 
-    @Inject
     LockManager lockManager;
-    @Inject
     LockDelegator lockDelegator;
-    @Inject
     ScheduledExecutorService executor;
-    @Inject
     AccountDao accountDao;
-    @Inject
     GenericResourceDao resourceDao;
-    @Inject
     ResourceMonitor resourceMonitor;
-    @Inject
     ObjectProcessManager processManager;
 
     Process process;
     ScheduledFuture<?> future;
 
-    @Override
+    public GenericServiceLauncher(LockManager lockManager, LockDelegator lockDelegator, ScheduledExecutorService executor, AccountDao accountDao,
+            GenericResourceDao resourceDao, ResourceMonitor resourceMonitor, ObjectProcessManager processManager) {
+        super();
+        this.lockManager = lockManager;
+        this.lockDelegator = lockDelegator;
+        this.executor = executor;
+        this.accountDao = accountDao;
+        this.resourceDao = resourceDao;
+        this.resourceMonitor = resourceMonitor;
+        this.processManager = processManager;
+    }
+
     public void start() {
         Runnable cb = (new Runnable() {
             @Override

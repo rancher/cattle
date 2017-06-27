@@ -2,6 +2,7 @@ package io.cattle.platform.iaas.api.auth.identity;
 
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
+import io.cattle.platform.api.resource.AbstractNoOpResourceManager;
 import io.cattle.platform.core.constants.IdentityConstants;
 import io.cattle.platform.core.model.ProjectMember;
 import io.cattle.platform.iaas.api.auth.integration.IdentityNotFoundException;
@@ -13,7 +14,6 @@ import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
-import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.ArrayList;
@@ -28,8 +28,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-import javax.inject.Inject;
-
 import org.apache.cloudstack.managed.context.ManagedContext;
 import org.apache.cloudstack.managed.context.impl.DefaultManagedContext;
 import org.apache.commons.logging.Log;
@@ -39,22 +37,19 @@ public class IdentityManager extends AbstractNoOpResourceManager {
 
     private static final Log logger = LogFactory.getLog(IdentityManager.class);
 
-    private Map<String, IdentityProvider> identityProviders;
-
+    List<IdentityProvider> identityProviders = new ArrayList<>();
     ExecutorService executorService;
-
-    @Inject
     ExternalServiceAuthProvider externalAuthProvider;
 
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[]{Identity.class};
+    public IdentityManager(List<IdentityProvider> identityProviders, ExecutorService executorService, ExternalServiceAuthProvider externalAuthProvider) {
+        this.identityProviders = identityProviders;
+        this.executorService = executorService;
+        this.externalAuthProvider = externalAuthProvider;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
-
+    public Object list(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
         if (criteria.get("id") != null) {
             return Collections.singletonList(projectMemberToIdentity((String) criteria.get("id")));
         }
@@ -106,9 +101,8 @@ public class IdentityManager extends AbstractNoOpResourceManager {
 
         }
         try {
-            for (Future<Identity> future:executorService.invokeAll(identitiesToGet)){
+            for (Future<Identity> future : executorService.invokeAll(identitiesToGet)){
                 Identity newIdentity = future.get();
-                authorize(newIdentity);
                 identitiesToReturn.add(newIdentity);
             }
         } catch (InterruptedException e) {
@@ -133,7 +127,7 @@ public class IdentityManager extends AbstractNoOpResourceManager {
         Identity identity = null;
         boolean scopeMatch = false;
 
-        for (IdentityProvider identityProvider : identityProviders.values()) {
+        for (IdentityProvider identityProvider : identityProviders) {
             if (identityProvider.scopes().contains(split[0]) && identityProvider.isConfigured()) {
                 scopeMatch = true;
                 identity = identityProvider.getIdentity(split[1], split[0]);
@@ -150,7 +144,7 @@ public class IdentityManager extends AbstractNoOpResourceManager {
 
     private List<Identity> searchIdentites(String name, boolean exactMatch) {
         Set<Identity> identities = new HashSet<>();
-        for (IdentityProvider identityProvider : identityProviders.values()) {
+        for (IdentityProvider identityProvider : identityProviders) {
             if (identityProvider.isConfigured()) {
                 identities.addAll(identityProvider.searchIdentities(name, exactMatch));
             }
@@ -177,7 +171,7 @@ public class IdentityManager extends AbstractNoOpResourceManager {
     public Identity untransform(Identity identity, boolean error) {
         Identity newIdentity = null;
         boolean scopeMatch = false;
-        for (IdentityProvider identityProvider : identityProviders.values()) {
+        for (IdentityProvider identityProvider : identityProviders) {
             if (identityProvider.scopes().contains(identity.getExternalIdType()) && identityProvider.isConfigured()) {
                 scopeMatch = true;
                 newIdentity = identityProvider.untransform(identity);
@@ -199,19 +193,10 @@ public class IdentityManager extends AbstractNoOpResourceManager {
         }
     }
 
-    @Inject
-    public void setIdentityProviders(Map<String, IdentityProvider> identityProviders) {
-        this.identityProviders = identityProviders;
-    }
-
-    public void setExecutorService(ExecutorService executorService) {
-        this.executorService = executorService;
-    }
-
     public Identity projectMemberToIdentity(Identity identity) {
         Identity newIdentity = null;
         boolean scopeMatch = false;
-        for (IdentityProvider identityProvider : identityProviders.values()) {
+        for (IdentityProvider identityProvider : identityProviders) {
             if (identityProvider.scopes().contains(identity.getExternalIdType()) && identityProvider.isConfigured()) {
                 scopeMatch = true;
                 newIdentity = identityProvider.transform(identity);
@@ -232,4 +217,5 @@ public class IdentityManager extends AbstractNoOpResourceManager {
         }
         return newIdentity;
     }
+
 }

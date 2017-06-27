@@ -2,20 +2,21 @@ package io.cattle.platform.sample.data;
 
 import static io.cattle.platform.core.model.tables.SettingTable.*;
 
+import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Setting;
 import io.cattle.platform.docker.machine.launch.CatalogLauncher;
 import io.cattle.platform.docker.machine.launch.CatalogLauncher.CatalogEntry;
 import io.cattle.platform.docker.machine.launch.CatalogLauncher.ConfigFileFields;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.process.ObjectProcessManager;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-
-import javax.inject.Inject;
 
 
 public class SampleDataStartupV15 extends AbstractSampleData {
@@ -23,10 +24,10 @@ public class SampleDataStartupV15 extends AbstractSampleData {
     private static List<String> OLD_URL = Arrays.asList("https://git.rancher.io/rancher-catalog.git",
             "https://github.com/rancher/rancher-catalog.git");
 
-    @Inject
-    JsonMapper jsonMapper;
-    @Inject
-    ObjectManager objectManager;
+    public SampleDataStartupV15(ObjectManager objectManager, ObjectProcessManager processManager, AccountDao accountDao, JsonMapper jsonMapper,
+            LockManager lockManager) {
+        super(objectManager, processManager, accountDao, jsonMapper, lockManager);
+    }
 
     @Override
     protected String getName() {

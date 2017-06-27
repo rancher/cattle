@@ -5,12 +5,13 @@ import io.cattle.platform.core.model.Setting;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.object.ObjectManager;
 
-import javax.inject.Inject;
-
 public class SettingsUtils {
 
-    @Inject
     ObjectManager objectManager;
+
+    public SettingsUtils(ObjectManager objectManager) {
+        this.objectManager = objectManager;
+    }
 
     public void changeSetting(String name, Object value) {
         if (name == null) {

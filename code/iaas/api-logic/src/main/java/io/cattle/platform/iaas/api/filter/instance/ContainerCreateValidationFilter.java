@@ -3,37 +3,26 @@ package io.cattle.platform.iaas.api.filter.instance;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataUtils;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
+public class ContainerCreateValidationFilter extends AbstractValidationFilter {
 
-public class ContainerCreateValidationFilter extends AbstractDefaultResourceManagerFilter {
-    @Inject
-    ObjectManager objMgr;
-    @Inject
-    InstanceDao instanceDao;
+    ObjectManager objectManager;
 
-    @Override
-    public String[] getTypes() {
-        return new String[] { "container" };
-    }
-
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { Instance.class };
+    public ContainerCreateValidationFilter(ObjectManager objectManager) {
+        this.objectManager = objectManager;
     }
 
     @Override
@@ -62,7 +51,7 @@ public class ContainerCreateValidationFilter extends AbstractDefaultResourceMana
         if (sidekickTo != null) {
             deps.add(sidekickTo);
         }
-        List<Instance> instances = objMgr.find(Instance.class, INSTANCE.ID, new Condition(ConditionType.IN, deps));
+        List<Instance> instances = objectManager.find(Instance.class, INSTANCE.ID, new Condition(ConditionType.IN, deps));
         Long duId = null;
         for (Instance instance : instances) {
             if (instance.getDeploymentUnitId() == null) {

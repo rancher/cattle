@@ -19,15 +19,12 @@ import io.cattle.platform.engine.server.Cluster;
 import io.cattle.platform.eventing.EventCallOptions;
 import io.cattle.platform.framework.event.Ping;
 import io.cattle.platform.ha.monitor.PingInstancesMonitor;
-import io.cattle.platform.lock.LockDelegator;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.task.Task;
 import io.cattle.platform.task.TaskOptions;
 
 import java.util.concurrent.TimeUnit;
-
-import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +33,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.ListeningExecutorService;
 import com.netflix.config.DynamicLongProperty;
 
 public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
@@ -50,24 +46,13 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
 
     private static final Logger log = LoggerFactory.getLogger(PingMonitorImpl.class);
 
-    @Inject
     AgentResourcesMonitor agentResourceManager;
-    @Inject
     PingInstancesMonitor pingInstanceMonitor;
-    @Inject
     ObjectProcessManager processManager;
-    @Inject
     ObjectManager objectManager;
     int interation = 0;
-    @Inject
     PingDao pingDao;
-    @Inject
-    LockDelegator lockDelegator;
-    @Inject
     AgentLocator agentLocator;
-    @Inject
-    ListeningExecutorService executorService;
-    @Inject
     Cluster cluster;
     LoadingCache<Long, PingStatus> status = CacheBuilder.newBuilder().expireAfterAccess(PING_SCHEDULE.get() * 3, TimeUnit.SECONDS).build(
             new CacheLoader<Long, PingStatus>() {
@@ -76,6 +61,19 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
                     return new PingStatus(key);
                 }
             });
+
+
+    public PingMonitorImpl(AgentResourcesMonitor agentResourceManager, PingInstancesMonitor pingInstanceMonitor, ObjectProcessManager processManager,
+            ObjectManager objectManager, PingDao pingDao, AgentLocator agentLocator, Cluster cluster) {
+        super();
+        this.agentResourceManager = agentResourceManager;
+        this.pingInstanceMonitor = pingInstanceMonitor;
+        this.processManager = processManager;
+        this.objectManager = objectManager;
+        this.pingDao = pingDao;
+        this.agentLocator = agentLocator;
+        this.cluster = cluster;
+    }
 
     protected void handleOwned(Long agentId) {
         Ping ping = AgentUtils.newPing(agentId);

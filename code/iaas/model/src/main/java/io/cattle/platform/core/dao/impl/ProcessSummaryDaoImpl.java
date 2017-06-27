@@ -12,15 +12,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.inject.Named;
-
+import org.jooq.Configuration;
 import org.jooq.Field;
 import org.jooq.Record4;
 import org.jooq.RecordHandler;
 import org.jooq.impl.DSL;
 
-@Named
 public class ProcessSummaryDaoImpl extends AbstractJooqDao implements ProcessSummaryDao {
+
+    public ProcessSummaryDaoImpl(Configuration configuration) {
+        super(configuration);
+    }
 
     @Override
     public List<ProcessSummary> getProcessSummary() {

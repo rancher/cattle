@@ -1,10 +1,9 @@
 package io.cattle.platform.core.dao.impl;
 
 import static io.cattle.platform.core.model.tables.AccountTable.*;
-import static io.cattle.platform.core.model.tables.IpAddressTable.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.NetworkDriverTable.*;
 import static io.cattle.platform.core.model.tables.NetworkTable.*;
-import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
 
@@ -12,57 +11,41 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.SubnetConstants;
-import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
-import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.model.tables.records.NetworkRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.util.net.NetUtils;
 import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
 import java.util.List;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.apache.commons.lang3.tuple.Pair;
+import org.jooq.Configuration;
 
 import com.netflix.config.DynamicStringListProperty;
 
-@Named
 public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
     DynamicStringListProperty DOCKER_VIP_SUBNET_CIDR = ArchaiusUtil.getList("docker.vip.subnet.cidr");
 
-    @Inject
     ObjectManager objectManager;
-    @Inject
-    AccountDao accountDao;
-    @Inject
     GenericResourceDao resourceDao;
-    @Inject
-    ObjectProcessManager objectProcessManager;
-    @Inject
     LockManager lockManager;
-    @Inject
     TransactionDelegate transactionDelegate;
 
-    @Override
-    public Nic getPrimaryNic(long instanceId) {
-        return create()
-                .selectFrom(NIC)
-                .where(NIC.INSTANCE_ID.eq(instanceId)
-                        .and(NIC.DEVICE_NUMBER.eq(0))
-                        .and(NIC.REMOVED.isNull()))
-                .fetchAny();
+    public NetworkDaoImpl(Configuration configuration, ObjectManager objectManager, GenericResourceDao resourceDao, LockManager lockManager,
+            TransactionDelegate transactionDelegate) {
+        super(configuration);
+        this.objectManager = objectManager;
+        this.resourceDao = resourceDao;
+        this.lockManager = lockManager;
+        this.transactionDelegate = transactionDelegate;
     }
 
     @Override
@@ -79,11 +62,6 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
                 NETWORK.NAME, name,
                 NETWORK.ACCOUNT_ID, accountId,
                 NETWORK.REMOVED, null);
-    }
-
-    protected Network getInstancePrimaryNetwork(Instance instance) {
-        Nic primaryNic = getPrimaryNic(instance.getId());
-        return objectManager.loadResource(Network.class, primaryNic.getNetworkId());
     }
 
     @Override
@@ -127,15 +105,15 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
                     .and(SERVICE_EXPOSE_MAP.REMOVED.isNull()))
             .fetch().intoArray(SERVICE_EXPOSE_MAP.INSTANCE_ID);
 
-        return create().select(NIC.INSTANCE_ID)
-            .from(NIC)
+        return create().select(INSTANCE.ID)
+            .from(INSTANCE)
             .join(NETWORK)
-                .on(NIC.NETWORK_ID.eq(NETWORK.ID))
+                .on(INSTANCE.NETWORK_ID.eq(NETWORK.ID))
             .join(NETWORK_DRIVER)
                 .on(NETWORK_DRIVER.ID.eq(NETWORK.NETWORK_DRIVER_ID))
             .where(NETWORK_DRIVER.SERVICE_ID.eq(serviceId)
-                    .and(NIC.REMOVED.isNull())
-                    .and(NIC.INSTANCE_ID.notIn(ignore)))
+                    .and(INSTANCE.REMOVED.isNull())
+                    .and(INSTANCE.ID.notIn(ignore)))
             .fetchInto(Long.class);
     }
 
@@ -153,39 +131,6 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
                 .where(NETWORK.ACCOUNT_ID.eq(accountId)
                     .and(NETWORK.STATE.in(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE)))
                 .fetchInto(NetworkRecord.class);
-    }
-
-    @Override
-    public void migrateToNetwork(Network network) {
-        transactionDelegate.doInTransaction(() -> {
-            Network hostOnly = objectManager.findAny(Network.class,
-                    NETWORK.ACCOUNT_ID, network.getAccountId(),
-                    NETWORK.KIND, "hostOnlyNetwork");
-
-            if (hostOnly != null) {
-                create()
-                    .update(SUBNET)
-                    .set(SUBNET.NETWORK_ID, network.getId())
-                    .where(SUBNET.NETWORK_ID.eq(hostOnly.getId()))
-                    .execute();
-                create()
-                    .update(IP_ADDRESS)
-                    .set(IP_ADDRESS.NETWORK_ID, network.getId())
-                    .where(IP_ADDRESS.NETWORK_ID.eq(hostOnly.getId()))
-                    .execute();
-                create()
-                    .update(NIC)
-                    .set(NIC.NETWORK_ID, network.getId())
-                    .where(NIC.NETWORK_ID.eq(hostOnly.getId()))
-                    .execute();
-            }
-
-            create()
-                .update(ACCOUNT)
-                .set(ACCOUNT.DEFAULT_NETWORK_ID, network.getId())
-                .where(ACCOUNT.ID.eq(network.getAccountId()))
-                .execute();
-        });
     }
 
     @Override

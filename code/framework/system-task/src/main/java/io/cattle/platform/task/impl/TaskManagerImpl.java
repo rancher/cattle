@@ -18,8 +18,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import javax.inject.Inject;
-
 import org.apache.cloudstack.managed.context.NoExceptionRunnable;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -38,10 +36,18 @@ public class TaskManagerImpl implements TaskManager, InitializationTask, Runnabl
     List<Task> tasks;
     EventService eventService;
     boolean running = false;
-    Map<String, ScheduledFuture<?>> futures = new ConcurrentHashMap<String, ScheduledFuture<?>>();
-    Map<String, Runnable> runnables = new ConcurrentHashMap<String, Runnable>();
-    Map<String, Task> taskMap = new HashMap<String, Task>();
+    Map<String, ScheduledFuture<?>> futures = new ConcurrentHashMap<>();
+    Map<String, Runnable> runnables = new ConcurrentHashMap<>();
+    Map<String, Task> taskMap = new HashMap<>();
     TaskDao taskDao;
+
+    public TaskManagerImpl(ScheduledExecutorService executorService, EventService eventService, TaskDao taskDao, List<Task> tasks) {
+        super();
+        this.executorService = executorService;
+        this.eventService = eventService;
+        this.taskDao = taskDao;
+        this.tasks = tasks;
+    }
 
     @Override
     public void execute(String name) {
@@ -129,40 +135,8 @@ public class TaskManagerImpl implements TaskManager, InitializationTask, Runnabl
         }
     }
 
-    public ScheduledExecutorService getExecutorService() {
-        return executorService;
-    }
-
-    @Inject
-    public void setExecutorService(ScheduledExecutorService executorService) {
-        this.executorService = executorService;
-    }
-
-    public EventService getEventService() {
-        return eventService;
-    }
-
-    @Inject
-    public void setEventService(EventService eventService) {
-        this.eventService = eventService;
-    }
-
-    public TaskDao getTaskDao() {
-        return taskDao;
-    }
-
-    @Inject
-    public void setTaskDao(TaskDao taskDao) {
-        this.taskDao = taskDao;
-    }
-
     public List<Task> getTasks() {
         return tasks;
-    }
-
-    @Inject
-    public void setTasks(List<Task> tasks) {
-        this.tasks = tasks;
     }
 
 }

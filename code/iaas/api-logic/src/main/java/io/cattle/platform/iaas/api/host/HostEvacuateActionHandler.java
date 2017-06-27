@@ -2,25 +2,21 @@ package io.cattle.platform.iaas.api.host;
 
 import static io.cattle.platform.core.model.tables.ExternalEventTable.*;
 
-import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.core.constants.ExternalEventConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.ExternalEvent;
 import io.cattle.platform.core.model.Host;
-import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.process.ObjectProcessManager;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
-
-import javax.inject.Inject;
+import io.github.ibuildthecloud.gdapi.request.resource.ActionHandler;
 
 public class HostEvacuateActionHandler implements ActionHandler {
 
-    @Inject
-    ObjectProcessManager objectProcessManager;
-    @Inject
-    ObjectManager objectManager;
-    @Inject
     GenericResourceDao resourceDao;
+
+    public HostEvacuateActionHandler(GenericResourceDao resourceDao) {
+        super();
+        this.resourceDao = resourceDao;
+    }
 
     @Override
     public Object perform(String name, Object obj, ApiRequest request) {
@@ -35,10 +31,5 @@ public class HostEvacuateActionHandler implements ActionHandler {
         } else {
             return null;
         }
-    }
-
-    @Override
-    public String getName() {
-        return "host.evacuate";
     }
 }

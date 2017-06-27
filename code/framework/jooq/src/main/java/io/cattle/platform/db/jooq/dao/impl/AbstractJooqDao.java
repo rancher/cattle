@@ -1,7 +1,5 @@
 package io.cattle.platform.db.jooq.dao.impl;
 
-import javax.inject.Inject;
-
 import org.jooq.Configuration;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -14,6 +12,11 @@ import org.jooq.impl.DefaultDSLContext;
 public class AbstractJooqDao {
 
     Configuration configuration;
+
+    public AbstractJooqDao(Configuration configuration) {
+        super();
+        this.configuration = configuration;
+    }
 
     protected DSLContext create() {
         return new DefaultDSLContext(configuration);
@@ -31,9 +34,5 @@ public class AbstractJooqDao {
         return configuration;
     }
 
-    @Inject
-    public void setConfiguration(Configuration configuration) {
-        this.configuration = configuration;
-    }
 
 }

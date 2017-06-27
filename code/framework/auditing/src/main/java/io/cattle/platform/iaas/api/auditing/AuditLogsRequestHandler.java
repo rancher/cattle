@@ -4,16 +4,18 @@ import io.cattle.platform.api.auth.Policy;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
-import io.github.ibuildthecloud.gdapi.request.handler.AbstractApiRequestHandler;
+import io.github.ibuildthecloud.gdapi.request.handler.ApiRequestHandler;
 
 import java.io.IOException;
 
-import javax.inject.Inject;
+public class AuditLogsRequestHandler implements ApiRequestHandler {
 
-public class AuditLogsRequestHandler extends AbstractApiRequestHandler {
-
-    @Inject
     AuditService auditService;
+
+    public AuditLogsRequestHandler(AuditService auditService) {
+        super();
+        this.auditService = auditService;
+    }
 
     @Override
     public void handle(ApiRequest request) throws IOException {

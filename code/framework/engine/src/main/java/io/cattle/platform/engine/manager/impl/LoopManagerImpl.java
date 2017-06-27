@@ -10,20 +10,20 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import com.google.common.util.concurrent.ListenableFuture;
 
 public class LoopManagerImpl implements LoopManager {
 
     Map<String, Map<String, LoopWrapper>> loops = new HashMap<>();
-    @Inject
     LoopFactory factory;
-    @Inject @Named("ProcessNonBlockingExecutorService")
     ExecutorService executor;
-    @Inject
     ScheduledExecutorService executorService;
+
+    public LoopManagerImpl(LoopFactory factory, ExecutorService executor, ScheduledExecutorService executorService) {
+        this.factory = factory;
+        this.executor = executor;
+        this.executorService = executorService;
+    }
 
     @Override
     public synchronized ListenableFuture<?> kick(String name, String type, Long id, Object input) {

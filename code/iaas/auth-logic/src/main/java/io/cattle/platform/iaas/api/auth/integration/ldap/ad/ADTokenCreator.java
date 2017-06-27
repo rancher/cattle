@@ -1,14 +1,10 @@
 package io.cattle.platform.iaas.api.auth.integration.ldap.ad;
 
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
-import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.identity.Token;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.TokenCreator;
 import io.cattle.platform.iaas.api.auth.integration.ldap.ServiceContextCreationException;
 import io.cattle.platform.iaas.api.auth.integration.ldap.ServiceContextRetrievalException;
-import io.cattle.platform.iaas.api.auth.projects.ProjectResourceManager;
-import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.token.TokenService;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -17,23 +13,15 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.inject.Inject;
-
 public class ADTokenCreator extends ADConfigurable implements TokenCreator {
 
-    @Inject
     ADIdentityProvider adIdentityProvider;
-    @Inject
-    AuthDao authDao;
-    @Inject
-    TokenService tokenService;
-    @Inject
-    ProjectResourceManager projectResourceManager;
-    @Inject
-    ObjectManager objectManager;
-
-    @Inject
     ADTokenUtils adUtils;
+
+    public ADTokenCreator(ADIdentityProvider adIdentityProvider, ADTokenUtils adUtils) {
+        this.adIdentityProvider = adIdentityProvider;
+        this.adUtils = adUtils;
+    }
 
     private Token getLdapToken(String username, String password) {
         if (!isConfigured()) {

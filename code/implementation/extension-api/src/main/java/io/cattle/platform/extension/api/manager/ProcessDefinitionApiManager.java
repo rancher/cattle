@@ -1,5 +1,6 @@
 package io.cattle.platform.extension.api.manager;
 
+import io.cattle.platform.api.resource.AbstractNoOpResourceManager;
 import io.cattle.platform.engine.process.ExtensionBasedProcessDefinition;
 import io.cattle.platform.engine.process.ProcessDefinition;
 import io.cattle.platform.extension.api.dot.DotMaker;
@@ -7,11 +8,7 @@ import io.cattle.platform.extension.api.model.ProcessDefinitionApi;
 import io.cattle.platform.extension.api.util.ApiPredicates;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
-import io.github.ibuildthecloud.gdapi.model.Resource;
-import io.github.ibuildthecloud.gdapi.request.ApiRequest;
-import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,52 +22,20 @@ public class ProcessDefinitionApiManager extends AbstractNoOpResourceManager {
 
     public static final String PROCESS_DOT = "processDot";
 
-    private static final Map<String, String> LINKS = new HashMap<String, String>();
+    private static final Map<String, String> LINKS = new HashMap<>();
     static {
         LINKS.put(PROCESS_DOT, null);
     }
 
-    List<ProcessDefinition> processDefinitions;
     DotMaker dotMaker;
 
-    public ProcessDefinitionApiManager() {
-        addResourceToCreateResponse(ProcessDefinitionApi.class);
+    public ProcessDefinitionApiManager(DotMaker dotMaker) {
+        super();
+        this.dotMaker = dotMaker;
     }
 
     @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { ProcessDefinitionApi.class };
-    }
-
-    @Override
-    protected Map<String, String> getLinks(SchemaFactory schemaFactory, Resource resource) {
-        return LINKS;
-    }
-
-    @Override
-    protected Object getLinkInternal(String type, String id, String link, ApiRequest request) {
-        ProcessDefinition def = getById(id);
-        if (def == null) {
-            return null;
-        }
-
-        String dot = null;
-        if (PROCESS_DOT.equalsIgnoreCase(link)) {
-            dot = dotMaker.getProcessDot(def);
-        }
-
-        boolean written = false;
-        try {
-            written = dotMaker.writeResponse(dot, request);
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-
-        return written ? new Object() : null;
-    }
-
-    @Override
-    protected Object getByIdInternal(String type, String id, ListOptions options) {
+    public Object getById(String type, String id, ListOptions options) {
         return toApi(getById(id));
     }
 
@@ -85,8 +50,8 @@ public class ProcessDefinitionApiManager extends AbstractNoOpResourceManager {
     }
 
     @Override
-    protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
-        List<ProcessDefinitionApi> result = new ArrayList<ProcessDefinitionApi>();
+    public Object list(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
+        List<ProcessDefinitionApi> result = new ArrayList<>();
         Predicate<Object> condition = ApiPredicates.filterOn(criteria, "name", "resourceType");
 
         for (ProcessDefinition def : processDefinitions) {

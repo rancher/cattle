@@ -22,6 +22,7 @@ import io.cattle.platform.core.model.UserPreference;
 import io.cattle.platform.core.model.tables.records.GenericObjectRecord;
 import io.cattle.platform.core.model.tables.records.ProjectMemberRecord;
 import io.cattle.platform.core.model.tables.records.UserPreferenceRecord;
+import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -31,15 +32,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.Condition;
+import org.jooq.Configuration;
 import org.jooq.Record1;
 import org.jooq.impl.DSL;
 
-@Named
 public class AccountDaoImpl extends AbstractCoreDao implements AccountDao {
 
     private static final Set<String> GOOD_STATES = CollectionUtils.set(
@@ -48,8 +46,13 @@ public class AccountDaoImpl extends AbstractCoreDao implements AccountDao {
             CommonStatesConstants.ACTIVE,
             ServiceConstants.STATE_UPGRADING);
 
-    @Inject
     ObjectProcessManager objectProcessManager;
+
+    public AccountDaoImpl(Configuration configuration, ObjectManager objectManager,
+            ObjectProcessManager objectProcessManager) {
+        super(configuration, objectManager);
+        this.objectProcessManager = objectProcessManager;
+    }
 
     @Override
     public Account getSystemAccount() {

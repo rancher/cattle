@@ -19,24 +19,23 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
-@Named
 public class StackHealthStateUpdateTrigger implements Trigger {
 
-    @Inject
-    InstanceDao instanceDao;
-
-    @Inject
-    ObjectManager objectManager;
-
-    @Inject
-    LoopManager loopManager;
-
-    Set<String> instanceProcesses = CollectionUtils.set(InstanceConstants.PROCESS_STOP,
+    private static final Set<String> instanceProcesses = CollectionUtils.set(
+                InstanceConstants.PROCESS_STOP,
                 InstanceConstants.PROCESS_REMOVE,
                 InstanceConstants.PROCESS_START);
+
+    InstanceDao instanceDao;
+    ObjectManager objectManager;
+    LoopManager loopManager;
+
+    public StackHealthStateUpdateTrigger(InstanceDao instanceDao, ObjectManager objectManager, LoopManager loopManager) {
+        super();
+        this.instanceDao = instanceDao;
+        this.objectManager = objectManager;
+        this.loopManager = loopManager;
+    }
 
     @Override
     public void trigger(ProcessInstance process) {

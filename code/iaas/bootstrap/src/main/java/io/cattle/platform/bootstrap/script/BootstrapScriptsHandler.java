@@ -10,8 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.cert.Certificate;
 
-import javax.inject.Inject;
-
 import org.apache.commons.io.IOUtils;
 
 import com.netflix.config.DynamicStringProperty;
@@ -24,8 +22,12 @@ public class BootstrapScriptsHandler implements ScriptsHandler {
 
     private static final String BOOTSTRAP = "bootstrap";
 
-    @Inject
     RSAKeyProvider keyProvider;
+
+    public BootstrapScriptsHandler(RSAKeyProvider keyProvider) {
+        super();
+        this.keyProvider = keyProvider;
+    }
 
     @Override
     public boolean handle(ApiRequest request) throws IOException {

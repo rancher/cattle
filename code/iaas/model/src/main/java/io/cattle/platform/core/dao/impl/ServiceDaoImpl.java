@@ -50,8 +50,7 @@ import io.cattle.platform.core.model.tables.records.StackRecord;
 import io.cattle.platform.core.model.tables.records.VolumeTemplateRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
-import io.cattle.platform.engine.handler.ProcessLogic;
-import io.cattle.platform.eventing.EventService;
+import io.cattle.platform.engine.handler.ProcessHandler;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
@@ -68,31 +67,31 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.jooq.Condition;
+import org.jooq.Configuration;
 import org.jooq.Record2;
 import org.jooq.Record3;
 import org.jooq.Record6;
 import org.jooq.RecordHandler;
 
-@Named
 public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
 
-    @Inject
     ObjectManager objectManager;
-    @Inject
     JsonMapper jsonMapper;
-    @Inject
     LockManager lockManager;
-    @Inject
     GenericResourceDao resourceDao;
-    @Inject
-    EventService eventService;
-    @Inject
     TransactionDelegate transaction;
+
+    public ServiceDaoImpl(Configuration configuration, ObjectManager objectManager, JsonMapper jsonMapper, LockManager lockManager,
+            GenericResourceDao resourceDao, TransactionDelegate transaction) {
+        super(configuration);
+        this.objectManager = objectManager;
+        this.jsonMapper = jsonMapper;
+        this.lockManager = lockManager;
+        this.resourceDao = resourceDao;
+        this.transaction = transaction;
+    }
 
     @Override
     public Service getServiceByExternalId(Long accountId, String externalId) {
@@ -372,19 +371,19 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
     @Override
     public DeploymentUnit createDeploymentUnit(long accountId, Long serviceId, long stackId,
             Long hostId, String serviceIndex, Long revisionId, boolean active) {
-        Map<String, Object> params = new HashMap<>();
+        Map<Object, Object> params = new HashMap<>();
         params.put("accountId", accountId);
         params.put(InstanceConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX, serviceIndex);
         params.put(InstanceConstants.FIELD_SERVICE_ID, serviceId);
         params.put(InstanceConstants.FIELD_STACK_ID, stackId);
-        params.put(InstanceConstants.FIELD_HOST_ID, hostId);
+        params.put(INSTANCE.HOST_ID, hostId);
         params.put(InstanceConstants.FIELD_REVISION_ID, revisionId);
         if (hostId != null) {
             params.put(InstanceConstants.FIELD_LABELS, CollectionUtils.asMap(
                     ServiceConstants.LABEL_SERVICE_REQUESTED_HOST_ID, hostId));
         }
         if (active) {
-            params.put(ServiceConstants.PROCESS_DU_CREATE + ProcessLogic.CHAIN_PROCESS, ServiceConstants.PROCESS_DU_ACTIVATE);
+            params.put(ServiceConstants.PROCESS_DU_CREATE + ProcessHandler.CHAIN_PROCESS, ServiceConstants.PROCESS_DU_ACTIVATE);
             return resourceDao.createAndSchedule(DeploymentUnit.class, params);
         }
         return objectManager.create(DeploymentUnit.class, params);

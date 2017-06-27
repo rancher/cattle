@@ -1,6 +1,5 @@
 package io.cattle.platform.iaas.api.account;
 
-import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.model.Account;
@@ -9,18 +8,21 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.ActionHandler;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
-
-import javax.inject.Inject;
 
 public class AccountDeactivateActionHandler implements ActionHandler {
 
-    @Inject
     ObjectProcessManager objectProcessManager;
-    @Inject
     ObjectManager objectManager;
-    @Inject
     AccountDao accountDao;
+
+    public AccountDeactivateActionHandler(ObjectProcessManager objectProcessManager, ObjectManager objectManager, AccountDao accountDao) {
+        super();
+        this.objectProcessManager = objectProcessManager;
+        this.objectManager = objectManager;
+        this.accountDao = accountDao;
+    }
 
     @Override
     public Object perform(String name, Object obj, ApiRequest request) {
@@ -46,9 +48,4 @@ public class AccountDeactivateActionHandler implements ActionHandler {
         }
     }
 
-    @Override
-    public String getName() {
-        return "account.deactivate";
-    }
 }
-

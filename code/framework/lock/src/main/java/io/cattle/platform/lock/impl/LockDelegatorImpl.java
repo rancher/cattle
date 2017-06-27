@@ -16,8 +16,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import javax.inject.Inject;
-
 import org.apache.cloudstack.managed.context.NoExceptionRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,10 +27,15 @@ public class LockDelegatorImpl implements LockDelegator, InitializationTask {
     private static final Logger log = LoggerFactory.getLogger(LockDelegatorImpl.class);
 
     LockManager lockManager;
-    Map<String, Lock> holding = new ConcurrentHashMap<String, Lock>();
-    BlockingQueue<LockOp> ops = new LinkedBlockingQueue<LockOp>();
+    Map<String, Lock> holding = new ConcurrentHashMap<>();
+    BlockingQueue<LockOp> ops = new LinkedBlockingQueue<>();
     ExecutorService executorService;
     boolean shutdown = false;
+
+    public LockDelegatorImpl(LockManager lockManager, ExecutorService executorService) {
+        this.lockManager = lockManager;
+        this.executorService = executorService;
+    }
 
     @Override
     public boolean isLocked(LockDefinition lockDef) {
@@ -162,23 +165,6 @@ public class LockDelegatorImpl implements LockDelegator, InitializationTask {
             lockProvider.releaseLock(lock);
         }
         op.future.set(true);
-    }
-
-    public LockManager getLockManager() {
-        return lockManager;
-    }
-
-    @Inject
-    public void setLockManager(LockManager lockManager) {
-        this.lockManager = lockManager;
-    }
-
-    public ExecutorService getExecutorService() {
-        return executorService;
-    }
-
-    public void setExecutorService(ExecutorService executorService) {
-        this.executorService = executorService;
     }
 
     private static final class LockOp {

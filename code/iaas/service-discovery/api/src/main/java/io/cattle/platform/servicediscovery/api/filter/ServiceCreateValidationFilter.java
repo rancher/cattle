@@ -6,12 +6,10 @@ import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
-import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.core.util.ServiceUtil;
-import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.iaas.api.service.RevisionDiffomatic;
 import io.cattle.platform.iaas.api.service.RevisionManager;
 import io.cattle.platform.json.JsonMapper;
@@ -25,6 +23,7 @@ import io.cattle.platform.storage.service.StorageService;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
@@ -37,43 +36,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.apache.commons.lang3.StringUtils;
 
-@Named
-public class ServiceCreateValidationFilter extends AbstractDefaultResourceManagerFilter {
-    @Inject
+public class ServiceCreateValidationFilter extends AbstractValidationFilter {
+
     ObjectManager objectManager;
-    @Inject
     ObjectProcessManager processManager;
-    @Inject
     StorageService storageService;
-    @Inject
     JsonMapper jsonMapper;
-    @Inject
-    ServiceDao svcDao;
-    @Inject
     RevisionManager revisionManager;
 
     private static final int LB_HEALTH_CHECK_PORT = 42;
 
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { Service.class };
-    }
-
-    @Override
-    public String[] getTypes() {
-        return new String[] { ServiceConstants.KIND_SERVICE,
-                ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
-                ServiceConstants.KIND_EXTERNAL_SERVICE,
-                ServiceConstants.KIND_DNS_SERVICE,
-                ServiceConstants.KIND_NETWORK_DRIVER_SERVICE,
-                ServiceConstants.KIND_STORAGE_DRIVER_SERVICE,
-                ServiceConstants.KIND_SCALING_GROUP_SERVICE,
-                ServiceConstants.KIND_SELECTOR_SERVICE };
+    public ServiceCreateValidationFilter(ObjectManager objectManager, ObjectProcessManager processManager, StorageService storageService, JsonMapper jsonMapper,
+            RevisionManager revisionManager) {
+        super();
+        this.objectManager = objectManager;
+        this.processManager = processManager;
+        this.storageService = storageService;
+        this.jsonMapper = jsonMapper;
+        this.revisionManager = revisionManager;
     }
 
     @Override

@@ -15,7 +15,6 @@ import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.AccountLookup;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
@@ -25,7 +24,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.codec.binary.Base64;
@@ -33,7 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.netflix.config.DynamicStringProperty;
 
-public class BasicAuthImpl implements AccountLookup, Priority {
+public class BasicAuthImpl implements AccountLookup {
 
     public static final String AUTH_HEADER = "Authorization";
     public static final String CHALLENGE_HEADER = "WWW-Authenticate";
@@ -45,12 +43,17 @@ public class BasicAuthImpl implements AccountLookup, Priority {
     private static final DynamicStringProperty REALM = ArchaiusUtil.getString("api.auth.realm");
 
     AuthDao authDao;
-    @Inject
     AdminAuthLookUp adminAuthLookUp;
-    @Inject
     ObjectManager objectManager;
-    @Inject
     TokenAuthLookup tokenAuthLookUp;
+
+    public BasicAuthImpl(AuthDao authDao, AdminAuthLookUp adminAuthLookUp, ObjectManager objectManager, TokenAuthLookup tokenAuthLookUp) {
+        super();
+        this.authDao = authDao;
+        this.adminAuthLookUp = adminAuthLookUp;
+        this.objectManager = objectManager;
+        this.tokenAuthLookUp = tokenAuthLookUp;
+    }
 
     @Override
     public Account getAccount(ApiRequest request) {
@@ -176,20 +179,6 @@ public class BasicAuthImpl implements AccountLookup, Priority {
         } catch (UnsupportedEncodingException e) {
             return null;
         }
-    }
-
-    @Override
-    public int getPriority() {
-        return Priority.DEFAULT;
-    }
-
-    public AuthDao getAuthDao() {
-        return authDao;
-    }
-
-    @Inject
-    public void setAuthDao(AuthDao authDao) {
-        this.authDao = authDao;
     }
 
     @Override

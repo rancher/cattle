@@ -4,9 +4,9 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.dao.AgentDao;
 import io.cattle.platform.core.model.Agent;
-import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.util.DataUtils;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerLocator;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
@@ -14,15 +14,13 @@ import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import javax.inject.Inject;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicStringProperty;
 
-public class AgentFilter extends AbstractDefaultResourceManagerFilter {
+public class AgentFilter extends AbstractValidationFilter {
 
     private static final Logger log = LoggerFactory.getLogger(AgentFilter.class);
 
@@ -34,9 +32,10 @@ public class AgentFilter extends AbstractDefaultResourceManagerFilter {
     ResourceManagerLocator locator;
     AgentDao agentDao;
 
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { Agent.class };
+    public AgentFilter(ResourceManagerLocator locator, AgentDao agentDao) {
+        super();
+        this.locator = locator;
+        this.agentDao = agentDao;
     }
 
     @Override
@@ -96,24 +95,6 @@ public class AgentFilter extends AbstractDefaultResourceManagerFilter {
         }
 
         return String.format(URI_FORMAT.get(), user, ip);
-    }
-
-    public ResourceManagerLocator getLocator() {
-        return locator;
-    }
-
-    @Inject
-    public void setLocator(ResourceManagerLocator locator) {
-        this.locator = locator;
-    }
-
-    public AgentDao getAgentDao() {
-        return agentDao;
-    }
-
-    @Inject
-    public void setAgentDao(AgentDao agentDao) {
-        this.agentDao = agentDao;
     }
 
 }

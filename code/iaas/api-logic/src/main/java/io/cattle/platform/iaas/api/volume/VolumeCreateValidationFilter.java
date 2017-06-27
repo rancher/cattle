@@ -8,7 +8,6 @@ import io.cattle.platform.core.constants.StorageDriverConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.model.StorageDriver;
 import io.cattle.platform.core.model.Volume;
-import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
@@ -17,6 +16,7 @@ import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
@@ -24,18 +24,15 @@ import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 import java.util.HashSet;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 
-public class VolumeCreateValidationFilter extends AbstractDefaultResourceManagerFilter {
+public class VolumeCreateValidationFilter extends AbstractValidationFilter {
 
-    @Inject
     ObjectManager objectManager;
 
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { Volume.class };
+    public VolumeCreateValidationFilter(ObjectManager objectManager) {
+        super();
+        this.objectManager = objectManager;
     }
 
     @Override
@@ -76,7 +73,7 @@ public class VolumeCreateValidationFilter extends AbstractDefaultResourceManager
             }
 
             if (storageDriver == null
-                    || !new HashSet<String>(DataAccessor.fieldStringList(storageDriver, ObjectMetaDataManager.CAPABILITIES_FIELD))
+                    || !new HashSet<>(DataAccessor.fieldStringList(storageDriver, ObjectMetaDataManager.CAPABILITIES_FIELD))
                             .contains(StorageDriverConstants.CAPABILITY_SCHEDULE_SIZE)) {
                 throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, ValidationErrorCodes.INVALID_OPTION,
                         String.format("Volume driver %s does not support specifying a size.", driver), null);

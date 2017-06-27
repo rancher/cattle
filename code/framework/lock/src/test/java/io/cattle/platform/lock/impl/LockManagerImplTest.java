@@ -2,6 +2,7 @@ package io.cattle.platform.lock.impl;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+
 import io.cattle.platform.lock.Lock;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockCallbackNoReturn;
@@ -36,8 +37,7 @@ public class LockManagerImplTest {
         when(lockProvider.getLock(good2LockDef)).thenReturn(good2Lock);
         when(lockProvider.getLock(badLockDef)).thenReturn(badLock);
 
-        lockManager = new LockManagerImpl();
-        lockManager.setLockProvider(lockProvider);
+        lockManager = new LockManagerImpl(lockProvider);
     }
 
     @Test

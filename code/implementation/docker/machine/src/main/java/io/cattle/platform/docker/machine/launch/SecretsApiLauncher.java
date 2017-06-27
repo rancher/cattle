@@ -1,12 +1,16 @@
 package io.cattle.platform.docker.machine.launch;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.DataDao;
+import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.framework.secret.SecretsService;
-import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.lock.LockDelegator;
+import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.lock.definition.LockDefinition;
+import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.service.launcher.GenericServiceLauncher;
-import io.cattle.platform.util.type.InitializationTask;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -15,8 +19,7 @@ import java.security.SecureRandom;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
-
-import javax.inject.Inject;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
@@ -25,16 +28,19 @@ import org.apache.commons.io.IOUtils;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicStringProperty;
 
-public class SecretsApiLauncher extends GenericServiceLauncher implements InitializationTask {
+public class SecretsApiLauncher extends GenericServiceLauncher {
 
     private static final DynamicStringProperty SECRETS_BINARY = ArchaiusUtil.getString("secrets.api.service.executable");
     private static final DynamicBooleanProperty LAUNCH_SECRETS = ArchaiusUtil.getBoolean("secrets.api.execute");
     private static final DynamicStringProperty SECRETS_PATH = ArchaiusUtil.getString("secrets.api.local.key.path");
 
-    @Inject
-    JsonMapper jsonMapper;
-    @Inject
     DataDao dataDao;
+
+    public SecretsApiLauncher(LockManager lockManager, LockDelegator lockDelegator, ScheduledExecutorService executor, AccountDao accountDao,
+            GenericResourceDao resourceDao, ResourceMonitor resourceMonitor, ObjectProcessManager processManager, DataDao dataDao) {
+        super(lockManager, lockDelegator, executor, accountDao, resourceDao, resourceMonitor, processManager);
+        this.dataDao = dataDao;
+    }
 
     @Override
     protected boolean shouldRun() {

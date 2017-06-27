@@ -4,15 +4,12 @@ import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.PhysicalHostTable.*;
 
 import io.cattle.platform.agent.instance.service.AgentMetadataService;
-import io.cattle.platform.agent.server.ping.dao.PingDao;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.StoragePoolConstants;
 import io.cattle.platform.core.dao.AgentDao;
-import io.cattle.platform.core.dao.GenericResourceDao;
-import io.cattle.platform.core.dao.IpAddressDao;
 import io.cattle.platform.core.dao.StoragePoolDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
@@ -42,8 +39,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.exception.DataChangedException;
@@ -66,28 +61,24 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
             HostConstants.FIELD_LABELS };
     private static final Set<String> ORCHESTRATE_FIELDS = new HashSet<>(Arrays.asList(HostConstants.FIELD_LABELS));
 
-    @Inject
-    PingDao pingDao;
-    @Inject
     AgentDao agentDao;
-    @Inject
-    GenericResourceDao resourceDao;
-    @Inject
     StoragePoolDao storagePoolDao;
-    @Inject
-    IpAddressDao ipAddressDao;
-    @Inject
     ObjectManager objectManager;
-    @Inject
     LockManager lockManager;
-    @Inject
     AgentMetadataService agentMetadataService;
-    @Inject
     EventService eventService;
     Cache<String, Boolean> resourceCache;
 
-    public AgentResourcesMonitor() {
+    public AgentResourcesMonitor(AgentDao agentDao, StoragePoolDao storagePoolDao, ObjectManager objectManager, LockManager lockManager,
+            AgentMetadataService agentMetadataService, EventService eventService) {
         super();
+        this.agentDao = agentDao;
+        this.storagePoolDao = storagePoolDao;
+        this.objectManager = objectManager;
+        this.lockManager = lockManager;
+        this.agentMetadataService = agentMetadataService;
+        this.eventService = eventService;
+
         buildCache();
         CACHE_RESOURCE.addCallback(new Runnable() {
             @Override

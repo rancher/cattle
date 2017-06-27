@@ -2,11 +2,11 @@ package io.cattle.platform.iaas.api.filter.ssl;
 
 import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.ssh.common.SslCertificateUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
@@ -14,7 +14,7 @@ import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CertificateCreateValidationFilter extends AbstractDefaultResourceManagerFilter {
+public class CertificateCreateValidationFilter extends AbstractValidationFilter {
     private static final Logger log = LoggerFactory.getLogger(CertificateCreateValidationFilter.class);
 
     @Override

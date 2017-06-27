@@ -14,21 +14,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 public class StoragePoolOutputFilter extends CachedOutputFilter<Map<Long, Map<String, Object>>> {
 
-    @Inject
     StoragePoolDao storagePoolDao;
 
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { StoragePool.class };
-    }
-
-    @Override
-    public String[] getTypes() {
-        return new String[] {StoragePoolConstants.TYPE};
+    public StoragePoolOutputFilter(StoragePoolDao storagePoolDao) {
+        super();
+        this.storagePoolDao = storagePoolDao;
     }
 
     @Override

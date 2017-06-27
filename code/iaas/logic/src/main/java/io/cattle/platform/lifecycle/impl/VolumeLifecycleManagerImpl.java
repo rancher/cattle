@@ -38,24 +38,27 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 
 public class VolumeLifecycleManagerImpl implements VolumeLifecycleManager {
 
     private static final String LABEL_VOLUME_AFFINITY = "io.rancher.scheduler.affinity:volumes";
 
-    @Inject
     ObjectManager objectManager;
-    @Inject
     ObjectProcessManager processManager;
-    @Inject
     StoragePoolDao storagePoolDao;
-    @Inject
     VolumeDao volumeDao;
-    @Inject
     LockManager lockManager;
+
+    public VolumeLifecycleManagerImpl(ObjectManager objectManager, ObjectProcessManager processManager, StoragePoolDao storagePoolDao, VolumeDao volumeDao,
+            LockManager lockManager) {
+        super();
+        this.objectManager = objectManager;
+        this.processManager = processManager;
+        this.storagePoolDao = storagePoolDao;
+        this.volumeDao = volumeDao;
+        this.lockManager = lockManager;
+    }
 
     @Override
     public void create(Instance instance) throws LifecycleException {

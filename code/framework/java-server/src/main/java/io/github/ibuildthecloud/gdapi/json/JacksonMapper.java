@@ -15,8 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-import javax.annotation.PostConstruct;
-
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -31,7 +29,10 @@ public class JacksonMapper implements JsonMapper {
     ObjectMapper mapper;
     boolean escapeForwardSlashes = true;
 
-    @PostConstruct
+    public JacksonMapper() {
+        init();
+    }
+
     public void init() {
         SimpleModule module = getModule();
 

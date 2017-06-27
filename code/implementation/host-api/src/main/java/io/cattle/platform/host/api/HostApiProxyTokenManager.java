@@ -1,7 +1,9 @@
 package io.cattle.platform.host.api;
 
 import static io.cattle.platform.server.context.ServerContext.*;
+
 import io.cattle.platform.api.auth.Policy;
+import io.cattle.platform.api.resource.AbstractNoOpResourceManager;
 import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.dao.AgentDao;
@@ -13,14 +15,11 @@ import io.cattle.platform.token.TokenService;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
-import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -28,22 +27,19 @@ public class HostApiProxyTokenManager extends AbstractNoOpResourceManager {
 
     private static final String VERIFY_AGENT = "CantVerifyAgent";
 
-    @Inject
     TokenService tokenService;
-
-    @Inject
     AgentDao agentDao;
-
-    @Inject
     ObjectManager objectManager;
 
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { HostApiProxyTokenImpl.class };
+    public HostApiProxyTokenManager(TokenService tokenService, AgentDao agentDao, ObjectManager objectManager) {
+        super();
+        this.tokenService = tokenService;
+        this.agentDao = agentDao;
+        this.objectManager = objectManager;
     }
 
     @Override
-    protected Object createInternal(String type, ApiRequest request) {
+    public Object create(String type, ApiRequest request) {
         HostApiProxyToken p = request.proxyRequestObject(HostApiProxyToken.class);
         validate(p);
 
@@ -87,7 +83,7 @@ public class HostApiProxyTokenManager extends AbstractNoOpResourceManager {
     }
 
     protected String getToken(String reportedUuid) {
-        Map<String, Object> data = new HashMap<String, Object>();
+        Map<String, Object> data = new HashMap<>();
         data.put(HostConstants.FIELD_REPORTED_UUID, reportedUuid);
         return tokenService.generateToken(data);
     }

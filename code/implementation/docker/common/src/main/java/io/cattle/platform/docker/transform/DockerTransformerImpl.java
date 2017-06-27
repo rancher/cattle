@@ -25,8 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
@@ -60,8 +58,11 @@ public class DockerTransformerImpl implements DockerTransformer {
 
     private static final String RANCHER_VOLUME_PREFIX = "/var/lib/rancher/volumes";
 
-    @Inject
     JsonMapper jsonMapper;
+
+    public DockerTransformerImpl(JsonMapper jsonMapper) {
+        this.jsonMapper = jsonMapper;
+    }
 
     @Override
     public List<DockerInspectTransformVolume> transformVolumes(Map<String, Object> fromInspect, List<Object> mounts) {

@@ -2,29 +2,33 @@ package io.cattle.platform.sample.data;
 
 import static io.cattle.platform.core.model.tables.DataTable.*;
 
+import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.DataDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Data;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.process.ObjectProcessManager;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 
 
 public class SampleDataStartupV14 extends AbstractSampleData {
 
-
-    @Inject
-    ObjectManager objectManager;
-    @Inject
     DataDao dataDao;
+
+    public SampleDataStartupV14(ObjectManager objectManager, ObjectProcessManager processManager, AccountDao accountDao, JsonMapper jsonMapper,
+            LockManager lockManager, DataDao dataDao) {
+        super(objectManager, processManager, accountDao, jsonMapper, lockManager);
+        this.dataDao = dataDao;
+    }
 
     @Override
     protected String getName() {

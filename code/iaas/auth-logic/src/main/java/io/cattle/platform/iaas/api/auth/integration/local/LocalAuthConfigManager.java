@@ -1,5 +1,6 @@
 package io.cattle.platform.iaas.api.auth.integration.local;
 
+import io.cattle.platform.api.resource.AbstractNoOpResourceManager;
 import io.cattle.platform.core.util.SettingsUtils;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.dao.PasswordDao;
@@ -8,31 +9,26 @@ import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
-import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
-import java.util.Map;
 
-import javax.inject.Inject;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
 public class LocalAuthConfigManager extends AbstractNoOpResourceManager {
 
-    @Inject
     PasswordDao passwordDao;
-
-    @Inject
     SettingsUtils settingsUtils;
-
-    @Inject
     JsonMapper jsonMapper;
 
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] {LocalAuthConfig.class};
+    public LocalAuthConfigManager(PasswordDao passwordDao, SettingsUtils settingsUtils, JsonMapper jsonMapper) {
+        super();
+        this.passwordDao = passwordDao;
+        this.settingsUtils = settingsUtils;
+        this.jsonMapper = jsonMapper;
     }
 
     @Override
-    protected Object createInternal(String type, ApiRequest request) {
+    public Object create(String type, ApiRequest request) {
         if (!StringUtils.equalsIgnoreCase(LocalAuthConstants.CONFIG, request.getType())) {
             return null;
         }
@@ -63,7 +59,7 @@ public class LocalAuthConfigManager extends AbstractNoOpResourceManager {
     }
 
     @Override
-    protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
+    public Object list(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
         return new LocalAuthConfig("", "", "", LocalAuthConstants.ACCESS_MODE.get(), SecurityConstants.SECURITY.get());
     }
 }

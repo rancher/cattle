@@ -3,7 +3,6 @@ package io.cattle.platform.core.dao.impl;
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.CredentialTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
-import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.PhysicalHostTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
@@ -13,7 +12,6 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.AgentDao;
-import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Credential;
@@ -25,7 +23,7 @@ import io.cattle.platform.core.model.tables.records.AgentRecord;
 import io.cattle.platform.core.model.tables.records.HostRecord;
 import io.cattle.platform.core.model.tables.records.PhysicalHostRecord;
 import io.cattle.platform.core.model.tables.records.StoragePoolRecord;
-import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.ArrayList;
@@ -36,21 +34,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jooq.Configuration;
 import org.jooq.Record1;
 
-@Named
-public class AgentDaoImpl extends AbstractCoreDao implements AgentDao {
-
-    @Inject
-    GenericResourceDao resourceDao;
-    @Inject
-    ObjectManager objectManager;
+public class AgentDaoImpl extends AbstractJooqDao implements AgentDao {
 
     Long startTime = null;
+
+    public AgentDaoImpl(Configuration configuration) {
+        super(configuration);
+    }
 
     @Override
     public Instance getInstanceByAgent(Long agentId) {
@@ -193,11 +187,10 @@ public class AgentDaoImpl extends AbstractCoreDao implements AgentDao {
                 .from(AGENT)
                 .join(HOST)
                     .on(HOST.AGENT_ID.eq(AGENT.ID))
-                .join(INSTANCE_HOST_MAP)
-                    .on(INSTANCE_HOST_MAP.HOST_ID.eq(HOST.ID))
                 .join(INSTANCE)
-                    .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
-                .where(INSTANCE.AGENT_ID.eq(agentId)).fetchInto(AgentRecord.class);
+                    .on(INSTANCE.HOST_ID.eq(HOST.ID))
+                .where(INSTANCE.AGENT_ID.eq(agentId))
+                .fetchInto(AgentRecord.class);
         return result.size() == 0 ? null : result.get(0);
     }
 

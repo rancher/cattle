@@ -13,21 +13,22 @@ import io.cattle.platform.deferred.util.DeferredUtils;
 
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
+import org.jooq.Configuration;
 import org.jooq.Record1;
 import org.jooq.impl.DSL;
 
 import com.netflix.config.DynamicIntProperty;
 
-@Named
 public class ContainerEventDaoImpl extends AbstractJooqDao implements ContainerEventDao {
 
     private static final DynamicIntProperty MAX_EVENTS = ArchaiusUtil.getInt("container.event.max.size");
 
-    @Inject
     GenericResourceDao resourceDao;
+
+    public ContainerEventDaoImpl(Configuration configuration, GenericResourceDao resourceDao) {
+        super(configuration);
+        this.resourceDao = resourceDao;
+    }
 
     @Override
     public boolean canCreate(Long hostId, String event) {

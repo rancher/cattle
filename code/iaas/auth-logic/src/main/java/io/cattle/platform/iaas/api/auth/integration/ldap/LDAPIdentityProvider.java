@@ -17,7 +17,6 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -379,7 +378,6 @@ public abstract class LDAPIdentityProvider implements IdentityProvider{
     }
 
 
-    @PostConstruct
     public void init() {
         if (getContextPool() == null) {
             GenericObjectPoolConfig config = new GenericObjectPoolConfig();

@@ -25,13 +25,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import org.jooq.Configuration;
 
-@Named
 public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceExposeMapDao {
-    @Inject
+
     ObjectManager objectManager;
+
+    public ServiceExposeMapDaoImpl(Configuration configuration, ObjectManager objectManager) {
+        super(configuration);
+        this.objectManager = objectManager;
+    }
 
     @Override
     @SuppressWarnings("unchecked")

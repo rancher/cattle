@@ -1,29 +1,31 @@
 package io.cattle.platform.docker.api.container;
 
+import io.cattle.platform.api.resource.AbstractNoOpResourceManager;
 import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.docker.api.ContainerProxyActionHandler;
 import io.cattle.platform.docker.api.model.ServiceProxy;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
-import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.List;
-
-import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
 public class ServiceProxyManager extends AbstractNoOpResourceManager {
 
-    @Inject
     InstanceDao instanceDao;
-    @Inject
     ContainerProxyActionHandler actionHandler;
 
+    public ServiceProxyManager(InstanceDao instanceDao, ContainerProxyActionHandler actionHandler) {
+        super();
+        this.instanceDao = instanceDao;
+        this.actionHandler = actionHandler;
+    }
+
     @Override
-    protected Object createInternal(String type, ApiRequest request) {
+    public Object create(String type, ApiRequest request) {
         ServiceProxy proxy = request.proxyRequestObject(ServiceProxy.class);
         String service = proxy.getService();
         if (StringUtils.isBlank(service)) {
@@ -46,11 +48,6 @@ public class ServiceProxyManager extends AbstractNoOpResourceManager {
         }
 
         return actionHandler.perform(null, instances.get(0), request);
-    }
-
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { ServiceProxy.class };
     }
 
 }

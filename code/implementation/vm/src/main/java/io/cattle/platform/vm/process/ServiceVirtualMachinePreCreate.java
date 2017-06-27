@@ -2,23 +2,17 @@ package io.cattle.platform.vm.process;
 
 import static io.cattle.platform.core.constants.InstanceConstants.*;
 import static io.cattle.platform.core.constants.ServiceConstants.*;
+
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.handler.HandlerResult;
-import io.cattle.platform.engine.handler.ProcessPreListener;
+import io.cattle.platform.engine.handler.ProcessHandler;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.util.type.CollectionUtils;
-import io.cattle.platform.util.type.Priority;
 
-public class ServiceVirtualMachinePreCreate extends AbstractObjectProcessLogic implements ProcessPreListener, Priority {
-
-    @Override
-    public String[] getProcessNames() {
-        return new String[] { "service.create" };
-    }
+public class ServiceVirtualMachinePreCreate implements ProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
@@ -29,8 +23,4 @@ public class ServiceVirtualMachinePreCreate extends AbstractObjectProcessLogic i
         return null;
     }
 
-    @Override
-    public int getPriority() {
-        return Priority.PRE;
-    }
 }

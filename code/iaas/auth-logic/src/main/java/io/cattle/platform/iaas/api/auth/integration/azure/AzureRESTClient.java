@@ -16,8 +16,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,15 +23,17 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
 
-public class AzureRESTClient extends AzureConfigurable{
-
-    @Inject
-    private JsonMapper jsonMapper;
-
-    @Inject
-    private AzureTokenUtil azureTokenUtil;
+public class AzureRESTClient extends AzureConfigurable {
 
     private static final Log logger = LogFactory.getLog(AzureRESTClient.class);
+
+    JsonMapper jsonMapper;
+    AzureTokenUtil azureTokenUtil;
+
+    public AzureRESTClient(JsonMapper jsonMapper, AzureTokenUtil azureTokenUtil) {
+        this.jsonMapper = jsonMapper;
+        this.azureTokenUtil = azureTokenUtil;
+    }
 
     private Identity getUserIdentity(String azureAccessToken) {
         if (StringUtils.isEmpty(azureAccessToken)) {

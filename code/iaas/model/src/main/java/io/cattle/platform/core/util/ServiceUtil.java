@@ -13,6 +13,7 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,10 +23,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
 public class ServiceUtil {
+
+    private static final Pattern DNS_NAME_PATTERN = Pattern.compile("^[a-zA-Z0-9](?!.*--)[a-zA-Z0-9-]*$");
 
     private static final int LB_HEALTH_CHECK_PORT = 42;
 
@@ -320,6 +324,54 @@ public class ServiceUtil {
         }
         Object lbConfig = DataAccessor.field(service, ServiceConstants.FIELD_LB_CONFIG, Object.class);
         return lbConfig == null;
+    }
+
+    public static void validateDNSPatternForName(String name) {
+        if (name != null)  {
+            if(!DNS_NAME_PATTERN.matcher(name).matches()) {
+                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_CHARACTERS,
+                        "name");
+            } else if (name.endsWith("-")){
+                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_CHARACTERS,
+                        "name");
+            }
+        }
+    }
+
+    public static void validateLinkName(String linkName){
+        if(linkName != null && !linkName.isEmpty()){
+            if(linkName.startsWith(".") || linkName.endsWith(".") || linkName.contains("..")) {
+                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_CHARACTERS,
+                        "name");
+            }
+
+            //split around a "."
+            String[] parts = linkName.split("\\.");
+            if(parts.length > 1) {
+                //check total length <= 253
+                if (linkName.length() > 253) {
+                    ValidationErrorCodes.throwValidationError(ValidationErrorCodes.MAX_LENGTH_EXCEEDED,
+                            "name");
+                }
+            }
+
+            for (String linkPart : parts) {
+                if(linkPart.startsWith("-") || linkPart.endsWith("-") || linkPart.contains("--")) {
+                    ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_CHARACTERS,
+                            "name");
+                }
+                //check length
+                if (linkPart.length() < 1) {
+                    ValidationErrorCodes.throwValidationError(ValidationErrorCodes.MIN_LENGTH_EXCEEDED,
+                            "name");
+                }
+                if (linkPart.length() > 63) {
+                    ValidationErrorCodes.throwValidationError(ValidationErrorCodes.MAX_LENGTH_EXCEEDED,
+                            "name");
+                }
+
+            }
+        }
     }
 
 }

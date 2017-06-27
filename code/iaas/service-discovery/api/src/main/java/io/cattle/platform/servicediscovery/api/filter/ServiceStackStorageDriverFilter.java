@@ -8,7 +8,6 @@ import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.StoragePoolDao;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
-import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
@@ -16,6 +15,7 @@ import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
@@ -25,11 +25,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 
-public class ServiceStackStorageDriverFilter extends AbstractDefaultResourceManagerFilter {
+public class ServiceStackStorageDriverFilter extends AbstractValidationFilter {
 
     private static final Set<String> ACTIONS = new HashSet<>(Arrays.asList(
             StandardProcess.REMOVE.toString().toLowerCase(),
@@ -37,10 +35,14 @@ public class ServiceStackStorageDriverFilter extends AbstractDefaultResourceMana
             ServiceConstants.ACTION_STACK_DEACTIVATE_SERVICES
             ));
 
-    @Inject
     StoragePoolDao storagePoolDao;
-    @Inject
     ObjectManager objectManager;
+
+    public ServiceStackStorageDriverFilter(StoragePoolDao storagePoolDao, ObjectManager objectManager) {
+        super();
+        this.storagePoolDao = storagePoolDao;
+        this.objectManager = objectManager;
+    }
 
     @Override
     public Object delete(String type, String id, ApiRequest request, ResourceManager next) {
@@ -83,16 +85,6 @@ public class ServiceStackStorageDriverFilter extends AbstractDefaultResourceMana
             validateInUse(type, request.getId(), request, next);
         }
         return super.resourceAction(type, request, next);
-    }
-
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[]{Service.class, Stack.class};
-    }
-
-    @Override
-    public String[] getTypes() {
-        return new String[] { ServiceConstants.KIND_STORAGE_DRIVER_SERVICE };
     }
 
 }

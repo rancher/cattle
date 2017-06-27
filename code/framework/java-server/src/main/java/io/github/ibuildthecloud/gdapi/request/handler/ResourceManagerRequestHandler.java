@@ -9,12 +9,14 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.io.IOException;
 
-import javax.inject.Inject;
-import javax.servlet.ServletException;
-
 public class ResourceManagerRequestHandler extends AbstractResponseGenerator {
 
     ResourceManagerLocator resourceManagerLocator;
+
+    public ResourceManagerRequestHandler(ResourceManagerLocator resourceManagerLocator) {
+        super();
+        this.resourceManagerLocator = resourceManagerLocator;
+    }
 
     @Override
     protected void generate(ApiRequest request) throws IOException {
@@ -38,10 +40,8 @@ public class ResourceManagerRequestHandler extends AbstractResponseGenerator {
                  */
                 request.setResponseCode(ResponseCodes.CREATED);
                 response = manager.create(request.getType(), request);
-            } else if (request.getId() == null) {
-                response = manager.collectionAction(request.getType(), request);
             } else {
-                response = manager.resourceAction(request.getType(), request);
+                // Action, handled in ActionHandler
             }
         } else if (Method.PUT.isMethod(method)) {
             response = manager.update(request.getType(), request.getId(), request);
@@ -49,7 +49,7 @@ public class ResourceManagerRequestHandler extends AbstractResponseGenerator {
             if (request.getId() != null && request.getLink() == null) {
                 response = manager.getById(request.getType(), request.getId(), new ListOptions(request));
             } else if (request.getType() != null && request.getLink() != null) {
-                response = manager.getLink(request.getType(), request.getId(), request.getLink(), request);
+                // Link, handled in LinkHandler
             } else if (request.getType() != null) {
                 response = manager.list(request.getType(), request);
             }
@@ -57,26 +57,6 @@ public class ResourceManagerRequestHandler extends AbstractResponseGenerator {
             response = manager.delete(request.getType(), request.getId(), request);
         }
         request.setResponseObject(response);
-    }
-
-    @Override
-    public boolean handleException(ApiRequest request, Throwable e) throws IOException, ServletException {
-        ResourceManager manager = resourceManagerLocator.getResourceManager(request);
-
-        if (manager == null) {
-            return super.handleException(request, e);
-        }
-
-        return manager.handleException(e, request);
-    }
-
-    public ResourceManagerLocator getResourceManagerLocator() {
-        return resourceManagerLocator;
-    }
-
-    @Inject
-    public void setResourceManagerLocator(ResourceManagerLocator resourceManagerLocator) {
-        this.resourceManagerLocator = resourceManagerLocator;
     }
 
 }

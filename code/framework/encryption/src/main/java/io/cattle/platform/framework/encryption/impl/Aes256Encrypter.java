@@ -5,18 +5,14 @@ import io.cattle.platform.framework.encryption.EncryptionUtils;
 
 import java.security.Key;
 import java.security.SecureRandom;
-import javax.annotation.PostConstruct;
+
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import javax.inject.Inject;
 
 import org.apache.commons.codec.binary.Hex;
 
 public class Aes256Encrypter extends Encrypter {
-
-    @Inject
-    EncryptionUtils encryptionUtils;
 
     byte[] encryptionKeyBytes;
 
@@ -25,7 +21,6 @@ public class Aes256Encrypter extends Encrypter {
     private SecureRandom rn;
 
     @Override
-    @PostConstruct
     public void init() {
         try {
             rn = new SecureRandom();

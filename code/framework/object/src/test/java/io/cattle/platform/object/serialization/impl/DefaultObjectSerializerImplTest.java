@@ -6,7 +6,7 @@ import org.junit.Test;
 
 public class DefaultObjectSerializerImplTest {
 
-    DefaultObjectSerializerFactoryImpl serializer = new DefaultObjectSerializerFactoryImpl();
+    DefaultObjectSerializerFactoryImpl serializer = new DefaultObjectSerializerFactoryImpl(null, null, null);
 
     @Test
     public void testSimpleList() {

@@ -1,11 +1,11 @@
 package io.cattle.platform.api.handler;
 
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
-import io.github.ibuildthecloud.gdapi.request.handler.AbstractApiRequestHandler;
+import io.github.ibuildthecloud.gdapi.request.handler.ApiRequestHandler;
 
 import java.io.IOException;
 
-public class AddClientIpHeader extends AbstractApiRequestHandler {
+public class AddClientIpHeader implements ApiRequestHandler {
 
     public static final String CLIENT_IP = "X-API-Client-IP";
 

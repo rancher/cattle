@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.security.PublicKey;
 import java.util.Map;
 
-import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
@@ -21,8 +20,11 @@ public class HostApiPublicKeyScriptHandler implements ScriptsHandler {
 
     private static final Logger log = LoggerFactory.getLogger(HostApiPublicKeyScriptHandler.class);
 
-    @Inject
     HostApiService hostApiService;
+
+    public HostApiPublicKeyScriptHandler(HostApiService hostApiService) {
+        this.hostApiService = hostApiService;
+    }
 
     @Override
     public boolean handle(ApiRequest request) throws IOException {

@@ -11,9 +11,6 @@ import io.cattle.platform.engine.eventing.ProcessExecuteEvent;
 import io.cattle.platform.engine.handler.CompletableLogic;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessHandler;
-import io.cattle.platform.engine.handler.ProcessLogic;
-import io.cattle.platform.engine.handler.ProcessPostListener;
-import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.idempotent.Idempotent;
 import io.cattle.platform.engine.idempotent.IdempotentExecution;
 import io.cattle.platform.engine.idempotent.IdempotentRetryException;
@@ -43,8 +40,8 @@ import io.cattle.platform.lock.exception.FailedToAcquireLockException;
 import io.cattle.platform.util.exception.ExceptionUtils;
 import io.cattle.platform.util.exception.ExecutionException;
 import io.cattle.platform.util.exception.LoggableException;
+import io.cattle.platform.util.type.Named;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -74,7 +71,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
     boolean executed = false;
     boolean schedule = false;
 
-    List<ProcessLogic> logic;
+    List<ProcessHandler> logic;
     int logicIndex = 0;
     ListenableFuture<?> future;
 
@@ -362,8 +359,8 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         ProcessState state = instanceContext.getState();
         ProcessDefinition processDefinition = instanceContext.getProcessDefinition();
 
-        if (state.getData().containsKey(processDefinition.getName() + ProcessLogic.CHAIN_PROCESS)) {
-            return state.getData().get(processDefinition.getName() + ProcessLogic.CHAIN_PROCESS).toString();
+        if (state.getData().containsKey(processDefinition.getName() + ProcessHandler.CHAIN_PROCESS)) {
+            return state.getData().get(processDefinition.getName() + ProcessHandler.CHAIN_PROCESS).toString();
         }
 
         return null;
@@ -375,7 +372,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         final EngineContext context = EngineContext.getEngineContext();
 
         for (; logicIndex < logic.size() ; logicIndex++) {
-            ProcessLogic handler = logic.get(logicIndex);
+            ProcessHandler handler = logic.get(logicIndex);
             HandlerResult result = idempotentRunHandler(processDefinition, state, context, handler);
             if (result == null) {
                 continue;
@@ -399,19 +396,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         }
     }
 
-    protected String logicTypeString(ProcessLogic logic) {
-        if (logic instanceof ProcessPreListener) {
-            return "pre listener ";
-        } else if (logic instanceof ProcessHandler) {
-            return "handler ";
-        } else if (logic instanceof ProcessPostListener) {
-            return "post listener ";
-        }
-
-        return "";
-    }
-
-    protected HandlerResult idempotentRunHandler(ProcessDefinition processDefinition, ProcessState state, EngineContext context, ProcessLogic handler) {
+    protected HandlerResult idempotentRunHandler(ProcessDefinition processDefinition, ProcessState state, EngineContext context, ProcessHandler handler) {
         try {
             return Idempotent.execute(new IdempotentExecution<HandlerResult>() {
                 @Override
@@ -427,11 +412,12 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         }
     }
 
-    protected HandlerResult runHandler(ProcessDefinition processDefinition, ProcessState state, EngineContext context, ProcessLogic handler) {
-        final ProcessLogicExecutionLog processExecution = execution.newProcessLogicExecution(handler);
+    protected HandlerResult runHandler(ProcessDefinition processDefinition, ProcessState state, EngineContext context, ProcessHandler handler) {
+        Named processNamed = new NameWrapper(handler);
+        final ProcessLogicExecutionLog processExecution = execution.newProcessLogicExecution(processNamed);
         context.pushLog(processExecution);
         try {
-            log.debug("Running {}[{}]", logicTypeString(handler), handler.getName());
+            log.debug("Running handler [{}]", processNamed);
             HandlerResult handlerResult = null;
 
             if (future != null && handler instanceof CompletableLogic) {
@@ -440,7 +426,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                 handlerResult = handler.handle(state, this);
             }
 
-            log.debug("Finished {}[{}]", logicTypeString(handler), handler.getName());
+            log.debug("Finished handler [{}]", processNamed);
 
             if (handlerResult == null) {
                 return handlerResult;
@@ -480,12 +466,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
     protected void runLogic() {
         if (logic == null) {
             ProcessDefinition def = instanceContext.getProcessDefinition();
-            logic = new ArrayList<>(def.getPreProcessListeners().size() +
-                    def.getProcessHandlers().size() +
-                    def.getPostProcessListeners().size());
-            logic.addAll(def.getPreProcessListeners());
-            logic.addAll(def.getProcessHandlers());
-            logic.addAll(def.getPostProcessListeners());
+            logic = def.getProcessHandlers();
         }
 
         runHandlers();
@@ -636,4 +617,20 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         return instanceContext.getState().getResource();
     }
 
+    private static class NameWrapper implements Named {
+
+        Object obj;
+
+        public NameWrapper(Object obj) {
+            this.obj = obj;
+        }
+
+        @Override
+        public String getName() {
+            if (obj instanceof Named) {
+                return ((Named) obj).getName();
+            }
+            return obj == null ? "null" : obj.getClass().getSimpleName();
+        }
+    }
 }

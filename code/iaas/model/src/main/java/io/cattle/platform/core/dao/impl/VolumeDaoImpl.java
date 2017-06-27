@@ -7,7 +7,6 @@ import static io.cattle.platform.core.model.tables.MountTable.*;
 import static io.cattle.platform.core.model.tables.StorageDriverTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
-import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
 
@@ -23,16 +22,12 @@ import io.cattle.platform.core.model.Mount;
 import io.cattle.platform.core.model.StorageDriver;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
-import io.cattle.platform.core.model.VolumeStoragePoolMap;
 import io.cattle.platform.core.model.tables.VolumeTable;
 import io.cattle.platform.core.model.tables.records.MountRecord;
 import io.cattle.platform.core.model.tables.records.VolumeRecord;
-import io.cattle.platform.core.model.tables.records.VolumeStoragePoolMapRecord;
-import io.cattle.platform.core.util.VolumeUtils;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
@@ -47,26 +42,27 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jooq.Configuration;
 import org.jooq.Record;
 import org.jooq.Record6;
 import org.jooq.RecordHandler;
 
-@Named
 public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
+
     private static final Set<String> LOCAL_POOL_KINDS = new HashSet<>(Arrays.asList(new String[]{"docker", "sim"}));
 
-    @Inject
     GenericResourceDao resourceDao;
-    @Inject
     ObjectManager objectManager;
-    @Inject
-    ObjectProcessManager objectProcessManager;
-    @Inject
     TransactionDelegate transaction;
+
+
+    public VolumeDaoImpl(Configuration configuration, GenericResourceDao resourceDao, ObjectManager objectManager, TransactionDelegate transaction) {
+        super(configuration);
+        this.resourceDao = resourceDao;
+        this.objectManager = objectManager;
+        this.transaction = transaction;
+    }
 
     @Override
     public Volume getVolumeInPoolByExternalId(String externalId, StoragePool storagePool) {
@@ -104,10 +100,8 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
                     VOLUME.NAME, name,
                     VOLUME.STORAGE_POOL_ID, storagePool.getId(),
                     VOLUME.EXTERNAL_ID, externalId,
-
-            objectManager.setFields(volume,
-                VolumeConstants.FIELD_DOCKER_IS_NATIVE, isNative,
-                VolumeConstants.FIELD_VOLUME_DRIVER, driver);
+                    VolumeConstants.FIELD_DOCKER_IS_NATIVE, isNative,
+                    VolumeConstants.FIELD_VOLUME_DRIVER, driver);
 
             return volume;
         });
@@ -119,10 +113,8 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
         Record record = create()
             .select(VOLUME.fields())
             .from(VOLUME)
-            .join(VOLUME_STORAGE_POOL_MAP)
-            .on(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID.eq(storagePoolId))
-            .where(VOLUME.EXTERNAL_ID.eq(externalId)
-                    .or(VOLUME.EXTERNAL_ID.eq(VolumeUtils.externalId(externalId)))
+            .where(VOLUME.STORAGE_POOL_ID.eq(storagePoolId)
+                    .and(VOLUME.EXTERNAL_ID.eq(externalId).or(externalId))
             .and((VOLUME.REMOVED.isNull().or(VOLUME.STATE.eq(CommonStatesConstants.REMOVING)))))
             .fetchAny();
 
@@ -130,42 +122,12 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
     }
 
     @Override
-    public void createVolumeInStoragePool(Map<String, Object> volumeData, String volumeName, StoragePool storagePool) {
-        transaction.doInTransaction(() -> {
-            Record record = create()
-                    .select(VOLUME.fields())
-                    .from(VOLUME)
-                    .join(VOLUME_STORAGE_POOL_MAP)
-                        .on(VOLUME_STORAGE_POOL_MAP.VOLUME_ID.eq(VOLUME.ID)
-                        .and(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID.eq(storagePool.getId())))
-                    .join(STORAGE_POOL)
-                        .on(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID.eq(STORAGE_POOL.ID))
-                        .and(STORAGE_POOL.REMOVED.isNull())
-                    .where(VOLUME.NAME.eq(volumeName)
-                        .and((VOLUME.REMOVED.isNull().or(VOLUME.STATE.eq(CommonStatesConstants.REMOVING)))))
-                        .and(VOLUME.ACCOUNT_ID.eq(storagePool.getAccountId()))
-                    .fetchAny();
-            if (record != null) {
-                return;
-            }
-
-            Volume volume = resourceDao.createAndSchedule(Volume.class, volumeData);
-            Map<String, Object> vspm = new HashMap<>();
-            vspm.put("volumeId", volume.getId());
-            vspm.put("storagePoolId", storagePool.getId());
-            resourceDao.createAndSchedule(VolumeStoragePoolMap.class, vspm);
-        });
-    }
-
-    @Override
     public List<? extends Volume> findSharedOrUnmappedVolumes(long accountId, String volumeName) {
         List<VolumeRecord> volumes = create()
             .selectDistinct(VOLUME.fields())
             .from(VOLUME)
-            .leftOuterJoin(VOLUME_STORAGE_POOL_MAP)
-                .on(VOLUME_STORAGE_POOL_MAP.VOLUME_ID.eq(VOLUME.ID))
             .leftOuterJoin(STORAGE_POOL)
-                .on(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID.eq(STORAGE_POOL.ID))
+                .on(VOLUME.STORAGE_POOL_ID.eq(STORAGE_POOL.ID))
             .where(VOLUME.NAME.eq(volumeName)
                 .and((VOLUME.REMOVED.isNull())))
                 .and(VOLUME.ACCOUNT_ID.eq(accountId))
@@ -181,12 +143,10 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
         List<VolumeRecord> volumes = create()
             .selectDistinct(VOLUME.fields())
             .from(VOLUME)
-            .leftOuterJoin(VOLUME_STORAGE_POOL_MAP)
-                .on(VOLUME_STORAGE_POOL_MAP.VOLUME_ID.eq(VOLUME.ID))
             .where(VOLUME.ID.in(volumeIds)
                 .and((VOLUME.REMOVED.isNull())))
                 .and(VOLUME.ACCOUNT_ID.eq(accountId))
-                .and(VOLUME_STORAGE_POOL_MAP.ID.isNull())
+                .and(VOLUME.STORAGE_POOL_ID.isNull())
             .fetchInto(VolumeRecord.class);
         return volumes;
     }
@@ -320,12 +280,8 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
     public List<? extends Volume> findNonRemovedVolumesOnPool(Long storagePoolId) {
         return create().select(VOLUME.fields())
                 .from(VOLUME)
-                .join(VOLUME_STORAGE_POOL_MAP)
-                    .on(VOLUME_STORAGE_POOL_MAP.VOLUME_ID.eq(VOLUME.ID))
-                .join(STORAGE_POOL)
-                    .on(STORAGE_POOL.ID.eq(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID))
                 .where(VOLUME.REMOVED.isNull()
-                        .and(STORAGE_POOL.ID.eq(storagePoolId)))
+                        .and(VOLUME.STORAGE_POOL_ID.eq(storagePoolId)))
                 .fetchInto(VolumeRecord.class);
     }
 
@@ -368,19 +324,6 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
                         .and(MOUNT.STATE.notIn(CommonStatesConstants.DEACTIVATING, CommonStatesConstants.REMOVING)))
                 .limit(count)
                 .fetchInto(MountRecord.class);
-    }
-
-    @Override
-    public List<? extends VolumeStoragePoolMap> findBandVolumeStoragePoolMap(int count) {
-        return create().select(VOLUME_STORAGE_POOL_MAP.fields())
-                .from(VOLUME_STORAGE_POOL_MAP)
-                .join(VOLUME)
-                    .on(VOLUME.ID.eq(VOLUME_STORAGE_POOL_MAP.VOLUME_ID))
-                .where(VOLUME.STATE.eq(AccountConstants.STATE_PURGED)
-                        .and(VOLUME_STORAGE_POOL_MAP.REMOVED.isNull())
-                        .and(VOLUME_STORAGE_POOL_MAP.STATE.notIn(CommonStatesConstants.DEACTIVATING, CommonStatesConstants.REMOVING)))
-                .limit(count)
-                .fetchInto(VolumeStoragePoolMapRecord.class);
     }
 
     @Override

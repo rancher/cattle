@@ -4,31 +4,26 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.configitem.request.ConfigUpdateRequest;
 import io.cattle.platform.configitem.request.util.ConfigUpdateRequestUtils;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
-import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.model.Agent;
-import io.cattle.platform.engine.handler.AbstractProcessLogic;
 import io.cattle.platform.engine.handler.HandlerResult;
-import io.cattle.platform.engine.handler.ProcessPreListener;
+import io.cattle.platform.engine.handler.ProcessHandler;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.json.JsonMapper;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import com.netflix.config.DynamicStringListProperty;
 
-@Named
-public class AgentScriptsApply extends AbstractProcessLogic implements ProcessPreListener {
+public class AgentScriptsApply implements ProcessHandler {
 
     private static final DynamicStringListProperty ITEMS = ArchaiusUtil.getList("agent.config.items");
 
     ConfigItemStatusManager statusManager;
     JsonMapper jsonMapper;
 
-    @Override
-    public String[] getProcessNames() {
-        return new String[] { AgentConstants.PROCESS_ACTIVATE, AgentConstants.PROCESS_RECONNECT };
+    public AgentScriptsApply(ConfigItemStatusManager statusManager, JsonMapper jsonMapper) {
+        super();
+        this.statusManager = statusManager;
+        this.jsonMapper = jsonMapper;
     }
 
     @Override
@@ -58,24 +53,6 @@ public class AgentScriptsApply extends AbstractProcessLogic implements ProcessPr
         statusManager.updateConfig(request);
 
         return request;
-    }
-
-    public ConfigItemStatusManager getStatusManager() {
-        return statusManager;
-    }
-
-    @Inject
-    public void setStatusManager(ConfigItemStatusManager statusManager) {
-        this.statusManager = statusManager;
-    }
-
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
-    }
-
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
     }
 
 }

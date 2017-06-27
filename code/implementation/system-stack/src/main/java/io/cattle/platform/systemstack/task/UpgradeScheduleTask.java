@@ -5,8 +5,6 @@ import io.cattle.platform.task.Task;
 
 import java.io.IOException;
 
-import javax.inject.Inject;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,8 +12,11 @@ public class UpgradeScheduleTask implements Task {
 
     private static final Logger log = LoggerFactory.getLogger(UpgradeScheduleTask.class);
 
-    @Inject
     UpgradeManager upgradeManager;
+
+    public UpgradeScheduleTask(UpgradeManager upgradeManager) {
+        this.upgradeManager = upgradeManager;
+    }
 
     @Override
     public void run() {

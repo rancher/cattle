@@ -1,46 +1,40 @@
 package io.cattle.platform.iaas.api.manager;
 
-import io.cattle.platform.api.resource.jooq.AbstractJooqResourceManager;
+import io.cattle.platform.api.resource.DefaultResourceManager;
+import io.cattle.platform.api.resource.DefaultResourceManagerSupport;
 import io.cattle.platform.api.utils.ApiUtils;
-import io.cattle.platform.core.model.HostTemplate;
 import io.cattle.platform.framework.secret.SecretsService;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
+import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HostTemplateManager extends AbstractJooqResourceManager {
+public class HostTemplateManager extends DefaultResourceManager {
 
     private static final Logger log = LoggerFactory.getLogger(HostTemplateManager.class);
 
-    @Inject
     SecretsService secretsService;
-    @Inject
     JsonMapper jsonMapper;
 
-    @Override
-    public String[] getTypes() {
-        return new String[] {};
+    public HostTemplateManager(DefaultResourceManagerSupport support, SecretsService secretsService, JsonMapper jsonMapper) {
+        super(support);
+        this.secretsService = secretsService;
+        this.jsonMapper = jsonMapper;
     }
 
     @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { HostTemplate.class };
-    }
-
-    @Override
-    protected <T> T createAndScheduleObject(Class<T> clz, Map<String, Object> properties) {
+    public Object create(String type, ApiRequest request) {
+        Map<String, Object> properties = CollectionUtils.toMap(request.getRequestObject());
         Object value = DataAccessor.fromMap(properties).withKey("secretValues").get();
         if (value != null) {
             try {
@@ -49,12 +43,13 @@ public class HostTemplateManager extends AbstractJooqResourceManager {
                 Map<String, Object> empty = emptyMap(CollectionUtils.toMap(value));
                 properties.put("secretValues", newValue);
                 properties.put("secretValuesEmpty", empty);
+                request.setRequestObject(properties);
             } catch (IOException e) {
                 log.error("Failed to encrypt", e);
                 throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE);
             }
         }
-        T result = super.createAndScheduleObject(clz, properties);
+        Object result = super.create(type, request);
         DataAccessor.setField(result, "secretValues", value);
         return result;
     }

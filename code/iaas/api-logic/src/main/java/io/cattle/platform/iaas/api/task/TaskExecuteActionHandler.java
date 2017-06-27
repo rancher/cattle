@@ -1,19 +1,17 @@
 package io.cattle.platform.iaas.api.task;
 
-import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.core.model.Task;
 import io.cattle.platform.task.TaskManager;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
-
-import javax.inject.Inject;
+import io.github.ibuildthecloud.gdapi.request.resource.ActionHandler;
 
 public class TaskExecuteActionHandler implements ActionHandler {
 
     TaskManager taskManager;
 
-    @Override
-    public String getName() {
-        return "task.execute";
+    public TaskExecuteActionHandler(TaskManager taskManager) {
+        super();
+        this.taskManager = taskManager;
     }
 
     @Override
@@ -21,15 +19,6 @@ public class TaskExecuteActionHandler implements ActionHandler {
         Task task = (Task) obj;
         taskManager.execute(task.getName());
         return task;
-    }
-
-    public TaskManager getTaskManager() {
-        return taskManager;
-    }
-
-    @Inject
-    public void setTaskManager(TaskManager taskManager) {
-        this.taskManager = taskManager;
     }
 
 }

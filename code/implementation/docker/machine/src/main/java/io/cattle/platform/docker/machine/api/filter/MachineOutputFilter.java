@@ -7,8 +7,6 @@ import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.response.ResourceOutputFilter;
 
-import javax.inject.Inject;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,8 +14,12 @@ public class MachineOutputFilter implements ResourceOutputFilter {
 
     private static final Logger log = LoggerFactory.getLogger(MachineOutputFilter.class);
 
-    @Inject
     SecretsService serviceService;
+
+    public MachineOutputFilter(SecretsService serviceService) {
+        super();
+        this.serviceService = serviceService;
+    }
 
     @Override
     public Resource filter(ApiRequest request, Object original, Resource converted) {
@@ -38,16 +40,6 @@ public class MachineOutputFilter implements ResourceOutputFilter {
         }
 
         return converted;
-    }
-
-    @Override
-    public String[] getTypes() {
-        return new String[] { MachineConstants.KIND_MACHINE };
-    }
-
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[0];
     }
 
 }

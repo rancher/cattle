@@ -9,12 +9,9 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.util.ObjectUtils;
 
 import java.util.concurrent.TimeUnit;
-
-import javax.inject.Inject;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -24,16 +21,10 @@ public class AgentLocatorImpl implements AgentLocator {
 
     private static final String EVENTING = "event://";
 
-    @Inject
     AgentDao agentDao;
-    @Inject
     ObjectManager objectManager;
-    @Inject
     EventService eventService;
-    @Inject
     JsonMapper jsonMapper;
-    @Inject
-    ResourceMonitor resourceMonitor;
 
     LoadingCache<Long, RemoteAgent> cache = CacheBuilder.newBuilder().expireAfterWrite(15L, TimeUnit.MINUTES).build(new CacheLoader<Long, RemoteAgent>() {
         @Override
@@ -47,6 +38,13 @@ public class AgentLocatorImpl implements AgentLocator {
             return new RemoteAgentImpl(jsonMapper, objectManager, eventService, wrappedEventService, agentId);
         }
     });
+
+    public AgentLocatorImpl(AgentDao agentDao, ObjectManager objectManager, EventService eventService, JsonMapper jsonMapper) {
+        this.agentDao = agentDao;
+        this.objectManager = objectManager;
+        this.eventService = eventService;
+        this.jsonMapper = jsonMapper;
+    }
 
     @Override
     public RemoteAgent lookupAgent(Object resource) {

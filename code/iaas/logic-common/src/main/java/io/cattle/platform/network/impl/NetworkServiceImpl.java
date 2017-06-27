@@ -20,8 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 public class NetworkServiceImpl implements NetworkService {
 
     public static final Map<String, String> MODE_TO_KIND = new HashMap<>();
@@ -34,12 +32,16 @@ public class NetworkServiceImpl implements NetworkService {
         MODE_TO_KIND.put(NetworkConstants.NETWORK_MODE_CONTAINER, NetworkConstants.KIND_DOCKER_CONTAINER);
     }
 
-    @Inject
     NetworkDao networkDao;
-    @Inject
     JsonMapper jsonMapper;
-    @Inject
     ResourcePoolManager poolManager;
+
+    public NetworkServiceImpl(NetworkDao networkDao, JsonMapper jsonMapper, ResourcePoolManager poolManager) {
+        super();
+        this.networkDao = networkDao;
+        this.jsonMapper = jsonMapper;
+        this.poolManager = poolManager;
+    }
 
     @Override
     public Network resolveNetwork(long accountId, String networkName) {

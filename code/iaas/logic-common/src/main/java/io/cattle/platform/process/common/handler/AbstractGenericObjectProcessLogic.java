@@ -1,11 +1,12 @@
 package io.cattle.platform.process.common.handler;
 
 import io.cattle.platform.engine.handler.HandlerResult;
+import io.cattle.platform.engine.handler.ProcessHandler;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.util.ObjectUtils;
 
-public abstract class AbstractGenericObjectProcessLogic extends AbstractObjectProcessLogic {
+public abstract class AbstractGenericObjectProcessLogic implements ProcessHandler {
 
     public abstract String getKind();
 

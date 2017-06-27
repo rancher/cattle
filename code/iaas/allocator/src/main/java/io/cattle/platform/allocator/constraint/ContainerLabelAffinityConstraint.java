@@ -2,7 +2,7 @@ package io.cattle.platform.allocator.constraint;
 
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.AffinityOps;
 import io.cattle.platform.allocator.service.AllocationCandidate;
-import io.cattle.platform.resource.service.EnvironmentResourceManager;
+import io.cattle.platform.core.cache.EnvironmentResourceManager;
 
 public class ContainerLabelAffinityConstraint implements Constraint {
     public static final String ENV_HEADER_AFFINITY_CONTAINER_LABEL = "affinity:";

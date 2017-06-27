@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.inject.Inject;
 import javax.servlet.http.Cookie;
 
 import org.apache.commons.lang.ObjectUtils;
@@ -55,26 +54,24 @@ public abstract class AbstractTokenUtil implements TokenUtil {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractTokenUtil.class);
 
-    @Inject
     protected AuthDao authDao;
-
-    @Inject
     TokenService tokenService;
-
-    @Inject
+    AuthTokenDao authTokenDao;
+    ObjectManager objectManager;
+    SettingsUtils settingsUtils;
+    AccountDao accountDao;
     ProjectResourceManager projectResourceManager;
 
-    @Inject
-    AuthTokenDao authTokenDao;
-
-    @Inject
-    ObjectManager objectManager;
-
-    @Inject
-    SettingsUtils settingsUtils;
-
-    @Inject
-    AccountDao accountDao;
+    public AbstractTokenUtil(AuthDao authDao, TokenService tokenService, AuthTokenDao authTokenDao, ObjectManager objectManager, SettingsUtils settingsUtils,
+            AccountDao accountDao) {
+        super();
+        this.authDao = authDao;
+        this.tokenService = tokenService;
+        this.authTokenDao = authTokenDao;
+        this.objectManager = objectManager;
+        this.settingsUtils = settingsUtils;
+        this.accountDao = accountDao;
+    }
 
     @Override
     public Account getAccountFromJWT() {
@@ -440,5 +437,13 @@ public abstract class AbstractTokenUtil implements TokenUtil {
         }
         log.debug("retrieveCurrentToken returning {}", token);
         return token;
+    }
+
+    public ProjectResourceManager getProjectResourceManager() {
+        return projectResourceManager;
+    }
+
+    public void setProjectResourceManager(ProjectResourceManager projectResourceManager) {
+        this.projectResourceManager = projectResourceManager;
     }
 }

@@ -10,38 +10,36 @@ import io.cattle.platform.iaas.api.auth.AchaiusPolicyOptionsFactory;
 import io.cattle.platform.iaas.api.auth.AuthorizationProvider;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.event.IaasEvents;
-import io.cattle.platform.util.type.InitializationTask;
-import io.cattle.platform.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
-import io.github.ibuildthecloud.gdapi.factory.impl.SubSchemaFactory;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DefaultAuthorizationProvider implements AuthorizationProvider, InitializationTask, Priority {
+public class DefaultAuthorizationProvider implements AuthorizationProvider {
 
     public static final String ACCOUNT_SCHEMA_FACTORY_NAME = "accountSchemaFactoryName";
 
     private static final Logger log = LoggerFactory.getLogger(DefaultAuthorizationProvider.class);
 
-    Map<String, SchemaFactory> schemaFactories = new HashMap<String, SchemaFactory>();
-    List<SchemaFactory> schemaFactoryList;
-    int priority = Priority.DEFAULT;
+    Map<String, SchemaFactory> schemaFactories = new HashMap<>();
     AchaiusPolicyOptionsFactory optionsFactory;
 
-    @Inject
     AuthDao authDao;
-
-    @Inject
     AccountDao accountDao;
+
+    public DefaultAuthorizationProvider(AchaiusPolicyOptionsFactory optionsFactory, AuthDao authDao, AccountDao accountDao,
+            Map<String, SchemaFactory> schemaFactories) {
+        super();
+        this.optionsFactory = optionsFactory;
+        this.authDao = authDao;
+        this.accountDao = accountDao;
+        this.schemaFactories = schemaFactories;
+    }
 
     @Override
     public SchemaFactory getSchemaFactory(Account account, Policy policy, ApiRequest request) {
@@ -131,43 +129,6 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider, Init
     public static SubscriptionStyle getSubscriptionStyle(Account account, AchaiusPolicyOptionsFactory optionsFactory) {
         Policy tempPolicy = new AccountPolicy(account, account, null, optionsFactory.getOptions(account));
         return SubscriptionUtils.getSubscriptionStyle(tempPolicy);
-    }
-
-    public List<SchemaFactory> getSchemaFactoryList() {
-        return schemaFactoryList;
-    }
-
-    @Inject
-    public void setSchemaFactoryList(List<SchemaFactory> schemaFactoryList) {
-        this.schemaFactoryList = schemaFactoryList;
-    }
-
-    @Override
-    public void start() {
-        for (SchemaFactory factory : schemaFactoryList) {
-            if (factory instanceof SubSchemaFactory) {
-                ((SubSchemaFactory) factory).init();
-            }
-            schemaFactories.put(factory.getId(), factory);
-        }
-    }
-
-    @Override
-    public int getPriority() {
-        return priority;
-    }
-
-    public void setPriority(int priority) {
-        this.priority = priority;
-    }
-
-    public AchaiusPolicyOptionsFactory getOptionsFactory() {
-        return optionsFactory;
-    }
-
-    @Inject
-    public void setOptionsFactory(AchaiusPolicyOptionsFactory optionsFactory) {
-        this.optionsFactory = optionsFactory;
     }
 
 }

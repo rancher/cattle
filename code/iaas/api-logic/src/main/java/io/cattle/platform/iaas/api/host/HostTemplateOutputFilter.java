@@ -29,14 +29,4 @@ public class HostTemplateOutputFilter implements ResourceOutputFilter {
         return converted;
     }
 
-    @Override
-    public String[] getTypes() {
-        return new String[] { HostTemplateConstants.KIND };
-    }
-
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[]{HostTemplate.class};
-    }
-
 }

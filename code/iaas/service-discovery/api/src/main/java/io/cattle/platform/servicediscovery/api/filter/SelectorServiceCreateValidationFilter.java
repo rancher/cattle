@@ -3,32 +3,22 @@ package io.cattle.platform.servicediscovery.api.filter;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+public class SelectorServiceCreateValidationFilter extends AbstractValidationFilter {
 
-@Named
-public class SelectorServiceCreateValidationFilter extends AbstractDefaultResourceManagerFilter {
-    @Inject
     ObjectManager objManager;
 
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { Service.class };
-    }
-
-    @Override
-    public String[] getTypes() {
-        return new String[] { ServiceConstants.KIND_SERVICE, ServiceConstants.KIND_SELECTOR_SERVICE };
+    public SelectorServiceCreateValidationFilter(ObjectManager objManager) {
+        this.objManager = objManager;
     }
 
     @Override

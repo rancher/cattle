@@ -16,8 +16,13 @@ import com.google.common.util.concurrent.SettableFuture;
 
 public class RetryTimeoutServiceImpl implements RetryTimeoutService {
 
-    DelayQueue<DelayedObject<Retry>> retryQueue = new DelayQueue<DelayedObject<Retry>>();
+    DelayQueue<DelayedObject<Retry>> retryQueue = new DelayQueue<>();
     ExecutorService executorService;
+
+    public RetryTimeoutServiceImpl(ExecutorService executorService) {
+        super();
+        this.executorService = executorService;
+    }
 
     @Override
     public Object submit(Retry retry) {
@@ -70,7 +75,7 @@ public class RetryTimeoutServiceImpl implements RetryTimeoutService {
     }
 
     protected DelayedObject<Retry> queue(Retry retry) {
-        DelayedObject<Retry> delayed = new DelayedObject<Retry>(System.currentTimeMillis() + retry.getTimeoutMillis(), retry);
+        DelayedObject<Retry> delayed = new DelayedObject<>(System.currentTimeMillis() + retry.getTimeoutMillis(), retry);
         retryQueue.add(delayed);
         return delayed;
     }

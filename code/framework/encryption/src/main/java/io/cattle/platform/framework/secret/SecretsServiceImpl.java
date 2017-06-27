@@ -25,7 +25,6 @@ import java.util.Map;
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import javax.inject.Inject;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
@@ -48,12 +47,16 @@ public class SecretsServiceImpl implements SecretsService {
     private static final DynamicStringProperty SECRETS_URL = ArchaiusUtil.getString("secrets.url");
     private static final DynamicStringProperty SECRETS_BACKEND = ArchaiusUtil.getString("secrets.backend");
 
-    @Inject
     SecretDao secretDao;
-    @Inject
     JsonMapper jsonMapper;
-    @Inject
     RSAKeyProvider rsaKeyProvider;
+
+    public SecretsServiceImpl(SecretDao secretDao, JsonMapper jsonMapper, RSAKeyProvider rsaKeyProvider) {
+        super();
+        this.secretDao = secretDao;
+        this.jsonMapper = jsonMapper;
+        this.rsaKeyProvider = rsaKeyProvider;
+    }
 
     @Override
     public String encrypt(long accountId, String value) throws IOException {

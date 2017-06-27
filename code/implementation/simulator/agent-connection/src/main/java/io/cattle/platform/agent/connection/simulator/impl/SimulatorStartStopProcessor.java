@@ -30,8 +30,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 
 public class SimulatorStartStopProcessor implements AgentSimulatorEventProcessor {
@@ -42,15 +40,21 @@ public class SimulatorStartStopProcessor implements AgentSimulatorEventProcessor
     private static final String SIM_CREATE_ANOTHER = "simCreateAnother_";
     private static final Pattern CREATE_ANOTHER = Pattern.compile(".*simCreateAnother_.*");
 
-    @Inject
     ConfigItemStatusDao configItemStatusDao;
-    @Inject
     SimulatorConfigUpdateProcessor configUpdateProcessor;
-    @Inject
     ObjectManager objectManager;
-
     JsonMapper jsonMapper;
     ScheduledExecutorService scheduleExecutorService;
+
+    public SimulatorStartStopProcessor(ConfigItemStatusDao configItemStatusDao, SimulatorConfigUpdateProcessor configUpdateProcessor,
+            ObjectManager objectManager, JsonMapper jsonMapper, ScheduledExecutorService scheduleExecutorService) {
+        super();
+        this.configItemStatusDao = configItemStatusDao;
+        this.configUpdateProcessor = configUpdateProcessor;
+        this.objectManager = objectManager;
+        this.jsonMapper = jsonMapper;
+        this.scheduleExecutorService = scheduleExecutorService;
+    }
 
     @SuppressWarnings("unchecked")
     @Override
@@ -147,24 +151,6 @@ public class SimulatorStartStopProcessor implements AgentSimulatorEventProcessor
                 }
             }
         });
-    }
-
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
-    }
-
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
-    }
-
-    public ScheduledExecutorService getScheduleExecutorService() {
-        return scheduleExecutorService;
-    }
-
-    @Inject
-    public void setScheduleExecutorService(ScheduledExecutorService scheduleExecutorService) {
-        this.scheduleExecutorService = scheduleExecutorService;
     }
 
 }

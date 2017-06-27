@@ -12,6 +12,7 @@ public class CredentialConstants {
     public static final String KIND_API_KEY = "apiKey";
     public static final String KIND_PASSWORD = "password";
     public static final String KIND_AGENT_API_KEY = "agentApiKey";
+    public static final String KIND_CREDENTIAL_REGISTRATION_TOKEN = "registrationToken";
 
     public static final String LINK_PEM_FILE = "pem";
     public static final String LINK_CERTIFICATE = "certificate";

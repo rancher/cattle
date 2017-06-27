@@ -21,8 +21,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,16 +54,20 @@ public class UpgradeManager {
             "catalog://library:infra*network-services:18"
             ));
 
-    @Inject
     CatalogService catalogService;
-    @Inject
     StackDao stackDao;
-    @Inject
     GenericResourceDao resourceDao;
-    @Inject
     LockManager lockManager;
-    @Inject
     ObjectProcessManager processManager;
+
+    public UpgradeManager(CatalogService catalogService, StackDao stackDao, GenericResourceDao resourceDao, LockManager lockManager,
+            ObjectProcessManager processManager) {
+        this.catalogService = catalogService;
+        this.stackDao = stackDao;
+        this.resourceDao = resourceDao;
+        this.lockManager = lockManager;
+        this.processManager = processManager;
+    }
 
     public void schedule() throws IOException {
         lockManager.lock(new ScheduledUpgradeLock(), ()->{

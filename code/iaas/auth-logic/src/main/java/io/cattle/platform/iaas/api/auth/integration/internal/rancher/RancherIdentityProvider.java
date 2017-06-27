@@ -6,7 +6,6 @@ import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityProvider;
-import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
@@ -17,17 +16,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.inject.Inject;
-
 public class RancherIdentityProvider implements IdentityProvider {
 
-    @Inject
     AuthDao authDao;
-    @Inject
-    ObjectManager objectManager;
-
-    @Inject
     IdFormatter idFormatter;
+
+    public RancherIdentityProvider(AuthDao authDao, IdFormatter idFormatter) {
+        super();
+        this.authDao = authDao;
+        this.idFormatter = idFormatter;
+    }
 
     @Override
     public List<Identity> searchIdentities(String name, String scope, boolean exactMatch) {

@@ -3,8 +3,8 @@ package io.cattle.platform.allocator.constraint;
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.AffinityOps;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.service.AllocationCandidate;
+import io.cattle.platform.core.cache.EnvironmentResourceManager;
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.resource.service.EnvironmentResourceManager;
 
 import java.util.Map;
 

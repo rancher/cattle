@@ -13,14 +13,13 @@ import io.cattle.platform.inator.planner.impl.ScaleServicePlanner;
 import io.cattle.platform.inator.wrapper.DeploymentUnitWrapper;
 import io.cattle.platform.inator.wrapper.StackWrapper;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
-@Named
 public class InatorFactoryinator {
 
-    @Inject
     InatorServices svc;
+
+    public InatorFactoryinator(InatorServices svc) {
+        this.svc = svc;
+    }
 
     public Inator buildInator(String type, Long id) {
         Class<?> clz = svc.objectManager.getSchemaFactory().getSchemaClass(type);

@@ -14,15 +14,14 @@ import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
-import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.InstanceDao;
-import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.ContainerEvent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.engine.handler.HandlerResult;
+import io.cattle.platform.engine.handler.ProcessHandler;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
@@ -31,20 +30,18 @@ import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
+import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
-import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
-import io.cattle.platform.storage.service.StorageService;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -54,7 +51,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.netflix.config.DynamicBooleanProperty;
 
-public class ContainerEventCreate extends AbstractDefaultProcessHandler {
+public class ContainerEventCreate implements ProcessHandler {
 
     public static final String AGENT_ID = "agentId";
     public static final String INSTANCE_INSPECT_EVENT_NAME = "compute.instance.inspect";
@@ -71,29 +68,25 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ContainerEventCreate.class);
 
-    @Inject
-    StorageService storageService;
-
-    @Inject
-    NetworkDao networkDao;
-
-    @Inject
-    AccountDao accountDao;
-
-    @Inject
+    ObjectManager objectManager;
+    ObjectProcessManager processManager;
     InstanceDao instanceDao;
-
-    @Inject
     LockManager lockManager;
-
-    @Inject
     ResourceMonitor resourceMonitor;
-
-    @Inject
     AgentLocator agentLocator;
-
-    @Inject
     GenericResourceDao resourceDao;
+
+    public ContainerEventCreate(ObjectManager objectManager, ObjectProcessManager processManager, InstanceDao instanceDao, LockManager lockManager,
+            ResourceMonitor resourceMonitor, AgentLocator agentLocator, GenericResourceDao resourceDao) {
+        super();
+        this.objectManager = objectManager;
+        this.processManager = processManager;
+        this.instanceDao = instanceDao;
+        this.lockManager = lockManager;
+        this.resourceMonitor = resourceMonitor;
+        this.agentLocator = agentLocator;
+        this.resourceDao = resourceDao;
+    }
 
     Cache<String, String> scheduled = CacheBuilder.newBuilder()
             .expireAfterWrite(15, TimeUnit.MINUTES)
@@ -145,7 +138,7 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         HandlerResult result = lockManager.lock(new ContainerEventInstanceLock(event.getAccountId(), event.getExternalId()), new LockCallback<HandlerResult>() {
             @Override
             public HandlerResult doWithLock() {
-                Map<String, Object> inspect = getInspect(event, data, false);
+                Map<String, Object> inspect = getInspect(event, state.getData(), false);
                 String rancherUuid = getRancherUuidLabel(inspect, data);
                 Instance instance = instanceDao.getInstanceByUuidOrExternalId(event.getAccountId(), rancherUuid, event.getExternalId());
 
@@ -170,7 +163,7 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
                             instance = resourceMonitor.waitForNotTransitioning(instance, 3000L);
                         }
 
-                        objectProcessManager.scheduleProcessInstance(PROCESS_START, instance, makeData());
+                        processManager.scheduleProcessInstance(PROCESS_START, instance, makeData());
                     } else if (EVENT_STOP.equals(status) || EVENT_DIE.equals(status)) {
                         if (STATE_STOPPED.equals(state) || STATE_STOPPING.equals(state))
                             return null;
@@ -179,21 +172,21 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
                             instance = resourceMonitor.waitForNotTransitioning(instance, 3000L);
                         }
 
-                        objectProcessManager.scheduleProcessInstance(PROCESS_STOP, objectManager.reload(instance), makeData());
+                        processManager.scheduleProcessInstance(PROCESS_STOP, objectManager.reload(instance), makeData());
                     } else if (EVENT_DESTROY.equals(status)) {
                         if (REMOVED.equals(state) || REMOVING.equals(state))
                             return null;
 
                         Map<String, Object> data = makeData();
                         try {
-                            objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, instance, data);
+                            processManager.scheduleStandardProcess(StandardProcess.REMOVE, instance, data);
                         } catch (ProcessCancelException e) {
                             if (STATE_STOPPING.equals(state)) {
                                 // handle docker forced stop and remove
                                 instance = resourceMonitor.waitForNotTransitioning(instance, 3000L);
-                                objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, instance, data);
+                                processManager.scheduleStandardProcess(StandardProcess.REMOVE, instance, data);
                             } else {
-                                objectProcessManager.stopThenRemove(instance, data);
+                                processManager.stopThenRemove(instance, data);
                             }
                         }
                     }

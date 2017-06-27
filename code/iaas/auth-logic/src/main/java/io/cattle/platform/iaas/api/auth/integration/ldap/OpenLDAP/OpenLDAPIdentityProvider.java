@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
-import javax.inject.Inject;
 import javax.naming.InvalidNameException;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
@@ -40,17 +39,20 @@ import org.slf4j.LoggerFactory;
 public class OpenLDAPIdentityProvider extends LDAPIdentityProvider implements IdentityProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(OpenLDAPIdentityProvider.class);
-    @Inject
-    OpenLDAPUtils openLDAPUtils;
-    @Inject
-    OpenLDAPTokenCreator ADTokenCreator;
-    @Inject
-    AuthTokenDao authTokenDao;
-    private GenericObjectPool<LdapContext> contextPool;
-    ExecutorService executorService;
-    @Inject
-    OpenLDAPConstantsConfig openLDAPConfig;
 
+    OpenLDAPUtils openLDAPUtils;
+    AuthTokenDao authTokenDao;
+    GenericObjectPool<LdapContext> contextPool;
+    ExecutorService executorService;
+    OpenLDAPConstantsConfig openLDAPConfig = new OpenLDAPConstantsConfig();
+
+    public OpenLDAPIdentityProvider(OpenLDAPUtils openLDAPUtils, AuthTokenDao authTokenDao, ExecutorService executorService) {
+        super();
+        this.openLDAPUtils = openLDAPUtils;
+        this.authTokenDao = authTokenDao;
+        this.executorService = executorService;
+        init();
+    }
 
     @Override
     public Set<Identity> getIdentities(Account account) {

@@ -5,13 +5,14 @@ import io.cattle.platform.framework.encryption.EncryptionConstants;
 import io.github.ibuildthecloud.gdapi.model.Transformer;
 import io.github.ibuildthecloud.gdapi.util.TransformationService;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
 public class TransformationServiceImpl implements TransformationService {
 
-    Map<String, Transformer> transformers;
+    Map<String, Transformer> transformers = new HashMap<>();
 
     @Override
     public String transform(String value, String method) {
@@ -29,17 +30,17 @@ public class TransformationServiceImpl implements TransformationService {
             throw new IllegalArgumentException(method);
         }
         transformerExists(transformer);
-        return transformer + EncryptionConstants.ENCRYPTER_NAME_DELM + getTransformers().get(transformer).transform(value);
+        return transformer + EncryptionConstants.ENCRYPTER_NAME_DELM + transformers.get(transformer).transform(value);
     }
 
     protected String untransformInternal(String transformerName, String value) {
         transformerExists(transformerName);
-        return getTransformers().get(transformerName).untransform(value);
+        return transformers.get(transformerName).untransform(value);
     }
 
     protected boolean compareInternal(String plainText, String encrypted, String transformerName) {
         transformerExists(transformerName);
-        return getTransformers().get(transformerName).compare(plainText, encrypted);
+        return transformers.get(transformerName).compare(plainText, encrypted);
     }
 
     @Override
@@ -54,14 +55,12 @@ public class TransformationServiceImpl implements TransformationService {
         return untransformInternal(valueSplit[0], valueSplit[1]);
     }
 
-    @Override
-    public void setTransformers(Map<String, Transformer> transformers) {
-        this.transformers = transformers;
-    }
-
-    @Override
     public Map<String, Transformer> getTransformers() {
         return transformers;
+    }
+
+    public void addTransformers(Transformer transformers) {
+        this.transformers.put(transformers.getName(), transformers);
     }
 
     @Override
@@ -77,7 +76,7 @@ public class TransformationServiceImpl implements TransformationService {
     }
 
     void transformerExists(String transformerName) {
-        if (!getTransformers().containsKey(transformerName)){
+        if (!transformers.containsKey(transformerName)){
             throw new IllegalArgumentException("Transformer: " + transformerName + " does not exist.");
         }
     }

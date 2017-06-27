@@ -10,7 +10,6 @@ import io.cattle.platform.iaas.api.servlet.filter.ProxyPreFilter;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.util.type.Named;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -35,7 +34,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import javax.inject.Inject;
 import javax.net.ssl.SSLContext;
 import javax.servlet.http.HttpServletRequest;
 
@@ -73,7 +71,7 @@ import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicStringListProperty;
 
 
-public class GenericWhitelistedProxy extends AbstractResponseGenerator implements Named {
+public class GenericWhitelistedProxy extends AbstractResponseGenerator {
 
     public static final String ALLOWED_HOST = GenericWhitelistedProxy.class.getName() + "allowed.host";
     public static final String SET_HOST_CURRENT_HOST = GenericWhitelistedProxy.class.getName() + "set_host_current_host";
@@ -96,7 +94,6 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator implement
 
     private List<String> allowedPaths;
     private boolean noAuthProxy = false;
-    private String name;
 
     static {
         LayeredConnectionSocketFactory ssl = null;
@@ -142,12 +139,11 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator implement
             .maximumSize(100)
             .build();
 
-    @Inject
     ObjectManager objectManager;
 
-    public GenericWhitelistedProxy(String name) {
+    public GenericWhitelistedProxy(ObjectManager objectManager) {
         super();
-        this.name = name;
+        this.objectManager = objectManager;
     }
 
     protected boolean isAllowed(HttpServletRequest servletRequest, String host) {
@@ -424,14 +420,5 @@ public class GenericWhitelistedProxy extends AbstractResponseGenerator implement
 
     public void setNoAuthProxy(String noAuthProxy) {
         this.noAuthProxy = Boolean.parseBoolean(noAuthProxy);
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public String getName() {
-        return name;
     }
 }

@@ -15,7 +15,13 @@ import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.List;
 
+import org.jooq.Configuration;
+
 public class DockerImageCredentialLookup extends AbstractJooqDao implements ImageCredentialLookup {
+
+    public DockerImageCredentialLookup(Configuration configuration) {
+        super(configuration);
+    }
 
     @Override
     public Credential getDefaultCredential(String uuid, long currentAccount) {

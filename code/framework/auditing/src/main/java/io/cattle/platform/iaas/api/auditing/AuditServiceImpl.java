@@ -5,9 +5,7 @@ import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.ContainerEventConstants;
 import io.cattle.platform.core.constants.ExternalEventConstants;
-import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.iaas.api.auditing.dao.AuditLogDao;
-import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.json.JsonMapper;
@@ -25,13 +23,13 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AuditServiceImpl implements AuditService{
+
+    private static final Logger log = LoggerFactory.getLogger(AuditLogsRequestHandler.class);
 
     public static final Set<String> BLACK_LIST_TYPES = Collections.unmodifiableSet(
             new HashSet<>(Arrays.asList(
@@ -47,27 +45,19 @@ public class AuditServiceImpl implements AuditService{
                     "dynamicSchema".toLowerCase(),
                     ContainerEventConstants.CONTAINER_EVENT_KIND.toLowerCase(),
                     ExternalEventConstants.KIND_EXTERNAL_EVENT.toLowerCase(),
-                    ExternalEventConstants.KIND_SERVICE_EVENT.toLowerCase(),
-                    ExternalEventConstants.KIND_VOLUME_EVENT.toLowerCase(),
-                    ExternalEventConstants.KIND_STORAGE_POOL_EVENT.toLowerCase()
+                    ExternalEventConstants.KIND_SERVICE_EVENT.toLowerCase()
             )));
 
-    @Inject
     AuditLogDao auditLogDao;
-
-    @Inject
     JsonMapper jsonMapper;
-
-    @Inject
-    EventService eventService;
-
-    @Inject
-    ObjectManager objectManager;
-
-    @Inject
     IdFormatter idFormatter;
 
-    private static final Logger log = LoggerFactory.getLogger(AuditLogsRequestHandler.class);
+    public AuditServiceImpl(AuditLogDao auditLogDao, JsonMapper jsonMapper, IdFormatter idFormatter) {
+        super();
+        this.auditLogDao = auditLogDao;
+        this.jsonMapper = jsonMapper;
+        this.idFormatter = idFormatter;
+    }
 
     @Override
     public void logRequest(ApiRequest request, Policy policy) {
@@ -181,4 +171,5 @@ public class AuditServiceImpl implements AuditService{
             log.error("Failed to log [{}]", errMsg, e);
         }
     }
+
 }

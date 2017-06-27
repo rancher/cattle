@@ -1,18 +1,21 @@
 package io.cattle.platform.register.api;
 
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.iaas.api.auth.impl.DefaultAuthorizationProvider;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.AccountLookup;
 import io.cattle.platform.iaas.api.auth.integration.internal.rancher.BasicAuthImpl;
-import io.cattle.platform.iaas.api.auth.impl.DefaultAuthorizationProvider;
 import io.cattle.platform.register.auth.RegistrationAuthTokenManager;
 import io.cattle.platform.register.util.RegisterConstants;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
-import javax.inject.Inject;
-
 public class RegistrationTokenAccountLookup implements AccountLookup {
 
     RegistrationAuthTokenManager tokenManager;
+
+    public RegistrationTokenAccountLookup(RegistrationAuthTokenManager tokenManager) {
+        super();
+        this.tokenManager = tokenManager;
+    }
 
     @Override
     public Account getAccount(ApiRequest request) {
@@ -43,15 +46,6 @@ public class RegistrationTokenAccountLookup implements AccountLookup {
     @Override
     public boolean challenge(ApiRequest request) {
         return false;
-    }
-
-    public RegistrationAuthTokenManager getTokenManager() {
-        return tokenManager;
-    }
-
-    @Inject
-    public void setTokenManager(RegistrationAuthTokenManager tokenManager) {
-        this.tokenManager = tokenManager;
     }
 
     @Override

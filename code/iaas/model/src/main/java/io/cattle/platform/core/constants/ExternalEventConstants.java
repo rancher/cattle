@@ -3,8 +3,6 @@ package io.cattle.platform.core.constants;
 public class ExternalEventConstants {
 
     public static final String PROCESS_EXTERNAL_EVENT_CREATE = "externalEvent.create";
-    public static final String KIND_VOLUME_EVENT = "externalVolumeEvent";
-    public static final String KIND_STORAGE_POOL_EVENT = "externalStoragePoolEvent";
     public static final String KIND_EXTERNAL_DNS_EVENT = "externalDnsEvent";
     public static final String KIND_SERVICE_EVENT = "externalServiceEvent";
     public static final String KIND_EXTERNAL_HOST_EVENT = "externalHostEvent";

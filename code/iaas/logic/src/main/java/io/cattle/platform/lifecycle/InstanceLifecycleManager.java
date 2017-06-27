@@ -9,7 +9,7 @@ public interface InstanceLifecycleManager {
 
     void preStart(Instance instance) throws LifecycleException;
 
-    void postStart(Instance instance) throws LifecycleException;
+    void postStart(Instance instance);
 
     void postStop(Instance instance, boolean stopOnly);
 

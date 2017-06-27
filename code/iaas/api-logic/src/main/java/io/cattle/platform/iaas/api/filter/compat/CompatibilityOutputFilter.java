@@ -109,20 +109,4 @@ public class CompatibilityOutputFilter implements ResourceOutputFilter {
         links.putAll(newLinks);
     }
 
-    @Override
-    public String[] getTypes() {
-        return new String[] { "stack", ServiceConstants.KIND_SERVICE,
-                ServiceConstants.KIND_KUBERNETES_SERVICE,
-                ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
-                ServiceConstants.KIND_DNS_SERVICE,
-                ServiceConstants.KIND_EXTERNAL_SERVICE,
-                ServiceConstants.KIND_SELECTOR_SERVICE,
-                ServiceConstants.KIND_SCALING_GROUP_SERVICE };
-    }
-
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] {};
-    }
-
 }

@@ -8,7 +8,6 @@ import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.docker.transform.DockerTransformer;
 import io.cattle.platform.iaas.api.filter.common.CachedOutputFilter;
-import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
@@ -21,27 +20,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 public class InstanceOutputFilter extends CachedOutputFilter<Map<Long, Map<String, Object>>> {
-    @Inject
+
     ServiceDao serviceDao;
-    @Inject
-    ObjectManager objectManager;
-    @Inject
     VolumeDao volumeDao;
-    @Inject
     DockerTransformer transformer;
 
-
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] {};
-    }
-
-    @Override
-    public String[] getTypes() {
-        return new String[]{InstanceConstants.TYPE_CONTAINER};
+    public InstanceOutputFilter(ServiceDao serviceDao, VolumeDao volumeDao, DockerTransformer transformer) {
+        super();
+        this.serviceDao = serviceDao;
+        this.volumeDao = volumeDao;
+        this.transformer = transformer;
     }
 
     @Override

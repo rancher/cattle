@@ -3,45 +3,42 @@ package io.cattle.platform.servicediscovery.process;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.ServiceExposeMapDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.engine.handler.HandlerResult;
-import io.cattle.platform.engine.handler.ProcessPostListener;
+import io.cattle.platform.engine.handler.ProcessHandler;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.lifecycle.ServiceLifecycleManager;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
+import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
-import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.servicediscovery.deployment.impl.lock.ServiceInstanceLock;
-import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
-import io.cattle.platform.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
 import java.util.List;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+public class SelectorInstancePostListener implements ProcessHandler {
 
-@Named
-public class SelectorInstancePostListener extends AbstractObjectProcessLogic implements ProcessPostListener,
-        Priority {
-    @Inject
-    ServiceDiscoveryService sdService;
-
-    @Inject
+    ServiceLifecycleManager serviceLifecycle;
     ServiceExposeMapDao exposeMapDao;
-
-    @Inject
     LockManager lockManager;
+    ObjectManager objectManager;
+    ObjectProcessManager processManager;
 
-    @Override
-    public String[] getProcessNames() {
-        return new String[] { InstanceConstants.PROCESS_START };
+    public SelectorInstancePostListener(ServiceLifecycleManager serviceLifecycle, ServiceExposeMapDao exposeMapDao, LockManager lockManager,
+            ObjectManager objectManager, ObjectProcessManager processManager) {
+        super();
+        this.serviceLifecycle = serviceLifecycle;
+        this.exposeMapDao = exposeMapDao;
+        this.lockManager = lockManager;
+        this.objectManager = objectManager;
+        this.processManager = processManager;
     }
 
     @Override
@@ -53,13 +50,13 @@ public class SelectorInstancePostListener extends AbstractObjectProcessLogic imp
                 SERVICE.SELECTOR_CONTAINER, new Condition(ConditionType.NOTNULL));
 
         for (final Service service : services) {
-            if (sdService.isSelectorContainerMatch(service.getSelectorContainer(), instance)) {
+            if (serviceLifecycle.isSelectorContainerMatch(service.getSelectorContainer(), instance)) {
                 lockManager.lock(new ServiceInstanceLock(service, instance), new LockCallbackNoReturn() {
                     @Override
                     public void doWithLockNoResult() {
                         ServiceExposeMap exposeMap = exposeMapDao.createServiceInstanceMap(service, instance, false);
                         if (exposeMap.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
-                            objectProcessManager.scheduleStandardProcessAsync(StandardProcess.CREATE, exposeMap,
+                            processManager.scheduleStandardProcessAsync(StandardProcess.CREATE, exposeMap,
                                     null);
                         }
                     }
@@ -70,8 +67,4 @@ public class SelectorInstancePostListener extends AbstractObjectProcessLogic imp
         return null;
     }
 
-    @Override
-    public int getPriority() {
-        return Priority.DEFAULT;
-    }
 }

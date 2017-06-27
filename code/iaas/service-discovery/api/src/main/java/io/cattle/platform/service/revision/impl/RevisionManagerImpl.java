@@ -40,27 +40,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.apache.commons.lang3.StringUtils;
 
-@Named
 public class RevisionManagerImpl implements RevisionManager {
 
-    @Inject
     ObjectManager objectManager;
-    @Inject
     ObjectProcessManager processManager;
-    @Inject
     ServiceDao serviceDao;
-    @Inject
     GenericResourceDao resourceDao;
-    @Inject
-    @Named("CoreSchemaFactory")
     SchemaFactory schemaFactory;
-    @Inject
     StorageService storageService;
+
+    public RevisionManagerImpl(ObjectManager objectManager, ObjectProcessManager processManager, ServiceDao serviceDao, GenericResourceDao resourceDao,
+            SchemaFactory schemaFactory, StorageService storageService) {
+        super();
+        this.objectManager = objectManager;
+        this.processManager = processManager;
+        this.serviceDao = serviceDao;
+        this.resourceDao = resourceDao;
+        this.schemaFactory = schemaFactory;
+        this.storageService = storageService;
+    }
 
     @Override
     public Revision createInitialRevision(Service service, Map<String, Object> data) {

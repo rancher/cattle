@@ -25,9 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,26 +32,25 @@ import com.netflix.config.DynamicLongProperty;
 
 public class RemoveMonitorImpl implements RemoveMonitor, Task {
 
-    @Inject
-    @Named("CoreSchemaFactory")
-    SchemaFactory schemaFactory;
-
-    @Inject
-    ObjectMetaDataManager objectMetaDataManager;
-
-    @Inject
-    ObjectProcessManager objectProcessManager;
-
-    @Inject
-    ProcessManager processManager;
-
-    @Inject
-    ObjectManager objectManager;
-
     private static final String ERROR_STATE = "error";
     private static final Logger log = LoggerFactory.getLogger(RemoveMonitorImpl.class);
     private static final DynamicLongProperty REMOVE_DELAY = ArchaiusUtil.getLong("remove.resources.after");
 
+    SchemaFactory schemaFactory;
+    ObjectMetaDataManager objectMetaDataManager;
+    ObjectProcessManager objectProcessManager;
+    ProcessManager processManager;
+    ObjectManager objectManager;
+
+    public RemoveMonitorImpl(SchemaFactory schemaFactory, ObjectMetaDataManager objectMetaDataManager, ObjectProcessManager objectProcessManager,
+            ProcessManager processManager, ObjectManager objectManager) {
+        super();
+        this.schemaFactory = schemaFactory;
+        this.objectMetaDataManager = objectMetaDataManager;
+        this.objectProcessManager = objectProcessManager;
+        this.processManager = processManager;
+        this.objectManager = objectManager;
+    }
 
     @Override
     public void run() {
@@ -93,7 +89,7 @@ public class RemoveMonitorImpl implements RemoveMonitor, Task {
     }
 
     protected synchronized Set<String> findRemovableTypes() {
-        Set<String> types = new HashSet<String>();
+        Set<String> types = new HashSet<>();
         for (Schema schema : schemaFactory.listSchemas()) {
             while (schema.getParent() != null) {
                 schema = schemaFactory.getSchema(schema.getParent());

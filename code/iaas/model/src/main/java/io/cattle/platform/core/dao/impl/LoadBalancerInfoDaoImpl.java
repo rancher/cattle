@@ -5,6 +5,7 @@ import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
+
 import io.cattle.platform.core.addon.HaproxyConfig;
 import io.cattle.platform.core.addon.LbConfig;
 import io.cattle.platform.core.addon.LoadBalancerCookieStickinessPolicy;
@@ -35,25 +36,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jooq.Configuration;
 import org.jooq.Record2;
 import org.jooq.Record3;
 import org.jooq.RecordHandler;
 
-@Named
 public class LoadBalancerInfoDaoImpl extends AbstractJooqDao implements LoadBalancerInfoDao {
-    @Inject
+
     ObjectManager objectManager;
-
-    @Inject
     JsonMapper jsonMapper;
-
-    @Inject
     ServiceDao svcDao;
+
+    public LoadBalancerInfoDaoImpl(Configuration configuration, ObjectManager objectManager, JsonMapper jsonMapper, ServiceDao svcDao) {
+        super(configuration);
+        this.objectManager = objectManager;
+        this.jsonMapper = jsonMapper;
+        this.svcDao = svcDao;
+    }
 
     @SuppressWarnings("unchecked")
     protected List<LoadBalancerListenerInfo> getListeners(Service lbService) {

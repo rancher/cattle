@@ -10,7 +10,7 @@ import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.gdapi.model.impl.CollectionImpl;
 import io.github.ibuildthecloud.gdapi.model.impl.WrappedResource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
-import io.github.ibuildthecloud.gdapi.request.handler.AbstractApiRequestHandler;
+import io.github.ibuildthecloud.gdapi.request.handler.ApiRequestHandler;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -18,11 +18,16 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
-public class JsonResponseWriter extends AbstractApiRequestHandler {
+public class JsonResponseWriter implements ApiRequestHandler {
 
     JsonMapper jsonMapper;
     JsonMapper actionLinksMapper = new ActionLinksMapper();
     boolean chunked = true;
+
+    public JsonResponseWriter(JsonMapper jsonMapper) {
+        super();
+        this.jsonMapper = jsonMapper;
+    }
 
     @Override
     public void handle(ApiRequest request) throws IOException {
@@ -110,14 +115,6 @@ public class JsonResponseWriter extends AbstractApiRequestHandler {
 
     protected void writeJson(JsonMapper jsonMapper, OutputStream os, Object responseObject, ApiRequest request) throws IOException {
         jsonMapper.writeValue(os, responseObject);
-    }
-
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
-    }
-
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
     }
 
     public boolean isChunked() {

@@ -5,12 +5,13 @@ import io.cattle.platform.engine.eventing.ProcessExecuteEvent;
 import io.cattle.platform.engine.model.ProcessReference;
 import io.cattle.platform.engine.server.ProcessServer;
 
-import javax.inject.Inject;
-
 public class ProcessEventListenerImpl implements ProcessEventListener {
 
-    @Inject
     ProcessServer processServer;
+
+    public ProcessEventListenerImpl(ProcessServer processServer) {
+        this.processServer = processServer;
+    }
 
     @Override
     public void processExecute(ProcessExecuteEvent event) {

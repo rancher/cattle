@@ -10,12 +10,14 @@ import io.cattle.platform.resource.pool.PooledResourceItemGeneratorFactory;
 import io.cattle.platform.resource.pool.impl.StringRangeGenerator;
 import io.cattle.platform.resource.pool.util.ResourcePoolConstants;
 
-import javax.inject.Inject;
-
 public class EnvironmentPortGeneratorFactory implements PooledResourceItemGeneratorFactory {
 
-    @Inject
     JsonMapper jsonMapper;
+
+    public EnvironmentPortGeneratorFactory(JsonMapper jsonMapper) {
+        super();
+        this.jsonMapper = jsonMapper;
+    }
 
     @Override
     public PooledResourceItemGenerator getGenerator(Object pool, String qualifier) {

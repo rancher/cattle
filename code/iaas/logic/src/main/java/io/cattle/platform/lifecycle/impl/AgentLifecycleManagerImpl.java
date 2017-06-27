@@ -13,12 +13,13 @@ import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.List;
 
-import javax.inject.Inject;
-
 public class AgentLifecycleManagerImpl implements AgentLifecycleManager {
 
-    @Inject
     AgentInstanceFactory agentInstanceFactory;
+
+    public AgentLifecycleManagerImpl(AgentInstanceFactory agentInstanceFactory) {
+        this.agentInstanceFactory = agentInstanceFactory;
+    }
 
     @Override
     public void create(Instance instance) {

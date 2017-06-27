@@ -15,17 +15,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import org.apache.commons.io.IOUtils;
 
 public class TransformInspect implements ScriptsHandler {
 
-    @Inject
     DockerTransformer transformer;
-
-    @Inject
     JsonMapper jsonMapper;
+
+    public TransformInspect(DockerTransformer transformer, JsonMapper jsonMapper) {
+        super();
+        this.transformer = transformer;
+        this.jsonMapper = jsonMapper;
+    }
 
     @SuppressWarnings("unchecked")
     @Override

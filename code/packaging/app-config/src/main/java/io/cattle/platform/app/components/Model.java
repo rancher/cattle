@@ -33,28 +33,24 @@ import io.cattle.platform.core.addon.VirtualMachineDisk;
 import io.cattle.platform.core.addon.VolumeActivateInput;
 import io.cattle.platform.core.model.CattleTable;
 import io.cattle.platform.db.jooq.utils.SchemaRecordTypeListGenerator;
-import io.cattle.platform.engine.process.ProcessDefinition;
-import io.cattle.platform.extension.dynamic.api.addon.ExternalHandlerProcessConfig;
 import io.cattle.platform.object.meta.TypeSet;
-import io.cattle.platform.process.common.spring.ResourceProcessBuilder;
+import io.cattle.platform.process.builder.ResourceProcessBuilder;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 public class Model {
 
-    Framework framework;
-    Map<String, ProcessDefinition> processDefintions = new HashMap<>();
+    Framework f;
 
     public Model(Framework framework) {
-        this.framework = framework;
+        this.f = framework;
         init();
     }
 
     private void init() {
         setupTypes();
         setupProcessDefinitions();
+        f.wireUpTypes();
     }
 
     private void setupProcessDefinitions() {
@@ -259,11 +255,11 @@ public class Model {
         process("deploymentunit.error").resourceType("deploymentUnit").start("active,activating,pausing,paused").transitioning("erroring").done("error").build();
         process("deploymentunit.pause").resourceType("deploymentUnit").start("requested,registering,activating,active,deactivating,inactive,error,erroring").transitioning("pausing").done("paused").build();
 
-        framework.metaDataManager.getProcessDefinitions().addAll(processDefintions.values());
+        f.metaDataManager.getProcessDefinitions().addAll(f.processDefinitions.values());
     }
 
     private void setupTypes() {
-        framework.metaDataManager.setTypeSets(Arrays.asList(
+        f.metaDataManager.setTypeSets(Arrays.asList(
                 databaseObjects(),
                 addons(),
                 named()));;
@@ -293,8 +289,8 @@ public class Model {
     }
 
     private ResourceProcessBuilder process(String name) {
-        ResourceProcessBuilder builder = new ResourceProcessBuilder(processDefintions, framework.objectManager,
-                framework.jsonMapper, framework.processRecordDao, framework.extensionManager);
+        ResourceProcessBuilder builder = new ResourceProcessBuilder(f.processDefinitions, f.objectManager,
+                f.jsonMapper, f.processRecordDao, f.processRegistry);
         return builder.name(name);
     }
 
@@ -310,7 +306,6 @@ public class Model {
                 LogConfig.class,
                 RestartPolicy.class,
                 LoadBalancerCookieStickinessPolicy.class,
-                ExternalHandlerProcessConfig.class,
                 ComposeConfig.class,
                 InstanceHealthCheck.class,
                 ServiceLink.class,
@@ -391,4 +386,5 @@ public class Model {
                 "selectorService,parent=service",
                 "scalingGroup,parent=service");
     }
+
 }

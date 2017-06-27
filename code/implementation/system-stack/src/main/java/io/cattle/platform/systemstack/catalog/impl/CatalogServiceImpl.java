@@ -22,8 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
@@ -43,19 +41,20 @@ public class CatalogServiceImpl implements CatalogService {
     private static DynamicStringProperty CATALOG_RESOURCE_VERSION = ArchaiusUtil.getString("rancher.server.version");
     private static final DynamicBooleanProperty LAUNCH_CATALOG = ArchaiusUtil.getBoolean("catalog.execute");
 
-    @Inject
     JsonMapper jsonMapper;
-
-    @Inject
     GenericResourceDao resourceDao;
-
-    @Inject
     ObjectManager objectManager;
-
-    @Inject
     ObjectProcessManager processManager;
 
     boolean firstCall = true;
+
+    public CatalogServiceImpl(JsonMapper jsonMapper, GenericResourceDao resourceDao, ObjectManager objectManager, ObjectProcessManager processManager) {
+        super();
+        this.jsonMapper = jsonMapper;
+        this.resourceDao = resourceDao;
+        this.objectManager = objectManager;
+        this.processManager = processManager;
+    }
 
     @Override
     public Map<String, CatalogTemplate> resolvedExternalIds(List<CatalogTemplate> templates) throws IOException {

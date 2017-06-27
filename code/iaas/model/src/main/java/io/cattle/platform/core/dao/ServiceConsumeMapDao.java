@@ -2,7 +2,6 @@ package io.cattle.platform.core.dao;
 
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.InstanceLink;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 
@@ -43,12 +42,6 @@ public interface ServiceConsumeMapDao {
      * @return list of services consumed by the instance specified
      */
     List<? extends ServiceConsumeMap> findConsumedServicesForInstance(long instanceId, List<String> kinds);
-
-    /**
-     * @param instanceId
-     * @return  list of InstanceLink for the instance that are from services, not container links
-     */
-    List<? extends InstanceLink> findServiceBasedInstanceLinks(long instanceId);
 
     Instance findOneInstanceForService(long serviceId);
 

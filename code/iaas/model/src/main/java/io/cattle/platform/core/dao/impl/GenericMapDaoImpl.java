@@ -2,6 +2,7 @@ package io.cattle.platform.core.dao.impl;
 
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
+import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.jooq.utils.JooqUtils;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.meta.Relationship;
@@ -10,20 +11,20 @@ import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
+import org.jooq.Configuration;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.UpdatableRecord;
 
-@Named
 public class GenericMapDaoImpl extends AbstractCoreDao implements GenericMapDao {
 
-    @Inject
-    @Named("CoreSchemaFactory")
+    public GenericMapDaoImpl(Configuration configuration, ObjectManager objectManager, SchemaFactory schemaFactory, ObjectMetaDataManager metaDataManager) {
+        super(configuration, objectManager);
+        this.schemaFactory = schemaFactory;
+        this.metaDataManager = metaDataManager;
+    }
+
     SchemaFactory schemaFactory;
-    @Inject
     ObjectMetaDataManager metaDataManager;
 
     @SuppressWarnings("unchecked")

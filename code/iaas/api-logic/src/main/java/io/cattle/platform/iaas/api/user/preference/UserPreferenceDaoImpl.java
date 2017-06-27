@@ -1,10 +1,18 @@
 package io.cattle.platform.iaas.api.user.preference;
 
-import io.cattle.platform.core.model.UserPreference;
 import static io.cattle.platform.core.model.tables.UserPreferenceTable.*;
+
+import io.cattle.platform.core.model.UserPreference;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 
+import org.jooq.Configuration;
+
 public class UserPreferenceDaoImpl extends AbstractJooqDao implements UserPreferenceDao {
+
+    public UserPreferenceDaoImpl(Configuration configuration) {
+        super(configuration);
+    }
+
     @Override
     public boolean isUnique(UserPreference userPreference, long accountId) {
         return create().selectFrom(USER_PREFERENCE)

@@ -15,25 +15,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import com.google.common.base.Strings;
 
 public class ServiceMappingsOutputFilter extends CachedOutputFilter<Map<Long, ServiceMappingsOutputFilter.ServiceInfo>> {
 
-    @Inject
     ServiceDao serviceDao;
-    @Inject
     ObjectManager objectManager;
 
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] {Service.class};
-    }
-
-    @Override
-    public String[] getTypes() {
-        return new String[]{};
+    public ServiceMappingsOutputFilter(ServiceDao serviceDao, ObjectManager objectManager) {
+        super();
+        this.serviceDao = serviceDao;
+        this.objectManager = objectManager;
     }
 
     @Override

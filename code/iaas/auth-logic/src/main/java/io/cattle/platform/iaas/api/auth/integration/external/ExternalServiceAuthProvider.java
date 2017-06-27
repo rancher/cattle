@@ -28,8 +28,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.fluent.Request;
@@ -44,16 +42,18 @@ public class ExternalServiceAuthProvider {
 
     private static final Logger log = LoggerFactory.getLogger(ExternalServiceAuthProvider.class);
 
-    @Inject
     private JsonMapper jsonMapper;
-
-    @Inject
     TokenService tokenService;
-
-    @Inject
     ExternalServiceTokenUtil tokenUtil;
-    @Inject
-    private AuthTokenDao authTokenDao;
+    AuthTokenDao authTokenDao;
+
+    public ExternalServiceAuthProvider(JsonMapper jsonMapper, TokenService tokenService, ExternalServiceTokenUtil tokenUtil, AuthTokenDao authTokenDao) {
+        super();
+        this.jsonMapper = jsonMapper;
+        this.tokenService = tokenService;
+        this.tokenUtil = tokenUtil;
+        this.authTokenDao = authTokenDao;
+    }
 
     public Token getToken(ApiRequest request) {
         Map<String, Object> requestBody = CollectionUtils.toMap(request.getRequestObject());

@@ -7,32 +7,33 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.manager.LoopFactory;
 import io.cattle.platform.engine.model.Loop;
 import io.cattle.platform.inator.Deployinator;
+import io.cattle.platform.lifecycle.ServiceLifecycleManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
-import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
-
-import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
 
-@Named
 public class LoopFactoryImpl implements LoopFactory {
 
     public static final String RECONCILE = "service-reconcile";
     public static final String DU_RECONCILE = "deployment-unit-reconcile";
     public static final String STACK_HEALTH = "stack-health";
 
-    @Inject
     Deployinator deployinator;
-    @Inject
-    ServiceDiscoveryService sdService;
-    @Inject
+    ServiceLifecycleManager sdService;
     ObjectManager objectManager;
-    @Inject
     ActivityService activityService;
-    @Inject
     ObjectProcessManager processManager;
+
+    public LoopFactoryImpl(Deployinator deployinator, ServiceLifecycleManager sdService, ObjectManager objectManager, ActivityService activityService,
+            ObjectProcessManager processManager) {
+        super();
+        this.deployinator = deployinator;
+        this.sdService = sdService;
+        this.objectManager = objectManager;
+        this.activityService = activityService;
+        this.processManager = processManager;
+    }
 
     @Override
     public Loop buildLoop(String name, String type, Long id) {

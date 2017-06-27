@@ -9,18 +9,18 @@ import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
-@Named
 public class GenericResourceDaoImpl implements GenericResourceDao {
 
-    @Inject
     ObjectManager objectManager;
-    @Inject
     ObjectProcessManager processManager;
-    @Inject
     TransactionDelegate transaction;
+
+    public GenericResourceDaoImpl(ObjectManager objectManager, ObjectProcessManager processManager, TransactionDelegate transaction) {
+        super();
+        this.objectManager = objectManager;
+        this.processManager = processManager;
+        this.transaction = transaction;
+    }
 
     @Override
     public <T> T createAndSchedule(Class<T> clz, Map<String, Object> properties) {

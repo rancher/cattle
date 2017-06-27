@@ -10,23 +10,24 @@ import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
-import io.github.ibuildthecloud.gdapi.request.resource.AbstractResourceManagerFilter;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
-import java.util.List;
-
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 
-public class CredentialUniqueFilter extends AbstractResourceManagerFilter {
+public class CredentialUniqueFilter extends AbstractValidationFilter {
 
     SchemaFactory schemaFactory;
-    @Inject
     PasswordDao passwordDao;
-    @Inject
     JsonMapper jsonMapper;
+
+    public CredentialUniqueFilter(SchemaFactory schemaFactory, PasswordDao passwordDao, JsonMapper jsonMapper) {
+        super();
+        this.schemaFactory = schemaFactory;
+        this.passwordDao = passwordDao;
+        this.jsonMapper = jsonMapper;
+    }
 
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
@@ -54,21 +55,6 @@ public class CredentialUniqueFilter extends AbstractResourceManagerFilter {
         }
 
         return super.create(type, request, next);
-    }
-
-    @Override
-    public String[] getTypes() {
-        List<String> types = schemaFactory.getSchemaNames(Credential.class);
-        return types.toArray(new String[types.size()]);
-    }
-
-
-    public SchemaFactory getSchemaFactory() {
-        return schemaFactory;
-    }
-
-    public void setSchemaFactory(SchemaFactory schemaFactory) {
-        this.schemaFactory = schemaFactory;
     }
 
 }

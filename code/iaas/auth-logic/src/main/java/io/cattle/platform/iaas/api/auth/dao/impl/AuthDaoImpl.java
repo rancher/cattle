@@ -42,10 +42,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.Condition;
+import org.jooq.Configuration;
 import org.jooq.Record;
 import org.jooq.SelectQuery;
 import org.jooq.TableField;
@@ -56,18 +55,23 @@ import com.netflix.config.DynamicStringListProperty;
 
 public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
 
-    @Inject
     GenericResourceDao resourceDao;
-    @Inject
     ObjectManager objectManager;
-    @Inject
     ObjectProcessManager objectProcessManager;
-    @Inject
     LockManager lockManager;
-    @Inject
     AccountDao accountDao;
 
-    private DynamicStringListProperty SUPPORTED_TYPES = ArchaiusUtil.getList("account.by.key.credential.types");
+    private static DynamicStringListProperty SUPPORTED_TYPES = ArchaiusUtil.getList("account.by.key.credential.types");
+
+    public AuthDaoImpl(Configuration configuration, GenericResourceDao resourceDao, ObjectManager objectManager, ObjectProcessManager objectProcessManager,
+            LockManager lockManager, AccountDao accountDao) {
+        super(configuration);
+        this.resourceDao = resourceDao;
+        this.objectManager = objectManager;
+        this.objectProcessManager = objectProcessManager;
+        this.lockManager = lockManager;
+        this.accountDao = accountDao;
+    }
 
     @Override
     public Account getAdminAccount() {

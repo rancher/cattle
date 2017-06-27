@@ -2,6 +2,7 @@ package io.cattle.platform.api.utils;
 
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.auth.impl.DefaultPolicy;
+import io.cattle.platform.api.handler.ResponseObjectConverter;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.object.util.ObjectUtils;
@@ -13,7 +14,6 @@ import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.gdapi.model.impl.WrappedResource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
-import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -103,13 +103,13 @@ public class ApiUtils {
         }
 
         if (attachments == null) {
-            attachments = new HashMap<String, Map<Object, Object>>();
+            attachments = new HashMap<>();
             request.setAttribute(key, attachments);
         }
 
         Map<Object, Object> attachment = attachments.get(name);
         if (attachment == null) {
-            attachment = new LinkedHashMap<Object, Object>();
+            attachment = new LinkedHashMap<>();
             attachments.put(name, attachment);
         }
 
@@ -117,7 +117,7 @@ public class ApiUtils {
     }
 
     public static Map<String, Object> getAttachements(Object obj, Transformer transformer) {
-        Map<String, Object> result = new LinkedHashMap<String, Object>();
+        Map<String, Object> result = new LinkedHashMap<>();
         Object key = getAttachementKey(obj);
         ApiRequest request = ApiContext.getContext().getApiRequest();
         @SuppressWarnings("unchecked")
@@ -129,7 +129,7 @@ public class ApiUtils {
 
         for (Map.Entry<String, Map<Object, Object>> entry : attachments.entrySet()) {
             String keyName = entry.getKey();
-            List<Object> objects = new ArrayList<Object>();
+            List<Object> objects = new ArrayList<>();
             for (Object attachment : entry.getValue().values()) {
                 attachment = transformer.transform(attachment);
                 if (attachment != null) {
@@ -148,13 +148,13 @@ public class ApiUtils {
         return result;
     }
 
-    public static Resource createResourceWithAttachments(final ResourceManager resourceManager, final ApiRequest request, final IdFormatter idFormatter,
+    public static Resource createResourceWithAttachments(final ResponseObjectConverter responseConverter, final ApiRequest request, final IdFormatter idFormatter,
             final SchemaFactory schemaFactory, final Schema schema, Object obj, Map<String, Object> inputAdditionalFields) {
         Integer depth = DEPTH.get();
 
         try {
             DEPTH.set(depth + 1);
-            Map<String, Object> additionalFields = new LinkedHashMap<String, Object>();
+            Map<String, Object> additionalFields = new LinkedHashMap<>();
             additionalFields.putAll(DataUtils.getFields(obj));
 
             if (inputAdditionalFields != null && inputAdditionalFields.size() > 0) {
@@ -169,7 +169,7 @@ public class ApiUtils {
                         if (input == null)
                             return null;
 
-                        return resourceManager.convertResponse(input, request);
+                        return responseConverter.convertResponse(input, request);
                     }
                 });
 
@@ -197,6 +197,19 @@ public class ApiUtils {
         }
 
         return schema.getId();
+    }
+
+    public static Object getFirstFromCollectionOrList(Object obj) {
+        if (obj instanceof Collection) {
+            return getFirstFromList(((Collection)obj).getData());
+        }
+
+        if (obj instanceof List) {
+            List<?> list = (List<?>)obj;
+            return list.size() > 0 ? list.get(0) : null;
+        }
+
+        return null;
     }
 
 }

@@ -6,9 +6,7 @@ import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.StorageDriverConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
-import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.StorageDriverDao;
-import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.StorageDriver;
 import io.cattle.platform.core.model.Volume;
@@ -23,22 +21,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.apache.commons.codec.binary.Hex;
+import org.jooq.Configuration;
 
-@Named
 public class StorageDriverDaoImpl extends AbstractJooqDao implements StorageDriverDao {
 
-    @Inject
     ObjectManager objectManager;
-    @Inject
-    VolumeDao volumeDao;
-    @Inject
-    GenericResourceDao resourceDao;
-    @Inject
     JsonMapper jsonMapper;
+
+    public StorageDriverDaoImpl(Configuration configuration, ObjectManager objectManager, JsonMapper jsonMapper) {
+        super(configuration);
+        this.objectManager = objectManager;
+        this.jsonMapper = jsonMapper;
+    }
 
     @Override
     public StorageDriver findSecretsDriver(long accountId) {

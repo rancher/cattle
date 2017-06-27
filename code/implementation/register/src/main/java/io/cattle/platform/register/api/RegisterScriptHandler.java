@@ -14,8 +14,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +32,10 @@ public class RegisterScriptHandler implements ScriptsHandler {
 
     RegistrationAuthTokenManager tokenManager;
 
+    public RegisterScriptHandler(RegistrationAuthTokenManager tokenManager) {
+        this.tokenManager = tokenManager;
+    }
+
     @Override
     public boolean handle(ApiRequest request) throws IOException {
         String id = request.getId();
@@ -48,7 +50,7 @@ public class RegisterScriptHandler implements ScriptsHandler {
             return false;
         }
 
-        Map<String, String> tokens = new HashMap<String, String>();
+        Map<String, String> tokens = new HashMap<>();
         tokens.put("CATTLE_URL", getUrl(request));
         tokens.put("CATTLE_REGISTRATION_ACCESS_KEY", RegisterConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN);
         tokens.put("CATTLE_REGISTRATION_SECRET_KEY", id);
@@ -101,11 +103,6 @@ public class RegisterScriptHandler implements ScriptsHandler {
 
     public RegistrationAuthTokenManager getTokenManager() {
         return tokenManager;
-    }
-
-    @Inject
-    public void setTokenManager(RegistrationAuthTokenManager tokenManager) {
-        this.tokenManager = tokenManager;
     }
 
 }

@@ -6,11 +6,14 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import javax.inject.Inject;
-
 public class HtmlResponseWriter extends JsonResponseWriter {
 
     HtmlTemplate htmlTemplate;
+
+    public HtmlResponseWriter(JsonMapper jsonMapper, HtmlTemplate htmlTemplate) {
+        super(jsonMapper);
+        this.htmlTemplate = htmlTemplate;
+    }
 
     @Override
     protected String getContentType() {
@@ -27,15 +30,6 @@ public class HtmlResponseWriter extends JsonResponseWriter {
         os.write(htmlTemplate.getHeader(request, responseObject));
         super.writeJson(jsonMapper, os, responseObject, request);
         os.write(htmlTemplate.getFooter(request, responseObject));
-    }
-
-    public HtmlTemplate getHtmlTemplate() {
-        return htmlTemplate;
-    }
-
-    @Inject
-    public void setHtmlTemplate(HtmlTemplate htmlTemplate) {
-        this.htmlTemplate = htmlTemplate;
     }
 
 }

@@ -2,7 +2,6 @@ package io.cattle.platform.docker.machine.api;
 
 import static io.cattle.platform.core.constants.MachineConstants.*;
 
-import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.MachineConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.PhysicalHost;
@@ -41,16 +40,6 @@ public class MachineLinkFilter implements ResourceOutputFilter {
         SchemaFactory schemaFactory = ApiContext.getSchemaFactory();
         Schema machineSchema = schemaFactory == null ? null :schemaFactory.getSchema(KIND_MACHINE);
         return machineSchema != null && machineSchema.getCollectionMethods().contains(Schema.Method.POST.toString());
-    }
-
-    @Override
-    public String[] getTypes() {
-        return new String[] { KIND_MACHINE, HostConstants.TYPE };
-    }
-
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[0];
     }
 
 }

@@ -7,15 +7,18 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import java.io.IOException;
 import java.security.cert.Certificate;
 
-import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
 
 public class HostApiPublicCAScriptHandler implements ScriptsHandler {
 
     public static final String FILENAME = "ca.pem";
 
-    @Inject
     RSAKeyProvider rsaKeyProvider;
+
+    public HostApiPublicCAScriptHandler(RSAKeyProvider rsaKeyProvider) {
+        super();
+        this.rsaKeyProvider = rsaKeyProvider;
+    }
 
     @Override
     public boolean handle(ApiRequest request) throws IOException {

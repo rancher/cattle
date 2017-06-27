@@ -1,16 +1,13 @@
 package io.cattle.platform.framework.encryption.handler.impl;
 
-import io.github.ibuildthecloud.gdapi.model.Transformer;
 import io.cattle.platform.framework.encryption.impl.Aes256Encrypter;
 import io.cattle.platform.framework.encryption.impl.NoOpTransformer;
 import io.cattle.platform.framework.encryption.impl.Sha256Hasher;
+import io.github.ibuildthecloud.gdapi.model.Transformer;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class TransformationServiceImplTest {
 
@@ -19,16 +16,16 @@ public class TransformationServiceImplTest {
     @Before
     public void setUp() throws Exception {
         encrypterHandler = new TransformationServiceImpl();
-        Map<String, Transformer> transformers = new HashMap<>();
         Transformer transformer = new NoOpTransformer();
-        transformers.put(transformer.getName(), transformer);
+        encrypterHandler.addTransformers(transformer);
+
         transformer = new Sha256Hasher();
         transformer.init();
-        transformers.put(transformer.getName(), transformer);
+        encrypterHandler.addTransformers(transformer);
+
         transformer = new Aes256Encrypter();
         transformer.init();
-        transformers.put(transformer.getName(), transformer);
-        encrypterHandler.setTransformers(transformers);
+        encrypterHandler.addTransformers(transformer);
     }
 
     @Test

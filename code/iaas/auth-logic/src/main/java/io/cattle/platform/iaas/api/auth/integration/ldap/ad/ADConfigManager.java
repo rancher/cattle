@@ -1,6 +1,7 @@
 package io.cattle.platform.iaas.api.auth.integration.ldap.ad;
 
 import io.cattle.platform.api.auth.Identity;
+import io.cattle.platform.api.resource.AbstractNoOpResourceManager;
 import io.cattle.platform.core.util.SettingsUtils;
 import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
@@ -11,34 +12,27 @@ import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
-import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
 
 import java.util.List;
 import java.util.Map;
-
-import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
 public class ADConfigManager extends AbstractNoOpResourceManager {
 
-
-    @Inject
     SettingsUtils settingsUtils;
-
-    @Inject
     JsonMapper jsonMapper;
-
-    @Inject
     ADIdentityProvider adIdentityProvider;
 
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[]{ADConfig.class};
+    public ADConfigManager(SettingsUtils settingsUtils, JsonMapper jsonMapper, ADIdentityProvider adIdentityProvider) {
+        super();
+        this.settingsUtils = settingsUtils;
+        this.jsonMapper = jsonMapper;
+        this.adIdentityProvider = adIdentityProvider;
     }
 
     @Override
-    protected Object createInternal(String type, ApiRequest request) {
+    public Object create(String type, ApiRequest request) {
         if (!StringUtils.equals(ADConstants.CONFIG, request.getType())) {
             return null;
         }
@@ -51,7 +45,7 @@ public class ADConfigManager extends AbstractNoOpResourceManager {
 
     @SuppressWarnings("unchecked")
     private ADConfig currentLdapConfig(Map<String, Object> config) {
-        ADConfig currentConfig = (ADConfig) listInternal(null, null, null, null);
+        ADConfig currentConfig = (ADConfig) list(null, null, null, null);
         String domain = currentConfig.getDomain();
         if (config.get(ADConstants.CONFIG_DOMAIN) != null) {
             domain = (String)config.get(ADConstants.CONFIG_DOMAIN);
@@ -156,7 +150,7 @@ public class ADConfigManager extends AbstractNoOpResourceManager {
     }
 
     @Override
-    protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
+    public Object list(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
         boolean enabled = SecurityConstants.SECURITY.get();
         boolean tls = ADConstants.TLS_ENABLED.get();
 

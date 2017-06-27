@@ -7,15 +7,18 @@ import static io.cattle.platform.core.model.tables.MachineDriverTable.*;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.MachineDriverConstants;
+import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.MachineDriver;
+import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.lock.LockManager;
+import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
+import io.cattle.platform.object.process.ObjectProcessManager;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import javax.inject.Inject;
 
 import org.jooq.Configuration;
 import org.jooq.DSLContext;
@@ -25,10 +28,15 @@ import com.netflix.config.DynamicStringListProperty;
 
 public class SampleDataStartupV10 extends AbstractSampleData {
 
-    @Inject
+    private static final DynamicStringListProperty DRIVERS = ArchaiusUtil.getList("machine.drivers.default");
+
     Configuration configuration;
 
-    private static final DynamicStringListProperty DRIVERS = ArchaiusUtil.getList("machine.drivers.default");
+    public SampleDataStartupV10(ObjectManager objectManager, ObjectProcessManager processManager, AccountDao accountDao, JsonMapper jsonMapper,
+            LockManager lockManager, Configuration configuration) {
+        super(objectManager, processManager, accountDao, jsonMapper, lockManager);
+        this.configuration = configuration;
+    }
 
     protected DSLContext create() {
         return new DefaultDSLContext(configuration);

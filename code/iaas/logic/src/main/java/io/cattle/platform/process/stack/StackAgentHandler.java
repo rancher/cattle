@@ -1,24 +1,29 @@
 package io.cattle.platform.process.stack;
 
+import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.core.cache.EnvironmentResourceManager;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.eventing.model.EventVO;
+import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.serialization.ObjectSerializerFactory;
 import io.cattle.platform.process.common.handler.AgentBasedProcessHandler;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 public abstract class StackAgentHandler extends AgentBasedProcessHandler {
 
-    @Inject
     EnvironmentResourceManager envResourceManager;
-    String agentService;
-    String stackKind;
+    protected String agentService;
+    protected String stackKind;
+
+    public StackAgentHandler(AgentLocator agentLocator, ObjectSerializerFactory factory, ObjectManager objectManager, ObjectProcessManager processManager) {
+        super(agentLocator, factory, objectManager, processManager);
+    }
 
     @Override
     protected Object getAgentResource(ProcessState state, ProcessInstance process, Object dataResource) {
@@ -39,23 +44,6 @@ public abstract class StackAgentHandler extends AgentBasedProcessHandler {
 
         Map<String, Object> data = CollectionUtils.toMap(event.getData());
         data.put("environment", data.get("stack"));
-    }
-
-
-    public String getStackKind() {
-        return stackKind;
-    }
-
-    public void setStackKind(String environmentKind) {
-        this.stackKind = environmentKind;
-    }
-
-    public String getAgentService() {
-        return agentService;
-    }
-
-    public void setAgentService(String agentService) {
-        this.agentService = agentService;
     }
 
 }

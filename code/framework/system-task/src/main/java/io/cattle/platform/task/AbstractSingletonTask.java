@@ -3,11 +3,13 @@ package io.cattle.platform.task;
 import io.cattle.platform.lock.LockDelegator;
 import io.cattle.platform.lock.definition.LockDefinition;
 
-import javax.inject.Inject;
-
 public abstract class AbstractSingletonTask implements LockDefinition, Task {
 
     LockDelegator delegator;
+
+    public AbstractSingletonTask(LockDelegator delegator) {
+        this.delegator = delegator;
+    }
 
     @Override
     public final void run() {
@@ -23,15 +25,6 @@ public abstract class AbstractSingletonTask implements LockDefinition, Task {
     @Override
     public String getLockId() {
         return getName();
-    }
-
-    public LockDelegator getDelegator() {
-        return delegator;
-    }
-
-    @Inject
-    public void setDelegator(LockDelegator delegator) {
-        this.delegator = delegator;
     }
 
 }

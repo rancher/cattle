@@ -2,12 +2,12 @@ package io.cattle.platform.servicediscovery.api.filter;
 
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Stack;
-import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerLocator;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
@@ -16,20 +16,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+public class StackCreateValidationFilter extends AbstractValidationFilter {
 
-@Named
-public class StackCreateValidationFilter extends AbstractDefaultResourceManagerFilter {
-
-    @Inject
     ResourceManagerLocator locator;
-    @Inject
     ObjectManager objMgr;
 
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { Stack.class };
+    public StackCreateValidationFilter(ResourceManagerLocator locator, ObjectManager objMgr) {
+        super();
+        this.locator = locator;
+        this.objMgr = objMgr;
     }
 
     @Override

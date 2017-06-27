@@ -1,27 +1,30 @@
 package io.cattle.platform.eventing.memory;
 
+import io.cattle.platform.async.retry.RetryTimeoutService;
 import io.cattle.platform.eventing.EventListener;
 import io.cattle.platform.eventing.impl.AbstractThreadPoolingEventService;
 import io.cattle.platform.eventing.model.Event;
+import io.cattle.platform.json.JsonMapper;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-
-import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.util.concurrent.SettableFuture;
 
-public class InMemoryEventService extends AbstractThreadPoolingEventService implements io.cattle.platform.util.type.Named {
+public class InMemoryEventService extends AbstractThreadPoolingEventService {
 
     private static final Logger log = LoggerFactory.getLogger(InMemoryEventService.class);
 
-    @Inject @Named("EventExecutorService")
     ExecutorService executorService;
+
+    public InMemoryEventService(RetryTimeoutService timeoutService, ExecutorService executorService, JsonMapper jsonMapper) {
+        super(timeoutService, executorService, jsonMapper);
+        this.executorService = executorService;
+    }
 
     @Override
     protected boolean doPublish(final String name, final Event event, final String eventString) throws IOException {
@@ -56,11 +59,6 @@ public class InMemoryEventService extends AbstractThreadPoolingEventService impl
 
     @Override
     protected void disconnect() {
-    }
-
-    @Override
-    public String getName() {
-        return "EventService";
     }
 
 }

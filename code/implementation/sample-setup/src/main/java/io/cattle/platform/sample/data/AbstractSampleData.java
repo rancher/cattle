@@ -16,20 +16,17 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.sample.lock.SampleDataLock;
 import io.cattle.platform.util.type.CollectionUtils;
-import io.cattle.platform.util.type.InitializationTask;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.netflix.config.DynamicBooleanProperty;
 
-public abstract class AbstractSampleData implements InitializationTask {
+public abstract class AbstractSampleData {
 
     private static final Logger log = LoggerFactory.getLogger(SampleDataStartupV3.class);
 
@@ -40,6 +37,16 @@ public abstract class AbstractSampleData implements InitializationTask {
     protected AccountDao accountDao;
     protected JsonMapper jsonMapper;
     protected LockManager lockManager;
+
+    public AbstractSampleData(ObjectManager objectManager, ObjectProcessManager processManager, AccountDao accountDao, JsonMapper jsonMapper,
+            LockManager lockManager) {
+        super();
+        this.objectManager = objectManager;
+        this.processManager = processManager;
+        this.accountDao = accountDao;
+        this.jsonMapper = jsonMapper;
+        this.lockManager = lockManager;
+    }
 
     @Override
     public final void start() {
@@ -108,51 +115,6 @@ public abstract class AbstractSampleData implements InitializationTask {
         }
 
         return objectManager.create(type, properties);
-    }
-
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
-    }
-
-    public AccountDao getAccountDao() {
-        return accountDao;
-    }
-
-    @Inject
-    public void setAccountDao(AccountDao accountDao) {
-        this.accountDao = accountDao;
-    }
-
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
-    }
-
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
-    }
-
-    public ObjectProcessManager getProcessManager() {
-        return processManager;
-    }
-
-    @Inject
-    public void setProcessManager(ObjectProcessManager processManager) {
-        this.processManager = processManager;
-    }
-
-    public LockManager getLockManager() {
-        return lockManager;
-    }
-
-    @Inject
-    public void setLockManager(LockManager lockManager) {
-        this.lockManager = lockManager;
     }
 
 }

@@ -10,8 +10,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,39 +75,6 @@ public class JsonDefaultsProvider implements ObjectDefaultsProvider {
             log.info("Loading defaults for type [{}] from [{}]", schema.getId(), path);
         }
         return is;
-    }
-
-    public SchemaFactory getSchemaFactory() {
-        return schemaFactory;
-    }
-
-    public void setSchemaFactory(SchemaFactory schemaFactory) {
-        this.schemaFactory = schemaFactory;
-    }
-
-    public String getDefaultPath() {
-        return defaultPath;
-    }
-
-    public void setDefaultPath(String defaultPath) {
-        this.defaultPath = defaultPath;
-    }
-
-    public String getDefaultOverridePath() {
-        return defaultOverridePath;
-    }
-
-    public void setDefaultOverridePath(String defaultOverridePath) {
-        this.defaultOverridePath = defaultOverridePath;
-    }
-
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
-    }
-
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
     }
 
 }

@@ -26,14 +26,4 @@ public class ResourceOutputFilterChain implements ResourceOutputFilter {
         return result;
     }
 
-    @Override
-    public String[] getTypes() {
-        return new String[0];
-    }
-
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[0];
-    }
-
 }

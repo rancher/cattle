@@ -21,8 +21,6 @@
         <module>code/framework/engine</module>
         <module>code/framework/eventing</module>
         <module>code/framework/events</module>
-        <module>code/framework/extension</module>
-        <module>code/framework/extension-spring</module>
         <module>code/framework/java-server</module>
         <module>code/framework/jmx</module>
         <module>code/framework/jooq</module>
@@ -37,7 +35,6 @@
         <module>code/framework/resource-monitor</module>
         <module>code/framework/schema</module>
         <module>code/framework/server</module>
-        <module>code/framework/spring</module>
         <module>code/framework/system-task</module>
         <module>code/framework/token</module>
         <module>code/framework/utils</module>
@@ -69,7 +66,6 @@
                 <module>code/iaas/config-item/server</module>
                 <module>code/iaas/engine-jooq</module>
                 <module>code/iaas/events</module>
-                <module>code/iaas/external-handler</module>
                 <module>code/iaas/ha</module>
                 <module>code/iaas/logic</module>
                 <module>code/iaas/logic-common</module>

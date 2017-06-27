@@ -10,6 +10,8 @@ public interface ApiRequestHandler {
 
     void handle(ApiRequest request) throws IOException;
 
-    boolean handleException(ApiRequest request, Throwable e) throws IOException, ServletException;
+    default boolean handleException(ApiRequest request, Throwable e) throws IOException, ServletException {
+        return false;
+    }
 
 }

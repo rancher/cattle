@@ -21,16 +21,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
-import javax.inject.Inject;
-
 public class LoadBalancerServiceImpl implements LoadBalancerService {
 
-    @Inject
     JsonMapper jsonMapper;
-    @Inject
     LockManager lockManager;
-    @Inject
     ObjectManager objectManager;
+
+    public LoadBalancerServiceImpl(JsonMapper jsonMapper, LockManager lockManager, ObjectManager objectManager) {
+        super();
+        this.jsonMapper = jsonMapper;
+        this.lockManager = lockManager;
+        this.objectManager = objectManager;
+    }
 
     @Override
     public void removeFromLoadBalancerServices(Service service) {

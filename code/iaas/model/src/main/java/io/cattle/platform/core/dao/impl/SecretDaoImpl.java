@@ -2,7 +2,6 @@ package io.cattle.platform.core.dao.impl;
 
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
-import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.SecretTable.*;
 
@@ -21,27 +20,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.inject.Named;
-
+import org.jooq.Configuration;
 import org.jooq.Record;
 
-@Named
 public class SecretDaoImpl extends AbstractJooqDao implements SecretDao {
+
+    public SecretDaoImpl(Configuration configuration) {
+        super(configuration);
+    }
 
     @Override
     public InstanceAndHost getHostForInstanceUUIDAndAuthAccount(long accountId, String instanceUuid) {
         Record r = create().select(HOST.fields())
             .from(HOST)
-            .join(INSTANCE_HOST_MAP)
-                .on(INSTANCE_HOST_MAP.HOST_ID.eq(HOST.ID))
             .join(INSTANCE)
-                .on(INSTANCE.ID.eq(INSTANCE_HOST_MAP.INSTANCE_ID))
+                .on(INSTANCE.HOST_ID.eq(HOST.ID))
             .join(AGENT)
                 .on(INSTANCE.AGENT_ID.eq(AGENT.ID))
             .where(AGENT.ACCOUNT_ID.eq(accountId)
                     .and(AGENT.REMOVED.isNull())
-                    .and(INSTANCE.REMOVED.isNull())
-                    .and(INSTANCE_HOST_MAP.REMOVED.isNull()))
+                    .and(INSTANCE.REMOVED.isNull()))
             .fetchAny();
 
         if (r == null) {
@@ -52,12 +50,9 @@ public class SecretDaoImpl extends AbstractJooqDao implements SecretDao {
 
         r = create().select(INSTANCE.fields())
             .from(INSTANCE)
-            .join(INSTANCE_HOST_MAP)
-                .on(INSTANCE_HOST_MAP.INSTANCE_ID.eq(INSTANCE.ID))
-            .where(INSTANCE_HOST_MAP.HOST_ID.eq(host.getId())
+            .where(INSTANCE.HOST_ID.eq(host.getId())
                     .and(INSTANCE.UUID.eq(instanceUuid))
-                    .and(INSTANCE.REMOVED.isNull())
-                    .and(INSTANCE_HOST_MAP.REMOVED.isNull()))
+                    .and(INSTANCE.REMOVED.isNull()))
             .fetchAny();
 
         if (r == null) {
@@ -74,7 +69,7 @@ public class SecretDaoImpl extends AbstractJooqDao implements SecretDao {
             ids.add(ref.getSecretId());
         }
 
-        Map<Long, Secret> result = new HashMap<Long, Secret>();
+        Map<Long, Secret> result = new HashMap<>();
 
         for (Secret secret : create().select(SECRET.fields())
             .from(SECRET)

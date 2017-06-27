@@ -2,10 +2,16 @@ package io.cattle.platform.sample.data;
 
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
+
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.ServiceIndex;
+import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.lock.LockManager;
+import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.process.ObjectProcessManager;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
@@ -14,6 +20,11 @@ import java.util.List;
 import java.util.Map;
 
 public class SampleDataStartupV8 extends AbstractSampleData {
+
+    public SampleDataStartupV8(ObjectManager objectManager, ObjectProcessManager processManager, AccountDao accountDao, JsonMapper jsonMapper,
+            LockManager lockManager) {
+        super(objectManager, processManager, accountDao, jsonMapper, lockManager);
+    }
 
     @Override
     protected String getName() {

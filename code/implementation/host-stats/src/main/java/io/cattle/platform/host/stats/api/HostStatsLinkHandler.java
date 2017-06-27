@@ -1,6 +1,5 @@
 package io.cattle.platform.host.stats.api;
 
-import io.cattle.platform.api.link.LinkHandler;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HostConstants;
@@ -15,6 +14,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.token.TokenService;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.LinkHandler;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,22 +22,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 public class HostStatsLinkHandler implements LinkHandler {
 
     private static final String PROJECT_PATH = "/project/";
 
-    @Inject
     HostApiService hostApiService;
-    @Inject
     ObjectManager objectManager;
-    @Inject
     TokenService tokenService;
 
-    @Override
-    public String[] getTypes() {
-        return new String[] { HostConstants.TYPE, ProjectConstants.TYPE };
+    public HostStatsLinkHandler(HostApiService hostApiService, ObjectManager objectManager, TokenService tokenService) {
+        super();
+        this.hostApiService = hostApiService;
+        this.objectManager = objectManager;
+        this.tokenService = tokenService;
     }
 
     @Override

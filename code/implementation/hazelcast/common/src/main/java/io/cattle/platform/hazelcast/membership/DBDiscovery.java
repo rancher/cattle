@@ -4,7 +4,6 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.ClusterMembership;
 import io.cattle.platform.hazelcast.membership.dao.ClusterMembershipDAO;
 import io.cattle.platform.json.JsonMapper;
-import io.cattle.platform.object.ObjectManager;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,9 +21,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 
 import org.apache.cloudstack.managed.context.NoExceptionRunnable;
 import org.apache.commons.io.IOUtils;
@@ -58,11 +54,7 @@ public class DBDiscovery extends NoExceptionRunnable implements DiscoveryStrateg
 
     private static final Logger log = LoggerFactory.getLogger("ConsoleStatus");
 
-    @Inject
     ClusterMembershipDAO clusterMembershipDao;
-    @Inject
-    ObjectManager objectManager;
-    @Inject
     JsonMapper jsonMapper;
     ScheduledExecutorService executorService;
     DiscoveryNode selfNode;
@@ -76,8 +68,14 @@ public class DBDiscovery extends NoExceptionRunnable implements DiscoveryStrateg
     boolean logStartup = true;
     Pair<Integer, Integer> countAndIndex = new ImmutablePair<>(0, 0);
 
-    @PostConstruct
-    public void init() {
+
+    public DBDiscovery(ClusterMembershipDAO clusterMembershipDao, JsonMapper jsonMapper) {
+        this.clusterMembershipDao = clusterMembershipDao;
+        this.jsonMapper = jsonMapper;
+        init();
+    }
+
+    private void init() {
         try {
             readId();
             checkin();

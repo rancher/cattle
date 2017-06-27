@@ -25,14 +25,13 @@ public class SchemaImpl extends ResourceImpl implements Schema, Serializable {
 
     String name, parent;
     String pluralName;
-    List<String> children = new ArrayList<String>();
+    List<String> children = new ArrayList<>();
     boolean create, update, list = true, deletable, byId = true;
-    Map<String, Field> resourceFields = new TreeMap<String, Field>();
-    Map<String, Filter> collectionFilters = new TreeMap<String, Filter>();
-    List<String> includeableLinks = new ArrayList<String>();
-    Map<String, Action> resourceActions = new HashMap<String, Action>();
-    Map<String, Action> collectionActions = new HashMap<String, Action>();
-    Map<String, Field> collectionFields = new HashMap<String, Field>();
+    Map<String, Field> resourceFields = new TreeMap<>();
+    Map<String, Filter> collectionFilters = new TreeMap<>();
+    Map<String, Action> resourceActions = new HashMap<>();
+    Map<String, Action> collectionActions = new HashMap<>();
+    Map<String, Field> collectionFields = new HashMap<>();
 
     public SchemaImpl() {
         setType("schema");
@@ -42,7 +41,7 @@ public class SchemaImpl extends ResourceImpl implements Schema, Serializable {
         this();
         this.name = schema.getId();
         this.parent = schema.getParent();
-        this.children = new ArrayList<String>(schema.getChildren());
+        this.children = new ArrayList<>(schema.getChildren());
         this.pluralName = schema.getPluralName();
 
         this.load(schema);
@@ -54,7 +53,6 @@ public class SchemaImpl extends ResourceImpl implements Schema, Serializable {
         this.list = schema.isList();
         this.deletable = schema.isDeletable();
         this.byId = schema.isById();
-        this.includeableLinks = new ArrayList<String>(schema.getIncludeableLinks());
         this.resourceFields = copyFields(schema.getResourceFields());
         this.collectionFilters = copyFilters(schema.getCollectionFilters());
         this.resourceActions = copyActions(schema.getResourceActions());
@@ -63,7 +61,7 @@ public class SchemaImpl extends ResourceImpl implements Schema, Serializable {
     }
 
     protected Map<String, Field> copyFields(Map<String, Field> input) {
-        Map<String, Field> result = new LinkedHashMap<String, Field>();
+        Map<String, Field> result = new LinkedHashMap<>();
         for (String key : input.keySet()) {
             result.put(key, new FieldImpl(input.get(key)));
         }
@@ -72,7 +70,7 @@ public class SchemaImpl extends ResourceImpl implements Schema, Serializable {
     }
 
     protected Map<String, Filter> copyFilters(Map<String, Filter> input) {
-        Map<String, Filter> result = new LinkedHashMap<String, Filter>();
+        Map<String, Filter> result = new LinkedHashMap<>();
         for (String key : input.keySet()) {
             result.put(key, new Filter(input.get(key)));
         }
@@ -81,7 +79,7 @@ public class SchemaImpl extends ResourceImpl implements Schema, Serializable {
     }
 
     protected Map<String, Action> copyActions(Map<String, Action> input) {
-        Map<String, Action> result = new LinkedHashMap<String, Action>();
+        Map<String, Action> result = new LinkedHashMap<>();
         for (String key : input.keySet()) {
             result.put(key, new Action(input.get(key)));
         }
@@ -172,7 +170,7 @@ public class SchemaImpl extends ResourceImpl implements Schema, Serializable {
 
     @Override
     public List<String> getResourceMethods() {
-        List<String> methods = new ArrayList<String>();
+        List<String> methods = new ArrayList<>();
 
         if (byId) {
             methods.add(Method.GET.toString());
@@ -202,7 +200,7 @@ public class SchemaImpl extends ResourceImpl implements Schema, Serializable {
 
     @Override
     public List<String> getCollectionMethods() {
-        List<String> methods = new ArrayList<String>();
+        List<String> methods = new ArrayList<>();
 
         if (list) {
             methods.add(Method.GET.toString());
@@ -219,12 +217,12 @@ public class SchemaImpl extends ResourceImpl implements Schema, Serializable {
     public Map<String, URL> getLinks() {
         Map<String, URL> result = links;
         if (!links.containsKey(UrlBuilder.SELF)) {
-            result = new HashMap<String, URL>(links);
+            result = new HashMap<>(links);
             result.put(UrlBuilder.SELF, ApiContext.getUrlBuilder().resourceReferenceLink(this));
         }
 
         if (list && !result.containsKey(UrlBuilder.COLLECTION)) {
-            result = result == null ? new HashMap<String, URL>(links) : result;
+            result = result == null ? new HashMap<>(links) : result;
             result.put(UrlBuilder.COLLECTION, ApiContext.getUrlBuilder().resourceCollection(getId()));
         }
 
@@ -265,15 +263,6 @@ public class SchemaImpl extends ResourceImpl implements Schema, Serializable {
     @XmlTransient
     public String getRawPluralName() {
         return pluralName;
-    }
-
-    @Override
-    public List<String> getIncludeableLinks() {
-        return includeableLinks;
-    }
-
-    public void setIncludeableLinks(List<String> includeableLinks) {
-        this.includeableLinks = includeableLinks;
     }
 
     @Override

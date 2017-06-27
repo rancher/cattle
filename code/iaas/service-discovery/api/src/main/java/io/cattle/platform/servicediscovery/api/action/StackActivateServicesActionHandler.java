@@ -1,7 +1,7 @@
 package io.cattle.platform.servicediscovery.api.action;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
-import io.cattle.platform.api.action.ActionHandler;
+
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ServiceConsumeMapDao;
@@ -11,31 +11,27 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.ActionHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.TransformerUtils;
 
-@Named
 public class StackActivateServicesActionHandler implements ActionHandler {
 
-    @Inject
     ObjectProcessManager objectProcessManager;
-    @Inject
     ObjectManager objectManager;
-    @Inject
     ServiceConsumeMapDao consumeMapDao;
 
-    @Override
-    public String getName() {
-        return ServiceConstants.PROCESS_STACK_ACTIVATE_SERVICES;
+    public StackActivateServicesActionHandler(ObjectProcessManager objectProcessManager, ObjectManager objectManager, ServiceConsumeMapDao consumeMapDao) {
+        super();
+        this.objectProcessManager = objectProcessManager;
+        this.objectManager = objectManager;
+        this.consumeMapDao = consumeMapDao;
     }
 
     @Override

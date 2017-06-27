@@ -11,12 +11,10 @@ import io.cattle.platform.eventing.util.EventUtils;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.resource.ResourceMonitor;
-import io.cattle.platform.util.type.CollectionUtils;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import javax.inject.Inject;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -26,15 +24,10 @@ public class AgentSimulator implements AnnotatedEventListener {
 
     private static final Simulator NULL_SIMULATOR = new NullSimulator();
 
-    @Inject
     JsonMapper jsonMapper;
-    @Inject
     ObjectManager objectManager;
-    @Inject
     ResourceMonitor resourceMonitor;
-    @Inject
     AgentLocator agentLocator;
-    @Inject
     EventService eventService;
 
     List<AgentSimulatorEventProcessor> processors;
@@ -44,6 +37,17 @@ public class AgentSimulator implements AnnotatedEventListener {
             return makeSimulator(agentId);
         }
     });
+
+    public AgentSimulator(JsonMapper jsonMapper, ObjectManager objectManager, ResourceMonitor resourceMonitor, AgentLocator agentLocator,
+            EventService eventService, AgentSimulatorEventProcessor... processors) {
+        super();
+        this.jsonMapper = jsonMapper;
+        this.objectManager = objectManager;
+        this.resourceMonitor = resourceMonitor;
+        this.agentLocator = agentLocator;
+        this.eventService = eventService;
+        this.processors = Arrays.asList(processors);
+    }
 
     @EventHandler
     public void agentRequest(SimulatorRequest agentRequest) {
@@ -73,15 +77,6 @@ public class AgentSimulator implements AnnotatedEventListener {
         }
 
         return new AgentConnectionSimulator(objectManager, agent, processors);
-    }
-
-    public List<AgentSimulatorEventProcessor> getProcessors() {
-        return processors;
-    }
-
-    @Inject
-    public void setProcessors(List<AgentSimulatorEventProcessor> processors) {
-        this.processors = CollectionUtils.orderList(AgentSimulatorEventProcessor.class, processors);
     }
 
 }

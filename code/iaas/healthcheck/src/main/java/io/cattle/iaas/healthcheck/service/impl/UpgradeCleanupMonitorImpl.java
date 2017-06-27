@@ -16,8 +16,7 @@ import io.cattle.platform.task.Task;
 import java.util.Date;
 import java.util.List;
 
-import javax.inject.Inject;
-
+import org.jooq.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,10 +26,15 @@ public class UpgradeCleanupMonitorImpl extends AbstractJooqDao implements Task {
     private static final Logger log = LoggerFactory.getLogger(UpgradeCleanupMonitorImpl.class);
     private static final DynamicLongProperty REMOVE_DELAY = ArchaiusUtil.getLong("upgrade.cleanup.after");
 
-    @Inject
     ObjectProcessManager objectProcessManager;
-    @Inject
     JsonMapper jsonMapper;
+
+    public UpgradeCleanupMonitorImpl(Configuration configuration, ObjectProcessManager objectProcessManager, JsonMapper jsonMapper) {
+        super(configuration);
+        this.objectProcessManager = objectProcessManager;
+        this.jsonMapper = jsonMapper;
+    }
+
 
     @Override
     public void run() {

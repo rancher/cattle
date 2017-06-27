@@ -11,16 +11,18 @@ import io.cattle.platform.engine.server.ProcessInstanceExecutor;
 import io.cattle.platform.util.exception.ExceptionUtils;
 import io.cattle.platform.util.exception.LoggableException;
 
-import javax.inject.Inject;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ProcessInstanceDispatcherImpl implements ProcessInstanceExecutor {
     private static final Logger log = LoggerFactory.getLogger(ProcessInstanceDispatcherImpl.class);
 
-    @Inject
     ProcessManager processManager;
+
+    public ProcessInstanceDispatcherImpl(ProcessManager processManager) {
+        super();
+        this.processManager = processManager;
+    }
 
     @Override
     public ProcessInstance execute(final long processId) {

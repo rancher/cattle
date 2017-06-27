@@ -8,13 +8,15 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import java.io.IOException;
 import java.util.List;
 
-import javax.inject.Inject;
-
 public class Scripts extends AbstractResponseGenerator {
 
     private static final String SCRIPTS = "scripts";
 
     List<ScriptsHandler> handlers;
+
+    public Scripts(List<ScriptsHandler> handlers) {
+        this.handlers = handlers;
+    }
 
     @Override
     protected void generate(ApiRequest request) throws IOException {
@@ -44,11 +46,6 @@ public class Scripts extends AbstractResponseGenerator {
 
     public List<ScriptsHandler> getHandlers() {
         return handlers;
-    }
-
-    @Inject
-    public void setHandlers(List<ScriptsHandler> handlers) {
-        this.handlers = handlers;
     }
 
 }

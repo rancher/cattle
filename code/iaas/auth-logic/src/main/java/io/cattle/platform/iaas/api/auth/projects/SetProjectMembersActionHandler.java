@@ -1,24 +1,25 @@
 package io.cattle.platform.iaas.api.auth.projects;
 
-import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.ActionHandler;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import javax.inject.Inject;
 
 public class SetProjectMembersActionHandler implements ActionHandler {
 
-    @Inject
     AuthDao authDao;
-
-    @Inject
     ProjectMemberResourceManager projectMemberResourceManager;
+
+    public SetProjectMembersActionHandler(AuthDao authDao, ProjectMemberResourceManager projectMemberResourceManager) {
+        this.authDao = authDao;
+        this.projectMemberResourceManager = projectMemberResourceManager;
+    }
 
     @SuppressWarnings("unchecked")
     @Override
@@ -33,9 +34,5 @@ public class SetProjectMembersActionHandler implements ActionHandler {
         return projectMemberResourceManager.setMembers(project, members);
     }
 
-    @Override
-    public String getName() {
-        return "account.setmembers";
-    }
 }
 

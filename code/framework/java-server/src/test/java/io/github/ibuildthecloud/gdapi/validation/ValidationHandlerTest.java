@@ -32,7 +32,7 @@ public class ValidationHandlerTest {
 
         ApiRequest request = new ApiRequest(null, null);
         ValidationContext context = new ValidationContext();
-        ValidationHandler handler = new ValidationHandler();
+        ValidationHandler handler = new ValidationHandler(null);
 
         Map<String, Object> input = new HashMap<>();
         input.put("test", null);
@@ -53,7 +53,7 @@ public class ValidationHandlerTest {
 
         ApiRequest request = new ApiRequest(null, null);
         ValidationContext context = new ValidationContext();
-        ValidationHandler handler = new ValidationHandler();
+        ValidationHandler handler = new ValidationHandler(null);
 
         Map<String, Object> input = new HashMap<>();
         input.put("test", "three");
@@ -79,7 +79,7 @@ public class ValidationHandlerTest {
 
         ApiRequest request = new ApiRequest(null, null);
         ValidationContext context = new ValidationContext();
-        ValidationHandler handler = new ValidationHandler();
+        ValidationHandler handler = new ValidationHandler(null);
 
         context.schemaFactory = factory;
 
@@ -111,7 +111,7 @@ public class ValidationHandlerTest {
 
         ApiRequest request = new ApiRequest(null, null);
         ValidationContext context = new ValidationContext();
-        ValidationHandler handler = new ValidationHandler();
+        ValidationHandler handler = new ValidationHandler(null);
 
         context.schemaFactory = factory;
 

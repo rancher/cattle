@@ -1,7 +1,6 @@
 package io.cattle.platform.inator.impl;
 
 import io.cattle.platform.activity.ActivityService;
-import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.inator.Deployinator;
 import io.cattle.platform.inator.Inator;
 import io.cattle.platform.inator.InatorContext;
@@ -12,32 +11,31 @@ import io.cattle.platform.inator.UnitRef;
 import io.cattle.platform.inator.factory.InatorFactoryinator;
 import io.cattle.platform.inator.lock.ReconcileLock;
 import io.cattle.platform.inator.unit.AllUnits;
+import io.cattle.platform.lifecycle.ServiceLifecycleManager;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
-@Named
 public class DeployinatorImpl implements Deployinator {
 
-    @Inject
     InatorFactoryinator factory;
-    @Inject
     ObjectManager objectManager;
-    @Inject
     LockManager lockManager;
-    @Inject
-    ConfigItemStatusManager itemManager;
-    @Inject
     ActivityService activitySvc;
-    @Inject
-    ServiceDiscoveryService sdService;
+    ServiceLifecycleManager sdService;
+
+    public DeployinatorImpl(InatorFactoryinator factory, ObjectManager objectManager, LockManager lockManager, ActivityService activitySvc,
+            ServiceLifecycleManager sdService) {
+        this.factory = factory;
+        this.objectManager = objectManager;
+        this.lockManager = lockManager;
+        this.activitySvc = activitySvc;
+        this.sdService = sdService;
+    }
+
 
     @Override
     public Result reconcile(Class<?> clz, Long id) {

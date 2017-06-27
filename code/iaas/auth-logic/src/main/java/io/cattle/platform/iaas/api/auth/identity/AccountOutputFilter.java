@@ -40,13 +40,4 @@ public class AccountOutputFilter implements ResourceOutputFilter {
         return converted;
     }
 
-    @Override
-    public String[] getTypes() {
-        return new String[0];
-    }
-
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { Account.class };
-    }
 }

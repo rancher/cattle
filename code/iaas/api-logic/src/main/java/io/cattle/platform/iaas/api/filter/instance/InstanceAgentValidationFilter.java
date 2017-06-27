@@ -2,29 +2,21 @@ package io.cattle.platform.iaas.api.filter.instance;
 
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
-import javax.inject.Inject;
+public class InstanceAgentValidationFilter extends AbstractValidationFilter {
 
-public class InstanceAgentValidationFilter extends AbstractDefaultResourceManagerFilter {
-
-    @Inject
     ObjectManager objectManager;
 
-    @Override
-    public String[] getTypes() {
-        return new String[] {InstanceConstants.TYPE_CONTAINER};
-    }
-
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { Instance.class };
+    public InstanceAgentValidationFilter(ObjectManager objectManager) {
+        super();
+        this.objectManager = objectManager;
     }
 
     @Override

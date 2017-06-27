@@ -1,18 +1,13 @@
 package io.cattle.platform.allocator.service.impl;
 
-import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
-import static io.cattle.platform.core.model.tables.PortTable.*;
-
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
-import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.allocator.constraint.Constraint;
 import io.cattle.platform.allocator.constraint.PortsConstraint;
 import io.cattle.platform.allocator.constraint.ValidHostsConstraint;
 import io.cattle.platform.allocator.constraint.provider.AllocationConstraintsProvider;
 import io.cattle.platform.allocator.constraint.provider.PortsConstraintProvider;
 import io.cattle.platform.allocator.dao.AllocatorDao;
-import io.cattle.platform.allocator.dao.impl.QueryOptions;
 import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.lock.AllocateConstraintLock;
 import io.cattle.platform.allocator.lock.AllocateResourceLock;
@@ -23,16 +18,17 @@ import io.cattle.platform.allocator.service.AllocationHelper;
 import io.cattle.platform.allocator.service.AllocationLog;
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.cache.EnvironmentResourceManager;
+import io.cattle.platform.core.cache.QueryOptions;
 import io.cattle.platform.core.constants.DockerInstanceConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.StorageDriverConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
+import io.cattle.platform.core.dao.AgentDao;
 import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.InstanceHostMap;
 import io.cattle.platform.core.model.StorageDriver;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.util.InstanceHelpers;
@@ -45,15 +41,14 @@ import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.lock.definition.LockDefinition;
-import io.cattle.platform.metrics.util.MetricsUtil;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.util.type.CollectionUtils;
-import io.cattle.platform.util.type.Named;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -64,18 +59,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
 import javax.sound.sampled.Port;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.codahale.metrics.Timer;
-import com.codahale.metrics.Timer.Context;
 import com.netflix.config.DynamicStringProperty;
 
-public class AllocatorServiceImpl implements AllocatorService, Named {
+public class AllocatorServiceImpl implements AllocatorService {
 
     private static final Logger log = LoggerFactory.getLogger(AllocatorServiceImpl.class);
     private static final DynamicStringProperty PORT_SCHEDULER_IMAGE_VERSION = ArchaiusUtil.getString("port.scheduler.image.version");
@@ -98,32 +90,35 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
     private static final String BIND_ADDRESS = "bindAddress";
     private static final String PHASE = "phase";
 
-    Timer allocateLockTimer = MetricsUtil.getRegistry().timer("allocator.allocate.with.lock");
-    Timer allocateTimer = MetricsUtil.getRegistry().timer("allocator.allocate");
-    Timer deallocateTimer = MetricsUtil.getRegistry().timer("allocator.deallocate");
-
-    String name = getClass().getSimpleName();
-
-    @Inject
-    AgentInstanceDao agentInstanceDao;
-    @Inject
+    AgentDao agentDao;
     AgentLocator agentLocator;
-    @Inject
     GenericMapDao mapDao;
-    @Inject
-    protected AllocatorDao allocatorDao;
-    @Inject
-    protected LockManager lockManager;
-    @Inject
-    protected ObjectManager objectManager;
-    @Inject
-    protected ObjectProcessManager processManager;
-    @Inject
+    AllocatorDao allocatorDao;
+    LockManager lockManager;
+    ObjectManager objectManager;
+    ObjectProcessManager processManager;
     AllocationHelper allocationHelper;
-    @Inject
     VolumeDao volumeDao;
-    @Inject
-    protected List<AllocationConstraintsProvider> allocationConstraintProviders;
+    EnvironmentResourceManager envResourceManager;
+    List<AllocationConstraintsProvider> allocationConstraintProviders;
+
+
+    public AllocatorServiceImpl(AgentDao agentDao, AgentLocator agentLocator, GenericMapDao mapDao, AllocatorDao allocatorDao, LockManager lockManager,
+            ObjectManager objectManager, ObjectProcessManager processManager, AllocationHelper allocationHelper, VolumeDao volumeDao,
+            EnvironmentResourceManager envResourceManager, AllocationConstraintsProvider... allocationConstraintProviders) {
+        super();
+        this.agentDao = agentDao;
+        this.agentLocator = agentLocator;
+        this.mapDao = mapDao;
+        this.allocatorDao = allocatorDao;
+        this.lockManager = lockManager;
+        this.objectManager = objectManager;
+        this.processManager = processManager;
+        this.allocationHelper = allocationHelper;
+        this.volumeDao = volumeDao;
+        this.envResourceManager = envResourceManager;
+        this.allocationConstraintProviders = Arrays.asList(allocationConstraintProviders);
+    }
 
     @Override
     public void instanceAllocate(final Instance instance) {
@@ -143,16 +138,11 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
         lockManager.lock(new AllocateResourceLock(instance.getId()), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
-                Context c = deallocateTimer.time();
-                try {
-                    if (assertDeallocated(instance.getId(), instance.getAllocationState(), "Instance")) {
-                        return;
-                    }
-
-                    releaseAllocation(instance);
-                } finally {
-                    c.stop();
+                if (instance.getHostId() == null) {
+                    return;
                 }
+
+                releaseAllocation(instance);
             }
         });
         log.info("Handled request for instance [{}]", instance.getId());
@@ -197,7 +187,7 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
     @Override
     @SuppressWarnings("unchecked")
     public List<String> callExternalSchedulerForHostsSatisfyingLabels(Long accountId, Map<String, String> labels) {
-        List<Long> agentIds = agentInstanceDao.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_SCHEDULING_PROVIDER, accountId);
+        List<Long> agentIds = envResourceManager.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_SCHEDULING_PROVIDER, accountId);
         List<String> hosts = null;
         List<Object> instances = new ArrayList<>();
         Map<String, Object> instance = constructInstanceMapWithLabel(labels);
@@ -260,33 +250,19 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
 
         LockDefinition lock = getInstanceLockDef(origInstance, instances, volumeIds);
         if (lock != null) {
-            Context c = allocateLockTimer.time();
-            try {
-                lockManager.lock(lock, new LockCallbackNoReturn() {
-                    @Override
-                    public void doWithLockNoResult() {
-                        allocateInstanceInternal(origInstance, instances);
-                    }
-                });
-            } finally {
-                c.stop();
-            }
+            lockManager.lock(lock, new LockCallbackNoReturn() {
+                @Override
+                public void doWithLockNoResult() {
+                    allocateInstanceInternal(origInstance, instances);
+                }
+            });
         } else {
             allocateInstanceInternal(origInstance, instances);
         }
     }
 
     protected void allocateInstanceInternal(Instance origInstance, List<Instance> instances) {
-        boolean origAllocated = assertAllocated(origInstance.getId(), origInstance.getAllocationState(), "Instance", true);
-        for (Instance instance : instances) {
-            boolean allocated = assertAllocated(origInstance.getId(), instance.getAllocationState(), "Instance", false);
-            if (origAllocated ^ allocated) {
-                throw new FailedToAllocate(String.format("Instance %s is in allocation state %s and instance %s is in allocation state %s.",
-                        origInstance.getId(), origInstance.getAllocationState(), instance.getId(), instance.getAllocationState()));
-            }
-        }
-
-        if (origAllocated) {
+        if (origInstance.getHostId() != null) {
             return;
         }
 
@@ -363,31 +339,26 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
         populateConstraints(attempt, log);
 
         List<Constraint> finalFailedConstraints = new ArrayList<>();
-        Context c = allocateTimer.time();
-        try {
-            do {
-                Set<Constraint> failedConstraints = runAllocation(attempt);
-                if (attempt.getMatchedCandidate() == null) {
-                    boolean removed = false;
-                    // iterate over failed constraints and remove first soft constraint if any
-                    Iterator<Constraint> failedIter = failedConstraints.iterator();
-                    while (failedIter.hasNext() && !removed) {
-                        Constraint failedConstraint = failedIter.next();
-                        if (failedConstraint.isHardConstraint()) {
-                            continue;
-                        }
-                        attempt.getConstraints().remove(failedConstraint);
-                        removed = true;
+        do {
+            Set<Constraint> failedConstraints = runAllocation(attempt);
+            if (attempt.getMatchedCandidate() == null) {
+                boolean removed = false;
+                // iterate over failed constraints and remove first soft constraint if any
+                Iterator<Constraint> failedIter = failedConstraints.iterator();
+                while (failedIter.hasNext() && !removed) {
+                    Constraint failedConstraint = failedIter.next();
+                    if (failedConstraint.isHardConstraint()) {
+                        continue;
                     }
-                    if (!removed) {
-                        finalFailedConstraints.addAll(failedConstraints);
-                        break;
-                    }
+                    attempt.getConstraints().remove(failedConstraint);
+                    removed = true;
                 }
-            } while (attempt.getMatchedCandidate() == null);
-        } finally {
-            c.stop();
-        }
+                if (!removed) {
+                    finalFailedConstraints.addAll(failedConstraints);
+                    break;
+                }
+            }
+        } while (attempt.getMatchedCandidate() == null);
 
         if (attempt.getMatchedCandidate() == null) {
             if (finalFailedConstraints.size() > 0) {
@@ -556,28 +527,6 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
         });
     }
 
-    public boolean assertAllocated(long resourceId, String state, String type, boolean raiseOnBadState) {
-        if (CommonStatesConstants.ACTIVE.equals(state) || ("instance".equalsIgnoreCase(type)
-                && objectManager.findAny(InstanceHostMap.class, INSTANCE_HOST_MAP.INSTANCE_ID, resourceId, INSTANCE_HOST_MAP.REMOVED, null) != null)){
-            log.info("{} [{}] is already allocated", type, resourceId);
-            return true;
-        }else if (raiseOnBadState && !CommonStatesConstants.ACTIVATING.equals(state)) {
-            throw new FailedToAllocate(String.format("Illegal allocation state: %s", state));
-        }
-        return false;
-    }
-
-    public static boolean assertDeallocated(long resourceId, String state, String logType) {
-        if (CommonStatesConstants.INACTIVE.equals(state)) {
-            log.info("{} [{}] is already deallocated", logType, resourceId);
-            return true;
-        } else if (!CommonStatesConstants.DEACTIVATING.equals(state)) {
-            throw new FailedToAllocate(String.format("Illegal deallocation state: %s", state));
-        }
-
-        return false;
-    }
-
     protected Iterator<AllocationCandidate> getCandidates(AllocationAttempt attempt) {
         List<Long> volumeIds = new ArrayList<>();
         for (Volume v : attempt.getVolumes()) {
@@ -604,20 +553,19 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
         if (attempt.getRequestedHostId() == null) {
             orderedHostUUIDs = callExternalSchedulerForHosts(attempt);
         }
-        return allocatorDao.iteratorHosts(orderedHostUUIDs, volumeIds, options);
+        return envResourceManager.iterateHosts(options, orderedHostUUIDs).map((x) -> {
+            return new AllocationCandidate(x.getId(), x.getUuid(), x.getPorts(), options.getAccountId());
+        }).iterator();
     }
 
     protected void releaseAllocation(Instance instance) {
-        // This is kind of strange logic to remove deallocate for every instance host map, but in truth there will be only one ihm
-        Map<String, List<InstanceHostMap>> maps = allocatorDao.getInstanceHostMapsWithHostUuid(instance.getId());
-        for (Map.Entry<String, List<InstanceHostMap>> entry : maps.entrySet()) {
-            for (InstanceHostMap map : entry.getValue()) {
-                if (!allocatorDao.isAllocationReleased(map)) {
-                    allocatorDao.releaseAllocation(instance, map);
-                    releaseResources(instance, entry.getKey(), InstanceConstants.PROCESS_DEALLOCATE);
-                }
-            }
+        Host host = objectManager.loadResource(Host.class, instance.getHostId());
+        if (host == null) {
+            return;
         }
+
+        allocatorDao.releaseAllocation(instance);
+        releaseResources(instance, host.getUuid(), InstanceConstants.PROCESS_DEALLOCATE);
     }
 
     protected boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate) {
@@ -629,28 +577,8 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
     }
 
     private String getHostUuid(Instance instance) {
-        List<? extends InstanceHostMap> maps = mapDao.findNonRemoved(InstanceHostMap.class, Instance.class, instance.getId());
-        Long hostId = null;
-        if (maps.size() == 1) {
-            hostId = maps.get(0).getHostId();
-        } else if (maps.size() > 1) {
-            Set<Long> hostIds = new HashSet<>();
-            for (InstanceHostMap ihm : maps) {
-                hostIds.add(ihm.getHostId());
-            }
-            if (hostIds.size() == 1) {
-                hostId = hostIds.iterator().next();
-            } else {
-                log.warn("Instance {} has {} instance host maps. Cannot determine host uuid. Returning null.", instance.getId(), maps.size());
-                return null;
-            }
-        }
-        if (hostId != null) {
-            Host h = objectManager.loadResource(Host.class, hostId);
-            return h != null ? h.getUuid() : null;
-        } else {
-            return null;
-        }
+        Host h = objectManager.loadResource(Host.class, instance.getHostId());
+        return h != null ? h.getUuid() : null;
     }
 
     @SuppressWarnings("unchecked")
@@ -822,7 +750,7 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
     }
 
     private List<Long> getAgentResource(Long accountId, List<Instance> instances) {
-        List<Long> agentIds = agentInstanceDao.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_SCHEDULING_PROVIDER, accountId);
+        List<Long> agentIds = envResourceManager.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_SCHEDULING_PROVIDER, accountId);
         for (Instance instance : instances) {
             if (agentIds.contains(instance.getAgentId())) {
                 return new ArrayList<>();
@@ -833,7 +761,7 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
 
     private List<Long> getAgentResource(Object resource) {
         Long accountId = (Long)ObjectUtils.getAccountId(resource);
-        List<Long> agentIds = agentInstanceDao.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_SCHEDULING_PROVIDER, accountId);
+        List<Long> agentIds = envResourceManager.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_SCHEDULING_PROVIDER, accountId);
         // If the resource being allocated is a scheduling provider agent, return null so that we don't try to send the container to the scheduler.
         Long resourceAgentId = (Long)ObjectUtils.getPropertyIgnoreErrors(resource, "agentId");
         if (resourceAgentId != null && agentIds.contains(resourceAgentId)) {
@@ -908,7 +836,7 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
     }
 
     protected String getSchedulerVersion(Long agentId) {
-        Instance instance = agentInstanceDao.getInstanceByAgent(agentId);
+        Instance instance = agentDao.getInstanceByAgent(agentId);
         String imageUuid = (String) DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_IMAGE_UUID).get();
         DockerImage img = DockerImage.parse(imageUuid);
         String[] imageParts = img.getFullName().split(":");
@@ -966,13 +894,4 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
         return false;
     }
 
-    @Override
-    public String toString() {
-        return getName();
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
 }

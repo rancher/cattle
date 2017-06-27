@@ -7,16 +7,18 @@ import io.cattle.platform.iaas.api.auth.integration.interfaces.AccountLookup;
 import io.cattle.platform.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 
 public class AdminAuthLookUp implements AccountLookup, Priority {
 
     private static final String ENFORCE_AUTH_HEADER = "X-ENFORCE-AUTHENTICATION";
 
-    @Inject
     AuthDao authDao;
+
+    public AdminAuthLookUp(AuthDao authDao) {
+        super();
+        this.authDao = authDao;
+    }
 
     @Override
     public Account getAccount(ApiRequest request) {

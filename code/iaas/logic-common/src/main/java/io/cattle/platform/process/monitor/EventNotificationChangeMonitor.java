@@ -21,12 +21,13 @@ import io.cattle.platform.object.util.ObjectUtils;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 public class EventNotificationChangeMonitor extends io.cattle.platform.engine.process.impl.EventNotificationChangeMonitor {
 
-    @Inject
     ObjectManager objectManager;
+
+    public EventNotificationChangeMonitor(ObjectManager objectManager) {
+        this.objectManager = objectManager;
+    }
 
     @Override
     public void addData(Map<String, Object> data, boolean schedule, String previousState, String newState, ProcessRecord record, ProcessState state,

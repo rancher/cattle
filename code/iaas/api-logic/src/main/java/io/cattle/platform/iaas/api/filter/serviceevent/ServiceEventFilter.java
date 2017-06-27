@@ -9,32 +9,27 @@ import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.HealthcheckInstance;
 import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 import io.cattle.platform.core.model.ServiceEvent;
-import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
-import javax.inject.Inject;
-
-public class ServiceEventFilter extends AbstractDefaultResourceManagerFilter {
+public class ServiceEventFilter extends AbstractValidationFilter {
 
     public static final String VERIFY_AGENT = "CantVerifyHealthcheck";
 
-    @Inject
     ObjectManager objectManager;
-
-    @Inject
     AgentDao agentDao;
-
-    @Inject
     ServiceDao serviceDao;
 
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { ServiceEvent.class };
+    public ServiceEventFilter(ObjectManager objectManager, AgentDao agentDao, ServiceDao serviceDao) {
+        super();
+        this.objectManager = objectManager;
+        this.agentDao = agentDao;
+        this.serviceDao = serviceDao;
     }
 
     protected Agent getAgent() {

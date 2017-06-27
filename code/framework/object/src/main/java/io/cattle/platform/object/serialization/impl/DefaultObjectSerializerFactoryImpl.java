@@ -7,7 +7,6 @@ import io.cattle.platform.object.serialization.ObjectSerializer;
 import io.cattle.platform.object.serialization.ObjectSerializerFactory;
 import io.cattle.platform.object.serialization.ObjectTypeSerializerPostProcessor;
 import io.cattle.platform.util.type.CollectionUtils;
-import io.cattle.platform.util.type.InitializationTask;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,17 +14,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import javax.inject.Inject;
-
-public class DefaultObjectSerializerFactoryImpl implements ObjectSerializerFactory, InitializationTask {
+public class DefaultObjectSerializerFactoryImpl implements ObjectSerializerFactory {
 
     private static final Pattern GOOD_CHARS = Pattern.compile("[a-z0-9]", Pattern.CASE_INSENSITIVE);
 
     JsonMapper jsonMapper;
     ObjectManager objectManager;
     ObjectMetaDataManager metaDataManager;
-    Map<String, List<ObjectTypeSerializerPostProcessor>> postProcessorsMap = new HashMap<String, List<ObjectTypeSerializerPostProcessor>>();
-    List<ObjectTypeSerializerPostProcessor> postProcessors;
+    Map<String, List<ObjectTypeSerializerPostProcessor>> postProcessorsMap = new HashMap<>();
+
+    public DefaultObjectSerializerFactoryImpl(JsonMapper jsonMapper, ObjectManager objectManager, ObjectMetaDataManager metaDataManager,
+            ObjectTypeSerializerPostProcessor... postProcessors) {
+        super();
+        this.jsonMapper = jsonMapper;
+        this.objectManager = objectManager;
+        this.metaDataManager = metaDataManager;
+        init(postProcessors);
+    }
 
     @Override
     public ObjectSerializer compile(String type, String expression) {
@@ -36,8 +41,7 @@ public class DefaultObjectSerializerFactoryImpl implements ObjectSerializerFacto
         return result;
     }
 
-    @Override
-    public void start() {
+    private void init(ObjectTypeSerializerPostProcessor[] postProcessors) {
         for (ObjectTypeSerializerPostProcessor postProcessor : postProcessors) {
             for (String type : postProcessor.getTypes()) {
                 CollectionUtils.addToMap(postProcessorsMap, type, postProcessor, ArrayList.class);
@@ -109,7 +113,7 @@ public class DefaultObjectSerializerFactoryImpl implements ObjectSerializerFacto
 
     private static final class Context {
         Context parent = null;
-        List<Action> currentActions = new ArrayList<Action>();
+        List<Action> currentActions = new ArrayList<>();
         Action currentAction = new Action();
         StringBuilder currentWord = new StringBuilder();
         boolean dotStart = false;
@@ -138,49 +142,13 @@ public class DefaultObjectSerializerFactoryImpl implements ObjectSerializerFacto
                 current = current.parent;
             }
             if (current.currentWord.length() > 0) {
-                List<Action> actions = new ArrayList<Action>(current.currentActions);
+                List<Action> actions = new ArrayList<>(current.currentActions);
                 actions.add(new Action(current.currentWord.toString() + "*", current.currentAction.getChildren()));
                 return actions.toString();
             } else {
                 return current.currentActions.toString();
             }
         }
-    }
-
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
-    }
-
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
-    }
-
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
-    }
-
-    public ObjectMetaDataManager getMetaDataManager() {
-        return metaDataManager;
-    }
-
-    @Inject
-    public void setMetaDataManager(ObjectMetaDataManager metaDataManager) {
-        this.metaDataManager = metaDataManager;
-    }
-
-    public List<ObjectTypeSerializerPostProcessor> getPostProcessors() {
-        return postProcessors;
-    }
-
-    @Inject
-    public void setPostProcessors(List<ObjectTypeSerializerPostProcessor> postProcessors) {
-        this.postProcessors = postProcessors;
     }
 
 }

@@ -1,14 +1,14 @@
 package io.cattle.platform.loop;
 
 import io.cattle.platform.engine.model.Loop;
-import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
+import io.cattle.platform.lifecycle.ServiceLifecycleManager;
 
 public class StackHealthLoop implements Loop {
 
-    ServiceDiscoveryService sdService;
+    ServiceLifecycleManager sdService;
     Long stackId;
 
-    public StackHealthLoop(ServiceDiscoveryService sdService, Long id) {
+    public StackHealthLoop(ServiceLifecycleManager sdService, Long id) {
         super();
         this.sdService = sdService;
         this.stackId = id;

@@ -5,6 +5,7 @@ import io.cattle.platform.api.pubsub.model.Subscribe;
 import io.cattle.platform.api.pubsub.subscribe.SubscriptionHandler;
 import io.cattle.platform.api.pubsub.util.SubscriptionUtils;
 import io.cattle.platform.api.pubsub.util.SubscriptionUtils.SubscriptionStyle;
+import io.cattle.platform.api.resource.AbstractNoOpResourceManager;
 import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.framework.event.FrameworkEvents;
 import io.cattle.platform.iaas.event.IaasEvents;
@@ -13,7 +14,6 @@ import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
-import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ProxyUtils;
 
 import java.io.IOException;
@@ -23,24 +23,22 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 
 public class SubscribeManager extends AbstractNoOpResourceManager {
 
     public static final String EVENT_DISCONNECT = "disconnect";
-    List<SubscriptionHandler> handlers = new ArrayList<SubscriptionHandler>();
+    SubscriptionHandler[] handlers;
 
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { Subscribe.class };
+    public SubscribeManager(SubscriptionHandler... handlers) {
+        super();
+        this.handlers = handlers;
     }
 
     @Override
-    protected Object createInternal(String type, ApiRequest request) {
+    public Object create(String type, ApiRequest request) {
         List<String> eventNames = getEventNames(request);
-        Set<String> filteredEventNames = new TreeSet<String>();
+        Set<String> filteredEventNames = new TreeSet<>();
 
         Policy policy = ApiUtils.getPolicy();
 
@@ -80,7 +78,7 @@ public class SubscribeManager extends AbstractNoOpResourceManager {
             throw new IllegalStateException("Failed to subscribe to [" + filteredEventNames + "]", e);
         }
 
-        return super.createInternal(type, request);
+        return null;
     }
 
     protected List<String> getEventNames(ApiRequest request) {
@@ -91,7 +89,7 @@ public class SubscribeManager extends AbstractNoOpResourceManager {
             return eventNames;
         }
 
-        eventNames = new ArrayList<String>();
+        eventNames = new ArrayList<>();
         Map<String, List<Condition>> conditions = request.getConditions();
         if (conditions == null) {
             return eventNames;
@@ -114,17 +112,8 @@ public class SubscribeManager extends AbstractNoOpResourceManager {
     }
 
     @Override
-    protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
-        return createInternal(type, ApiContext.getContext().getApiRequest());
-    }
-
-    public List<SubscriptionHandler> getHandlers() {
-        return handlers;
-    }
-
-    @Inject
-    public void setHandlers(List<SubscriptionHandler> handlers) {
-        this.handlers = handlers;
+    public Object list(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
+        return create(type, ApiContext.getContext().getApiRequest());
     }
 
 }

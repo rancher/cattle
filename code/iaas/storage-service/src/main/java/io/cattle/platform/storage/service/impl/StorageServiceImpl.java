@@ -20,19 +20,20 @@ import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.Map;
 
-import javax.inject.Inject;
-
 public class StorageServiceImpl implements StorageService {
 
-    @Inject
     ObjectManager objectManager;
-    @Inject
     GenericResourceDao genericResourceDao;
-    @Inject
     LockManager lockManager;
-    @Inject
     StoragePoolDao storagePoolDao;
 
+    public StorageServiceImpl(ObjectManager objectManager, GenericResourceDao genericResourceDao, LockManager lockManager, StoragePoolDao storagePoolDao) {
+        super();
+        this.objectManager = objectManager;
+        this.genericResourceDao = genericResourceDao;
+        this.lockManager = lockManager;
+        this.storagePoolDao = storagePoolDao;
+    }
 
     @Override
     public boolean isValidUUID(String uuid) {

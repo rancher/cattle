@@ -1,40 +1,34 @@
 package io.cattle.platform.process.mount;
 
+import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.GenericMapDao;
-import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Mount;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.serialization.ObjectSerializerFactory;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AgentBasedProcessHandler;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
-@Named
 public class MountRemove extends AgentBasedProcessHandler {
 
-    @Inject
     GenericMapDao mapDao;
 
-    public MountRemove() {
-        super();
-        setIgnoreReconnecting(true);
-        setCommandName("storage.volume.remove");
-        setDataTypeClass(Volume.class);
-        setProcessNames("mount.remove");
-        setShortCircuitIfAgentRemoved(true);
-        setPriority(DEFAULT);
+    public MountRemove(AgentLocator agentLocator, ObjectSerializerFactory factory, ObjectManager objectManager, ObjectProcessManager processManager) {
+        super(agentLocator, factory, objectManager, processManager);
+        ignoreReconnecting = true;
+        commandName = "storage.volume.remove";
+        dataTypeClass = Volume.class;
+        shortCircuitIfAgentRemoved = true;
     }
 
     @Override
     protected Object getAgentResource(ProcessState state, ProcessInstance process, Object dataResource) {
-        Instance instance = (Instance)getObjectByRelationship("instance", state.getResource());
-        Host host = objectManager.loadResource(Host.class, instance.getHostId());
-        return host;
+        return objectManager.loadResource(Instance.class, ((Mount) state.getResource()).getInstanceId());
     }
 
     @Override

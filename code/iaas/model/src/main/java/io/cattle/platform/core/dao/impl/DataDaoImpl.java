@@ -13,20 +13,22 @@ import io.cattle.platform.util.exception.ExceptionUtils;
 
 import java.util.concurrent.Callable;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.jooq.Configuration;
 import org.jooq.DSLContext;
 import org.jooq.impl.DefaultDSLContext;
 
-@Named
 public class DataDaoImpl extends AbstractJooqDao implements DataDao {
 
     LockManager lockManager;
     ObjectManager objectManager;
-    @Inject @Named("NewConnectionJooqConfiguration")
     Configuration newConfiguration;
+
+    public DataDaoImpl(Configuration configuration, LockManager lockManager, ObjectManager objectManager, Configuration newConfiguration) {
+        super(configuration);
+        this.lockManager = lockManager;
+        this.objectManager = objectManager;
+        this.newConfiguration = newConfiguration;
+    }
 
     @Override
     protected DSLContext create() {
@@ -106,17 +108,8 @@ public class DataDaoImpl extends AbstractJooqDao implements DataDao {
         return lockManager;
     }
 
-    @Inject
-    public void setLockManager(LockManager lockManager) {
-        this.lockManager = lockManager;
-    }
-
     public ObjectManager getObjectManager() {
         return objectManager;
     }
 
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
-    }
 }

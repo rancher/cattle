@@ -10,8 +10,13 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import java.util.List;
 
 import org.jooq.Condition;
+import org.jooq.Configuration;
 
 public class PingDaoImpl extends AbstractJooqDao implements PingDao {
+
+    public PingDaoImpl(Configuration configuration) {
+        super(configuration);
+    }
 
     @Override
     public List<Long> findAgentsToPing() {

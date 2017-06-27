@@ -25,18 +25,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
+import org.jooq.Configuration;
 import org.jooq.Record2;
 import org.jooq.RecordHandler;
 import org.jooq.impl.DSL;
 
-@Named
 public class StackDaoImpl extends AbstractJooqDao implements StackDao {
 
-	 @Inject
     ObjectManager objectManager;
+
+    public StackDaoImpl(Configuration configuration, ObjectManager objectManager) {
+        super(configuration);
+        this.objectManager = objectManager;
+    }
 
     @Override
     public Stack getStackByExternalId(Long accountId, String externalId) {

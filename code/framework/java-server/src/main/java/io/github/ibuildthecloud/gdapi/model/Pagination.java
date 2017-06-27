@@ -14,7 +14,7 @@ public class Pagination {
     Pagination response;
 
     public static ListOptions limit(int limit) {
-        return new ListOptions(null, new Pagination(limit), null);
+        return new ListOptions(null, new Pagination(limit));
     }
 
     public Pagination(Integer limit) {

@@ -19,26 +19,35 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.eventing.exception.EventExecutionException;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
+import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.serialization.ObjectSerializer;
 import io.cattle.platform.object.serialization.ObjectSerializerFactory;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.process.common.handler.AbstractGenericObjectProcessLogic;
+import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.process.progress.ProcessProgress;
 import io.cattle.platform.storage.ImageCredentialLookup;
 import io.cattle.platform.util.type.CollectionUtils;
-import io.cattle.platform.util.type.InitializationTask;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import com.google.common.util.concurrent.ListenableFuture;
 import com.netflix.config.DynamicStringProperty;
 
-public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements ProcessHandler, InitializationTask {
+public class PullTaskCreate implements ProcessHandler {
+
+    public PullTaskCreate(AllocationHelper allocationHelper, AgentLocator agentLocator, ProcessProgress progress, ImageCredentialLookup imageCredentialLookup,
+            ObjectSerializerFactory serializerFactory) {
+        super();
+        this.allocationHelper = allocationHelper;
+        this.agentLocator = agentLocator;
+        this.progress = progress;
+        this.imageCredentialLookup = imageCredentialLookup;
+        this.serializerFactory = serializerFactory;
+        this.serializer = serializerFactory.compile(CredentialConstants.TYPE, EXPR.get());
+    }
 
     public static final DynamicStringProperty EXPR = ArchaiusUtil.getString("event.data.credential");
 
@@ -50,31 +59,37 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
     public static final String STATUS = "status";
     public static final String ERRORS = "errors";
 
-    @Inject
     AllocationHelper allocationHelper;
-
-    @Inject
     AgentLocator agentLocator;
-
-    @Inject
     ProcessProgress progress;
-
-    @Inject
-    List<ImageCredentialLookup> imageCredentialLookups;
-
-    @Inject
+    ImageCredentialLookup imageCredentialLookup;
     ObjectSerializerFactory serializerFactory;
-
+    ObjectManager objectManager;
     ObjectSerializer serializer;
 
+    public PullTaskCreate(AllocationHelper allocationHelper, AgentLocator agentLocator, ProcessProgress progress, ImageCredentialLookup imageCredentialLookup,
+            ObjectSerializerFactory serializerFactory, ObjectManager objectManager) {
+        super();
+        this.allocationHelper = allocationHelper;
+        this.agentLocator = agentLocator;
+        this.progress = progress;
+        this.imageCredentialLookup = imageCredentialLookup;
+        this.serializerFactory = serializerFactory;
+        this.objectManager = objectManager;
+        this.serializer = serializerFactory.compile(CredentialConstants.TYPE, EXPR.get());
+    }
+
     @Override
-    public String[] getProcessNames() {
-        return new String[] { GenericObjectConstants.PROCESS_CREATE };
+    public final HandlerResult handle(ProcessState state, ProcessInstance process) {
+        if (GenericObjectConstants.KIND_PULL_TASK.equals(ObjectUtils.getKind(state.getResource()))) {
+            return handleKind(state, process);
+        }
+
+        return null;
     }
 
     @SuppressWarnings("unchecked")
-    @Override
-    public HandlerResult handleKind(ProcessState state, ProcessInstance process) {
+    private HandlerResult handleKind(ProcessState state, ProcessInstance process) {
         GenericObject pullTask = (GenericObject)state.getResource();
         String tag = DataAccessor.fieldString(pullTask, TAG);
         String mode = DataAccessor.fieldString(pullTask, MODE);
@@ -99,7 +114,7 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
         List<Integer> weights = new ArrayList<>();
 
         for (final long hostId : hostIds) {
-            Host host = getObjectManager().loadResource(Host.class, hostId);
+            Host host = objectManager.loadResource(Host.class, hostId);
             if (host == null) {
                 return null;
             }
@@ -116,7 +131,7 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
             }
         }
 
-        progress.init(state, toArray(weights));
+        progress.init(state);
         pullTask = objectManager.reload(pullTask);
         objectManager.setFields(pullTask, STATUS, status);
 
@@ -145,14 +160,7 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
     }
 
     protected Credential getCredential(String uuid, long accountId) {
-        for (ImageCredentialLookup lookup : imageCredentialLookups) {
-            Credential cred = lookup.getDefaultCredential(uuid, accountId);
-            if (cred != null) {
-                return cred;
-            }
-        }
-
-        return null;
+        return imageCredentialLookup.getDefaultCredential(uuid, accountId);
     }
 
     protected GenericObject setStatus(GenericObject object, Map<String, String> status, Map<String, String> errors, Host host, String message, boolean error) {
@@ -199,27 +207,9 @@ public class PullTaskCreate extends AbstractGenericObjectProcessLogic implements
         return agent.call(event);
     }
 
-    protected int[] toArray(List<Integer> ints) {
-        int[] result = new int[ints.size()];
-        for (int i = 0; i < ints.size(); i++) {
-            result[i] = ints.get(i);
-        }
-        return result;
-    }
-
     protected DataAccessor getData(ProcessState state) {
         return DataAccessor.fromMap(state.getData())
                 .withScope(PullTaskCreate.class);
-    }
-
-    @Override
-    public String getKind() {
-        return GenericObjectConstants.KIND_PULL_TASK;
-    }
-
-    @Override
-    public void start() {
-        serializer = serializerFactory.compile(CredentialConstants.TYPE, EXPR.get());
     }
 
 }

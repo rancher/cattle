@@ -3,35 +3,32 @@ package io.cattle.platform.iaas.api.user.preference;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.model.UserPreference;
-import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class UserPreferenceFilter extends AbstractDefaultResourceManagerFilter {
-
-    @Inject
-    UserPreferenceDao userPreferenceDao;
+public class UserPreferenceFilter extends AbstractValidationFilter {
 
     private static final Logger log = LoggerFactory.getLogger(UserPreferenceFilter.class);
-
     private static final String ALL = "all";
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { UserPreference.class };
+
+    UserPreferenceDao userPreferenceDao;
+
+    public UserPreferenceFilter(UserPreferenceDao userPreferenceDao) {
+        this.userPreferenceDao = userPreferenceDao;
     }
 
     @Override

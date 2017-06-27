@@ -9,7 +9,6 @@ import io.cattle.platform.core.model.ProjectTemplate;
 import io.cattle.platform.lock.LockCallbackWithException;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.systemstack.catalog.CatalogService;
 import io.cattle.platform.systemstack.lock.ProjectTemplateLoadLock;
 import io.cattle.platform.task.Task;
@@ -22,9 +21,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-
-import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.apache.cloudstack.managed.context.NoExceptionRunnable;
 import org.slf4j.Logger;
@@ -40,20 +36,23 @@ public class ProjectTemplateService implements InitializationTask, Task {
 
     private static final Logger log = LoggerFactory.getLogger(ProjectTemplateService.class);
 
-    @Inject
     CatalogService catalogService;
-    @Inject @Named("CoreExecutorService")
     ExecutorService executor;
-    @Inject
     ObjectManager objectManager;
-    @Inject
-    ObjectProcessManager processManager;
-    @Inject
     GenericResourceDao resourceDao;
-    @Inject
     LockManager lockManager;
 
     boolean initialRun = true;
+
+    public ProjectTemplateService(CatalogService catalogService, ExecutorService executor, ObjectManager objectManager, GenericResourceDao resourceDao,
+            LockManager lockManager) {
+        super();
+        this.catalogService = catalogService;
+        this.executor = executor;
+        this.objectManager = objectManager;
+        this.resourceDao = resourceDao;
+        this.lockManager = lockManager;
+    }
 
     @Override
     public void start() {

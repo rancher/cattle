@@ -3,6 +3,7 @@ package io.cattle.platform.api.pubsub.manager;
 import io.cattle.platform.api.pubsub.model.Publish;
 import io.cattle.platform.api.pubsub.util.SubscriptionUtils;
 import io.cattle.platform.api.pubsub.util.SubscriptionUtils.SubscriptionStyle;
+import io.cattle.platform.api.resource.AbstractNoOpResourceManager;
 import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.model.Event;
@@ -13,31 +14,27 @@ import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
-import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import javax.inject.Inject;
-
 public class PublishManager extends AbstractNoOpResourceManager {
 
     final static Pattern SERVICE_PATTERN = Pattern.compile("^service\\.[a-z.]+$");
 
-    @Inject
     ObjectManager objectManager;
-
     EventService eventService;
 
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { Publish.class };
+    public PublishManager(ObjectManager objectManager, EventService eventService) {
+        super();
+        this.objectManager = objectManager;
+        this.eventService = eventService;
     }
 
     @Override
-    protected Object createInternal(String type, ApiRequest request) {
+    public Object create(String type, ApiRequest request) {
         Publish publish = request.proxyRequestObject(Publish.class);
 
         Event event = createEvent(publish);
@@ -68,7 +65,7 @@ public class PublishManager extends AbstractNoOpResourceManager {
     }
 
     protected Event createEvent(Publish publish) {
-        EventVO<Object> event = new EventVO<Object>();
+        EventVO<Object> event = new EventVO<>();
 
         if (publish.getId() != null) {
             event.setId(publish.getId());
@@ -100,15 +97,6 @@ public class PublishManager extends AbstractNoOpResourceManager {
     protected String getResourceId(String resourceId) {
         IdFormatter formatter = ApiContext.getContext().getIdFormatter();
         return formatter.parseId(resourceId);
-    }
-
-    public EventService getEventService() {
-        return eventService;
-    }
-
-    @Inject
-    public void setEventService(EventService eventService) {
-        this.eventService = eventService;
     }
 
 }

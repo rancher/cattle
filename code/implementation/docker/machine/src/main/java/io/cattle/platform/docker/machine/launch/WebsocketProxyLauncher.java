@@ -3,10 +3,16 @@ package io.cattle.platform.docker.machine.launch;
 import static io.cattle.platform.server.context.ServerContext.*;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.dao.AccountDao;
+import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.hazelcast.membership.ClusterService;
 import io.cattle.platform.hazelcast.membership.ClusteredMember;
+import io.cattle.platform.lock.LockDelegator;
+import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.lock.definition.LockDefinition;
+import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.service.launcher.GenericServiceLauncher;
 
 import java.io.File;
@@ -16,8 +22,7 @@ import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import javax.inject.Inject;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -36,14 +41,19 @@ public class WebsocketProxyLauncher extends GenericServiceLauncher {
     private static final DynamicStringProperty API_INTERCEPTOR_CONFIG = ArchaiusUtil.getString("api.interceptor.config");
     private static final DynamicStringProperty API_INTERCEPTOR_CONFIG_FILE = ArchaiusUtil.getString("api.interceptor.config.file");
 
-    @Inject
     ClusterService clusterService;
 
     String written = "start";
 
+    public WebsocketProxyLauncher(LockManager lockManager, LockDelegator lockDelegator, ScheduledExecutorService executor, AccountDao accountDao,
+            GenericResourceDao resourceDao, ResourceMonitor resourceMonitor, ObjectProcessManager processManager, ClusterService clusterService) {
+        super(lockManager, lockDelegator, executor, accountDao, resourceDao, resourceMonitor, processManager);
+        this.clusterService = clusterService;
+    }
+
     @Override
     protected List<DynamicStringProperty> getReloadSettings() {
-        List<DynamicStringProperty> list = new ArrayList<DynamicStringProperty>();
+        List<DynamicStringProperty> list = new ArrayList<>();
         list.add(ACCESS_LOG);
         list.add(API_INTERCEPTOR_CONFIG);
         return list;

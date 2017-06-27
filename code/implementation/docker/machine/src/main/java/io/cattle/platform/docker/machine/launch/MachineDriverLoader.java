@@ -20,8 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -35,14 +33,18 @@ public class MachineDriverLoader implements InitializationTask {
 
     private static final Logger log = LoggerFactory.getLogger(MachineDriverLoader.class);
 
-    @Inject
     LockManager lockManager;
-    @Inject
     ObjectManager objectManager;
-    @Inject
     ObjectProcessManager processManager;
-    @Inject
     JsonMapper jsonMapper;
+
+    public MachineDriverLoader(LockManager lockManager, ObjectManager objectManager, ObjectProcessManager processManager, JsonMapper jsonMapper) {
+        super();
+        this.lockManager = lockManager;
+        this.objectManager = objectManager;
+        this.processManager = processManager;
+        this.jsonMapper = jsonMapper;
+    }
 
     @Override
     public void start() {
@@ -120,16 +122,17 @@ public class MachineDriverLoader implements InitializationTask {
         });
     }
 
-}
+    public static class DriverConfig {
+        List<MachineDriverRecord> drivers;
 
-class DriverConfig {
-    List<MachineDriverRecord> drivers;
+        public List<MachineDriverRecord> getDrivers() {
+            return drivers;
+        }
 
-    public List<MachineDriverRecord> getDrivers() {
-        return drivers;
+        public void setDrivers(List<MachineDriverRecord> drivers) {
+            this.drivers = drivers;
+        }
     }
 
-    public void setDrivers(List<MachineDriverRecord> drivers) {
-        this.drivers = drivers;
-    }
 }
+

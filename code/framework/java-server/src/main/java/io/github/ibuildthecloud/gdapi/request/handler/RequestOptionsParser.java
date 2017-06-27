@@ -10,11 +10,11 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class RequestOptionsParser extends AbstractApiRequestHandler {
+public class RequestOptionsParser implements ApiRequestHandler {
 
     private static final String DEFAULT_VALUE = "true";
 
-    List<String> options = new ArrayList<String>();
+    List<String> options = new ArrayList<>();
 
     @Override
     public void handle(ApiRequest request) throws IOException {

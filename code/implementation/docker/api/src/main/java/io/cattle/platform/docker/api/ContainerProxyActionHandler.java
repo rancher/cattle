@@ -1,6 +1,5 @@
 package io.cattle.platform.docker.api;
 
-import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.DockerInstanceConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -17,12 +16,11 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.ActionHandler;
 
 import java.util.Date;
 import java.util.Map;
 import java.util.Set;
-
-import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -35,14 +33,12 @@ public class ContainerProxyActionHandler implements ActionHandler {
     private static final DynamicLongProperty EXPIRE_SECONDS = ArchaiusUtil.getLong("host.proxy.jwt.expiration.seconds");
     private static final Set<String> VALID_SCHEMES = CollectionUtils.set("http", "https");
 
-    @Inject
     HostApiService apiService;
-    @Inject
     ObjectManager objectManager;
 
-    @Override
-    public String getName() {
-        return "instance.proxy";
+    public ContainerProxyActionHandler(HostApiService apiService, ObjectManager objectManager) {
+        this.apiService = apiService;
+        this.objectManager = objectManager;
     }
 
     @Override

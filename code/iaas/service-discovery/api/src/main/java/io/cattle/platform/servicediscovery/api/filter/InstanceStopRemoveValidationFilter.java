@@ -2,33 +2,21 @@ package io.cattle.platform.servicediscovery.api.filter;
 
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataUtils;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
-
-import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
 
-@Named
-public class InstanceStopRemoveValidationFilter extends AbstractDefaultResourceManagerFilter {
-    @Inject
+public class InstanceStopRemoveValidationFilter extends AbstractValidationFilter {
+
     ObjectManager objectManager;
 
-    @Override
-    public String[] getTypes() {
-        return new String[] {
-                InstanceConstants.KIND_CONTAINER,
-                InstanceConstants.KIND_VIRTUAL_MACHINE
-                };
-    }
-
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { Instance.class };
+    public InstanceStopRemoveValidationFilter(ObjectManager objectManager) {
+        super();
+        this.objectManager = objectManager;
     }
 
     @Override

@@ -20,21 +20,21 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 
 public class AzureIdentityProvider extends AzureConfigurable implements IdentityProvider {
 
-    @Inject
     AzureRESTClient azureClient;
-
-    @Inject
-    private AzureTokenUtil azureTokenUtils;
-    @Inject
-    private AuthTokenDao authTokenDao;
-    @Inject
+    AzureTokenUtil azureTokenUtils;
+    AuthTokenDao authTokenDao;
     AzureTokenCreator azureTokenCreator;
+
+    public AzureIdentityProvider(AzureRESTClient azureClient, AzureTokenUtil azureTokenUtils, AuthTokenDao authTokenDao, AzureTokenCreator azureTokenCreator) {
+        this.azureClient = azureClient;
+        this.azureTokenUtils = azureTokenUtils;
+        this.authTokenDao = authTokenDao;
+        this.azureTokenCreator = azureTokenCreator;
+    }
 
     @Override
     public List<Identity> searchIdentities(String name, boolean exactMatch) {

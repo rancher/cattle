@@ -3,26 +3,25 @@ package io.cattle.platform.servicediscovery.api.filter;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ServiceExposeMapDao;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+public class ServiceRestartValidationFilter extends AbstractValidationFilter {
 
-@Named
-public class ServiceRestartValidationFilter extends AbstractDefaultResourceManagerFilter {
-    @Inject
     ObjectManager objectManager;
-
-    @Inject
     JsonMapper jsonMapper;
-
-    @Inject
     ServiceExposeMapDao exposeMapDao;
+
+    public ServiceRestartValidationFilter(ObjectManager objectManager, JsonMapper jsonMapper, ServiceExposeMapDao exposeMapDao) {
+        super();
+        this.objectManager = objectManager;
+        this.jsonMapper = jsonMapper;
+        this.exposeMapDao = exposeMapDao;
+    }
 
     @Override
     public Class<?>[] getTypeClasses() {

@@ -5,17 +5,22 @@ import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 
-import javax.inject.Inject;
-
 import org.apache.cloudstack.managed.threadlocal.ManagedThreadLocal;
 
 public class ProcessProgressImpl implements ProcessProgress {
 
-    private static final ManagedThreadLocal<ProcessProgressContext> TL = new ManagedThreadLocal<ProcessProgressContext>();
+    private static final ManagedThreadLocal<ProcessProgressContext> TL = new ManagedThreadLocal<>();
 
     ObjectManager objectManager;
     JsonMapper jsonMapper;
     EventService eventService;
+
+    public ProcessProgressImpl(ObjectManager objectManager, JsonMapper jsonMapper, EventService eventService) {
+        super();
+        this.objectManager = objectManager;
+        this.jsonMapper = jsonMapper;
+        this.eventService = eventService;
+    }
 
     @Override
     public ProcessProgressInstance get() {
@@ -23,7 +28,7 @@ public class ProcessProgressImpl implements ProcessProgress {
     }
 
     @Override
-    public void init(ProcessState state, int... checkpointWeights) {
+    public void init(ProcessState state) {
         ProcessProgressContext context = TL.get();
 
         if (context != null) {
@@ -31,7 +36,7 @@ public class ProcessProgressImpl implements ProcessProgress {
         }
 
         context = new ProcessProgressContext(state, objectManager, jsonMapper, eventService);
-        context.init(state, checkpointWeights);
+        context.init(state);
 
         TL.set(context);
     }
@@ -45,55 +50,6 @@ public class ProcessProgressImpl implements ProcessProgress {
         }
 
         context.checkPoint(name);
-    }
-
-    @Override
-    public void progress(Integer progress) {
-        ProcessProgressContext context = TL.get();
-
-        if (context == null) {
-            return;
-        }
-
-        context.progress(progress);
-    }
-
-    @Override
-    public String getCurrentCheckpoint() {
-        ProcessProgressContext context = TL.get();
-
-        if (context == null) {
-            return null;
-        }
-
-        return context.getCurrentCheckpoint();
-    }
-
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
-    }
-
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
-    }
-
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
-    }
-
-    public EventService getEventService() {
-        return eventService;
-    }
-
-    @Inject
-    public void setEventService(EventService eventService) {
-        this.eventService = eventService;
     }
 
 }

@@ -13,23 +13,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 public class StackOutputFilter extends CachedOutputFilter<Map<Long, List<Object>>> {
 
-    @Inject
     StackDao stackDao;
-    @Inject
     ObjectManager objectManager;
 
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { Stack.class };
-    }
-
-    @Override
-    public String[] getTypes() {
-        return new String[] {};
+    public StackOutputFilter(StackDao stackDao, ObjectManager objectManager) {
+        super();
+        this.stackDao = stackDao;
+        this.objectManager = objectManager;
     }
 
     @Override

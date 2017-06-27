@@ -5,48 +5,29 @@ import io.cattle.platform.core.addon.ServiceUpgrade;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.ServiceUtil;
-import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.iaas.api.service.RevisionDiffomatic;
 import io.cattle.platform.iaas.api.service.RevisionManager;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.storage.service.StorageService;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+public class ServiceUpgradeValidationFilter extends AbstractValidationFilter {
 
-@Named
-public class ServiceUpgradeValidationFilter extends AbstractDefaultResourceManagerFilter {
-
-    @Inject
     ObjectManager objectManager;
-    @Inject
     JsonMapper jsonMapper;
-    @Inject
     RevisionManager revisionManager;
-    @Inject
-    StorageService storageService;
 
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { Service.class };
-    }
-
-    @Override
-    public String[] getTypes() {
-        List<String> supportedTypes = new ArrayList<>();
-        supportedTypes.addAll(ServiceConstants.SERVICE_LIKE);
-        supportedTypes.add(ServiceConstants.KIND_DNS_SERVICE);
-        supportedTypes.add(ServiceConstants.KIND_EXTERNAL_SERVICE);
-        return supportedTypes.toArray(new String[supportedTypes.size()]);
+    public ServiceUpgradeValidationFilter(ObjectManager objectManager, JsonMapper jsonMapper, RevisionManager revisionManager) {
+        super();
+        this.objectManager = objectManager;
+        this.jsonMapper = jsonMapper;
+        this.revisionManager = revisionManager;
     }
 
     @Override

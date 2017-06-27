@@ -1,6 +1,5 @@
 package io.cattle.platform.servicediscovery.api.action;
 
-import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
@@ -15,6 +14,7 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.lock.ServiceDiscoveryServiceSetLinksLock;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.ActionHandler;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.ArrayList;
@@ -23,27 +23,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
-@Named
 public class SetServiceLinksActionHandler implements ActionHandler {
 
-    @Inject
     JsonMapper jsonMapper;
-    @Inject
     ServiceConsumeMapDao consumeMapDao;
-    @Inject
     LockManager lockManager;
-    @Inject
     ObjectManager objMgr;
-    @Inject
     IdFormatter idFormatter;
 
-
-    @Override
-    public String getName() {
-        return ServiceConstants.PROCESS_SERVICE_SET_SERVICE_LINKS;
+    public SetServiceLinksActionHandler(JsonMapper jsonMapper, ServiceConsumeMapDao consumeMapDao, LockManager lockManager, ObjectManager objMgr,
+            IdFormatter idFormatter) {
+        super();
+        this.jsonMapper = jsonMapper;
+        this.consumeMapDao = consumeMapDao;
+        this.lockManager = lockManager;
+        this.objMgr = objMgr;
+        this.idFormatter = idFormatter;
     }
 
     @Override

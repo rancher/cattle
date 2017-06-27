@@ -13,7 +13,6 @@ import io.cattle.platform.eventing.exception.EventExecutionException;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.json.JsonMapper;
-import io.cattle.platform.metrics.util.MetricsUtil;
 import io.cattle.platform.pool.PoolConfig;
 
 import java.io.IOException;
@@ -23,24 +22,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.Timer;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.netflix.config.DynamicIntProperty;
@@ -59,14 +52,18 @@ public abstract class AbstractEventService implements EventService {
 
     RetryTimeoutService timeoutService;
     private ExecutorService executorService;
-    Map<String, List<EventListener>> eventToListeners = new HashMap<String, List<EventListener>>();
-    Map<EventListener, Set<String>> listenerToEvents = new HashMap<EventListener, Set<String>>();
+    Map<String, List<EventListener>> eventToListeners = new HashMap<>();
+    Map<EventListener, Set<String>> listenerToEvents = new HashMap<>();
     JsonMapper jsonMapper;
     ObjectPool<FutureEventListener> listenerPool;
-    Map<String, Counter> request = new ConcurrentHashMap<String, Counter>();
-    Map<String, Counter> publish = new ConcurrentHashMap<String, Counter>();
-    Map<String, Counter> failed = new ConcurrentHashMap<String, Counter>();
-    Map<String, Timer> timers = new ConcurrentHashMap<String, Timer>();
+
+    public AbstractEventService(RetryTimeoutService timeoutService, ExecutorService executorService, JsonMapper jsonMapper) {
+        super();
+        this.timeoutService = timeoutService;
+        this.executorService = executorService;
+        this.jsonMapper = jsonMapper;
+        init();
+    }
 
     @Override
     public boolean publish(Event event) {
@@ -92,7 +89,6 @@ public abstract class AbstractEventService implements EventService {
 
         try {
             getEventLogOut().debug(eventString);
-            increment(event, request);
             return doPublish(event.getName(), event, eventString);
         } catch (Throwable e) {
             log.warn("Failed to publish event [" + eventString + "]", e);
@@ -114,7 +110,7 @@ public abstract class AbstractEventService implements EventService {
                     if (result == null) {
                         return additional;
                     } else {
-                        result = new ArrayList<EventListener>(result);
+                        result = new ArrayList<>(result);
                         result.addAll(additional);
                     }
                 }
@@ -139,14 +135,14 @@ public abstract class AbstractEventService implements EventService {
             Set<String> events = listenerToEvents.get(listener);
 
             if (events == null) {
-                events = new HashSet<String>();
+                events = new HashSet<>();
                 listenerToEvents.put(listener, events);
             }
 
             List<EventListener> listeners = eventToListeners.get(eventName);
 
             if (listeners == null) {
-                listeners = new CopyOnWriteArrayList<EventListener>();
+                listeners = new CopyOnWriteArrayList<>();
                 eventToListeners.put(eventName, listeners);
                 doSubscribe = true;
             }
@@ -186,7 +182,7 @@ public abstract class AbstractEventService implements EventService {
 
     protected Set<String> getSubscriptions(EventListener eventListener) {
         synchronized (SUBSCRIPTION_LOCK) {
-            Set<String> result = new HashSet<String>();
+            Set<String> result = new HashSet<>();
             Set<String> current = listenerToEvents.get(eventListener);
             if (current != null) {
                 result.addAll(current);
@@ -252,7 +248,6 @@ public abstract class AbstractEventService implements EventService {
 
     @Override
     public ListenableFuture<Event> call(final Event event, EventCallOptions options) {
-        final long start = System.currentTimeMillis();
         Integer retries = options.getRetry();
         Long timeoutMillis = options.getTimeoutMillis();
         final RetryCallback retryCallback = options.getRetryCallback();
@@ -279,7 +274,7 @@ public abstract class AbstractEventService implements EventService {
             return future;
         }
 
-        final EventVO<Object> request = new EventVO<Object>(event, listener.getReplyTo());
+        final EventVO<Object> request = new EventVO<>(event, listener.getReplyTo());
         request.setTimeoutMillis(timeoutMillis);
 
         Retry retry = new Retry(retries, timeoutMillis, future, new Runnable() {
@@ -319,9 +314,7 @@ public abstract class AbstractEventService implements EventService {
                 try {
                     timeoutService.completed(cancel);
                     future.get();
-                    time(event, start);
                 } catch (ExecutionException t) {
-                    error(event);
                     if (t.getCause() instanceof TimeoutException) {
                         // Ignore don't treat as a bad listener
                     } else if (t.getCause() instanceof EventExecutionException) {
@@ -330,7 +323,6 @@ public abstract class AbstractEventService implements EventService {
                         listener.setFailed(true);
                     }
                 } catch (Throwable t) {
-                    error(event);
                     listener.setFailed(true);
                 } finally {
                     try {
@@ -348,68 +340,12 @@ public abstract class AbstractEventService implements EventService {
     }
 
     @PostConstruct
-    public void init() {
+    private void init() {
         if (listenerPool == null) {
             GenericObjectPoolConfig config = new GenericObjectPoolConfig();
             PoolConfig.setConfig(config, "eventing.reply.pool", "eventing.reply.pool.", "global.pool.");
-            listenerPool = new GenericObjectPool<FutureEventListener>(new ListenerPoolObjectFactory(this), config);
+            listenerPool = new GenericObjectPool<>(new ListenerPoolObjectFactory(this), config);
         }
-    }
-
-    protected void increment(Event event, boolean request) {
-        String metricName = metricName(event, request ? "request" : "publish");
-        if (metricName == null) {
-            return;
-        }
-
-        Map<String, Counter> counters = request ? this.request : publish;
-        Counter counter = counters.get(metricName);
-        if (counter == null) {
-            counter = MetricsUtil.getRegistry().counter(metricName);
-            counters.put(metricName, counter);
-        }
-
-        counter.inc();
-    }
-
-    protected void error(Event event) {
-        String metricName = metricName(event, "failed");
-        if (metricName == null) {
-            return;
-        }
-
-        Counter counter = failed.get(metricName);
-        if (counter == null) {
-            counter = MetricsUtil.getRegistry().counter(metricName);
-            failed.put(metricName, counter);
-        }
-
-        counter.inc();
-    }
-
-    protected void time(Event event, long start) {
-        long duration = System.currentTimeMillis() - start;
-        String metricName = metricName(event, "time");
-        if (metricName == null) {
-            return;
-        }
-
-        Timer timer = timers.get(metricName);
-        if (timer == null) {
-            timer = MetricsUtil.getRegistry().timer(metricName);
-            timers.put(metricName, timer);
-        }
-
-        timer.update(duration, TimeUnit.MILLISECONDS);
-    }
-
-    protected String metricName(Event event, String prefix) {
-        String name = event.getName();
-        if (name.startsWith(REPLY_PREFIX)) {
-            return null;
-        }
-
-        return "event." + prefix + "." + StringUtils.substringBefore(name, EVENT_SEP).replace('.', '_');
     }
 
     boolean isSubscribed(String eventName) {
@@ -418,42 +354,8 @@ public abstract class AbstractEventService implements EventService {
 
     protected abstract void disconnect();
 
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
-    }
-
     protected Object getSubscriptionLock() {
         return SUBSCRIPTION_LOCK;
-    }
-
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
-    }
-
-    public ObjectPool<FutureEventListener> getListenerPool() {
-        return listenerPool;
-    }
-
-    public void setListenerPool(ObjectPool<FutureEventListener> listenerPool) {
-        this.listenerPool = listenerPool;
-    }
-
-    public ExecutorService getExecutorService() {
-        return executorService;
-    }
-
-    public void setExecutorService(ExecutorService executorService) {
-        this.executorService = executorService;
-    }
-
-    public RetryTimeoutService getTimeoutService() {
-        return timeoutService;
-    }
-
-    @Inject
-    public void setTimeoutService(RetryTimeoutService timeoutService) {
-        this.timeoutService = timeoutService;
     }
 
 }

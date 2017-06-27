@@ -1,6 +1,5 @@
 package io.cattle.platform.api.schema;
 
-import io.cattle.platform.util.type.InitializationTask;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.factory.impl.AbstractSchemaFactory;
 import io.github.ibuildthecloud.gdapi.factory.impl.SubSchemaFactory;
@@ -19,17 +18,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.apache.commons.lang3.StringUtils;
 
-public class FileSchemaFactory extends AbstractSchemaFactory implements InitializationTask {
+public class FileSchemaFactory extends AbstractSchemaFactory {
 
-    @Inject
     JsonMapper jsonMapper;
-    @Inject @Named("CoreSchemaFactory")
     SchemaFactory schemaFactory;
     String file, id;
     Map<String, Schema> schemaMap = new TreeMap<>();
@@ -37,10 +30,21 @@ public class FileSchemaFactory extends AbstractSchemaFactory implements Initiali
     List<Schema> schemas = new ArrayList<>();
     boolean init;
 
-    @Override
-    public synchronized void start() {
+    public FileSchemaFactory(JsonMapper jsonMapper, SchemaFactory schemaFactory, String file) {
+        super();
+        this.jsonMapper = jsonMapper;
+        this.schemaFactory = schemaFactory;
+        this.file = file;
+        init();
+    }
+
+    private synchronized void init() {
         if (init) {
             return;
+        }
+
+        if (this.id == null) {
+            this.id = "v1-" + StringUtils.substringAfterLast(file, "/").split("[.]")[0];
         }
 
         if (schemaFactory instanceof SubSchemaFactory) {
@@ -70,13 +74,6 @@ public class FileSchemaFactory extends AbstractSchemaFactory implements Initiali
         }
 
         init = true;
-    }
-
-    @PostConstruct
-    protected void init() {
-        if (this.id == null) {
-            this.id = "v1-" + StringUtils.substringAfterLast(file, "/").split("[.]")[0];
-        }
     }
 
     protected void copyAccessors(Schema schema) {

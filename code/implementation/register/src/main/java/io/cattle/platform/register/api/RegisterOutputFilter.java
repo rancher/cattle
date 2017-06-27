@@ -30,14 +30,4 @@ public class RegisterOutputFilter implements ResourceOutputFilter {
         return converted;
     }
 
-    @Override
-    public String[] getTypes() {
-        return new String[] { RegisterConstants.KIND_REGISTER };
-    }
-
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[0];
-    }
-
 }

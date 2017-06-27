@@ -1,23 +1,24 @@
 package io.cattle.platform.framework.encryption.request.handler;
 
-import io.github.ibuildthecloud.gdapi.util.TransformationService;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.model.Field;
 import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
-import io.github.ibuildthecloud.gdapi.request.handler.AbstractApiRequestHandler;
+import io.github.ibuildthecloud.gdapi.request.handler.ApiRequestHandler;
+import io.github.ibuildthecloud.gdapi.util.TransformationService;
 
 import java.io.IOException;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 
-public class TransformationHandler extends AbstractApiRequestHandler {
+public class TransformationHandler implements ApiRequestHandler {
 
-    @Inject
     TransformationService transformationService;
+
+    public TransformationHandler(TransformationService transformationService) {
+        this.transformationService = transformationService;
+    }
 
     @Override
     public void handle(ApiRequest request) throws IOException {

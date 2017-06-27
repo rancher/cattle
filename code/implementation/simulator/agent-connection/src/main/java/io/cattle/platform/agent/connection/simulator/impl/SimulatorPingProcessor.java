@@ -19,14 +19,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 
 public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
 
     JsonMapper jsonMapper;
     ObjectManager objectManager;
+
+    public SimulatorPingProcessor(JsonMapper jsonMapper, ObjectManager objectManager) {
+        this.jsonMapper = jsonMapper;
+        this.objectManager = objectManager;
+    }
 
     @Override
     public Event handle(AgentConnectionSimulator simulator, Event event) throws Exception {
@@ -66,7 +69,7 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
         }
 
         String hostUuid = agent.getUuid() + "-" + 0;
-        Map<String, Object> hostUuidResource = new HashMap<String, Object>();
+        Map<String, Object> hostUuidResource = new HashMap<>();
         hostUuidResource.put(ObjectMetaDataManager.TYPE_FIELD, "hostUuid");
         hostUuidResource.put(ObjectMetaDataManager.UUID_FIELD, hostUuid);
         resources.add(hostUuidResource);
@@ -85,7 +88,7 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
             physicalHostUuid = agent.getUuid() + "-physical-host";
         }
 
-        Map<String, Object> physicalHost = new HashMap<String, Object>();
+        Map<String, Object> physicalHost = new HashMap<>();
         physicalHost.put(ObjectMetaDataManager.UUID_FIELD, physicalHostUuid);
         physicalHost.put(ObjectMetaDataManager.KIND_FIELD, "sim");
         physicalHost.put(ObjectMetaDataManager.TYPE_FIELD, "physicalHost");
@@ -104,7 +107,7 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
                 hostUuid = externalId;
             }
 
-            Map<String, Object> host = new HashMap<String, Object>();
+            Map<String, Object> host = new HashMap<>();
             host.put(ObjectMetaDataManager.UUID_FIELD, hostUuid);
             host.put(ObjectMetaDataManager.KIND_FIELD, "sim");
             host.put(ObjectMetaDataManager.TYPE_FIELD, "host");
@@ -135,7 +138,7 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
             for (long j = 0; j < poolsPerHost; j++) {
                 String poolUuid = hostUuid + "-" + j;
 
-                Map<String, Object> pool = new HashMap<String, Object>();
+                Map<String, Object> pool = new HashMap<>();
                 pool.put(ObjectMetaDataManager.UUID_FIELD, poolUuid);
                 pool.put(ObjectMetaDataManager.KIND_FIELD, "sim");
                 pool.put(ObjectMetaDataManager.TYPE_FIELD, "storagePool");
@@ -174,24 +177,6 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
              */
             resources.add(physicalHost);
         }
-    }
-
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
-    }
-
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
-    }
-
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
     }
 
 }

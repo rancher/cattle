@@ -5,17 +5,14 @@ import io.cattle.platform.agent.connection.simulator.AgentSimulatorEventProcesso
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.json.JsonMapper;
-import io.cattle.platform.util.type.Priority;
 
-import javax.inject.Inject;
-
-public class SimulatorFailedProcessor implements AgentSimulatorEventProcessor, Priority {
+public class SimulatorFailedProcessor implements AgentSimulatorEventProcessor {
 
     JsonMapper jsonMapper;
 
-    @Override
-    public int getPriority() {
-        return Priority.PRE;
+    public SimulatorFailedProcessor(JsonMapper jsonMapper) {
+        super();
+        this.jsonMapper = jsonMapper;
     }
 
     @Override
@@ -28,15 +25,6 @@ public class SimulatorFailedProcessor implements AgentSimulatorEventProcessor, P
         }
 
         return null;
-    }
-
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
-    }
-
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
     }
 
 }

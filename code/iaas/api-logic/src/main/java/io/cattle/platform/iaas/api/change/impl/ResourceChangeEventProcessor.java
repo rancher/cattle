@@ -14,16 +14,23 @@ import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerLocator;
+import io.github.ibuildthecloud.gdapi.response.ResponseConverter;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 public class ResourceChangeEventProcessor implements ApiPubSubEventPostProcessor {
 
     ResourceManagerLocator locator;
+    ResponseConverter responseConverter;
     JsonMapper jsonMapper;
+
+    public ResourceChangeEventProcessor(ResourceManagerLocator locator, ResponseConverter responseConverter, JsonMapper jsonMapper) {
+        super();
+        this.locator = locator;
+        this.responseConverter = responseConverter;
+        this.jsonMapper = jsonMapper;
+    }
 
     @Override
     public boolean processEvent(EventVO<Object> event) {
@@ -54,7 +61,7 @@ public class ResourceChangeEventProcessor implements ApiPubSubEventPostProcessor
             }
 
             request.setResponseObject(obj);
-            Resource resource = rm.convertResponse(obj, request);
+            Resource resource = responseConverter.convertResponse(obj, request);
             if (resource == null) {
                 return false;
             }
@@ -65,7 +72,7 @@ public class ResourceChangeEventProcessor implements ApiPubSubEventPostProcessor
                 return false;
             }
 
-            Map<String, Object> data = new HashMap<String, Object>();
+            Map<String, Object> data = new HashMap<>();
             @SuppressWarnings("unchecked")
             Map<String, Object> resourceData = jsonMapper.convertValue(resource, Map.class);;
             if (request.getOptions().get("_actionLinks") != null) {
@@ -79,24 +86,6 @@ public class ResourceChangeEventProcessor implements ApiPubSubEventPostProcessor
         }
 
         return true;
-    }
-
-    public ResourceManagerLocator getLocator() {
-        return locator;
-    }
-
-    @Inject
-    public void setLocator(ResourceManagerLocator locator) {
-        this.locator = locator;
-    }
-
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
-    }
-
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
     }
 
 }

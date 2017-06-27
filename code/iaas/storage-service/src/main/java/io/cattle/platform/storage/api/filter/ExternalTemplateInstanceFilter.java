@@ -2,15 +2,13 @@ package io.cattle.platform.storage.api.filter;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.docker.client.DockerImage;
 import io.cattle.platform.storage.service.StorageService;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
-import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
-import io.github.ibuildthecloud.gdapi.request.resource.AbstractResourceManagerFilter;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
@@ -18,23 +16,22 @@ import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.apache.commons.lang3.StringUtils;
 
 import com.netflix.config.DynamicStringListProperty;
 import com.netflix.config.DynamicStringProperty;
 
-public class ExternalTemplateInstanceFilter extends AbstractResourceManagerFilter {
+public class ExternalTemplateInstanceFilter extends AbstractValidationFilter {
 
     public static final DynamicStringProperty DEFAULT_REGISTRY = ArchaiusUtil.getString("registry.default");
     public static final DynamicStringListProperty WHITELIST_REGISTRIES = ArchaiusUtil.getList("registry.whitelist");
 
-    @Inject @Named("CoreSchemaFactory")
-    SchemaFactory schemaFactory;
-    @Inject
     StorageService storageService;
+
+    public ExternalTemplateInstanceFilter(StorageService storageService) {
+        super();
+        this.storageService = storageService;
+    }
 
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
@@ -120,9 +117,4 @@ public class ExternalTemplateInstanceFilter extends AbstractResourceManagerFilte
         }
     }
 
-    @Override
-    public String[] getTypes() {
-        List<String> types = schemaFactory.getSchemaNames(Instance.class);
-        return types.toArray(new String[types.size()]);
-    }
 }

@@ -9,7 +9,6 @@ import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.iaas.api.filter.common.CachedOutputFilter;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataUtils;
-import io.cattle.platform.util.type.Priority;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -17,23 +16,14 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 
-public class HostsFilter extends CachedOutputFilter<HostsFilter.Data> implements Priority {
+public class HostsFilter extends CachedOutputFilter<HostsFilter.Data> {
 
-    @Inject
     HostDao hostDao;
 
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { Host.class };
-    }
-
-    @Override
-    public String[] getTypes() {
-        return new String[] {};
+    public HostsFilter(HostDao hostDao) {
+        this.hostDao = hostDao;
     }
 
     @Override
@@ -93,11 +83,6 @@ public class HostsFilter extends CachedOutputFilter<HostsFilter.Data> implements
     static class Data {
         Map<Long, List<Object>> instancesPerHost;
         Map<Long, PhysicalHost> physicalHosts;
-    }
-
-    @Override
-    public int getPriority() {
-        return Priority.PRE;
     }
 
 }

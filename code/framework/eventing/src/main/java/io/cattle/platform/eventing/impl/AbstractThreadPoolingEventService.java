@@ -1,27 +1,22 @@
 package io.cattle.platform.eventing.impl;
 
+import io.cattle.platform.async.retry.RetryTimeoutService;
 import io.cattle.platform.eventing.EventListener;
 import io.cattle.platform.eventing.PoolSpecificListener;
 import io.cattle.platform.eventing.annotation.EventHandler;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.exception.FailedToAcquireLockException;
-import io.cattle.platform.metrics.util.MetricsUtil;
-import io.cattle.platform.util.concurrent.NamedExecutorService;
-import io.cattle.platform.util.type.InitializationTask;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
-
-import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.apache.cloudstack.managed.context.ManagedContextRunnable;
 import org.apache.cloudstack.managed.context.NoExceptionRunnable;
@@ -29,20 +24,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-import com.codahale.metrics.Counter;
-
-public abstract class AbstractThreadPoolingEventService extends AbstractEventService implements InitializationTask {
+public abstract class AbstractThreadPoolingEventService extends AbstractEventService {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractThreadPoolingEventService.class);
 
-    @Inject @Named("CoreExecutorService")
     ExecutorService runExecutorService;
     String threadCountSetting = "eventing.pool.%s.count";
     String defaultPoolName = EventHandler.DEFAULT_POOL_KEY;
-    @Inject
-    List<NamedExecutorService> namedExecutorServiceList;
-    Map<String, ExecutorService> executorServices;
-    Map<String, Counter> dropped = new ConcurrentHashMap<String, Counter>();
+    Map<String, ExecutorService> executorServices = new HashMap<>();
+
+    public AbstractThreadPoolingEventService(RetryTimeoutService timeoutService, ExecutorService executorService, JsonMapper jsonMapper) {
+        super(timeoutService, executorService, jsonMapper);
+        this.runExecutorService = executorService;
+    }
 
     protected void onEvent(String listenerKey, String eventName, byte[] bytes) {
         try {
@@ -107,25 +101,9 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
             try {
                 executor.execute(runnable);
             } catch (RejectedExecutionException e) {
-                dropped(event);
                 log.debug("Too busy to process [{}]", event);
             }
         }
-    }
-
-    protected void dropped(Event event) {
-        String metricName = metricName(event, "dropped");
-        if (metricName == null) {
-            return;
-        }
-
-        Counter counter = dropped.get(metricName);
-        if (counter == null) {
-            counter = MetricsUtil.getRegistry().counter(metricName);
-            dropped.put(metricName, counter);
-        }
-
-        counter.inc();
     }
 
     protected Runnable getRunnable(final Event event, final EventListener listener) {
@@ -170,14 +148,6 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
 
     protected Executor getDefaultExecutor() {
         return runExecutorService;
-    }
-
-    @Override
-    public void start() {
-        executorServices = new HashMap<String, ExecutorService>();
-        for (NamedExecutorService named : namedExecutorServiceList) {
-            executorServices.put(named.getName(), named.getExecutorService());
-        }
     }
 
     public String getThreadCountSetting() {

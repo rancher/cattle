@@ -11,12 +11,16 @@ import io.cattle.platform.json.JsonMapper;
 import java.io.IOException;
 import java.util.List;
 
-import javax.inject.Inject;
+import org.jooq.Configuration;
 
 public class ClusterMembershipDAOImpl extends AbstractJooqDao implements ClusterMembershipDAO {
 
-    @Inject
     JsonMapper jsonMapper;
+
+    public ClusterMembershipDAOImpl(Configuration configuration, JsonMapper jsonMapper) {
+        super(configuration);
+        this.jsonMapper = jsonMapper;
+    }
 
     @Override
     public void checkin(String uuid, ClusterConfig config, boolean initial) throws IOException {

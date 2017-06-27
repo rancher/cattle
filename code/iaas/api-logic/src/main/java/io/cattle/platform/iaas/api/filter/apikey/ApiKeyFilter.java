@@ -1,11 +1,10 @@
 package io.cattle.platform.iaas.api.filter.apikey;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.model.Credential;
-import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 
 import java.security.SecureRandom;
@@ -15,15 +14,10 @@ import org.apache.commons.codec.binary.Hex;
 
 import com.netflix.config.DynamicStringProperty;
 
-public class ApiKeyFilter extends AbstractDefaultResourceManagerFilter {
+public class ApiKeyFilter extends AbstractValidationFilter {
 
     public static final DynamicStringProperty BAD_CHARACTERS = ArchaiusUtil.getString("process.credential.create.bad.characters");
     private final static SecureRandom RANDOM = new SecureRandom();
-
-    @Override
-    public String[] getTypes() {
-        return new String[] {CredentialConstants.KIND_API_KEY};
-    }
 
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {

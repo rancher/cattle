@@ -12,6 +12,12 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.datasource.DataSourceFactory;
 import io.cattle.platform.datasource.JMXDataSourceFactoryImpl;
 import io.cattle.platform.db.jooq.logging.LoggerListener;
+import io.cattle.platform.hazelcast.membership.ClusterService;
+import io.cattle.platform.hazelcast.membership.DBDiscovery;
+import io.cattle.platform.hazelcast.membership.dao.ClusterMembershipDAO;
+import io.cattle.platform.hazelcast.membership.dao.impl.ClusterMembershipDAOImpl;
+import io.cattle.platform.json.JacksonJsonMapper;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.liquibase.Loader;
 import io.cattle.platform.logback.Startup;
 
@@ -26,12 +32,19 @@ import javax.sql.DataSource;
 
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.jooq.Configuration;
+import org.jooq.ExecuteListener;
+import org.jooq.SQLDialect;
+import org.jooq.conf.RenderNameStyle;
+import org.jooq.conf.Settings;
 import org.jooq.impl.DataSourceConnectionProvider;
+import org.jooq.impl.DefaultConfiguration;
+import org.jooq.impl.DefaultExecuteListenerProvider;
 import org.jooq.impl.ThreadLocalTransactionProvider;
 import org.jooq.tools.StopWatchListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.netflix.config.ConcurrentCompositeConfiguration;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.config.sources.JDBCConfigurationSource;
@@ -66,13 +79,30 @@ public class Bootstrap {
     ConcurrentCompositeConfiguration baseConfig = new ConcurrentCompositeConfiguration();
     RefreshableFixedDelayPollingScheduler scheduler = new RefreshableFixedDelayPollingScheduler();
     LazyJDBCSource dbConfigSource = new LazyJDBCSource();
+    ClusterMembershipDAO clusterMembershipDao;
+    JsonMapper jsonMapper;
+    ClusterService cluster;
 
     public Bootstrap() throws IOException {
         setHomeAndEnv();
         setupArchaius();
         setupLogging();
         setupDatabase();
-        //migrateSchema();
+        setupJson();
+        setupCluster();
+        migrateSchema();
+    }
+
+    private void setupJson() {
+        JacksonJsonMapper mapper = new JacksonJsonMapper();
+        mapper.setModules(Arrays.asList(new SimpleModule()));
+        mapper.init();
+        this.jsonMapper = mapper;
+    }
+
+    private void setupCluster() {
+        clusterMembershipDao = new ClusterMembershipDAOImpl(jooqConfig, jsonMapper);
+        cluster = new DBDiscovery(clusterMembershipDao, jsonMapper);
     }
 
     private void setHomeAndEnv() throws IOException {
@@ -136,15 +166,44 @@ public class Bootstrap {
         LoggerListener logger = new LoggerListener();
         logger.setMaxLength(1000);
 
-        io.cattle.platform.db.jooq.config.Configuration config = new io.cattle.platform.db.jooq.config.Configuration();
-        config.setName("cattle");
-        config.setConnectionProvider(dscp);
-        config.setTransactionProvider(tp);
-        config.setListeners(Arrays.asList(
-                logger,
-                new StopWatchListener()));
+        ExecuteListener[] listeners = new ExecuteListener[] { logger, new StopWatchListener() };
+        Settings settings = dbSetting("cattle");
+        jooqConfig = new DefaultConfiguration()
+                .set(getSQLDialect("cattle"))
+                .set(settings)
+                .set(dscp)
+                .set(tp)
+                .set(DefaultExecuteListenerProvider.providers(listeners));
+    }
 
-        jooqConfig = config;
+    private static Settings dbSetting(String name) {
+        String prop = "db." + name + ".database";
+        String database = ArchaiusUtil.getString(prop).get();
+
+        Settings settings = new Settings();
+        settings.setRenderSchema(false);
+        settings.setExecuteLogging(false);
+
+        String renderNameStyle = ArchaiusUtil.getString("db." + name + "." + database + ".render.name.style").get();
+        if (renderNameStyle != null) {
+            settings.setRenderNameStyle(RenderNameStyle.valueOf(renderNameStyle.trim().toUpperCase()));
+        }
+
+        return settings;
+    }
+
+    private static SQLDialect getSQLDialect(String name) {
+        String prop = "db." + name + ".database";
+        String database = ArchaiusUtil.getString(prop).get();
+        if (database == null) {
+            throw new IllegalStateException("Failed to find config for [" + prop + "]");
+        }
+
+        try {
+            return SQLDialect.valueOf(database.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid SQLDialect [" + database.toUpperCase() + "]", e);
+        }
     }
 
     private void migrateSchema() {

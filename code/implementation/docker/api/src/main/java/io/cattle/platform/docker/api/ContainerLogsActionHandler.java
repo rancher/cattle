@@ -1,6 +1,5 @@
 package io.cattle.platform.docker.api;
 
-import io.cattle.platform.api.action.ActionHandler;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.DockerInstanceConstants;
 import io.cattle.platform.core.model.Host;
@@ -13,10 +12,9 @@ import io.cattle.platform.host.service.HostApiService;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.ActionHandler;
 
 import java.util.Map;
-
-import javax.inject.Inject;
 
 import com.netflix.config.DynamicStringProperty;
 
@@ -27,9 +25,10 @@ public class ContainerLogsActionHandler implements ActionHandler {
     HostApiService apiService;
     ObjectManager objectManager;
 
-    @Override
-    public String getName() {
-        return "instance.logs";
+    public ContainerLogsActionHandler(HostApiService apiService, ObjectManager objectManager) {
+        super();
+        this.apiService = apiService;
+        this.objectManager = objectManager;
     }
 
     @Override
@@ -63,21 +62,4 @@ public class ContainerLogsActionHandler implements ActionHandler {
         return access;
     }
 
-    public HostApiService getApiService() {
-        return apiService;
-    }
-
-    @Inject
-    public void setApiService(HostApiService apiService) {
-        this.apiService = apiService;
-    }
-
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
-    }
 }

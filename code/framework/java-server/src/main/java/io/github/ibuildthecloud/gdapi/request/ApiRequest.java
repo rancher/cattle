@@ -2,7 +2,6 @@ package io.github.ibuildthecloud.gdapi.request;
 
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
-import io.github.ibuildthecloud.gdapi.model.Include;
 import io.github.ibuildthecloud.gdapi.model.Pagination;
 import io.github.ibuildthecloud.gdapi.model.Sort;
 import io.github.ibuildthecloud.gdapi.server.model.ApiServletContext;
@@ -49,15 +48,14 @@ public class ApiRequest {
 
     long startTime = System.currentTimeMillis();
     UrlBuilder urlBuilder;
-    Map<String, List<Condition>> conditions = new LinkedHashMap<String, List<Condition>>();
+    Map<String, List<Condition>> conditions = new LinkedHashMap<>();
     Sort sort;
     Pagination pagination;
-    Include include;
-    Map<Object, Object> attributes = new HashMap<Object, Object>();
-    Map<String, String> options = new HashMap<String, String>();
+    Map<Object, Object> attributes = new HashMap<>();
+    Map<String, String> options = new HashMap<>();
     SchemaFactory schemaFactory;
-    Map<String, Object> createDefaults = new HashMap<String, Object>();
-    List<Throwable> exceptions = new ArrayList<Throwable>();
+    Map<String, Object> createDefaults = new HashMap<>();
+    List<Throwable> exceptions = new ArrayList<>();
 
     public ApiRequest(ApiRequest request) {
         this.locale = request.getLocale();
@@ -83,7 +81,6 @@ public class ApiRequest {
         this.conditions = request.getConditions();
         this.sort = request.getSort();
         this.pagination = request.getPagination();
-        this.include = request.getInclude();
         this.schemaFactory = request.getSchemaFactory();
         this.createDefaults = request.getCreateDefaults();
         this.exceptions = request.getExceptions();
@@ -114,14 +111,13 @@ public class ApiRequest {
         version = null;
         schemaVersion = null;
         startTime = System.currentTimeMillis();
-        conditions = new LinkedHashMap<String, List<Condition>>();
+        conditions = new LinkedHashMap<>();
         sort = null;
         pagination = null;
-        include = null;
-        attributes = new HashMap<Object, Object>();
-        options = new HashMap<String, String>();
-        createDefaults = new HashMap<String, Object>();
-        exceptions = new ArrayList<Throwable>();
+        attributes = new HashMap<>();
+        options = new HashMap<>();
+        createDefaults = new HashMap<>();
+        exceptions = new ArrayList<>();
         subContext = "";
 
         return this;
@@ -341,14 +337,6 @@ public class ApiRequest {
 
     public void setLocale(Locale locale) {
         this.locale = locale;
-    }
-
-    public Include getInclude() {
-        return include;
-    }
-
-    public void setInclude(Include include) {
-        this.include = include;
     }
 
     public Object getAttribute(Object object) {

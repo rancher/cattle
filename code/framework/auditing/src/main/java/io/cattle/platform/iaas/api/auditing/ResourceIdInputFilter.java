@@ -1,25 +1,21 @@
 package io.cattle.platform.iaas.api.auditing;
 
-import io.cattle.platform.core.model.AuditLog;
-import io.cattle.platform.core.model.ProcessInstance;
-import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 
 import java.util.List;
 import java.util.Map;
-import javax.inject.Inject;
 
-public class ResourceIdInputFilter extends AbstractDefaultResourceManagerFilter {
+public class ResourceIdInputFilter extends AbstractValidationFilter {
 
-    @Inject
     IdFormatter idFormatter;
 
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class[] { AuditLog.class, ProcessInstance.class};
+
+    public ResourceIdInputFilter(IdFormatter idFormatter) {
+        this.idFormatter = idFormatter;
     }
 
     @Override

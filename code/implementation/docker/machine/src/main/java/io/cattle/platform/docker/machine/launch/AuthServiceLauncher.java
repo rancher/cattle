@@ -3,19 +3,24 @@ package io.cattle.platform.docker.machine.launch;
 import static io.cattle.platform.core.model.tables.SettingTable.*;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.dao.AccountDao;
+import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.Setting;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.integration.external.ServiceAuthConstants;
+import io.cattle.platform.lock.LockDelegator;
+import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.server.context.ServerContext;
 import io.cattle.platform.server.context.ServerContext.BaseProtocol;
 import io.cattle.platform.service.launcher.GenericServiceLauncher;
 import io.cattle.platform.ssh.common.SshKeyGen;
 import io.cattle.platform.token.impl.RSAKeyProvider;
 import io.cattle.platform.token.impl.RSAPrivateKeyHolder;
-import io.cattle.platform.util.type.InitializationTask;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
@@ -24,8 +29,7 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import javax.inject.Inject;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.http.client.fluent.Request;
 import org.slf4j.Logger;
@@ -36,21 +40,25 @@ import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.config.DynamicStringProperty;
 
 
-public class AuthServiceLauncher extends GenericServiceLauncher implements InitializationTask {
-    @Inject
-    RSAKeyProvider keyProvider;
-
-    @Inject
-    ObjectManager objectManager;
-
+public class AuthServiceLauncher extends GenericServiceLauncher {
     private static final Logger log = LoggerFactory.getLogger(AuthServiceLauncher.class);
 
     private static final DynamicStringProperty AUTH_SERVICE_BINARY = ArchaiusUtil.getString("auth.service.executable");
     private static final DynamicBooleanProperty LAUNCH_AUTH_SERVICE = ArchaiusUtil.getBoolean("auth.service.execute");
+    private static final DynamicStringProperty SECURITY_SETTING = ArchaiusUtil.getString("api.security.enabled");
+    private static final DynamicStringProperty EXTERNAL_AUTH_PROVIDER_SETTING = ArchaiusUtil.getString("api.auth.external.provider.configured");
+    private static final DynamicStringProperty NO_IDENTITY_LOOKUP_SETTING = ArchaiusUtil.getString("api.auth.external.provider.no.identity.lookup");
 
-    public static final DynamicStringProperty SECURITY_SETTING = ArchaiusUtil.getString("api.security.enabled");
-    public static final DynamicStringProperty EXTERNAL_AUTH_PROVIDER_SETTING = ArchaiusUtil.getString("api.auth.external.provider.configured");
-    public static final DynamicStringProperty NO_IDENTITY_LOOKUP_SETTING = ArchaiusUtil.getString("api.auth.external.provider.no.identity.lookup");
+    RSAKeyProvider keyProvider;
+    ObjectManager objectManager;
+
+    public AuthServiceLauncher(LockManager lockManager, LockDelegator lockDelegator, ScheduledExecutorService executor, AccountDao accountDao,
+            GenericResourceDao resourceDao, ResourceMonitor resourceMonitor, ObjectProcessManager processManager, RSAKeyProvider keyProvider,
+            ObjectManager objectManager) {
+        super(lockManager, lockDelegator, executor, accountDao, resourceDao, resourceMonitor, processManager);
+        this.keyProvider = keyProvider;
+        this.objectManager = objectManager;
+    }
 
     @Override
     protected boolean shouldRun() {
@@ -116,7 +124,7 @@ public class AuthServiceLauncher extends GenericServiceLauncher implements Initi
 
     @Override
     protected List<DynamicStringProperty> getReloadSettings() {
-        List<DynamicStringProperty> list = new ArrayList<DynamicStringProperty>();
+        List<DynamicStringProperty> list = new ArrayList<>();
         list.add(SecurityConstants.AUTH_PROVIDER);
         list.add(SecurityConstants.AUTH_ENABLER_SETTING);
         list.add(SECURITY_SETTING);

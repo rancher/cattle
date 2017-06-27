@@ -4,12 +4,22 @@ import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.ProjectMemberTable.*;
 
 import io.cattle.platform.core.constants.ProjectConstants;
+import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.ProjectMember;
+import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.lock.LockManager;
+import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.process.ObjectProcessManager;
 
 import java.util.List;
 
 public class SampleDataStartupV3 extends AbstractSampleData {
+
+    public SampleDataStartupV3(ObjectManager objectManager, ObjectProcessManager processManager, AccountDao accountDao, JsonMapper jsonMapper,
+            LockManager lockManager) {
+        super(objectManager, processManager, accountDao, jsonMapper, lockManager);
+    }
 
     @Override
     protected String getName() {

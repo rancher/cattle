@@ -19,8 +19,6 @@ import io.cattle.platform.task.TaskOptions;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -29,10 +27,16 @@ public class ResourceChangeEventListenerImpl implements ResourceChangeEventListe
     volatile Map<Pair<String, String>, Object> changed = new ConcurrentHashMap<>();
     LockDelegator lockDelegator;
     EventService eventService;
-    @Inject
     ObjectManager objectManager;
-    @Inject
     JsonMapper jsonMapper;
+
+    public ResourceChangeEventListenerImpl(LockDelegator lockDelegator, EventService eventService, ObjectManager objectManager, JsonMapper jsonMapper) {
+        super();
+        this.lockDelegator = lockDelegator;
+        this.eventService = eventService;
+        this.objectManager = objectManager;
+        this.jsonMapper = jsonMapper;
+    }
 
     @Override
     public void stateChange(Event event) {
@@ -125,24 +129,6 @@ public class ResourceChangeEventListenerImpl implements ResourceChangeEventListe
     @Override
     public boolean isShouldLock() {
         return false;
-    }
-
-    public EventService getEventService() {
-        return eventService;
-    }
-
-    @Inject
-    public void setEventService(EventService eventService) {
-        this.eventService = eventService;
-    }
-
-    public LockDelegator getLockDelegator() {
-        return lockDelegator;
-    }
-
-    @Inject
-    public void setLockDelegator(LockDelegator lockDelegator) {
-        this.lockDelegator = lockDelegator;
     }
 
 }

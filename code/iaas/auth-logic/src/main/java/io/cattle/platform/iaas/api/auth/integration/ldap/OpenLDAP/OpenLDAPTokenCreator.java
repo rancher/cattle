@@ -1,14 +1,10 @@
 package io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP;
 
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
-import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.identity.Token;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.TokenCreator;
 import io.cattle.platform.iaas.api.auth.integration.ldap.ServiceContextCreationException;
 import io.cattle.platform.iaas.api.auth.integration.ldap.ServiceContextRetrievalException;
-import io.cattle.platform.iaas.api.auth.projects.ProjectResourceManager;
-import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.token.TokenService;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -17,23 +13,17 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.inject.Inject;
-
 public class OpenLDAPTokenCreator extends OpenLDAPConfigurable implements TokenCreator {
 
-    @Inject
     OpenLDAPIdentityProvider openLDAPIdentityProvider;
-    @Inject
-    AuthDao authDao;
-    @Inject
-    TokenService tokenService;
-    @Inject
-    ProjectResourceManager projectResourceManager;
-    @Inject
-    ObjectManager objectManager;
-
-    @Inject
     OpenLDAPUtils OpenLDAPUtils;
+
+    public OpenLDAPTokenCreator(OpenLDAPIdentityProvider openLDAPIdentityProvider,
+            io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP.OpenLDAPUtils openLDAPUtils) {
+        super();
+        this.openLDAPIdentityProvider = openLDAPIdentityProvider;
+        OpenLDAPUtils = openLDAPUtils;
+    }
 
     private Token getLdapToken(String username, String password) {
         if (!isConfigured()) {

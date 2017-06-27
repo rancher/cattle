@@ -24,18 +24,12 @@ import io.cattle.platform.core.model.tables.ExternalHandlerTable;
 import io.cattle.platform.core.model.tables.GenericObjectTable;
 import io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable;
 import io.cattle.platform.core.model.tables.HealthcheckInstanceTable;
-import io.cattle.platform.core.model.tables.HostIpAddressMapTable;
 import io.cattle.platform.core.model.tables.HostTable;
-import io.cattle.platform.core.model.tables.InstanceHostMapTable;
-import io.cattle.platform.core.model.tables.InstanceLinkTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
-import io.cattle.platform.core.model.tables.IpAddressNicMapTable;
-import io.cattle.platform.core.model.tables.IpAddressTable;
 import io.cattle.platform.core.model.tables.MachineDriverTable;
 import io.cattle.platform.core.model.tables.MountTable;
 import io.cattle.platform.core.model.tables.NetworkDriverTable;
 import io.cattle.platform.core.model.tables.NetworkTable;
-import io.cattle.platform.core.model.tables.NicTable;
 import io.cattle.platform.core.model.tables.PhysicalHostTable;
 import io.cattle.platform.core.model.tables.ProcessExecutionTable;
 import io.cattle.platform.core.model.tables.ProcessInstanceTable;
@@ -56,7 +50,6 @@ import io.cattle.platform.core.model.tables.StoragePoolTable;
 import io.cattle.platform.core.model.tables.SubnetTable;
 import io.cattle.platform.core.model.tables.TaskInstanceTable;
 import io.cattle.platform.core.model.tables.UserPreferenceTable;
-import io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable;
 import io.cattle.platform.core.model.tables.VolumeTable;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.jooq.utils.JooqUtils;
@@ -67,6 +60,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import org.jooq.Configuration;
 import org.jooq.Field;
 import org.jooq.ForeignKey;
 import org.jooq.Record1;
@@ -101,7 +95,8 @@ public class TableCleanup extends AbstractJooqDao implements Task {
     private List<CleanableTable> serviceLogTables;
     private List<CleanableTable> otherTables;
 
-    public TableCleanup() {
+    public TableCleanup(Configuration configuration) {
+        super(configuration);
         this.processInstanceTables = getProcessInstanceTables();
         this.eventTables = getEventTables();
         this.auditLogTables = getAuditLogTables();
@@ -373,17 +368,11 @@ public class TableCleanup extends AbstractJooqDao implements Task {
                 CleanableTable.from(HealthcheckInstanceTable.HEALTHCHECK_INSTANCE),
                 CleanableTable.from(HealthcheckInstanceHostMapTable.HEALTHCHECK_INSTANCE_HOST_MAP),
                 CleanableTable.from(HostTable.HOST),
-                CleanableTable.from(HostIpAddressMapTable.HOST_IP_ADDRESS_MAP),
                 CleanableTable.from(InstanceTable.INSTANCE),
-                CleanableTable.from(InstanceHostMapTable.INSTANCE_HOST_MAP),
-                CleanableTable.from(InstanceLinkTable.INSTANCE_LINK),
-                CleanableTable.from(IpAddressTable.IP_ADDRESS),
-                CleanableTable.from(IpAddressNicMapTable.IP_ADDRESS_NIC_MAP),
                 CleanableTable.from(MachineDriverTable.MACHINE_DRIVER),
                 CleanableTable.from(MountTable.MOUNT),
                 CleanableTable.from(NetworkTable.NETWORK),
                 CleanableTable.from(NetworkDriverTable.NETWORK_DRIVER),
-                CleanableTable.from(NicTable.NIC),
                 CleanableTable.from(PhysicalHostTable.PHYSICAL_HOST),
                 CleanableTable.from(ProjectMemberTable.PROJECT_MEMBER),
                 CleanableTable.from(ResourcePoolTable.RESOURCE_POOL),
@@ -399,7 +388,6 @@ public class TableCleanup extends AbstractJooqDao implements Task {
                 CleanableTable.from(TaskInstanceTable.TASK_INSTANCE),
                 CleanableTable.from(UserPreferenceTable.USER_PREFERENCE),
                 CleanableTable.from(VolumeTable.VOLUME),
-                CleanableTable.from(VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP),
                 // These tables are cleaned through specialized logic but we need to keep them in the "other" list so that they
                 // are picked up for foreign key references.
                 CleanableTable.from(ExternalHandlerExternalHandlerProcessMapTable.EXTERNAL_HANDLER_EXTERNAL_HANDLER_PROCESS_MAP),

@@ -1,69 +1,135 @@
 package io.cattle.platform.app.components;
 
+import io.cattle.platform.async.retry.RetryTimeoutService;
+import io.cattle.platform.async.retry.impl.RetryTimeoutServiceImpl;
 import io.cattle.platform.db.jooq.logging.LoggerListener;
+import io.cattle.platform.engine.manager.impl.DefaultProcessManager;
 import io.cattle.platform.engine.manager.impl.ProcessRecordDao;
 import io.cattle.platform.engine.manager.impl.jooq.JooqProcessRecordDao;
-import io.cattle.platform.extension.ExtensionManager;
-import io.cattle.platform.extension.dynamic.DynamicExtensionManager;
+import io.cattle.platform.engine.model.Trigger;
+import io.cattle.platform.engine.process.ProcessDefinition;
+import io.cattle.platform.engine.process.impl.ProcessHandlerRegistryImpl;
+import io.cattle.platform.engine.server.ProcessInstanceExecutor;
+import io.cattle.platform.engine.server.ProcessServer;
+import io.cattle.platform.engine.server.impl.ProcessInstanceDispatcherImpl;
+import io.cattle.platform.eventing.EventService;
+import io.cattle.platform.eventing.memory.InMemoryEventService;
+import io.cattle.platform.hazelcast.membership.ClusterService;
 import io.cattle.platform.iaas.api.object.postinit.AccountFieldPostInitHandler;
-import io.cattle.platform.json.JacksonJsonMapper;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.lock.LockManager;
+import io.cattle.platform.lock.impl.LockDelegatorImpl;
+import io.cattle.platform.lock.impl.LockManagerImpl;
+import io.cattle.platform.lock.provider.impl.InMemoryLockProvider;
 import io.cattle.platform.object.defaults.JsonDefaultsProvider;
 import io.cattle.platform.object.impl.JooqObjectManager;
 import io.cattle.platform.object.impl.TransactionDelegateImpl;
 import io.cattle.platform.object.meta.impl.DefaultObjectMetaDataManager;
+import io.cattle.platform.object.monitor.impl.ResourceMonitorImpl;
 import io.cattle.platform.object.postinit.ObjectDataPostInstantiationHandler;
 import io.cattle.platform.object.postinit.ObjectDefaultsPostInstantiationHandler;
 import io.cattle.platform.object.postinit.ObjectPostInstantiationHandler;
 import io.cattle.platform.object.postinit.SpecialFieldsPostInstantiationHandler;
 import io.cattle.platform.object.postinit.UUIDPostInstantiationHandler;
+import io.cattle.platform.object.process.impl.DefaultObjectProcessManager;
+import io.cattle.platform.object.process.impl.ObjectExecutionExceptionHandler;
+import io.cattle.platform.process.monitor.EventNotificationChangeMonitor;
+import io.cattle.platform.resource.pool.ResourcePoolManager;
+import io.cattle.platform.resource.pool.impl.ResourcePoolManagerImpl;
+import io.cattle.platform.resource.pool.mac.MacAddressGeneratorFactory;
+import io.cattle.platform.resource.pool.mac.MacAddressPrefixGeneratorFactory;
+import io.cattle.platform.resource.pool.port.EnvironmentPortGeneratorFactory;
+import io.cattle.platform.resource.pool.port.HostPortGeneratorFactory;
+import io.cattle.platform.resource.pool.subnet.SubnetAddressGeneratorFactory;
 import io.cattle.platform.schema.processor.AuthSchemaAdditionsPostProcessor;
 import io.cattle.platform.schema.processor.JpaWritablePostProcessor;
 import io.cattle.platform.schema.processor.JsonFileOverlayPostProcessor;
 import io.cattle.platform.schema.processor.StripSuffixPostProcessor;
+import io.cattle.platform.util.resource.ClassloaderResourceLoader;
+import io.cattle.platform.util.resource.ResourceLoader;
 import io.github.ibuildthecloud.gdapi.factory.impl.SchemaFactoryImpl;
 import io.github.ibuildthecloud.gdapi.factory.impl.SchemaPostProcessor;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
+import io.github.ibuildthecloud.gdapi.id.TypeIdFormatter;
 import io.github.ibuildthecloud.gdapi.json.JacksonMapper;
 import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.sql.DataSource;
 
 import org.jooq.Configuration;
-import org.jooq.conf.Settings;
+import org.jooq.conf.SettingsTools;
+import org.jooq.impl.DefaultConfiguration;
 import org.jooq.impl.DefaultTransactionProvider;
-import org.jooq.tools.StopWatchListener;
-
-import com.fasterxml.jackson.databind.module.SimpleModule;
 
 public class Framework {
 
-    DataSource dataSource;
+    private static AtomicInteger COUNTER = new AtomicInteger();
+
+    SchemaFactoryImpl coreSchemaFactory = new SchemaFactoryImpl();
+    Map<String, ProcessDefinition> processDefinitions = new HashMap<>();
+    List<Trigger> triggers = new ArrayList<>();
+
+    ClusterService cluster;
     Configuration jooqConfig;
     Configuration lockingJooqConfig;
     Configuration newConnJooqConfig;
-    JsonMapper jsonMapper;
-    SchemaFactoryImpl coreSchemaFactory = new SchemaFactoryImpl();
+    DataSource dataSource;
     DefaultObjectMetaDataManager metaDataManager = new DefaultObjectMetaDataManager(coreSchemaFactory);
+    DefaultObjectProcessManager processManager;
+    DefaultProcessManager defaultProcessManager;
+    ProcessHandlerRegistryImpl processRegistry = new ProcessHandlerRegistryImpl(processDefinitions);
+    ProcessInstanceExecutor processInstanceExecutor = new ProcessInstanceDispatcherImpl(defaultProcessManager);
+    ProcessServer processServer;
+    IdFormatter idFormatter;
     io.github.ibuildthecloud.gdapi.json.JsonMapper schemaJsonMapper = new JacksonMapper();
     JooqObjectManager objectManager;
-    TransactionDelegate transaction;
-    ProcessRecordDao processRecordDao;
     JsonDefaultsProvider jsonDefaultsProvider;
+    JsonMapper jsonMapper;
     ObjectDefaultsPostInstantiationHandler objectDefaultsPostInstantiationHandler;
-    ExtensionManager extensionManager = new DynamicExtensionManager();
+    ProcessRecordDao processRecordDao;
+    ResourceLoader resourceLoader = new ClassloaderResourceLoader();
+    ResourceMonitorImpl resourceMonitor;
+    ResourcePoolManager resourcePoolManager;
+    RetryTimeoutService retryTimeoutService;
+    TransactionDelegate transaction;
+
+    ThreadPoolExecutor executorService = new ThreadPoolExecutor(0, 200, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), (r) -> {
+        Thread t = new Thread(r);
+        t.setName("core-" + COUNTER.incrementAndGet());
+        return t;
+    });
+    ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2, (r) -> {
+        Thread t = new Thread(r);
+        t.setName("sched-core-" + COUNTER.incrementAndGet());
+        return t;
+    });
+
+    LockManager lockManager = new LockManagerImpl(new InMemoryLockProvider());
+    LockDelegatorImpl lockDelegator = new LockDelegatorImpl(lockManager, executorService);
+    EventService eventService = new InMemoryEventService(retryTimeoutService, executorService, jsonMapper);
 
     public Framework() throws IOException {
         Bootstrap bootstrap = new Bootstrap();
         this.dataSource = bootstrap.dataSource;
         this.jooqConfig = bootstrap.jooqConfig;
+        this.jsonMapper = bootstrap.jsonMapper;
+        this.cluster = bootstrap.cluster;
         init();
     }
 
-    public void start() {
+    public void wireUpTypes() {
         jsonDefaultsProvider.start();
         objectDefaultsPostInstantiationHandler.start();
         metaDataManager.start();
@@ -71,8 +137,30 @@ public class Framework {
 
     private void init() {
         setupDb();
-        setupJson();
         setupObjectFramework();
+        setupServices();
+    }
+
+    private void setupServices() {
+        processRecordDao = new JooqProcessRecordDao(jooqConfig, jsonMapper, objectManager, metaDataManager);
+        defaultProcessManager = new DefaultProcessManager(processRecordDao,
+                lockManager,
+                eventService,
+                new ObjectExecutionExceptionHandler(),
+                new EventNotificationChangeMonitor(objectManager),
+                processDefinitions,
+                triggers);
+        processManager = new DefaultObjectProcessManager(defaultProcessManager, coreSchemaFactory, objectManager);
+        retryTimeoutService = new RetryTimeoutServiceImpl(executorService);
+        idFormatter = new TypeIdFormatter(coreSchemaFactory);
+        resourceMonitor = new ResourceMonitorImpl(objectManager, metaDataManager, idFormatter);
+        resourcePoolManager = new ResourcePoolManagerImpl(objectManager,
+                new MacAddressGeneratorFactory(),
+                new MacAddressPrefixGeneratorFactory(),
+                new SubnetAddressGeneratorFactory(),
+                new EnvironmentPortGeneratorFactory(jsonMapper),
+                new HostPortGeneratorFactory());
+        processServer = new ProcessServer(scheduledExecutorService, executorService, executorService, processInstanceExecutor, defaultProcessManager, cluster, triggers);
     }
 
     private void setupObjectFramework() {
@@ -82,7 +170,7 @@ public class Framework {
         List<SchemaPostProcessor> postProcessors = coreSchemaFactory.getPostProcessors();
         postProcessors.add(new StripSuffixPostProcessor("Record"));
         postProcessors.add(new JpaWritablePostProcessor());
-        postProcessors.add(new JsonFileOverlayPostProcessor(null, jsonMapper, schemaJsonMapper, "schema/base"));
+        postProcessors.add(new JsonFileOverlayPostProcessor(resourceLoader, jsonMapper, schemaJsonMapper, "schema/base"));
         postProcessors.add(new AuthSchemaAdditionsPostProcessor());
 
         objectManager = new JooqObjectManager(coreSchemaFactory, metaDataManager, jooqConfig, lockingJooqConfig, transaction);
@@ -93,14 +181,6 @@ public class Framework {
         postInitHandlers.add(new ObjectDataPostInstantiationHandler(jsonMapper));
         postInitHandlers.add(new UUIDPostInstantiationHandler());
 
-        processRecordDao = new JooqProcessRecordDao(jsonMapper, objectManager, metaDataManager);
-    }
-
-    private void setupJson() {
-        JacksonJsonMapper mapper = new JacksonJsonMapper();
-        mapper.setModules(Arrays.asList(new SimpleModule()));
-        mapper.init();
-        this.jsonMapper = mapper;
     }
 
     private void setupDb() {
@@ -114,26 +194,21 @@ public class Framework {
     }
 
     private void setupLockingJooq(LoggerListener logger) {
-        io.cattle.platform.db.jooq.config.Configuration config = new io.cattle.platform.db.jooq.config.Configuration();
-        config.setName("cattle");
-        config.setConnectionProvider(jooqConfig.connectionProvider());
-        config.setTransactionProvider(jooqConfig.transactionProvider());
-        config.setListeners(Arrays.asList(
-                logger,
-                new StopWatchListener()));
-        config.setSettings(new Settings().withExecuteWithOptimisticLocking(true));
-        this.lockingJooqConfig = config;
+        this.lockingJooqConfig = new DefaultConfiguration()
+                .set(jooqConfig.dialect())
+                .set(SettingsTools.clone(jooqConfig.settings()).withExecuteWithOptimisticLocking(true))
+                .set(jooqConfig.connectionProvider())
+                .set(jooqConfig.transactionProvider())
+                .set(jooqConfig.executeListenerProviders());
     }
 
     private void setupNewConnJooq(LoggerListener logger) {
-        io.cattle.platform.db.jooq.config.Configuration config = new io.cattle.platform.db.jooq.config.Configuration();
-        config.setName("cattle");
-        config.setConnectionProvider(jooqConfig.connectionProvider());
-        config.setTransactionProvider(new DefaultTransactionProvider(jooqConfig.connectionProvider(), false));
-        config.setListeners(Arrays.asList(
-                logger,
-                new StopWatchListener()));
-        this.newConnJooqConfig = config;
+        this.newConnJooqConfig = new DefaultConfiguration()
+                .set(jooqConfig.dialect())
+                .set(SettingsTools.clone(jooqConfig.settings()).withExecuteWithOptimisticLocking(true))
+                .set(jooqConfig.connectionProvider())
+                .set(new DefaultTransactionProvider(jooqConfig.connectionProvider(), false))
+                .set(jooqConfig.executeListenerProviders());
     }
 
 }

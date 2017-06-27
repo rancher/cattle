@@ -16,6 +16,10 @@ public class LockManagerImpl extends AbstractLockManagerImpl implements LockMana
 
     LockProvider lockProvider;
 
+    public LockManagerImpl(LockProvider lockProvider) {
+        this.lockProvider = lockProvider;
+    }
+
     @Override
     protected <T, E extends Throwable> T doLock(LockDefinition lockDef, LockCallbackWithException<T, E> callback, WithLock with) throws E {
         Lock lock = null;
@@ -70,10 +74,6 @@ public class LockManagerImpl extends AbstractLockManagerImpl implements LockMana
     @Override
     public LockProvider getLockProvider() {
         return lockProvider;
-    }
-
-    public void setLockProvider(LockProvider lockProvider) {
-        this.lockProvider = lockProvider;
     }
 
 }

@@ -9,7 +9,6 @@ import io.github.ibuildthecloud.gdapi.model.Collection;
 import io.github.ibuildthecloud.gdapi.model.Field;
 import io.github.ibuildthecloud.gdapi.model.FieldType;
 import io.github.ibuildthecloud.gdapi.model.Filter;
-import io.github.ibuildthecloud.gdapi.model.Include;
 import io.github.ibuildthecloud.gdapi.model.Pagination;
 import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.gdapi.model.Sort;
@@ -25,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class ParseCollectionAttributes extends AbstractApiRequestHandler {
+public class ParseCollectionAttributes implements ApiRequestHandler {
 
     Integer defaultLimit = 100;
     Integer maxLimit = 3000;
@@ -45,26 +44,13 @@ public class ParseCollectionAttributes extends AbstractApiRequestHandler {
         parseSort(schema, params, request);
         parsePagination(schema, params, request);
         parseFilters(schema, params, request);
-        parseIncludes(schema, params, request);
-    }
-
-    protected void parseIncludes(Schema schema, Map<String, Object> params, ApiRequest request) {
-        List<String> links = new ArrayList<String>();
-        List<?> inputs = RequestUtils.toList(params.get(Collection.INCLUDE));
-        for (Object input : inputs) {
-            links.add(input.toString());
-        }
-
-        if (links.size() > 0) {
-            request.setInclude(new Include(links.subList(0, 1)));
-        }
     }
 
     protected void parseFilters(Schema schema, Map<String, Object> params, ApiRequest request) {
         IdFormatter formatter = ApiContext.getContext().getIdFormatter();
         Map<String, Filter> filters = schema.getCollectionFilters();
         Map<String, Field> fields = schema.getResourceFields();
-        Map<String, List<Condition>> conditions = new TreeMap<String, List<Condition>>();
+        Map<String, List<Condition>> conditions = new TreeMap<>();
 
         for (Map.Entry<String, Object> entry : params.entrySet()) {
             NameAndOp nameAndOp = new NameAndOp(entry.getKey());
@@ -76,7 +62,7 @@ public class ParseCollectionAttributes extends AbstractApiRequestHandler {
 
             for (String mod : filter.getModifiers()) {
                 if (nameAndOp.getOp().equals(mod)) {
-                    List<Condition> conditionList = new ArrayList<Condition>();
+                    List<Condition> conditionList = new ArrayList<>();
                     ConditionType conditionType = ConditionType.valueOf(nameAndOp.getOp().toUpperCase());
 
                     for (Object obj : RequestUtils.toList(entry.getValue())) {

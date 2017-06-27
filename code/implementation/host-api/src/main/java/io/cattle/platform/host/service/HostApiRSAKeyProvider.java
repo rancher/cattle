@@ -7,7 +7,6 @@ import io.cattle.platform.token.CertSet;
 import io.cattle.platform.token.impl.RSAKeyProvider;
 import io.cattle.platform.token.impl.RSAPrivateKeyHolder;
 import io.cattle.platform.util.exception.ExceptionUtils;
-import io.cattle.platform.util.type.InitializationTask;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -21,13 +20,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-import javax.inject.Inject;
-
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 
 import com.netflix.config.DynamicBooleanProperty;
 
-public class HostApiRSAKeyProvider implements RSAKeyProvider, InitializationTask {
+public class HostApiRSAKeyProvider implements RSAKeyProvider {
 
     private static final DynamicBooleanProperty GEN_ON_STARTUP = ArchaiusUtil.getBoolean("host.api.keygen.on.startup");
 
@@ -36,6 +33,11 @@ public class HostApiRSAKeyProvider implements RSAKeyProvider, InitializationTask
     private static final String DEFAULT = "default";
 
     DataDao dataDao;
+
+    public HostApiRSAKeyProvider(DataDao dataDao) {
+        this.dataDao = dataDao;
+        start();
+    }
 
     @Override
     public RSAPrivateKeyHolder getPrivateKey() {
@@ -46,8 +48,7 @@ public class HostApiRSAKeyProvider implements RSAKeyProvider, InitializationTask
         return new RSAPrivateKeyHolder(DEFAULT, (RSAPrivateKey) kp.getPrivate());
     }
 
-    @Override
-    public void start() {
+    protected void start() {
         if (GEN_ON_STARTUP.get()) {
             getPrivateKey();
             getCACertificate();
@@ -121,11 +122,6 @@ public class HostApiRSAKeyProvider implements RSAKeyProvider, InitializationTask
 
     public DataDao getDataDao() {
         return dataDao;
-    }
-
-    @Inject
-    public void setDataDao(DataDao dataDao) {
-        this.dataDao = dataDao;
     }
 
     @Override

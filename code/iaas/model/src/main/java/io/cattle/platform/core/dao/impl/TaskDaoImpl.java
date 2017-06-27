@@ -10,21 +10,24 @@ import io.cattle.platform.task.dao.TaskDao;
 
 import java.util.Date;
 
-import javax.inject.Named;
-
+import org.jooq.Configuration;
 import org.jooq.exception.DataAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.netflix.config.DynamicLongProperty;
 
-@Named
 public class TaskDaoImpl extends AbstractJooqDao implements TaskDao {
 
     private static Logger log = LoggerFactory.getLogger(TaskDaoImpl.class);
 
     private static DynamicLongProperty AFTER_SECONDS = ArchaiusUtil.getLong("task.purge.after.seconds");
 
+    public TaskDaoImpl(Configuration configuration) {
+        super(configuration);
+    }
+
+    @Override
     public void purgeOld() {
         int deleted = create()
             .delete(TASK_INSTANCE)

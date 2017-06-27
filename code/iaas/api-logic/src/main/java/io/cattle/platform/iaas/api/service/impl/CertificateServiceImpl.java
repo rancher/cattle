@@ -19,19 +19,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-import javax.inject.Inject;
-
 import org.apache.commons.codec.binary.Base64;
 
 public class CertificateServiceImpl implements CertificateService {
-    @Inject
+
     ObjectManager objectManager;
-    @Inject
     JsonMapper jsonMapper;
-    @Inject
     RSAKeyProvider keyProvider;
-    @Inject
     DataDao dataDao;
+
+    public CertificateServiceImpl(ObjectManager objectManager, JsonMapper jsonMapper, RSAKeyProvider keyProvider, DataDao dataDao) {
+        super();
+        this.objectManager = objectManager;
+        this.jsonMapper = jsonMapper;
+        this.keyProvider = keyProvider;
+        this.dataDao = dataDao;
+    }
 
     @Override
     public String getServiceCertificate(final Service service) {

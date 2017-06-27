@@ -2,24 +2,19 @@ package io.cattle.platform.agent.instance.factory.impl;
 
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 
-import io.cattle.platform.agent.AgentLocator;
-import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.agent.instance.factory.AgentInstanceFactory;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
-import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.AgentDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
-import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.docker.client.DockerImage;
-import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.resource.ResourceMonitor;
@@ -35,8 +30,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -45,26 +38,21 @@ import com.netflix.config.DynamicStringProperty;
 public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
     private static final DynamicStringProperty LB_IMAGE_UUID = ArchaiusUtil.getString("lb.instance.image.uuid");
 
-    @Inject
-    AccountDao accountDao;
-    @Inject
     ObjectManager objectManager;
-    @Inject
-    AgentInstanceDao factoryDao;
-    @Inject
     AgentDao agentDao;
-    @Inject
-    LockManager lockManager;
-    @Inject
     GenericResourceDao resourceDao;
-    @Inject
-    AgentLocator agentLocator;
-    @Inject
     ResourceMonitor resourceMonitor;
-    @Inject
     ObjectProcessManager processManager;
-    @Inject
-    InstanceDao instanceDao;
+
+    public AgentInstanceFactoryImpl(ObjectManager objectManager, AgentDao agentDao, GenericResourceDao resourceDao, ResourceMonitor resourceMonitor,
+            ObjectProcessManager processManager) {
+        super();
+        this.objectManager = objectManager;
+        this.agentDao = agentDao;
+        this.resourceDao = resourceDao;
+        this.resourceMonitor = resourceMonitor;
+        this.processManager = processManager;
+    }
 
     @Override
     public Agent createAgent(Instance instance) {
@@ -163,7 +151,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
         agent = resourceMonitor.waitFor(agent, new ResourcePredicate<Agent>() {
             @Override
             public boolean evaluate(Agent agent) {
-                return factoryDao.areAllCredentialsActive(agent);
+                return agentDao.areAllCredentialsActive(agent);
             }
 
             @Override

@@ -4,25 +4,27 @@ import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.StoragePoolConstants;
 import io.cattle.platform.core.model.StoragePool;
-import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
+public class RegistryServerAddressFilter extends AbstractValidationFilter {
 
-public class RegistryServerAddressFilter extends AbstractDefaultResourceManagerFilter {
-
-    @Inject
     ObjectManager objectManager;
+
+    public RegistryServerAddressFilter(ObjectManager objectManager) {
+        super();
+        this.objectManager = objectManager;
+    }
 
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
@@ -44,8 +46,4 @@ public class RegistryServerAddressFilter extends AbstractDefaultResourceManagerF
         return super.create(type, request, next);
     }
 
-    @Override
-    public String[] getTypes() {
-        return new String[] { StoragePoolConstants.KIND_REGISTRY };
-    }
 }

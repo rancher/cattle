@@ -5,31 +5,25 @@ import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.handler.CompletableLogic;
 import io.cattle.platform.engine.handler.HandlerResult;
+import io.cattle.platform.engine.handler.ProcessHandler;
 import io.cattle.platform.engine.manager.LoopManager;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.loop.LoopFactoryImpl;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.ObjectUtils;
-import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
-import io.cattle.platform.util.type.Priority;
-
-import javax.inject.Inject;
-import javax.inject.Named;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
-@Named
-public class InatorReconcileHandler extends AbstractObjectProcessHandler implements Priority, CompletableLogic {
+public class InatorReconcileHandler implements ProcessHandler, CompletableLogic {
 
-    @Inject
     ObjectManager objectManager;
-    @Inject
     LoopManager loopManager;
 
-    @Override
-    public String[] getProcessNames() {
-        return new String[] {"service.*", "deploymentunit.*"};
+    public InatorReconcileHandler(ObjectManager objectManager, LoopManager loopManager) {
+        super();
+        this.objectManager = objectManager;
+        this.loopManager = loopManager;
     }
 
     @Override
@@ -56,11 +50,6 @@ public class InatorReconcileHandler extends AbstractObjectProcessHandler impleme
     @Override
     public HandlerResult complete(ListenableFuture<?> future, ProcessState state, ProcessInstance process) {
         return null;
-    }
-
-    @Override
-    public int getPriority() {
-        return Integer.MAX_VALUE;
     }
 
 }

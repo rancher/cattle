@@ -7,17 +7,18 @@ import io.cattle.platform.object.ObjectManager;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jooq.Configuration;
 
-@Named
 public class RancherCertificatesToComposeFormatter extends AbstractJooqDao
         implements RancherConfigToComposeFormatter {
 
-    @Inject
     ObjectManager objManager;
+
+    public RancherCertificatesToComposeFormatter(Configuration configuration, ObjectManager objManager) {
+        super(configuration);
+        this.objManager = objManager;
+    }
 
     @Override
     @SuppressWarnings("unchecked")

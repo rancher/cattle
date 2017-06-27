@@ -21,8 +21,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.zip.GZIPInputStream;
 
-import javax.inject.Inject;
-
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.io.IOUtils;
@@ -37,6 +35,12 @@ public class SimulatorConfigUpdateProcessor implements AgentSimulatorEventProces
 
     JsonMapper jsonMapper;
     ObjectManager objectManager;
+
+    public SimulatorConfigUpdateProcessor(JsonMapper jsonMapper, ObjectManager objectManager) {
+        super();
+        this.jsonMapper = jsonMapper;
+        this.objectManager = objectManager;
+    }
 
     @Override
     public Event handle(AgentConnectionSimulator simulator, Event event) throws IOException {
@@ -113,24 +117,6 @@ public class SimulatorConfigUpdateProcessor implements AgentSimulatorEventProces
             IOUtils.closeQuietly(tar);
             IOUtils.closeQuietly(is);
         }
-    }
-
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
-    }
-
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
-    }
-
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
     }
 
 }

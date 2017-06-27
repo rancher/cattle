@@ -1,18 +1,19 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+
 import io.cattle.platform.core.addon.LbConfig;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.ServiceUtil;
-import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
@@ -20,25 +21,21 @@ import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.TransformerUtils;
 import org.apache.commons.lang.StringUtils;
 
-@Named
-public class LoadBalancerServiceCertificateRemoveFilter extends AbstractDefaultResourceManagerFilter {
-    @Inject
+public class LoadBalancerServiceCertificateRemoveFilter extends AbstractValidationFilter {
+
     ObjectManager objectManager;
-    @Inject
     ServiceDao svcDao;
-    @Inject
     JsonMapper jsonMapper;
 
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { Certificate.class };
+    public LoadBalancerServiceCertificateRemoveFilter(ObjectManager objectManager, ServiceDao svcDao, JsonMapper jsonMapper) {
+        super();
+        this.objectManager = objectManager;
+        this.svcDao = svcDao;
+        this.jsonMapper = jsonMapper;
     }
 
     @Override

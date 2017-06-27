@@ -1,19 +1,16 @@
 package io.cattle.platform.iaas.api.auth.integration.azure;
 
 import io.cattle.platform.api.auth.Identity;
+import io.cattle.platform.api.resource.AbstractNoOpResourceManager;
 import io.cattle.platform.core.constants.IdentityConstants;
 import io.cattle.platform.core.util.SettingsUtils;
-import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
-import io.cattle.platform.iaas.api.auth.dao.AuthDao;
-import io.cattle.platform.json.JsonMapper;
-import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
-import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.ArrayList;
@@ -22,42 +19,28 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 
 public class AzureConfigManager extends AbstractNoOpResourceManager {
-    
+
     private static final String CLIENT_ID = "clientId";
     private static final String TENANT_ID = "tenantId";
     private static final String ADMIN_USERNAME = "adminAccountUsername";
     private static final String ADMIN_PWD = "adminAccountPassword";
-    
-    @Inject
-    JsonMapper jsonMapper;
 
-    @Inject
-    ObjectManager objectManager;
-
-    @Inject
     AzureRESTClient client;
-
-    @Inject
     AzureIdentityProvider azureIdentitySearchProvider;
-
-    @Inject
     SettingsUtils settingsUtils;
 
-    @Inject
-    AuthDao authDao;
-
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[]{AzureConfig.class};
+    public AzureConfigManager(AzureRESTClient client, AzureIdentityProvider azureIdentitySearchProvider, SettingsUtils settingsUtils) {
+        super();
+        this.client = client;
+        this.azureIdentitySearchProvider = azureIdentitySearchProvider;
+        this.settingsUtils = settingsUtils;
     }
 
     @Override
-    protected Object createInternal(String type, ApiRequest request) {
+    public Object create(String type, ApiRequest request) {
         if (!StringUtils.equalsIgnoreCase(AzureConstants.CONFIG, request.getType())) {
             return null;
         }
@@ -92,26 +75,26 @@ public class AzureConfigManager extends AbstractNoOpResourceManager {
         }
         if (config.get(AzureConstants.DOMAIN) != null) {
             domain = (String) config.get(AzureConstants.DOMAIN);
-        } 
+        }
         if (config.get(ADMIN_USERNAME) != null) {
             adminAccountUsername = (String) config.get(ADMIN_USERNAME);
         }
         if (config.get(ADMIN_PWD) != null) {
             adminAccountPassword = (String) config.get(ADMIN_PWD);
-        }        
-        
+        }
+
         return new AzureConfig(enabled, accessMode, tenantId, clientId, domain, adminAccountUsername, adminAccountPassword);
     }
 
     @Override
-    protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
+    public Object list(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
         return getCurrentConfig(new HashMap<String, Object>());
     }
 
     public AzureConfig updateCurrentConfig(Map<String, Object> config) {
 
         settingsUtils.changeSetting(SecurityConstants.SECURITY_SETTING, config.get(SecurityConstants.ENABLED));
-        
+
         if (config.get(CLIENT_ID) != null) {
             settingsUtils.changeSetting(AzureConstants.CLIENT_ID_SETTING, config.get(CLIENT_ID));
         }
@@ -126,17 +109,17 @@ public class AzureConfigManager extends AbstractNoOpResourceManager {
         }
         if (config.get(ADMIN_PWD) != null) {
             settingsUtils.changeSetting(AzureConstants.ADMIN_PASSWORD_SETTING, config.get(ADMIN_PWD));
-        }        
-        
-        
+        }
+
+
         settingsUtils.changeSetting(AzureConstants.ACCESSMODE_SETTING, config.get(AbstractTokenUtil.ACCESSMODE));
- 
+
         if (config.get(SecurityConstants.ENABLED) != null){
             settingsUtils.changeSetting(SecurityConstants.AUTH_PROVIDER_SETTING, AzureConstants.CONFIG);
         } else {
             settingsUtils.changeSetting(SecurityConstants.AUTH_PROVIDER_SETTING, SecurityConstants.NO_PROVIDER);
         }
-        
+
         return getCurrentConfig(config);
     }
 

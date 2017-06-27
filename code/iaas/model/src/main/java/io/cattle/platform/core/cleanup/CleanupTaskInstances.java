@@ -1,13 +1,15 @@
 package io.cattle.platform.core.cleanup;
 
-import io.cattle.platform.core.dao.impl.TaskDaoImpl;
 import io.cattle.platform.task.Task;
-
-import javax.inject.Inject;
+import io.cattle.platform.task.dao.TaskDao;
 
 public class CleanupTaskInstances implements Task {
 
-    TaskDaoImpl taskDao;
+    TaskDao taskDao;
+
+    public CleanupTaskInstances(TaskDao taskDao) {
+        this.taskDao = taskDao;
+    }
 
     @Override
     public void run() {
@@ -17,15 +19,6 @@ public class CleanupTaskInstances implements Task {
     @Override
     public String getName() {
         return "cleanup.task.instances";
-    }
-
-    public TaskDaoImpl getTaskDao() {
-        return taskDao;
-    }
-
-    @Inject
-    public void setTaskDao(TaskDaoImpl taskDao) {
-        this.taskDao = taskDao;
     }
 
 }

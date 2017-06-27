@@ -8,24 +8,21 @@ import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.ContainerEvent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.engine.handler.HandlerResult;
-import io.cattle.platform.engine.handler.ProcessPreListener;
+import io.cattle.platform.engine.handler.ProcessHandler;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
-import io.cattle.platform.util.type.Priority;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.inject.Named;
+public class ContainerEventPreCreate implements ProcessHandler {
 
-@Named
-public class ContainerEventPreCreate extends AbstractObjectProcessLogic implements ProcessPreListener, Priority {
+    ObjectManager objectManager;
 
-    @Override
-    public String[] getProcessNames() {
-        return new String[] { "containerevent.create" };
+    public ContainerEventPreCreate(ObjectManager objectManager) {
+        this.objectManager = objectManager;
     }
 
     @Override
@@ -56,8 +53,4 @@ public class ContainerEventPreCreate extends AbstractObjectProcessLogic implemen
         return null;
     }
 
-    @Override
-    public int getPriority() {
-        return Priority.DEFAULT;
-    }
 }

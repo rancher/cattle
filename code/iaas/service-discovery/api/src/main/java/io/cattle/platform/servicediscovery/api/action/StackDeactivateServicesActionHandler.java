@@ -1,35 +1,30 @@
 package io.cattle.platform.servicediscovery.api.action;
 
-import io.cattle.platform.api.action.ActionHandler;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
+
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
-import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.ActionHandler;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
-import static io.cattle.platform.core.model.tables.ServiceTable.*;
 
 import java.util.Arrays;
 import java.util.List;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
-@Named
 public class StackDeactivateServicesActionHandler implements ActionHandler {
 
-    @Inject
     ObjectProcessManager objectProcessManager;
-
-    @Inject
     ObjectManager objectManager;
 
-    @Override
-    public String getName() {
-        return ServiceConstants.PROCESS_STACK_DEACTIVATE_SERVICES;
+    public StackDeactivateServicesActionHandler(ObjectProcessManager objectProcessManager, ObjectManager objectManager) {
+        super();
+        this.objectProcessManager = objectProcessManager;
+        this.objectManager = objectManager;
     }
 
     @Override

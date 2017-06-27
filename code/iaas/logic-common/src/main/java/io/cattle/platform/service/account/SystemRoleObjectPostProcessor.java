@@ -17,8 +17,6 @@ import io.cattle.platform.service.launcher.ServiceAccountCreateStartup;
 
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,11 +24,14 @@ public class SystemRoleObjectPostProcessor implements ObjectTypeSerializerPostPr
 
     private static final Logger log = LoggerFactory.getLogger(SystemRoleObjectPostProcessor.class);
 
-    @Inject
     ObjectManager objectManager;
-
-    @Inject
     ServiceAccountCreateStartup serviceAccount;
+
+    public SystemRoleObjectPostProcessor(ObjectManager objectManager, ServiceAccountCreateStartup serviceAccount) {
+        super();
+        this.objectManager = objectManager;
+        this.serviceAccount = serviceAccount;
+    }
 
     @Override
     public String[] getTypes() {

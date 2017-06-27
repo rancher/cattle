@@ -148,7 +148,7 @@
 
     <filter>
         <filter-name>ApiFilter</filter-name>
-        <filter-class>io.cattle.platform.api.servlet.ApiRequestFilter</filter-class>
+        <filter-class>io.cattle.platform.app.CattleFilter</filter-class>
         <async-supported>true</async-supported>
         <init-param>
             <param-name>ignore-prefixes</param-name>

@@ -18,12 +18,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 public class DockerContainerSerializer implements ObjectTypeSerializerPostProcessor {
 
     JsonMapper jsonMapper;
     ObjectManager objectManager;
+
+    public DockerContainerSerializer(JsonMapper jsonMapper, ObjectManager objectManager) {
+        super();
+        this.jsonMapper = jsonMapper;
+        this.objectManager = objectManager;
+    }
 
     @Override
     public String[] getTypes() {
@@ -51,22 +55,5 @@ public class DockerContainerSerializer implements ObjectTypeSerializerPostProces
         data.put(DockerInstanceConstants.EVENT_FIELD_VOLUMES_FROM_DVM, volumes);
     }
 
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
-    }
-
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
-    }
-
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
-    }
 
 }

@@ -1,38 +1,36 @@
 package io.github.ibuildthecloud.gdapi.request.handler.write;
 
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
-import io.github.ibuildthecloud.gdapi.request.handler.AbstractApiRequestHandler;
 import io.github.ibuildthecloud.gdapi.request.handler.ApiRequestHandler;
 import io.github.ibuildthecloud.gdapi.util.RequestUtils;
+import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
 import java.io.IOException;
 
-import javax.servlet.ServletException;
+public class ReadWriteApiHandler implements ApiRequestHandler {
 
-public class ReadWriteApiHandler extends AbstractApiRequestHandler implements ApiRequestHandler {
+    ApiRequestHandler[] delegates;
+    TransactionDelegate transaction;
 
-    ReadWriteApiDelegate delegate;
+    public ReadWriteApiHandler(TransactionDelegate transaction, ApiRequestHandler... delegates) {
+        super();
+        this.delegates = delegates;
+        this.transaction = transaction;
+    }
 
     @Override
     public void handle(ApiRequest request) throws IOException {
         if (RequestUtils.isWriteMethod(request.getMethod())) {
-            delegate.write(request);
+            transaction.doInTransactionWithException(() -> {
+                for (ApiRequestHandler handler : delegates) {
+                    handler.handle(request);
+                }
+            });
         } else {
-            delegate.read(request);
+            for (ApiRequestHandler handler : delegates) {
+                handler.handle(request);
+            }
         }
-    }
-
-    @Override
-    public boolean handleException(ApiRequest request, Throwable e) throws IOException, ServletException {
-        return delegate.handleException(request, e);
-    }
-
-    public ReadWriteApiDelegate getDelegate() {
-        return delegate;
-    }
-
-    public void setDelegate(ReadWriteApiDelegate delegate) {
-        this.delegate = delegate;
     }
 
 }

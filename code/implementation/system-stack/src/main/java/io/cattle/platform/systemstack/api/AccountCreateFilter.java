@@ -5,33 +5,31 @@ import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.ProjectTemplateConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.ProjectTemplate;
-import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.systemstack.listener.SystemStackUpdate;
 import io.cattle.platform.util.type.CollectionUtils;
-import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.apache.commons.lang3.StringUtils;
 
-public class AccountCreateFilter extends AbstractDefaultResourceManagerFilter {
+public class AccountCreateFilter extends AbstractValidationFilter {
 
-    @Inject @Named("CoreSchemaFactory")
-    SchemaFactory schemaFactory;
-    @Inject
     ObjectManager objectManager;
-    @Inject
     JsonMapper jsonMapper;
+
+    public AccountCreateFilter(ObjectManager objectManager, JsonMapper jsonMapper) {
+        super();
+        this.objectManager = objectManager;
+        this.jsonMapper = jsonMapper;
+    }
 
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
@@ -61,12 +59,6 @@ public class AccountCreateFilter extends AbstractDefaultResourceManagerFilter {
         input.put(AccountConstants.FIELD_ORCHESTRATION, SystemStackUpdate.chooseOrchestration(ids));
 
         return super.create(type, request, next);
-    }
-
-    @Override
-    public String[] getTypes() {
-        List<String> names =  schemaFactory.getSchemaNames(Account.class);
-        return names.toArray(new String[names.size()]);
     }
 
 }

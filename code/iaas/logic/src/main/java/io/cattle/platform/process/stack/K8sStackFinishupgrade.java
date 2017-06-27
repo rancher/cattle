@@ -1,19 +1,19 @@
 package io.cattle.platform.process.stack;
 
+import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.core.model.Stack;
+import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.serialization.ObjectSerializerFactory;
 
-import javax.inject.Named;
-
-@Named
 public class K8sStackFinishupgrade extends StackAgentHandler {
 
-    public K8sStackFinishupgrade() {
-        setCommandName("kubernetesStack.finishupgrade");
-        setDataTypeClass(Stack.class);
-        setProcessNames("stack.finishupgrade");
-        setStackKind("kubernetesStack");
-        setAgentService("io.rancher.container.agent_service.kubernetes_stack");
-        setPriority(DEFAULT);
+    public K8sStackFinishupgrade(AgentLocator agentLocator, ObjectSerializerFactory factory, ObjectManager objectManager, ObjectProcessManager processManager) {
+        super(agentLocator, factory, objectManager, processManager);
+        commandName = "kubernetesStack.finishupgrade";
+        dataTypeClass = Stack.class;
+        stackKind = "kubernetesStack";
+        agentService = "io.rancher.container.agent_service.kubernetes_stack";
     }
 
 }

@@ -30,24 +30,27 @@ import io.cattle.platform.resource.pool.util.ResourcePoolConstants;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.base.Joiner;
 
 public class NetworkLifecycleManagerImpl implements NetworkLifecycleManager {
 
-    @Inject
     ObjectManager objectManager;
-    @Inject
     NetworkService networkService;
-    @Inject
     ResourcePoolManager poolManager;
-    @Inject
     ConfigItemStatusManager statusManager;
-    @Inject
     EnvironmentResourceManager envResourceManager;
+
+    public NetworkLifecycleManagerImpl(ObjectManager objectManager, NetworkService networkService, ResourcePoolManager poolManager,
+            ConfigItemStatusManager statusManager, EnvironmentResourceManager envResourceManager) {
+        super();
+        this.objectManager = objectManager;
+        this.networkService = networkService;
+        this.poolManager = poolManager;
+        this.statusManager = statusManager;
+        this.envResourceManager = envResourceManager;
+    }
 
     @Override
     public void create(Instance instance, Stack stack) throws LifecycleException {

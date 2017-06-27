@@ -1,14 +1,11 @@
 package io.cattle.platform.iaas.api.service;
 
-import io.cattle.platform.api.action.ActionHandler;
-import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.iaas.api.credential.ApiKeyCertificateDownloadLinkHandler;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.ActionHandler;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
-
-import javax.inject.Inject;
 
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
@@ -18,12 +15,11 @@ public class ServiceCertificateActionHandler implements ActionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ServiceCertificateActionHandler.class);
 
-    @Inject
     CertificateService certService;
 
-    @Override
-    public String getName() {
-        return ServiceConstants.PROCESS_SERVICE_CERTIFICATE;
+    public ServiceCertificateActionHandler(CertificateService certService) {
+        super();
+        this.certService = certService;
     }
 
     @Override

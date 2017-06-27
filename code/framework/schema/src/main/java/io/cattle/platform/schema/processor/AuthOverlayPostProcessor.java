@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -190,20 +189,6 @@ public class AuthOverlayPostProcessor implements SchemaPostProcessor {
 
     public List<URL> getResources() {
         return resources;
-    }
-
-    @Inject
-    public void setResources(List<URL> resources) {
-        this.resources = resources;
-    }
-
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
-    }
-
-    @Inject
-    public void setJsonMapper(JsonMapper jsonMapper) {
-        this.jsonMapper = jsonMapper;
     }
 
     private static class Perm {

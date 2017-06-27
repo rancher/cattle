@@ -1,25 +1,20 @@
 package io.cattle.platform.iaas.api.manager;
 
-import io.cattle.platform.api.resource.jooq.AbstractJooqResourceManager;
-import io.cattle.platform.core.model.Data;
+import io.cattle.platform.api.resource.DefaultResourceManager;
+import io.cattle.platform.api.resource.DefaultResourceManagerSupport;
 import io.cattle.platform.core.model.tables.DataTable;
 
 import java.util.Map;
 
-public class DataManager extends AbstractJooqResourceManager {
+public class DataManager extends DefaultResourceManager {
 
-    @Override
-    public String[] getTypes() {
-        return new String[0];
+
+    public DataManager(DefaultResourceManagerSupport support) {
+        super(support);
     }
 
     @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { Data.class };
-    }
-
-    @Override
-    protected Map<Object, Object> getDefaultCriteria(boolean byId, boolean byLink, String type) {
+    public Map<Object, Object> getDefaultCriteria(boolean byId, boolean byLink, String type) {
         Map<Object, Object> criteria = super.getDefaultCriteria(byId, byLink, type);
         criteria.put(DataTable.DATA.VISIBLE, true);
 

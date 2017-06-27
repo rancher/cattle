@@ -6,18 +6,19 @@ import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.lock.exception.FailedToAcquireLockException;
 import io.cattle.platform.object.ObjectManager;
 
-import javax.inject.Inject;
-
 import org.apache.cloudstack.managed.threadlocal.ManagedThreadLocal;
 
 public class ActivityService {
 
-    @Inject
+    private static ManagedThreadLocal<ActivityLog> TL = new ManagedThreadLocal<>();
+
     ObjectManager objectManager;
-    @Inject
     EventService eventService;
 
-    private static ManagedThreadLocal<ActivityLog> TL = new ManagedThreadLocal<>();
+    public ActivityService(ObjectManager objectManager, EventService eventService) {
+        this.objectManager = objectManager;
+        this.eventService = eventService;
+    }
 
     private ActivityLog newLog(Long accountId) {
         ActivityLog log = TL.get();

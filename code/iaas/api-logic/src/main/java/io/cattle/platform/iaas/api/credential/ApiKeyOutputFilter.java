@@ -23,14 +23,4 @@ public class ApiKeyOutputFilter implements ResourceOutputFilter {
         return converted;
     }
 
-    @Override
-    public String[] getTypes() {
-        return new String[] {CredentialConstants.KIND_API_KEY, CredentialConstants.TYPE};
-    }
-
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[0];
-    }
-
 }

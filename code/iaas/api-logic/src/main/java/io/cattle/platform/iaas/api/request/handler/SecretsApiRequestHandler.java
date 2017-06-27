@@ -9,7 +9,6 @@ import io.cattle.platform.core.model.Secret;
 import io.cattle.platform.framework.secret.SecretValue;
 import io.cattle.platform.framework.secret.SecretsService;
 import io.cattle.platform.json.JsonMapper;
-import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.token.TokenException;
 import io.cattle.platform.token.TokenService;
@@ -22,24 +21,24 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 
 public class SecretsApiRequestHandler extends AbstractResponseGenerator {
 
-    private String CONTENT_TYPE = "application/x-api-secrets-token";
+    private static String CONTENT_TYPE = "application/x-api-secrets-token";
 
-    @Inject
-    ObjectManager objectManager;
-    @Inject
     TokenService tokenService;
-    @Inject
     SecretDao secretDao;
-    @Inject
     JsonMapper jsonMapper;
-    @Inject
     SecretsService secretsService;
+
+    public SecretsApiRequestHandler(TokenService tokenService, SecretDao secretDao, JsonMapper jsonMapper, SecretsService secretsService) {
+        super();
+        this.tokenService = tokenService;
+        this.secretDao = secretDao;
+        this.jsonMapper = jsonMapper;
+        this.secretsService = secretsService;
+    }
 
     @Override
     protected void generate(final ApiRequest request) throws IOException {

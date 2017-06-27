@@ -8,7 +8,6 @@ import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.dao.AccountDao;
-import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
@@ -28,20 +27,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jooq.Configuration;
 
 public class PasswordDaoImpl extends AbstractJooqDao implements PasswordDao {
 
-    @Inject
     ObjectManager objectManager;
-    @Inject
-    GenericResourceDao resourceDao;
-    @Inject
     TransformationService transformationService;
-    @Inject
     AccountDao accountDao;
+
+    public PasswordDaoImpl(Configuration configuration, ObjectManager objectManager, TransformationService transformationService, AccountDao accountDao) {
+        super(configuration);
+        this.objectManager = objectManager;
+        this.transformationService = transformationService;
+        this.accountDao = accountDao;
+    }
 
     @Override
     public Credential changePassword(Credential password, ChangePassword changePassword, Policy policy) {

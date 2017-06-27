@@ -15,11 +15,13 @@ import io.cattle.platform.object.util.DataUtils;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 public class AgentInstanceAuthObjectPostProcessor implements ObjectTypeSerializerPostProcessor {
 
     ObjectManager objectManager;
+
+    public AgentInstanceAuthObjectPostProcessor(ObjectManager objectManager) {
+        this.objectManager = objectManager;
+    }
 
     @Override
     public String[] getTypes() {
@@ -74,15 +76,6 @@ public class AgentInstanceAuthObjectPostProcessor implements ObjectTypeSerialize
                 DataAccessor.fromMap(fields).withScopeKey(InstanceConstants.FIELD_ENVIRONMENT).withKey(entry.getKey()).set(entry.getValue());
             }
         }
-    }
-
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
     }
 
 }

@@ -4,28 +4,26 @@ import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+public class ServiceSetServiceLinksValidationFilter extends AbstractValidationFilter {
 
-@Named
-public class ServiceSetServiceLinksValidationFilter extends AbstractDefaultResourceManagerFilter {
-
-    @Inject
     ObjectManager objectManager;
-
-    @Inject
     JsonMapper jsonMapper;
+
+    public ServiceSetServiceLinksValidationFilter(ObjectManager objectManager, JsonMapper jsonMapper) {
+        this.objectManager = objectManager;
+        this.jsonMapper = jsonMapper;
+    }
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -34,8 +32,11 @@ public class ServiceSetServiceLinksValidationFilter extends AbstractDefaultResou
 
     @Override
     public String[] getTypes() {
-        return new String[] { ServiceConstants.KIND_SERVICE, ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
-                ServiceConstants.KIND_DNS_SERVICE, ServiceConstants.KIND_SCALING_GROUP_SERVICE };
+        return new String[] {
+                ServiceConstants.KIND_SERVICE,
+                ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
+                ServiceConstants.KIND_DNS_SERVICE,
+                ServiceConstants.KIND_SCALING_GROUP_SERVICE };
     }
 
     @Override

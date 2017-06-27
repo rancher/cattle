@@ -8,29 +8,35 @@ import io.cattle.platform.core.model.StoragePoolHostMap;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.tables.CredentialTable;
 import io.cattle.platform.engine.handler.HandlerResult;
+import io.cattle.platform.engine.handler.ProcessHandler;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
-import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
-
-import javax.inject.Inject;
-import javax.inject.Named;
+import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.process.ObjectProcessManager;
 
 
-@Named
-public class StoragePoolRemove extends AbstractDefaultProcessHandler {
+public class StoragePoolRemove implements ProcessHandler {
 
-    @Inject
+    ObjectManager objectManager;
+    ObjectProcessManager processManager;
     VolumeDao volumeDao;
+
+    public StoragePoolRemove(ObjectManager objectManager, ObjectProcessManager processManager, VolumeDao volumeDao) {
+        super();
+        this.objectManager = objectManager;
+        this.processManager = processManager;
+        this.volumeDao = volumeDao;
+    }
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         StoragePool registry = (StoragePool) state.getResource();
         if (registry.getKind().equalsIgnoreCase(StoragePoolConstants.KIND_REGISTRY)){
-            for (Credential cred : getObjectManager().find(Credential.class, CredentialTable.CREDENTIAL.REGISTRY_ID,
+            for (Credential cred : objectManager.find(Credential.class, CredentialTable.CREDENTIAL.REGISTRY_ID,
                     registry.getId(), CredentialTable.CREDENTIAL.REMOVED, null)) {
                 try {
-                    deactivateThenScheduleRemove(cred, state.getData());
+                    processManager.executeDeactivateThenScheduleRemove(cred, state.getData());
                 } catch (ProcessCancelException e) {
                     //Ignore
                 }
@@ -39,11 +45,11 @@ public class StoragePoolRemove extends AbstractDefaultProcessHandler {
         }
 
         for (Volume v : volumeDao.findNonRemovedVolumesOnPool(registry.getId())) {
-            deactivateThenRemove(v, null);
+            processManager.executeDeactivateThenRemove(v, null);
         }
 
         for (StoragePoolHostMap map : objectManager.children(registry, StoragePoolHostMap.class)) {
-            deactivateThenRemove(map, null);
+            processManager.executeDeactivateThenRemove(map, null);
         }
 
         return null;

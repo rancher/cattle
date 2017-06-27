@@ -1,26 +1,23 @@
 package io.cattle.platform.servicediscovery.process;
 
-import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.engine.handler.HandlerResult;
+import io.cattle.platform.engine.handler.ProcessHandler;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
-import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
-import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
+import io.cattle.platform.lifecycle.ServiceLifecycleManager;
+import io.cattle.platform.object.ObjectManager;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+public class ServiceIndexRemove implements ProcessHandler {
 
-@Named
-public class ServiceIndexRemove extends AbstractObjectProcessHandler {
+    ServiceLifecycleManager serviceLifecycleManager;
+    ObjectManager objectManager;
 
-    @Inject
-    ServiceDiscoveryService sdService;
-
-    @Override
-    public String[] getProcessNames() {
-        return new String[] { ServiceConstants.PROCESS_SERVICE_INDEX_REMOVE };
+    public ServiceIndexRemove(ServiceLifecycleManager serviceLifecycleManager, ObjectManager objectManager) {
+        super();
+        this.serviceLifecycleManager = serviceLifecycleManager;
+        this.objectManager = objectManager;
     }
 
     @Override
@@ -28,13 +25,11 @@ public class ServiceIndexRemove extends AbstractObjectProcessHandler {
         ServiceIndex serviceIndex = (ServiceIndex) state.getResource();
 
         Service service = objectManager.loadResource(Service.class, serviceIndex.getServiceId());
-
         if (service == null) {
             return null;
         }
 
-        sdService.releaseIpFromServiceIndex(service, serviceIndex);
-
+        serviceLifecycleManager.releaseIpFromServiceIndex(service, serviceIndex);
         return null;
     }
 }

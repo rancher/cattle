@@ -3,12 +3,12 @@ package io.cattle.platform.iaas.api.request.handler;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
-import io.github.ibuildthecloud.gdapi.request.handler.AbstractApiRequestHandler;
+import io.github.ibuildthecloud.gdapi.request.handler.ApiRequestHandler;
 
 import java.io.IOException;
 import java.util.Map;
 
-public class RequestReRouterHandler extends AbstractApiRequestHandler {
+public class RequestReRouterHandler implements ApiRequestHandler {
 
     @Override
     public void handle(ApiRequest request) throws IOException {

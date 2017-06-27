@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.jooq.Configuration;
 import org.jooq.Field;
 import org.jooq.Record5;
 import org.jooq.RecordHandler;
@@ -44,8 +45,8 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
     ObjectManager objectManager;
     ObjectMetaDataManager metaData;
 
-    public JooqProcessRecordDao(JsonMapper jsonMapper, ObjectManager objectManager, ObjectMetaDataManager metaData) {
-        super();
+    public JooqProcessRecordDao(Configuration configuration, JsonMapper jsonMapper, ObjectManager objectManager, ObjectMetaDataManager metaData) {
+        super(configuration);
         this.jsonMapper = jsonMapper;
         this.objectManager = objectManager;
         this.metaData = metaData;

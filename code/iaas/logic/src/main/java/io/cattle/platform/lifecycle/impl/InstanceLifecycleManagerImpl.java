@@ -32,44 +32,50 @@ import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
 import java.util.HashMap;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 
 public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
 
-    @Inject
     K8sLifecycleManager k8sLifecycle;
-    @Inject
     VirtualMachineLifecycleManager vmLifecycle;
-    @Inject
     VolumeLifecycleManager volumeLifecycle;
-    @Inject
     ObjectManager objectManager;
-    @Inject
     ImageCredentialLookup credLookup;
-    @Inject
     JsonMapper jsonMapper;
-    @Inject
     ServiceDao svcDao;
-    @Inject
     TransactionDelegate transaction;
-    @Inject
     NetworkLifecycleManager networkLifecycle;
-    @Inject
     AgentLifecycleManager agentLifecycle;
-    @Inject
     BackPopulater backPopulator;
-    @Inject
     RestartLifecycleManager restartLifecycle;
-    @Inject
     SecretsLifecycleManager secretsLifecycle;
-    @Inject
     AllocationLifecycleManager allocationLifecycle;
-    @Inject
     ServiceLifecycleManager serviceLifecycle;
-    @Inject
     InstanceDao instanceDao;
+
+    public InstanceLifecycleManagerImpl(K8sLifecycleManager k8sLifecycle, VirtualMachineLifecycleManager vmLifecycle, VolumeLifecycleManager volumeLifecycle,
+            ObjectManager objectManager, ImageCredentialLookup credLookup, JsonMapper jsonMapper, ServiceDao svcDao, TransactionDelegate transaction,
+            NetworkLifecycleManager networkLifecycle, AgentLifecycleManager agentLifecycle, BackPopulater backPopulator,
+            RestartLifecycleManager restartLifecycle, SecretsLifecycleManager secretsLifecycle, AllocationLifecycleManager allocationLifecycle,
+            ServiceLifecycleManager serviceLifecycle, InstanceDao instanceDao) {
+        super();
+        this.k8sLifecycle = k8sLifecycle;
+        this.vmLifecycle = vmLifecycle;
+        this.volumeLifecycle = volumeLifecycle;
+        this.objectManager = objectManager;
+        this.credLookup = credLookup;
+        this.jsonMapper = jsonMapper;
+        this.svcDao = svcDao;
+        this.transaction = transaction;
+        this.networkLifecycle = networkLifecycle;
+        this.agentLifecycle = agentLifecycle;
+        this.backPopulator = backPopulator;
+        this.restartLifecycle = restartLifecycle;
+        this.secretsLifecycle = secretsLifecycle;
+        this.allocationLifecycle = allocationLifecycle;
+        this.serviceLifecycle = serviceLifecycle;
+        this.instanceDao = instanceDao;
+    }
 
     @Override
     public void create(Instance instance) throws LifecycleException {
@@ -120,7 +126,7 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
     }
 
     @Override
-    public void postStart(Instance instance) throws LifecycleException {
+    public void postStart(Instance instance) {
         backPopulator.update(instance);
 
         restartLifecycle.postStart(instance);

@@ -18,8 +18,6 @@ import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,10 +27,14 @@ public class RestartLifecycleManagerImpl implements RestartLifecycleManager {
 
     private static long RUNNING_TIME = 10000L;
 
-    @Inject
     BackPopulater backPopulator;
-    @Inject
     JsonMapper jsonMapper;
+
+    public RestartLifecycleManagerImpl(BackPopulater backPopulator, JsonMapper jsonMapper) {
+        super();
+        this.backPopulator = backPopulator;
+        this.jsonMapper = jsonMapper;
+    }
 
     @Override
     public void postStop(Instance instance, boolean stopOnly) {

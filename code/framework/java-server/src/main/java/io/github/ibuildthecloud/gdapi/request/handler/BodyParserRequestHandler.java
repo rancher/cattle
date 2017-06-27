@@ -16,15 +16,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-
 import org.apache.commons.io.IOUtils;
 
-public class BodyParserRequestHandler extends AbstractApiRequestHandler implements ApiRequestHandler {
+public class BodyParserRequestHandler implements ApiRequestHandler {
 
     JsonMapper jsonMarshaller;
     Set<Class<?>> allowedTypes;
+
+    public BodyParserRequestHandler(JsonMapper jsonMarshaller) {
+        this.jsonMarshaller = jsonMarshaller;
+        init();
+    }
 
     @Override
     public void handle(ApiRequest request) throws IOException {
@@ -91,7 +93,7 @@ public class BodyParserRequestHandler extends AbstractApiRequestHandler implemen
         } else if (body instanceof List) {
             @SuppressWarnings("unchecked")
             List<Object> list = (List<Object>)body;
-            List<Object> result = new ArrayList<Object>(list.size());
+            List<Object> result = new ArrayList<>(list.size());
             for (Object object : list) {
                 if (isAllowedType(object)) {
                     result.add(merge(object, request));
@@ -104,7 +106,7 @@ public class BodyParserRequestHandler extends AbstractApiRequestHandler implemen
     }
 
     protected Map<String, Object> mergeMap(Map<String, Object> overlay, ApiRequest request) {
-        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Object> result = new HashMap<>();
 
         /*
          * Notice that this loop makes the value singular if it can. This is because the request params are always a String[] from the
@@ -123,30 +125,12 @@ public class BodyParserRequestHandler extends AbstractApiRequestHandler implemen
         return result;
     }
 
-    @PostConstruct
-    public void init() {
+    private void init() {
         if (allowedTypes == null) {
-            allowedTypes = new HashSet<Class<?>>();
+            allowedTypes = new HashSet<>();
             allowedTypes.add(Map.class);
             allowedTypes.add(List.class);
         }
-    }
-
-    public JsonMapper getJsonMarshaller() {
-        return jsonMarshaller;
-    }
-
-    @Inject
-    public void setJsonMarshaller(JsonMapper jsonMarshaller) {
-        this.jsonMarshaller = jsonMarshaller;
-    }
-
-    public Set<Class<?>> getAllowedTypes() {
-        return allowedTypes;
-    }
-
-    public void setAllowedTypes(Set<Class<?>> allowedTypes) {
-        this.allowedTypes = allowedTypes;
     }
 
 }

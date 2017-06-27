@@ -30,8 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 
 public class VirtualMachineLifecycleManagerImpl implements VirtualMachineLifecycleManager {
@@ -41,20 +39,21 @@ public class VirtualMachineLifecycleManagerImpl implements VirtualMachineLifecyc
     private static final String[] DEVICES = new String[] { "/dev/kvm:/dev/kvm", "/dev/net/tun:/dev/net/tun" };
     private static final Pattern NAME_PATTERN = Pattern.compile("[a-zA-Z0-9][a-zA-Z0-9_.-]+");
 
-    @Inject
     VolumeDao volumeDao;
-
-    @Inject
     StoragePoolDao storagePoolDao;
-
-    @Inject
     ServiceDao serviceDao;
-
-    @Inject
     JsonMapper jsonMapper;
-
-    @Inject
     ObjectManager objectManager;
+
+    public VirtualMachineLifecycleManagerImpl(VolumeDao volumeDao, StoragePoolDao storagePoolDao, ServiceDao serviceDao, JsonMapper jsonMapper,
+            ObjectManager objectManager) {
+        super();
+        this.volumeDao = volumeDao;
+        this.storagePoolDao = storagePoolDao;
+        this.serviceDao = serviceDao;
+        this.jsonMapper = jsonMapper;
+        this.objectManager = objectManager;
+    }
 
     @Override
     public void instanceCreate(Instance instance) {

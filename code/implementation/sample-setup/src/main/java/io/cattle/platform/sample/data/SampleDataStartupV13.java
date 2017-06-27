@@ -6,12 +6,17 @@ import static io.cattle.platform.core.model.tables.StackTable.*;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.MachineConstants;
+import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.core.model.ProcessInstance;
 import io.cattle.platform.core.model.Setting;
 import io.cattle.platform.core.model.Stack;
+import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.lock.LockManager;
+import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
+import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
@@ -54,6 +59,11 @@ public class SampleDataStartupV13 extends AbstractSampleData {
 
     private static final String EC2_CONFIG = "amazonec2Config";
     private static final String SECURITY_GROUP = "securityGroup";
+
+    public SampleDataStartupV13(ObjectManager objectManager, ObjectProcessManager processManager, AccountDao accountDao, JsonMapper jsonMapper,
+            LockManager lockManager) {
+        super(objectManager, processManager, accountDao, jsonMapper, lockManager);
+    }
 
     @Override
     protected String getName() {

@@ -7,8 +7,4 @@ public interface ResourceOutputFilter {
 
     Resource filter(ApiRequest request, Object original, Resource converted);
 
-    String[] getTypes();
-
-    Class<?>[] getTypeClasses();
-
 }

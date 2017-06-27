@@ -5,12 +5,9 @@ import io.cattle.platform.allocator.constraint.ValidHostsConstraint;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationLog;
-import io.cattle.platform.core.dao.GenericMapDao;
-import io.cattle.platform.core.dao.StoragePoolDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
-import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.util.type.Priority;
 
 import java.util.Collection;
@@ -18,18 +15,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.inject.Inject;
-
 public class BaseConstraintsProvider implements AllocationConstraintsProvider, Priority {
 
-    @Inject
     AllocatorDao allocatorDao;
-    @Inject
-    ObjectManager objectManager;
-    @Inject
-    GenericMapDao mapDao;
-    @Inject
-    StoragePoolDao storagePoolDao;
+
+    public BaseConstraintsProvider(AllocatorDao allocatorDao) {
+        super();
+        this.allocatorDao = allocatorDao;
+    }
 
     @Override
     public void appendConstraints(AllocationAttempt attempt, AllocationLog log, List<Constraint> constraints) {

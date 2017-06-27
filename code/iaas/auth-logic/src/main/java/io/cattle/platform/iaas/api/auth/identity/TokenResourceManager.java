@@ -3,26 +3,21 @@ package io.cattle.platform.iaas.api.auth.identity;
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.pubsub.manager.SubscribeManager;
+import io.cattle.platform.api.resource.AbstractNoOpResourceManager;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
-import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
 import io.cattle.platform.iaas.api.auth.integration.external.ExternalServiceAuthProvider;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.TokenCreator;
-import io.cattle.platform.iaas.api.auth.integration.internal.rancher.TokenAuthLookup;
 import io.cattle.platform.iaas.event.IaasEvents;
-import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.token.TokenService;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
-import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.ArrayList;
@@ -30,7 +25,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
@@ -39,43 +33,26 @@ import com.netflix.config.DynamicBooleanProperty;
 
 public class TokenResourceManager extends AbstractNoOpResourceManager {
 
-    @Inject
-    ObjectManager objectManager;
-
-    @Inject
-    AuthTokenDao authTokenDao;
-
-    @Inject
-    IdentityManager identityManager;
-
-    @Inject
-    ExternalServiceAuthProvider externalAuthProvider;
-
-    @Inject
-    TokenService tokenService;
-
-    @Inject
-    TokenAuthLookup tokenAuthLookup;
-
-    @Inject
-    AuthDao authDao;
-
-    @Inject
-    AccountDao accountDao;
-
-    @Inject
-    EventService eventService;
-
-    private List<TokenCreator> tokenCreators;
     private static final DynamicBooleanProperty RESTRICT_CONCURRENT_SESSIONS = ArchaiusUtil.getBoolean("api.auth.restrict.concurrent.sessions");
 
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[]{Token.class};
+    AuthTokenDao authTokenDao;
+    IdentityManager identityManager;
+    ExternalServiceAuthProvider externalAuthProvider;
+    EventService eventService;
+    List<TokenCreator> tokenCreators;
+
+    public TokenResourceManager(AuthTokenDao authTokenDao, IdentityManager identityManager, ExternalServiceAuthProvider externalAuthProvider,
+            EventService eventService, List<TokenCreator> tokenCreators) {
+        super();
+        this.authTokenDao = authTokenDao;
+        this.identityManager = identityManager;
+        this.externalAuthProvider = externalAuthProvider;
+        this.eventService = eventService;
+        this.tokenCreators = tokenCreators;
     }
 
     @Override
-    protected Object createInternal(String type, ApiRequest request) {
+    public Object create(String type, ApiRequest request) {
         if (!StringUtils.equals(AbstractTokenUtil.TOKEN, request.getType())) {
             return null;
         }
@@ -133,7 +110,7 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
     }
 
     @Override
-    protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
+    public Object list(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
         Token token = listToken();
         return Collections.singletonList(token);
     }
@@ -162,17 +139,8 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
         return token;
     }
 
-    public List<TokenCreator> getTokenCreators() {
-        return tokenCreators;
-    }
-
-    @Inject
-    public void setTokenCreators(List<TokenCreator> tokenCreators) {
-        this.tokenCreators = tokenCreators;
-    }
-
     @Override
-    protected Object deleteInternal(String type, String id, Object obj, ApiRequest request) {
+    public Object deleteObject(String type, String id, Object obj, ApiRequest request) {
         if (!StringUtils.equals(AbstractTokenUtil.TOKEN, request.getType())) {
             return null;
         }

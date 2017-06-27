@@ -8,11 +8,10 @@ import io.cattle.platform.allocator.constraint.Constraint;
 import io.cattle.platform.allocator.constraint.ContainerAffinityConstraint;
 import io.cattle.platform.allocator.constraint.ContainerLabelAffinityConstraint;
 import io.cattle.platform.allocator.constraint.HostAffinityConstraint;
-import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.lock.AllocateConstraintLock;
+import io.cattle.platform.core.cache.EnvironmentResourceManager;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
-import io.cattle.platform.core.dao.LabelsDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.SystemLabels;
@@ -20,7 +19,6 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.resource.service.EnvironmentResourceManager;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -29,8 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.inject.Inject;
-
 import org.jooq.tools.StringUtils;
 
 public class AllocationHelperImpl implements AllocationHelper {
@@ -38,26 +34,17 @@ public class AllocationHelperImpl implements AllocationHelper {
     private static final String SERVICE_NAME_MACRO = "${service_name}";
     private static final String STACK_NAME_MACRO = "${stack_name}";
 
-    @Inject
-    LabelsDao labelsDao;
-
-    @Inject
-    AllocatorDao allocatorDao;
-
-    @Inject
     InstanceDao instanceDao;
-
-    @Inject
     ObjectManager objectManager;
-
-    @Inject
     JsonMapper jsonMapper;
-
-    @Inject
-    AllocatorService allocatorService;
-
-    @Inject
     EnvironmentResourceManager envResourceManager;
+
+    public AllocationHelperImpl(InstanceDao instanceDao, ObjectManager objectManager, JsonMapper jsonMapper, EnvironmentResourceManager envResourceManager) {
+        this.instanceDao = instanceDao;
+        this.objectManager = objectManager;
+        this.jsonMapper = jsonMapper;
+        this.envResourceManager = envResourceManager;
+    }
 
     @Override
     public List<Long> getAllHostsSatisfyingHostAffinity(Long accountId, Map<String, String> labelConstraints) {

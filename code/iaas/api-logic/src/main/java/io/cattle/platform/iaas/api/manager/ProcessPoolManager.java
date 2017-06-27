@@ -1,33 +1,31 @@
 package io.cattle.platform.iaas.api.manager;
 
+import io.cattle.platform.api.resource.AbstractNoOpResourceManager;
 import io.cattle.platform.core.addon.ProcessPool;
 import io.cattle.platform.util.type.NamedUtils;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
-import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
-
-import javax.inject.Inject;
 
 import org.apache.commons.beanutils.PropertyUtils;
 
 public class ProcessPoolManager extends AbstractNoOpResourceManager {
 
-    @Inject
     List<ThreadPoolExecutor> executors;
 
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { ProcessPool.class };
+    public ProcessPoolManager(ThreadPoolExecutor... executors) {
+        super();
+        this.executors = Arrays.asList(executors);
     }
 
     @Override
-    protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
+    public Object list(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
         List<ProcessPool> pools = new ArrayList<>();
 
         for (ThreadPoolExecutor executor : executors) {
@@ -55,7 +53,7 @@ public class ProcessPoolManager extends AbstractNoOpResourceManager {
     }
 
     @Override
-    protected Object getByIdInternal(String type, String id, ListOptions options) {
+    public Object getById(String type, String id, ListOptions options) {
         return null;
     }
 

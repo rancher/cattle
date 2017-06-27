@@ -13,7 +13,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jooq.Configuration;
+
 public class PingInstancesMonitorDaoImpl extends AbstractJooqDao implements PingInstancesMonitorDao {
+
+    public PingInstancesMonitorDaoImpl(Configuration configuration) {
+        super(configuration);
+    }
 
     @Override
     public Map<String, KnownInstance> getInstances(long agentId) {

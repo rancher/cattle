@@ -6,41 +6,32 @@ import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.MachineConstants;
-import io.cattle.platform.core.model.Host;
 import io.cattle.platform.framework.secret.SecretsService;
-import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.io.IOException;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MachineValidationFilter extends AbstractDefaultResourceManagerFilter {
+public class MachineValidationFilter extends AbstractValidationFilter {
 
     private static final String DRIVER_CONFIG_EXACTLY_ONE_REQUIRED = "DriverConfigExactlyOneRequired";
     private static final Logger log = LoggerFactory.getLogger(MachineValidationFilter.class);
 
-    @Inject
     SecretsService secretsService;
 
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] {Host.class};
-    }
-
-    @Override
-    public String[] getTypes() {
-        return new String[] { KIND_MACHINE };
+    public MachineValidationFilter(SecretsService secretsService) {
+        super();
+        this.secretsService = secretsService;
     }
 
     @Override

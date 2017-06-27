@@ -13,27 +13,25 @@ import io.cattle.platform.iaas.api.auth.integration.external.ExternalServiceAuth
 import io.cattle.platform.iaas.api.auth.integration.interfaces.AccountLookup;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityProvider;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
-import io.github.ibuildthecloud.gdapi.request.handler.AbstractApiRequestHandler;
+import io.github.ibuildthecloud.gdapi.request.handler.ApiRequestHandler;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.util.TransformationService;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ApiAuthenticator extends AbstractApiRequestHandler {
+public class ApiAuthenticator implements ApiRequestHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ApiAuthenticator.class);
 
@@ -41,20 +39,21 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
     private static final String USER_ID_HEADER = "X-API-USER-ID";
 
     AuthDao authDao;
-    List<AccountLookup> accountLookups;
-    List<IdentityProvider> identityProviders;
-    List<AuthorizationProvider> authorizationProviders;
-    @Inject
+    List<AccountLookup> accountLookups = new ArrayList<>();
+    List<IdentityProvider> identityProviders = new ArrayList<>();
+    List<AuthorizationProvider> authorizationProviders = new ArrayList<>();
+
     ObjectManager objectManager;
-
-    @Inject
     TransformationService transformationService;
-
-    @Inject
     ExternalServiceAuthProvider externalAuthProvider;
-
-    @Inject
     AccountDao accountDao;
+
+    public ApiAuthenticator(ObjectManager objectManager, TransformationService transformationService, AccountDao accountDao) {
+        super();
+        this.objectManager = objectManager;
+        this.transformationService = transformationService;
+        this.accountDao = accountDao;
+    }
 
     @Override
     public void handle(ApiRequest request) throws IOException {
@@ -235,40 +234,24 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         throw new ClientVisibleException(ResponseCodes.FORBIDDEN);
     }
 
-    public AuthDao getAuthDao() {
-        return authDao;
-    }
-
-    @Inject
-    public void setAuthDao(AuthDao authDao) {
-        this.authDao = authDao;
-    }
-
-    public List<AuthorizationProvider> getAuthorizationProviders() {
-        return authorizationProviders;
-    }
-
-    @Inject
-    public void setAuthorizationProviders(List<AuthorizationProvider> authorizationProviders) {
-        this.authorizationProviders = CollectionUtils.orderList(AuthorizationProvider.class, authorizationProviders);
-    }
-
     public List<AccountLookup> getAccountLookups() {
         return accountLookups;
-    }
-
-    @Inject
-    public void setAccountLookups(List<AccountLookup> accountLookups) {
-        this.accountLookups = CollectionUtils.orderList(AccountLookup.class, accountLookups);
     }
 
     public List<IdentityProvider> getIdentityProviders() {
         return identityProviders;
     }
 
-    @Inject
-    public void setIdentityProviders(List<IdentityProvider> identityProviders) {
-        this.identityProviders = CollectionUtils.orderList(IdentityProvider.class, identityProviders);
+    public List<AuthorizationProvider> getAuthorizationProviders() {
+        return authorizationProviders;
+    }
+
+    public ExternalServiceAuthProvider getExternalAuthProvider() {
+        return externalAuthProvider;
+    }
+
+    public void setExternalAuthProvider(ExternalServiceAuthProvider externalAuthProvider) {
+        this.externalAuthProvider = externalAuthProvider;
     }
 
 }

@@ -18,37 +18,38 @@ import io.cattle.platform.engine.process.StateChangeMonitor;
 import io.cattle.platform.engine.process.impl.DefaultProcessInstanceImpl;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.lock.LockManager;
-import io.cattle.platform.util.concurrent.DelayedObject;
-import io.cattle.platform.util.type.InitializationTask;
-import io.cattle.platform.util.type.NamedUtils;
 
-import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.DelayQueue;
 
-import javax.inject.Inject;
+public class DefaultProcessManager implements ProcessManager {
 
-public class DefaultProcessManager implements ProcessManager, InitializationTask {
-
-    @Inject
     ProcessRecordDao processRecordDao;
-    @Inject
-    List<ProcessDefinition> definitionList;
-    Map<String, ProcessDefinition> definitions = new HashMap<>();
-    @Inject
     LockManager lockManager;
-    DelayQueue<DelayedObject<WeakReference<ProcessInstance>>> toPersist = new DelayQueue<>();
-    @Inject
     EventService eventService;
-    @Inject
     ExecutionExceptionHandler exceptionHandler;
-    @Inject
-    List<StateChangeMonitor> changeMonitors;
-    @Inject
-    List<Trigger> triggers;
+
+    Map<String, ProcessDefinition> definitions;
+    List<StateChangeMonitor> changeMonitors = new ArrayList<>();
+    List<Trigger> triggers = new ArrayList<>();
+
+    public DefaultProcessManager(ProcessRecordDao processRecordDao,
+            LockManager lockManager, EventService eventService,
+            ExecutionExceptionHandler exceptionHandler,
+            StateChangeMonitor changeMonitor,
+            Map<String, ProcessDefinition> definitions,
+            List<Trigger> triggers) {
+        this.processRecordDao = processRecordDao;
+        this.lockManager = lockManager;
+        this.eventService = eventService;
+        this.exceptionHandler = exceptionHandler;
+        this.changeMonitors = Arrays.asList(changeMonitor);
+        this.definitions = definitions;
+        this.triggers = triggers;
+    }
 
     @Override
     public ProcessInstance createProcessInstance(LaunchConfiguration config) {
@@ -128,11 +129,6 @@ public class DefaultProcessManager implements ProcessManager, InitializationTask
     @Override
     public ProcessDefinition getProcessDefinition(String name) {
         return definitions.get(name);
-    }
-
-    @Override
-    public void start() {
-        definitions = NamedUtils.createMapByName(definitionList);
     }
 
 }

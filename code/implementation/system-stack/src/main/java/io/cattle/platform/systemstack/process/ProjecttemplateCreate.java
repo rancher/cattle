@@ -6,23 +6,26 @@ import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.ProjectTemplate;
 import io.cattle.platform.engine.handler.HandlerResult;
+import io.cattle.platform.engine.handler.ProcessHandler;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
-import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.sample.data.SampleDataStartupV3;
 import io.cattle.platform.systemstack.catalog.CatalogService;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+public class ProjecttemplateCreate implements ProcessHandler {
 
-@Named
-public class ProjecttemplateCreate extends AbstractDefaultProcessHandler {
-
-    @Inject
     SystemStackTrigger systemStackTrigger;
-    @Inject
     SampleDataStartupV3 sampleDataStartupV3;
+    ObjectManager objectManager;
+
+    public ProjecttemplateCreate(SystemStackTrigger systemStackTrigger, SampleDataStartupV3 sampleDataStartupV3, ObjectManager objectManager) {
+        super();
+        this.systemStackTrigger = systemStackTrigger;
+        this.sampleDataStartupV3 = sampleDataStartupV3;
+        this.objectManager = objectManager;
+    }
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {

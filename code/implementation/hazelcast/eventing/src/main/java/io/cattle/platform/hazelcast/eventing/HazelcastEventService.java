@@ -1,14 +1,14 @@
 package io.cattle.platform.hazelcast.eventing;
 
+import io.cattle.platform.async.retry.RetryTimeoutService;
 import io.cattle.platform.eventing.impl.AbstractThreadPoolingEventService;
 import io.cattle.platform.eventing.model.Event;
-import io.cattle.platform.util.type.Named;
+import io.cattle.platform.json.JsonMapper;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import javax.inject.Inject;
+import java.util.concurrent.ExecutorService;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -20,12 +20,17 @@ import com.hazelcast.core.ITopic;
 import com.hazelcast.core.Message;
 import com.hazelcast.core.MessageListener;
 
-public class HazelcastEventService extends AbstractThreadPoolingEventService implements Named {
+public class HazelcastEventService extends AbstractThreadPoolingEventService {
 
     private static final Logger log = LoggerFactory.getLogger(HazelcastEventService.class);
 
     HazelcastInstance hazelcast;
-    Map<String, String> registrations = new ConcurrentHashMap<String, String>();
+    Map<String, String> registrations = new ConcurrentHashMap<>();
+
+    public HazelcastEventService(RetryTimeoutService timeoutService, ExecutorService executorService, JsonMapper jsonMapper, HazelcastInstance hazelcast) {
+        super(timeoutService, executorService, jsonMapper);
+        this.hazelcast = hazelcast;
+    }
 
     @Override
     protected boolean doPublish(String name, Event event, String eventString) throws IOException {
@@ -94,20 +99,6 @@ public class HazelcastEventService extends AbstractThreadPoolingEventService imp
 
     @Override
     protected void disconnect() {
-    }
-
-    public HazelcastInstance getHazelcast() {
-        return hazelcast;
-    }
-
-    @Inject
-    public void setHazelcast(HazelcastInstance hazelcast) {
-        this.hazelcast = hazelcast;
-    }
-
-    @Override
-    public String getName() {
-        return "EventService";
     }
 
     private static class TopicName {

@@ -15,23 +15,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 public class VolumeOutputFilter extends CachedOutputFilter<Map<Long, Map<String, Object>>> {
 
-    @Inject
     ObjectManager objectManager;
-    @Inject
     VolumeDao volumeDao;
 
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] {Volume.class};
-    }
-
-    @Override
-    public String[] getTypes() {
-        return new String[]{};
+    public VolumeOutputFilter(ObjectManager objectManager, VolumeDao volumeDao) {
+        super();
+        this.objectManager = objectManager;
+        this.volumeDao = volumeDao;
     }
 
     @Override

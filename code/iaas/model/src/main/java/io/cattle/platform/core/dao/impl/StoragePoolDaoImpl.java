@@ -5,7 +5,6 @@ import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.StorageDriverTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
-import static io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 
 import io.cattle.platform.core.constants.AccountConstants;
@@ -18,13 +17,10 @@ import io.cattle.platform.core.dao.StoragePoolDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.StoragePoolHostMap;
-import io.cattle.platform.core.model.Volume;
-import io.cattle.platform.core.model.VolumeStoragePoolMap;
 import io.cattle.platform.core.model.tables.records.StoragePoolHostMapRecord;
 import io.cattle.platform.core.model.tables.records.StoragePoolRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.process.ObjectProcessManager;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
@@ -36,32 +32,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
+import org.jooq.Configuration;
 import org.jooq.Record;
 import org.jooq.Record2;
 import org.jooq.RecordHandler;
 
-@Named
 public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDao {
 
     public static final Set<String> UNMANGED_STORAGE_POOLS = new HashSet<>(Arrays.asList(new String[]{"docker", "sim"}));
 
-    @Inject
     GenericResourceDao resourceDao;
-
-    @Inject
     GenericMapDao genericMapDao;
-
-    @Inject
     ObjectManager objectManager;
-
-    @Inject
-    ObjectProcessManager objectProcessManager;
-
-    @Inject
     TransactionDelegate transaction;
+
+    public StoragePoolDaoImpl(Configuration configuration, GenericResourceDao resourceDao, GenericMapDao genericMapDao, ObjectManager objectManager,
+            TransactionDelegate transaction) {
+        super(configuration);
+        this.resourceDao = resourceDao;
+        this.genericMapDao = genericMapDao;
+        this.objectManager = objectManager;
+        this.transaction = transaction;
+    }
 
     @Override
     public StoragePool mapNewPool(Host host, Map<String, Object> properties) {
@@ -161,10 +153,8 @@ public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDa
     public List<Long> findVolumesInUseByServiceDriver(Long serviceId) {
         return create().select(VOLUME.ID)
             .from(VOLUME)
-            .join(VOLUME_STORAGE_POOL_MAP)
-                .on(VOLUME_STORAGE_POOL_MAP.VOLUME_ID.eq(VOLUME.ID))
             .join(STORAGE_POOL)
-                .on(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID.eq(STORAGE_POOL.ID))
+                .on(VOLUME.STORAGE_POOL_ID.eq(STORAGE_POOL.ID))
             .join(STORAGE_DRIVER)
                 .on(STORAGE_DRIVER.ID.eq(STORAGE_POOL.STORAGE_DRIVER_ID))
             .where(STORAGE_DRIVER.REMOVED.isNull()
@@ -186,14 +176,10 @@ public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDa
             return null;
         }
         StoragePool storagePool = record.into(StoragePoolRecord.class);
-        VolumeStoragePoolMap map = genericMapDao.findNonRemoved(VolumeStoragePoolMap.class,
-                StoragePool.class, storagePool.getId(), Volume.class, volumeId);
-        if (map == null) {
-            resourceDao.createAndSchedule(VolumeStoragePoolMap.class,
-                    VOLUME_STORAGE_POOL_MAP.VOLUME_ID, volumeId,
-                    VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID, storagePool.getId());
-        }
-
+        create().update(VOLUME)
+            .set(VOLUME.STORAGE_POOL_ID, storagePool.getId())
+            .where(VOLUME.ID.eq(volumeId))
+            .execute();
         return storagePool;
     }
 
@@ -225,18 +211,17 @@ public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDa
     public Map<Long, List<Object>> findVolumesForPools(List<Long> ids, final IdFormatter idFormatter) {
         final Map<Long, List<Object>> result = new HashMap<>();
 
-        create().select(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID, VOLUME_STORAGE_POOL_MAP.VOLUME_ID)
-            .from(VOLUME_STORAGE_POOL_MAP)
+        create().select(VOLUME.STORAGE_POOL_ID, VOLUME.ID)
+            .from(VOLUME)
             .join(STORAGE_POOL)
-                .on(STORAGE_POOL.ID.eq(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID))
-            .where(VOLUME_STORAGE_POOL_MAP.REMOVED.isNull()
-                    .and(STORAGE_POOL.KIND.ne("docker"))
-                    .and(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID.in(ids)))
+                .on(STORAGE_POOL.ID.eq(VOLUME.STORAGE_POOL_ID))
+            .where(STORAGE_POOL.KIND.ne("docker")
+                    .and(VOLUME.STORAGE_POOL_ID.in(ids)))
             .fetchInto(new RecordHandler<Record2<Long, Long>>() {
                 @Override
                 public void next(Record2<Long, Long> record) {
-                    Long volumeId = record.getValue(VOLUME_STORAGE_POOL_MAP.VOLUME_ID);
-                    Long storagePoolId = record.getValue(VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID);
+                    Long volumeId = record.getValue(VOLUME.ID);
+                    Long storagePoolId = record.getValue(VOLUME.STORAGE_POOL_ID);
                     List<Object> pools = result.get(storagePoolId);
                     if (pools == null) {
                         pools = new ArrayList<>();

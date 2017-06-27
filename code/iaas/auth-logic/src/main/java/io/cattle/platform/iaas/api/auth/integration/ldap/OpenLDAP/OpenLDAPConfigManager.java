@@ -1,44 +1,35 @@
 package io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP;
 
 import io.cattle.platform.api.auth.Identity;
+import io.cattle.platform.api.resource.AbstractNoOpResourceManager;
 import io.cattle.platform.core.util.SettingsUtils;
 import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.integration.ldap.LDAPUtils;
 import io.cattle.platform.iaas.api.auth.integration.ldap.interfaces.LDAPConstants;
-import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
-import io.github.ibuildthecloud.gdapi.request.resource.impl.AbstractNoOpResourceManager;
 
 import java.util.List;
 import java.util.Map;
-
-import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
 public class OpenLDAPConfigManager extends AbstractNoOpResourceManager {
 
-
-    @Inject
     SettingsUtils settingsUtils;
-
-    @Inject
     OpenLDAPIdentityProvider openLDAPIdentityProvider;
 
-    @Inject
-    JsonMapper jsonMapper;
-
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[]{OpenLDAPConfig.class};
+    public OpenLDAPConfigManager(SettingsUtils settingsUtils, OpenLDAPIdentityProvider openLDAPIdentityProvider) {
+        super();
+        this.settingsUtils = settingsUtils;
+        this.openLDAPIdentityProvider = openLDAPIdentityProvider;
     }
 
     @Override
-    protected Object createInternal(String type, ApiRequest request) {
+    public Object create(String type, ApiRequest request) {
         if (!StringUtils.equals(OpenLDAPConstants.CONFIG, request.getType())) {
             return null;
         }
@@ -50,7 +41,7 @@ public class OpenLDAPConfigManager extends AbstractNoOpResourceManager {
 
     @SuppressWarnings("unchecked")
     private OpenLDAPConfig currentLdapConfig(Map<String, Object> config) {
-        OpenLDAPConfig currentConfig = (OpenLDAPConfig) listInternal(null, null, null, null);
+        OpenLDAPConfig currentConfig = (OpenLDAPConfig) list(null, null, null, null);
         String domain = currentConfig.getDomain();
         if (config.get(OpenLDAPConstants.CONFIG_DOMAIN) != null) {
             domain = (String)config.get(OpenLDAPConstants.CONFIG_DOMAIN);
@@ -159,7 +150,7 @@ public class OpenLDAPConfigManager extends AbstractNoOpResourceManager {
     }
 
     @Override
-    protected Object listInternal(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
+    public Object list(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
         boolean enabled = SecurityConstants.SECURITY.get();
         boolean tls = OpenLDAPConstants.TLS_ENABLED.get();
         int port = OpenLDAPConstants.LDAP_PORT.get();

@@ -19,16 +19,18 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import javax.inject.Inject;
-
 public class LocalAuthTokenCreator extends LocalAuthConfigurable implements TokenCreator {
 
-    @Inject
     AuthDao authDao;
-    @Inject
     LocalAuthTokenUtils localAuthTokenUtils;
-    @Inject
     RancherIdentityProvider rancherIdentityProvider;
+
+    public LocalAuthTokenCreator(AuthDao authDao, LocalAuthTokenUtils localAuthTokenUtils, RancherIdentityProvider rancherIdentityProvider) {
+        super();
+        this.authDao = authDao;
+        this.localAuthTokenUtils = localAuthTokenUtils;
+        this.rancherIdentityProvider = rancherIdentityProvider;
+    }
 
     @Override
     public Token getToken(ApiRequest request) {

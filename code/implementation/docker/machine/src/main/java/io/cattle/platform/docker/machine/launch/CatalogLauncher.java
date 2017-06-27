@@ -2,11 +2,16 @@ package io.cattle.platform.docker.machine.launch;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.ProjectConstants;
+import io.cattle.platform.core.dao.AccountDao;
+import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.iaas.api.manager.DBSettings;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.lock.LockDelegator;
+import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.lock.definition.LockDefinition;
+import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.service.launcher.GenericServiceLauncher;
-import io.cattle.platform.util.type.InitializationTask;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -16,8 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.inject.Inject;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.fluent.Request;
@@ -25,7 +29,7 @@ import org.apache.http.client.fluent.Request;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicStringProperty;
 
-public class CatalogLauncher extends GenericServiceLauncher implements InitializationTask {
+public class CatalogLauncher extends GenericServiceLauncher {
 
     private static final DynamicStringProperty CATALOG_URL = ArchaiusUtil.getString("catalog.url");
     private static final DynamicStringProperty CATALOG_REFRESH_INTERVAL = ArchaiusUtil.getString("catalog.refresh.interval.seconds");
@@ -74,8 +78,13 @@ public class CatalogLauncher extends GenericServiceLauncher implements Initializ
         }
     }
 
-    @Inject
     JsonMapper jsonMapper;
+
+    public CatalogLauncher(LockManager lockManager, LockDelegator lockDelegator, ScheduledExecutorService executor, AccountDao accountDao,
+            GenericResourceDao resourceDao, ResourceMonitor resourceMonitor, ObjectProcessManager processManager, JsonMapper jsonMapper) {
+        super(lockManager, lockDelegator, executor, accountDao, resourceDao, resourceMonitor, processManager);
+        this.jsonMapper = jsonMapper;
+    }
 
     @Override
     protected boolean shouldRun() {

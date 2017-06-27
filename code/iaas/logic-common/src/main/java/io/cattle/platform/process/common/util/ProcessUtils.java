@@ -1,6 +1,6 @@
 package io.cattle.platform.process.common.util;
 
-import io.cattle.platform.engine.handler.ProcessLogic;
+import io.cattle.platform.engine.handler.ProcessHandler;
 import io.cattle.platform.util.type.ScopeUtils;
 
 import java.util.Map;
@@ -21,7 +21,7 @@ public class ProcessUtils {
     }
 
     public static Map<String, Object> chainInData(Map<String, Object> data, String fromProcess, String toProcess) {
-        data.put(fromProcess + ProcessLogic.CHAIN_PROCESS, toProcess);
+        data.put(fromProcess + ProcessHandler.CHAIN_PROCESS, toProcess);
         return data;
     }
 }

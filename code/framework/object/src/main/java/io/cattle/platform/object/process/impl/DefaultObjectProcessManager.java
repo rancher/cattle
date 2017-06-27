@@ -1,7 +1,7 @@
 package io.cattle.platform.object.process.impl;
 
 import io.cattle.platform.deferred.util.DeferredUtils;
-import io.cattle.platform.engine.handler.ProcessLogic;
+import io.cattle.platform.engine.handler.ProcessHandler;
 import io.cattle.platform.engine.manager.ProcessManager;
 import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.LaunchConfiguration;
@@ -16,13 +16,18 @@ import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 public class DefaultObjectProcessManager implements ObjectProcessManager {
 
     ProcessManager processManager;
     SchemaFactory schemaFactory;
     ObjectManager objectManager;
+
+    public DefaultObjectProcessManager(ProcessManager processManager, SchemaFactory schemaFactory, ObjectManager objectManager) {
+        super();
+        this.processManager = processManager;
+        this.schemaFactory = schemaFactory;
+        this.objectManager = objectManager;
+    }
 
     @Override
     public ExitReason executeStandardProcess(StandardProcess process, Object resource, Map<String, Object> data) {
@@ -66,32 +71,6 @@ public class DefaultObjectProcessManager implements ObjectProcessManager {
     public ProcessInstance createProcessInstance(String processName, Object resource, Map<String, Object> data) {
         LaunchConfiguration config = ObjectLaunchConfigurationUtils.createConfig(schemaFactory, processName, resource, data);
         return processManager.createProcessInstance(config);
-    }
-
-    public ProcessManager getProcessManager() {
-        return processManager;
-    }
-
-    @Inject
-    public void setProcessManager(ProcessManager processManager) {
-        this.processManager = processManager;
-    }
-
-    public SchemaFactory getSchemaFactory() {
-        return schemaFactory;
-    }
-
-    public void setSchemaFactory(SchemaFactory schemaFactory) {
-        this.schemaFactory = schemaFactory;
-    }
-
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
-    @Inject
-    public void setObjectManager(ObjectManager objectManager) {
-        this.objectManager = objectManager;
     }
 
     @Override
@@ -141,7 +120,7 @@ public class DefaultObjectProcessManager implements ObjectProcessManager {
         if (data != null) {
             newData.putAll(data);
         }
-        newData.put(fromProcess + ProcessLogic.CHAIN_PROCESS, toProcess);
+        newData.put(fromProcess + ProcessHandler.CHAIN_PROCESS, toProcess);
         try {
             scheduleStandardProcess(to, resource, data);
         } catch (ProcessCancelException e) {

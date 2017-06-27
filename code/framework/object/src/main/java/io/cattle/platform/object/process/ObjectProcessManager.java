@@ -1,7 +1,9 @@
 package io.cattle.platform.object.process;
 
+import io.cattle.platform.engine.manager.ProcessNotFoundException;
 import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.ProcessInstance;
+import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.object.util.ObjectUtils;
 
 import java.util.Map;
@@ -99,6 +101,52 @@ public interface ObjectProcessManager {
         if (!StandardStates.ERRORING.equals(ObjectUtils.getState(resource))) {
             scheduleStandardProcessAsync(StandardProcess.ERROR, resource, data);
         }
+    }
+
+    default void executeCreateThenActivate(Object obj, Map<String, Object> data) {
+        if (StandardStates.ACTIVE.equals(ObjectUtils.getState(obj))) {
+            return;
+        }
+        try {
+            executeStandardProcess(StandardProcess.CREATE, obj, data);
+        } catch (ProcessCancelException e) {
+           // ignore
+        } catch (ProcessNotFoundException e) {
+            // ignore
+        }
+        executeStandardProcess(StandardProcess.ACTIVATE, obj, data);
+    }
+
+    default void executeDeactivateThenRemove(Object obj, Map<String, Object> data) {
+        if (ObjectUtils.getRemoved(obj) != null) {
+            return;
+        }
+        try {
+            executeStandardProcess(StandardProcess.DEACTIVATE, obj, data);
+        } catch (ProcessCancelException e) {
+           // ignore
+        } catch (ProcessNotFoundException e) {
+            // ignore
+        }
+        executeStandardProcess(StandardProcess.REMOVE, obj, data);
+    }
+
+    default void executeDeactivateThenScheduleRemove(Object obj, Map<String, Object> data) {
+        if (ObjectUtils.getRemoved(obj) != null) {
+            return;
+        }
+        try {
+            executeStandardProcess(StandardProcess.DEACTIVATE, obj, data);
+        } catch (ProcessCancelException e) {
+           // ignore
+        } catch (ProcessNotFoundException e) {
+            // ignore
+        }
+        remove(obj, data);
+    }
+
+    default void executeDeactivate(Object obj, Map<String, Object> data) {
+        executeStandardProcess(StandardProcess.DEACTIVATE, obj, data);
     }
 
 }

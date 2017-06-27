@@ -31,8 +31,6 @@ public interface Schema extends Resource {
 
     Map<String, Filter> getCollectionFilters();
 
-    List<String> getIncludeableLinks();
-
     @XmlTransient
     @io.github.ibuildthecloud.gdapi.annotation.Field(include = false)
     String getParent();

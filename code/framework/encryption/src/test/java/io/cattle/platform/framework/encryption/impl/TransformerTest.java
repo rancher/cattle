@@ -1,22 +1,19 @@
 package io.cattle.platform.framework.encryption.impl;
 
-import io.github.ibuildthecloud.gdapi.model.Transformer;
-import io.github.ibuildthecloud.gdapi.util.TransformationService;
 import io.cattle.platform.framework.encryption.handler.impl.TransformationServiceImpl;
+import io.github.ibuildthecloud.gdapi.model.Transformer;
+
+import java.security.SecureRandom;
+
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.security.SecureRandom;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.junit.Assert;
-
 public class TransformerTest {
 
-    private TransformationService transformationService;
+    private TransformationServiceImpl transformationService;
 
     static final char[] specialChars = new char[]{
             '\'', '\"', '\\', '/', '[', ']', '*', ':', ';', '%', '$', ',',
@@ -25,18 +22,16 @@ public class TransformerTest {
     @Before
     public void setUp() throws Exception {
         transformationService = new TransformationServiceImpl();
-        Map<String, Transformer> encrypters = new HashMap<>();
-
         Transformer transformer = new NoOpTransformer();
         transformer.init();
-        encrypters.put(transformer.getName(), transformer);
+
+        transformationService.addTransformers(transformer);
         transformer = new Sha256Hasher();
         transformer.init();
-        encrypters.put(transformer.getName(), transformer);
+        transformationService.addTransformers(transformer);
         transformer = new Aes256Encrypter();
         transformer.init();
-        encrypters.put(transformer.getName(), transformer);
-        transformationService.setTransformers(encrypters);
+        transformationService.addTransformers(transformer);
     }
 
     @Test

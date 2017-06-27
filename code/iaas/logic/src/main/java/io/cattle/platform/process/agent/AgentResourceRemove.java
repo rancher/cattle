@@ -1,33 +1,23 @@
 package io.cattle.platform.process.agent;
 
 import io.cattle.platform.agent.impl.AgentLocatorImpl;
-import io.cattle.platform.agent.util.AgentUtils;
-import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.engine.handler.HandlerResult;
-import io.cattle.platform.engine.handler.ProcessPostListener;
+import io.cattle.platform.engine.handler.ProcessHandler;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
-import io.cattle.platform.engine.process.impl.ProcessCancelException;
-import io.cattle.platform.object.process.StandardProcess;
-import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
-import io.cattle.platform.process.common.util.ProcessUtils;
+import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.process.ObjectProcessManager;
 
-import java.util.ArrayList;
-import java.util.List;
-import javax.inject.Named;
+public class AgentResourceRemove implements ProcessHandler {
 
-@Named
-public class AgentResourceRemove extends AbstractObjectProcessLogic implements ProcessPostListener {
+    ObjectManager objectManager;
+    ObjectProcessManager processManager;
 
-    @Override
-    public String[] getProcessNames() {
-        List<String> result = new ArrayList<>();
-        for (String i : AgentUtils.AGENT_RESOURCES.get()) {
-            result.add(String.format("%s.remove", i).toLowerCase());
-        }
-
-        return result.toArray(new String[result.size()]);
+    public AgentResourceRemove(ObjectManager objectManager, ObjectProcessManager processManager) {
+        super();
+        this.objectManager = objectManager;
+        this.processManager = processManager;
     }
 
     @Override
@@ -41,14 +31,9 @@ public class AgentResourceRemove extends AbstractObjectProcessLogic implements P
             return null;
         }
 
-        try {
-            objectProcessManager.scheduleStandardProcess(StandardProcess.DEACTIVATE,
-                    agent, ProcessUtils.chainInData(state.getData(), AgentConstants.PROCESS_DEACTIVATE,
-                            AgentConstants.PROCESS_REMOVE));
-        } catch (ProcessCancelException e) {
-            objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, agent, state.getData());
-        }
+        processManager.deactivateThenRemove(resource, null);
 
         return null;
     }
+
 }

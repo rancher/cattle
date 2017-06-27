@@ -18,7 +18,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.fileupload.FileItem;
@@ -48,6 +47,10 @@ public class DefaultApiRequestParser implements ApiRequestParser {
     String overrideClientIpHeader = DEFAULT_OVERRIDE_CLIENT_IP_HEADER;
     Set<String> allowedFormats;
     String trimPrefix;
+
+    public DefaultApiRequestParser() {
+        init();
+    }
 
     @Override
     public boolean parse(ApiRequest apiRequest) throws IOException {
@@ -110,7 +113,7 @@ public class DefaultApiRequestParser implements ApiRequestParser {
         if (!ServletFileUpload.isMultipartContent(request))
             return null;
 
-        Map<String, List<String>> params = new HashMap<String, List<String>>();
+        Map<String, List<String>> params = new HashMap<>();
 
         try {
             List<FileItem> items = servletFileUpload.parseRequest(request);
@@ -119,14 +122,14 @@ public class DefaultApiRequestParser implements ApiRequestParser {
                 if (item.isFormField()) {
                     List<String> values = params.get(item.getFieldName());
                     if (values == null) {
-                        values = new ArrayList<String>();
+                        values = new ArrayList<>();
                         params.put(item.getFieldName(), values);
                     }
                     values.add(item.getString());
                 }
             }
 
-            Map<String, Object> result = new HashMap<String, Object>();
+            Map<String, Object> result = new HashMap<>();
 
             for (Map.Entry<String, List<String>> entry : params.entrySet()) {
                 List<String> values = entry.getValue();
@@ -361,8 +364,7 @@ public class DefaultApiRequestParser implements ApiRequestParser {
         return value == null ? value : value.trim();
     }
 
-    @PostConstruct
-    public void init() {
+    private void init() {
         DiskFileItemFactory factory = new DiskFileItemFactory();
         factory.setSizeThreshold(maxUploadSize * 2);
 
@@ -371,7 +373,7 @@ public class DefaultApiRequestParser implements ApiRequestParser {
         servletFileUpload.setSizeMax(maxUploadSize);
 
         if (allowedFormats == null) {
-            allowedFormats = new HashSet<String>();
+            allowedFormats = new HashSet<>();
             allowedFormats.add(HTML);
             allowedFormats.add(JSON);
         }

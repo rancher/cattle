@@ -7,41 +7,36 @@ import io.cattle.platform.core.dao.ContainerEventDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.ContainerEvent;
 import io.cattle.platform.core.model.Host;
-import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ContainerEventFilter extends AbstractDefaultResourceManagerFilter {
+public class ContainerEventFilter extends AbstractValidationFilter {
 
     public static final String HOST_PARAM = "hostId";
     public static final String VERIFY_AGENT = "CantVerifyAgent";
     public static final String TOO_MANY = "TooManyContainerEvents";
     private static final Logger log = LoggerFactory.getLogger(ContainerEventFilter.class);
 
-    @Inject
     AgentDao agentDao;
-
-    @Inject
     ContainerEventDao containerEventDao;
-
-    @Inject
     ObjectManager objectManager;
 
-    @Override
-    public Class<?>[] getTypeClasses() {
-        return new Class<?>[] { ContainerEvent.class };
+    public ContainerEventFilter(AgentDao agentDao, ContainerEventDao containerEventDao, ObjectManager objectManager) {
+        super();
+        this.agentDao = agentDao;
+        this.containerEventDao = containerEventDao;
+        this.objectManager = objectManager;
     }
 
     @Override

@@ -12,16 +12,18 @@ import io.cattle.platform.object.ObjectManager;
 
 import java.util.List;
 
-import javax.inject.Inject;
-
 public class AllocationLifecycleManagerImpl implements AllocationLifecycleManager {
 
-    @Inject
     AllocatorService allocatorService;
-    @Inject
     VolumeDao volumeDao;
-    @Inject
     ObjectManager objectManager;
+
+    public AllocationLifecycleManagerImpl(AllocatorService allocatorService, VolumeDao volumeDao, ObjectManager objectManager) {
+        super();
+        this.allocatorService = allocatorService;
+        this.volumeDao = volumeDao;
+        this.objectManager = objectManager;
+    }
 
     @Override
     public void preStart(Instance instance) {
