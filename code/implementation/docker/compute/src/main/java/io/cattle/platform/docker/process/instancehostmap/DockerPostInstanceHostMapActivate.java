@@ -11,7 +11,6 @@ import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.PortConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.HostDao;
-import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.IpAddressDao;
 import io.cattle.platform.core.dao.NicDao;
 import io.cattle.platform.core.model.Host;
@@ -36,6 +35,10 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.eventing.EventService;
+import io.cattle.platform.eventing.model.Event;
+import io.cattle.platform.eventing.model.EventVO;
+import io.cattle.platform.iaas.event.IaasEvents;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
@@ -82,7 +85,7 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
     @Inject
     LabelsService labelsService;
     @Inject
-    InstanceDao instanceDao;
+    EventService eventService;
 
     @Override
     public String[] getProcessNames() {
@@ -117,7 +120,10 @@ public class DockerPostInstanceHostMapActivate extends AbstractObjectProcessLogi
 
         nativeDockerBackPopulate(instance);
 
-        instanceDao.clearCacheInstanceData(instance.getId());
+        Event event = EventVO.newEvent(IaasEvents.INVALIDATE_INSTANCE_DATA_CACHE)
+                .withResourceType(instance.getKind())
+                .withResourceId(instance.getId().toString());
+        eventService.publish(event);
 
         return null;
     }

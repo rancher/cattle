@@ -1,13 +1,16 @@
 package io.cattle.platform.process.port;
 
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.eventing.EventService;
+import io.cattle.platform.eventing.model.Event;
+import io.cattle.platform.eventing.model.EventVO;
+import io.cattle.platform.iaas.event.IaasEvents;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
@@ -26,7 +29,7 @@ public class PortUpdate extends AbstractDefaultProcessHandler {
     @Inject
     LockManager lockManager;
     @Inject
-    InstanceDao instanceDao;
+    EventService eventService;
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
@@ -57,7 +60,10 @@ public class PortUpdate extends AbstractDefaultProcessHandler {
             portSpecs.add(new PortSpec(port).toSpec());
         }
         objectManager.setFields(instance, InstanceConstants.FIELD_PORTS, new ArrayList<>(portSpecs));
-        instanceDao.clearCacheInstanceData(instance.getId());
+        Event event = EventVO.newEvent(IaasEvents.INVALIDATE_INSTANCE_DATA_CACHE)
+                .withResourceType(instance.getKind())
+                .withResourceId(instance.getId().toString());
+        eventService.publish(event);
     }
 
 }
