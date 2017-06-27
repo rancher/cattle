@@ -3,9 +3,9 @@ package io.cattle.platform.allocator.constraint;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 
 public class AccountConstraint extends HardConstraint implements Constraint {
-    long accountId;
+    String accountId;
 
-    public AccountConstraint(long accountId) {
+    public AccountConstraint(String accountId) {
         this.accountId = accountId;
     }
 
@@ -17,6 +17,6 @@ public class AccountConstraint extends HardConstraint implements Constraint {
 
     @Override
     public String toString() {
-        return String.format("account id must be %d", accountId);
+        return String.format("account id must be %s", accountId);
     }
 }

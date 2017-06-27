@@ -3,13 +3,13 @@ package io.cattle.platform.allocator.constraint;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 
 public class VolumeAccessModeSingleHostConstraint implements Constraint {
-    Long hostId;
-    Long volumeId;
+    String hostId;
+    String volumeId;
     String volumeName;
     String hostName;
     boolean hard;
 
-    public VolumeAccessModeSingleHostConstraint(Long hostId, Long volumeId, String volumeName, String hostName, boolean hard) {
+    public VolumeAccessModeSingleHostConstraint(String hostId, String volumeId, String volumeName, String hostName, boolean hard) {
         super();
         this.hostId = hostId;
         this.volumeId = volumeId;
