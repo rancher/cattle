@@ -51,14 +51,14 @@ public class MachineConfigLinkHandler implements LinkHandler {
         if (obj instanceof PhysicalHost) {
             PhysicalHost host = (PhysicalHost) obj;
             String extractedConfig = (String) DataUtils.getFields(host).get(EXTRACTED_CONFIG_FIELD);
-            if (extractedConfig.startsWith("{")) {
+            if (StringUtils.isNotBlank(extractedConfig) && extractedConfig.startsWith("{")) {
                 try {
                     extractedConfig = secretsService.decrypt(host.getAccountId(), extractedConfig);
                 } catch (Exception e) {
                     throw new IOException(e);
                 }
             }
-            if (StringUtils.isNotEmpty(extractedConfig)) {
+            if (StringUtils.isNotBlank(extractedConfig)) {
                 byte[] content = Base64.decodeBase64(extractedConfig.getBytes());
                 HttpServletResponse response = request.getServletContext().getResponse();
                 response.setContentLength(content.length);
