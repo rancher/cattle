@@ -2,9 +2,12 @@ package io.cattle.platform.docker.machine.launch;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.ProjectConstants;
+import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.iaas.api.manager.HaConfigManager;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.definition.LockDefinition;
+import io.cattle.platform.server.context.ServerContext;
+import io.cattle.platform.server.context.ServerContext.BaseProtocol;
 import io.cattle.platform.service.launcher.GenericServiceLauncher;
 import io.cattle.platform.util.type.InitializationTask;
 
@@ -162,6 +165,10 @@ public class CatalogLauncher extends GenericServiceLauncher implements Initializ
         env.put("CATALOG_SERVICE_MYSQL_USER", HaConfigManager.DB_USER.get());
         env.put("CATALOG_SERVICE_MYSQL_PASSWORD", HaConfigManager.DB_PASS.get());
         env.put("CATALOG_SERVICE_MYSQL_PARAMS", DB_PARAMS.get() == null ? "" : DB_PARAMS.get());
+        Credential cred = getCredential();
+        env.put("CATALOG_SERVICE_CATTLE_ACCESS_KEY", cred.getPublicValue());
+        env.put("CATALOG_SERVICE_CATTLE_SECRET_KEY", cred.getSecretValue());
+        env.put("CATALOG_SERVICE_CATTLE_URL", ServerContext.getLocalhostUrl(BaseProtocol.HTTP));
     }
 
     @Override
