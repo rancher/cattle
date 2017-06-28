@@ -13,7 +13,6 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.api.model.DockerBuild;
-import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lifecycle.AgentLifecycleManager;
 import io.cattle.platform.lifecycle.AllocationLifecycleManager;
 import io.cattle.platform.lifecycle.InstanceLifecycleManager;
@@ -41,7 +40,6 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
     VolumeLifecycleManager volumeLifecycle;
     ObjectManager objectManager;
     ImageCredentialLookup credLookup;
-    JsonMapper jsonMapper;
     ServiceDao svcDao;
     TransactionDelegate transaction;
     NetworkLifecycleManager networkLifecycle;
@@ -54,7 +52,7 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
     InstanceDao instanceDao;
 
     public InstanceLifecycleManagerImpl(K8sLifecycleManager k8sLifecycle, VirtualMachineLifecycleManager vmLifecycle, VolumeLifecycleManager volumeLifecycle,
-            ObjectManager objectManager, ImageCredentialLookup credLookup, JsonMapper jsonMapper, ServiceDao svcDao, TransactionDelegate transaction,
+            ObjectManager objectManager, ImageCredentialLookup credLookup, ServiceDao svcDao, TransactionDelegate transaction,
             NetworkLifecycleManager networkLifecycle, AgentLifecycleManager agentLifecycle, BackPopulater backPopulator,
             RestartLifecycleManager restartLifecycle, SecretsLifecycleManager secretsLifecycle, AllocationLifecycleManager allocationLifecycle,
             ServiceLifecycleManager serviceLifecycle, InstanceDao instanceDao) {
@@ -64,7 +62,6 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
         this.volumeLifecycle = volumeLifecycle;
         this.objectManager = objectManager;
         this.credLookup = credLookup;
-        this.jsonMapper = jsonMapper;
         this.svcDao = svcDao;
         this.transaction = transaction;
         this.networkLifecycle = networkLifecycle;
@@ -113,8 +110,6 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
         volumeLifecycle.preStart(instance);
 
         clearStartSource(instance);
-
-        networkLifecycle.preStart(instance);
 
         allocationLifecycle.preStart(instance);
 
@@ -214,8 +209,7 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
 
 
     protected void setLogConfig(Instance instance) {
-        LogConfig logConfig = DataAccessor.field(instance,
-                InstanceConstants.FIELD_LOG_CONFIG, jsonMapper, LogConfig.class);
+        LogConfig logConfig = DataAccessor.field(instance, InstanceConstants.FIELD_LOG_CONFIG, LogConfig.class);
         if (logConfig != null && !StringUtils.isEmpty(logConfig.getDriver()) && logConfig.getConfig() == null) {
             logConfig.setConfig(new HashMap<String, String>());
             DataAccessor.setField(instance, InstanceConstants.FIELD_LOG_CONFIG, logConfig);
@@ -230,8 +224,7 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
     }
 
     private void setupDockerBuild(Instance instance) {
-        DockerBuild build = field(instance, DockerInstanceConstants.FIELD_BUILD,
-                jsonMapper, DockerBuild.class);
+        DockerBuild build = field(instance, DockerInstanceConstants.FIELD_BUILD, DockerBuild.class);
 
         if (build == null) {
             return;

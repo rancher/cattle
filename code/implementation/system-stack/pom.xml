@@ -11,11 +11,6 @@
     <dependencies>
         <dependency>
             <groupId>io.cattle</groupId>
-            <artifactId>cattle-config-item-common</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.cattle</groupId>
             <artifactId>cattle-sample-setup</artifactId>
             <version>${project.version}</version>
         </dependency>

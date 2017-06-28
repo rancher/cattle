@@ -68,7 +68,7 @@ public class SecretsApiRequestHandler extends AbstractResponseGenerator {
             throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
         }
 
-        List<SecretReference> secrets = DataAccessor.fieldObjectList(ih.instance, InstanceConstants.FIELD_SECRETS, SecretReference.class, jsonMapper);
+        List<SecretReference> secrets = DataAccessor.fieldObjectList(ih.instance, InstanceConstants.FIELD_SECRETS, SecretReference.class);
         List<SecretValue> values = secretsService.getValues(secrets, ih.host);
 
         jsonMapper.writeValue(request.getOutputStream(), values);

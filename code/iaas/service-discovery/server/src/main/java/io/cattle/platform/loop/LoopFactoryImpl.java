@@ -6,6 +6,8 @@ import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.manager.LoopFactory;
 import io.cattle.platform.engine.model.Loop;
+import io.cattle.platform.environment.EnvironmentResourceManager;
+import io.cattle.platform.healthcheck.loop.HealthcheckScheduleLoop;
 import io.cattle.platform.inator.Deployinator;
 import io.cattle.platform.lifecycle.ServiceLifecycleManager;
 import io.cattle.platform.object.ObjectManager;
@@ -17,22 +19,25 @@ public class LoopFactoryImpl implements LoopFactory {
 
     public static final String RECONCILE = "service-reconcile";
     public static final String DU_RECONCILE = "deployment-unit-reconcile";
-    public static final String STACK_HEALTH = "stack-health";
+    public static final String HEALTHCHECK_SCHEDULE = "healthcheck-schedule";
+    public static final String HEALTHSTATE_CALCULATE = "healthstate-calculate";
 
     Deployinator deployinator;
     ServiceLifecycleManager sdService;
     ObjectManager objectManager;
     ActivityService activityService;
     ObjectProcessManager processManager;
+    EnvironmentResourceManager envResourceManager;
 
     public LoopFactoryImpl(Deployinator deployinator, ServiceLifecycleManager sdService, ObjectManager objectManager, ActivityService activityService,
-            ObjectProcessManager processManager) {
+            ObjectProcessManager processManager, EnvironmentResourceManager envResourceManager) {
         super();
         this.deployinator = deployinator;
         this.sdService = sdService;
         this.objectManager = objectManager;
         this.activityService = activityService;
         this.processManager = processManager;
+        this.envResourceManager = envResourceManager;
     }
 
     @Override
@@ -56,8 +61,8 @@ public class LoopFactoryImpl implements LoopFactory {
             }
             return new ReconcileLoop(objectManager, processManager, deployinator, activityService, DeploymentUnit.class, id,
                     unit.getServiceId(), id, unit.getAccountId(), ServiceConstants.KIND_DEPLOYMENT_UNIT);
-        case STACK_HEALTH:
-            return new StackHealthLoop(sdService, id);
+        case HEALTHCHECK_SCHEDULE:
+            return new HealthcheckScheduleLoop(id, envResourceManager, objectManager);
         default:
             break;
         }

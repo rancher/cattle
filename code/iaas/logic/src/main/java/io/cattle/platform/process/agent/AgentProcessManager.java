@@ -28,7 +28,6 @@ import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.framework.event.Ping;
-import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
@@ -61,7 +60,6 @@ public class AgentProcessManager {
 
     private static final Logger log = LoggerFactory.getLogger(AgentProcessManager.class);
 
-    JsonMapper jsonMapper;
     AccountDao accountDao;
     ObjectManager objectManager;
     ObjectProcessManager processManager;
@@ -69,10 +67,8 @@ public class AgentProcessManager {
     EventService eventService;
     SchemaFactory schemaFactory;
 
-    public AgentProcessManager(JsonMapper jsonMapper, AccountDao accountDao, ObjectManager objectManager, ObjectProcessManager processManager,
+    public AgentProcessManager(AccountDao accountDao, ObjectManager objectManager, ObjectProcessManager processManager,
             AgentLocator agentLocator, EventService eventService, SchemaFactory schemaFactory) {
-        super();
-        this.jsonMapper = jsonMapper;
         this.accountDao = accountDao;
         this.objectManager = objectManager;
         this.processManager = processManager;
@@ -165,7 +161,7 @@ public class AgentProcessManager {
 
         List<? extends String> roles =
                 DataAccessor.fromDataFieldOf(agent).withKey(AgentConstants.DATA_REQUESTED_ROLES).withDefault(Collections.EMPTY_LIST)
-                        .asList(jsonMapper, String.class);
+                        .asList(String.class);
         sortRoles(roles);
 
         String primaryRole = getPrimaryRole(roles); // note null is an acceptable value

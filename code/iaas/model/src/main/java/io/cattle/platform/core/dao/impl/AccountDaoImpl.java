@@ -35,7 +35,6 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.Condition;
 import org.jooq.Configuration;
-import org.jooq.Record1;
 import org.jooq.impl.DSL;
 
 public class AccountDaoImpl extends AbstractCoreDao implements AccountDao {
@@ -231,21 +230,4 @@ public class AccountDaoImpl extends AbstractCoreDao implements AccountDao {
         return accountIds;
     }
 
-    @Override
-    public Long incrementRevision(long accountId) {
-        Record1<Long> row = create().select(ACCOUNT.REVISION)
-                .from(ACCOUNT)
-                .where(ACCOUNT.ID.eq(accountId))
-                .fetchAny();
-        if (row == null) {
-            return 0L;
-        }
-
-        create().update(ACCOUNT)
-            .set(ACCOUNT.REVISION, ACCOUNT.REVISION.plus(1))
-            .where(ACCOUNT.ID.eq(accountId))
-            .execute();
-
-        return row.value1() + 1;
-    }
 }

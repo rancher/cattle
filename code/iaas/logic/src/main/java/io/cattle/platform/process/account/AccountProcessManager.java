@@ -32,7 +32,6 @@ import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
-import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
@@ -81,10 +80,9 @@ public class AccountProcessManager {
     ObjectManager objectManager;
     InstanceDao instanceDao;
     AccountDao accountDao;
-    JsonMapper jsonMapper;
 
     public AccountProcessManager(NetworkDao networkDao, GenericResourceDao resourceDao, ObjectProcessManager processManager, ObjectManager objectManager,
-            InstanceDao instanceDao, AccountDao accountDao, JsonMapper jsonMapper) {
+            InstanceDao instanceDao, AccountDao accountDao) {
         super();
         this.networkDao = networkDao;
         this.resourceDao = resourceDao;
@@ -92,7 +90,6 @@ public class AccountProcessManager {
         this.objectManager = objectManager;
         this.instanceDao = instanceDao;
         this.accountDao = accountDao;
-        this.jsonMapper = jsonMapper;
     }
 
     public HandlerResult create(ProcessState state, ProcessInstance process) {
@@ -127,7 +124,7 @@ public class AccountProcessManager {
 
         List<? extends Long> accountLinks = DataAccessor.fromMap(state.getData()).withKey(
                 AccountConstants.FIELD_ACCOUNT_LINKS).withDefault(Collections.EMPTY_LIST)
-            .asList(jsonMapper, Long.class);
+            .asList(Long.class);
 
         accountDao.generateAccountLinks(account, accountLinks);
 
@@ -198,7 +195,7 @@ public class AccountProcessManager {
                 .fromMap(state.getData())
                 .withKey(AccountConstants.FIELD_ACCOUNT_LINKS)
                 .withDefault(Collections.EMPTY_LIST)
-                .asList(jsonMapper, Long.class);
+                .asList(Long.class);
 
         accountDao.generateAccountLinks(account, accountLinks);
         return null;
@@ -216,8 +213,7 @@ public class AccountProcessManager {
         createNetwork(NetworkConstants.KIND_DOCKER_CONTAINER, account, networksByKind, "Docker Container Network Mode", null);
         createNetwork(NetworkConstants.KIND_DOCKER_BRIDGE, account, networksByKind, "Docker Bridge Network Mode", null);
 
-        ServicesPortRange portRange = DataAccessor.field(account, AccountConstants.FIELD_PORT_RANGE, jsonMapper,
-                ServicesPortRange.class);
+        ServicesPortRange portRange = DataAccessor.field(account, AccountConstants.FIELD_PORT_RANGE, ServicesPortRange.class);
         if (portRange == null) {
             portRange = AccountConstants.getDefaultServicesPortRange();
         }

@@ -16,8 +16,6 @@ public interface ServiceLifecycleManager {
 
     void releaseIpFromServiceIndex(Service service, ServiceIndex serviceIndex);
 
-    void updateHealthState(Long stackId);
-
     void remove(Service service);
 
     void create(Service service);

@@ -8,8 +8,6 @@ public interface NetworkLifecycleManager {
 
     void create(Instance instance, Stack stack) throws LifecycleException;
 
-    void preStart(Instance instance);
-
     void preRemove(Instance instance);
 
     void assignNetworkResources(Instance instance) throws LifecycleException;

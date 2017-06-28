@@ -17,6 +17,8 @@ import org.apache.commons.beanutils.ConvertUtils;
 
 public class DataAccessor {
 
+    private static JsonMapper jsonMapper;
+
     Object source;
     Object defaultValue;
     Map<String, Object> sourceMap;
@@ -49,6 +51,10 @@ public class DataAccessor {
 
     public static String fieldString(Object obj, String key) {
         return fields(obj).withKey(key).as(String.class);
+    }
+
+    public static Object fieldObject(Object obj, String key) {
+        return fields(obj).withKey(key).get();
     }
 
     public static Map<String, Object> fieldMap(Object obj, String key) {
@@ -89,7 +95,7 @@ public class DataAccessor {
         return fields(obj).withKey(key).as(Long.class);
     }
 
-    public static <T> List<T> fieldObjectList(Object obj, String name, Class<T> clz, JsonMapper jsonMapper) {
+    public static <T> List<T> fieldObjectList(Object obj, String name, Class<T> clz) {
         Object field = DataAccessor.field(obj, name, Object.class);
         if (field == null) {
             return Collections.emptyList();
@@ -128,6 +134,11 @@ public class DataAccessor {
         return ObjectUtils.toString(fieldMapRO(obj, "labels").get(key));
     }
 
+    @SuppressWarnings("unchecked")
+    public static Map<String, String> getLabels(Object obj) {
+        return (Map<String, String>) (Map<?, ?>) fieldMapRO(obj, "labels");
+    }
+
     public static Integer fieldInteger(Object obj, String key) {
         return fields(obj).withKey(key).as(Integer.class);
     }
@@ -148,10 +159,6 @@ public class DataAccessor {
             return new Date(((Number) val).longValue());
         }
         return null;
-    }
-
-    public static <T> T field(Object obj, String name, JsonMapper mapper, Class<T> type) {
-        return fields(obj).withKey(name).as(mapper, type);
     }
 
     public static <T> T field(Object obj, String name, Class<T> type) {
@@ -178,17 +185,13 @@ public class DataAccessor {
         return this;
     }
 
-    public <T> T as(JsonMapper mapper, Class<T> clz) {
-        return mapper.convertValue(get(), clz);
-    }
-
     @SuppressWarnings("rawtypes")
-    public <T> T asCollection(JsonMapper mapper, Class<? extends Collection> collectionClass, Class<?> elementsClass) {
-        return mapper.convertCollectionValue(get(), collectionClass, elementsClass);
+    public <T> T asCollection(Class<? extends Collection> collectionClass, Class<?> elementsClass) {
+        return jsonMapper.convertCollectionValue(get(), collectionClass, elementsClass);
     }
 
-    public <T> List<? extends T> asList(JsonMapper mapper, Class<T> elementsClass) {
-        return asCollection(mapper, List.class, elementsClass);
+    public <T> List<? extends T> asList(Class<T> elementsClass) {
+        return asCollection(List.class, elementsClass);
     }
 
     @SuppressWarnings("unchecked")
@@ -199,7 +202,11 @@ public class DataAccessor {
         if (clz == Boolean.class && obj == null) {
             return null;
         }
-        return (T) ConvertUtils.convert(obj, clz);
+        if (clz == String.class || clz == Integer.class || clz == Long.class || clz == Boolean.class || clz.isPrimitive()) {
+            return (T) ConvertUtils.convert(obj, clz);
+        }
+
+        return jsonMapper.convertValue(get(), clz);
     }
 
     public Object get() {
@@ -270,6 +277,10 @@ public class DataAccessor {
 
         ObjectUtils.setProperty(obj, DataUtils.DATA, map);
         return map;
+    }
+
+    public static void setJsonMapper(JsonMapper jsonMapper) {
+        DataAccessor.jsonMapper = jsonMapper;
     }
 
     protected boolean isScopeSet() {

@@ -54,6 +54,11 @@ public class ServiceUtil {
         return getLaunchConfigNames(DataUtils.getFields(service));
     }
 
+    public static List<String> getSidekickNames(Service service) {
+        List<String> list = getLaunchConfigNames(DataUtils.getFields(service));
+        return list.subList(1, list.size());
+    }
+
     @SuppressWarnings("unchecked")
     private static List<String> getLaunchConfigNames(Map<String, Object> originalData) {
         List<String> launchConfigNames = new ArrayList<>();

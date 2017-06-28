@@ -19,8 +19,6 @@ import io.cattle.platform.api.resource.DefaultResourceManager;
 import io.cattle.platform.bootstrap.script.BootstrapScriptsHandler;
 import io.cattle.platform.compose.api.StackComposeLinkHandler;
 import io.cattle.platform.compose.api.StackExportConfigActionHandler;
-import io.cattle.platform.configitem.api.manager.ConfigContentManager;
-import io.cattle.platform.configitem.api.model.ConfigContent;
 import io.cattle.platform.core.addon.ActiveSetting;
 import io.cattle.platform.core.addon.ProcessPool;
 import io.cattle.platform.core.addon.ProcessSummary;
@@ -427,7 +425,6 @@ public class Api {
     }
 
     private void addResourceManagers() throws IOException {
-        c.router.resourceManager(ConfigContent.class, new ConfigContentManager(c.configItemServer));
         c.router.resourceManager(Data.class, new DataManager(c.support));
         c.router.resourceManager(HostApiProxyTokenImpl.class, new HostApiProxyTokenManager(c.tokenService, d.agentDao, f.objectManager));
         c.router.resourceManager(HostTemplate.class, new HostTemplateManager(c.support, c.secretsService, f.jsonMapper));

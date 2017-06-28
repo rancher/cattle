@@ -1,7 +1,7 @@
 package io.cattle.platform.process.credential;
 
+import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.register.util.RegisterConstants;
 import io.github.ibuildthecloud.gdapi.util.TransformationService;
 
 public class RegisterTokenCreate extends ApiKeyCreate {
@@ -12,7 +12,7 @@ public class RegisterTokenCreate extends ApiKeyCreate {
 
     @Override
     protected String getCredentialType() {
-        return RegisterConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN;
+        return CredentialConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN;
     }
 
     @Override

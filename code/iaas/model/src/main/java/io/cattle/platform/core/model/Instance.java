@@ -376,28 +376,6 @@ public interface Instance extends Serializable {
     public Long getServiceIndexId();
 
     /**
-     * Setter for <code>cattle.instance.dns_internal</code>.
-     */
-    public void setDnsInternal(String value);
-
-    /**
-     * Getter for <code>cattle.instance.dns_internal</code>.
-     */
-    @Column(name = "dns_internal", length = 255)
-    public String getDnsInternal();
-
-    /**
-     * Setter for <code>cattle.instance.dns_search_internal</code>.
-     */
-    public void setDnsSearchInternal(String value);
-
-    /**
-     * Getter for <code>cattle.instance.dns_search_internal</code>.
-     */
-    @Column(name = "dns_search_internal", length = 255)
-    public String getDnsSearchInternal();
-
-    /**
      * Setter for <code>cattle.instance.memory_reservation</code>.
      */
     public void setMemoryReservation(Long value);
@@ -509,4 +487,12 @@ public interface Instance extends Serializable {
      * Copy data into another generated Record/POJO implementing the common interface Instance
      */
     public <E extends io.cattle.platform.core.model.Instance> E into(E into);
+
+    default String getServiceIndex() {
+        return null;
+    }
+
+    default Long getNetworkId() {
+        return null;
+    }
 }

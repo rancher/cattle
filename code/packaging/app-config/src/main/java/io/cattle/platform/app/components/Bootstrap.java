@@ -45,6 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 import com.netflix.config.ConcurrentCompositeConfiguration;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.config.sources.JDBCConfigurationSource;
@@ -95,7 +96,7 @@ public class Bootstrap {
 
     private void setupJson() {
         JacksonJsonMapper mapper = new JacksonJsonMapper();
-        mapper.setModules(Arrays.asList(new SimpleModule()));
+        mapper.setModules(Arrays.asList(new SimpleModule(), new JaxbAnnotationModule()));
         mapper.init();
         this.jsonMapper = mapper;
     }

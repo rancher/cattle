@@ -48,7 +48,6 @@ public abstract class AbstractSampleData {
         this.lockManager = lockManager;
     }
 
-    @Override
     public final void start() {
         if (!RUN.get()) {
             return;

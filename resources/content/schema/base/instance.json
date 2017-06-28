@@ -43,6 +43,11 @@
             "create": true,
             "nullable": true
         },
+        "portBindings": {
+            "type": "array[portBinding]",
+            "create": true,
+            "nullable": true
+        },
         "primaryIpAddress" : {
             "type" : "string"
         },

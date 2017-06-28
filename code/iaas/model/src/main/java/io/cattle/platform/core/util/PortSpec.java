@@ -1,6 +1,6 @@
 package io.cattle.platform.core.util;
 
-import io.cattle.platform.core.addon.PublicEndpoint;
+import io.cattle.platform.core.addon.PortBinding;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
@@ -29,7 +29,7 @@ public class PortSpec {
     public PortSpec() {
     }
 
-    public PortSpec(PublicEndpoint port) {
+    public PortSpec(PortBinding port) {
         this.ipAddress = port.getIpAddress();
         this.publicPort = port.getPort();
         this.privatePort = port.getPrivatePort();

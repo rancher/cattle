@@ -61,9 +61,6 @@
                 <module>code/iaas/archaius-management</module>
                 <module>code/iaas/auth-logic</module>
                 <module>code/iaas/bootstrap</module>
-                <module>code/iaas/config-item/api</module>
-                <module>code/iaas/config-item/common</module>
-                <module>code/iaas/config-item/server</module>
                 <module>code/iaas/engine-jooq</module>
                 <module>code/iaas/events</module>
                 <module>code/iaas/ha</module>

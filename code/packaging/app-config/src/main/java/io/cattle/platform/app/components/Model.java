@@ -1,5 +1,8 @@
 package io.cattle.platform.app.components;
 
+import io.cattle.platform.api.auth.Identity;
+import io.cattle.platform.api.pubsub.model.Publish;
+import io.cattle.platform.core.addon.ActiveSetting;
 import io.cattle.platform.core.addon.BlkioDeviceOption;
 import io.cattle.platform.core.addon.CatalogTemplate;
 import io.cattle.platform.core.addon.ComposeConfig;
@@ -15,10 +18,10 @@ import io.cattle.platform.core.addon.NetworkPolicyRule.NetworkPolicyRuleAction;
 import io.cattle.platform.core.addon.NetworkPolicyRule.NetworkPolicyRuleWithin;
 import io.cattle.platform.core.addon.NetworkPolicyRuleBetween;
 import io.cattle.platform.core.addon.NetworkPolicyRuleMember;
+import io.cattle.platform.core.addon.PortBinding;
 import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.addon.ProcessPool;
 import io.cattle.platform.core.addon.ProcessSummary;
-import io.cattle.platform.core.addon.PublicEndpoint;
 import io.cattle.platform.core.addon.RestartPolicy;
 import io.cattle.platform.core.addon.ScalePolicy;
 import io.cattle.platform.core.addon.SecretReference;
@@ -33,10 +36,32 @@ import io.cattle.platform.core.addon.VirtualMachineDisk;
 import io.cattle.platform.core.addon.VolumeActivateInput;
 import io.cattle.platform.core.model.CattleTable;
 import io.cattle.platform.db.jooq.utils.SchemaRecordTypeListGenerator;
+import io.cattle.platform.docker.api.model.ContainerExec;
+import io.cattle.platform.docker.api.model.ContainerLogs;
+import io.cattle.platform.docker.api.model.ContainerProxy;
+import io.cattle.platform.docker.api.model.DockerBuild;
+import io.cattle.platform.docker.api.model.HostAccess;
+import io.cattle.platform.docker.api.model.ServiceProxy;
+import io.cattle.platform.docker.machine.api.addon.BaseMachineConfig;
+import io.cattle.platform.engine.process.StateTransition;
+import io.cattle.platform.extension.api.model.ProcessDefinitionApi;
+import io.cattle.platform.extension.api.model.ResourceDefinition;
+import io.cattle.platform.host.api.HostApiProxyTokenImpl;
+import io.cattle.platform.host.stats.api.StatsAccess;
+import io.cattle.platform.iaas.api.auth.identity.Token;
+import io.cattle.platform.iaas.api.auth.integration.azure.AzureConfig;
+import io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP.OpenLDAPConfig;
+import io.cattle.platform.iaas.api.auth.integration.ldap.ad.ADConfig;
+import io.cattle.platform.iaas.api.auth.integration.local.LocalAuthConfig;
+import io.cattle.platform.iaas.api.auth.projects.Member;
 import io.cattle.platform.object.meta.TypeSet;
 import io.cattle.platform.process.builder.ResourceProcessBuilder;
+import io.github.ibuildthecloud.gdapi.doc.FieldDocumentation;
+import io.github.ibuildthecloud.gdapi.doc.TypeDocumentation;
 
 import java.util.Arrays;
+
+import com.google.common.eventbus.Subscribe;
 
 public class Model {
 
@@ -56,9 +81,6 @@ public class Model {
     private void setupProcessDefinitions() {
         defaultProcesses("accountLink");
         defaultProcesses("credential");
-        defaultProcesses("externalHandler");
-        defaultProcesses("externalHandlerExternalHandlerProcessMap");
-        defaultProcesses("externalHandlerProcess");
         defaultProcesses("network");
         defaultProcesses("projectMember");
         defaultProcesses("storagePool");
@@ -72,9 +94,7 @@ public class Model {
         // Account
         defaultProcesses("account");
         process("account.purge").resourceType("account").start("removed").transitioning("purging").done("purged").build();
-
-        // ServiceIndex
-        process("serviceindex.remove").resourceType("serviceIndex").start("inactive,active").transitioning("removing").done("removed").build();
+        process("account.upgrade").resourceType("account").start("active").transitioning("upgrading").done("active").build();
 
         // Host
         defaultProcesses("host");
@@ -163,26 +183,6 @@ public class Model {
         process("service.finishupgrade").resourceType("service").start("upgraded").transitioning("finishing-upgrade").done("active").build();
         process("service.restart").resourceType("service").start("active").transitioning("restarting").done("active").build();
 
-        // Account
-        process("account.upgrade").resourceType("account").start("active").transitioning("upgrading").done("active").build();
-
-        // Service Discovery Service/Instance map
-        process("serviceexposemap.create").resourceType("serviceExposeMap").start("requested").transitioning("activating").done("active").build();
-        process("serviceexposemap.remove").resourceType("serviceExposeMap").start("active,activating, requested").transitioning("removing").done("removed").build();
-
-        // Service Discovery Service/Service map
-        process("serviceconsumemap.create").resourceType("serviceConsumeMap").start("requested").transitioning("activating").done("active").build();
-        process("serviceconsumemap.remove").resourceType("serviceConsumeMap").start("active,activating,updating-active").transitioning("removing").done("removed").build();
-        process("serviceconsumemap.update").resourceType("serviceConsumeMap").start("active,activating").transitioning("updating-active").done("active").build();
-
-        // Instance healthcheck
-        process("healthcheckinstance.create").resourceType("healthcheckInstance").start("requested").transitioning("activating").done("active").build();
-        process("healthcheckinstance.remove").resourceType("healthcheckInstance").start("active,activating").transitioning("removing").done("removed").build();
-
-        // Instance Healthcheck/Host map
-        process("healthcheckinstancehostmap.create").resourceType("healthcheckInstanceHostMap").start("requested").transitioning("activating").done("active").build();
-        process("healthcheckinstancehostmap.remove").resourceType("healthcheckInstanceHostMap").start("active,activating").transitioning("removing").done("removed").build();
-
         // Container Event
         process("containerevent.create").resourceType("containerEvent").start("requested").transitioning("creating").done("created").build();
         process("containerevent.remove").resourceType("containerEvent").start("created,creating").transitioning("removing").done("removed").build();
@@ -191,21 +191,9 @@ public class Model {
         process("externalevent.create").resourceType("externalEvent").start("requested").transitioning("creating").done("created").build();
         process("externalevent.remove").resourceType("externalEvent").start("created,creating").transitioning("removing").done("removed").build();
 
-        // Label
-        process("label.create").resourceType("label").start("requested").transitioning("creating").done("created").build();
-        process("label.remove").resourceType("label").start("created,creating").transitioning("removing").done("removed").build();
-
         //  Secrets
         process("secret.create").resourceType("secret").start("requested").transitioning("creating").done("active").build();
         process("secret.remove").resourceType("secret").start("active,creating").transitioning("removing").done("removed").build();
-
-        // Host label map
-        process("hostlabelmap.create").resourceType("hostLabelMap").start("requested").transitioning("creating").done("created").build();
-        process("hostlabelmap.remove").resourceType("hostLabelMap").start("created,creating").transitioning("removing").done("removed").build();
-
-        // Instance label map
-        process("instancelabelmap.create").resourceType("instanceLabelMap").start("requested").transitioning("creating").done("created").build();
-        process("instancelabelmap.remove").resourceType("instanceLabelMap").start("created,creating").transitioning("removing").done("removed").build();
 
         // Service Event
         process("serviceevent.create").resourceType("serviceEvent").start("requested").transitioning("creating").done("created").build();
@@ -266,26 +254,15 @@ public class Model {
     }
 
     private void defaultProcesses(String type) {
-        process((type + ".create").toLowerCase()).resourceType(type)
-            .start("requested")
-            .transitioning("registering")
-            .done("inactive").build();
-        process((type + ".activate").toLowerCase()).resourceType(type)
-            .start("inactive,registering")
-            .transitioning("activating")
-            .done("active").build();
-        process((type + ".deactivate").toLowerCase()).resourceType(type)
-            .start("requested,registering,active,activating,updating-active,updating-inactive")
-            .transitioning("deactivating")
-            .done("inactive").build();
-        process((type + ".remove").toLowerCase()).resourceType(type)
-            .start("requested,inactive,registering,updating-active,updating-inactive")
-            .transitioning("removing")
-            .done("removed").build();
-        process((type + ".update").toLowerCase()).resourceType(type)
-            .start("inactive,active")
-            .transitioning("inactive=updating-inactive,active=updating-active")
-            .done("updating-inactive=inactive,updating-active=active").build();
+        defaultProcess(type, "create").resourceType(type).start("requested").transitioning("registering").done("inactive").build();
+        defaultProcess(type, "activate").resourceType(type).start("inactive,registering").transitioning("activating").done("active").build();
+        defaultProcess(type, "deactivate").resourceType(type).start("requested,registering,active,activating,updating-active,updating-inactive").transitioning("deactivating").done("inactive").build();
+        defaultProcess(type, "remove").resourceType(type).start("requested,inactive,registering,updating-active,updating-inactive").transitioning("removing").done("removed").build();
+        defaultProcess(type, "update").resourceType(type).start("inactive,active").transitioning("inactive=updating-inactive,active=updating-active").done("updating-inactive=inactive,updating-active=active").build();
+    }
+
+    private ResourceProcessBuilder defaultProcess(String type, String suffix) {
+        return process((type + "." + suffix).toLowerCase());
     }
 
     private ResourceProcessBuilder process(String name) {
@@ -303,37 +280,61 @@ public class Model {
 
     private TypeSet addons() {
         return TypeSet.ofClasses(
-                LogConfig.class,
-                RestartPolicy.class,
-                LoadBalancerCookieStickinessPolicy.class,
-                ComposeConfig.class,
-                InstanceHealthCheck.class,
-                ServiceLink.class,
-                ServiceUpgrade.class,
-                ServiceUpgradeStrategy.class,
-                InServiceUpgradeStrategy.class,
-                PublicEndpoint.class,
-                VirtualMachineDisk.class,
-                VolumeActivateInput.class,
-                HaproxyConfig.class,
-                ServicesPortRange.class,
+                ActiveSetting.class,
+                ADConfig.class,
+                AzureConfig.class,
+                BaseMachineConfig.class,
                 BlkioDeviceOption.class,
-                ScalePolicy.class,
-                Ulimit.class,
                 CatalogTemplate.class,
-                PortRule.class,
-                TargetPortRule.class,
+                ComposeConfig.class,
+                ContainerExec.class,
+                ContainerLogs.class,
+                ContainerProxy.class,
+                ContainerUpgrade.class,
+                DockerBuild.class,
+                FieldDocumentation.class,
+                HaproxyConfig.class,
+                HostAccess.class,
+                HostApiProxyTokenImpl.class,
+                Identity.class,
+                InServiceUpgradeStrategy.class,
+                InstanceHealthCheck.class,
+                LoadBalancerCookieStickinessPolicy.class,
+                LocalAuthConfig.class,
+                LogConfig.class,
+                Member.class,
                 MountEntry.class,
+                NetworkPolicyRuleAction.class,
+                NetworkPolicyRuleBetween.class,
                 NetworkPolicyRule.class,
                 NetworkPolicyRuleMember.class,
-                NetworkPolicyRuleBetween.class,
                 NetworkPolicyRuleWithin.class,
-                NetworkPolicyRuleAction.class,
-                ProcessSummary.class,
+                OpenLDAPConfig.class,
+                PortRule.class,
+                ProcessDefinitionApi.class,
                 ProcessPool.class,
+                ProcessSummary.class,
+                PortBinding.class,
+                Publish.class,
+                ResourceDefinition.class,
+                RestartPolicy.class,
+                ScalePolicy.class,
                 SecretReference.class,
+                ServiceLink.class,
+                ServiceProxy.class,
                 ServiceRollback.class,
-                ContainerUpgrade.class);
+                ServicesPortRange.class,
+                ServiceUpgrade.class,
+                ServiceUpgradeStrategy.class,
+                StateTransition.class,
+                StatsAccess.class,
+                Subscribe.class,
+                TargetPortRule.class,
+                Token.class,
+                TypeDocumentation.class,
+                Ulimit.class,
+                VirtualMachineDisk.class,
+                VolumeActivateInput.class);
     }
 
     private TypeSet named() {
@@ -383,6 +384,9 @@ public class Model {
                 "balancerServiceConfig",
                 "balancerTargetConfig",
                 "defaultNetwork,parent=network",
+                "register,parent=genericObject",
+                "registrationToken,parent=credential",
+                "hostOnlyNetwork,parent=network",
                 "selectorService,parent=service",
                 "scalingGroup,parent=service");
     }

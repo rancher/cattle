@@ -2,14 +2,10 @@ package io.cattle.platform.lifecycle.impl;
 
 import static io.cattle.platform.object.util.DataAccessor.*;
 
-import io.cattle.platform.configitem.request.ConfigUpdateItem;
-import io.cattle.platform.configitem.request.ConfigUpdateRequest;
-import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.cache.EnvironmentResourceManager;
 import io.cattle.platform.core.constants.DockerInstanceConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
-import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Stack;
@@ -32,23 +28,19 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.google.common.base.Joiner;
-
 public class NetworkLifecycleManagerImpl implements NetworkLifecycleManager {
 
     ObjectManager objectManager;
     NetworkService networkService;
     ResourcePoolManager poolManager;
-    ConfigItemStatusManager statusManager;
     EnvironmentResourceManager envResourceManager;
 
     public NetworkLifecycleManagerImpl(ObjectManager objectManager, NetworkService networkService, ResourcePoolManager poolManager,
-            ConfigItemStatusManager statusManager, EnvironmentResourceManager envResourceManager) {
+            EnvironmentResourceManager envResourceManager) {
         super();
         this.objectManager = objectManager;
         this.networkService = networkService;
         this.poolManager = poolManager;
-        this.statusManager = statusManager;
         this.envResourceManager = envResourceManager;
     }
 
@@ -57,11 +49,6 @@ public class NetworkLifecycleManagerImpl implements NetworkLifecycleManager {
         setupRequestedIp(instance);
         Network network = resolveNetworkMode(instance);
         setDns(instance, stack, network);
-    }
-
-    @Override
-    public void preStart(Instance instance) {
-        setPskForIpsec(instance);
     }
 
     @Override
@@ -121,12 +108,10 @@ public class NetworkLifecycleManagerImpl implements NetworkLifecycleManager {
         for (String dns : DataAccessor.fieldStringList(network, NetworkConstants.FIELD_DNS)) {
             List<String> dnsList = appendToFieldStringList(instance, DockerInstanceConstants.FIELD_DNS, dns);
             setField(instance, DockerInstanceConstants.FIELD_DNS, dnsList);
-            setField(instance, InstanceConstants.FIELD_DNS_INTERNAL, Joiner.on(",").join(dnsList));
         }
 
         for (String dnsSearch : fieldStringList(network, NetworkConstants.FIELD_DNS_SEARCH)) {
             List<String> dnsSearchList = appendToFieldStringList(instance, DockerInstanceConstants.FIELD_DNS_SEARCH, dnsSearch);
-            setField(instance, DockerInstanceConstants.FIELD_DNS_SEARCH, dnsSearchList);
             String stackDns = null;
             if (stack != null) {
                 stackDns = ServiceUtil.getStackNamespace(stack.getName());
@@ -134,7 +119,7 @@ public class NetworkLifecycleManagerImpl implements NetworkLifecycleManager {
             if (!dnsSearchList.contains(stackDns)) {
                 dnsSearchList.add(stackDns);
             }
-            setField(instance, InstanceConstants.FIELD_DNS_SEARCH_INTERNAL, Joiner.on(",").join(dnsSearchList));
+            setField(instance, DockerInstanceConstants.FIELD_DNS_SEARCH, dnsSearchList);
         }
     }
 
@@ -205,22 +190,6 @@ public class NetworkLifecycleManagerImpl implements NetworkLifecycleManager {
         }
 
         return ip;
-    }
-
-    private void setPskForIpsec(Instance instance) {
-        if (!Boolean.TRUE.equals(instance.getSystem())) {
-            return;
-        }
-
-        List<Long> agentIds = envResourceManager.getAgentProviderIgnoreHealth(SystemLabels.LABEL_AGENT_SERVICE_IPSEC,
-                instance.getAccountId());
-        for (long agentId : agentIds) {
-            ConfigUpdateRequest request = ConfigUpdateRequest.forResource(Agent.class, agentId);
-            ConfigUpdateItem item = request.addItem("psk");
-            item.setApply(true);
-            item.setIncrement(false);
-            statusManager.updateConfig(request);
-        }
     }
 
 }

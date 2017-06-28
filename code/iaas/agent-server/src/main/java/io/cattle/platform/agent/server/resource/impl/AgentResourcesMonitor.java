@@ -3,7 +3,6 @@ package io.cattle.platform.agent.server.resource.impl;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.PhysicalHostTable.*;
 
-import io.cattle.platform.agent.instance.service.AgentMetadataService;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.HostConstants;
@@ -65,18 +64,16 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
     StoragePoolDao storagePoolDao;
     ObjectManager objectManager;
     LockManager lockManager;
-    AgentMetadataService agentMetadataService;
     EventService eventService;
     Cache<String, Boolean> resourceCache;
 
     public AgentResourcesMonitor(AgentDao agentDao, StoragePoolDao storagePoolDao, ObjectManager objectManager, LockManager lockManager,
-            AgentMetadataService agentMetadataService, EventService eventService) {
+            EventService eventService) {
         super();
         this.agentDao = agentDao;
         this.storagePoolDao = storagePoolDao;
         this.objectManager = objectManager;
         this.lockManager = lockManager;
-        this.agentMetadataService = agentMetadataService;
         this.eventService = eventService;
 
         buildCache();
@@ -192,7 +189,6 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
                 }
                 if (publish) {
                     publishChanged(host);
-                    agentMetadataService.updateMetadata(host.getAccountId());
                 }
             }
         }

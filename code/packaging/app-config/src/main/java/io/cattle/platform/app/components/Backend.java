@@ -3,7 +3,6 @@ package io.cattle.platform.app.components;
 import io.cattle.iaas.healthcheck.service.impl.HealthcheckCleanupMonitorImpl;
 import io.cattle.iaas.healthcheck.service.impl.UpgradeCleanupMonitorImpl;
 import io.cattle.platform.agent.connection.simulator.AgentSimulator;
-import io.cattle.platform.agent.connection.simulator.impl.SimulatorConfigUpdateProcessor;
 import io.cattle.platform.agent.connection.simulator.impl.SimulatorConsoleProcessor;
 import io.cattle.platform.agent.connection.simulator.impl.SimulatorFailedProcessor;
 import io.cattle.platform.agent.connection.simulator.impl.SimulatorInstanceInspectProcessor;
@@ -11,7 +10,6 @@ import io.cattle.platform.agent.connection.simulator.impl.SimulatorPingProcessor
 import io.cattle.platform.agent.connection.simulator.impl.SimulatorStartStopProcessor;
 import io.cattle.platform.agent.instance.factory.AgentInstanceFactory;
 import io.cattle.platform.agent.instance.factory.impl.AgentInstanceFactoryImpl;
-import io.cattle.platform.agent.instance.service.AgentMetadataService;
 import io.cattle.platform.agent.server.ping.impl.PingMonitorImpl;
 import io.cattle.platform.agent.server.resource.impl.AgentResourcesMonitor;
 import io.cattle.platform.allocator.service.AllocationHelperImpl;
@@ -19,22 +17,6 @@ import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.archaius.eventing.impl.ArchaiusEventListenerImpl;
 import io.cattle.platform.backpopulate.BackPopulater;
 import io.cattle.platform.backpopulate.impl.BackPopulaterImpl;
-import io.cattle.platform.configitem.context.impl.ConfigUrlInfoFactory;
-import io.cattle.platform.configitem.context.impl.HostApiKeyInfoFactory;
-import io.cattle.platform.configitem.context.impl.ServiceMetadataInfoFactory;
-import io.cattle.platform.configitem.context.impl.ServicesInfoFactory;
-import io.cattle.platform.configitem.server.model.impl.GenericConfigItemFactory;
-import io.cattle.platform.configitem.server.model.impl.MetadataConfigItemFactory;
-import io.cattle.platform.configitem.server.model.impl.PSKConfigItemFactory;
-import io.cattle.platform.configitem.server.task.ItemMigrationTask;
-import io.cattle.platform.configitem.server.task.ItemSourceVersionSyncTask;
-import io.cattle.platform.configitem.server.task.ItemSyncTask;
-import io.cattle.platform.configitem.server.template.impl.DefaultTemplateLoader;
-import io.cattle.platform.configitem.server.template.impl.FreemarkerTemplateLoader;
-import io.cattle.platform.configitem.server.template.impl.FreemarkerURLTemplateLoader;
-import io.cattle.platform.configitem.server.template.impl.TemplateFactoryImpl;
-import io.cattle.platform.configitem.spring.URLArrayFactory;
-import io.cattle.platform.core.cache.EnvironmentResourceManager;
 import io.cattle.platform.core.cleanup.BadDataCleanup;
 import io.cattle.platform.core.cleanup.CleanupTaskInstances;
 import io.cattle.platform.core.cleanup.TableCleanup;
@@ -53,6 +35,7 @@ import io.cattle.platform.engine.eventing.impl.ProcessEventListenerImpl;
 import io.cattle.platform.engine.manager.LoopManager;
 import io.cattle.platform.engine.process.ProcessRouter;
 import io.cattle.platform.engine.task.ProcessReplayTask;
+import io.cattle.platform.environment.EnvironmentResourceManager;
 import io.cattle.platform.eventing.annotation.AnnotatedEventListener;
 import io.cattle.platform.eventing.annotation.AnnotatedListenerRegistration;
 import io.cattle.platform.ha.monitor.PingInstancesMonitor;
@@ -84,6 +67,7 @@ import io.cattle.platform.loadbalancer.impl.LoadBalancerServiceImpl;
 import io.cattle.platform.loop.trigger.DeploymentUnitReconcileTrigger;
 import io.cattle.platform.loop.trigger.ServiceReconcileTrigger;
 import io.cattle.platform.loop.trigger.StackHealthStateUpdateTrigger;
+import io.cattle.platform.metadata.service.MetadataTrigger;
 import io.cattle.platform.network.NetworkService;
 import io.cattle.platform.network.impl.NetworkServiceImpl;
 import io.cattle.platform.object.purge.impl.PurgeMonitorImpl;
@@ -92,7 +76,6 @@ import io.cattle.platform.process.account.AccountProcessManager;
 import io.cattle.platform.process.agent.AgentHostStateUpdate;
 import io.cattle.platform.process.agent.AgentProcessManager;
 import io.cattle.platform.process.agent.AgentResourceRemove;
-import io.cattle.platform.process.agent.AgentScriptsApply;
 import io.cattle.platform.process.cache.ClearCacheHandler;
 import io.cattle.platform.process.containerevent.ContainerEventCreate;
 import io.cattle.platform.process.containerevent.ContainerEventPreCreate;
@@ -127,6 +110,7 @@ import io.cattle.platform.process.storagepool.StoragePoolRemove;
 import io.cattle.platform.process.subnet.SubnetCreate;
 import io.cattle.platform.process.volume.VolumeProcessManager;
 import io.cattle.platform.register.process.RegisterProcessManager;
+import io.cattle.platform.sample.data.AbstractSampleData;
 import io.cattle.platform.service.launcher.GenericServiceLauncher;
 import io.cattle.platform.servicediscovery.process.AccountLinkRemove;
 import io.cattle.platform.servicediscovery.process.SelectorInstancePostListener;
@@ -151,12 +135,8 @@ import io.cattle.platform.task.eventing.impl.TaskManagerEventListenerImpl;
 import io.cattle.platform.util.type.InitializationTask;
 import io.cattle.platform.vm.process.ServiceVirtualMachinePreCreate;
 
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -171,7 +151,6 @@ public class Backend {
 
     AgentInstanceFactory agentInstanceFactory;
     AgentLifecycleManager agentLifecycleManager;
-    AgentMetadataService agentMetadataService;
     AgentResourcesMonitor agentResourcesMonitor;
     AllocationHelperImpl allocationHelper;
     AllocationLifecycleManager allocationLifecycleManager;
@@ -185,7 +164,6 @@ public class Backend {
     K8sLifecycleManager k8sLifecycleManager;
     LoadBalancerService loadBalancerService;
     LoopManager loopManager;
-    MetadataConfigItemFactory metadataConfigItemFactory;
     NetworkLifecycleManager networkLifecycleManager;
     NetworkService networkService;
     PingInstancesMonitor pingInstancesMonitor;
@@ -195,7 +173,6 @@ public class Backend {
     RestartLifecycleManager restartLifecycleManager;
     SecretsLifecycleManager secretsLifecycleManager;
     ServiceLifecycleManager serviceLifecycleManager;
-    SystemStackTrigger systemStackTrigger;
     SystemStackUpdate systemStackUpdate;
     UpgradeManager upgradeManager;
     VirtualMachineLifecycleManager virtualMachineLifecycleManager;
@@ -217,8 +194,13 @@ public class Backend {
         addListeners();
         addTasks();
         addLaunchers();
-        addConfigItemFactories();
         addInitializationTasks();
+
+        for (AbstractSampleData data : d.sampleDatas) {
+            long start = System.currentTimeMillis();
+            data.start();
+            CONSOLE_LOG.info("Started {} {}ms", data.getClass().getSimpleName(), (System.currentTimeMillis()-start));
+        }
 
         for (InitializationTask task : initTasks) {
             long start = System.currentTimeMillis();
@@ -256,8 +238,7 @@ public class Backend {
         upgradeManager = new UpgradeManager(catalogService, d.stackDao, d.resourceDao, f.lockManager, f.processManager);
         systemStackTrigger = new SystemStackTrigger(c.configItemStatusManager, f.objectManager);
         systemStackUpdate = new SystemStackUpdate(f.jooqConfig, c.configItemStatusManager, f.eventService, f.objectManager, d.hostDao, f.processManager, f.jsonMapper, catalogService, f.resourceMonitor);
-        agentMetadataService = new AgentMetadataService(c.configItemStatusManager, d.accountDao, envResourceManager);
-        agentResourcesMonitor = new AgentResourcesMonitor(d.agentDao, d.storagePoolDao, f.objectManager, f.lockManager, agentMetadataService, f.eventService);
+        agentResourcesMonitor = new AgentResourcesMonitor(d.agentDao, d.storagePoolDao, f.objectManager, f.lockManager, f.eventService);
         pingInstancesMonitor = new PingInstancesMonitorImpl(d.agentDao, f.metaDataManager, c.agentLocator, d.pingInstancesMonitorDao, f.objectManager, containerEventCreate,
                 d.containerEventDao);
 
@@ -269,6 +250,7 @@ public class Backend {
         f.triggers.add(new DeploymentUnitReconcileTrigger(loopManager, d.serviceDao, d.volumeDao, f.objectManager));
         f.triggers.add(new ServiceReconcileTrigger(loopManager, f.objectManager));
         f.triggers.add(new StackHealthStateUpdateTrigger(d.instanceDao, f.objectManager, loopManager));
+        f.triggers.add(new MetadataTrigger(envResourceManager));
     }
 
     private void addProcessHandlers() {
@@ -289,13 +271,12 @@ public class Backend {
         ScheduledUpgradeProcessManager scheduledUpgradeProcessManager = new ScheduledUpgradeProcessManager(catalogService, upgradeManager, f.objectManager, f.processManager);
         ServiceProcessManager serviceProcessManager = new ServiceProcessManager(serviceLifecycleManager, f.objectManager, f.processManager, d.serviceDao);
         StackProcessManager stackProcessManager = new StackProcessManager(f.processManager, f.objectManager);
-        SystemStackProcessManager systemStackProcessManager = new SystemStackProcessManager(f.objectManager, f.processManager, systemStackUpdate, systemStackTrigger, f.resourceMonitor, d.networkDao);
+        SystemStackProcessManager systemStackProcessManager = new SystemStackProcessManager(f.objectManager, f.processManager, systemStackUpdate, f.resourceMonitor, d.networkDao);
         VolumeProcessManager volumeProcessManager = new VolumeProcessManager(f.objectManager, f.processManager, d.storagePoolDao, d.genericMapDao);
 
         AccountLinkRemove accountLinkRemove = new AccountLinkRemove(f.objectManager, f.processManager, f.lockManager, f.eventService);
         ActivateByDefault activateByDefault = new ActivateByDefault(f.objectManager, f.processManager);
         AgentResourceRemove agentResourceRemove = new AgentResourceRemove(f.objectManager, f.processManager);
-        AgentScriptsApply agentScriptsApply = new AgentScriptsApply(c.configItemStatusManager, f.jsonMapper);
         containerEventCreate = new ContainerEventCreate(f.objectManager, f.processManager, d.instanceDao, f.lockManager, f.resourceMonitor, c.agentLocator, d.resourceDao);
         ContainerEventPreCreate containerEventPreCreate = new ContainerEventPreCreate(f.objectManager);
         HosttemplateRemove hosttemplateRemove = new HosttemplateRemove(c.secretsService);
@@ -342,8 +323,8 @@ public class Backend {
         r.handle("accountlink.remove", accountLinkRemove);
 
         r.handle("agent.*", agentHostStateUpdate::postHandle);
-        r.handle("agent.activate", agentScriptsApply, agentProcessManager::activate);
-        r.handle("agent.reconnect", agentScriptsApply, agentProcessManager::activate);
+        r.handle("agent.activate", agentProcessManager::activate);
+        r.handle("agent.reconnect", agentProcessManager::activate);
         r.handle("agent.create", agentProcessManager::create);
         r.handle("agent.remove", agentProcessManager::remove, registerProcessManager::agentRemove);
         r.preHandle("agent.*", agentHostStateUpdate::preHandle);
@@ -433,14 +414,12 @@ public class Backend {
     }
 
     private void addListeners() {
-        SimulatorConfigUpdateProcessor simulatorConfigUpdateProcessor = new SimulatorConfigUpdateProcessor(f.jsonMapper, f.objectManager);
         AgentSimulator agentSimulator = new AgentSimulator(f.jsonMapper, f.objectManager, f.resourceMonitor, c.agentLocator, f.eventService,
                 new SimulatorFailedProcessor(f.jsonMapper),
-                simulatorConfigUpdateProcessor,
                 new SimulatorConsoleProcessor(),
                 new SimulatorInstanceInspectProcessor(),
                 new SimulatorPingProcessor(f.jsonMapper, f.objectManager),
-                new SimulatorStartStopProcessor(d.configItemStatusDao, simulatorConfigUpdateProcessor, f.objectManager, f.jsonMapper, f.scheduledExecutorService));
+                new SimulatorStartStopProcessor(f.objectManager, f.jsonMapper, f.scheduledExecutorService));
         ProcessEventListener processEventListener = new ProcessEventListenerImpl(f.processServer);
         resourceChangeEventListener = new ResourceChangeEventListenerImpl(f.lockDelegator, f.eventService, f.objectManager, f.jsonMapper);
         TaskManagerEventListener taskManagerEventListener = new TaskManagerEventListenerImpl(c.taskManager, f.lockManager);
@@ -459,9 +438,6 @@ public class Backend {
     }
 
     private void addTasks() {
-        ItemMigrationTask itemMigrationTask = new ItemMigrationTask(f.lockDelegator, c.configItemStatusManager);
-        ItemSyncTask itemSyncTask = new ItemSyncTask(f.lockDelegator, c.configItemStatusManager);
-        ItemSourceVersionSyncTask itemSourceVersionSyncTask = new ItemSourceVersionSyncTask(f.lockDelegator, c.configItemServer);
         BadDataCleanup badDataCleanup = new BadDataCleanup(f.jooqConfig, f.objectManager, f.processManager, d.instanceDao, d.networkDao,
                 d.storagePoolDao, d.accountDao, d.volumeDao, d.serviceDao, f.executorService);
         CleanupTaskInstances cleanupTaskInstances = new CleanupTaskInstances(d.taskDao);
@@ -476,9 +452,6 @@ public class Backend {
         UpgradeCleanupMonitorImpl upgradeCleanupMonitorImpl = new UpgradeCleanupMonitorImpl(f.jooqConfig, f.processManager, f.jsonMapper);
         UpgradeScheduleTask upgradeScheduleTask = new UpgradeScheduleTask(upgradeManager);
 
-        c.tasks.add(itemMigrationTask);
-        c.tasks.add(itemSyncTask);
-        c.tasks.add(itemSourceVersionSyncTask);
         c.tasks.add(badDataCleanup);
         c.tasks.add(cleanupTaskInstances);
         c.tasks.add(healthcheckCleanupMonitorImpl);
@@ -517,60 +490,13 @@ public class Backend {
         launchers.add(websocketProxyLauncher);
     }
 
-    private void addConfigItemFactories() {
-        ConfigUrlInfoFactory configUrlInfoFactory = new ConfigUrlInfoFactory(f.objectManager);
-        HostApiKeyInfoFactory hostApiKeyInfoFactory = new HostApiKeyInfoFactory(f.objectManager, c.hostApiService);
-        ServiceMetadataInfoFactory serviceMetadataInfoFactory = new ServiceMetadataInfoFactory(f.objectManager, d.serviceConsumeMapDao, d.metaDataInfoDao);
-        ServicesInfoFactory servicesInfoFactory = new ServicesInfoFactory(f.objectManager);
-
-        URLArrayFactory factory = new URLArrayFactory();
-        factory.setLocations(new String[] {
-            "classpath*:/config-content/**/*"
-        });
-
-        freemarker.template.Configuration config = new freemarker.template.Configuration();
-        config.setTemplateLoader(new FreemarkerURLTemplateLoader());
-        config.setLocalizedLookup(false);
-        config.setNumberFormat("computer");
-
-        TemplateFactoryImpl templateFactory = new TemplateFactoryImpl(
-                new FreemarkerTemplateLoader(config),
-                new DefaultTemplateLoader());
-
-        Map<String, Callable<byte[]>> additional = new HashMap<>();
-        additional.put("agent-instance-startup", configUrlInfoFactory);
-
-        GenericConfigItemFactory genericFactory = new GenericConfigItemFactory(c.configItemStatusManager, templateFactory,
-                configUrlInfoFactory,
-                hostApiKeyInfoFactory,
-                serviceMetadataInfoFactory,
-                servicesInfoFactory);
-        genericFactory.setRoot("config-content");
-        genericFactory.setDevRelativePath("../../../content/config-content");
-        genericFactory.setName("CommonConfigItems");
-        //genericFactory.setResources(factory.getObject());
-        genericFactory.setResources(new URL[0]);
-        genericFactory.setAdditionalRevisionData(additional);
-
-        metadataConfigItemFactory = new MetadataConfigItemFactory(serviceMetadataInfoFactory, f.objectManager, c.configItemStatusManager,
-                d.configItemStatusDao, c.configItemRegistry);
-        PSKConfigItemFactory pskConfigItemFactory = new PSKConfigItemFactory(d.dataDao, f.objectManager, c.configItemStatusManager);
-
-        c.configItemFactories.add(genericFactory);
-        c.configItemFactories.add(metadataConfigItemFactory);
-        c.configItemFactories.add(pskConfigItemFactory);
-    }
-
     private void addInitializationTasks() {
         AnnotatedListenerRegistration annotatedListenerRegistration = new AnnotatedListenerRegistration(eventListeners, f.eventService, f.jsonMapper, f.lockManager);
         MachineDriverLoader machineDriverLoader = new MachineDriverLoader(f.lockManager, f.objectManager, f.processManager, f.jsonMapper);
 
         initTasks.add(annotatedListenerRegistration);
-        initTasks.add(c.configItemRegistry);
-        initTasks.add(c.configItemServer);
         initTasks.add(f.lockDelegator);
         initTasks.add(machineDriverLoader);
-        initTasks.add(metadataConfigItemFactory);
         initTasks.add(projectTemplateService);
         initTasks.add(c.serviceAccountCreateStartup);
         initTasks.add(c.taskManager);

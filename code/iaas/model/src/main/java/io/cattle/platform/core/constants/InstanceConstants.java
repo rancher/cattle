@@ -26,7 +26,7 @@ public class InstanceConstants {
     public static final String FIELD_INSTANCE_TRIGGERED_STOP = "instanceTriggeredStop";
     public static final String FIELD_NETWORK_IDS = "networkIds";
     public static final String FIELD_PORTS = "ports";
-    public static final String FIELD_USER_PORTS = "userPorts";
+    public static final String FIELD_PORT_BINDINGS = "portBindings";
     public static final String FIELD_MANAGED_IP = "managedIp";
     public static final String FIELD_PRIMARY_IP_ADDRESS = "primaryIpAddress";
     public static final String FIELD_PRIMARY_NETWORK_ID = "primaryNetworkId";
@@ -53,8 +53,6 @@ public class InstanceConstants {
     public static final String FIELD_SERVICE_INSTANCE_SERVICE_INDEX = "serviceIndex";
     public static final String FIELD_METADATA = "metadata";
 //    public static final String FIELD_HOST_ID = "hostId";
-    public static final String FIELD_DNS_INTERNAL = "dnsInternal";
-    public static final String FIELD_DNS_SEARCH_INTERNAL = "dnsSearchInternal";
     public static final String FIELD_LOG_CONFIG = "logConfig";
     public static final String FIELD_SERVICE_IDS = "serviceIds";
     public static final String FIELD_SECRETS = "secrets";

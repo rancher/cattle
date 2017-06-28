@@ -4,26 +4,13 @@ import static io.cattle.platform.core.constants.InstanceConstants.*;
 
 import io.cattle.platform.agent.connection.simulator.AgentConnectionSimulator;
 import io.cattle.platform.agent.connection.simulator.AgentSimulatorEventProcessor;
-import io.cattle.platform.configitem.events.ConfigUpdate;
-import io.cattle.platform.configitem.model.Client;
-import io.cattle.platform.configitem.model.ItemVersion;
-import io.cattle.platform.configitem.request.ConfigUpdateItem;
-import io.cattle.platform.configitem.version.dao.ConfigItemStatusDao;
-import io.cattle.platform.core.constants.AgentConstants;
-import io.cattle.platform.core.model.Agent;
-import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.server.context.ServerContext;
-import io.cattle.platform.server.context.ServerContext.BaseProtocol;
 import io.cattle.platform.util.type.CollectionUtils;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -40,17 +27,12 @@ public class SimulatorStartStopProcessor implements AgentSimulatorEventProcessor
     private static final String SIM_CREATE_ANOTHER = "simCreateAnother_";
     private static final Pattern CREATE_ANOTHER = Pattern.compile(".*simCreateAnother_.*");
 
-    ConfigItemStatusDao configItemStatusDao;
-    SimulatorConfigUpdateProcessor configUpdateProcessor;
     ObjectManager objectManager;
     JsonMapper jsonMapper;
     ScheduledExecutorService scheduleExecutorService;
 
-    public SimulatorStartStopProcessor(ConfigItemStatusDao configItemStatusDao, SimulatorConfigUpdateProcessor configUpdateProcessor,
-            ObjectManager objectManager, JsonMapper jsonMapper, ScheduledExecutorService scheduleExecutorService) {
+    public SimulatorStartStopProcessor(ObjectManager objectManager, JsonMapper jsonMapper, ScheduledExecutorService scheduleExecutorService) {
         super();
-        this.configItemStatusDao = configItemStatusDao;
-        this.configUpdateProcessor = configUpdateProcessor;
         this.objectManager = objectManager;
         this.jsonMapper = jsonMapper;
         this.scheduleExecutorService = scheduleExecutorService;
@@ -121,36 +103,7 @@ public class SimulatorStartStopProcessor implements AgentSimulatorEventProcessor
                     new Date().getTime() });
         }
 
-        Number agentId = (Number)instance.get("agentId");
-        if (agentId != null && "add".equals(action)) {
-            publishItemUpdates(agentId.longValue());
-        }
-
         return EventVO.reply(event).withData(update);
-    }
-
-    protected void publishItemUpdates(long agentId) {
-        Client client = new Client(Agent.class, agentId);
-        Map<String, ItemVersion> version = configItemStatusDao.getApplied(client);
-        List<ConfigUpdateItem> items = new ArrayList<>(version.size());
-
-        for (String name : version.keySet()) {
-            items.add(new ConfigUpdateItem(name));
-        }
-
-        final Agent agent = objectManager.loadResource(Agent.class, agentId);
-        final Event configUpdate = new ConfigUpdate(client.getEventName(), ServerContext.getHostApiBaseUrl(BaseProtocol.HTTP), items)
-                .withResourceType(AgentConstants.TYPE).withResourceId(Long.toString(agentId));
-        DeferredUtils.defer(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    configUpdateProcessor.handle(agent, configUpdate);
-                } catch (IOException e) {
-                    throw new IllegalStateException(e);
-                }
-            }
-        });
     }
 
 }

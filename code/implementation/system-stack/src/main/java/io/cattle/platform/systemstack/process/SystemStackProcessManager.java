@@ -37,16 +37,14 @@ public class SystemStackProcessManager {
     ObjectManager objectManager;
     ObjectProcessManager processManager;
     SystemStackUpdate update;
-    SystemStackTrigger systemStackTrigger;
     ResourceMonitor resourceMonitor;
     NetworkDao networkDao;
 
     public SystemStackProcessManager(ObjectManager objectManager, ObjectProcessManager processManager, SystemStackUpdate update,
-            SystemStackTrigger systemStackTrigger, ResourceMonitor resourceMonitor, NetworkDao networkDao) {
+            ResourceMonitor resourceMonitor, NetworkDao networkDao) {
         this.objectManager = objectManager;
         this.processManager = processManager;
         this.update = update;
-        this.systemStackTrigger = systemStackTrigger;
         this.resourceMonitor = resourceMonitor;
         this.networkDao = networkDao;
     }
