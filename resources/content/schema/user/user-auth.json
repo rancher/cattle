@@ -595,8 +595,10 @@
         "composeConfig" : "r",
         "composeConfig.dockerComposeConfig" : "r",
         "composeConfig.rancherComposeConfig" : "r",
+        "composeConfig.composeConfig": "r",
         "composeConfigInput" : "cr",
         "composeConfigInput.serviceIds" : "cr",
+        "composeConfigInput.format": "cr",
 
         "stack" : "r",
         "stack.dockerCompose": "cr",

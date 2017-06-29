@@ -8,10 +8,10 @@ import java.util.Map.Entry;
 
 public interface ComposeExportService {
 
-    Entry<String, String> buildComposeConfig(List<? extends Service> services, Stack stack);
+    Entry<String, String> buildComposeConfig(List<? extends Service> services, Stack stack, boolean combined);
 
-    String buildDockerComposeConfig(List<? extends Service> services, Stack stack);
+    String buildDockerComposeConfig(List<? extends Service> services, Stack stack, boolean combined);
 
-    String buildRancherComposeConfig(List<? extends Service> services);
+    String buildRancherComposeConfig(List<? extends Service> services, boolean combined);
 
 }
