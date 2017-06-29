@@ -1,0 +1,29 @@
+{
+    "resourceActions": {
+        "create" : {
+            "attributes" : {
+                "capability" : "modifyInfra"
+            }
+        },
+        "update" : {
+            "attributes" : {
+                "capability" : "modifyInfra"
+            }
+        },
+        "bootstrap" : {
+            "attributes" : {
+                "capability" : "modifyInfra"
+            }
+        },
+        "error" : {
+            "attributes" : {
+                "capability" : "modifyInfra"
+            }
+        },
+        "remove" : {
+            "attributes" : {
+                "capability" : "modifyInfra"
+            }
+        }
+    }
+}

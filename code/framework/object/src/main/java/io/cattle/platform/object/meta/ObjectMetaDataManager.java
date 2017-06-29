@@ -36,6 +36,9 @@ public interface ObjectMetaDataManager {
     public static final String CREATED_FIELD = "created";
     public static final String SYSTEM_FIELD = "system";
 
+    public static final String CAPABILITY = "capability";
+    public static final String MODIFY_INFRA_CAPABILITY = "modifyInfra";
+
     public static final String MAP_SUFFIX = "Map";
 
     public static final String APPEND = "+";

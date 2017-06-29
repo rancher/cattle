@@ -9,6 +9,7 @@ import io.cattle.platform.core.constants.MachineConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.framework.secret.SecretsService;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
+import io.cattle.platform.iaas.api.infrastructure.InfrastructureAccessManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
@@ -33,6 +34,9 @@ public class MachineValidationFilter extends AbstractDefaultResourceManagerFilte
     @Inject
     SecretsService secretsService;
 
+    @Inject
+    InfrastructureAccessManager infraAccess;
+
     @Override
     public Class<?>[] getTypeClasses() {
         return new Class<?>[] {Host.class};
@@ -45,6 +49,8 @@ public class MachineValidationFilter extends AbstractDefaultResourceManagerFilte
 
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
+        validateInfraAccess(request, "create");
+
         // Don't validate hosts for v1 API
         if (HostConstants.TYPE.equals(type) && ("v1".equals(request.getVersion()) ||
                 AccountConstants.SUPER_ADMIN_KIND.equals(request.getSchemaFactory().getId()))) {
@@ -71,6 +77,8 @@ public class MachineValidationFilter extends AbstractDefaultResourceManagerFilte
 
     @Override
     public Object update(String type, String id, ApiRequest request, ResourceManager next) {
+        validateInfraAccess(request, "update");
+
         Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
         String extracted = DataAccessor.fromMap(data).withKey(MachineConstants.EXTRACTED_CONFIG_FIELD).as(String.class);
         if (extracted != null) {
@@ -85,4 +93,16 @@ public class MachineValidationFilter extends AbstractDefaultResourceManagerFilte
         return super.update(type, id, request, next);
     }
 
+    @Override
+    public Object delete(String type, String id, ApiRequest request, ResourceManager next) {
+        validateInfraAccess(request, "delete");
+        return super.delete(type, id, request, next);
+    }
+
+    private void validateInfraAccess(ApiRequest request, String action) {
+        if (!infraAccess.canModifyInfrastructure(ApiUtils.getPolicy())) {
+            String message = String.format("Cannot %s machine", action);
+            throw new ClientVisibleException(ResponseCodes.FORBIDDEN, "Forbidden", message, null);
+        }
+    }
 }
