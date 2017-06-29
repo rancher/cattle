@@ -1,13 +1,14 @@
 package io.cattle.platform.docker.machine.api;
 
 import static io.cattle.platform.core.constants.MachineConstants.*;
-import static io.cattle.platform.docker.machine.api.MachineLinkFilter.*;
 
 import io.cattle.platform.api.link.LinkHandler;
+import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.framework.secret.SecretsService;
+import io.cattle.platform.iaas.api.infrastructure.InfrastructureAccessManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
@@ -28,6 +29,8 @@ public class MachineConfigLinkHandler implements LinkHandler {
     ObjectManager objectManager;
     @Inject
     SecretsService secretsService;
+    @Inject
+    InfrastructureAccessManager infraAccess;
 
     @Override
     public String[] getTypes() {
@@ -41,7 +44,7 @@ public class MachineConfigLinkHandler implements LinkHandler {
 
     @Override
     public Object link(String name, Object obj, ApiRequest request) throws IOException {
-        if (!canAccessConfig()){
+        if (!infraAccess.canModifyInfrastructure(ApiUtils.getPolicy())){
             throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
         }
         if (obj instanceof Host) {

@@ -7,6 +7,7 @@ import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.ProcessInstanceException;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.engine.process.impl.ProcessExecutionExitException;
+import io.cattle.platform.iaas.api.infrastructure.InfrastructureAccessManager;
 import io.cattle.platform.lock.exception.FailedToAcquireLockException;
 import io.cattle.platform.object.jooq.utils.JooqUtils;
 import io.cattle.platform.object.meta.MapRelationship;
@@ -17,6 +18,7 @@ import io.cattle.platform.util.exception.ExceptionUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
+import io.github.ibuildthecloud.gdapi.model.Action;
 import io.github.ibuildthecloud.gdapi.model.Include;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.model.Pagination;
@@ -32,6 +34,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.jooq.Condition;
 import org.jooq.Configuration;
 import org.jooq.DSLContext;
@@ -50,6 +53,9 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
     private static final Logger log = LoggerFactory.getLogger(AbstractJooqResourceManager.class);
 
     Configuration configuration;
+
+    @Inject
+    InfrastructureAccessManager infraAccess;
 
     protected DSLContext create() {
         return new DefaultDSLContext(configuration);
@@ -85,9 +91,48 @@ public abstract class AbstractJooqResourceManager extends AbstractObjectResource
 
         List<?> result = mapper == null ? query.fetch() : query.fetchInto(mapper);
 
+        addCapabilities(result, schemaFactory.getSchema(clz));
+
         processPaginationResult(result, pagination, mapper);
 
         return result;
+    }
+
+    private void addCapabilities(List<?> result, Schema s) {
+        // This could be built into a framework of "capability providers" where the providers are stored in a map with the key being the 
+        // capability, but since we only have one for now, we'll do it the simple way
+        if (s == null) {
+            return;
+        }
+
+        Map<String, Action> actions = s.getResourceActions();
+        if (actions == null || actions.size() == 0) {
+            return;
+        }
+
+        if (!infraAccess.canModifyInfrastructure((Policy) ApiContext.getContext().getPolicy())) {
+           return;
+        }
+
+        boolean addCapability = false;
+        for (Map.Entry<String, Action> entry : actions.entrySet()) {
+            Map<String, Object> attributes = entry.getValue().getAttributes();
+            if (attributes == null || attributes.size() == 0) {
+                continue;
+            }
+
+            String capability = ObjectUtils.toString(attributes.get(ObjectMetaDataManager.CAPABILITY), null);
+            if (ObjectMetaDataManager.MODIFY_INFRA_CAPABILITY.equals(capability)) {
+                addCapability = true;
+                break;
+            }
+        }
+
+        if (addCapability) {
+            for (Object r : result) {
+                ApiContext.getContext().addCapability(r, ObjectMetaDataManager.MODIFY_INFRA_CAPABILITY);
+            }
+        }
     }
 
     protected void addJoins(SelectQuery<?> query, Map<Table<?>, Condition> joins) {

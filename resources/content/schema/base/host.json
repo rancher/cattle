@@ -59,7 +59,56 @@
         "evacuate": {
             "output": "host",
             "attributes": {
-                "states": ["active", "inactive"]
+                "states": ["active", "inactive"],
+                "capability": "modifyInfra"
+            }
+        },
+        "dockersocket": {
+            "input": null,
+            "output": "hostAccess",
+            "attributes" : {
+                "states" : ["active", "inactive", "activating", "deactivating"],
+                "capability": "modifyInfra"
+            }
+        },
+        "create" : {
+            "attributes" : {
+                "capability" : "modifyInfra"
+            }
+        },
+        "deactivate" : {
+            "attributes" : {
+                "capability" : "modifyInfra"
+            }
+        },
+        "activate" : {
+            "attributes" : {
+                "capability" : "modifyInfra"
+            }
+        },
+        "update" : {
+            "attributes" : {
+                "capability" : "modifyInfra"
+            }
+        },
+        "upgrade" : {
+            "attributes" : {
+                "capability" : "modifyInfra"
+            }
+        },
+        "delete" : {
+            "attributes" : {
+                "capability" : "modifyInfra"
+            }
+        },
+        "purge" : {
+            "attributes" : {
+                "capability" : "modifyInfra"
+            }
+        },
+        "remove" : {
+            "attributes" : {
+                "capability" : "modifyInfra"
             }
         }
     }

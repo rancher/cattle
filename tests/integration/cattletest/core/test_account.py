@@ -19,9 +19,6 @@ def test_account_create(kind, admin_user_client, random_str):
 
     creds = account.credentials()
 
-    assert len(creds) == 1
-    creds = filter(lambda x: x.kind == 'apiKey', creds)
-
     assert len(creds) == 0
 
 
@@ -49,7 +46,7 @@ def test_account_no_key(super_client):
     account = super_client.wait_success(account)
     creds = account.credentials()
 
-    assert len(creds) >= 1
+    assert len(creds) == 0
 
     account = super_client.create_account(kind='unknown')
     account = super_client.wait_success(account)

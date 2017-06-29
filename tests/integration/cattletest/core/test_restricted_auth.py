@@ -2,11 +2,104 @@ from common_fixtures import *  # NOQA
 import copy
 
 from cattle import ApiError
+from test_authorization import service_client  # NOQA
+from test_machines import machine_context
 from test_svc_discovery import _validate_compose_instance_start
+
+_ = machine_context  # Needed just to avoid a pep-8 quirk
+
+
+@pytest.fixture()
+def infra_access_setting(admin_user_client):
+    id = 'modify.infrastructure.roles'
+    setting = admin_user_client.by_id_setting(id)
+    orig = setting.value
+    no_member = orig.replace('member,', '')
+    setting = admin_user_client.update(setting, value=no_member)
+    wait_setting_active(admin_user_client, setting)
+    yield
+    setting = admin_user_client.by_id_setting(id)
+    setting = admin_user_client.update(setting, value=orig)
+    wait_setting_active(admin_user_client, setting)
+
+
+@pytest.mark.nonparallel
+def test_restricted_infra_access(new_context, admin_user_client,
+                                 infra_access_setting, machine_context):
+    client = new_context.client
+    member = create_user(new_context, admin_user_client, 'member')
+    host = new_context.host
+
+    # No actions on host
+    m_host = member.by_id_host(host.id)
+    assert len(m_host.actions) == 0
+    # Can't create host
+    with pytest.raises(ApiError) as e:
+        member.create_host(hostname='foo')
+    assert e.value.error.status == 403
+    # Can't update host
+    with pytest.raises(ApiError) as e:
+        member.update(m_host, name='foo')
+    assert e.value.error.status == 403
+    # Can't delete host
+    with pytest.raises(ApiError) as e:
+        member.delete(m_host)
+    assert e.value.error.status == 403
+
+    reg_tokens = client.list_registration_token()
+    assert len(reg_tokens) > 0
+    reg_token = reg_tokens[0]
+
+    # Can't see any registration tokens
+    m_reg_tokens = member.list_registration_token()
+    assert len(m_reg_tokens) == 0
+    # Can't create registration token
+    with pytest.raises(ApiError) as e:
+        member.create_registration_token()
+    assert e.value.error.status == 403
+    # Can't update registraion token
+    with pytest.raises(ApiError) as e:
+        member.update(reg_token, name=random_str())
+    assert e.value.error.status == 405
+    # Can't delete registration token
+    with pytest.raises(ApiError) as e:
+        member.delete(reg_token)
+    assert e.value.error.status == 405
+
+    # Physical host has no actions
+    ph = m_host.physicalHost()
+    assert len(ph.actions) == 0
+    # Can't update physical host
+    with pytest.raises(ApiError) as e:
+        member.update(ph, name=random_str())
+    assert e.value.error.status == 405
+    # Can't delete physical host
+    with pytest.raises(ApiError) as e:
+        member.delete(ph)
+    assert e.value.error.status == 405
+
+    # Owner creates machine
+    machine = client.create_machine(name=random_str(), fooConfig={})
+    machine = client.wait_success(machine)
+    # Machine has no actions
+    mem_machine = member.by_id_machine(machine.id)
+    assert len(mem_machine.actions) == 0
+    # Can't create machine
+    with pytest.raises(ApiError) as e:
+        member.create_machine(name=random_str(), fooConfig={})
+    assert e.value.error.status == 403
+    # Can't update machine
+    with pytest.raises(ApiError) as e:
+        member.update(mem_machine, name=random_str())
+    assert e.value.error.status == 403
+    # Can't delete machine
+    with pytest.raises(ApiError) as e:
+        member.delete(mem_machine)
+    assert e.value.error.status == 403
 
 
 def test_restricted_from_system(new_context, admin_user_client):
-    restricted = create_restricted_user(new_context, admin_user_client)
+    restricted = create_user(new_context, admin_user_client)
 
     # Restricted can't create system stack. system property not settable
     rstack = restricted.create_stack(name=random_str(), system=True)
@@ -123,7 +216,7 @@ def test_restricted_from_system(new_context, admin_user_client):
 
 
 def test_restricted_agent_containers(new_context, admin_user_client):
-    restricted = create_restricted_user(new_context, admin_user_client)
+    restricted = create_user(new_context, admin_user_client)
     client = new_context.client
     c = new_context.create_container(labels={
         'io.rancher.container.create_agent': 'true'
@@ -138,7 +231,7 @@ def test_restricted_agent_containers(new_context, admin_user_client):
 
 
 def test_restricted_privileged_cap_add(new_context, admin_user_client):
-    restricted = create_restricted_user(new_context, admin_user_client)
+    restricted = create_user(new_context, admin_user_client)
     client = new_context.client
     c = new_context.create_container(privileged=True)
     c = client.wait_success(c)
@@ -157,12 +250,12 @@ def test_restricted_privileged_cap_add(new_context, admin_user_client):
     assert "proxy" not in rc.actions
 
 
-def create_restricted_user(context, admin_user_client):
+def create_user(context, admin_user_client, role='restricted'):
     context2 = create_context(admin_user_client)
     restricted = context2.user_client
     members = get_plain_members(context.project.projectMembers())
     members.append({
-        'role': 'restricted',
+        'role': role,
         'externalId': acc_id(restricted),
         'externalIdType': 'rancher_id'
     })

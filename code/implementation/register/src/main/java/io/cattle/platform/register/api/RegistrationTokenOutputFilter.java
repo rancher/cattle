@@ -1,8 +1,10 @@
 package io.cattle.platform.register.api;
 
+import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.dao.CertificateDao;
 import io.cattle.platform.core.model.Credential;
+import io.cattle.platform.iaas.api.infrastructure.InfrastructureAccessManager;
 import io.cattle.platform.register.util.RegisterConstants;
 import io.cattle.platform.register.util.RegistrationToken;
 import io.cattle.platform.server.context.ServerContext;
@@ -28,6 +30,8 @@ public class RegistrationTokenOutputFilter implements ResourceOutputFilter {
 
     @Inject
     CertificateDao certDao;
+    @Inject
+    InfrastructureAccessManager infraAccess;
 
     @Override
     public Resource filter(ApiRequest request, Object original, Resource converted) {
@@ -36,6 +40,13 @@ public class RegistrationTokenOutputFilter implements ResourceOutputFilter {
         }
 
         Credential cred = (Credential) original;
+        if (!RegisterConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN.equalsIgnoreCase(cred.getKind())) {
+            return converted;
+        }
+
+        if (!infraAccess.canModifyInfrastructure(ApiUtils.getPolicy())) {
+            return null;
+        }
 
         String accessKey = cred.getPublicValue();
         String secretKey = cred.getSecretValue();
@@ -87,7 +98,7 @@ public class RegistrationTokenOutputFilter implements ResourceOutputFilter {
 
     @Override
     public Class<?>[] getTypeClasses() {
-        return new Class<?>[0];
+        return new Class<?>[]{Credential.class};
     }
 
 }

@@ -41,13 +41,13 @@ def test_register_create(client, super_client):
     assert agent.data.registrationKey == r.key
 
 
-def test_registration_token_create(client):
-    assert_required_fields(client.create_registration_token)
+def test_registration_token_create(context):
+    assert_required_fields(context.client.create_registration_token)
 
-    t = client.create_registration_token()
+    t = context.client.create_registration_token()
     assert t.state == 'registering'
 
-    t = client.wait_success(t)
+    t = context.client.wait_success(t)
     assert t.state == 'active'
 
     assert 'publicValue' not in t
@@ -57,38 +57,10 @@ def test_registration_token_create(client):
     # Test that tokens don't change, need three just in case we get unlucky
     # and cross the rollover boundry time
     tokens = set()
-    tokens.add(client.reload(t).token)
-    tokens.add(client.reload(t).token)
+    tokens.add(context.client.reload(t).token)
+    tokens.add(context.client.reload(t).token)
 
     assert len(tokens) == 2 or len(tokens) == 1
-
-
-@pytest.mark.parametrize('kind', ['user', 'admin'])
-def test_registration_token_account_create(kind, admin_user_client,
-                                           cattle_url):
-    account = create_and_activate(admin_user_client, 'account', kind=kind)
-
-    creds = filter(lambda x: x.kind == 'registrationToken',
-                   account.credentials())
-
-    assert len(creds) == 1
-
-    cred = admin_user_client.wait_success(creds[0])
-    assert cred.state == 'active'
-    assert cred.token is not None
-
-    client = cattle.from_env(url=cattle_url,
-                             access_key=cred.kind,
-                             secret_key=cred.token)
-
-    types = set(client.schema.types.keys())
-    assert set(['register', 'schema']) == types
-
-    auth_check(client.schema, 'register', 'crd', {
-        'key': 'cr',
-        'accessKey': 'r',
-        'secretKey': 'r',
-    })
 
 
 def test_registration_token_list(service_client, client):
