@@ -29,7 +29,6 @@ import io.cattle.platform.framework.encryption.impl.Sha256Hasher;
 import io.cattle.platform.framework.secret.SecretsService;
 import io.cattle.platform.framework.secret.SecretsServiceImpl;
 import io.cattle.platform.host.service.HostApiRSAKeyProvider;
-import io.cattle.platform.host.service.HostApiService;
 import io.cattle.platform.host.service.impl.HostApiServiceImpl;
 import io.cattle.platform.iaas.api.auditing.AuditService;
 import io.cattle.platform.iaas.api.auditing.AuditServiceImpl;
@@ -73,7 +72,6 @@ public class Common {
     DefaultResourceManagerSupport support;
     DockerTransformer dockerTransformer;
     HostApiRSAKeyProvider keyProvider;
-    HostApiService hostApiService;
     ObjectSerializerFactory objectSerializerFactory;
     ProcessRouter processes;
     RegistrationAuthTokenManager registrationAuthTokenManager;

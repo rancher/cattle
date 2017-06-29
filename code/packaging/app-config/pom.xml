@@ -11,47 +11,12 @@
     <dependencies>
         <dependency>
             <groupId>io.cattle</groupId>
-            <artifactId>cattle-vm</artifactId>
+            <artifactId>cattle-caas-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.cattle</groupId>
-            <artifactId>cattle-system-stack</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.cattle</groupId>
-            <artifactId>cattle-host-stats</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.cattle</groupId>
-            <artifactId>cattle-framework-jmx</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.cattle</groupId>
-            <artifactId>cattle-hazelcast-eventing</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.cattle</groupId>
-            <artifactId>cattle-hazelcast-lock</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.cattle</groupId>
-            <artifactId>cattle-simulator-agent-connection</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.cattle</groupId>
-            <artifactId>cattle-framework-db-loader</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.cattle</groupId>
-            <artifactId>cattle-meta</artifactId>
+            <artifactId>cattle-caas-backend</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

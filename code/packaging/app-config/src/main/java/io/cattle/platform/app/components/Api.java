@@ -6,7 +6,6 @@ import io.cattle.platform.api.handler.CommonExceptionsHandler;
 import io.cattle.platform.api.handler.DeferredActionsHandler;
 import io.cattle.platform.api.handler.EventNotificationHandler;
 import io.cattle.platform.api.handler.LinkRequestHandler;
-import io.cattle.platform.api.handler.ResponseObjectConverter;
 import io.cattle.platform.api.html.ConfigBasedHtmlTemplate;
 import io.cattle.platform.api.parser.ApiRequestParser;
 import io.cattle.platform.api.pubsub.manager.PublishManager;
@@ -30,23 +29,15 @@ import io.cattle.platform.core.constants.StoragePoolConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.AuditLog;
-import io.cattle.platform.core.model.Certificate;
-import io.cattle.platform.core.model.ContainerEvent;
 import io.cattle.platform.core.model.Credential;
-import io.cattle.platform.core.model.Data;
 import io.cattle.platform.core.model.ExternalEvent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.HostTemplate;
-import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.ProcessInstance;
 import io.cattle.platform.core.model.Secret;
-import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceEvent;
 import io.cattle.platform.core.model.Setting;
-import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.UserPreference;
-import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.VolumeTemplate;
 import io.cattle.platform.docker.api.ContainerLogsActionHandler;
 import io.cattle.platform.docker.api.ContainerProxyActionHandler;
@@ -59,6 +50,7 @@ import io.cattle.platform.docker.machine.api.MachineConfigLinkHandler;
 import io.cattle.platform.docker.machine.api.MachineLinkFilter;
 import io.cattle.platform.docker.machine.api.filter.MachineOutputFilter;
 import io.cattle.platform.docker.machine.api.filter.MachineValidationFilter;
+import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.extension.api.dot.DotMaker;
 import io.cattle.platform.extension.api.manager.ProcessDefinitionApiManager;
 import io.cattle.platform.extension.api.manager.ResourceDefinitionLinkHandler;
@@ -182,17 +174,24 @@ import io.github.ibuildthecloud.gdapi.request.handler.write.ReadWriteApiHandler;
 import io.github.ibuildthecloud.gdapi.response.HtmlResponseWriter;
 import io.github.ibuildthecloud.gdapi.response.JsonResponseWriter;
 import io.github.ibuildthecloud.gdapi.response.ResponseConverter;
+import io.github.ibuildthecloud.gdapi.response.ResponseObjectConverter;
 import io.github.ibuildthecloud.gdapi.servlet.ApiRequestFilterDelegate;
 import io.github.ibuildthecloud.gdapi.validation.ReferenceValidator;
 import io.github.ibuildthecloud.gdapi.validation.ResourceManagerReferenceValidator;
 import io.github.ibuildthecloud.gdapi.validation.ValidationHandler;
 import io.github.ibuildthecloud.gdapi.version.Versions;
 
+import java.awt.event.ContainerEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Properties;
+import java.util.Stack;
+
+import org.glassfish.jersey.process.internal.RequestScope.Instance;
+
+import com.github.dockerjava.api.model.Volume;
 
 public class Api {
 
@@ -203,10 +202,11 @@ public class Api {
     ApiRequestFilterDelegate apiRequestFilterDelegate;
     Auth auth;
     ContainerProxyActionHandler containerProxyActionHandler;
+    DotMaker dotMaker = new DotMaker();
+    HostApiService hostApiService;
     ReferenceValidator referenceValidator;
     ResponseConverter responseConverter;
     Versions versions;
-    DotMaker dotMaker = new DotMaker();
 
     public Api(Framework framework, Common common, DataAccess dataAccess) throws IOException {
         this.f = framework;
