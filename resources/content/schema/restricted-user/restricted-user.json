@@ -6,9 +6,6 @@
         "physicalHost.resourceActions\\..*": "",
         "registrationToken" : "",
 
-        "container.privileged" : "r",
-        "container.capAdd" : "r",
-
         "end" : ""
     }
 }
