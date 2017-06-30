@@ -103,6 +103,7 @@ public class ServiceConstants {
     public static final String FIELD_FINISH_UPGRADE = "finishUpgrade";
     public static final String FIELD_FORCE_UPGRADE = "forceUpgrade";
     public static final String FIELD_COMPLETE_UPDATE = "completeUpdate";
+    public static final String FIELD_SECRETS = "secrets";
     public static final String FIELD_RESTART_TRIGGER = "restartTrigger";
 
     public static final String FIELD_INTERNAL_VOLUMES = "internalVolumes";

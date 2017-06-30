@@ -60,8 +60,6 @@ public class ComposeExportConfigItem {
             "stdin_open",
             false);
     public static final ComposeExportConfigItem SYSCTLS = new ComposeExportConfigItem("sysctls", "sysctls", false);
-    public static final ComposeExportConfigItem SECRETS = new ComposeExportConfigItem("secrets", "secrets",
-            false);
     public static final ComposeExportConfigItem TTY = new ComposeExportConfigItem("tty", "tty", false);
     public static final ComposeExportConfigItem CPUSHARES = new ComposeExportConfigItem("cpuShares",
             "cpu_shares",

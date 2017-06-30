@@ -1,4 +1,5 @@
 from common_fixtures import *  # NOQA
+import yaml
 from cattle import ApiError
 import requests
 
@@ -168,3 +169,76 @@ def test_secret_multi_host(secret_context, super_client):
     c = client.wait_success(c)
     assert c.state == 'running'
     assert c.hosts()[0].id == host2.id
+
+
+def test_service_secrets_fields(context, secret_context):
+    client = secret_context.client
+    env = _create_stack(client)
+
+    image_uuid = secret_context.image_uuid
+
+    sclient = secret_context.client
+    secret1 = sclient.create_secret(name=random_str(),
+                                    value='foo')
+    assert secret1.state == 'creating'
+    assert secret1.value == 'foo'
+    secret1 = sclient.wait_success(secret1)
+
+    secret1 = sclient.reload(secret1)
+    assert secret1.value is None
+
+    secret2 = sclient.create_secret(name=random_str(),
+                                    value='bar')
+    assert secret2.state == 'creating'
+    assert secret2.value == 'bar'
+    secret2 = sclient.wait_success(secret2)
+
+    secret2 = sclient.reload(secret2)
+    assert secret2.value is None
+
+    secrets = [
+        {
+           "name": "my_secret1",
+           "secretId": secret1.id,
+        },
+        {
+            "name": "my_secret2",
+            "secretId": secret2.id,
+            "mode": "444",
+            "uid": "0",
+            "gid": "0",
+        }
+    ]
+    launch_config = {"imageUuid": image_uuid,
+                     "secrets": secrets,
+                     }
+    service = client. \
+        create_service(name=random_num(),
+                       stackId=env.id,
+                       launchConfig=launch_config,
+                       retainIp=True
+                       )
+    service = client.wait_success(service)
+
+    compose_config = env.exportconfig()
+    docker_yml = yaml.load(compose_config.dockerComposeConfig)
+    assert "version" in docker_yml
+    assert docker_yml["version"] == "2"
+    svc = docker_yml['services'][service.name]
+    assert len(docker_yml["secrets"]) == 2
+    assert secret1.name in docker_yml["secrets"].keys()
+    assert secret2.name in docker_yml["secrets"].keys()
+    assert len(svc['secrets']) == 2
+    assert svc['secrets'][0] == secret1.name
+    assert svc['secrets'][1]['uid'] == '0'
+    assert svc['secrets'][1]['gid'] == '0'
+    assert svc['secrets'][1]['mode'] == '444'
+    assert svc['secrets'][1]['source'] == secret2.name
+    assert svc['secrets'][1]['target'] == 'my_secret2'
+
+
+def _create_stack(client):
+    env = client.create_stack(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+    return env
