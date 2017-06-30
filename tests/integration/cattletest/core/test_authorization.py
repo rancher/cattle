@@ -364,7 +364,6 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'kubernetesStack',
         'kubernetesStackUpgrade',
         'label',
-        'ldapconfig',
         'loadBalancerService',
         'localAuthConfig',
         'logConfig',
@@ -514,38 +513,6 @@ def test_azure_auth(admin_user_client, user_client, project_client):
         'adminAccountUsername': 'cr',
         'accessMode': 'cr',
         'domain': 'cr'
-    })
-
-
-def test_ldap_auth(admin_user_client, user_client, project_client):
-    assert 'ldapconfig' not in user_client.schema.types
-    assert 'ldapconfig' not in project_client.schema.types
-
-    auth_check(admin_user_client.schema, 'ldapconfig', 'cru', {
-        'accessMode': 'cr',
-        'domain': 'cr',
-        'groupSearchDomain': 'cr',
-        'enabled': 'cr',
-        'groupNameField': 'cr',
-        'groupObjectClass': 'cr',
-        'groupSearchField': 'cr',
-        'loginDomain': 'cr',
-        'name': 'r',
-        'port': 'cr',
-        'server': 'cr',
-        'serviceAccountPassword': 'cro',
-        'serviceAccountUsername': 'cr',
-        'tls': 'cr',
-        'userDisabledBitMask': 'cr',
-        'userEnabledAttribute': 'cr',
-        'userLoginField': 'cr',
-        'userNameField': 'cr',
-        'userObjectClass': 'cr',
-        'userSearchField': 'cr',
-        'groupMemberMappingAttribute': 'cr',
-        'userMemberAttribute': 'cr',
-        'connectionTimeout': 'cr',
-        'allowedIdentities': 'cr'
     })
 
 

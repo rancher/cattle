@@ -65,7 +65,6 @@ import io.cattle.platform.iaas.api.auth.dao.impl.PasswordDaoImpl;
 import io.cattle.platform.iaas.api.auth.identity.Token;
 import io.cattle.platform.iaas.api.auth.integration.azure.AzureConfig;
 import io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP.OpenLDAPConfig;
-import io.cattle.platform.iaas.api.auth.integration.ldap.ad.ADConfig;
 import io.cattle.platform.iaas.api.auth.integration.local.ChangeSecretActionHandler;
 import io.cattle.platform.iaas.api.auth.integration.local.LocalAuthConfig;
 import io.cattle.platform.iaas.api.auth.projects.Member;
@@ -415,7 +414,6 @@ public class ApiServerConfig {
                 Token.class,
                 Member.class,
                 Identity.class,
-                ADConfig.class,
                 OpenLDAPConfig.class,
                 LocalAuthConfig.class,
                 AzureConfig.class
