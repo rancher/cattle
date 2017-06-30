@@ -372,7 +372,7 @@
     <process:process name="volume.activate" resourceType="volume" start="inactive,registering,detached" transitioning="activating" done="active" />
     <process:process name="volume.allocate" resourceType="volume" stateField="allocationState" start="inactive" transitioning="activating" done="active" />
     <process:process name="volume.deallocate" resourceType="volume" stateField="allocationState" start="activating,active" transitioning="deactivating" done="inactive" />
-    <process:process name="volume.deactivate" resourceType="volume" start="registering,creating,active,activating,updating-active,updating-inactive" transitioning="deactivating" done="deactivating=detached,activating=inactive" />
+    <process:process name="volume.deactivate" resourceType="volume" start="requested,registering,creating,active,activating,updating-active,updating-inactive" transitioning="deactivating" done="deactivating=detached,activating=inactive" />
     <process:process name="volume.reverttosnapshot" resourceType="volume" start="active,inactive" transitioning="active=reverting-active,inactive=reverting-inactive" done="reverting-active=active,reverting-inactive=inactive" />
     <process:process name="volume.restorefrombackup" resourceType="volume" start="active,inactive" transitioning="active=restoring-active,inactive=restoring-inactive" done="restoring-active=active,restoring-inactive=inactive" />
     <process:process name="volume.remove" resourceType="volume" start="requested,inactive,detached,deactivating,registering,updating-active,updating-inactive" transitioning="removing" done="removed" />
