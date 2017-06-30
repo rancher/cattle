@@ -1176,7 +1176,7 @@ def test_external_svc_healthcheck(client, context):
     # test rancher-compose export
     compose_config = env.exportconfig()
     assert compose_config is not None
-    document = yaml.load(compose_config.rancherComposeConfig)
+    document = yaml.load(compose_config.dockerComposeConfig)
     assert document['services'][service.name]['health_check'] is not None
 
 

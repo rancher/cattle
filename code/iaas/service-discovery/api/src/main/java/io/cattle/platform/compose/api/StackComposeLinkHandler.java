@@ -46,10 +46,9 @@ public class StackComposeLinkHandler implements LinkHandler {
         List<? extends Service> services = objectManager.find(Service.class, SERVICE.STACK_ID, stack.getId(),
                 SERVICE.REMOVED, null);
         String dockerCompose = composeExportService.buildDockerComposeConfig(services, stack);
-        String rancherCompose = composeExportService.buildRancherComposeConfig(services);
 
-        if (StringUtils.isNotEmpty(dockerCompose) || StringUtils.isNotEmpty(rancherCompose)) {
-            ByteArrayOutputStream baos = zipFiles(dockerCompose, rancherCompose);
+        if (StringUtils.isNotEmpty(dockerCompose)) {
+            ByteArrayOutputStream baos = zipFiles(dockerCompose);
             HttpServletResponse response = request.getServletContext().getResponse();
             response.setContentLength(baos.toByteArray().length);
             response.setContentType("application/zip");
@@ -64,12 +63,11 @@ public class StackComposeLinkHandler implements LinkHandler {
         return null;
     }
 
-    private ByteArrayOutputStream zipFiles(String dockerCompose, String rancherCompose) throws IOException {
+    private ByteArrayOutputStream zipFiles(String dockerCompose) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ZipOutputStream zos = new ZipOutputStream(baos);
         try {
             zipFile(dockerCompose, zos, "docker-compose.yml");
-            zipFile(rancherCompose, zos, "rancher-compose.yml");
         } finally {
             zos.flush();
             baos.flush();

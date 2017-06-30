@@ -1851,9 +1851,6 @@ def test_export_config(client, context):
     assert svc["ulimits"] == {"cpu": {"hard": 1234, "soft": 1234},
                               "nporc": 1234}
 
-    rancher_yml = yaml.load(compose_config.rancherComposeConfig)
-    svc = rancher_yml['services'][service.name]
-    assert 'scale' not in svc
     updated = {"$$id$$$$foo$$bar$$$$": "$${HOSTNAME}"}
     metadata = {"$$bar": {"metadata": [updated]}}
     assert svc['metadata'] is not None

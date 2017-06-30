@@ -2034,9 +2034,6 @@ def test_export_config(client, context):
                               "nporc": 1234}
     assert svc["sysctls"] == {"net.ipv4.ip_forward": "1"}
 
-    rancher_yml = yaml.load(compose_config.rancherComposeConfig)
-    svc = rancher_yml['services'][service.name]
-    assert 'scale' not in svc
     updated = {"$$id$$$$foo$$bar$$$$": "$${HOSTNAME}"}
     metadata = {"$$bar": {"metadata": [updated]}}
     assert svc['metadata'] is not None
@@ -3717,7 +3714,7 @@ def test_max_scale(new_context):
 
     compose_config = env.exportconfig()
     assert compose_config is not None
-    rancher_yml = yaml.load(compose_config.rancherComposeConfig)
+    rancher_yml = yaml.load(compose_config.dockerComposeConfig)
     svc = rancher_yml['services'][service.name]
     assert svc['scale_max'] == 4
     assert svc['scale_increment'] == 2

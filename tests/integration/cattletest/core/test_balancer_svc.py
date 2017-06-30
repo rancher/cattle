@@ -91,7 +91,7 @@ def test_validate_balancer_svc_fields(client, image_uuid):
 
     assert compose_config is not None
     docker_yml = yaml.load(compose_config.dockerComposeConfig)
-    y = yaml.load(compose_config.rancherComposeConfig)
+    y = yaml.load(compose_config.dockerComposeConfig)
     assert "lb_config" in y['services'][lb_svc.name]
     lb = y['services'][lb_svc.name]["lb_config"]
     assert 'metadata' not in y['services'][lb_svc.name]
@@ -342,9 +342,9 @@ def test_validate_svc_fields(client, image_uuid):
     compose_config = env.exportconfig()
 
     assert compose_config is not None
-    docker_yml = yaml.load(compose_config.rancherComposeConfig)
+    docker_yml = yaml.load(compose_config.dockerComposeConfig)
     assert 'metadata' not in docker_yml['services'][svc.name]
-    y = yaml.load(compose_config.rancherComposeConfig)
+    y = yaml.load(compose_config.dockerComposeConfig)
     assert "lb_config" in y['services'][svc.name]
     lb = y['services'][svc.name]["lb_config"]
     assert lb is not None
@@ -521,9 +521,9 @@ def test_validate_export_cross_stack(client, image_uuid):
 
     compose_config = env2.exportconfig()
     assert compose_config is not None
-    docker_yml = yaml.load(compose_config.rancherComposeConfig)
+    docker_yml = yaml.load(compose_config.dockerComposeConfig)
     assert 'metadata' not in docker_yml['services'][lb_svc.name]
-    y = yaml.load(compose_config.rancherComposeConfig)
+    y = yaml.load(compose_config.dockerComposeConfig)
     assert "lb_config" in y['services'][lb_svc.name]
     lb = y['services'][lb_svc.name]["lb_config"]
     assert lb is not None
