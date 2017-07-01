@@ -13,15 +13,11 @@ import java.util.Set;
 
 public interface AllocatorDao {
 
-    Host getHost(Instance instance);
-
     List<? extends Host> getHosts(Collection<? extends StoragePool> storagePoolsIds);
 
     boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate);
 
     void releaseAllocation(Instance instance);
-
-    boolean isVolumeInUseOnHost(long volumeId, long hostId);
 
     Set<Long> findHostsWithVolumeInUse(long volumeId);
 
@@ -30,4 +26,5 @@ public interface AllocatorDao {
     List<Instance> getUnmappedDeploymentUnitInstances(Long deploymentUnitId);
 
     Long getHostAffinityForVolume(Volume volume);
+
  }

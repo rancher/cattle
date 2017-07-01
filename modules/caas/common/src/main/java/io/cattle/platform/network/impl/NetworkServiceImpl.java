@@ -1,6 +1,5 @@
 package io.cattle.platform.network.impl;
 
-import io.cattle.platform.core.constants.DockerInstanceConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.dao.NetworkDao;
@@ -111,8 +110,8 @@ public class NetworkServiceImpl implements NetworkService {
         }
 
         if (mode == null) {
-            if (instanceData.containsKey(DockerInstanceConstants.FIELD_NETWORK_MODE)) {
-                mode = ObjectUtils.toString(instanceData.get(DockerInstanceConstants.FIELD_NETWORK_MODE));
+            if (instanceData.containsKey(InstanceConstants.FIELD_NETWORK_MODE)) {
+                mode = ObjectUtils.toString(instanceData.get(InstanceConstants.FIELD_NETWORK_MODE));
             } else {
                 mode = NetworkConstants.NETWORK_MODE_MANAGED;
             }

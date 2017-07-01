@@ -1,10 +1,13 @@
 package io.cattle.platform.metadata.model;
 
+import io.cattle.platform.core.addon.PortInstance;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.object.util.DataAccessor;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class HostInfo implements MetadataObject {
     long id;
@@ -13,6 +16,7 @@ public class HostInfo implements MetadataObject {
     String state;
     String agentState;
     Map<String, String> labels;
+    Set<PortInstance> ports;
     String uuid;
     String hostname;
     Long milliCpu;
@@ -29,6 +33,8 @@ public class HostInfo implements MetadataObject {
         this.memory = host.getMemory();
         this.state = host.getState();
         this.agentState = host.getAgentState();
+        this.ports = new HashSet<>(
+                DataAccessor.fieldObjectList(host, HostConstants.FIELD_PUBLIC_ENDPOINTS, PortInstance.class));
     }
 
     public long getId() {
@@ -72,6 +78,10 @@ public class HostInfo implements MetadataObject {
         return agentState;
     }
 
+    public Set<PortInstance> getPorts() {
+        return ports;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -84,6 +94,7 @@ public class HostInfo implements MetadataObject {
         result = prime * result + ((memory == null) ? 0 : memory.hashCode());
         result = prime * result + ((milliCpu == null) ? 0 : milliCpu.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((ports == null) ? 0 : ports.hashCode());
         result = prime * result + ((state == null) ? 0 : state.hashCode());
         result = prime * result + ((uuid == null) ? 0 : uuid.hashCode());
         return result;
@@ -134,6 +145,11 @@ public class HostInfo implements MetadataObject {
             if (other.name != null)
                 return false;
         } else if (!name.equals(other.name))
+            return false;
+        if (ports == null) {
+            if (other.ports != null)
+                return false;
+        } else if (!ports.equals(other.ports))
             return false;
         if (state == null) {
             if (other.state != null)

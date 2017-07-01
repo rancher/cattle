@@ -16,15 +16,9 @@ public class FrameworkEvents {
     public static final String REPLY_PREFIX = "reply.";
 
     public static final String AGENT_REQUEST = "agent.request";
-    public static final String CONFIG_UPDATE = "config.update";
-    public static final String CONFIG_UPDATED = "config.updated";
-    public static final String SERVICE_UPDATE = "service.update";
-    public static final String GLOBAL_SERVICE_UPDATE = "global.service.update";
     public static final String RESOURCE_CHANGE = "resource.change";
-    public static final String STACK_UPDATE = "stack.update";
     public static final String CLEAR_CACHE = "clear.cache";
-    public static final String HOST_ENDPOINTS_UPDATE = "host.endpoints.update";
-    public static final String DEPLOYMENT_UNIT_UPDATE = "deployment.unit.update";
+    public static final String CONTAINER_EVENT = "container.event";
 
     public static final String AGENT_QUALIFIER = "agent";
 

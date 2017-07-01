@@ -4,6 +4,7 @@ import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.engine.manager.LoopFactory;
 import io.cattle.platform.engine.manager.LoopManager;
 import io.cattle.platform.engine.model.Loop;
+import io.cattle.platform.object.ObjectManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,11 +18,14 @@ public class LoopManagerImpl implements LoopManager {
     Map<String, Map<String, LoopWrapper>> loops = new HashMap<>();
     LoopFactory factory;
     ExecutorService executor;
+    ObjectManager objectManager;
     ScheduledExecutorService executorService;
 
-    public LoopManagerImpl(LoopFactory factory, ExecutorService executor, ScheduledExecutorService executorService) {
+    public LoopManagerImpl(LoopFactory factory, ExecutorService executor, ObjectManager objectManager, ScheduledExecutorService executorService) {
+        super();
         this.factory = factory;
         this.executor = executor;
+        this.objectManager = objectManager;
         this.executorService = executorService;
     }
 
@@ -60,6 +64,11 @@ public class LoopManagerImpl implements LoopManager {
             return null;
         }
         return loops.get(resourceKey);
+    }
+
+    @Override
+    public ListenableFuture<?> kick(String name, Class<?> type, Long id, Object input) {
+        return kick(name, objectManager.getType(type), id, input);
     }
 
 }

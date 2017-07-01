@@ -1,11 +1,10 @@
 package io.cattle.platform.docker.machine.api.filter;
 
-import static io.cattle.platform.core.constants.MachineConstants.*;
+import static io.cattle.platform.core.constants.HostConstants.*;
 
 import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.HostConstants;
-import io.cattle.platform.core.constants.MachineConstants;
 import io.cattle.platform.framework.secret.SecretsService;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -63,7 +62,7 @@ public class MachineValidationFilter extends AbstractValidationFilter {
     @Override
     public Object update(String type, String id, ApiRequest request, ResourceManager next) {
         Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
-        String extracted = DataAccessor.fromMap(data).withKey(MachineConstants.EXTRACTED_CONFIG_FIELD).as(String.class);
+        String extracted = DataAccessor.fromMap(data).withKey(EXTRACTED_CONFIG_FIELD).as(String.class);
         if (extracted != null) {
             try {
                 extracted = secretsService.encrypt(ApiUtils.getPolicy().getAccountId(), extracted);
@@ -71,7 +70,7 @@ public class MachineValidationFilter extends AbstractValidationFilter {
                 log.error("Failed to encrypt machine secrets", e);
                 throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "FailedEncryption");
             }
-            data.put(MachineConstants.EXTRACTED_CONFIG_FIELD, extracted);
+            data.put(EXTRACTED_CONFIG_FIELD, extracted);
         }
         return super.update(type, id, request, next);
     }

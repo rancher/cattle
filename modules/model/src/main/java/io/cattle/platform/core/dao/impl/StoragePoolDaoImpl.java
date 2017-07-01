@@ -1,13 +1,11 @@
 package io.cattle.platform.core.dao.impl;
 
-import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.StorageDriverTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 
-import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
@@ -17,7 +15,6 @@ import io.cattle.platform.core.dao.StoragePoolDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.StoragePoolHostMap;
-import io.cattle.platform.core.model.tables.records.StoragePoolHostMapRecord;
 import io.cattle.platform.core.model.tables.records.StoragePoolRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
@@ -234,46 +231,16 @@ public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDa
     }
 
     @Override
-    public List<? extends StoragePool> findBadPools(int count) {
-        return create().select(STORAGE_POOL.fields())
-                .from(STORAGE_POOL)
-                .join(ACCOUNT)
-                    .on(ACCOUNT.ID.eq(STORAGE_POOL.ACCOUNT_ID))
-                .where(STORAGE_POOL.REMOVED.isNull()
-                        .and(ACCOUNT.STATE.eq(AccountConstants.STATE_PURGED))
-                        .and(STORAGE_POOL.STATE.notIn(CommonStatesConstants.DEACTIVATING, CommonStatesConstants.REMOVING)))
-                .limit(count)
-                .fetchInto(StoragePoolRecord.class);
-    }
-
-    @Override
-    public List<? extends StoragePool> findBadDockerPools(int count) {
-        return create().select(STORAGE_POOL.fields())
+    public List<? extends StoragePool> findNonRemovedStoragePoolByHost(long hostId) {
+        return create()
+                .select(STORAGE_POOL.fields())
                 .from(STORAGE_POOL)
                 .join(STORAGE_POOL_HOST_MAP)
                     .on(STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID.eq(STORAGE_POOL.ID))
-                .join(HOST)
-                    .on(HOST.ID.eq(STORAGE_POOL_HOST_MAP.HOST_ID))
-                .where(STORAGE_POOL.REMOVED.isNull()
-                        .and(STORAGE_POOL.KIND.eq("docker"))
-                        .and(HOST.STATE.eq(AccountConstants.STATE_PURGED))
-                        .and(STORAGE_POOL.STATE.notIn(CommonStatesConstants.DEACTIVATING, CommonStatesConstants.REMOVING)))
-                .limit(count)
+                .where(STORAGE_POOL_HOST_MAP.HOST_ID.eq(hostId)
+                        .and(STORAGE_POOL.REMOVED.isNull())
+                        .and(STORAGE_POOL_HOST_MAP.REMOVED.isNull()))
                 .fetchInto(StoragePoolRecord.class);
-    }
-
-    @Override
-    public List<? extends StoragePoolHostMap> findBadPoolMapss(int limit) {
-        return create().select(STORAGE_POOL_HOST_MAP.fields())
-                .from(STORAGE_POOL_HOST_MAP)
-                .join(STORAGE_POOL)
-                    .on(STORAGE_POOL.ID.eq(STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID))
-                .join(HOST)
-                    .on(HOST.ID.eq(STORAGE_POOL_HOST_MAP.HOST_ID))
-                .where(STORAGE_POOL_HOST_MAP.REMOVED.isNull()
-                        .and(HOST.STATE.eq(AccountConstants.STATE_PURGED).or(STORAGE_POOL.STATE.eq(AccountConstants.STATE_PURGED))))
-                .limit(limit)
-                .fetchInto(StoragePoolHostMapRecord.class);
     }
 
 }

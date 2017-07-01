@@ -2,6 +2,7 @@ package io.cattle.platform.metadata.service.impl;
 
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.engine.manager.LoopManager;
+import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.metadata.model.HostInfo;
 import io.cattle.platform.metadata.model.InstanceInfo;
@@ -24,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MetadataImpl implements Metadata {
 
     long accountId;
+    EventService eventService;
     MetadataObjectFactory factory;
     LoopManager loopManager;
     String[] loopNames;
@@ -39,10 +41,11 @@ public class MetadataImpl implements Metadata {
     Map<Class<?>, Map<String, ?>> maps = new HashMap<>();
 
 
-    public MetadataImpl(long accountId, MetadataObjectFactory factory, LoopManager loopManager, LockManager lockManager, ObjectManager objectManager,
-            String... loopNames) {
+    public MetadataImpl(long accountId, EventService eventService, MetadataObjectFactory factory, LoopManager loopManager, LockManager lockManager,
+            ObjectManager objectManager, String... loopNames) {
         super();
         this.accountId = accountId;
+        this.eventService = eventService;
         this.factory = factory;
         this.loopManager = loopManager;
         this.lockManager = lockManager;
@@ -144,6 +147,7 @@ public class MetadataImpl implements Metadata {
         return lockManager.lock(new ResourceChangeLock(type, id), () -> {
             T obj = objectManager.loadResource(clz, id);
             obj = operation.modify(obj);
+            ObjectUtils.publishChanged(eventService, objectManager, obj);
             changed(obj);
             return obj;
         });

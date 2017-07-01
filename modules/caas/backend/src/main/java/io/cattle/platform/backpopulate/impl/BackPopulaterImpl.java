@@ -1,27 +1,21 @@
 package io.cattle.platform.backpopulate.impl;
 
-import static io.cattle.platform.core.constants.DockerInstanceConstants.*;
-import static io.cattle.platform.core.model.tables.IpAddressTable.*;
+import static io.cattle.platform.core.constants.InstanceConstants.*;
 import static io.cattle.platform.core.model.tables.MountTable.*;
 import static io.cattle.platform.object.util.DataAccessor.*;
 
 import io.cattle.platform.backpopulate.BackPopulater;
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.constants.DockerInstanceConstants;
-import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.constants.PortConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.InstanceDao;
+import io.cattle.platform.core.dao.StoragePoolDao;
 import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.Mount;
-import io.cattle.platform.core.model.Nic;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
-import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.docker.constants.DockerStoragePoolConstants;
 import io.cattle.platform.docker.process.lock.DockerStoragePoolVolumeCreateLock;
 import io.cattle.platform.docker.transform.DockerInspectTransformVolume;
@@ -31,18 +25,13 @@ import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
-import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.lock.MountVolumeLock;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-
-import javax.sound.sampled.Port;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -54,6 +43,7 @@ public class BackPopulaterImpl implements BackPopulater {
 
     JsonMapper jsonMapper;
     VolumeDao volumeDao;
+    StoragePoolDao storagePoolDao;
     LockManager lockManager;
     DockerTransformer transformer;
     InstanceDao instanceDao;
@@ -76,27 +66,11 @@ public class BackPopulaterImpl implements BackPopulater {
     public void update(Instance instance) {
         Host host = objectManager.loadResource(Host.class, instance.getHostId());
 
-        String dockerIp = fieldString(instance, DockerInstanceConstants.FIELD_DOCKER_IP);
-        String hostIp = fieldString(host, HostConstants.FIELD_IP_ADDRESS);
-        String primaryIp = fieldString(instance, InstanceConstants.FIELD_PRIMARY_IP_ADDRESS);
-
-        List<String> ports = DataAccessor.fields(instance).withKey(DockerInstanceConstants.FIELD_DOCKER_PORTS).as(jsonMapper, List.class);
-
-        assignDockerIp(instance, dockerIp);
-
-        if (hostIpAddress != null && ports != null) {
-            processPorts(primaryIp, hostIpAddress, ports, instance, nic, host);
-        }
-
         processVolumes(instance, host);
 
         processLabels(instance);
 
         processRemainingFields(instance);
-
-        instanceDao.clearCacheInstanceData(instance.getId());
-
-        return null;
     }
 
     @SuppressWarnings("unchecked")
@@ -117,9 +91,9 @@ public class BackPopulaterImpl implements BackPopulater {
         transformer.transform(inspect, instance);
     }
 
-    private Map<String, StoragePool> getPoolsByName(Host host) {
+    private Map<String, StoragePool> getPoolsByName(long hostId) {
         Map<String, StoragePool> pools = new HashMap<>();
-        for (StoragePool pool : objectManager.mappedChildren(host, StoragePool.class)) {
+        for (StoragePool pool : storagePoolDao.findNonRemovedStoragePoolByHost(hostId)) {
             if (DockerStoragePoolConstants.DOCKER_KIND.equals(pool.getKind()) &&
                     (VolumeConstants.LOCAL_DRIVER.equals(pool.getDriverName()) || StringUtils.isEmpty(pool.getDriverName()))) {
                 pools.put(VolumeConstants.LOCAL_DRIVER, pool);
@@ -150,9 +124,7 @@ public class BackPopulaterImpl implements BackPopulater {
             return;
         }
 
-        StoragePool dockerLocalStoragePool = null;
-        Map<String, StoragePool> pools = getPoolsByName(host);
-
+        Map<String, StoragePool> pools = getPoolsByName(instance.getHostId());
         for (DockerInspectTransformVolume dVol : dockerVolumes) {
             StoragePool pool = pools.get(dVol.getDriver());
             if (pool == null) {
@@ -219,80 +191,13 @@ public class BackPopulaterImpl implements BackPopulater {
         });
     }
 
-    protected void assignDockerIp(Instance instance, String dockerIp) {
+    protected void assignDockerIp(Instance instance) {
         if ("true".equals(fieldString(instance, InstanceConstants.FIELD_MANAGED_IP))) {
             return;
         }
 
+        String dockerIp = fieldString(instance, InstanceConstants.FIELD_DOCKER_IP);
         setField(instance, InstanceConstants.FIELD_PRIMARY_IP_ADDRESS, dockerIp);
-    }
-
-    protected void processPorts(IpAddress primaryIp, IpAddress ipAddress, List<String> ports, Instance instance, Nic nic, final Host host) {
-        Long privateIpAddressId = primaryIp == null ? null : primaryIp.getId();
-
-        Map<Integer, Port> existing = new HashMap<>();
-        for (Port port : getObjectManager().children(instance, Port.class)) {
-            existing.put(port.getPrivatePort(), port);
-        }
-
-        Long publicIpAddressId = ipAddress == null ? null : ipAddress.getId();
-
-        for (String entry : ports) {
-            PortSpec spec = new PortSpec(entry);
-            Port port = existing.get(spec.getPrivatePort());
-
-            if (port == null) {
-                Port portObj = objectManager.newRecord(Port.class);
-                portObj.setAccountId(instance.getAccountId());
-                portObj.setKind(PortConstants.KIND_IMAGE);
-                portObj.setInstanceId(instance.getId());
-                portObj.setPublicPort(spec.getPublicPort());
-                portObj.setPrivatePort(spec.getPrivatePort());
-                portObj.setProtocol(spec.getProtocol());
-                if (StringUtils.isNotEmpty(spec.getIpAddress()) && !"0.0.0.0".equals(spec.getIpAddress())) {
-                    DataAccessor.fields(portObj).withKey(PortConstants.FIELD_BIND_ADDR).set(spec.getIpAddress());
-                } else {
-                    portObj.setPublicIpAddressId(publicIpAddressId);
-                }
-                portObj.setPrivateIpAddressId(privateIpAddressId);
-                portObj = objectManager.create(portObj);
-            } else {
-                String bindAddress = DataAccessor.fields(port).withKey(PortConstants.FIELD_BIND_ADDR).as(String.class);
-                boolean bindAddressNull = bindAddress == null;
-                if (!Objects.equals(port.getPublicPort(), spec.getPublicPort())
-                        || !Objects.equals(port.getPrivateIpAddressId(), privateIpAddressId)
-                        || (bindAddressNull && !Objects.equals(port.getPublicIpAddressId(), publicIpAddressId))
-                        || (!bindAddressNull && !bindAddress.equals(spec.getIpAddress()))){
-                    if (spec.getPublicPort() != null) {
-                        port.setPublicPort(spec.getPublicPort());
-                    }
-                    port.setPrivateIpAddressId(privateIpAddressId);
-                    if (StringUtils.isNotEmpty(spec.getIpAddress()) && !"0.0.0.0".equals(spec.getIpAddress())) {
-                        DataAccessor.fields(port).withKey(PortConstants.FIELD_BIND_ADDR).set(spec.getIpAddress());
-                    } else {
-                        port.setPublicIpAddressId(publicIpAddressId);
-                    }
-                    objectManager.persist(port);
-                }
-            }
-        }
-
-        List<String> publishedPorts = new ArrayList<>();
-        for (Port port : getObjectManager().children(instance, Port.class)) {
-            if (port.getRemoved() != null) {
-                continue;
-            }
-            createIgnoreCancel(port, null);
-            if (port.getPublicPort() != null) {
-                publishedPorts.add(new PortSpec(port).toSpec());
-            }
-        }
-        List<String> userPorts = DataAccessor.fieldStringList(instance, InstanceConstants.FIELD_PORTS);
-        if (DataAccessor.fieldStringList(instance, InstanceConstants.FIELD_USER_PORTS).isEmpty()) {
-            DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_USER_PORTS).set(userPorts);
-        }
-        DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_PORTS).set(publishedPorts);
-        objectManager.persist(instance);
     }
 
     @Override

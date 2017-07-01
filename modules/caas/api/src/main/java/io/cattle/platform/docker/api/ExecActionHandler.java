@@ -1,7 +1,7 @@
 package io.cattle.platform.docker.api;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.constants.DockerInstanceConstants;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.docker.api.model.ContainerExec;
@@ -49,9 +49,9 @@ public class ExecActionHandler implements ActionHandler {
         ContainerExec exec = request.proxyRequestObject(ContainerExec.class);
 
         String dockerId = DockerUtils.getDockerIdentifier(instance);
-        Map<String, Object> data = CollectionUtils.asMap(DockerInstanceConstants.DOCKER_ATTACH_STDIN, exec.getAttachStdin(),
-                DockerInstanceConstants.DOCKER_ATTACH_STDOUT, exec.getAttachStdout(), DockerInstanceConstants.DOCKER_TTY, exec.getTty(),
-                DockerInstanceConstants.DOCKER_CMD, exec.getCommand(), DockerInstanceConstants.DOCKER_CONTAINER, dockerId);
+        Map<String, Object> data = CollectionUtils.asMap(InstanceConstants.DOCKER_ATTACH_STDIN, exec.getAttachStdin(),
+                InstanceConstants.DOCKER_ATTACH_STDOUT, exec.getAttachStdout(), InstanceConstants.DOCKER_TTY, exec.getTty(),
+                InstanceConstants.DOCKER_CMD, exec.getCommand(), InstanceConstants.DOCKER_CONTAINER, dockerId);
 
         HostApiAccess apiAccess = apiService.getAccess(request, host.getId(), CollectionUtils.asMap("exec", data), EXEC_AGENT_PATH.get());
 

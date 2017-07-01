@@ -1,18 +1,13 @@
 package io.cattle.platform.process.host;
 
-import io.cattle.platform.async.utils.ResourceTimeoutException;
-import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HostConstants;
-import io.cattle.platform.core.constants.MachineConstants;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.HostTemplate;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.StoragePoolHostMap;
-import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.docker.constants.DockerHostConstants;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -23,11 +18,8 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
-import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataUtils;
-import io.cattle.platform.object.util.ObjectUtils;
-import io.cattle.platform.object.util.TransitioningUtils;
-import io.cattle.platform.util.exception.ExecutionException;
+import io.cattle.platform.util.resource.UUID;
 
 import java.util.Map;
 
@@ -62,23 +54,27 @@ public class HostProcessManager {
             driver = getDriverFromHostTemplate(host);
         }
 
+        String externalId = host.getExternalId();
+        if (externalId == null) {
+            externalId = UUID.randomUUID().toString();
+        }
+
+        String chainProcess = HostConstants.PROCESS_PROVISION;
         if (StringUtils.isBlank(driver)) {
-            return new HandlerResult().withChainProcessName(HostConstants.PROCESS_ACTIVATE);
+            chainProcess = HostConstants.PROCESS_ACTIVATE;
         }
 
-        PhysicalHost phyHost = objectManager.loadResource(PhysicalHost.class, host.getPhysicalHostId());
-        if (phyHost == null) {
-            phyHost = hostDao.createMachineForHost(host, driver);
-        }
-
-        return new HandlerResult(MachineConstants.FIELD_DRIVER, driver).withChainProcessName(HostConstants.PROCESS_PROVISION);
+        return new HandlerResult(
+                HostConstants.FIELD_EXTERNAL_ID, externalId,
+                HostConstants.FIELD_DRIVER, driver)
+                .withChainProcessName(chainProcess);
     }
 
     public static String getDriver(Object obj) {
         Map<String, Object> fields = DataUtils.getFields(obj);
         for (Map.Entry<String, Object> field : fields.entrySet()) {
-            if (StringUtils.endsWithIgnoreCase(field.getKey(), MachineConstants.CONFIG_FIELD_SUFFIX) && field.getValue() != null) {
-                return StringUtils.removeEndIgnoreCase(field.getKey(), MachineConstants.CONFIG_FIELD_SUFFIX);
+            if (StringUtils.endsWithIgnoreCase(field.getKey(), HostConstants.CONFIG_FIELD_SUFFIX) && field.getValue() != null) {
+                return StringUtils.removeEndIgnoreCase(field.getKey(), HostConstants.CONFIG_FIELD_SUFFIX);
             }
         }
 
@@ -96,78 +92,8 @@ public class HostProcessManager {
     }
 
     public HandlerResult provision(ProcessState state, ProcessInstance process) {
-        final Host host = (Host)state.getResource();
-        PhysicalHost physicalHost = objectManager.loadResource(PhysicalHost.class, host.getPhysicalHostId());
-        if (physicalHost == null) {
-            return null;
-        }
-
-        physicalHost = resourceMonitor.waitFor(physicalHost, 5 * 60000, new ResourcePredicate<PhysicalHost>() {
-            @Override
-            public boolean evaluate(final PhysicalHost obj) {
-                boolean transitioning = objectMetaDataManager.isTransitioningState(obj.getClass(),
-                        obj.getState());
-                if (!transitioning) {
-                    return true;
-                }
-
-                objectManager.reload(host);
-                if (!host.getState().equals(HostConstants.STATE_PROVISIONING)) {
-                    throw new ResourceTimeoutException(host, "provisioning canceled");
-                }
-
-                String message = TransitioningUtils.getTransitioningMessage(obj);
-                objectManager.setFields(host, ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD, message);
-                DeferredUtils.nest(new Runnable() {
-                    @Override
-                    public void run() {
-                        ObjectUtils.publishChanged(eventService, objectManager, host);
-                    }
-                });
-
-                return false;
-            }
-
-            @Override
-            public String getMessage() {
-                return "machine to provision";
-            }
-        });
-
-        if (!CommonStatesConstants.ACTIVE.equals(physicalHost.getState())) {
-            processManager.scheduleStandardProcess(StandardProcess.ERROR, host, null);
-            String message = TransitioningUtils.getTransitioningMessage(physicalHost);
-            ExecutionException e = new ExecutionException(message);
-            e.setResources(host);
-            throw e;
-        }
-
-        try {
-            resourceMonitor.waitFor(host, 5 * 60000, new ResourcePredicate<Host>() {
-                @Override
-                public boolean evaluate(Host obj) {
-                    if (!host.getState().equals(HostConstants.STATE_PROVISIONING)) {
-                        throw new ResourceTimeoutException(host, "provisioning canceled");
-                    }
-
-                    return obj.getAgentId() != null;
-                }
-
-                @Override
-                public String getMessage() {
-                    return "agent to check in";
-                }
-            });
-        } catch (ResourceTimeoutException rte) {
-            processManager.scheduleStandardProcess(StandardProcess.ERROR, host, null);
-            ExecutionException e = new ExecutionException(rte.getMessage());
-            e.setResources(host);
-            throw e;
-        }
-
-        return new HandlerResult(
-                MachineConstants.FIELD_DRIVER, physicalHost.getDriver()
-                ).withChainProcessName(processManager.getProcessName(host, StandardProcess.ACTIVATE));
+        return new HandlerResult()
+                .withChainProcessName(processManager.getProcessName(state.getResource(), StandardProcess.ACTIVATE));
     }
 
     public HandlerResult remove(final ProcessState state, ProcessInstance process) {
@@ -175,11 +101,6 @@ public class HostProcessManager {
 
         removeInstances(host);
         removePools(host);
-
-        PhysicalHost physHost = objectManager.loadResource(PhysicalHost.class, host.getPhysicalHostId());
-        if (physHost != null) {
-            processManager.executeDeactivateThenScheduleRemove(physHost, null);
-        }
 
         return null;
     }

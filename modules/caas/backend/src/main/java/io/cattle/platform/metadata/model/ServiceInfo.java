@@ -1,14 +1,15 @@
 package io.cattle.platform.metadata.model;
 
-import io.cattle.platform.core.addon.PortBinding;
+import io.cattle.platform.core.addon.PortInstance;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.object.util.DataAccessor;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class ServiceInfo implements MetadataObject  {
 
@@ -26,10 +27,11 @@ public class ServiceInfo implements MetadataObject  {
     String vip;
     String state;
     String healthState;
+    String selector;
 
     List<String> externalIps;
     List<String> sidekicks;
-    List<PortBinding> ports = new ArrayList<>();
+    Set<PortInstance> ports;
     Map<String, Object> links;
     Map<String, String> labels;
     Map<String, Object> metadata;
@@ -50,11 +52,12 @@ public class ServiceInfo implements MetadataObject  {
         this.healthState = service.getHealthState();
         this.externalIps = DataAccessor.fieldStringList(service, ServiceConstants.FIELD_EXTERNALIPS);
         this.sidekicks = ServiceUtil.getSidekickNames(service);
-        this.ports = DataAccessor.fieldObjectList(service, ServiceConstants.FIELD_PUBLIC_ENDPOINTS, PortBinding.class);
+        this.ports = new HashSet<>(DataAccessor.fieldObjectList(service, ServiceConstants.FIELD_PUBLIC_ENDPOINTS, PortInstance.class));
         this.links = DataAccessor.fieldMapRO(service, ServiceConstants.FIELD_SERVICE_LINKS);
         this.labels = DataAccessor.getLabels(service);
         this.metadata = DataAccessor.fieldMapRO(service, ServiceConstants.FIELD_METADATA);
         this.system = service.getSystem();
+        this.selector = service.getSelectorContainer();
     }
 
     public long getId() {
@@ -114,10 +117,6 @@ public class ServiceInfo implements MetadataObject  {
         return sidekicks;
     }
 
-    public List<PortBinding> getPorts() {
-        return ports;
-    }
-
     public Map<String, Object> getLinks() {
         return links;
     }
@@ -132,6 +131,10 @@ public class ServiceInfo implements MetadataObject  {
 
     public boolean isSystem() {
         return system;
+    }
+
+    public Set<PortInstance> getPorts() {
+        return ports;
     }
 
     @Override
@@ -150,6 +153,7 @@ public class ServiceInfo implements MetadataObject  {
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((ports == null) ? 0 : ports.hashCode());
         result = prime * result + ((scale == null) ? 0 : scale.hashCode());
+        result = prime * result + ((selector == null) ? 0 : selector.hashCode());
         result = prime * result + ((sidekicks == null) ? 0 : sidekicks.hashCode());
         result = prime * result + ((stackId == null) ? 0 : stackId.hashCode());
         result = prime * result + ((state == null) ? 0 : state.hashCode());
@@ -226,6 +230,11 @@ public class ServiceInfo implements MetadataObject  {
                 return false;
         } else if (!scale.equals(other.scale))
             return false;
+        if (selector == null) {
+            if (other.selector != null)
+                return false;
+        } else if (!selector.equals(other.selector))
+            return false;
         if (sidekicks == null) {
             if (other.sidekicks != null)
                 return false;
@@ -259,6 +268,10 @@ public class ServiceInfo implements MetadataObject  {
         } else if (!vip.equals(other.vip))
             return false;
         return true;
+    }
+
+    public String getSelector() {
+        return selector;
     }
 
 }

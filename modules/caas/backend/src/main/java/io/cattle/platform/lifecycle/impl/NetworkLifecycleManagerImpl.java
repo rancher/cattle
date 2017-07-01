@@ -2,7 +2,6 @@ package io.cattle.platform.lifecycle.impl;
 
 import static io.cattle.platform.object.util.DataAccessor.*;
 
-import io.cattle.platform.core.constants.DockerInstanceConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.model.Instance;
@@ -102,12 +101,12 @@ public class NetworkLifecycleManagerImpl implements NetworkLifecycleManager {
         }
 
         for (String dns : DataAccessor.fieldStringList(network, NetworkConstants.FIELD_DNS)) {
-            List<String> dnsList = appendToFieldStringList(instance, DockerInstanceConstants.FIELD_DNS, dns);
-            setField(instance, DockerInstanceConstants.FIELD_DNS, dnsList);
+            List<String> dnsList = appendToFieldStringList(instance, InstanceConstants.FIELD_DNS, dns);
+            setField(instance, InstanceConstants.FIELD_DNS, dnsList);
         }
 
         for (String dnsSearch : fieldStringList(network, NetworkConstants.FIELD_DNS_SEARCH)) {
-            List<String> dnsSearchList = appendToFieldStringList(instance, DockerInstanceConstants.FIELD_DNS_SEARCH, dnsSearch);
+            List<String> dnsSearchList = appendToFieldStringList(instance, InstanceConstants.FIELD_DNS_SEARCH, dnsSearch);
             String stackDns = null;
             if (stack != null) {
                 stackDns = ServiceUtil.getStackNamespace(stack.getName());
@@ -115,7 +114,7 @@ public class NetworkLifecycleManagerImpl implements NetworkLifecycleManager {
             if (!dnsSearchList.contains(stackDns)) {
                 dnsSearchList.add(stackDns);
             }
-            setField(instance, DockerInstanceConstants.FIELD_DNS_SEARCH, dnsSearchList);
+            setField(instance, InstanceConstants.FIELD_DNS_SEARCH, dnsSearchList);
         }
     }
 

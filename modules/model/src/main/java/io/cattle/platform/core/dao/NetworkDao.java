@@ -7,8 +7,6 @@ import java.util.List;
 
 public interface NetworkDao {
 
-    List<? extends Network> findBadNetworks(int limit);
-
     Network getNetworkByKind(long accountId, String kind);
 
     Network getNetworkByName(long accountId, String name);

@@ -4,9 +4,7 @@ import static io.cattle.platform.object.util.DataAccessor.*;
 
 import io.cattle.platform.backpopulate.BackPopulater;
 import io.cattle.platform.core.addon.LogConfig;
-import io.cattle.platform.core.constants.DockerInstanceConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.Instance;
@@ -49,13 +47,12 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
     SecretsLifecycleManager secretsLifecycle;
     AllocationLifecycleManager allocationLifecycle;
     ServiceLifecycleManager serviceLifecycle;
-    InstanceDao instanceDao;
 
     public InstanceLifecycleManagerImpl(K8sLifecycleManager k8sLifecycle, VirtualMachineLifecycleManager vmLifecycle, VolumeLifecycleManager volumeLifecycle,
             ObjectManager objectManager, ImageCredentialLookup credLookup, ServiceDao svcDao, TransactionDelegate transaction,
             NetworkLifecycleManager networkLifecycle, AgentLifecycleManager agentLifecycle, BackPopulater backPopulator,
             RestartLifecycleManager restartLifecycle, SecretsLifecycleManager secretsLifecycle, AllocationLifecycleManager allocationLifecycle,
-            ServiceLifecycleManager serviceLifecycle, InstanceDao instanceDao) {
+            ServiceLifecycleManager serviceLifecycle) {
         super();
         this.k8sLifecycle = k8sLifecycle;
         this.vmLifecycle = vmLifecycle;
@@ -71,7 +68,6 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
         this.secretsLifecycle = secretsLifecycle;
         this.allocationLifecycle = allocationLifecycle;
         this.serviceLifecycle = serviceLifecycle;
-        this.instanceDao = instanceDao;
     }
 
     @Override
@@ -116,8 +112,6 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
         networkLifecycle.assignNetworkResources(instance);
 
         objectManager.persist(instance);
-
-        instanceDao.clearCacheInstanceData(instance.getId());
     }
 
     @Override
@@ -224,7 +218,7 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
     }
 
     private void setupDockerBuild(Instance instance) {
-        DockerBuild build = field(instance, DockerInstanceConstants.FIELD_BUILD, DockerBuild.class);
+        DockerBuild build = field(instance, InstanceConstants.FIELD_BUILD, DockerBuild.class);
 
         if (build == null) {
             return;
@@ -232,11 +226,10 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
 
         String imageUuid = fieldString(instance, InstanceConstants.FIELD_IMAGE_UUID);
         if (imageUuid != null) {
-            String tag = StringUtils.removeStart(imageUuid, "docker:");
-            build.setTag(tag);
+            build.setTag(imageUuid);
         }
 
-        setField(instance, DockerInstanceConstants.FIELD_BUILD, build);
+        setField(instance, InstanceConstants.FIELD_BUILD, build);
     }
 
 }

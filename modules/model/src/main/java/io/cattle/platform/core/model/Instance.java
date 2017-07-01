@@ -496,6 +496,17 @@ public interface Instance extends Serializable {
     @Column(name = "network_id", precision = 19)
     public Long getNetworkId();
 
+    /**
+     * Setter for <code>cattle.instance.service_index</code>.
+     */
+    public void setServiceIndex(Integer value);
+
+    /**
+     * Getter for <code>cattle.instance.service_index</code>.
+     */
+    @Column(name = "service_index", precision = 10)
+    public Integer getServiceIndex();
+
     // -------------------------------------------------------------------------
     // FROM and INTO
     // -------------------------------------------------------------------------

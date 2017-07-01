@@ -200,17 +200,6 @@ public interface Host extends Serializable {
     public Long getAgentId();
 
     /**
-     * Setter for <code>cattle.host.physical_host_id</code>.
-     */
-    public void setPhysicalHostId(Long value);
-
-    /**
-     * Getter for <code>cattle.host.physical_host_id</code>.
-     */
-    @Column(name = "physical_host_id", precision = 19)
-    public Long getPhysicalHostId();
-
-    /**
      * Setter for <code>cattle.host.is_public</code>.
      */
     public void setIsPublic(Boolean value);
@@ -297,6 +286,17 @@ public interface Host extends Serializable {
      */
     @Column(name = "host_template_id", precision = 19)
     public Long getHostTemplateId();
+
+    /**
+     * Setter for <code>cattle.host.external_id</code>.
+     */
+    public void setExternalId(String value);
+
+    /**
+     * Getter for <code>cattle.host.external_id</code>.
+     */
+    @Column(name = "external_id", length = 128)
+    public String getExternalId();
 
     // -------------------------------------------------------------------------
     // FROM and INTO

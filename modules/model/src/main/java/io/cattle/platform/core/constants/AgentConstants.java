@@ -31,4 +31,6 @@ public class AgentConstants {
     public static final String ENVIRONMENT_ROLE = "environment";
     public static final String ENVIRONMENT_ADMIN_ROLE = "environmentAdmin";
     public static final String SYSTEM_ROLE = "system";
+
+    public static final String REPORTED_UUID = "reportedUuid";
 }

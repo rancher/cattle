@@ -1,7 +1,7 @@
 package io.cattle.platform.docker.api;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.constants.DockerInstanceConstants;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.docker.api.model.ContainerLogs;
@@ -49,7 +49,7 @@ public class ContainerLogsActionHandler implements ActionHandler {
         ContainerLogs logs = request.proxyRequestObject(ContainerLogs.class);
 
         String dockerId = DockerUtils.getDockerIdentifier(container);
-        Map<String, Object> data = CollectionUtils.asMap(DockerInstanceConstants.DOCKER_CONTAINER, dockerId, "Lines", logs.getLines(), "Follow",
+        Map<String, Object> data = CollectionUtils.asMap(InstanceConstants.DOCKER_CONTAINER, dockerId, "Lines", logs.getLines(), "Follow",
                 logs.getFollow());
 
         HostApiAccess apiAccess = apiService.getAccess(request, host.getId(), CollectionUtils.asMap("logs", data), HOST_LOGS_PATH.get());

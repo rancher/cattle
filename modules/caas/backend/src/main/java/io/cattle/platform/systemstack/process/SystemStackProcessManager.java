@@ -8,15 +8,15 @@ import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.engine.handler.HandlerResult;
+import io.cattle.platform.engine.manager.LoopFactory;
+import io.cattle.platform.engine.manager.LoopManager;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
-import io.cattle.platform.systemstack.listener.SystemStackUpdate;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -36,29 +36,23 @@ public class SystemStackProcessManager {
 
     ObjectManager objectManager;
     ObjectProcessManager processManager;
-    SystemStackUpdate update;
+    LoopManager loopManager;
     ResourceMonitor resourceMonitor;
     NetworkDao networkDao;
 
-    public SystemStackProcessManager(ObjectManager objectManager, ObjectProcessManager processManager, SystemStackUpdate update,
+    public SystemStackProcessManager(ObjectManager objectManager, ObjectProcessManager processManager, LoopManager loopManager,
             ResourceMonitor resourceMonitor, NetworkDao networkDao) {
         this.objectManager = objectManager;
         this.processManager = processManager;
-        this.update = update;
+        this.loopManager = loopManager;
         this.resourceMonitor = resourceMonitor;
         this.networkDao = networkDao;
     }
 
     public HandlerResult accountCreate(ProcessState state, ProcessInstance process) {
         final Account account = (Account)state.getResource();
-        DeferredUtils.defer(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    update.createStacks(account);
-                } catch (IOException e) {
-                }
-            }
+        DeferredUtils.defer(() -> {
+                loopManager.kick(LoopFactory.SYSTEM_STACK, Account.class, account.getId(), null);
         });
         return null;
     }
@@ -69,7 +63,7 @@ public class SystemStackProcessManager {
             return null;
         }
 
-        String systemStackType = SystemStackUpdate.getStackTypeFromExternalId(systemStack.getExternalId());
+        String systemStackType = AccountConstants.getStackTypeFromExternalId(systemStack.getExternalId());
         if (systemStackType == null) {
             return null;
         }

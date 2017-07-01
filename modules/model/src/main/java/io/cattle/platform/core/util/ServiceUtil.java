@@ -218,7 +218,6 @@ public class ServiceUtil {
             healthCheck.setUnhealthyThreshold(3);
             healthCheck.setResponseTimeout(2000);
             healthCheck.setInitializingTimeout(60000);
-            healthCheck.setReinitializingTimeout(60000);
             launchConfig.put(InstanceConstants.FIELD_HEALTH_CHECK, healthCheck);
         }
     }

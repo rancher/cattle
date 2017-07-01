@@ -1,10 +1,10 @@
 package io.cattle.platform.allocator.service;
 
-import io.cattle.platform.core.model.Port;
+import io.cattle.platform.core.addon.PortInstance;
 import io.cattle.platform.util.resource.UUID;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 public class AllocationCandidate {
 
@@ -12,7 +12,7 @@ public class AllocationCandidate {
     Long accountId;
     Long host;
     String hostUuid;
-    List<Port> usedPorts;
+    Set<PortInstance> usedPorts;
 
     public AllocationCandidate() {
     }
@@ -21,10 +21,10 @@ public class AllocationCandidate {
         this.accountId = candidate.accountId;
         this.host = candidate.host;
         this.hostUuid = candidate.hostUuid;
-        this.usedPorts = candidate.usedPorts == null ? new ArrayList<>() : new ArrayList<>(candidate.usedPorts);
+        this.usedPorts = candidate.usedPorts == null ? new HashSet<>() : new HashSet<>(candidate.usedPorts);
     }
 
-    public AllocationCandidate(Long hostId, String hostUuid, List<Port> usedPorts, Long accountId) {
+    public AllocationCandidate(Long hostId, String hostUuid, Set<PortInstance> usedPorts, Long accountId) {
         super();
         this.accountId = accountId;
         this.host = hostId;
@@ -48,7 +48,7 @@ public class AllocationCandidate {
         return hostUuid;
     }
 
-    public List<Port> getUsedPorts() {
+    public Set<PortInstance> getUsedPorts() {
         return usedPorts;
     }
 

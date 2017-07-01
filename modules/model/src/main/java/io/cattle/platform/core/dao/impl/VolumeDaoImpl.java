@@ -1,6 +1,5 @@
 package io.cattle.platform.core.dao.impl;
 
-import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.MountTable.*;
@@ -11,19 +10,16 @@ import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
 
 import io.cattle.platform.core.addon.MountEntry;
-import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.StoragePoolConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.VolumeDao;
-import io.cattle.platform.core.model.Mount;
 import io.cattle.platform.core.model.StorageDriver;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.tables.VolumeTable;
-import io.cattle.platform.core.model.tables.records.MountRecord;
 import io.cattle.platform.core.model.tables.records.VolumeRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.deferred.util.DeferredUtils;
@@ -283,47 +279,6 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
                 .where(VOLUME.REMOVED.isNull()
                         .and(VOLUME.STORAGE_POOL_ID.eq(storagePoolId)))
                 .fetchInto(VolumeRecord.class);
-    }
-
-    @Override
-    public List<? extends Volume> findBadVolumes(int count) {
-        return create().select(VOLUME.fields())
-                .from(VOLUME)
-                .join(ACCOUNT)
-                    .on(ACCOUNT.ID.eq(VOLUME.ACCOUNT_ID))
-                .where(VOLUME.REMOVED.isNull()
-                        .and(ACCOUNT.STATE.eq(AccountConstants.STATE_PURGED))
-                        .and(VOLUME.STATE.notIn(CommonStatesConstants.DEACTIVATING, CommonStatesConstants.REMOVING)))
-                .limit(count)
-                .fetchInto(VolumeRecord.class);
-    }
-
-    @Override
-    public List<? extends Volume> findBadNativeVolumes(int count) {
-        return create().select(VOLUME.fields())
-                .from(VOLUME)
-                .join(MOUNT)
-                    .on(MOUNT.VOLUME_ID.eq(VOLUME.ID))
-                .join(INSTANCE)
-                    .on(MOUNT.INSTANCE_ID.eq(INSTANCE.ID))
-                .where(INSTANCE.STATE.eq(AccountConstants.STATE_PURGED)
-                        .and(VOLUME.STATE.eq(CommonStatesConstants.INACTIVE))
-                        .and(INSTANCE.NATIVE_CONTAINER.isTrue()))
-                .limit(count)
-                .fetchInto(VolumeRecord.class);
-    }
-
-    @Override
-    public List<? extends Mount> findBadMounts(int count) {
-        return create().select(MOUNT.fields())
-                .from(MOUNT)
-                .join(VOLUME)
-                    .on(VOLUME.ID.eq(MOUNT.VOLUME_ID))
-                .where(VOLUME.STATE.eq(AccountConstants.STATE_PURGED)
-                        .and(MOUNT.REMOVED.isNull())
-                        .and(MOUNT.STATE.notIn(CommonStatesConstants.DEACTIVATING, CommonStatesConstants.REMOVING)))
-                .limit(count)
-                .fetchInto(MountRecord.class);
     }
 
     @Override

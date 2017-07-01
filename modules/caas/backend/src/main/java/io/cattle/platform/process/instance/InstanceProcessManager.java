@@ -1,5 +1,6 @@
 package io.cattle.platform.process.instance;
 
+import io.cattle.platform.containersync.ContainerSync;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -11,7 +12,6 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.util.ProcessUtils;
-import io.cattle.platform.process.containerevent.ContainerEventCreate;
 import io.cattle.platform.util.exception.ExecutionException;
 
 import java.util.HashMap;
@@ -101,7 +101,7 @@ public class InstanceProcessManager {
 
 
     public static HandlerResult handleStartError(ObjectProcessManager objectProcessManager, ProcessState state, Instance instance, ExecutionException e) {
-        if ((isCreateStart(state) || instance.getFirstRunning() == null) && !ContainerEventCreate.isNativeDockerStart(state)) {
+        if ((isCreateStart(state) || instance.getFirstRunning() == null) && !ContainerSync.isNativeDockerStart(state)) {
             HashMap<String, Object> data = new HashMap<>();
             data.put(InstanceConstants.PROCESS_DATA_ERROR, true);
             objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance,

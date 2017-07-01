@@ -2,7 +2,6 @@ package io.cattle.platform.core.dao.impl;
 
 import static io.cattle.platform.core.model.tables.CertificateTable.*;
 import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
-import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
@@ -220,19 +219,6 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
             uuidToUnit.put(unit.getUuid(), unit);
         }
         return uuidToUnit;
-    }
-
-    @Override
-    public List<? extends Instance> getInstancesWithHealtcheckEnabled(long accountId) {
-        return create().select(INSTANCE.fields())
-                .from(INSTANCE)
-                .join(HEALTHCHECK_INSTANCE)
-                .on(HEALTHCHECK_INSTANCE.INSTANCE_ID.eq(INSTANCE.ID))
-                .and(HEALTHCHECK_INSTANCE.REMOVED.isNull())
-                .and(INSTANCE.REMOVED.isNull())
-                .and(INSTANCE.STATE.in(InstanceConstants.STATE_STARTING, InstanceConstants.STATE_RUNNING)
-                        .and(INSTANCE.ACCOUNT_ID.eq(accountId)))
-                .fetchInto(InstanceRecord.class);
     }
 
     @Override

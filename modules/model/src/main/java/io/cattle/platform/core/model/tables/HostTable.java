@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class HostTable extends TableImpl<HostRecord> {
 
-    private static final long serialVersionUID = 1471613214;
+    private static final long serialVersionUID = 1275722196;
 
     /**
      * The reference instance of <code>cattle.host</code>
@@ -131,11 +131,6 @@ public class HostTable extends TableImpl<HostRecord> {
     public final TableField<HostRecord, Long> AGENT_ID = createField("agent_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
-     * The column <code>cattle.host.physical_host_id</code>.
-     */
-    public final TableField<HostRecord, Long> PHYSICAL_HOST_ID = createField("physical_host_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
-
-    /**
      * The column <code>cattle.host.is_public</code>.
      */
     public final TableField<HostRecord, Boolean> IS_PUBLIC = createField("is_public", org.jooq.impl.SQLDataType.BIT.nullable(false).defaultValue(org.jooq.impl.DSL.inline("b'0'", org.jooq.impl.SQLDataType.BIT)), this, "");
@@ -174,6 +169,11 @@ public class HostTable extends TableImpl<HostRecord> {
      * The column <code>cattle.host.host_template_id</code>.
      */
     public final TableField<HostRecord, Long> HOST_TEMPLATE_ID = createField("host_template_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
+     * The column <code>cattle.host.external_id</code>.
+     */
+    public final TableField<HostRecord, String> EXTERNAL_ID = createField("external_id", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
 
     /**
      * Create a <code>cattle.host</code> table reference
@@ -234,7 +234,7 @@ public class HostTable extends TableImpl<HostRecord> {
      */
     @Override
     public List<ForeignKey<HostRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<HostRecord, ?>>asList(Keys.FK_HOST__ACCOUNT_ID, Keys.FK_HOST__AGENT_ID, Keys.FK_HOST__PHYSICAL_HOST_ID, Keys.FK_HOST__ENVIRONMENT_ID, Keys.FK_HOST__HOST_TEMPLATE_ID);
+        return Arrays.<ForeignKey<HostRecord, ?>>asList(Keys.FK_HOST__ACCOUNT_ID, Keys.FK_HOST__AGENT_ID, Keys.FK_HOST__ENVIRONMENT_ID, Keys.FK_HOST__HOST_TEMPLATE_ID);
     }
 
     /**

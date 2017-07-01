@@ -5,7 +5,7 @@ import static io.cattle.platform.server.context.ServerContext.*;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.resource.AbstractNoOpResourceManager;
 import io.cattle.platform.api.utils.ApiUtils;
-import io.cattle.platform.core.constants.HostConstants;
+import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.dao.AgentDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
@@ -84,7 +84,7 @@ public class HostApiProxyTokenManager extends AbstractNoOpResourceManager {
 
     protected String getToken(String reportedUuid) {
         Map<String, Object> data = new HashMap<>();
-        data.put(HostConstants.FIELD_REPORTED_UUID, reportedUuid);
+        data.put(AgentConstants.REPORTED_UUID, reportedUuid);
         return tokenService.generateToken(data);
     }
 
@@ -99,7 +99,7 @@ public class HostApiProxyTokenManager extends AbstractNoOpResourceManager {
         Map<String, Host> hosts = agentDao.getHosts(agent.getId());
         Host host = hosts.get(reportedUuid);
         if (host == null) {
-            throw new ValidationErrorException(ValidationErrorCodes.INVALID_REFERENCE, HostConstants.FIELD_REPORTED_UUID);
+            throw new ValidationErrorException(ValidationErrorCodes.INVALID_REFERENCE, AgentConstants.REPORTED_UUID);
         }
     }
 }

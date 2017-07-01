@@ -1,7 +1,6 @@
 package io.cattle.platform.core.dao;
 
 import io.cattle.platform.core.addon.MountEntry;
-import io.cattle.platform.core.model.Mount;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
@@ -11,10 +10,6 @@ import java.util.Map;
 import java.util.Set;
 
 public interface VolumeDao {
-    List<? extends Volume> findBadVolumes(int count);
-
-    List<? extends Mount> findBadMounts(int count);
-
     Volume createVolumeForDriver(long accountId, String name, String volumeName);
 
     Volume findVolumeByExternalId(Long storagePoolId, String externalId);
@@ -30,8 +25,6 @@ public interface VolumeDao {
     List<? extends Volume> identifyUnmappedVolumes(long accountId, Set<Long> volumeIds);
 
     List<? extends Volume> findNonRemovedVolumesOnPool(Long storagePoolId);
-
-    List<? extends Volume> findBadNativeVolumes(int count);
 
     List<Long> findDeploymentUnitsForVolume(Volume volume);
 

@@ -4,7 +4,6 @@ import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import static io.cattle.platform.object.util.DataAccessor.*;
 
 import io.cattle.platform.core.addon.VirtualMachineDisk;
-import io.cattle.platform.core.constants.DockerInstanceConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.StoragePoolConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
@@ -97,8 +96,8 @@ public class VirtualMachineLifecycleManagerImpl implements VirtualMachineLifecyc
         setField(instance, InstanceConstants.FIELD_ENVIRONMENT, env);
 
         List<String> dataVolumes = fieldStringList(instance, InstanceConstants.FIELD_DATA_VOLUMES);
-        List<String> devices = fieldStringList(instance, DockerInstanceConstants.FIELD_DEVICES);
-        List<String> caps = fieldStringList(instance, DockerInstanceConstants.FIELD_CAP_ADD);
+        List<String> devices = fieldStringList(instance, InstanceConstants.FIELD_DEVICES);
+        List<String> caps = fieldStringList(instance, InstanceConstants.FIELD_CAP_ADD);
 
         for (String volume : VOLUMES) {
             addToList(dataVolumes, volume);
@@ -112,10 +111,10 @@ public class VirtualMachineLifecycleManagerImpl implements VirtualMachineLifecyc
         }
 
         setField(instance, InstanceConstants.FIELD_DATA_VOLUMES, dataVolumes);
-        setField(instance, DockerInstanceConstants.FIELD_DEVICES, devices);
-        setField(instance, DockerInstanceConstants.FIELD_CAP_ADD, caps);
+        setField(instance, InstanceConstants.FIELD_DEVICES, devices);
+        setField(instance, InstanceConstants.FIELD_CAP_ADD, caps);
 
-        List<Object> command = new ArrayList<>(DataAccessor.fieldStringList(instance, DockerInstanceConstants.FIELD_COMMAND));
+        List<Object> command = new ArrayList<>(DataAccessor.fieldStringList(instance, InstanceConstants.FIELD_COMMAND));
         if (!command.contains("-m")) {
             command.add("-m");
             command.add(getLabel(instance, SystemLabels.LABEL_VM_MEMORY));
@@ -125,13 +124,13 @@ public class VirtualMachineLifecycleManagerImpl implements VirtualMachineLifecyc
             command.add("cpus=" + getLabel(instance, SystemLabels.LABEL_VM_VCPU));
         }
 
-        setField(instance, DockerInstanceConstants.FIELD_COMMAND, command);
+        setField(instance, InstanceConstants.FIELD_COMMAND, command);
         instance.setMemoryMb(mem);
     }
 
     private void setupVolumes(Instance instance) {
         List<String> dataVolumes = fieldStringList(instance, InstanceConstants.FIELD_DATA_VOLUMES);
-        List<String> devices = fieldStringList(instance, DockerInstanceConstants.FIELD_DEVICES);
+        List<String> devices = fieldStringList(instance, InstanceConstants.FIELD_DEVICES);
 
         String volumeDriver = DataAccessor.fieldString(instance, InstanceConstants.FIELD_VOLUME_DRIVER);
         Object objectDisks = DataAccessor.field(instance, InstanceConstants.FIELD_DISKS, Object.class);
@@ -207,7 +206,7 @@ public class VirtualMachineLifecycleManagerImpl implements VirtualMachineLifecyc
                     if (StringUtils.isNotEmpty(blockDevPath)) {
                         opts.put("dont-format", "true");
                         if (disk.isRoot()) {
-                            String image = StringUtils.removeStart(DataAccessor.fieldString(instance, InstanceConstants.FIELD_IMAGE_UUID), "docker:");
+                            String image = DataAccessor.fieldString(instance, InstanceConstants.FIELD_IMAGE_UUID);
                             if (StringUtils.isNotBlank(image)) {
                                 opts.put(VolumeConstants.DRIVER_OPT_BASE_IMAGE, image);
                             }
@@ -252,7 +251,7 @@ public class VirtualMachineLifecycleManagerImpl implements VirtualMachineLifecyc
         }
 
         setField(instance, InstanceConstants.FIELD_DATA_VOLUMES, dataVolumes);
-        setField(instance, DockerInstanceConstants.FIELD_DEVICES, devices);
+        setField(instance, InstanceConstants.FIELD_DEVICES, devices);
     }
 
     private void addToList(List<String> list, String value) {

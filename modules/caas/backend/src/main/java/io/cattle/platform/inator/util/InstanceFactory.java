@@ -1,10 +1,8 @@
 package io.cattle.platform.inator.util;
 
 import io.cattle.platform.allocator.constraint.ContainerLabelAffinityConstraint;
-import io.cattle.platform.core.constants.DockerInstanceConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
-import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.inator.wrapper.DeploymentUnitWrapper;
@@ -28,11 +26,10 @@ public class InstanceFactory {
             RevisionWrapper service,
             DeploymentUnitWrapper unit,
             String launchConfigName,
-            ServiceIndex serviceIndex,
             String instanceName) {
 
         Map<String, Object> fields = new HashMap<>(launchConfig);
-        addAdditionalFields(fields, stack, service, unit, launchConfigName, serviceIndex);
+        addAdditionalFields(fields, stack, service, unit, launchConfigName);
         addDns(fields, stack, service);
         addHostnameOverride(instanceName, fields);
 
@@ -49,7 +46,7 @@ public class InstanceFactory {
             return;
         }
 
-        Object domainName = fields.get(DockerInstanceConstants.FIELD_DOMAIN_NAME);
+        Object domainName = fields.get(InstanceConstants.FIELD_DOMAIN_NAME);
         String overrideName = getOverrideHostName(domainName, instanceName);
         fields.put(InstanceConstants.FIELD_HOSTNAME, overrideName);
     }
@@ -67,13 +64,13 @@ public class InstanceFactory {
         if ("false".equalsIgnoreCase(labels.get(SystemLabels.LABEL_USE_RANCHER_DNS))) {
             return;
         }
-        List<Object> dns = new ArrayList<>(CollectionUtils.toList(fields.get(DockerInstanceConstants.FIELD_DNS_SEARCH)));
+        List<Object> dns = new ArrayList<>(CollectionUtils.toList(fields.get(InstanceConstants.FIELD_DNS_SEARCH)));
         for (String entry : getSearchDomains(stack, service)) {
             if (!dns.contains(entry)) {
                 dns.add(entry);
             }
         }
-        fields.put(DockerInstanceConstants.FIELD_DNS_SEARCH, dns);
+        fields.put(InstanceConstants.FIELD_DNS_SEARCH, dns);
     }
 
     protected static List<String> getSearchDomains(StackWrapper stack, RevisionWrapper service) {
@@ -98,7 +95,7 @@ public class InstanceFactory {
     }
 
     protected static void addAdditionalFields(Map<String, Object> fields, StackWrapper stack, RevisionWrapper revision,
-            DeploymentUnitWrapper unit, String launchConfigName, ServiceIndex serviceIndex) {
+            DeploymentUnitWrapper unit, String launchConfigName) {
         fields.put(InstanceConstants.FIELD_DEPLOYMENT_UNIT_UUID, unit.getUuid());
         fields.put(InstanceConstants.FIELD_DEPLOYMENT_UNIT_ID, unit.getId());
         fields.put(InstanceConstants.FIELD_STACK_ID, stack.getId());
@@ -109,7 +106,7 @@ public class InstanceFactory {
         }
 
         if (revision != null) {
-            addServiceFields(fields, stack, revision, unit, launchConfigName, serviceIndex);
+            addServiceFields(fields, stack, revision, unit, launchConfigName);
         }
 
         if (serviceIndex != null) {
@@ -118,7 +115,7 @@ public class InstanceFactory {
     }
 
     protected static void addServiceFields(Map<String, Object> fields, StackWrapper stack, RevisionWrapper revision, DeploymentUnitWrapper unit,
-            String launchConfigName, ServiceIndex serviceIndex) {
+            String launchConfigName) {
         if (revision.getServiceId() != null) {
             Map<String, String> labels = createServiceLabels(fields, revision, stack, unit, launchConfigName);
             addLabels(fields, labels);

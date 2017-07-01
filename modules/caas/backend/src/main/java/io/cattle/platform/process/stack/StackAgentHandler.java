@@ -1,10 +1,10 @@
 package io.cattle.platform.process.stack;
 
 import io.cattle.platform.agent.AgentLocator;
-import io.cattle.platform.core.cache.EnvironmentResourceManager;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.environment.EnvironmentResourceManager;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;

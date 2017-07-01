@@ -14,7 +14,6 @@ import io.cattle.platform.core.model.tables.ClusterHostMapTable;
 import io.cattle.platform.core.model.tables.ClusterMembershipTable;
 import io.cattle.platform.core.model.tables.ConfigItemStatusTable;
 import io.cattle.platform.core.model.tables.ConfigItemTable;
-import io.cattle.platform.core.model.tables.ContainerEventTable;
 import io.cattle.platform.core.model.tables.CredentialTable;
 import io.cattle.platform.core.model.tables.DataTable;
 import io.cattle.platform.core.model.tables.DatabasechangelogTable;
@@ -24,8 +23,6 @@ import io.cattle.platform.core.model.tables.DynamicSchemaRoleTable;
 import io.cattle.platform.core.model.tables.DynamicSchemaTable;
 import io.cattle.platform.core.model.tables.ExternalEventTable;
 import io.cattle.platform.core.model.tables.GenericObjectTable;
-import io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable;
-import io.cattle.platform.core.model.tables.HealthcheckInstanceTable;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.HostTemplateTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
@@ -33,7 +30,6 @@ import io.cattle.platform.core.model.tables.MachineDriverTable;
 import io.cattle.platform.core.model.tables.MountTable;
 import io.cattle.platform.core.model.tables.NetworkDriverTable;
 import io.cattle.platform.core.model.tables.NetworkTable;
-import io.cattle.platform.core.model.tables.PhysicalHostTable;
 import io.cattle.platform.core.model.tables.ProcessExecutionTable;
 import io.cattle.platform.core.model.tables.ProcessInstanceTable;
 import io.cattle.platform.core.model.tables.ProjectMemberTable;
@@ -126,11 +122,6 @@ public class Tables {
     public static final ConfigItemStatusTable CONFIG_ITEM_STATUS = io.cattle.platform.core.model.tables.ConfigItemStatusTable.CONFIG_ITEM_STATUS;
 
     /**
-     * The table <code>cattle.container_event</code>.
-     */
-    public static final ContainerEventTable CONTAINER_EVENT = io.cattle.platform.core.model.tables.ContainerEventTable.CONTAINER_EVENT;
-
-    /**
      * The table <code>cattle.credential</code>.
      */
     public static final CredentialTable CREDENTIAL = io.cattle.platform.core.model.tables.CredentialTable.CREDENTIAL;
@@ -181,16 +172,6 @@ public class Tables {
     public static final GenericObjectTable GENERIC_OBJECT = io.cattle.platform.core.model.tables.GenericObjectTable.GENERIC_OBJECT;
 
     /**
-     * The table <code>cattle.healthcheck_instance</code>.
-     */
-    public static final HealthcheckInstanceTable HEALTHCHECK_INSTANCE = io.cattle.platform.core.model.tables.HealthcheckInstanceTable.HEALTHCHECK_INSTANCE;
-
-    /**
-     * The table <code>cattle.healthcheck_instance_host_map</code>.
-     */
-    public static final HealthcheckInstanceHostMapTable HEALTHCHECK_INSTANCE_HOST_MAP = io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.HEALTHCHECK_INSTANCE_HOST_MAP;
-
-    /**
      * The table <code>cattle.host</code>.
      */
     public static final HostTable HOST = io.cattle.platform.core.model.tables.HostTable.HOST;
@@ -224,11 +205,6 @@ public class Tables {
      * The table <code>cattle.network_driver</code>.
      */
     public static final NetworkDriverTable NETWORK_DRIVER = io.cattle.platform.core.model.tables.NetworkDriverTable.NETWORK_DRIVER;
-
-    /**
-     * The table <code>cattle.physical_host</code>.
-     */
-    public static final PhysicalHostTable PHYSICAL_HOST = io.cattle.platform.core.model.tables.PhysicalHostTable.PHYSICAL_HOST;
 
     /**
      * The table <code>cattle.process_execution</code>.

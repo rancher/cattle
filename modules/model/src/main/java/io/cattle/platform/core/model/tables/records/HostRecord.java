@@ -38,7 +38,7 @@ import org.jooq.impl.UpdatableRecordImpl;
 @Table(name = "host", schema = "cattle")
 public class HostRecord extends UpdatableRecordImpl<HostRecord> implements TableRecordJaxb, Host {
 
-    private static final long serialVersionUID = 142978522;
+    private static final long serialVersionUID = -1357742292;
 
     /**
      * Setter for <code>cattle.host.id</code>.
@@ -298,28 +298,11 @@ public class HostRecord extends UpdatableRecordImpl<HostRecord> implements Table
     }
 
     /**
-     * Setter for <code>cattle.host.physical_host_id</code>.
-     */
-    @Override
-    public void setPhysicalHostId(Long value) {
-        set(15, value);
-    }
-
-    /**
-     * Getter for <code>cattle.host.physical_host_id</code>.
-     */
-    @Column(name = "physical_host_id", precision = 19)
-    @Override
-    public Long getPhysicalHostId() {
-        return (Long) get(15);
-    }
-
-    /**
      * Setter for <code>cattle.host.is_public</code>.
      */
     @Override
     public void setIsPublic(Boolean value) {
-        set(16, value);
+        set(15, value);
     }
 
     /**
@@ -328,7 +311,7 @@ public class HostRecord extends UpdatableRecordImpl<HostRecord> implements Table
     @Column(name = "is_public", nullable = false, precision = 1)
     @Override
     public Boolean getIsPublic() {
-        return (Boolean) get(16);
+        return (Boolean) get(15);
     }
 
     /**
@@ -336,7 +319,7 @@ public class HostRecord extends UpdatableRecordImpl<HostRecord> implements Table
      */
     @Override
     public void setAgentState(String value) {
-        set(17, value);
+        set(16, value);
     }
 
     /**
@@ -345,7 +328,7 @@ public class HostRecord extends UpdatableRecordImpl<HostRecord> implements Table
     @Column(name = "agent_state", length = 128)
     @Override
     public String getAgentState() {
-        return (String) get(17);
+        return (String) get(16);
     }
 
     /**
@@ -353,7 +336,7 @@ public class HostRecord extends UpdatableRecordImpl<HostRecord> implements Table
      */
     @Override
     public void setLocalStorageMb(Long value) {
-        set(18, value);
+        set(17, value);
     }
 
     /**
@@ -362,7 +345,7 @@ public class HostRecord extends UpdatableRecordImpl<HostRecord> implements Table
     @Column(name = "local_storage_mb", precision = 19)
     @Override
     public Long getLocalStorageMb() {
-        return (Long) get(18);
+        return (Long) get(17);
     }
 
     /**
@@ -370,7 +353,7 @@ public class HostRecord extends UpdatableRecordImpl<HostRecord> implements Table
      */
     @Override
     public void setMemory(Long value) {
-        set(19, value);
+        set(18, value);
     }
 
     /**
@@ -379,7 +362,7 @@ public class HostRecord extends UpdatableRecordImpl<HostRecord> implements Table
     @Column(name = "memory", precision = 19)
     @Override
     public Long getMemory() {
-        return (Long) get(19);
+        return (Long) get(18);
     }
 
     /**
@@ -387,7 +370,7 @@ public class HostRecord extends UpdatableRecordImpl<HostRecord> implements Table
      */
     @Override
     public void setMilliCpu(Long value) {
-        set(20, value);
+        set(19, value);
     }
 
     /**
@@ -396,7 +379,7 @@ public class HostRecord extends UpdatableRecordImpl<HostRecord> implements Table
     @Column(name = "milli_cpu", precision = 19)
     @Override
     public Long getMilliCpu() {
-        return (Long) get(20);
+        return (Long) get(19);
     }
 
     /**
@@ -404,7 +387,7 @@ public class HostRecord extends UpdatableRecordImpl<HostRecord> implements Table
      */
     @Override
     public void setStackId(Long value) {
-        set(21, value);
+        set(20, value);
     }
 
     /**
@@ -413,7 +396,7 @@ public class HostRecord extends UpdatableRecordImpl<HostRecord> implements Table
     @Column(name = "environment_id", precision = 19)
     @Override
     public Long getStackId() {
-        return (Long) get(21);
+        return (Long) get(20);
     }
 
     /**
@@ -421,7 +404,7 @@ public class HostRecord extends UpdatableRecordImpl<HostRecord> implements Table
      */
     @Override
     public void setRemoveAfter(Date value) {
-        set(22, value);
+        set(21, value);
     }
 
     /**
@@ -430,7 +413,7 @@ public class HostRecord extends UpdatableRecordImpl<HostRecord> implements Table
     @Column(name = "remove_after")
     @Override
     public Date getRemoveAfter() {
-        return (Date) get(22);
+        return (Date) get(21);
     }
 
     /**
@@ -438,7 +421,7 @@ public class HostRecord extends UpdatableRecordImpl<HostRecord> implements Table
      */
     @Override
     public void setHostTemplateId(Long value) {
-        set(23, value);
+        set(22, value);
     }
 
     /**
@@ -447,7 +430,24 @@ public class HostRecord extends UpdatableRecordImpl<HostRecord> implements Table
     @Column(name = "host_template_id", precision = 19)
     @Override
     public Long getHostTemplateId() {
-        return (Long) get(23);
+        return (Long) get(22);
+    }
+
+    /**
+     * Setter for <code>cattle.host.external_id</code>.
+     */
+    @Override
+    public void setExternalId(String value) {
+        set(23, value);
+    }
+
+    /**
+     * Getter for <code>cattle.host.external_id</code>.
+     */
+    @Column(name = "external_id", length = 128)
+    @Override
+    public String getExternalId() {
+        return (String) get(23);
     }
 
     // -------------------------------------------------------------------------
@@ -486,7 +486,6 @@ public class HostRecord extends UpdatableRecordImpl<HostRecord> implements Table
         setComputeFree(from.getComputeFree());
         setComputeTotal(from.getComputeTotal());
         setAgentId(from.getAgentId());
-        setPhysicalHostId(from.getPhysicalHostId());
         setIsPublic(from.getIsPublic());
         setAgentState(from.getAgentState());
         setLocalStorageMb(from.getLocalStorageMb());
@@ -495,6 +494,7 @@ public class HostRecord extends UpdatableRecordImpl<HostRecord> implements Table
         setStackId(from.getStackId());
         setRemoveAfter(from.getRemoveAfter());
         setHostTemplateId(from.getHostTemplateId());
+        setExternalId(from.getExternalId());
     }
 
     /**
@@ -520,7 +520,7 @@ public class HostRecord extends UpdatableRecordImpl<HostRecord> implements Table
     /**
      * Create a detached, initialised HostRecord
      */
-    public HostRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String uri, Long computeFree, Long computeTotal, Long agentId, Long physicalHostId, Boolean isPublic, String agentState, Long localStorageMb, Long memory, Long milliCpu, Long environmentId, Date removeAfter, Long hostTemplateId) {
+    public HostRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String uri, Long computeFree, Long computeTotal, Long agentId, Boolean isPublic, String agentState, Long localStorageMb, Long memory, Long milliCpu, Long environmentId, Date removeAfter, Long hostTemplateId, String externalId) {
         super(HostTable.HOST);
 
         set(0, id);
@@ -538,14 +538,14 @@ public class HostRecord extends UpdatableRecordImpl<HostRecord> implements Table
         set(12, computeFree);
         set(13, computeTotal);
         set(14, agentId);
-        set(15, physicalHostId);
-        set(16, isPublic);
-        set(17, agentState);
-        set(18, localStorageMb);
-        set(19, memory);
-        set(20, milliCpu);
-        set(21, environmentId);
-        set(22, removeAfter);
-        set(23, hostTemplateId);
+        set(15, isPublic);
+        set(16, agentState);
+        set(17, localStorageMb);
+        set(18, memory);
+        set(19, milliCpu);
+        set(20, environmentId);
+        set(21, removeAfter);
+        set(22, hostTemplateId);
+        set(23, externalId);
     }
 }

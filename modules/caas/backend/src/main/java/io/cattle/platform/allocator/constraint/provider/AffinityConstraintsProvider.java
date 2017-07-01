@@ -6,7 +6,6 @@ import io.cattle.platform.allocator.service.AllocationHelper;
 import io.cattle.platform.allocator.service.AllocationLog;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.List;
@@ -19,12 +18,10 @@ import java.util.Map;
  */
 public class AffinityConstraintsProvider implements AllocationConstraintsProvider {
 
-    JsonMapper jsonMapper;
     AllocationHelper allocationHelper;
 
-    public AffinityConstraintsProvider(JsonMapper jsonMapper, AllocationHelper allocationHelper) {
+    public AffinityConstraintsProvider(AllocationHelper allocationHelper) {
         super();
-        this.jsonMapper = jsonMapper;
         this.allocationHelper = allocationHelper;
     }
 
@@ -32,7 +29,7 @@ public class AffinityConstraintsProvider implements AllocationConstraintsProvide
     @Override
     public void appendConstraints(AllocationAttempt attempt, AllocationLog log, List<Constraint> constraints) {
         for (Instance instance : attempt.getInstances()) {
-            Map env = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_ENVIRONMENT).as(jsonMapper, Map.class);
+            Map env = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_ENVIRONMENT).as(Map.class);
             // TODO: hack for now. assuming all affinity:constraint specs are just found in the key
             List<Constraint> affinityConstraintsFromEnv = allocationHelper.extractConstraintsFromEnv(env);
             for (Constraint constraint : affinityConstraintsFromEnv) {
@@ -40,7 +37,7 @@ public class AffinityConstraintsProvider implements AllocationConstraintsProvide
             }
 
             // Currently, intentionally duplicating code to be explicit
-            Map labels = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_LABELS).as(jsonMapper, Map.class);
+            Map labels = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_LABELS).as(Map.class);
             List<Constraint> affinityConstraintsFromLabels = allocationHelper.extractConstraintsFromLabels(labels, instance);
             for (Constraint constraint : affinityConstraintsFromLabels) {
                 constraints.add(constraint);

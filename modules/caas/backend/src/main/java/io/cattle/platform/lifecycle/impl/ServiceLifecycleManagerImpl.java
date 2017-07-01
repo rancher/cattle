@@ -7,6 +7,7 @@ import io.cattle.platform.core.dao.ServiceConsumeMapDao;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.dao.ServiceExposeMapDao;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Service;
@@ -131,7 +132,7 @@ public class ServiceLifecycleManagerImpl implements ServiceLifecycleManager {
     }
 
     @Override
-    public void releaseIpFromServiceIndex(Service service, ServiceIndex serviceIndex) {
+    public void releaseIpFromDeploymentUnit(DeploymentUnit du, ServiceIndex serviceIndex) {
         if (!StringUtils.isEmpty(serviceIndex.getAddress())) {
             String ntwkMode = networkService.getNetworkMode(DataAccessor
                     .fieldMap(service, ServiceConstants.FIELD_LAUNCH_CONFIG));

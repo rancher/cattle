@@ -189,17 +189,6 @@ public interface ServiceEvent extends Serializable {
     public Long getInstanceId();
 
     /**
-     * Setter for <code>cattle.service_event.healthcheck_instance_id</code>.
-     */
-    public void setHealthcheckInstanceId(Long value);
-
-    /**
-     * Getter for <code>cattle.service_event.healthcheck_instance_id</code>.
-     */
-    @Column(name = "healthcheck_instance_id", precision = 19)
-    public Long getHealthcheckInstanceId();
-
-    /**
      * Setter for <code>cattle.service_event.reported_health</code>.
      */
     public void setReportedHealth(String value);

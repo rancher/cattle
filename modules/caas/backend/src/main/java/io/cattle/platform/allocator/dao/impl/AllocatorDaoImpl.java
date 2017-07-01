@@ -10,7 +10,9 @@ import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
+import io.cattle.platform.core.addon.PortInstance;
 import io.cattle.platform.core.constants.HealthcheckConstants;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -19,23 +21,25 @@ import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.tables.records.HostRecord;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
+import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
+import io.github.ibuildthecloud.gdapi.util.ProxyUtils;
 import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import javax.sound.sampled.Port;
-
-import org.apache.commons.lang.StringUtils;
 import org.jooq.Configuration;
 import org.jooq.Record1;
 import org.jooq.RecordHandler;
@@ -47,13 +51,8 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
     private static final Logger log = LoggerFactory.getLogger(AllocatorDaoImpl.class);
 
-    private static final String ALLOCATED_IP = "allocatedIP";
-    private static final String PROTOCOL = "protocol";
-    private static final String PRIVATE_PORT = "privatePort";
-    private static final String PUBLIC_PORT = "publicPort";
     private static final String INSTANCE_ID = "instanceID";
     private static final String ALLOCATED_IPS = "allocatedIPs";
-    private static final String BIND_ADDRESS = "bindAddress";
 
     ObjectManager objectManager;
     TransactionDelegate transaction;
@@ -62,14 +61,6 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
         super(configuration);
         this.objectManager = objectManager;
         this.transaction = transaction;
-    }
-
-    @Override
-    public Host getHost(Instance instance) {
-        if (instance == null) {
-            return null;
-        }
-        return objectManager.loadResource(Host.class, instance.getHostId());
     }
 
     @Override
@@ -101,14 +92,11 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                 for (Instance instance : attempt.getInstances()) {
                     log.info("Associating instance [{}] to host [{}]", instance.getId(), newHost);
                     instance.setHostId(newHost);
+                    updateInstancePorts(instance, attempt.getAllocatedIPs());
                     objectManager.persist(instance);
                 }
 
                 updateVolumeHostInfo(attempt, candidate, newHost);
-            }
-
-            if (attempt.getAllocatedIPs() != null) {
-                updateInstancePorts(attempt.getAllocatedIPs());
             }
 
             return true;
@@ -165,19 +153,6 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                     .and(INSTANCE.HOST_ID.isNotNull())
                     .and((INSTANCE.HEALTH_STATE.isNull().or(INSTANCE.HEALTH_STATE.eq(HealthcheckConstants.HEALTH_STATE_HEALTHY)))))
                 .fetchInto(Long.class);
-    }
-
-    @Override
-    public boolean isVolumeInUseOnHost(long volumeId, long hostId) {
-        return create()
-                .select(INSTANCE.ID)
-                .from(INSTANCE)
-                .join(MOUNT)
-                    .on(MOUNT.INSTANCE_ID.eq(INSTANCE.ID).and(MOUNT.VOLUME_ID.eq(volumeId)))
-                .where(INSTANCE.REMOVED.isNull()
-                    .and(INSTANCE.HOST_ID.eq(hostId))
-                    .and((INSTANCE.HEALTH_STATE.isNull().or(INSTANCE.HEALTH_STATE.eq(HealthcheckConstants.HEALTH_STATE_HEALTHY)))))
-                .fetch().size() > 0;
     }
 
     @Override
@@ -239,40 +214,56 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
      *                          }
      * }
      *
-     * Then update
-     * Port Table. Binding address field in port table and public port field in port table if public port is allocated by external scheduler (for agent)
+     * Then update instance ports with the bind address if needed.
      */
-    @SuppressWarnings("unchecked")
-    private void updateInstancePorts(List<Map<String, Object>> dataList) {
-        for (Map<String, Object> data: dataList) {
-            if (data.get(INSTANCE_ID) == null) {
-                continue;
+    private void updateInstancePorts(Instance instance, List<Map<String, Object>> dataList) {
+        List<PortAssignment> portAssignments = getPortAssignments(instance, dataList);
+        List<PortSpec> portSpecs = InstanceConstants.getPortSpecs(instance);
+        List<PortInstance> portBindings = new ArrayList<>();
+
+        for (PortSpec spec : portSpecs) {
+            PortInstance binding = new PortInstance(spec);
+            for (PortAssignment assignment : portAssignments) {
+                if (matches(spec, assignment)) {
+                    binding.setBindIpAddress(assignment.getAllocatedIP());
+                }
             }
+            portBindings.add(binding);
+        }
+
+
+        DataAccessor.setField(instance, InstanceConstants.FIELD_PORT_BINDINGS, portBindings);
+    }
+
+    private List<PortAssignment> getPortAssignments(Instance instance, List<Map<String, Object>> dataList) {
+        if (dataList == null) {
+            return Collections.emptyList();
+        }
+
+        for (Map<String, Object> data : dataList) {
             String instanceId = (String) data.get(INSTANCE_ID);
-            if (data.get(ALLOCATED_IPS) == null) {
+            if (!Objects.equals(instanceId, instance.getId().toString())) {
                 continue;
             }
 
+            @SuppressWarnings("unchecked")
             List<Map<String, Object>> allocatedIPList = (List<Map<String, Object>>) data.get(ALLOCATED_IPS);
-            Instance instance = objectManager.loadResource(Instance.class, instanceId);
-            for (Map<String, Object> allocatedIp: allocatedIPList) {
-                String ipAddress = (String) allocatedIp.get(ALLOCATED_IP);
-                String protocol = (String) allocatedIp.get(PROTOCOL);
-                Integer publicPort = (Integer) allocatedIp.get(PUBLIC_PORT);
-                Integer privatePort = (Integer) allocatedIp.get(PRIVATE_PORT);
-                for (Port port: objectManager.children(instance, Port.class)) {
-                    if (port.getPrivatePort().equals(privatePort)
-                            && StringUtils.equals(port.getProtocol(), protocol)
-                            && (port.getPublicPort() == null || port.getPublicPort().equals(publicPort))) {
-                        DataAccessor.setField(port, BIND_ADDRESS, ipAddress);
-                        port.setPublicPort(publicPort);
-                        objectManager.persist(port);
-                        break;
-                    }
-                }
+            if (allocatedIPList == null) {
+                continue;
             }
+            return allocatedIPList.stream()
+                    .map((x) -> ProxyUtils.proxy(x, PortAssignment.class))
+                    .collect(Collectors.toList());
         }
-        return;
+
+        return Collections.emptyList();
+    }
+
+    private boolean matches(PortSpec spec, PortAssignment assignment) {
+        return spec.getIpAddress() == null &&
+                Objects.equals(spec.getPublicPort(), assignment.getPublicPort()) &&
+                Objects.equals(spec.getPrivatePort(), assignment.getPrivatePort()) &&
+                Objects.equals(spec.getProtocol(), assignment.getProtocol());
     }
 
 
@@ -289,4 +280,12 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
         return result.size() == 1 ? result.get(0).getValue(STORAGE_POOL_HOST_MAP.HOST_ID) : null;
     }
+
+    private static interface PortAssignment {
+        String getAllocatedIP();
+        String getProtocol();
+        Integer getPrivatePort();
+        Integer getPublicPort();
+    }
+
 }

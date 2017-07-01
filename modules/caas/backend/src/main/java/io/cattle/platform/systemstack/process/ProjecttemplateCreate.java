@@ -7,23 +7,22 @@ import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.ProjectTemplate;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessHandler;
+import io.cattle.platform.engine.manager.LoopFactory;
+import io.cattle.platform.engine.manager.LoopManager;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
-import io.cattle.platform.sample.data.SampleDataStartupV3;
 import io.cattle.platform.systemstack.catalog.CatalogService;
 
 public class ProjecttemplateCreate implements ProcessHandler {
 
-    SystemStackTrigger systemStackTrigger;
-    SampleDataStartupV3 sampleDataStartupV3;
+    LoopManager loopManager;
     ObjectManager objectManager;
 
-    public ProjecttemplateCreate(SystemStackTrigger systemStackTrigger, SampleDataStartupV3 sampleDataStartupV3, ObjectManager objectManager) {
+    public ProjecttemplateCreate(LoopManager loopManager, ObjectManager objectManager) {
         super();
-        this.systemStackTrigger = systemStackTrigger;
-        this.sampleDataStartupV3 = sampleDataStartupV3;
+        this.loopManager = loopManager;
         this.objectManager = objectManager;
     }
 
@@ -35,7 +34,6 @@ public class ProjecttemplateCreate implements ProcessHandler {
             return null;
         }
 
-        sampleDataStartupV3.start();
         Account defaultProject = getDefaultProject();
         if (defaultProject == null || defaultProject.getProjectTemplateId() != null) {
             return null;
@@ -50,7 +48,7 @@ public class ProjecttemplateCreate implements ProcessHandler {
             projectTemplateId = template.getId();
         }
 
-        systemStackTrigger.trigger(defaultProject.getId());
+        loopManager.kick(LoopFactory.SYSTEM_STACK, Account.class, defaultProject.getId(), null);
         objectManager.setFields(defaultProject,
                 ACCOUNT.PROJECT_TEMPLATE_ID, projectTemplateId);
 

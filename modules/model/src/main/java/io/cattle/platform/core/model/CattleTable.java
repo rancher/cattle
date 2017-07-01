@@ -14,7 +14,6 @@ import io.cattle.platform.core.model.tables.ClusterHostMapTable;
 import io.cattle.platform.core.model.tables.ClusterMembershipTable;
 import io.cattle.platform.core.model.tables.ConfigItemStatusTable;
 import io.cattle.platform.core.model.tables.ConfigItemTable;
-import io.cattle.platform.core.model.tables.ContainerEventTable;
 import io.cattle.platform.core.model.tables.CredentialTable;
 import io.cattle.platform.core.model.tables.DataTable;
 import io.cattle.platform.core.model.tables.DatabasechangelogTable;
@@ -24,8 +23,6 @@ import io.cattle.platform.core.model.tables.DynamicSchemaRoleTable;
 import io.cattle.platform.core.model.tables.DynamicSchemaTable;
 import io.cattle.platform.core.model.tables.ExternalEventTable;
 import io.cattle.platform.core.model.tables.GenericObjectTable;
-import io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable;
-import io.cattle.platform.core.model.tables.HealthcheckInstanceTable;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.HostTemplateTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
@@ -33,7 +30,6 @@ import io.cattle.platform.core.model.tables.MachineDriverTable;
 import io.cattle.platform.core.model.tables.MountTable;
 import io.cattle.platform.core.model.tables.NetworkDriverTable;
 import io.cattle.platform.core.model.tables.NetworkTable;
-import io.cattle.platform.core.model.tables.PhysicalHostTable;
 import io.cattle.platform.core.model.tables.ProcessExecutionTable;
 import io.cattle.platform.core.model.tables.ProcessInstanceTable;
 import io.cattle.platform.core.model.tables.ProjectMemberTable;
@@ -83,7 +79,7 @@ import org.jooq.impl.SchemaImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class CattleTable extends SchemaImpl {
 
-    private static final long serialVersionUID = -788259734;
+    private static final long serialVersionUID = -1981338446;
 
     /**
      * The reference instance of <code>cattle</code>
@@ -141,11 +137,6 @@ public class CattleTable extends SchemaImpl {
     public final ConfigItemStatusTable CONFIG_ITEM_STATUS = io.cattle.platform.core.model.tables.ConfigItemStatusTable.CONFIG_ITEM_STATUS;
 
     /**
-     * The table <code>cattle.container_event</code>.
-     */
-    public final ContainerEventTable CONTAINER_EVENT = io.cattle.platform.core.model.tables.ContainerEventTable.CONTAINER_EVENT;
-
-    /**
      * The table <code>cattle.credential</code>.
      */
     public final CredentialTable CREDENTIAL = io.cattle.platform.core.model.tables.CredentialTable.CREDENTIAL;
@@ -196,16 +187,6 @@ public class CattleTable extends SchemaImpl {
     public final GenericObjectTable GENERIC_OBJECT = io.cattle.platform.core.model.tables.GenericObjectTable.GENERIC_OBJECT;
 
     /**
-     * The table <code>cattle.healthcheck_instance</code>.
-     */
-    public final HealthcheckInstanceTable HEALTHCHECK_INSTANCE = io.cattle.platform.core.model.tables.HealthcheckInstanceTable.HEALTHCHECK_INSTANCE;
-
-    /**
-     * The table <code>cattle.healthcheck_instance_host_map</code>.
-     */
-    public final HealthcheckInstanceHostMapTable HEALTHCHECK_INSTANCE_HOST_MAP = io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable.HEALTHCHECK_INSTANCE_HOST_MAP;
-
-    /**
      * The table <code>cattle.host</code>.
      */
     public final HostTable HOST = io.cattle.platform.core.model.tables.HostTable.HOST;
@@ -239,11 +220,6 @@ public class CattleTable extends SchemaImpl {
      * The table <code>cattle.network_driver</code>.
      */
     public final NetworkDriverTable NETWORK_DRIVER = io.cattle.platform.core.model.tables.NetworkDriverTable.NETWORK_DRIVER;
-
-    /**
-     * The table <code>cattle.physical_host</code>.
-     */
-    public final PhysicalHostTable PHYSICAL_HOST = io.cattle.platform.core.model.tables.PhysicalHostTable.PHYSICAL_HOST;
 
     /**
      * The table <code>cattle.process_execution</code>.
@@ -395,7 +371,6 @@ public class CattleTable extends SchemaImpl {
             ClusterMembershipTable.CLUSTER_MEMBERSHIP,
             ConfigItemTable.CONFIG_ITEM,
             ConfigItemStatusTable.CONFIG_ITEM_STATUS,
-            ContainerEventTable.CONTAINER_EVENT,
             CredentialTable.CREDENTIAL,
             DataTable.DATA,
             DatabasechangelogTable.DATABASECHANGELOG,
@@ -406,8 +381,6 @@ public class CattleTable extends SchemaImpl {
             StackTable.STACK,
             ExternalEventTable.EXTERNAL_EVENT,
             GenericObjectTable.GENERIC_OBJECT,
-            HealthcheckInstanceTable.HEALTHCHECK_INSTANCE,
-            HealthcheckInstanceHostMapTable.HEALTHCHECK_INSTANCE_HOST_MAP,
             HostTable.HOST,
             HostTemplateTable.HOST_TEMPLATE,
             InstanceTable.INSTANCE,
@@ -415,7 +388,6 @@ public class CattleTable extends SchemaImpl {
             MountTable.MOUNT,
             NetworkTable.NETWORK,
             NetworkDriverTable.NETWORK_DRIVER,
-            PhysicalHostTable.PHYSICAL_HOST,
             ProcessExecutionTable.PROCESS_EXECUTION,
             ProcessInstanceTable.PROCESS_INSTANCE,
             ProjectMemberTable.PROJECT_MEMBER,

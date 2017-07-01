@@ -6,7 +6,6 @@ import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
 
 import io.cattle.platform.compose.export.ComposeExportService;
 import io.cattle.platform.core.addon.LbConfig;
-import io.cattle.platform.core.constants.DockerInstanceConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
@@ -398,7 +397,7 @@ public class ComposeExportServiceImpl implements ComposeExportService {
                 // network mode can be passed by container, or by service name, so check both
                 // networkFromContainerId wins
                 Integer targetContainerId = DataAccessor
-                        .fieldInteger(service, DockerInstanceConstants.DOCKER_CONTAINER);
+                        .fieldInteger(service, InstanceConstants.DOCKER_CONTAINER);
                 if (targetContainerId != null) {
                     Instance instance = objectManager.loadResource(Instance.class, targetContainerId.longValue());
                     String instanceName = ServiceUtil.getInstanceName(instance);
@@ -478,7 +477,7 @@ public class ComposeExportServiceImpl implements ComposeExportService {
 
         // 2. add instance names if specified
         List<? extends Integer> instanceIds = (List<? extends Integer>) launchConfigData
-                .get(DockerInstanceConstants.FIELD_VOLUMES_FROM);
+                .get(InstanceConstants.FIELD_VOLUMES_FROM);
 
         if (instanceIds != null) {
             for (Integer instanceId : instanceIds) {

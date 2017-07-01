@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ServiceEventTable extends TableImpl<ServiceEventRecord> {
 
-    private static final long serialVersionUID = -1238756498;
+    private static final long serialVersionUID = -1646026935;
 
     /**
      * The reference instance of <code>cattle.service_event</code>
@@ -126,11 +126,6 @@ public class ServiceEventTable extends TableImpl<ServiceEventRecord> {
     public final TableField<ServiceEventRecord, Long> INSTANCE_ID = createField("instance_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
-     * The column <code>cattle.service_event.healthcheck_instance_id</code>.
-     */
-    public final TableField<ServiceEventRecord, Long> HEALTHCHECK_INSTANCE_ID = createField("healthcheck_instance_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
-
-    /**
      * The column <code>cattle.service_event.reported_health</code>.
      */
     public final TableField<ServiceEventRecord, String> REPORTED_HEALTH = createField("reported_health", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
@@ -199,7 +194,7 @@ public class ServiceEventTable extends TableImpl<ServiceEventRecord> {
      */
     @Override
     public List<ForeignKey<ServiceEventRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<ServiceEventRecord, ?>>asList(Keys.FK_SERVICE_EVENT__ACCOUNT_ID, Keys.FK_SERVICE_EVENT__HOST_ID, Keys.FK_SERVICE_EVENT__INSTANCE_ID, Keys.FK_SERVICE_EVENT__HEALTHCHECK_INSTANCE_ID);
+        return Arrays.<ForeignKey<ServiceEventRecord, ?>>asList(Keys.FK_SERVICE_EVENT__ACCOUNT_ID, Keys.FK_SERVICE_EVENT__HOST_ID, Keys.FK_SERVICE_EVENT__INSTANCE_ID);
     }
 
     /**

@@ -23,7 +23,6 @@ import io.cattle.platform.core.model.GenericObject;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
-import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.core.model.ProjectTemplate;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.StoragePool;
@@ -66,7 +65,6 @@ public class AccountProcessManager {
         Host.class,
         Certificate.class,
         Credential.class,
-        PhysicalHost.class,
         StoragePool.class,
         Volume.class,
         Network.class,

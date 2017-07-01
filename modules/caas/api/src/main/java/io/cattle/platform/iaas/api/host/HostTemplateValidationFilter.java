@@ -1,6 +1,6 @@
 package io.cattle.platform.iaas.api.host;
 
-import static io.cattle.platform.core.constants.MachineConstants.*;
+import static io.cattle.platform.core.constants.HostConstants.*;
 import static io.github.ibuildthecloud.gdapi.util.ResponseCodes.*;
 
 import io.cattle.platform.util.type.CollectionUtils;

@@ -1,12 +1,8 @@
-package io.cattle.platform.systemstack.listener;
+package io.cattle.platform.systemstack.loop;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 
-import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.async.utils.TimeoutException;
-import io.cattle.platform.configitem.events.ConfigUpdate;
-import io.cattle.platform.configitem.version.ConfigItemStatusManager;
 import io.cattle.platform.core.addon.CatalogTemplate;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -14,101 +10,48 @@ import io.cattle.platform.core.constants.ProjectTemplateConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.core.model.ExternalHandler;
 import io.cattle.platform.core.model.ProjectTemplate;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
-import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.engine.model.Loop;
 import io.cattle.platform.eventing.EventService;
-import io.cattle.platform.eventing.annotation.AnnotatedEventListener;
-import io.cattle.platform.eventing.annotation.EventHandler;
-import io.cattle.platform.eventing.lock.EventLock;
-import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
-import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.systemstack.catalog.CatalogService;
-import io.cattle.platform.systemstack.process.SystemStackTrigger;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
-import org.jooq.Configuration;
 import org.jooq.exception.DataChangedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import com.netflix.config.DynamicBooleanProperty;
+public class SystemStackLoop implements Loop {
 
-public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEventListener {
-
-    private static final DynamicBooleanProperty LAUNCH_COMPOSE_EXECUTOR = ArchaiusUtil.getBoolean("compose.executor.execute");
-
-    private static final Logger log = LoggerFactory.getLogger(SystemStackUpdate.class);
-
-    public static final String VIRTUAL_MACHINE = "virtualMachine";
-    public static final List<String> ORC_PRIORITY = Arrays.asList(
-            AccountConstants.ORC_KUBERNETES,
-            AccountConstants.ORC_SWARM,
-            AccountConstants.ORC_MESOS,
-            AccountConstants.ORC_WINDOWS
-            );
-    public static final Set<String> ORCS = new HashSet<>(ORC_PRIORITY);
-
-    ConfigItemStatusManager itemManager;
+    long accountId;
     EventService eventService;
     ObjectManager objectManager;
     HostDao hostDao;
     ObjectProcessManager processManager;
-    JsonMapper jsonMapper;
     CatalogService catalogService;
-    ResourceMonitor resourceMonitor;
 
-    public SystemStackUpdate(Configuration configuration, ConfigItemStatusManager itemManager, EventService eventService, ObjectManager objectManager,
-            HostDao hostDao, ObjectProcessManager processManager, JsonMapper jsonMapper, CatalogService catalogService, ResourceMonitor resourceMonitor) {
-        super(configuration);
-        this.itemManager = itemManager;
+    public SystemStackLoop(long accountId, EventService eventService, ObjectManager objectManager,
+            HostDao hostDao, ObjectProcessManager processManager, CatalogService catalogService) {
+        this.accountId = accountId;
         this.eventService = eventService;
         this.objectManager = objectManager;
         this.hostDao = hostDao;
         this.processManager = processManager;
-        this.jsonMapper = jsonMapper;
         this.catalogService = catalogService;
-        this.resourceMonitor = resourceMonitor;
     }
 
-    @EventHandler(lock=EventLock.class)
-    public void globalServiceUpdate(ConfigUpdate update) {
-        if (update.getResourceId() == null) {
-            return;
-        }
-
-        final Client client = new Client(Account.class, new Long(update.getResourceId()));
-        itemManager.runUpdateForEvent(SystemStackTrigger.STACKS, update, client, new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    process(client.getResourceId());
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-    }
-
-    protected void startStacks(Account account) throws IOException {
+    protected void startStacks(Account account) {
         if (account.getRemoved() != null) {
             return;
         }
@@ -130,7 +73,6 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
                 continue;
             }
 
-            stack = resourceMonitor.waitForNotTransitioning(stack);
             if (CommonStatesConstants.ACTIVE.equals(stack.getState())) {
                 for (Service service : objectManager.find(Service.class, SERVICE.STACK_ID, stackId, SERVICE.REMOVED, null)) {
                     processManager.scheduleStandardProcess(StandardProcess.ACTIVATE, service, null);
@@ -146,13 +88,19 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
         }
     }
 
-    protected void process(long accountId) throws IOException {
+    @Override
+    public Result run(Object input) {
         Account account = objectManager.loadResource(Account.class, accountId);
         if (account == null || account.getRemoved() != null) {
-            return;
+            return Result.DONE;
         }
 
-        createStacks(account);
+        try {
+            createStacks(account);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to create system stacks", e);
+        }
+
         startStacks(account);
 
         List<Stack> stacks = objectManager.find(Stack.class,
@@ -168,13 +116,13 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
             }
 
             externalIds.add(stack.getExternalId());
-            String orcType = getStackTypeFromExternalId(stack.getExternalId());
-            if (VIRTUAL_MACHINE.equals(orcType)) {
+            String orcType = AccountConstants.getStackTypeFromExternalId(stack.getExternalId());
+            if (AccountConstants.VIRTUAL_MACHINE.equals(orcType)) {
                 virtualMachine = true;
             }
         }
 
-        String orchestration = chooseOrchestration(externalIds);
+        String orchestration = AccountConstants.chooseOrchestration(externalIds);
 
         boolean oldVm = DataAccessor.fieldBool(account, AccountConstants.FIELD_VIRTUAL_MACHINE);
         String oldOrch = DataAccessor.fieldString(account, AccountConstants.FIELD_ORCHESTRATION);
@@ -185,6 +133,8 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
             io.cattle.platform.object.util.ObjectUtils.publishChanged(eventService, account.getId(),
                     account.getId(), AccountConstants.TYPE);
         }
+
+        return Result.DONE;
     }
 
     public List<Long> createStacks(Account account) throws IOException {
@@ -199,11 +149,10 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
         }
 
         List<CatalogTemplate> templates = DataAccessor.fieldObjectList(projectTemplate, ProjectTemplateConstants.FIELD_STACKS,
-                CatalogTemplate.class, jsonMapper);
+                CatalogTemplate.class);
         Map<String, CatalogTemplate> templatesById = catalogService.resolvedExternalIds(templates);
         createdStackIds = new ArrayList<>();
 
-        boolean executorRunning = false;
         for (Map.Entry<String, CatalogTemplate> entry : templatesById.entrySet()) {
             String externalId = entry.getKey();
             Stack stack = objectManager.findAny(Stack.class,
@@ -212,7 +161,6 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
                     STACK.REMOVED, null);
 
             if (stack == null) {
-                executorRunning = waitForExecutor(executorRunning);
                 stack = catalogService.deploy(account.getId(), entry.getValue());
             }
 
@@ -222,34 +170,6 @@ public class SystemStackUpdate extends AbstractJooqDao implements AnnotatedEvent
         objectManager.reload(account);
         objectManager.setFields(account, AccountConstants.FIELD_CREATED_STACKS, createdStackIds);
         return createdStackIds;
-    }
-
-    private synchronized boolean waitForExecutor(boolean executorRunning) {
-        if (!LAUNCH_COMPOSE_EXECUTOR.get()) {
-            return true;
-        }
-
-        if (executorRunning) {
-            return executorRunning;
-        }
-
-        for (int i = 0; i < 120; i++) {
-            ExternalHandler handler = objectManager.findAny(ExternalHandler.class,
-                    ObjectMetaDataManager.NAME_FIELD, "rancher-compose-executor",
-                    ObjectMetaDataManager.STATE_FIELD, CommonStatesConstants.ACTIVE);
-            if (handler != null) {
-                return true;
-            }
-            log.info("Waiting for rancher-compose-executor");
-
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                throw new IllegalStateException(e);
-            }
-        }
-
-        throw new TimeoutException("Failed to find rancher-compose-executor");
     }
 
 }

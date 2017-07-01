@@ -6,6 +6,7 @@ import io.cattle.platform.api.handler.CommonExceptionsHandler;
 import io.cattle.platform.api.handler.DeferredActionsHandler;
 import io.cattle.platform.api.handler.EventNotificationHandler;
 import io.cattle.platform.api.handler.LinkRequestHandler;
+import io.cattle.platform.api.handler.ResponseObjectConverter;
 import io.cattle.platform.api.html.ConfigBasedHtmlTemplate;
 import io.cattle.platform.api.parser.ApiRequestParser;
 import io.cattle.platform.api.pubsub.manager.PublishManager;
@@ -24,16 +25,21 @@ import io.cattle.platform.core.addon.ProcessSummary;
 import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
+import io.cattle.platform.core.constants.RegisterConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.constants.StoragePoolConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.AuditLog;
+import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.Credential;
+import io.cattle.platform.core.model.Data;
 import io.cattle.platform.core.model.ExternalEvent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.HostTemplate;
+import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Secret;
+import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceEvent;
 import io.cattle.platform.core.model.Setting;
 import io.cattle.platform.core.model.StoragePool;
@@ -51,18 +57,12 @@ import io.cattle.platform.docker.machine.api.MachineLinkFilter;
 import io.cattle.platform.docker.machine.api.filter.MachineOutputFilter;
 import io.cattle.platform.docker.machine.api.filter.MachineValidationFilter;
 import io.cattle.platform.engine.process.ProcessInstance;
-import io.cattle.platform.extension.api.dot.DotMaker;
-import io.cattle.platform.extension.api.manager.ProcessDefinitionApiManager;
-import io.cattle.platform.extension.api.manager.ResourceDefinitionLinkHandler;
-import io.cattle.platform.extension.api.manager.ResourceDefinitionManager;
-import io.cattle.platform.extension.api.manager.ResourceDefinitionOutputFilter;
-import io.cattle.platform.extension.api.model.ProcessDefinitionApi;
-import io.cattle.platform.extension.api.model.ResourceDefinition;
 import io.cattle.platform.framework.encryption.request.handler.TransformationHandler;
 import io.cattle.platform.host.api.HostApiProxyTokenImpl;
 import io.cattle.platform.host.api.HostApiProxyTokenManager;
 import io.cattle.platform.host.api.HostApiPublicCAScriptHandler;
 import io.cattle.platform.host.api.HostApiPublicKeyScriptHandler;
+import io.cattle.platform.host.service.HostApiService;
 import io.cattle.platform.host.stats.api.ContainerStatsLinkHandler;
 import io.cattle.platform.host.stats.api.HostStatsLinkHandler;
 import io.cattle.platform.host.stats.api.ServiceContainerStatsLinkHandler;
@@ -132,7 +132,6 @@ import io.cattle.platform.iaas.api.volume.VolumeCreateValidationFilter;
 import io.cattle.platform.register.api.RegisterOutputFilter;
 import io.cattle.platform.register.api.RegisterScriptHandler;
 import io.cattle.platform.register.api.RegistrationTokenOutputFilter;
-import io.cattle.platform.register.util.RegisterConstants;
 import io.cattle.platform.servicediscovery.api.action.AddOutputsActionHandler;
 import io.cattle.platform.servicediscovery.api.action.AddServiceLinkActionHandler;
 import io.cattle.platform.servicediscovery.api.action.CancelUpgradeActionHandler;
@@ -174,7 +173,6 @@ import io.github.ibuildthecloud.gdapi.request.handler.write.ReadWriteApiHandler;
 import io.github.ibuildthecloud.gdapi.response.HtmlResponseWriter;
 import io.github.ibuildthecloud.gdapi.response.JsonResponseWriter;
 import io.github.ibuildthecloud.gdapi.response.ResponseConverter;
-import io.github.ibuildthecloud.gdapi.response.ResponseObjectConverter;
 import io.github.ibuildthecloud.gdapi.servlet.ApiRequestFilterDelegate;
 import io.github.ibuildthecloud.gdapi.validation.ReferenceValidator;
 import io.github.ibuildthecloud.gdapi.validation.ResourceManagerReferenceValidator;
@@ -189,8 +187,6 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Stack;
 
-import org.glassfish.jersey.process.internal.RequestScope.Instance;
-
 import com.github.dockerjava.api.model.Volume;
 
 public class Api {
@@ -202,7 +198,6 @@ public class Api {
     ApiRequestFilterDelegate apiRequestFilterDelegate;
     Auth auth;
     ContainerProxyActionHandler containerProxyActionHandler;
-    DotMaker dotMaker = new DotMaker();
     HostApiService hostApiService;
     ReferenceValidator referenceValidator;
     ResponseConverter responseConverter;
@@ -228,7 +223,7 @@ public class Api {
     private void addActionHandlers() {
         c.router.action("account.deactivate", new AccountDeactivateActionHandler(f.processManager, f.objectManager, d.accountDao));
         c.router.action("stack.addoutputs", new AddOutputsActionHandler(f.objectManager));
-        c.router.action("service.addservicelink", new AddServiceLinkActionHandler(f.jsonMapper, d.serviceConsumeMapDao));
+        c.router.action("service.addservicelink", new AddServiceLinkActionHandler(d.serviceConsumeMapDao));
         c.router.action("service.cancelupgrade", new CancelUpgradeActionHandler(f.processManager, f.objectManager));
         c.router.action("credential.changesecret", new ChangeSecretActionHandler(d.passwordDao, f.jsonMapper));
         c.router.action("instance.converttoservice", new ContainerConvertToServiceActionHandler(f.objectManager, f.jsonMapper, c.revisionManager));
@@ -240,14 +235,14 @@ public class Api {
         c.router.action("host.evacuate", new HostEvacuateActionHandler(d.resourceDao));
         c.router.action("instance.console", new InstanceConsoleActionHandler(c.hostApiService, f.objectManager));
         c.router.action("processinstance.replay", new ProcessInstanceReplayHandler(f.objectManager, f.eventService));
-        c.router.action("service.removeservicelink", new RemoveServiceLinkActionHandler(f.jsonMapper, d.serviceConsumeMapDao));
+        c.router.action("service.removeservicelink", new RemoveServiceLinkActionHandler(d.serviceConsumeMapDao));
         c.router.action("service.certificate", new ServiceCertificateActionHandler(c.certService));
         c.router.action("service.garbagecollect", new ServiceGarbageCollectActionHandler(d.serviceDao, f.processManager));
-        c.router.action("service.setservicelinks", new SetServiceLinksActionHandler(f.jsonMapper, d.serviceConsumeMapDao, f.lockManager, f.objectManager,
+        c.router.action("service.setservicelinks", new SetServiceLinksActionHandler(d.serviceConsumeMapDao, f.lockManager, f.objectManager,
                 f.idFormatter));
         c.router.action("stack.activateservices", new StackActivateServicesActionHandler(f.processManager, f.objectManager, d.serviceConsumeMapDao));
         c.router.action("stack.deactivateservices", new StackDeactivateServicesActionHandler(f.processManager, f.objectManager));
-        c.router.action("stack.exportconfig", new StackExportConfigActionHandler(f.objectManager, f.jsonMapper, c.composeExportService));
+        c.router.action("stack.exportconfig", new StackExportConfigActionHandler(f.objectManager, c.composeExportService));
         c.router.action("task.execute", new TaskExecuteActionHandler(c.taskManager));
     }
 
@@ -262,7 +257,6 @@ public class Api {
         c.router.link(HostTemplate.class, new HostTemplateLinkHandler(c.secretsService));
         c.router.link(Instance.class, new ContainerStatsLinkHandler(c.hostApiService, f.objectManager));
         c.router.link(ProjectConstants.TYPE, hostStatsLinkHandler);
-        c.router.link(ResourceDefinition.class, new ResourceDefinitionLinkHandler(c.locator, dotMaker));
         c.router.link(ServiceConstants.KIND_LOAD_BALANCER_SERVICE, serviceContainerStatsLinkHandler);
         c.router.link(ServiceConstants.KIND_SCALING_GROUP_SERVICE, serviceContainerStatsLinkHandler);
         c.router.link(ServiceConstants.KIND_SERVICE, serviceContainerStatsLinkHandler);
@@ -294,7 +288,6 @@ public class Api {
         c.router.outputFilter(Host.class, new MachineLinkFilter());
         c.router.outputFilter(Host.class, new MachineOutputFilter(c.secretsService));
         c.router.outputFilter(RegisterConstants.KIND_REGISTER, new RegisterOutputFilter());
-        c.router.outputFilter(ResourceDefinition.class, new ResourceDefinitionOutputFilter());
         c.router.outputFilter(CredentialConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN, new RegistrationTokenOutputFilter());
         c.router.outputFilter(AuditLog.class, resourceIdOutputFilter);
         c.router.outputFilter(ProcessInstance.class, resourceIdOutputFilter);
@@ -322,7 +315,7 @@ public class Api {
         ServiceCreateValidationFilter serviceCreateValidationFilter = new ServiceCreateValidationFilter(f.objectManager, f.processManager, c.storageService, f.jsonMapper, c.revisionManager);
         ServiceRestartValidationFilter serviceRestartValidationFilter = new ServiceRestartValidationFilter(f.objectManager, f.jsonMapper, d.serviceExposeMapDao);
         ServiceRollbackValidationFilter serviceRollbackValidationFilter = new ServiceRollbackValidationFilter(f.objectManager, c.revisionManager);
-        ServiceSetServiceLinksValidationFilter serviceSetServiceLinksValidationFilter = new ServiceSetServiceLinksValidationFilter(f.objectManager, f.jsonMapper);
+        ServiceSetServiceLinksValidationFilter serviceSetServiceLinksValidationFilter = new ServiceSetServiceLinksValidationFilter(f.objectManager);
         ServiceStackNetworkDriverFilter serviceStackNetworkDriverFilter = new ServiceStackNetworkDriverFilter(d.networkDao, f.objectManager);
         ServiceStackStorageDriverFilter serviceStackStorageDriverFilter = new ServiceStackStorageDriverFilter(d.storagePoolDao, f.objectManager);
         ServiceUpgradeValidationFilter serviceUpgradeValidationFilter = new ServiceUpgradeValidationFilter(f.objectManager, f.jsonMapper, c.revisionManager);
@@ -334,7 +327,7 @@ public class Api {
         c.router.filter(Agent.class, new AgentFilter(c.locator, d.agentDao));
         c.router.filter(AuditLog.class, resourceIdInputFilter);
         c.router.filter(Certificate.class, certificateCreateValidationFilter);
-        c.router.filter(Certificate.class, new LoadBalancerServiceCertificateRemoveFilter(f.objectManager, d.serviceDao, f.jsonMapper));
+        c.router.filter(Certificate.class, new LoadBalancerServiceCertificateRemoveFilter(f.objectManager, d.serviceDao));
         c.router.filter(ContainerEvent.class, new ContainerEventFilter(d.agentDao, d.containerEventDao, f.objectManager));
         c.router.filter(Credential.class, new CredentialUniqueFilter(f.coreSchemaFactory, d.passwordDao, f.jsonMapper));
         c.router.filter(CredentialConstants.KIND_API_KEY, new ApiKeyFilter());
@@ -428,10 +421,8 @@ public class Api {
         c.router.resourceManager(Data.class, new DataManager(c.support));
         c.router.resourceManager(HostApiProxyTokenImpl.class, new HostApiProxyTokenManager(c.tokenService, d.agentDao, f.objectManager));
         c.router.resourceManager(HostTemplate.class, new HostTemplateManager(c.support, c.secretsService, f.jsonMapper));
-        c.router.resourceManager(ProcessDefinitionApi.class, new ProcessDefinitionApiManager(dotMaker));
         c.router.resourceManager(ProcessPool.class, new ProcessPoolManager(f.executorService));
         c.router.resourceManager(ProcessSummary.class, new ProcessSummaryManager(d.processSummaryDao));
-        c.router.resourceManager(ResourceDefinition.class, new ResourceDefinitionManager(f.processDefinitions.values()));
         c.router.resourceManager(Secret.class, new SecretManager(c.support, c.secretsService));
         c.router.resourceManager(ServiceProxy.class, new ServiceProxyManager(d.instanceDao, containerProxyActionHandler));
         c.router.resourceManager(TypeDocumentation.class, new DocumentationHandler(f.jsonMapper, f.resourceLoader.getResources("schema/base/documentation.json")));

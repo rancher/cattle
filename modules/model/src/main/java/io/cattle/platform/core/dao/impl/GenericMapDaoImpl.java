@@ -18,14 +18,14 @@ import org.jooq.UpdatableRecord;
 
 public class GenericMapDaoImpl extends AbstractJooqDao implements GenericMapDao {
 
+    SchemaFactory schemaFactory;
+    ObjectMetaDataManager metaDataManager;
+
     public GenericMapDaoImpl(Configuration configuration, SchemaFactory schemaFactory, ObjectMetaDataManager metaDataManager) {
         super(configuration);
         this.schemaFactory = schemaFactory;
         this.metaDataManager = metaDataManager;
     }
-
-    SchemaFactory schemaFactory;
-    ObjectMetaDataManager metaDataManager;
 
     @SuppressWarnings("unchecked")
     @Override

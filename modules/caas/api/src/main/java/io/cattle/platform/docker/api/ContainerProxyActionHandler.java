@@ -1,7 +1,6 @@
 package io.cattle.platform.docker.api;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.constants.DockerInstanceConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -70,7 +69,7 @@ public class ContainerProxyActionHandler implements ActionHandler {
             scheme = null;
         }
 
-        Map<String, Object> data = CollectionUtils.asMap(DockerInstanceConstants.DOCKER_CONTAINER, dockerId,
+        Map<String, Object> data = CollectionUtils.asMap(InstanceConstants.DOCKER_CONTAINER, dockerId,
                 "scheme", StringUtils.isBlank(scheme) ? proxy.getScheme() : scheme,
                 "address", ipAddress + ":" + (StringUtils.isBlank(port) ? proxy.getPort() : port));
 

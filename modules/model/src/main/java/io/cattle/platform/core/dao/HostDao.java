@@ -2,7 +2,6 @@ package io.cattle.platform.core.dao;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Host;
-import io.cattle.platform.core.model.PhysicalHost;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.List;
@@ -18,12 +17,6 @@ public interface HostDao {
     boolean hasActiveHosts(Long accountId);
 
     Map<Long, List<Object>> getInstancesPerHost(List<Long> hosts, IdFormatter idFormatter);
-
-    PhysicalHost createMachineForHost(Host host, String driver);
-
-    Map<Long, PhysicalHost> getPhysicalHostsForHosts(List<Long> hosts);
-
-    void updateNullUpdatedHosts();
 
     List<? extends Host> findHostsRemove();
 

@@ -1,86 +1,113 @@
 package io.cattle.iaas.healthcheck.service.impl;
 
-import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.*;
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
-
-import io.cattle.platform.core.addon.InstanceHealthCheck;
-import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.model.Account;
+import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.tables.records.InstanceRecord;
-import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
-import io.cattle.platform.engine.process.ProcessInstanceException;
-import io.cattle.platform.object.process.ObjectProcessManager;
-import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.task.Task;
+import io.cattle.platform.engine.manager.LoopFactory;
+import io.cattle.platform.engine.manager.LoopManager;
+import io.cattle.platform.engine.model.Loop;
+import io.cattle.platform.environment.EnvironmentResourceManager;
+import io.cattle.platform.metadata.model.HealthcheckInfo;
+import io.cattle.platform.metadata.model.InstanceInfo;
+import io.cattle.platform.metadata.service.Metadata;
+import io.cattle.platform.object.ObjectManager;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
-import org.jooq.Configuration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.netflix.config.DynamicIntProperty;
 
-public class HealthcheckCleanupMonitorImpl extends AbstractJooqDao implements Task {
+public class HealthcheckCleanupMonitorImpl implements Loop {
 
-    private static final Logger log = LoggerFactory.getLogger(HealthcheckCleanupMonitorImpl.class);
+    private static final DynamicIntProperty DEFAULT_TIMEOUT = ArchaiusUtil.getInt("healthcheck.default.initializing.timeout");
 
-    ObjectProcessManager objectProcessManager;
+    long accountId;
+    ObjectManager objectManager;
+    LoopManager loopManager;
+    ScheduledExecutorService scheduledExecutorService;
+    EnvironmentResourceManager envResourceManager;
+    Map<Long, Long> firstSeen = new HashMap<>();
 
-    public HealthcheckCleanupMonitorImpl(Configuration configuration, ObjectProcessManager objectProcessManager) {
-        super(configuration);
-        this.objectProcessManager = objectProcessManager;
+    public HealthcheckCleanupMonitorImpl(long accountId, ObjectManager objectManager, LoopManager loopManager,
+            ScheduledExecutorService scheduledExecutorService, EnvironmentResourceManager envResourceManager) {
+        super();
+        this.accountId = accountId;
+        this.objectManager = objectManager;
+        this.loopManager = loopManager;
+        this.scheduledExecutorService = scheduledExecutorService;
+        this.envResourceManager = envResourceManager;
     }
 
     @Override
-    public void run() {
-        List<? extends Instance> instances =
-                create()
-                .select(INSTANCE.fields())
-                .from(INSTANCE)
-                .join(HEALTHCHECK_INSTANCE)
-                        .on(HEALTHCHECK_INSTANCE.INSTANCE_ID.eq(INSTANCE.ID))
-                .where(INSTANCE.REMOVED.isNull())
-                .and(INSTANCE.STATE.notIn(CommonStatesConstants.REMOVING))
-                        .and(INSTANCE.HEALTH_STATE.eq(HealthcheckConstants.HEALTH_STATE_INITIALIZING))
-                .fetchInto(InstanceRecord.class);
-        for (Instance instance : instances) {
-            boolean remove = needToRemove(instance);
-            if (!remove) {
+    public Result run(Object input) {
+        Metadata metadata = envResourceManager.getMetadata(accountId);
+        Map<Long, Long> firstSeen = new HashMap<>();
+        Long checkNext = null;
+
+        for (InstanceInfo instanceInfo : metadata.getInstances()) {
+            if (instanceInfo.getHealthCheck() == null) {
                 continue;
             }
-            try {
-                objectProcessManager.stopThenRemove(instance, null);
-                log.info("Scheduled remove for instance id [{}]", instance.getId());
-            } catch (ProcessInstanceException e) {
-                // don't error out so we have a chance to schedule remove for the rest of the instances
-                log.info("Failed to schedule remove for instance id [{}]", instance.getId(), e);
+
+            if (!InstanceConstants.STATE_RUNNING.equals(instanceInfo.getState())) {
+                continue;
+            }
+
+            if (!HealthcheckConstants.HEALTH_STATE_INITIALIZING.equals(instanceInfo.getHealthState())) {
+                continue;
+            }
+
+            Long delay = whenToDelete(instanceInfo, firstSeen);
+            if (delay <= 0) {
+                Instance instance = metadata.modify(Instance.class, instanceInfo.getId(), (i) -> {
+                    i.setHealthState(HealthcheckConstants.HEALTH_STATE_UNHEALTHY);
+                    return objectManager.persist(i);
+                });
+                if (instance.getDeploymentUnitId() != null) {
+                    loopManager.kick(LoopFactory.DU_RECONCILE, DeploymentUnit.class, instance.getDeploymentUnitId(), input);
+                }
+            } else if (checkNext == null) {
+                checkNext = delay;
+            } else if (delay < checkNext) {
+                checkNext = delay;
             }
         }
-    }
 
-    protected boolean needToRemove(Instance instance) {
-        boolean remove = false;
-        InstanceHealthCheck healthCheck = DataAccessor.field(instance,
-                InstanceConstants.FIELD_HEALTH_CHECK, InstanceHealthCheck.class);
-        Integer timeout;
-        if (instance.getHealthState().equalsIgnoreCase(HealthcheckConstants.HEALTH_STATE_INITIALIZING)) {
-            timeout = healthCheck.getInitializingTimeout();
-        } else {
-            timeout = healthCheck.getReinitializingTimeout();
+        this.firstSeen = firstSeen;
+        if (checkNext != null) {
+            scheduledExecutorService.schedule(
+                    () -> loopManager.kick(LoopFactory.HEALTHCHECK_CLEANUP, Account.class, accountId, null),
+                    checkNext,
+                    TimeUnit.MILLISECONDS);
+            return Result.WAITING;
         }
 
-        if (timeout != null && instance.getHealthUpdated() != null) {
-            long createdTimeAgo = System.currentTimeMillis() - instance.getHealthUpdated().getTime();
-            if (createdTimeAgo >= timeout) {
-                remove = true;
-            }
-        }
-        return remove;
+        return Result.DONE;
     }
 
-    @Override
-    public String getName() {
-        return "healthcheck.cleanup";
+    protected Long whenToDelete(InstanceInfo instanceInfo, Map<Long, Long> firstSeen) {
+        Long start = this.firstSeen.get(instanceInfo.getId());
+        if (start == null) {
+            start = System.currentTimeMillis();
+        }
+
+        HealthcheckInfo healthCheck = instanceInfo.getHealthCheck();
+        Integer timeout = healthCheck.getInitializingTimeout();
+        if (timeout == null) {
+            timeout = DEFAULT_TIMEOUT.get();
+        }
+
+        Long result = timeout - (System.currentTimeMillis() - start);
+        if (result > 0) {
+            firstSeen.put(instanceInfo.getId(), start);
+        }
+
+        return result;
     }
+
 }

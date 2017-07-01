@@ -1,43 +1,58 @@
 package io.cattle.platform.loop;
 
+import io.cattle.iaas.healthcheck.service.impl.HealthcheckCleanupMonitorImpl;
 import io.cattle.platform.activity.ActivityService;
 import io.cattle.platform.core.constants.ServiceConstants;
+import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.endpoint.loop.EndpointUpdateLoop;
 import io.cattle.platform.engine.manager.LoopFactory;
+import io.cattle.platform.engine.manager.LoopManager;
 import io.cattle.platform.engine.model.Loop;
 import io.cattle.platform.environment.EnvironmentResourceManager;
+import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.healthcheck.loop.HealthcheckScheduleLoop;
 import io.cattle.platform.inator.Deployinator;
 import io.cattle.platform.lifecycle.ServiceLifecycleManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.systemstack.catalog.CatalogService;
+import io.cattle.platform.systemstack.loop.SystemStackLoop;
+
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.commons.lang3.StringUtils;
 
 public class LoopFactoryImpl implements LoopFactory {
 
-    public static final String RECONCILE = "service-reconcile";
-    public static final String DU_RECONCILE = "deployment-unit-reconcile";
-    public static final String HEALTHCHECK_SCHEDULE = "healthcheck-schedule";
-    public static final String HEALTHSTATE_CALCULATE = "healthstate-calculate";
-
-    Deployinator deployinator;
-    ServiceLifecycleManager sdService;
-    ObjectManager objectManager;
     ActivityService activityService;
-    ObjectProcessManager processManager;
+    CatalogService catalogService;
+    Deployinator deployinator;
     EnvironmentResourceManager envResourceManager;
+    EventService eventService;
+    HostDao hostDao;
+    LoopManager loopManager;
+    ObjectManager objectManager;
+    ObjectProcessManager processManager;
+    ScheduledExecutorService scheduledExecutorService;
+    ServiceLifecycleManager sdService;
 
-    public LoopFactoryImpl(Deployinator deployinator, ServiceLifecycleManager sdService, ObjectManager objectManager, ActivityService activityService,
-            ObjectProcessManager processManager, EnvironmentResourceManager envResourceManager) {
+    public LoopFactoryImpl(ActivityService activityService, CatalogService catalogService, Deployinator deployinator,
+            EnvironmentResourceManager envResourceManager, EventService eventService, HostDao hostDao, LoopManager loopManager, ObjectManager objectManager,
+            ObjectProcessManager processManager, ScheduledExecutorService scheduledExecutorService, ServiceLifecycleManager sdService) {
         super();
-        this.deployinator = deployinator;
-        this.sdService = sdService;
-        this.objectManager = objectManager;
         this.activityService = activityService;
-        this.processManager = processManager;
+        this.catalogService = catalogService;
+        this.deployinator = deployinator;
         this.envResourceManager = envResourceManager;
+        this.eventService = eventService;
+        this.hostDao = hostDao;
+        this.loopManager = loopManager;
+        this.objectManager = objectManager;
+        this.processManager = processManager;
+        this.scheduledExecutorService = scheduledExecutorService;
+        this.sdService = sdService;
     }
 
     @Override
@@ -63,11 +78,15 @@ public class LoopFactoryImpl implements LoopFactory {
                     unit.getServiceId(), id, unit.getAccountId(), ServiceConstants.KIND_DEPLOYMENT_UNIT);
         case HEALTHCHECK_SCHEDULE:
             return new HealthcheckScheduleLoop(id, envResourceManager, objectManager);
-        default:
-            break;
+        case SYSTEM_STACK:
+            return new SystemStackLoop(id, eventService, objectManager, hostDao, processManager, catalogService);
+        case HEALTHCHECK_CLEANUP:
+            return new HealthcheckCleanupMonitorImpl(id, objectManager, loopManager, scheduledExecutorService, envResourceManager);
+        case ENDPOINT_UPDATE:
+            return new EndpointUpdateLoop(id, envResourceManager, objectManager);
         }
 
-        return null;
+        throw new IllegalArgumentException("Unknown loop " + name);
     }
 
 }

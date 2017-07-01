@@ -1,5 +1,6 @@
 package io.cattle.platform.app.components;
 
+import io.cattle.iaas.healthcheck.process.ServiceEventCreate;
 import io.cattle.iaas.healthcheck.service.impl.HealthcheckCleanupMonitorImpl;
 import io.cattle.iaas.healthcheck.service.impl.UpgradeCleanupMonitorImpl;
 import io.cattle.platform.agent.connection.simulator.AgentSimulator;
@@ -12,12 +13,19 @@ import io.cattle.platform.agent.instance.factory.AgentInstanceFactory;
 import io.cattle.platform.agent.instance.factory.impl.AgentInstanceFactoryImpl;
 import io.cattle.platform.agent.server.ping.impl.PingMonitorImpl;
 import io.cattle.platform.agent.server.resource.impl.AgentResourcesMonitor;
+import io.cattle.platform.allocator.constraint.provider.AccountConstraintsProvider;
+import io.cattle.platform.allocator.constraint.provider.AffinityConstraintsProvider;
+import io.cattle.platform.allocator.constraint.provider.BaseConstraintsProvider;
+import io.cattle.platform.allocator.constraint.provider.PortsConstraintProvider;
+import io.cattle.platform.allocator.constraint.provider.VolumeAccessModeConstraintProvider;
 import io.cattle.platform.allocator.service.AllocationHelperImpl;
 import io.cattle.platform.allocator.service.AllocatorService;
+import io.cattle.platform.allocator.service.impl.AllocatorServiceImpl;
 import io.cattle.platform.archaius.eventing.impl.ArchaiusEventListenerImpl;
 import io.cattle.platform.backpopulate.BackPopulater;
 import io.cattle.platform.backpopulate.impl.BackPopulaterImpl;
-import io.cattle.platform.core.cleanup.BadDataCleanup;
+import io.cattle.platform.containersync.PingInstancesMonitor;
+import io.cattle.platform.containersync.impl.PingInstancesMonitorImpl;
 import io.cattle.platform.core.cleanup.CleanupTaskInstances;
 import io.cattle.platform.core.cleanup.TableCleanup;
 import io.cattle.platform.docker.machine.launch.AuthServiceLauncher;
@@ -38,8 +46,6 @@ import io.cattle.platform.engine.task.ProcessReplayTask;
 import io.cattle.platform.environment.EnvironmentResourceManager;
 import io.cattle.platform.eventing.annotation.AnnotatedEventListener;
 import io.cattle.platform.eventing.annotation.AnnotatedListenerRegistration;
-import io.cattle.platform.ha.monitor.PingInstancesMonitor;
-import io.cattle.platform.ha.monitor.impl.PingInstancesMonitorImpl;
 import io.cattle.platform.iaas.api.change.impl.ResourceChangeEventListenerImpl;
 import io.cattle.platform.inator.process.InatorReconcileHandler;
 import io.cattle.platform.lifecycle.AgentLifecycleManager;
@@ -66,7 +72,6 @@ import io.cattle.platform.loadbalancer.LoadBalancerService;
 import io.cattle.platform.loadbalancer.impl.LoadBalancerServiceImpl;
 import io.cattle.platform.loop.trigger.DeploymentUnitReconcileTrigger;
 import io.cattle.platform.loop.trigger.ServiceReconcileTrigger;
-import io.cattle.platform.loop.trigger.StackHealthStateUpdateTrigger;
 import io.cattle.platform.metadata.service.MetadataTrigger;
 import io.cattle.platform.network.NetworkService;
 import io.cattle.platform.network.impl.NetworkServiceImpl;
@@ -115,17 +120,15 @@ import io.cattle.platform.service.launcher.GenericServiceLauncher;
 import io.cattle.platform.servicediscovery.process.AccountLinkRemove;
 import io.cattle.platform.servicediscovery.process.SelectorInstancePostListener;
 import io.cattle.platform.servicediscovery.process.SelectorServiceCreatePostListener;
-import io.cattle.platform.servicediscovery.process.ServiceIndexRemove;
 import io.cattle.platform.servicediscovery.process.StackProcessManager;
 import io.cattle.platform.storage.ImageCredentialLookup;
 import io.cattle.platform.storage.impl.DockerImageCredentialLookup;
 import io.cattle.platform.systemstack.catalog.CatalogService;
 import io.cattle.platform.systemstack.catalog.impl.CatalogServiceImpl;
-import io.cattle.platform.systemstack.listener.SystemStackUpdate;
+import io.cattle.platform.systemstack.loop.SystemStackTrigger;
 import io.cattle.platform.systemstack.process.ProjecttemplateCreate;
 import io.cattle.platform.systemstack.process.ScheduledUpgradeProcessManager;
 import io.cattle.platform.systemstack.process.SystemStackProcessManager;
-import io.cattle.platform.systemstack.process.SystemStackTrigger;
 import io.cattle.platform.systemstack.service.ProjectTemplateService;
 import io.cattle.platform.systemstack.service.UpgradeManager;
 import io.cattle.platform.systemstack.task.RunScheduledTask;
@@ -173,7 +176,6 @@ public class Backend {
     RestartLifecycleManager restartLifecycleManager;
     SecretsLifecycleManager secretsLifecycleManager;
     ServiceLifecycleManager serviceLifecycleManager;
-    SystemStackUpdate systemStackUpdate;
     UpgradeManager upgradeManager;
     VirtualMachineLifecycleManager virtualMachineLifecycleManager;
     VolumeLifecycleManager volumeLifecycleManager;
@@ -211,33 +213,31 @@ public class Backend {
 
     private void setupBackendService() {
         imageCredentialLookup = new DockerImageCredentialLookup(f.jooqConfig);
-        progress = new ProcessProgressImpl(f.objectManager, f.jsonMapper, f.eventService);
-        allocationHelper = new AllocationHelperImpl(d.instanceDao, f.objectManager, f.jsonMapper, envResourceManager);
-//        allocatorService = new AllocatorServiceImpl(d.agentDao, c.agentLocator, d.genericMapDao, d.allocatorDao, f.lockManager, f.objectManager,f. processManager, allocationHelper, d.volumeDao, envResourceManager,
-//                new AccountConstraintsProvider(),
-//                new BaseConstraintsProvider(d.allocatorDao),
-//                new AffinityConstraintsProvider(f.jsonMapper, allocationHelper),
-//                new PortsConstraintProvider(f.objectManager),
-//                new VolumeAccessModeConstraintProvider(d.allocatorDao, f.objectManager));
+        progress = new ProcessProgressImpl(f.objectManager, f.eventService);
+        allocationHelper = new AllocationHelperImpl(d.instanceDao, f.objectManager, envResourceManager);
+        allocatorService = new AllocatorServiceImpl(d.agentDao, c.agentLocator, d.genericMapDao, d.allocatorDao, f.lockManager, f.objectManager,f. processManager, allocationHelper, d.volumeDao, envResourceManager,
+                new AccountConstraintsProvider(),
+                new BaseConstraintsProvider(d.allocatorDao),
+                new AffinityConstraintsProvider(f.jsonMapper, allocationHelper),
+                new PortsConstraintProvider(f.objectManager),
+                new VolumeAccessModeConstraintProvider(d.allocatorDao, f.objectManager));
         allocationLifecycleManager = new AllocationLifecycleManagerImpl(allocatorService, d.volumeDao, f.objectManager);
         backPopulater = new BackPopulaterImpl(f.jsonMapper, d.volumeDao, f.lockManager, c.dockerTransformer, d.instanceDao, f.objectManager, f.processManager);
-        restartLifecycleManager = new RestartLifecycleManagerImpl(backPopulater, f.jsonMapper);
+        restartLifecycleManager = new RestartLifecycleManagerImpl(backPopulater);
         agentInstanceFactory = new AgentInstanceFactoryImpl(f.objectManager, d.agentDao, d.resourceDao, f.resourceMonitor, f.processManager);
         networkService = new NetworkServiceImpl(d.networkDao, f.jsonMapper, f.resourcePoolManager);
         k8sLifecycleManager = new K8sLifecycleManagerImpl();
         virtualMachineLifecycleManager = new VirtualMachineLifecycleManagerImpl(d.volumeDao, d.storagePoolDao, d.serviceDao, f.jsonMapper, f.objectManager);
         volumeLifecycleManager = new VolumeLifecycleManagerImpl(f.objectManager, f.processManager, d.storagePoolDao, d.volumeDao, f.lockManager);
-        networkLifecycleManager = new NetworkLifecycleManagerImpl(f.objectManager, networkService, f.resourcePoolManager, c.configItemStatusManager, envResourceManager);
+        networkLifecycleManager = new NetworkLifecycleManagerImpl(f.objectManager, networkService, f.resourcePoolManager);
         agentLifecycleManager = new AgentLifecycleManagerImpl(agentInstanceFactory);
-        secretsLifecycleManager = new SecretsLifecycleManagerImpl(c.tokenService, d.storageDriverDao, f.jsonMapper);
+        secretsLifecycleManager = new SecretsLifecycleManagerImpl(c.tokenService, d.storageDriverDao);
         loadBalancerService = new LoadBalancerServiceImpl(f.jsonMapper, f.lockManager, f.objectManager);
-        serviceLifecycleManager = new ServiceLifecycleManagerImpl(d.serviceConsumeMapDao, f.objectManager, d.networkDao, f.processManager, d.serviceExposeMapDao, f.resourcePoolManager, f.resourceMonitor, f.eventService, networkService, d.serviceDao, c.revisionManager, f.processManager, loadBalancerService);
-        instanceLifecycleManager = new InstanceLifecycleManagerImpl(k8sLifecycleManager, virtualMachineLifecycleManager, volumeLifecycleManager, f.objectManager, imageCredentialLookup, f.jsonMapper, d.serviceDao, f.transaction, networkLifecycleManager, agentLifecycleManager, backPopulater, restartLifecycleManager, secretsLifecycleManager, allocationLifecycleManager, serviceLifecycleManager, d.instanceDao);
+        serviceLifecycleManager = new ServiceLifecycleManagerImpl(d.serviceConsumeMapDao, f.objectManager, d.serviceExposeMapDao, f.resourcePoolManager, networkService, d.serviceDao, c.revisionManager, loadBalancerService);
+        instanceLifecycleManager = new InstanceLifecycleManagerImpl(k8sLifecycleManager, virtualMachineLifecycleManager, volumeLifecycleManager, f.objectManager, imageCredentialLookup, d.serviceDao, f.transaction, networkLifecycleManager, agentLifecycleManager, backPopulater, restartLifecycleManager, secretsLifecycleManager, allocationLifecycleManager, serviceLifecycleManager, d.instanceDao);
         catalogService = new CatalogServiceImpl(f.jsonMapper, d.resourceDao, f.objectManager, f.processManager);
         projectTemplateService = new ProjectTemplateService(catalogService, f.executorService, f.objectManager, d.resourceDao, f.lockManager);
         upgradeManager = new UpgradeManager(catalogService, d.stackDao, d.resourceDao, f.lockManager, f.processManager);
-        systemStackTrigger = new SystemStackTrigger(c.configItemStatusManager, f.objectManager);
-        systemStackUpdate = new SystemStackUpdate(f.jooqConfig, c.configItemStatusManager, f.eventService, f.objectManager, d.hostDao, f.processManager, f.jsonMapper, catalogService, f.resourceMonitor);
         agentResourcesMonitor = new AgentResourcesMonitor(d.agentDao, d.storagePoolDao, f.objectManager, f.lockManager, f.eventService);
         pingInstancesMonitor = new PingInstancesMonitorImpl(d.agentDao, f.metaDataManager, c.agentLocator, d.pingInstancesMonitorDao, f.objectManager, containerEventCreate,
                 d.containerEventDao);
@@ -249,15 +249,15 @@ public class Backend {
     private void addTriggers() {
         f.triggers.add(new DeploymentUnitReconcileTrigger(loopManager, d.serviceDao, d.volumeDao, f.objectManager));
         f.triggers.add(new ServiceReconcileTrigger(loopManager, f.objectManager));
-        f.triggers.add(new StackHealthStateUpdateTrigger(d.instanceDao, f.objectManager, loopManager));
         f.triggers.add(new MetadataTrigger(envResourceManager));
+        f.triggers.add(new SystemStackTrigger(loopManager, f.objectManager));
     }
 
     private void addProcessHandlers() {
         ProcessRouter r = c.processes;
 
-        AccountProcessManager account = new AccountProcessManager(d.networkDao, d.resourceDao, f.processManager, f.objectManager, d.instanceDao, d.accountDao, f.jsonMapper);
-        AgentProcessManager agentProcessManager = new AgentProcessManager(f.jsonMapper, d.accountDao, f.objectManager, f.processManager, c.agentLocator, f.eventService, f.coreSchemaFactory);
+        AccountProcessManager account = new AccountProcessManager(d.networkDao, d.resourceDao, f.processManager, f.objectManager, d.instanceDao, d.accountDao);
+        AgentProcessManager agentProcessManager = new AgentProcessManager(d.accountDao, f.objectManager, f.processManager, c.agentLocator, f.eventService, f.coreSchemaFactory);
         CredentialProcessManager credentialProcessManager = new CredentialProcessManager(f.objectManager, c.transformationService);
         DriverProcessManager driverProcessManager = new DriverProcessManager(f.jsonMapper, f.lockManager, f.objectManager, f.processManager, d.resourceDao, d.storagePoolDao, c.storageService);
         DynamicSchemaProcessManager dynamicSchemaProcessManager = new DynamicSchemaProcessManager(d.dynamicSchemaDao);
@@ -271,7 +271,7 @@ public class Backend {
         ScheduledUpgradeProcessManager scheduledUpgradeProcessManager = new ScheduledUpgradeProcessManager(catalogService, upgradeManager, f.objectManager, f.processManager);
         ServiceProcessManager serviceProcessManager = new ServiceProcessManager(serviceLifecycleManager, f.objectManager, f.processManager, d.serviceDao);
         StackProcessManager stackProcessManager = new StackProcessManager(f.processManager, f.objectManager);
-        SystemStackProcessManager systemStackProcessManager = new SystemStackProcessManager(f.objectManager, f.processManager, systemStackUpdate, f.resourceMonitor, d.networkDao);
+        SystemStackProcessManager systemStackProcessManager = new SystemStackProcessManager(f.objectManager, f.processManager, loopManager, f.resourceMonitor, d.networkDao);
         VolumeProcessManager volumeProcessManager = new VolumeProcessManager(f.objectManager, f.processManager, d.storagePoolDao, d.genericMapDao);
 
         AccountLinkRemove accountLinkRemove = new AccountLinkRemove(f.objectManager, f.processManager, f.lockManager, f.eventService);
@@ -292,28 +292,17 @@ public class Backend {
         MachinePreCreate machinePreCreate = new MachinePreCreate();
         PullTaskCreate pullTaskCreate = new PullTaskCreate(allocationHelper, c.agentLocator, progress, imageCredentialLookup, c.objectSerializerFactory);
         MountRemove mountRemove = new MountRemove(c.agentLocator, c.objectSerializerFactory, f.objectManager, f.processManager);
-        ProjecttemplateCreate projecttemplateCreate = new ProjecttemplateCreate(systemStackTrigger, d.sampleDataStartupV3, f.objectManager);
+        ProjecttemplateCreate projecttemplateCreate = new ProjecttemplateCreate(loopManager, f.objectManager);
         SecretRemove secretRemove = new SecretRemove(c.secretsService);
         SelectorInstancePostListener selectorInstancePostListener = new SelectorInstancePostListener(serviceLifecycleManager, d.serviceExposeMapDao, f.lockManager, f.objectManager, f.processManager);
-        ServiceIndexRemove serviceIndexRemove = new ServiceIndexRemove(serviceLifecycleManager, f.objectManager);
         SelectorServiceCreatePostListener selectorServiceCreatePostListener = new SelectorServiceCreatePostListener(serviceLifecycleManager, d.serviceExposeMapDao, f.lockManager, d.serviceConsumeMapDao, f.objectManager, f.processManager);
         ServiceVirtualMachinePreCreate serviceVirtualMachinePreCreate = new ServiceVirtualMachinePreCreate();
         SetRemovedFields setRemovedFields = new SetRemovedFields(f.objectManager);
         StoragePoolRemove storagePoolRemove = new StoragePoolRemove(f.objectManager, f.processManager, d.volumeDao);
         SubnetCreate subnetCreate = new SubnetCreate(f.jsonMapper);
         AgentHostStateUpdate agentHostStateUpdate = new AgentHostStateUpdate(f.coreSchemaFactory, f.processDefinitions, f.eventService, f.objectManager);
-
-        // TODO: trigger
         ClearCacheHandler clearCacheHandler = new ClearCacheHandler(f.eventService, d.dbCacheManager);
-
-//        HealthCheckReconcile healthCheckReconcile = new HealthCheckReconcile();
-//        HealthCheckReconcilePostTrigger healthCheckReconcilePostTrigger = new HealthCheckReconcilePostTrigger();
-//        HealthCheckReconcileTrigger healthCheckReconcileTrigger = new HealthCheckReconcileTrigger();
-//        ServiceEventCreate serviceEventCreate = new ServiceEventCreate();
-//        ServiceEventPreCreate serviceEventPreCreate = new ServiceEventPreCreate();
-//        InstanceHealthcheckRegister instanceHealthcheckRegister = new InstanceHealthcheckRegister();
-//        InstanceHealthCheckUpdate instanceHealthCheckUpdate = new InstanceHealthCheckUpdate();
-//        MetadataProcessHandler metadataProcessHandler = new MetadataProcessHandler();
+        ServiceEventCreate serviceEventCreate = new ServiceEventCreate(f.objectManager, loopManager);
 
         r.handle("account.create", account::preCreate, account::create, registerProcessManager::accountCreate, systemStackProcessManager::accountCreate);
         r.handle("account.remove", account::remove);
@@ -343,12 +332,10 @@ public class Backend {
 
         r.handle("genericobject.create", pullTaskCreate, registerProcessManager::genericObjectCreate);
 
-        r.handle("host.*", systemStackTrigger);
         r.handle("host.create", hostProcessManager::create);
         r.handle("host.provision", hostProcessManager::provision);
         r.handle("host.activate", driverProcessManager::setupPools);
         r.handle("host.remove", hostProcessManager::remove, agentResourceRemove);
-        r.preHandle("host.*", systemStackTrigger);
 
         r.handle("hosttemplate.remove", hosttemplateRemove);
 
@@ -371,7 +358,6 @@ public class Backend {
         r.handle("networkdriver.remove", networkProcessManager::networkDriverRemove);
 
         r.handle("physicalhost.create", machinePreCreate);
-        r.handle("physicalhost.remove", agentResourceRemove);
 
         r.handle("projecttemplate.create", projecttemplateCreate);
 
@@ -387,15 +373,13 @@ public class Backend {
         r.handle("service.remove", driverProcessManager::remove, serviceProcessManager::remove);
         r.handle("service.finishupgrade", serviceProcessManager::finishupgrade);
 
-        r.handle("serviceindex.remove", serviceIndexRemove);
+        r.handle("serviceevent.create", serviceEventCreate);
 
-        r.handle("stack.*", systemStackTrigger);
         r.handle("stack.create", k8sStackCreate);
         r.handle("stack.upgrade", k8sStackUpgrade);
         r.handle("stack.rollback", k8sStackRollback);
         r.handle("stack.remove", k8sStackRemove, stackProcessManager::remove, systemStackProcessManager::stackRemove);
         r.handle("stack.finishupgrade", k8sStackFinishupgrade);
-        r.preHandle("stack.*", systemStackTrigger);
 
         r.handle("storagedriver.activate", driverProcessManager::storageDriverActivate, driverProcessManager::setupPools);
         r.handle("storagedriver.deactivate", driverProcessManager::setupPools);
@@ -429,7 +413,6 @@ public class Backend {
         eventListeners.add(agentSimulator);
         eventListeners.add(d.dbCacheManager);
         eventListeners.add(f.resourceMonitor);
-        eventListeners.add(systemStackUpdate);
         eventListeners.add(new ArchaiusEventListenerImpl());
         eventListeners.add(pingInstancesMonitor);
         eventListeners.add(processEventListener);
@@ -438,10 +421,8 @@ public class Backend {
     }
 
     private void addTasks() {
-        BadDataCleanup badDataCleanup = new BadDataCleanup(f.jooqConfig, f.objectManager, f.processManager, d.instanceDao, d.networkDao,
-                d.storagePoolDao, d.accountDao, d.volumeDao, d.serviceDao, f.executorService);
         CleanupTaskInstances cleanupTaskInstances = new CleanupTaskInstances(d.taskDao);
-        HealthcheckCleanupMonitorImpl healthcheckCleanupMonitorImpl = new HealthcheckCleanupMonitorImpl(f.jooqConfig, f.processManager, f.jsonMapper);
+        HealthcheckCleanupMonitorImpl healthcheckCleanupMonitorImpl = new HealthcheckCleanupMonitorImpl(f.jooqConfig, f.processManager);
         HostRemoveMonitorImpl hostRemoveMonitorImpl = new HostRemoveMonitorImpl(d.hostDao, d.agentDao, f.processManager);
         PingMonitorImpl pingMonitor = new PingMonitorImpl(agentResourcesMonitor, pingInstancesMonitor, f.processManager, f.objectManager, d.pingDao, c.agentLocator, f.cluster);
         ProcessReplayTask processReplayTask = new ProcessReplayTask(f.processServer);
@@ -452,7 +433,6 @@ public class Backend {
         UpgradeCleanupMonitorImpl upgradeCleanupMonitorImpl = new UpgradeCleanupMonitorImpl(f.jooqConfig, f.processManager, f.jsonMapper);
         UpgradeScheduleTask upgradeScheduleTask = new UpgradeScheduleTask(upgradeManager);
 
-        c.tasks.add(badDataCleanup);
         c.tasks.add(cleanupTaskInstances);
         c.tasks.add(healthcheckCleanupMonitorImpl);
         c.tasks.add(hostRemoveMonitorImpl);

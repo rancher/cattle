@@ -11,21 +11,17 @@ import io.cattle.platform.core.model.tables.AuthTokenTable;
 import io.cattle.platform.core.model.tables.CertificateTable;
 import io.cattle.platform.core.model.tables.ClusterHostMapTable;
 import io.cattle.platform.core.model.tables.ConfigItemStatusTable;
-import io.cattle.platform.core.model.tables.ContainerEventTable;
 import io.cattle.platform.core.model.tables.CredentialTable;
 import io.cattle.platform.core.model.tables.DeploymentUnitTable;
 import io.cattle.platform.core.model.tables.DynamicSchemaTable;
 import io.cattle.platform.core.model.tables.ExternalEventTable;
 import io.cattle.platform.core.model.tables.GenericObjectTable;
-import io.cattle.platform.core.model.tables.HealthcheckInstanceHostMapTable;
-import io.cattle.platform.core.model.tables.HealthcheckInstanceTable;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
 import io.cattle.platform.core.model.tables.MachineDriverTable;
 import io.cattle.platform.core.model.tables.MountTable;
 import io.cattle.platform.core.model.tables.NetworkDriverTable;
 import io.cattle.platform.core.model.tables.NetworkTable;
-import io.cattle.platform.core.model.tables.PhysicalHostTable;
 import io.cattle.platform.core.model.tables.ProcessExecutionTable;
 import io.cattle.platform.core.model.tables.ProcessInstanceTable;
 import io.cattle.platform.core.model.tables.ProjectMemberTable;
@@ -92,7 +88,6 @@ public class TableCleanup extends AbstractJooqDao implements Task {
     public TableCleanup(Configuration configuration) {
         super(configuration);
         this.processInstanceTables = getProcessInstanceTables();
-        this.eventTables = getEventTables();
         this.auditLogTables = getAuditLogTables();
         this.serviceLogTables = getServiceLogTables();
         this.otherTables = getOtherTables();
@@ -307,12 +302,6 @@ public class TableCleanup extends AbstractJooqDao implements Task {
         return sortByReferences(tables);
     }
 
-    private static List<CleanableTable> getEventTables() {
-        List<CleanableTable> tables = Arrays.asList(
-                CleanableTable.from(ContainerEventTable.CONTAINER_EVENT));
-        return sortByReferences(tables);
-    }
-
     private static List<CleanableTable> getAuditLogTables() {
         return Arrays.asList(CleanableTable.from(AuditLogTable.AUDIT_LOG));
     }
@@ -334,15 +323,12 @@ public class TableCleanup extends AbstractJooqDao implements Task {
                 CleanableTable.from(DynamicSchemaTable.DYNAMIC_SCHEMA),
                 CleanableTable.from(ExternalEventTable.EXTERNAL_EVENT),
                 CleanableTable.from(GenericObjectTable.GENERIC_OBJECT),
-                CleanableTable.from(HealthcheckInstanceTable.HEALTHCHECK_INSTANCE),
-                CleanableTable.from(HealthcheckInstanceHostMapTable.HEALTHCHECK_INSTANCE_HOST_MAP),
                 CleanableTable.from(HostTable.HOST),
                 CleanableTable.from(InstanceTable.INSTANCE),
                 CleanableTable.from(MachineDriverTable.MACHINE_DRIVER),
                 CleanableTable.from(MountTable.MOUNT),
                 CleanableTable.from(NetworkTable.NETWORK),
                 CleanableTable.from(NetworkDriverTable.NETWORK_DRIVER),
-                CleanableTable.from(PhysicalHostTable.PHYSICAL_HOST),
                 CleanableTable.from(ProjectMemberTable.PROJECT_MEMBER),
                 CleanableTable.from(ResourcePoolTable.RESOURCE_POOL),
                 CleanableTable.from(ServiceTable.SERVICE),

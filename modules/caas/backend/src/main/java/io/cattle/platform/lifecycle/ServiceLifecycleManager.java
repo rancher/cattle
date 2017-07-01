@@ -12,8 +12,6 @@ public interface ServiceLifecycleManager {
 
     boolean isSelectorContainerMatch(String selector, Instance instance);
 
-    void setServiceIndexIp(ServiceIndex serviceIndex, String ipAddress);
-
     void releaseIpFromServiceIndex(Service service, ServiceIndex serviceIndex);
 
     void remove(Service service);

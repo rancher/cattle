@@ -2,13 +2,10 @@ package io.cattle.platform.iaas.api.filter.hosts;
 
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HostConstants;
-import io.cattle.platform.core.constants.MachineConstants;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.model.Host;
-import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.iaas.api.filter.common.CachedOutputFilter;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
-import io.cattle.platform.object.util.DataUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -38,22 +35,8 @@ public class HostsFilter extends CachedOutputFilter<HostsFilter.Data> {
             if (data == null) {
                 return converted;
             }
-            PhysicalHost physicalHost = data.physicalHosts.get(host.getPhysicalHostId());
             Map<String, Object> fields = converted.getFields();
             fields.put(HostConstants.FIELD_INSTANCE_IDS, data.instancesPerHost.get(host.getId()));
-
-            if (physicalHost != null) {
-                Map<String, Object> phFields = DataUtils.getFields(physicalHost);
-                for (Map.Entry<String, Object> entry : phFields.entrySet()) {
-                    if (entry.getValue() == null || MachineConstants.EXTRACTED_CONFIG_FIELD.equals(entry.getKey())) {
-                        continue;
-                    }
-                    String key = entry.getKey();
-                    if (key.equals(MachineConstants.FIELD_DRIVER) || key.endsWith(MachineConstants.CONFIG_FIELD_SUFFIX)) {
-                        fields.put(key, entry.getValue());
-                    }
-                }
-            }
 
             String agentState = host.getAgentState();
             if (CommonStatesConstants.ACTIVE.equals(host.getState()) && StringUtils.isNotBlank(agentState)) {
@@ -68,7 +51,6 @@ public class HostsFilter extends CachedOutputFilter<HostsFilter.Data> {
         List<Long> ids = getIds(apiRequest);
         Data data = new Data();
         data.instancesPerHost = hostDao.getInstancesPerHost(ids, ApiContext.getContext().getIdFormatter());
-        data.physicalHosts = hostDao.getPhysicalHostsForHosts(ids);
         return data;
     }
 
@@ -82,7 +64,6 @@ public class HostsFilter extends CachedOutputFilter<HostsFilter.Data> {
 
     static class Data {
         Map<Long, List<Object>> instancesPerHost;
-        Map<Long, PhysicalHost> physicalHosts;
     }
 
 }

@@ -1,10 +1,9 @@
 package io.cattle.platform.docker.machine.api;
 
-import static io.cattle.platform.core.constants.MachineConstants.*;
+import static io.cattle.platform.core.constants.HostConstants.*;
 import static io.cattle.platform.docker.machine.api.MachineLinkFilter.*;
 
 import io.cattle.platform.core.model.Host;
-import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.framework.secret.SecretsService;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataUtils;
@@ -43,11 +42,7 @@ public class MachineConfigLinkHandler implements LinkHandler {
             throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
         }
         if (obj instanceof Host) {
-            Long physicalHostId = ((Host) obj).getPhysicalHostId();
-            obj = objectManager.loadResource(PhysicalHost.class, physicalHostId);
-        }
-        if (obj instanceof PhysicalHost) {
-            PhysicalHost host = (PhysicalHost) obj;
+            Host host = (Host) obj;
             String extractedConfig = (String) DataUtils.getFields(host).get(EXTRACTED_CONFIG_FIELD);
             if (extractedConfig.startsWith("{")) {
                 try {

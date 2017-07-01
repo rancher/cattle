@@ -1,6 +1,5 @@
 package io.cattle.platform.compose.export.impl;
 
-import io.cattle.platform.core.constants.DockerInstanceConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
@@ -110,18 +109,18 @@ public class ComposeExportConfigItem {
     public static final ComposeExportConfigItem LINKS = new ComposeExportConfigItem(null, "links", false, true,
             false);
     public static final ComposeExportConfigItem NETWORKMODE = new ComposeExportConfigItem(
-            DockerInstanceConstants.FIELD_NETWORK_MODE,
-            NamedUtils.toUnderscoreSeparated(DockerInstanceConstants.FIELD_NETWORK_MODE), false);
+            InstanceConstants.FIELD_NETWORK_MODE,
+            NamedUtils.toUnderscoreSeparated(InstanceConstants.FIELD_NETWORK_MODE), false);
     public static final ComposeExportConfigItem CPUSET = new ComposeExportConfigItem("cpuSet", "cpuset", false);
 
     public static final ComposeExportConfigItem LABELS = new ComposeExportConfigItem(
             InstanceConstants.FIELD_LABELS, InstanceConstants.FIELD_LABELS, false);
     public static final ComposeExportConfigItem MEMSWAPLIMIT = new ComposeExportConfigItem(
-            DockerInstanceConstants.FIELD_MEMORY_SWAP, "memswap_limit", false);
+            InstanceConstants.FIELD_MEMORY_SWAP, "memswap_limit", false);
     public static final ComposeExportConfigItem PIDMODE = new ComposeExportConfigItem(
-            DockerInstanceConstants.FIELD_PID_MODE, "pid", false);
+            InstanceConstants.FIELD_PID_MODE, "pid", false);
     public static final ComposeExportConfigItem DEVICES = new ComposeExportConfigItem(
-            DockerInstanceConstants.FIELD_DEVICES, DockerInstanceConstants.FIELD_DEVICES, false);
+            InstanceConstants.FIELD_DEVICES, InstanceConstants.FIELD_DEVICES, false);
 
     // CATTLE PARAMETERS
     public static final ComposeExportConfigItem SCALE = new ComposeExportConfigItem(ServiceConstants.FIELD_SCALE,

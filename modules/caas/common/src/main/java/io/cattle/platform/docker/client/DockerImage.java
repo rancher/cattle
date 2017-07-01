@@ -6,10 +6,6 @@ public class DockerImage {
 
     public static final String DEFAULT_REGISTRY = "index.docker.io";
 
-    public static final String KIND_PREFIX = "docker:";
-
-    public static final String SIM_PREFIX = "sim:";
-
     String fullName, serverAddress;
 
     public DockerImage(String fullName, String serverAddress) {
@@ -19,12 +15,6 @@ public class DockerImage {
     }
 
     public static DockerImage parse(String uuid) {
-        if (uuid.startsWith(KIND_PREFIX)) {
-            uuid = uuid.substring(KIND_PREFIX.length());
-        }
-        if (uuid.startsWith(SIM_PREFIX)) {
-            uuid = uuid.substring(SIM_PREFIX.length());
-        }
         String[] hostNameAndRepoName = splitHostName(uuid);
         return new DockerImage(hostNameAndRepoName[1], hostNameAndRepoName[0]);
     }

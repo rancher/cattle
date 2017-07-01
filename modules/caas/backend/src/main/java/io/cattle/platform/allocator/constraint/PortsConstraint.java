@@ -1,21 +1,19 @@
 package io.cattle.platform.allocator.constraint;
 
 import io.cattle.platform.allocator.service.AllocationCandidate;
-import io.cattle.platform.core.constants.PortConstants;
-import io.cattle.platform.core.model.Port;
-import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.core.addon.PortInstance;
+import io.cattle.platform.core.util.PortSpec;
 
 import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
+import java.util.Objects;
 
 public class PortsConstraint extends HardConstraint implements Constraint {
 
-    List<Port> ports;
+    List<PortSpec> ports;
 
     long instanceId;
 
-    public PortsConstraint(long instanceId, List<Port> ports) {
+    public PortsConstraint(long instanceId, List<PortSpec> ports) {
         this.ports = ports;
         this.instanceId = instanceId;
     }
@@ -27,9 +25,9 @@ public class PortsConstraint extends HardConstraint implements Constraint {
         }
 
         // TODO: Performance improvement. Move more of the filtering into the DB query itself
-        List<Port> portsUsedByHost = candidate.getUsedPorts();
-        for (Port portUsed : portsUsedByHost) {
-            for (Port requestedPort : ports) {
+        List<PortInstance> portsUsedByHost = candidate.getUsedPorts();
+        for (PortInstance portUsed : portsUsedByHost) {
+            for (PortSpec requestedPort : ports) {
                 if (requestedPort.getPublicPort() != null &&
                         requestedPort.getPublicPort().equals(portUsed.getPublicPort()) &&
                         publicIpTheSame(requestedPort, portUsed) &&
@@ -41,20 +39,14 @@ public class PortsConstraint extends HardConstraint implements Constraint {
         return true;
     }
 
-    private boolean publicIpTheSame(Port requestedPort, Port portUsed) {
-        if (requestedPort.getPublicIpAddressId() != null) {
-            return requestedPort.getPublicIpAddressId().equals(portUsed.getPublicIpAddressId());
-        } else {
-            String requestedIp = DataAccessor.fields(requestedPort).withKey(PortConstants.FIELD_BIND_ADDR).as(String.class);
-            String usedIp = DataAccessor.fields(portUsed).withKey(PortConstants.FIELD_BIND_ADDR).as(String.class);
-            return StringUtils.equals(requestedIp, usedIp);
-        }
+    private boolean publicIpTheSame(PortSpec requestedPort, PortInstance portUsed) {
+        return Objects.equals(requestedPort.getIpAddress(), portUsed.getBindIpAddress());
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (Port port: ports) {
+        for (PortSpec port: ports) {
             if (sb.length() > 0) {
                 sb.append(", ");
             }

@@ -5,10 +5,11 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
+import io.cattle.platform.engine.manager.LoopFactory;
 import io.cattle.platform.engine.manager.LoopManager;
 import io.cattle.platform.environment.EnvironmentResourceManager;
+import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.lock.LockManager;
-import io.cattle.platform.loop.LoopFactoryImpl;
 import io.cattle.platform.metadata.service.Metadata;
 import io.cattle.platform.metadata.service.MetadataObjectFactory;
 import io.cattle.platform.metadata.service.impl.MetadataImpl;
@@ -35,6 +36,7 @@ public class EnvironmentResourceManagerImpl implements EnvironmentResourceManage
     LoopManager loopManager;
     LockManager lockManager;
     ObjectManager objectManager;
+    EventService eventService;
 
     LoadingCache<Long, Metadata> metadataCache = CacheBuilder.newBuilder()
             .expireAfterAccess(30, TimeUnit.MINUTES)
@@ -45,17 +47,20 @@ public class EnvironmentResourceManagerImpl implements EnvironmentResourceManage
                 }
             });
 
-    public EnvironmentResourceManagerImpl(MetadataObjectFactory factory, LoopManager loopManager, LockManager lockManager, ObjectManager objectManager) {
+    public EnvironmentResourceManagerImpl(MetadataObjectFactory factory, LoopManager loopManager, LockManager lockManager, ObjectManager objectManager,
+            EventService eventService) {
         this.factory = factory;
         this.loopManager = loopManager;
         this.lockManager = lockManager;
         this.objectManager = objectManager;
+        this.eventService = eventService;
     }
 
     private Metadata buildMetadata(long accountId) {
-        MetadataImpl metadata = new MetadataImpl(accountId, factory, loopManager, lockManager, objectManager,
-                LoopFactoryImpl.HEALTHCHECK_SCHEDULE,
-                LoopFactoryImpl.HEALTHSTATE_CALCULATE);
+        MetadataImpl metadata = new MetadataImpl(accountId, eventService, factory, loopManager, lockManager, objectManager,
+                LoopFactory.HEALTHCHECK_SCHEDULE,
+                LoopFactory.HEALTHSTATE_CALCULATE,
+                LoopFactory.ENDPOINT_UPDATE);
 
         for (Class<?> clz : LOAD_TYPES) {
             for (Object obj : objectManager.find(clz,

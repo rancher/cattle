@@ -4,7 +4,6 @@ import io.cattle.platform.core.dao.ServiceDao.VolumeData;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Revision;
 import io.cattle.platform.core.model.ServiceExposeMap;
-import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.inator.Inator;
 import io.cattle.platform.inator.InatorContext;
 import io.cattle.platform.inator.Result;
@@ -30,7 +29,7 @@ import java.util.stream.Collectors;
 
 public class DeploymentUnitInator implements Inator {
 
-    Map<Long, ServiceIndex> indexes = new HashMap<>();
+    Map<Long, Integer> indexes = new HashMap<>();
     Map<Long, RevisionWrapper> revisions = new HashMap<>();
     DeploymentUnitWrapper unit;
     StackWrapper stack;
@@ -59,7 +58,7 @@ public class DeploymentUnitInator implements Inator {
 
     protected List<Unit> collectInstances() {
         return svc.serviceDao.getInstanceData(unit.getId(), unit.getUuid()).stream()
-            .map((x) -> (Unit)toInstanceUnit(x.instance, x.serviceIndex, x.serviceExposeMap))
+            .map((x) -> (Unit)toInstanceUnit(x.instance, x.serviceExposeMap))
             .collect(Collectors.toList());
     }
 
@@ -136,13 +135,13 @@ public class DeploymentUnitInator implements Inator {
         return revisionWrapper;
     }
 
-    protected InstanceUnit toInstanceUnit(Instance instance, ServiceIndex index, ServiceExposeMap serviceExposeMap) {
+    protected InstanceUnit toInstanceUnit(Instance instance, ServiceExposeMap serviceExposeMap) {
         RevisionWrapper revisionWrapper = revisions.get(instance.getRevisionId());
         if (revisionWrapper == null) {
             revisionWrapper = buildRevisionWrapper(instance.getRevisionId());
         }
 
-        InstanceWrapper instanceWrapper = new InstanceWrapper(instance, serviceExposeMap, index, svc);
+        InstanceWrapper instanceWrapper = new InstanceWrapper(instance, serviceExposeMap, svc);
         return new InstanceUnit(instanceWrapper, revisionWrapper.getLaunchConfig(instanceWrapper.getLaunchConfigName()));
     }
 

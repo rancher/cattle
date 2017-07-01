@@ -1,5 +1,6 @@
 package io.github.ibuildthecloud.gdapi.json;
 
+import io.github.ibuildthecloud.gdapi.model.Collection;
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.model.SchemaCollection;
 import io.github.ibuildthecloud.gdapi.model.impl.SchemaImpl;
@@ -25,6 +26,7 @@ public class ActionLinksMapper extends JacksonMapper {
     protected SimpleModule getModule() {
         SimpleModule module = new SimpleModule();
         module.setMixInAnnotation(Resource.class, ResourceMix.class);
+        module.setMixInAnnotation(Collection.class, ResourceMix.class);
         module.setMixInAnnotation(SchemaCollection.class, SchemaCollectionMixin.class);
         module.setMixInAnnotation(SchemaImpl.class, SchemaImplMixin.class);
         return module;

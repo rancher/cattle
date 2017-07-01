@@ -12,12 +12,6 @@ import io.cattle.platform.compose.export.impl.ComposeExportServiceImpl;
 import io.cattle.platform.compose.export.impl.RancherCertificatesToComposeFormatter;
 import io.cattle.platform.compose.export.impl.RancherGenericMapToComposeFormatter;
 import io.cattle.platform.compose.export.impl.RancherImageToComposeFormatter;
-import io.cattle.platform.configitem.registry.impl.ConfigItemRegistryImpl;
-import io.cattle.platform.configitem.server.impl.ConfigItemServerImpl;
-import io.cattle.platform.configitem.server.model.ConfigItemFactory;
-import io.cattle.platform.configitem.version.ConfigItemStatusManager;
-import io.cattle.platform.configitem.version.impl.ConfigItemStatusManagerImpl;
-import io.cattle.platform.configitem.version.impl.ConfigUpdatePublisher;
 import io.cattle.platform.docker.process.serializer.DockerContainerSerializer;
 import io.cattle.platform.docker.transform.DockerTransformer;
 import io.cattle.platform.docker.transform.DockerTransformerImpl;
@@ -29,6 +23,7 @@ import io.cattle.platform.framework.encryption.impl.Sha256Hasher;
 import io.cattle.platform.framework.secret.SecretsService;
 import io.cattle.platform.framework.secret.SecretsServiceImpl;
 import io.cattle.platform.host.service.HostApiRSAKeyProvider;
+import io.cattle.platform.host.service.HostApiService;
 import io.cattle.platform.host.service.impl.HostApiServiceImpl;
 import io.cattle.platform.iaas.api.auditing.AuditService;
 import io.cattle.platform.iaas.api.auditing.AuditServiceImpl;
@@ -66,11 +61,9 @@ public class Common {
     AuditService auditService;
     CertificateService certService;
     ComposeExportService composeExportService;
-    ConfigItemRegistryImpl configItemRegistry;
-    ConfigItemServerImpl configItemServer;
-    ConfigItemStatusManager configItemStatusManager;
     DefaultResourceManagerSupport support;
     DockerTransformer dockerTransformer;
+    HostApiService hostApiService;
     HostApiRSAKeyProvider keyProvider;
     ObjectSerializerFactory objectSerializerFactory;
     ProcessRouter processes;
@@ -85,7 +78,6 @@ public class Common {
     TransformationServiceImpl transformationService;
 
     List<Task> tasks = new ArrayList<>();
-    List<ConfigItemFactory> configItemFactories = new ArrayList<>();
     Map<String, SchemaFactory> schemaFactories = new HashMap<>();
 
     public Common(Framework f, DataAccess d) {
@@ -102,16 +94,16 @@ public class Common {
         this.storageService = new StorageServiceImpl(f.objectManager, d.resourceDao, f.lockManager, d.storagePoolDao);
         this.revisionManager = new RevisionManagerImpl(f.objectManager, f.processManager, d.serviceDao, d.resourceDao, f.coreSchemaFactory, storageService);
         this.dockerTransformer = new DockerTransformerImpl(f.jsonMapper);
-        this.composeExportService = new ComposeExportServiceImpl(f.objectManager, d.serviceConsumeMapDao, f.jsonMapper, d.loadBalancerInfoDao,
+        this.composeExportService = new ComposeExportServiceImpl(f.objectManager, d.serviceConsumeMapDao, d.loadBalancerInfoDao,
                 Arrays.asList(
                         new RancherCertificatesToComposeFormatter(f.jooqConfig, f.objectManager),
                         new RancherImageToComposeFormatter(),
                         new RancherGenericMapToComposeFormatter()));
-        this.certService = new CertificateServiceImpl(f.objectManager, f.jsonMapper, keyProvider, d.dataDao);
+        this.certService = new CertificateServiceImpl(f.objectManager, keyProvider, d.dataDao);
         this.taskManager = new TaskManagerImpl(f.scheduledExecutorService, f.eventService, d.taskDao, tasks);
         this.serviceAccountCreateStartup = new ServiceAccountCreateStartup(f.lockManager, f.lockDelegator, f.scheduledExecutorService, d.accountDao, d.resourceDao, f.resourceMonitor, f.processManager);
         this.objectSerializerFactory = new DefaultObjectSerializerFactoryImpl(f.jsonMapper, f.objectManager, f.metaDataManager,
-                new DockerContainerSerializer(f.jsonMapper, f.objectManager),
+                new DockerContainerSerializer(f.objectManager),
                 new AgentInstanceAuthObjectPostProcessor(f.objectManager),
                 new SystemRoleObjectPostProcessor(f.objectManager, serviceAccountCreateStartup));
 
@@ -123,12 +115,6 @@ public class Common {
         ApiRouterImpl routerImpl = new ApiRouterImpl(f.coreSchemaFactory);
         router = routerImpl;
         locator = routerImpl;
-
-        ConfigUpdatePublisher configUpdatePublisher = new ConfigUpdatePublisher(f.eventService, agentLocator, d.configItemStatusDao, f.objectManager);
-        configItemStatusManager = new ConfigItemStatusManagerImpl(d.configItemStatusDao, f.objectManager, configUpdatePublisher,
-                f.lockManager, f.eventService);
-        configItemRegistry = new ConfigItemRegistryImpl(configItemFactories);
-        this.configItemServer = new ConfigItemServerImpl(configItemStatusManager, configItemRegistry, f.lockManager);
 
         Aes256Encrypter aes256Encrypter = new Aes256Encrypter();
         aes256Encrypter.init();

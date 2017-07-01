@@ -2,14 +2,15 @@ package io.cattle.platform.metadata.model;
 
 import io.cattle.platform.core.addon.HealthcheckState;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
-import io.cattle.platform.core.addon.PortBinding;
-import io.cattle.platform.core.constants.DockerInstanceConstants;
+import io.cattle.platform.core.addon.PortInstance;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.object.util.DataAccessor;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class InstanceInfo implements MetadataObject {
     long id;
@@ -36,7 +37,7 @@ public class InstanceInfo implements MetadataObject {
     Long networkId;
     Long startCount;
 
-    List<PortBinding> ports;
+    Set<PortInstance> ports;
     List<String> dns;
     List<String> dnsSearch;
     Map<String, String> labels;
@@ -64,9 +65,9 @@ public class InstanceInfo implements MetadataObject {
         this.milliCpuReservation = instance.getMilliCpuReservation();
         this.networkId = instance.getNetworkId();
         this.startCount = instance.getStartCount();
-        this.ports = DataAccessor.fieldObjectList(instance, InstanceConstants.FIELD_PORT_BINDINGS, PortBinding.class);
-        this.dns = DataAccessor.fieldStringList(instance, DockerInstanceConstants.FIELD_DNS);
-        this.dnsSearch = DataAccessor.fieldStringList(instance, DockerInstanceConstants.FIELD_DNS_SEARCH);
+        this.ports = new HashSet<>(DataAccessor.fieldObjectList(instance, InstanceConstants.FIELD_PORT_BINDINGS, PortInstance.class));
+        this.dns = DataAccessor.fieldStringList(instance, InstanceConstants.FIELD_DNS);
+        this.dnsSearch = DataAccessor.fieldStringList(instance, InstanceConstants.FIELD_DNS_SEARCH);
         this.labels = DataAccessor.getLabels(instance);
         this.healthCheckHosts = DataAccessor.fieldObjectList(instance,
                 InstanceConstants.FIELD_HEALTHCHECK_STATES, HealthcheckState.class);
@@ -116,7 +117,7 @@ public class InstanceInfo implements MetadataObject {
         return primaryMacAddress;
     }
 
-    public String getServiceIndex() {
+    public Integer getServiceIndex() {
         return serviceIndex;
     }
 
@@ -156,10 +157,6 @@ public class InstanceInfo implements MetadataObject {
         return startCount;
     }
 
-    public List<PortBinding> getPorts() {
-        return ports;
-    }
-
     public List<String> getDns() {
         return dns;
     }
@@ -186,6 +183,10 @@ public class InstanceInfo implements MetadataObject {
 
     public HealthcheckInfo getHealthCheck() {
         return healthCheck;
+    }
+
+    public Set<PortInstance> getPorts() {
+        return ports;
     }
 
     @Override

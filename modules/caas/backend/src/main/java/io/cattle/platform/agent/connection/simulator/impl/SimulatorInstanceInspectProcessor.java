@@ -14,7 +14,7 @@ public class SimulatorInstanceInspectProcessor implements AgentSimulatorEventPro
 
     @Override
     public Event handle(AgentConnectionSimulator simulator, Event event) throws Exception {
-        if (!ContainerEventCreate.INSTANCE_INSPECT_EVENT_NAME.equals(event.getName())) {
+        if (!ContainerSyncImpl.INSTANCE_INSPECT_EVENT_NAME.equals(event.getName())) {
             return null;
         }
 

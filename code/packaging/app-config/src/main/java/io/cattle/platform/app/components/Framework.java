@@ -158,7 +158,7 @@ public class Framework {
                 new MacAddressGeneratorFactory(),
                 new MacAddressPrefixGeneratorFactory(),
                 new SubnetAddressGeneratorFactory(),
-                new EnvironmentPortGeneratorFactory(jsonMapper),
+                new EnvironmentPortGeneratorFactory(),
                 new HostPortGeneratorFactory());
         processServer = new ProcessServer(scheduledExecutorService, executorService, executorService, processInstanceExecutor, defaultProcessManager, cluster, triggers);
     }

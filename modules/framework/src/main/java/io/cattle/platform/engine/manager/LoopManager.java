@@ -6,4 +6,6 @@ public interface LoopManager {
 
     ListenableFuture<?> kick(String name, String type, Long id, Object input);
 
+    ListenableFuture<?> kick(String name, Class<?> type, Long id, Object input);
+
 }

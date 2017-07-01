@@ -1,7 +1,6 @@
 package io.cattle.platform.core.dao.impl;
 
 import static io.cattle.platform.core.model.tables.GenericObjectTable.*;
-import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
@@ -27,15 +26,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.Condition;
 import org.jooq.Configuration;
-
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 
 public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
 
@@ -47,15 +41,6 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
         this.objectManager = objectManager;
         this.jsonMapper = jsonMapper;
     }
-
-    LoadingCache<Long, Map<String, Object>> instanceData = CacheBuilder.newBuilder()
-            .expireAfterAccess(24, TimeUnit.HOURS)
-            .build(new CacheLoader<Long, Map<String, Object>>() {
-                @Override
-                public Map<String, Object> load(Long key) throws Exception {
-                    return lookupCacheInstanceData(key);
-                }
-            });
 
     @Override
     public List<? extends Instance> getNonRemovedInstanceOn(Long hostId) {
@@ -158,29 +143,6 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
         Map<String, Object> newData = new HashMap<>();
         newData.put(DataUtils.FIELDS, instance.getData().get(DataUtils.FIELDS));
         return newData;
-    }
-
-    @Override
-    public Map<String, Object> getCacheInstanceData(long instanceId) {
-        return instanceData.getUnchecked(instanceId);
-    }
-
-    @Override
-    public void clearCacheInstanceData(long instanceId) {
-        instanceData.invalidate(instanceId);
-    }
-
-    @Override
-    public List<? extends Instance> findBadInstances(int count) {
-        return create().select(INSTANCE.fields())
-            .from(INSTANCE)
-            .join(HOST)
-                .on(INSTANCE.HOST_ID.eq(HOST.ID))
-            .where(HOST.REMOVED.isNotNull().and(INSTANCE.REMOVED.isNull())
-                    .and(INSTANCE.STATE.notIn(InstanceConstants.STATE_STOPPING,
-                            CommonStatesConstants.REMOVING)))
-            .limit(count)
-            .fetchInto(InstanceRecord.class);
     }
 
     GenericObject getPullTask(long accountId, String image, Map<String, String> labels) {

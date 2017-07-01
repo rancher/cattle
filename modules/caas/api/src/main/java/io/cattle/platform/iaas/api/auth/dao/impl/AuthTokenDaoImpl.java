@@ -8,7 +8,6 @@ import io.cattle.platform.core.model.tables.records.AuthTokenRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
-import io.cattle.platform.iaas.api.filter.apikey.ApiKeyFilter;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
@@ -53,7 +52,7 @@ public class AuthTokenDaoImpl extends AbstractJooqDao implements AuthTokenDao{
         AuthTokenRecord authTokenRecord = new AuthTokenRecord();
         authTokenRecord.setAccountId(accountId);
         authTokenRecord.setValue(jwt);
-        authTokenRecord.setKey(ApiKeyFilter.generateKeys()[1]);
+        authTokenRecord.setKey(SecurityConstants.generateKeys()[1]);
         authTokenRecord.setVersion(SecurityConstants.TOKEN_VERSION);
         authTokenRecord.setProvider(provider);
         authTokenRecord.setAuthenticatedAsAccountId(authenticatedAsAccountId);

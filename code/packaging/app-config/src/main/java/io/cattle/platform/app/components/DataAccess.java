@@ -4,10 +4,6 @@ import io.cattle.platform.agent.server.ping.dao.PingDao;
 import io.cattle.platform.agent.server.ping.dao.impl.PingDaoImpl;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.dao.impl.AllocatorDaoImpl;
-import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
-import io.cattle.platform.configitem.context.dao.impl.MetaDataInfoDaoImpl;
-import io.cattle.platform.configitem.version.dao.ConfigItemStatusDao;
-import io.cattle.platform.configitem.version.dao.impl.ConfigItemStatusDaoImpl;
 import io.cattle.platform.core.cache.DBCacheManager;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.AgentDao;
@@ -69,18 +65,7 @@ import io.cattle.platform.register.dao.impl.RegisterDaoImpl;
 import io.cattle.platform.register.dao.impl.RegistrationTokenAuthDaoImpl;
 import io.cattle.platform.sample.data.AbstractSampleData;
 import io.cattle.platform.sample.data.SampleDataStartupV10;
-import io.cattle.platform.sample.data.SampleDataStartupV11;
-import io.cattle.platform.sample.data.SampleDataStartupV12;
-import io.cattle.platform.sample.data.SampleDataStartupV13;
-import io.cattle.platform.sample.data.SampleDataStartupV14;
-import io.cattle.platform.sample.data.SampleDataStartupV15;
-import io.cattle.platform.sample.data.SampleDataStartupV16;
-import io.cattle.platform.sample.data.SampleDataStartupV17;
 import io.cattle.platform.sample.data.SampleDataStartupV3;
-import io.cattle.platform.sample.data.SampleDataStartupV5;
-import io.cattle.platform.sample.data.SampleDataStartupV6;
-import io.cattle.platform.sample.data.SampleDataStartupV8;
-import io.cattle.platform.sample.data.SampleDataStartupV9;
 import io.cattle.platform.task.dao.TaskDao;
 
 import java.util.ArrayList;
@@ -94,7 +79,6 @@ public class DataAccess {
     AuditLogDao auditLogDao;
     AuthDao authDao;
     AuthTokenDao authTokenDao;
-    ConfigItemStatusDao configItemStatusDao;
     ContainerEventDao containerEventDao;
     DataDao dataDao;
     DBCacheManager dbCacheManager;
@@ -104,7 +88,6 @@ public class DataAccess {
     HostDao hostDao;
     InstanceDao instanceDao;
     LoadBalancerInfoDao loadBalancerInfoDao;
-    MetaDataInfoDao metaDataInfoDao;
     NetworkDao networkDao;
     PasswordDao passwordDao;
     PingDao pingDao;
@@ -124,8 +107,6 @@ public class DataAccess {
     UserPreferenceDao userPreferenceDao;
     VolumeDao volumeDao;
 
-    SampleDataStartupV3 sampleDataStartupV3;
-
     List<AbstractSampleData> sampleDatas = new ArrayList<>();
 
     public DataAccess(Framework f) {
@@ -135,16 +116,14 @@ public class DataAccess {
         this.auditLogDao = new AuditLogDaoImpl(f.jooqConfig, f.objectManager);
         this.authDao = new AuthDaoImpl(f.jooqConfig, resourceDao, f.objectManager, f.processManager, f.lockManager, accountDao);
         this.authTokenDao = new AuthTokenDaoImpl(f.jooqConfig, resourceDao, f.objectManager, f.processManager);
-        this.configItemStatusDao = new ConfigItemStatusDaoImpl(f.jooqConfig, f.eventService, f.objectManager);
         this.containerEventDao = new ContainerEventDaoImpl(f.jooqConfig, resourceDao);
         this.dataDao = new DataDaoImpl(f.jooqConfig, f.lockManager, f.objectManager, f.newConnJooqConfig);
         this.dbCacheManager = new DBCacheManager();
         this.dynamicSchemaDao = new DynamicSchemaDaoImpl(f.jooqConfig, dbCacheManager);
-        this.genericMapDao = new GenericMapDaoImpl(f.jooqConfig, f.objectManager, f.coreSchemaFactory, f.metaDataManager);
+        this.genericMapDao = new GenericMapDaoImpl(f.jooqConfig, f.coreSchemaFactory, f.metaDataManager);
         this.hostDao = new HostDaoImpl(f.jooqConfig, f.objectManager, resourceDao, f.transaction);
         this.instanceDao = new InstanceDaoImpl(f.jooqConfig, f.objectManager, f.jsonMapper);
         this.loadBalancerInfoDao = new LoadBalancerInfoDaoImpl(f.jooqConfig, f.objectManager, f.jsonMapper, serviceDao);
-        this.metaDataInfoDao = new MetaDataInfoDaoImpl(f.jooqConfig, instanceDao, f.objectManager, loadBalancerInfoDao, f.jsonMapper);
         this.networkDao = new NetworkDaoImpl(f.jooqConfig, f.objectManager, resourceDao, f.lockManager, f.transaction);
         this.passwordDao = new PasswordDaoImpl(f.jooqConfig, f.objectManager, transformationService, accountDao);
         this.pingDao = new PingDaoImpl(f.jooqConfig);
@@ -164,21 +143,9 @@ public class DataAccess {
         this.transformationService = new TransformationServiceImpl();
         this.userPreferenceDao = new UserPreferenceDaoImpl(f.jooqConfig);
         this.volumeDao = new VolumeDaoImpl(f.jooqConfig, resourceDao, f.objectManager, f.transaction);
-        this.sampleDataStartupV3 = new SampleDataStartupV3(f.objectManager, f.processManager, accountDao, f.jsonMapper, f.lockManager);
 
-        sampleDatas.add(sampleDataStartupV3);
-        sampleDatas.add(new SampleDataStartupV5(f.objectManager, f.processManager, accountDao, f.jsonMapper, f.lockManager));
-        sampleDatas.add(new SampleDataStartupV6(f.objectManager, f.processManager, accountDao, f.jsonMapper, f.lockManager));
-        sampleDatas.add(new SampleDataStartupV8(f.objectManager, f.processManager, accountDao, f.jsonMapper, f.lockManager));
-        sampleDatas.add(new SampleDataStartupV9(f.objectManager, f.processManager, accountDao, f.jsonMapper, f.lockManager));
+        sampleDatas.add(new SampleDataStartupV3(f.objectManager, f.processManager, accountDao, f.jsonMapper, f.lockManager));
         sampleDatas.add(new SampleDataStartupV10(f.objectManager, f.processManager, accountDao, f.jsonMapper, f.lockManager, f.jooqConfig));
-        sampleDatas.add(new SampleDataStartupV11(f.objectManager, f.processManager, accountDao, f.jsonMapper, f.lockManager));
-        sampleDatas.add(new SampleDataStartupV12(f.objectManager, f.processManager, accountDao, f.jsonMapper, f.lockManager));
-        sampleDatas.add(new SampleDataStartupV13(f.objectManager, f.processManager, accountDao, f.jsonMapper, f.lockManager));
-        sampleDatas.add(new SampleDataStartupV14(f.objectManager, f.processManager, accountDao, f.jsonMapper, f.lockManager, dataDao));
-        sampleDatas.add(new SampleDataStartupV15(f.objectManager, f.processManager, accountDao, f.jsonMapper, f.lockManager));
-        sampleDatas.add(new SampleDataStartupV16(f.objectManager, f.processManager, accountDao, f.jsonMapper, f.lockManager));
-        sampleDatas.add(new SampleDataStartupV17(f.objectManager, f.processManager, accountDao, f.jsonMapper, f.lockManager));
     }
 
 }

@@ -18,5 +18,10 @@
             <artifactId>jetty-jmx</artifactId>
             <version>${jetty.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.cattle</groupId>
+            <artifactId>cattle-caas-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 	</dependencies>
 </project>

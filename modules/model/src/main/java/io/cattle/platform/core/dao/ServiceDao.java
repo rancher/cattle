@@ -53,8 +53,6 @@ public interface ServiceDao {
 
     Map<String, DeploymentUnit> getDeploymentUnits(Service service);
 
-    List<? extends Instance> getInstancesWithHealtcheckEnabled(long accountId);
-
     List<Long> getServiceDeploymentUnitsOnHost(Host host);
 
     DeploymentUnit createDeploymentUnit(long accountId, Long serviceId,

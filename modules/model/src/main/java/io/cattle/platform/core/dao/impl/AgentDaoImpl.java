@@ -4,24 +4,21 @@ import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.CredentialTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
-import static io.cattle.platform.core.model.tables.PhysicalHostTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.StoragePoolConstants;
 import io.cattle.platform.core.dao.AgentDao;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.tables.records.AgentRecord;
 import io.cattle.platform.core.model.tables.records.HostRecord;
-import io.cattle.platform.core.model.tables.records.PhysicalHostRecord;
 import io.cattle.platform.core.model.tables.records.StoragePoolRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.util.DataAccessor;
@@ -34,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jooq.Configuration;
 import org.jooq.Record1;
 
@@ -117,7 +113,7 @@ public class AgentDaoImpl extends AbstractJooqDao implements AgentDao {
         Map<String,Host> hosts = new HashMap<>();
 
         for ( Host host : hostList ) {
-            String uuid = DataAccessor.fields(host).withKey(HostConstants.FIELD_REPORTED_UUID).as(String.class);
+            String uuid = host.getExternalId();
             if ( uuid == null ) {
                 uuid = host.getUuid();
             }
@@ -141,7 +137,7 @@ public class AgentDaoImpl extends AbstractJooqDao implements AgentDao {
                         .fetchInto(StoragePoolRecord.class);
 
         for ( StoragePool pool : poolList ) {
-            String uuid = DataAccessor.fields(pool).withKey(HostConstants.FIELD_REPORTED_UUID).as(String.class);
+            String uuid = DataAccessor.fieldString(pool, StoragePoolConstants.FIELD_REPORTED_UUID);
             if ( uuid == null ) {
                 uuid = pool.getUuid();
             }
@@ -150,35 +146,6 @@ public class AgentDaoImpl extends AbstractJooqDao implements AgentDao {
         }
 
         return pools;
-    }
-
-    @Override
-    public Map<String, PhysicalHost> getPhysicalHosts(long agentId) {
-        Map<String,PhysicalHost> hosts = new HashMap<>();
-
-        List<? extends PhysicalHost> hostList = create()
-                .select(PHYSICAL_HOST.fields())
-                .from(PHYSICAL_HOST)
-                .where(
-                        PHYSICAL_HOST.AGENT_ID.eq(agentId)
-                        .and(PHYSICAL_HOST.REMOVED.isNull()))
-                        .fetchInto(PhysicalHostRecord.class);
-
-        for ( PhysicalHost host : hostList ) {
-            String uuid = host.getExternalId();
-
-            if (StringUtils.isEmpty(uuid)) {
-                uuid = DataAccessor.fields(host).withKey(HostConstants.FIELD_REPORTED_UUID).as(String.class);
-            }
-
-            if (StringUtils.isEmpty(uuid)) {
-                uuid = host.getUuid();
-            }
-
-            hosts.put(uuid, host);
-        }
-
-        return hosts;
     }
 
     @Override
@@ -231,5 +198,17 @@ public class AgentDaoImpl extends AbstractJooqDao implements AgentDao {
         result.addAll(oldAgents);
 
         return result;
+    }
+
+    @Override
+    public Host getHost(long agentId, String externalId) {
+        return create()
+            .select(HOST.fields())
+            .from(HOST)
+            .where(
+                    HOST.AGENT_ID.eq(agentId)
+                    .and(HOST.EXTERNAL_ID.eq(externalId))
+                    .and(HOST.REMOVED.isNull()))
+            .fetchAnyInto(HostRecord.class);
     }
 }

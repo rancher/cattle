@@ -8,7 +8,7 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.framework.encryption.EncryptionConstants;
-import io.cattle.platform.iaas.api.filter.apikey.ApiKeyFilter;
+import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.util.TransformationService;
@@ -40,7 +40,7 @@ public class CredentialProcessManager {
         String publicValue = credential.getPublicValue();
         String secretValue = credential.getSecretValue();
         if (publicValue == null) {
-            String[] keys = ApiKeyFilter.generateKeys();
+            String[] keys = SecurityConstants.generateKeys();
             publicValue = keys[0];
 
             if (credential.getKind().equals(CredentialConstants.KIND_API_KEY)) {

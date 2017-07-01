@@ -1,6 +1,5 @@
 package io.cattle.platform.core.dao.impl;
 
-import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.NetworkDriverTable.*;
 import static io.cattle.platform.core.model.tables.NetworkTable.*;
@@ -8,7 +7,6 @@ import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.SubnetConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
@@ -130,19 +128,6 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
                 .from(NETWORK)
                 .where(NETWORK.ACCOUNT_ID.eq(accountId)
                     .and(NETWORK.STATE.in(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE)))
-                .fetchInto(NetworkRecord.class);
-    }
-
-    @Override
-    public List<? extends Network> findBadNetworks(int count) {
-        return create().select(NETWORK.fields())
-                .from(NETWORK)
-                .join(ACCOUNT)
-                    .on(ACCOUNT.ID.eq(NETWORK.ACCOUNT_ID))
-                .where(NETWORK.REMOVED.isNull()
-                        .and(ACCOUNT.STATE.eq(AccountConstants.STATE_PURGED))
-                        .and(NETWORK.STATE.notIn(CommonStatesConstants.REMOVING)))
-                .limit(count)
                 .fetchInto(NetworkRecord.class);
     }
 

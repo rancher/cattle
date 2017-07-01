@@ -2,7 +2,6 @@ package io.cattle.platform.docker.process.serializer;
 
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 
-import io.cattle.platform.core.constants.DockerInstanceConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Volume;
@@ -38,7 +37,7 @@ public class DockerContainerSerializer implements ObjectTypeSerializerPostProces
             return;
 
         Instance instance = (Instance) obj;
-        List volumesFromContainerIds = DataAccessor.fields(instance).withKey(DockerInstanceConstants.FIELD_VOLUMES_FROM).as(List.class);
+        List volumesFromContainerIds = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_VOLUMES_FROM).as(List.class);
         List<Instance> containers = null;
         if (volumesFromContainerIds != null && !volumesFromContainerIds.isEmpty()) {
             Condition condition = new Condition(ConditionType.IN, volumesFromContainerIds);
@@ -46,10 +45,10 @@ public class DockerContainerSerializer implements ObjectTypeSerializerPostProces
         }
         if (containers == null)
             containers = new ArrayList<>();
-        data.put(DockerInstanceConstants.EVENT_FIELD_VOLUMES_FROM, containers);
+        data.put(InstanceConstants.EVENT_FIELD_VOLUMES_FROM, containers);
 
         List<Volume>volumes = InstanceHelpers.extractVolumesFromMounts(instance, objectManager);
-        data.put(DockerInstanceConstants.EVENT_FIELD_VOLUMES_FROM_DVM, volumes);
+        data.put(InstanceConstants.EVENT_FIELD_VOLUMES_FROM_DVM, volumes);
     }
 
 

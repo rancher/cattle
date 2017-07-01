@@ -18,9 +18,8 @@ import io.cattle.platform.allocator.service.AllocationHelper;
 import io.cattle.platform.allocator.service.AllocationLog;
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.cache.EnvironmentResourceManager;
+import io.cattle.platform.core.addon.PortInstance;
 import io.cattle.platform.core.cache.QueryOptions;
-import io.cattle.platform.core.constants.DockerInstanceConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.StorageDriverConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
@@ -35,6 +34,7 @@ import io.cattle.platform.core.util.InstanceHelpers;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.client.DockerImage;
+import io.cattle.platform.environment.EnvironmentResourceManager;
 import io.cattle.platform.eventing.exception.EventExecutionException;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
@@ -58,8 +58,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.sound.sampled.Port;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -87,7 +85,6 @@ public class AllocatorServiceImpl implements AllocatorService {
     private static final String PORT_RESERVATION = "portReservation";
     private static final String COMPUTE_POOL = "computePool";
     private static final String PORT_POOL = "portPool";
-    private static final String BIND_ADDRESS = "bindAddress";
     private static final String PHASE = "phase";
 
     AgentDao agentDao;
@@ -266,7 +263,7 @@ public class AllocatorServiceImpl implements AllocatorService {
             return;
         }
 
-        Host host = allocatorDao.getHost(origInstance);
+        Host host = objectManager.loadResource(Host.class, origInstance.getHostId());
         Long hostId = host != null ? host.getId() : null;
 
         Set<Volume> volumes = new HashSet<>();
@@ -298,8 +295,8 @@ public class AllocatorServiceImpl implements AllocatorService {
             locks.add(new AllocateConstraintLock(AllocateConstraintLock.Type.DEPLOYMENT_UNIT, origInstance.getDeploymentUnitUuid()));
         }
 
-        List<Long> instancesIds = DataAccessor.fieldLongList(origInstance, DockerInstanceConstants.FIELD_VOLUMES_FROM);
-        Long networkFromId = DataAccessor.fieldLong(origInstance, DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID);
+        List<Long> instancesIds = DataAccessor.fieldLongList(origInstance, InstanceConstants.FIELD_VOLUMES_FROM);
+        Long networkFromId = DataAccessor.fieldLong(origInstance, InstanceConstants.FIELD_NETWORK_CONTAINER_ID);
         if (networkFromId != null) {
             instancesIds.add(networkFromId);
         }
@@ -308,8 +305,8 @@ public class AllocatorServiceImpl implements AllocatorService {
         }
 
         for (Instance i : instances) {
-            List<Port> ports = objectManager.find(Port.class, PORT.INSTANCE_ID, i.getId(), PORT.REMOVED, null);
-            for (Port port : ports) {
+            List<PortSpec> ports = InstanceConstants.getPortSpecs(i);
+            for (PortSpec port : ports) {
                 locks.add(new AllocateConstraintLock(AllocateConstraintLock.Type.PORT,
                         String.format("%s.%s", port.getProtocol(), port.getPublicPort())));
             }
@@ -780,23 +777,23 @@ public class AllocatorServiceImpl implements AllocatorService {
             request.setResource(resourceType);
             request.setInstanceId(instance.getId().toString());
             request.setResourceUuid(instance.getUuid());
-            List<PortSpec> portReservation = new ArrayList<>();
-            for(Port port: objectManager.children(instance, Port.class)) {
-                PortSpec spec = new PortSpec();
-                String bindAddress = DataAccessor.fieldString(port, BIND_ADDRESS);
-                if (bindAddress != null) {
-                    spec.setIpAddress(bindAddress);
-                }
-                spec.setPrivatePort(port.getPrivatePort());
-                spec.setPublicPort(port.getPublicPort());
-                String proto = StringUtils.isEmpty(port.getProtocol()) ? "tcp" : port.getProtocol();
-                spec.setProtocol(proto);
-                portReservation.add(spec);
-            }
-            if (portReservation.isEmpty()) {
+            List<PortSpec> portSpecs = InstanceConstants.getPortSpecs(instance);
+            List<PortInstance> portBindings = DataAccessor.fieldObjectList(instance, InstanceConstants.FIELD_PORT_BINDINGS, PortInstance.class);
+
+            if (portSpecs.isEmpty()) {
                 return null;
             }
-            request.setPortRequests(portReservation);
+
+            /* Populate bind addresses */
+            for (PortSpec spec : portSpecs) {
+                for (PortInstance portBinding : portBindings) {
+                    if (portBinding.matches(spec) && portBinding.getBindIpAddress() != null) {
+                        spec.setIpAddress(portBinding.getBindIpAddress());
+                    }
+                }
+            }
+
+            request.setPortRequests(portSpecs);
             request.setType(poolType);
             return request;
         case INSTANCE_RESERVATION:

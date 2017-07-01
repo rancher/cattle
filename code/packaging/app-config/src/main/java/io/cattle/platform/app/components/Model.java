@@ -6,6 +6,7 @@ import io.cattle.platform.core.addon.ActiveSetting;
 import io.cattle.platform.core.addon.BlkioDeviceOption;
 import io.cattle.platform.core.addon.CatalogTemplate;
 import io.cattle.platform.core.addon.ComposeConfig;
+import io.cattle.platform.core.addon.ContainerEvent;
 import io.cattle.platform.core.addon.ContainerUpgrade;
 import io.cattle.platform.core.addon.HaproxyConfig;
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
@@ -18,7 +19,7 @@ import io.cattle.platform.core.addon.NetworkPolicyRule.NetworkPolicyRuleAction;
 import io.cattle.platform.core.addon.NetworkPolicyRule.NetworkPolicyRuleWithin;
 import io.cattle.platform.core.addon.NetworkPolicyRuleBetween;
 import io.cattle.platform.core.addon.NetworkPolicyRuleMember;
-import io.cattle.platform.core.addon.PortBinding;
+import io.cattle.platform.core.addon.PortInstance;
 import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.addon.ProcessPool;
 import io.cattle.platform.core.addon.ProcessSummary;
@@ -44,8 +45,6 @@ import io.cattle.platform.docker.api.model.HostAccess;
 import io.cattle.platform.docker.api.model.ServiceProxy;
 import io.cattle.platform.docker.machine.api.addon.BaseMachineConfig;
 import io.cattle.platform.engine.process.StateTransition;
-import io.cattle.platform.extension.api.model.ProcessDefinitionApi;
-import io.cattle.platform.extension.api.model.ResourceDefinition;
 import io.cattle.platform.host.api.HostApiProxyTokenImpl;
 import io.cattle.platform.host.stats.api.StatsAccess;
 import io.cattle.platform.iaas.api.auth.identity.Token;
@@ -99,8 +98,8 @@ public class Model {
         // Host
         defaultProcesses("host");
         process("host.activate").resourceType("host").start("inactive,registering,provisioned").transitioning("activating").done("active").build();
-        process("host.provision").resourceType("host").start("inactive").transitioning("provisioning").done("provisioned").build();
-        process("host.error").resourceType("host").start("provisioning").transitioning("erroring").done("error").build();
+        process("host.provision").resourceType("host").start("inactive").transitioning("provisioning").done("active").build();
+        process("host.error").resourceType("host").start("creating,provisioning,updating-active,updating-inactive").transitioning("erroring").done("error").build();
         process("host.remove").resourceType("host").start("erroring,error,requested,inactive,activating,deactivating,registering,updating-active,updating-inactive,provisioning").transitioning("removing").done("removed").build();
 
         // Agent
@@ -126,7 +125,7 @@ public class Model {
         // Volume
         defaultProcesses("volume");
         process("volume.activate").resourceType("volume").start("inactive,registering,detached").transitioning("activating").done("active").build();
-        process("volume.deactivate").resourceType("volume").start("registering,creating,active,activating,updating-active,updating-inactive").transitioning("deactivating").done("deactivating=detached,activating=inactive").build();
+        process("volume.deactivate").resourceType("volume").start("requested,registering,creating,active,activating,updating-active,updating-inactive").transitioning("deactivating").done("deactivating=detached,activating=inactive").build();
         process("volume.remove").resourceType("volume").start("requested,inactive,detached,deactivating,registering,updating-active,updating-inactive").transitioning("removing").done("removed").build();
 
         // NetworkDriver
@@ -152,13 +151,6 @@ public class Model {
         process("projecttemplate.create").resourceType("projectTemplate").start("requested").transitioning("activating").done("active").build();
         process("projecttemplate.remove").resourceType("projectTemplate").start("requested,activating,active").transitioning("removing").done("removed").build();
 
-        // Physical Host
-        process("physicalhost.create").resourceType("physicalHost").start("requested").transitioning("creating").done("created").build();
-        process("physicalhost.bootstrap").resourceType("physicalHost").start("created,creating").transitioning("bootstrapping").done("active").build();
-        process("physicalhost.remove").resourceType("physicalHost").start("created,active,requested,bootstrapping,creating,updating,error,erroring").transitioning("removing").done("removed").build();
-        process("physicalhost.update").resourceType("physicalHost").start("active").transitioning("updating").done("active").build();
-        process("physicalhost.error").resourceType("physicalHost").start("creating, bootstrapping, updating").transitioning("erroring").done("error").build();
-
         // Stack
         process("stack.create").resourceType("stack").start("requested").transitioning("activating").done("active").build();
         process("stack.update").resourceType("stack").start("active").transitioning("updating-active").done("active").build();
@@ -182,10 +174,6 @@ public class Model {
         process("service.rollback").resourceType("service").start("upgrading,upgraded,paused,active,error").transitioning("rolling-back").done("active").build();
         process("service.finishupgrade").resourceType("service").start("upgraded").transitioning("finishing-upgrade").done("active").build();
         process("service.restart").resourceType("service").start("active").transitioning("restarting").done("active").build();
-
-        // Container Event
-        process("containerevent.create").resourceType("containerEvent").start("requested").transitioning("creating").done("created").build();
-        process("containerevent.remove").resourceType("containerEvent").start("created,creating").transitioning("removing").done("removed").build();
 
         // External Event
         process("externalevent.create").resourceType("externalEvent").start("requested").transitioning("creating").done("created").build();
@@ -288,6 +276,7 @@ public class Model {
                 CatalogTemplate.class,
                 ComposeConfig.class,
                 ContainerExec.class,
+                ContainerEvent.class,
                 ContainerLogs.class,
                 ContainerProxy.class,
                 ContainerUpgrade.class,
@@ -311,12 +300,10 @@ public class Model {
                 NetworkPolicyRuleWithin.class,
                 OpenLDAPConfig.class,
                 PortRule.class,
-                ProcessDefinitionApi.class,
                 ProcessPool.class,
                 ProcessSummary.class,
-                PortBinding.class,
+                PortInstance.class,
                 Publish.class,
-                ResourceDefinition.class,
                 RestartPolicy.class,
                 ScalePolicy.class,
                 SecretReference.class,
@@ -375,7 +362,6 @@ public class Model {
                 "externalHostEvent,parent=externalEvent",
                 "loadBalancerConfig",
                 "kubernetesStack,parent=stack",
-                "machine,parent=physicalHost",
                 "nfsConfig",
                 "binding",
                 "serviceBinding",

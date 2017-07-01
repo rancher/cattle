@@ -48,8 +48,9 @@ public class Reconcile {
         InatorFactoryinator inatorFactoryinator = new InatorFactoryinator(inatorServices);
         ActivityService activityService = new ActivityService(f.objectManager, f.eventService);
         Deployinator deployinator = new DeployinatorImpl(inatorFactoryinator, f.objectManager, f.lockManager, activityService, b.serviceLifecycleManager);
-        LoopFactory loopFactory = new LoopFactoryImpl(deployinator, b.serviceLifecycleManager, f.objectManager, activityService, f.processManager);
-        loopManager = new LoopManagerImpl(loopFactory, f.executorService, f.scheduledExecutorService);
+        LoopFactory loopFactory = new LoopFactoryImpl(deployinator, b.serviceLifecycleManager, f.objectManager, activityService,
+                f.processManager, b.envResourceManager, f.eventService, d.hostDao, b.catalogService);
+        loopManager = new LoopManagerImpl(loopFactory, f.executorService, f.objectManager, f.scheduledExecutorService);
 
         inatorServices.loopManager = loopManager;
     }

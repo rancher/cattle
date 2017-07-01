@@ -204,19 +204,19 @@ public class ServiceConstants {
     };
 
     public static final String[] HARD_DEPS = new String[] {
-            DockerInstanceConstants.FIELD_IPC_CONTAINER_ID,
-            DockerInstanceConstants.FIELD_PID_CONTAINER_ID,
-            DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID,
-            DockerInstanceConstants.FIELD_VOLUMES_FROM
+            InstanceConstants.FIELD_IPC_CONTAINER_ID,
+            InstanceConstants.FIELD_PID_CONTAINER_ID,
+            InstanceConstants.FIELD_NETWORK_CONTAINER_ID,
+            InstanceConstants.FIELD_VOLUMES_FROM
     };
 
     public static final Map<String, String> NS_DEP_FIELD_MAPPING = new HashMap<>();
 
     static {
-        NS_DEP_FIELD_MAPPING.put(FIELD_IPC_LAUNCH_CONFIG, DockerInstanceConstants.FIELD_IPC_CONTAINER_ID);
-        NS_DEP_FIELD_MAPPING.put(FIELD_PID_LAUNCH_CONFIG, DockerInstanceConstants.FIELD_PID_CONTAINER_ID);
-        NS_DEP_FIELD_MAPPING.put(FIELD_NETWORK_LAUNCH_CONFIG, DockerInstanceConstants.FIELD_NETWORK_CONTAINER_ID);
-        NS_DEP_FIELD_MAPPING.put(FIELD_DATA_VOLUMES_LAUNCH_CONFIG, DockerInstanceConstants.FIELD_VOLUMES_FROM);
+        NS_DEP_FIELD_MAPPING.put(FIELD_IPC_LAUNCH_CONFIG, InstanceConstants.FIELD_IPC_CONTAINER_ID);
+        NS_DEP_FIELD_MAPPING.put(FIELD_PID_LAUNCH_CONFIG, InstanceConstants.FIELD_PID_CONTAINER_ID);
+        NS_DEP_FIELD_MAPPING.put(FIELD_NETWORK_LAUNCH_CONFIG, InstanceConstants.FIELD_NETWORK_CONTAINER_ID);
+        NS_DEP_FIELD_MAPPING.put(FIELD_DATA_VOLUMES_LAUNCH_CONFIG, InstanceConstants.FIELD_VOLUMES_FROM);
         NS_DEP_FIELD_MAPPING.put(null, InstanceConstants.FIELD_SIDEKICK_TO);
     }
 

@@ -9,7 +9,6 @@ public class InstanceHealthCheck {
         none,
         recreate,
     }
-    String name;
     Integer responseTimeout;
     Integer interval;
     Integer healthyThreshold;
@@ -18,17 +17,8 @@ public class InstanceHealthCheck {
     Integer port;
     Strategy strategy;
     Integer initializingTimeout;
-    Integer reinitializingTimeout;
 
-    @Field(nullable = true)
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
+    @Field(defaultValue = "2000")
     public Integer getResponseTimeout() {
         return responseTimeout;
     }
@@ -37,6 +27,7 @@ public class InstanceHealthCheck {
         this.responseTimeout = responseTimeout;
     }
 
+    @Field(defaultValue = "2000")
     public Integer getInterval() {
         return interval;
     }
@@ -45,6 +36,7 @@ public class InstanceHealthCheck {
         this.interval = interval;
     }
 
+    @Field(defaultValue = "2")
     public Integer getHealthyThreshold() {
         return healthyThreshold;
     }
@@ -53,6 +45,7 @@ public class InstanceHealthCheck {
         this.healthyThreshold = healthyThreshold;
     }
 
+    @Field(defaultValue = "3")
     public Integer getUnhealthyThreshold() {
         return unhealthyThreshold;
     }
@@ -88,20 +81,13 @@ public class InstanceHealthCheck {
         this.strategy = strategy;
     }
 
+    @Field(defaultValue = "120000")
     public Integer getInitializingTimeout() {
         return initializingTimeout;
     }
 
     public void setInitializingTimeout(Integer initializingTimeout) {
         this.initializingTimeout = initializingTimeout;
-    }
-
-    public Integer getReinitializingTimeout() {
-        return reinitializingTimeout;
-    }
-
-    public void setReinitializingTimeout(Integer reinitializingTimeout) {
-        this.reinitializingTimeout = reinitializingTimeout;
     }
 }
 

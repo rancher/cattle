@@ -7,6 +7,7 @@ public class HealthcheckInfo {
     Integer interval;
     Integer healthyThreshold;
     Integer unhealthyThreshold;
+    Integer initializingTimeout;
     String requestLine;
     Integer port;
 
@@ -17,6 +18,7 @@ public class HealthcheckInfo {
         this.unhealthyThreshold = hc.getUnhealthyThreshold();
         this.requestLine = hc.getRequestLine();
         this.port = hc.getPort();
+        this.initializingTimeout = hc.getInitializingTimeout();
     }
 
     public Integer getResponseTimeout() {
@@ -43,11 +45,16 @@ public class HealthcheckInfo {
         return port;
     }
 
+    public Integer getInitializingTimeout() {
+        return initializingTimeout;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((healthyThreshold == null) ? 0 : healthyThreshold.hashCode());
+        result = prime * result + ((initializingTimeout == null) ? 0 : initializingTimeout.hashCode());
         result = prime * result + ((interval == null) ? 0 : interval.hashCode());
         result = prime * result + ((port == null) ? 0 : port.hashCode());
         result = prime * result + ((requestLine == null) ? 0 : requestLine.hashCode());
@@ -69,6 +76,11 @@ public class HealthcheckInfo {
             if (other.healthyThreshold != null)
                 return false;
         } else if (!healthyThreshold.equals(other.healthyThreshold))
+            return false;
+        if (initializingTimeout == null) {
+            if (other.initializingTimeout != null)
+                return false;
+        } else if (!initializingTimeout.equals(other.initializingTimeout))
             return false;
         if (interval == null) {
             if (other.interval != null)

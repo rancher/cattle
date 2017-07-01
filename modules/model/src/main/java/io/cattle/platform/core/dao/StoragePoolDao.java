@@ -10,10 +10,6 @@ import java.util.Map;
 
 public interface StoragePoolDao {
 
-    List<? extends StoragePool> findBadPools(int limit);
-
-    List<? extends StoragePoolHostMap> findBadPoolMapss(int limit);
-
     StoragePool mapNewPool(Host host, Map<String, Object> properties);
 
     StoragePool mapNewPool(Long hostId, Map<String, Object> properties);
@@ -23,6 +19,8 @@ public interface StoragePoolDao {
     Map<Long, Long> findStoragePoolHostsByDriver(Long accountId, Long storageDriverId);
 
     List<? extends StoragePool> findNonRemovedStoragePoolByDriver(Long storageDriverId);
+
+    List<? extends StoragePool> findNonRemovedStoragePoolByHost(long hostId);
 
     List<? extends StoragePoolHostMap> findMapsToRemove(Long id);
 
@@ -37,7 +35,5 @@ public interface StoragePoolDao {
     Map<Long, List<Object>> findHostsForPools(List<Long> ids, IdFormatter idFormatter);
 
     Map<Long, List<Object>> findVolumesForPools(List<Long> ids, IdFormatter idFormatter);
-
-    List<? extends StoragePool> findBadDockerPools(int count);
 
 }

@@ -1,14 +1,15 @@
 package io.cattle.platform.docker.transform;
 
-import static io.cattle.platform.core.constants.DockerInstanceConstants.*;
 import static io.cattle.platform.core.constants.InstanceConstants.*;
 
 import io.cattle.platform.core.addon.BlkioDeviceOption;
 import io.cattle.platform.core.addon.LogConfig;
+import io.cattle.platform.core.addon.PortInstance;
 import io.cattle.platform.core.addon.Ulimit;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.constants.DockerVolumeConstants;
 import io.cattle.platform.json.JsonMapper;
@@ -42,8 +43,6 @@ public class DockerTransformerImpl implements DockerTransformer {
 
     private static final String HOST_CONFIG = "HostConfig";
     private static final String CONFIG = "Config";
-    private static final String IMAGE_PREFIX = "docker:";
-    private static final String IMAGE_KIND_PATTERN = "^(sim|docker):.*";
     private static final String ACCESS_MODE = "RW";
     private static final String DRIVER = "Driver";
     private static final String DEST = "Destination";
@@ -189,14 +188,14 @@ public class DockerTransformerImpl implements DockerTransformer {
         // Consider: AttachStdin, AttachStdout, AttachStderr, StdinOnce,
     }
 
-    void setMemoryReservation(Map<String, Object> fromInspect, Instance instance) {
+    private void setMemoryReservation(Map<String, Object> fromInspect, Instance instance) {
         Object memRes = CollectionUtils.getNestedValue(fromInspect, HOST_CONFIG, "MemoryReservation");
         if (memRes != null && memRes instanceof Number) {
             instance.setMemoryReservation(((Number)memRes).longValue());
         }
     }
 
-    void setHealthConfig(Map<String, Object> fromInspect, Instance instance) {
+    private void setHealthConfig(Map<String, Object> fromInspect, Instance instance) {
         Object healthCmd = CollectionUtils.getNestedValue(fromInspect, CONFIG, "Healthcheck", "Test");
         Object healthInterval = CollectionUtils.getNestedValue(fromInspect, CONFIG, "Healthcheck", "Interval");
         Object healthTimeout = CollectionUtils.getNestedValue(fromInspect, CONFIG, "Healthcheck", "Timeout");
@@ -216,7 +215,7 @@ public class DockerTransformerImpl implements DockerTransformer {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    void setBlkioDeviceOptionss(Instance instance, Map<String, Object> fromInspect) {
+    private void setBlkioDeviceOptionss(Instance instance, Map<String, Object> fromInspect) {
         /*
          * We're coverting from docker's structure of:
          *  {BlkioDeviceReadIOps: [{Path: <device>, Rate: 1000} ... ], BlkioDeviceWriteIOps: [{Path: <device>, Rate: 1000} ... ] ... }
@@ -280,7 +279,7 @@ public class DockerTransformerImpl implements DockerTransformer {
         }
     }
 
-    void setNetworkMode(Instance instance, ContainerConfig containerConfig, HostConfig hostConfig) {
+    private void setNetworkMode(Instance instance, ContainerConfig containerConfig, HostConfig hostConfig) {
         if(DataAccessor.fields(instance).withKey(FIELD_NETWORK_MODE).get() != null)
             return;
 
@@ -307,12 +306,12 @@ public class DockerTransformerImpl implements DockerTransformer {
         setField(instance, FIELD_NETWORK_MODE, netMode);
     }
 
-    void setField(Instance instance, String field, Map<String, Object> fromInspect, String... keys) {
+    private void setField(Instance instance, String field, Map<String, Object> fromInspect, String... keys) {
         Object l = CollectionUtils.getNestedValue(fromInspect, keys);
         setField(instance, field, l);
     }
 
-    void setFieldIfNotEmpty(Instance instance, String field, Map<String, Object> fromInspect, String... keys) {
+    private void setFieldIfNotEmpty(Instance instance, String field, Map<String, Object> fromInspect, String... keys) {
         Object l = CollectionUtils.getNestedValue(fromInspect, keys);
         if (!isEmptyValue(l)) {
             setField(instance, field, l);
@@ -320,7 +319,7 @@ public class DockerTransformerImpl implements DockerTransformer {
     }
 
     @SuppressWarnings("unchecked")
-    void setLogConfig(Instance instance, Map<String, Object> fromInspect) {
+    private void setLogConfig(Instance instance, Map<String, Object> fromInspect) {
         Object type = CollectionUtils.getNestedValue(fromInspect, HOST_CONFIG, "LogConfig", "Type");
         Object config = CollectionUtils.getNestedValue(fromInspect, HOST_CONFIG, "LogConfig", "Config");
 
@@ -340,7 +339,7 @@ public class DockerTransformerImpl implements DockerTransformer {
     }
 
     @SuppressWarnings("unchecked")
-    void setUlimit(Instance instance, Map<String, Object> fromInspect) {
+    private void setUlimit(Instance instance, Map<String, Object> fromInspect) {
         Object ulimits = CollectionUtils.getNestedValue(fromInspect, HOST_CONFIG, "Ulimits");
 
         if (ulimits == null) {
@@ -395,15 +394,11 @@ public class DockerTransformerImpl implements DockerTransformer {
         setField(instance, FIELD_LABELS, labels);
     }
 
-    void setImage(Instance instance, String image) {
-        if (StringUtils.isNotBlank(image) && !image.matches(IMAGE_KIND_PATTERN)) {
-            image = IMAGE_PREFIX + image;
-        }
-
+    private void setImage(Instance instance, String image) {
         setField(instance, FIELD_IMAGE_UUID, image);
     }
 
-    void setName(Instance instance, InspectContainerResponse inspect, Map<String, Object> fromInspect) {
+    private void setName(Instance instance, InspectContainerResponse inspect, Map<String, Object> fromInspect) {
         String name = inspect.getName();
         Object displayNameLabel = CollectionUtils.getNestedValue(fromInspect, "Config", "Labels", SystemLabels.LABEL_DISPLAY_NAME);
         if (displayNameLabel == null) {
@@ -431,7 +426,7 @@ public class DockerTransformerImpl implements DockerTransformer {
         }
     }
 
-    void setDevices(Instance instance, Device[] devices) {
+    private void setDevices(Instance instance, Device[] devices) {
         if (devices == null) {
             devices = new Device[0];
         }
@@ -450,7 +445,7 @@ public class DockerTransformerImpl implements DockerTransformer {
         setField(instance, FIELD_DEVICES, instanceDevices);
     }
 
-    void setRestartPolicy(Instance instance, RestartPolicy restartPolicy) {
+    private void setRestartPolicy(Instance instance, RestartPolicy restartPolicy) {
         if (restartPolicy == null || StringUtils.isEmpty(restartPolicy.getName())) {
             return;
         }
@@ -461,7 +456,7 @@ public class DockerTransformerImpl implements DockerTransformer {
         setField(instance, FIELD_RESTART_POLICY, rp);
     }
 
-    void setCapField(Instance instance, String field, Capability[] caps) {
+    private void setCapField(Instance instance, String field, Capability[] caps) {
         if (caps == null) {
             caps = new Capability[0];
         }
@@ -473,7 +468,7 @@ public class DockerTransformerImpl implements DockerTransformer {
         setField(instance, field, list);
     }
 
-    void setLxcConf(Instance instance, LxcConf[] lxcConf) {
+    private void setLxcConf(Instance instance, LxcConf[] lxcConf) {
         if (lxcConf == null || lxcConf.length == 0) {
             lxcConf = new LxcConf[0];
         }
@@ -486,33 +481,78 @@ public class DockerTransformerImpl implements DockerTransformer {
         setField(instance, FIELD_LXC_CONF, instanceLxcConf);
     }
 
-    void setPorts(Instance instance, ExposedPort[] exposedPorts, Ports portBindings) {
-        if (exposedPorts == null) {
-            exposedPorts = new ExposedPort[0];
+    private void setPorts(Instance instance, ExposedPort[] exposedPorts, Ports portBindings) {
+        if (exposedPorts == null || exposedPorts.length == 0) {
+            return;
         }
 
+        List<PortInstance> containerPortInstances = new ArrayList<>();
         List<String> ports = new ArrayList<>();
         for (ExposedPort ep : exposedPorts) {
-            String port = ep.toString();
-
             Binding[] bindings = portBindings == null || portBindings.getBindings() == null ? null : portBindings.getBindings().get(ep);
             if (bindings != null && bindings.length > 0) {
                 for (Binding b : bindings) {
+                    PortInstance portInstance = newPortInstance(ep);
                     // HostPort should really be a string, not an int.  Somehow empty string becomes 0
                     if (b.getHostPort() != null && b.getHostPort() != 0) {
-                        String fullPort = b.getHostPort() + ":" + port;
-                        ports.add(fullPort);
-                    } else {
-                        ports.add(port);
+                        portInstance.setPublicPort(b.getHostPort());
                     }
+                    if (StringUtils.isNotBlank(b.getHostIp())) {
+                        portInstance.setIpAddress(b.getHostIp());
+                        portInstance.setBindIpAddress(b.getHostIp());
+                    }
+                    containerPortInstances.add(portInstance);
                 }
+            } else {
+                containerPortInstances.add(newPortInstance(ep));
             }
         }
 
-        setField(instance, FIELD_PORTS, ports);
+        List<PortSpec> portSpecs = InstanceConstants.getPortSpecs(instance);
+        for (PortInstance portInstance : containerPortInstances) {
+            boolean found = false;
+            for (PortSpec portSpec : portSpecs) {
+                if (portInstance.matches(portSpec)) {
+                    portSpec.populate(portInstance);
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                portSpecs.add(new PortSpec(portInstance));
+            }
+        }
+        setField(instance, FIELD_PORTS, portSpecs);
+
+        boolean changed = false;
+        List<PortInstance> portInstances = DataAccessor.fieldObjectList(instance, FIELD_PORT_BINDINGS, PortInstance.class);
+        for (PortInstance containerPortInstance : portInstances) {
+            PortSpec spec = new PortSpec(containerPortInstance);
+            boolean found = false;
+            for (PortInstance portInstance : portInstances) {
+                if (portInstance.matches(spec)) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                portInstances.add(containerPortInstance);
+                changed = true;
+            }
+        }
+
+        if (changed) {
+            setField(instance, FIELD_PORT_BINDINGS, ports);
+        }
     }
 
-    void setVolumes(Instance instance, Map<String, ?> volumes, String[] binds) {
+    private PortInstance newPortInstance(ExposedPort ep) {
+        return new PortInstance(ep.getPort(), ep.getProtocol() == null ? "tcp" : ep.getProtocol().toString());
+    }
+
+    private void setVolumes(Instance instance, Map<String, ?> volumes, String[] binds) {
         List<String> dataVolumes = new ArrayList<>();
         if (volumes != null) {
             dataVolumes.addAll(volumes.keySet());
@@ -525,7 +565,7 @@ public class DockerTransformerImpl implements DockerTransformer {
         setField(instance, InstanceConstants.FIELD_DATA_VOLUMES, dataVolumes);
     }
 
-    void setListField(Instance instance, String field, String[] value) {
+    private void setListField(Instance instance, String field, String[] value) {
         if (value == null) {
             value = new String[0];
         }
@@ -534,7 +574,7 @@ public class DockerTransformerImpl implements DockerTransformer {
         setField(instance, field, list);
     }
 
-    void setCommand(Instance instance, String[] cmd) {
+    private void setCommand(Instance instance, String[] cmd) {
         if (cmd == null) {
             cmd = new String[0];
         }
@@ -544,7 +584,7 @@ public class DockerTransformerImpl implements DockerTransformer {
         setField(instance, FIELD_COMMAND, args);
     }
 
-    void setEnvironment(Instance instance, String[] env) {
+    private void setEnvironment(Instance instance, String[] env) {
         if (env == null) {
             env = new String[0];
         }
@@ -555,8 +595,6 @@ public class DockerTransformerImpl implements DockerTransformer {
             if (kvp.length == 2) {
                 envMap.put(kvp[0], kvp[1]);
             } else if (kvp.length == 1) {
-                // TODO Change the Rancher API to support valueless environment variables.
-                // -e FOO and -e FOO="" are not the same thing.
                 envMap.put(kvp[0], "");
             }
         }
@@ -590,7 +628,7 @@ public class DockerTransformerImpl implements DockerTransformer {
                 (fieldValue instanceof Map && fieldValue == null);
     }
 
-    InspectContainerResponse transformInspect(Map<String, Object> inspect) {
+    private InspectContainerResponse transformInspect(Map<String, Object> inspect) {
         return jsonMapper.convertValue(inspect, InspectContainerResponse.class);
     }
 

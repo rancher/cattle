@@ -4,7 +4,6 @@ import static io.cattle.platform.object.util.DataAccessor.*;
 
 import io.cattle.platform.backpopulate.BackPopulater;
 import io.cattle.platform.core.addon.RestartPolicy;
-import io.cattle.platform.core.constants.DockerInstanceConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.util.SystemLabels;
@@ -68,8 +67,8 @@ public class RestartLifecycleManagerImpl implements RestartLifecycleManager {
         if (count == null) {
             count = 0;
         }
-        Date started = getDate(instance, DockerInstanceConstants.FIELD_DOCKER_INSPECT, "State", "StartedAt");
-        Date finished = getDate(instance, DockerInstanceConstants.FIELD_DOCKER_INSPECT, "State", "FinishedAt");
+        Date started = getDate(instance, InstanceConstants.FIELD_DOCKER_INSPECT, "State", "StartedAt");
+        Date finished = getDate(instance, InstanceConstants.FIELD_DOCKER_INSPECT, "State", "FinishedAt");
 
         if (started == null || finished == null) {
             return count;
@@ -114,7 +113,7 @@ public class RestartLifecycleManagerImpl implements RestartLifecycleManager {
     }
 
     protected boolean shouldRestart(Instance instance, int restartCount) {
-        RestartPolicy rp = DataAccessor.field(instance, DockerInstanceConstants.FIELD_RESTART_POLICY, RestartPolicy.class);
+        RestartPolicy rp = DataAccessor.field(instance, InstanceConstants.FIELD_RESTART_POLICY, RestartPolicy.class);
         if (isStartOnce(instance)) {
             rp = new RestartPolicy();
             rp.setName(RestartPolicy.RESTART_NEVER);

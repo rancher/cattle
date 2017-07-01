@@ -9,13 +9,12 @@ import io.cattle.platform.allocator.constraint.ContainerAffinityConstraint;
 import io.cattle.platform.allocator.constraint.ContainerLabelAffinityConstraint;
 import io.cattle.platform.allocator.constraint.HostAffinityConstraint;
 import io.cattle.platform.allocator.lock.AllocateConstraintLock;
-import io.cattle.platform.core.cache.EnvironmentResourceManager;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.SystemLabels;
-import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.environment.EnvironmentResourceManager;
 import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
@@ -36,13 +35,11 @@ public class AllocationHelperImpl implements AllocationHelper {
 
     InstanceDao instanceDao;
     ObjectManager objectManager;
-    JsonMapper jsonMapper;
     EnvironmentResourceManager envResourceManager;
 
-    public AllocationHelperImpl(InstanceDao instanceDao, ObjectManager objectManager, JsonMapper jsonMapper, EnvironmentResourceManager envResourceManager) {
+    public AllocationHelperImpl(InstanceDao instanceDao, ObjectManager objectManager, EnvironmentResourceManager envResourceManager) {
         this.instanceDao = instanceDao;
         this.objectManager = objectManager;
-        this.jsonMapper = jsonMapper;
         this.envResourceManager = envResourceManager;
     }
 
@@ -317,16 +314,16 @@ public class AllocationHelperImpl implements AllocationHelper {
     @Override
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public List<LockDefinition> extractAllocationLockDefinitions(Instance instance, List<Instance> instances) {
-        Map env = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_ENVIRONMENT).as(jsonMapper, Map.class);
+        Map env = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_ENVIRONMENT).as(Map.class);
         List<LockDefinition> lockDefs = extractAllocationLockDefinitionsFromEnv(env);
 
-        Map labels = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_LABELS).as(jsonMapper, Map.class);
+        Map labels = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_LABELS).as(Map.class);
         if (labels == null) {
             return lockDefs;
         }
         // we need to merge all the affinity labels from primary containers and sickkicks
         for (Instance inst: instances) {
-            Map lbs = DataAccessor.fields(inst).withKey(InstanceConstants.FIELD_LABELS).as(jsonMapper, Map.class);
+            Map lbs = DataAccessor.fields(inst).withKey(InstanceConstants.FIELD_LABELS).as(Map.class);
             Iterator<Map.Entry> it = lbs.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry affinityDef = it.next();

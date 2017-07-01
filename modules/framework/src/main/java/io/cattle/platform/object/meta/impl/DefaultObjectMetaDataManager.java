@@ -76,6 +76,9 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager {
         init();
     }
 
+    protected DefaultObjectMetaDataManager() {
+    }
+
     private void init() {
         if (schemaFactory instanceof SchemaFactoryImpl) {
             ((SchemaFactoryImpl) schemaFactory).getPostProcessors().add(0, new SchemaPostProcessor() {

@@ -27,8 +27,6 @@ public class HostRemoveMonitorImpl implements Task {
             return;
         }
 
-        hostDao.updateNullUpdatedHosts();
-
         for (Host host : hostDao.findHostsRemove()) {
             processManager.scheduleStandardChainedProcessAsync(StandardProcess.DEACTIVATE, StandardProcess.REMOVE,
                     host, null);

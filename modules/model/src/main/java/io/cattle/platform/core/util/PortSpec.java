@@ -1,6 +1,6 @@
 package io.cattle.platform.core.util;
 
-import io.cattle.platform.core.addon.PortBinding;
+import io.cattle.platform.core.addon.PortInstance;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
@@ -29,11 +29,8 @@ public class PortSpec {
     public PortSpec() {
     }
 
-    public PortSpec(PortBinding port) {
-        this.ipAddress = port.getIpAddress();
-        this.publicPort = port.getPort();
-        this.privatePort = port.getPrivatePort();
-        this.protocol = port.getProtocol();
+    public PortSpec(PortInstance portInstance) {
+        populate(portInstance);
     }
 
     public PortSpec(String spec) {
@@ -87,6 +84,13 @@ public class PortSpec {
         this.protocol = protocol;
     }
 
+    public void populate(PortInstance portInstance) {
+        privatePort = portInstance.getPrivatePort();
+        ipAddress = portInstance.getIpAddress();
+        publicPort = portInstance.getPublicPort();
+        protocol = portInstance.getProtocol();
+    }
+
     public Integer getPublicPort() {
         return publicPort;
     }
@@ -96,7 +100,7 @@ public class PortSpec {
     }
 
     public String getProtocol() {
-        return protocol;
+        return protocol == null ? "tcp" : protocol;
     }
 
     public String getIpAddress() {

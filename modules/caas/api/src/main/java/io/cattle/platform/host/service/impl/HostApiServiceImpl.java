@@ -3,14 +3,12 @@ package io.cattle.platform.host.service.impl;
 import static io.cattle.platform.server.context.ServerContext.*;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.host.api.HostApiUtils;
 import io.cattle.platform.host.model.HostApiAccess;
 import io.cattle.platform.host.service.HostApiRSAKeyProvider;
 import io.cattle.platform.host.service.HostApiService;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.token.TokenService;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -108,7 +106,7 @@ public class HostApiServiceImpl implements HostApiService {
 
     protected String getToken(Host host, Map<String, Object> inputData, Date expiration) {
         Map<String, Object> data = new HashMap<>(inputData);
-        String uuid = DataAccessor.fields(host).withKey(HostConstants.FIELD_REPORTED_UUID).as(String.class);
+        String uuid = host.getExternalId();
         if (uuid != null) {
             data.put(HOST_UUID, uuid);
         } else {
