@@ -4,8 +4,8 @@
 package io.cattle.platform.core.model.tables.records;
 
 
-import io.cattle.platform.core.model.AccountLink;
-import io.cattle.platform.core.model.tables.AccountLinkTable;
+import io.cattle.platform.core.model.ServiceIndex;
+import io.cattle.platform.core.model.tables.ServiceIndexTable;
 import io.cattle.platform.db.jooq.utils.TableRecordJaxb;
 
 import java.util.Date;
@@ -21,8 +21,8 @@ import javax.persistence.Table;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record12;
-import org.jooq.Row12;
+import org.jooq.Record15;
+import org.jooq.Row15;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -38,13 +38,13 @@ import org.jooq.impl.UpdatableRecordImpl;
 )
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
-@Table(name = "account_link", schema = "cattle")
-public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> implements TableRecordJaxb, Record12<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long>, AccountLink {
+@Table(name = "service_index", schema = "cattle")
+public class ServiceIndexRecord extends UpdatableRecordImpl<ServiceIndexRecord> implements TableRecordJaxb, Record15<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, Long, String>, ServiceIndex {
 
-    private static final long serialVersionUID = 2025229366;
+    private static final long serialVersionUID = 2028920225;
 
     /**
-     * Setter for <code>cattle.account_link.id</code>.
+     * Setter for <code>cattle.service_index.id</code>.
      */
     @Override
     public void setId(Long value) {
@@ -52,7 +52,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
     }
 
     /**
-     * Getter for <code>cattle.account_link.id</code>.
+     * Getter for <code>cattle.service_index.id</code>.
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -63,7 +63,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
     }
 
     /**
-     * Setter for <code>cattle.account_link.name</code>.
+     * Setter for <code>cattle.service_index.name</code>.
      */
     @Override
     public void setName(String value) {
@@ -71,7 +71,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
     }
 
     /**
-     * Getter for <code>cattle.account_link.name</code>.
+     * Getter for <code>cattle.service_index.name</code>.
      */
     @Column(name = "name", length = 255)
     @Override
@@ -80,7 +80,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
     }
 
     /**
-     * Setter for <code>cattle.account_link.account_id</code>.
+     * Setter for <code>cattle.service_index.account_id</code>.
      */
     @Override
     public void setAccountId(Long value) {
@@ -88,7 +88,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
     }
 
     /**
-     * Getter for <code>cattle.account_link.account_id</code>.
+     * Getter for <code>cattle.service_index.account_id</code>.
      */
     @Column(name = "account_id", precision = 19)
     @Override
@@ -97,7 +97,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
     }
 
     /**
-     * Setter for <code>cattle.account_link.kind</code>.
+     * Setter for <code>cattle.service_index.kind</code>.
      */
     @Override
     public void setKind(String value) {
@@ -105,7 +105,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
     }
 
     /**
-     * Getter for <code>cattle.account_link.kind</code>.
+     * Getter for <code>cattle.service_index.kind</code>.
      */
     @Column(name = "kind", nullable = false, length = 255)
     @Override
@@ -114,7 +114,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
     }
 
     /**
-     * Setter for <code>cattle.account_link.uuid</code>.
+     * Setter for <code>cattle.service_index.uuid</code>.
      */
     @Override
     public void setUuid(String value) {
@@ -122,7 +122,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
     }
 
     /**
-     * Getter for <code>cattle.account_link.uuid</code>.
+     * Getter for <code>cattle.service_index.uuid</code>.
      */
     @Column(name = "uuid", unique = true, nullable = false, length = 128)
     @Override
@@ -131,7 +131,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
     }
 
     /**
-     * Setter for <code>cattle.account_link.description</code>.
+     * Setter for <code>cattle.service_index.description</code>.
      */
     @Override
     public void setDescription(String value) {
@@ -139,7 +139,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
     }
 
     /**
-     * Getter for <code>cattle.account_link.description</code>.
+     * Getter for <code>cattle.service_index.description</code>.
      */
     @Column(name = "description", length = 1024)
     @Override
@@ -148,7 +148,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
     }
 
     /**
-     * Setter for <code>cattle.account_link.state</code>.
+     * Setter for <code>cattle.service_index.state</code>.
      */
     @Override
     public void setState(String value) {
@@ -156,7 +156,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
     }
 
     /**
-     * Getter for <code>cattle.account_link.state</code>.
+     * Getter for <code>cattle.service_index.state</code>.
      */
     @Column(name = "state", nullable = false, length = 128)
     @Override
@@ -165,7 +165,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
     }
 
     /**
-     * Setter for <code>cattle.account_link.created</code>.
+     * Setter for <code>cattle.service_index.created</code>.
      */
     @Override
     public void setCreated(Date value) {
@@ -173,7 +173,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
     }
 
     /**
-     * Getter for <code>cattle.account_link.created</code>.
+     * Getter for <code>cattle.service_index.created</code>.
      */
     @Column(name = "created")
     @Override
@@ -182,7 +182,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
     }
 
     /**
-     * Setter for <code>cattle.account_link.removed</code>.
+     * Setter for <code>cattle.service_index.removed</code>.
      */
     @Override
     public void setRemoved(Date value) {
@@ -190,7 +190,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
     }
 
     /**
-     * Getter for <code>cattle.account_link.removed</code>.
+     * Getter for <code>cattle.service_index.removed</code>.
      */
     @Column(name = "removed")
     @Override
@@ -199,7 +199,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
     }
 
     /**
-     * Setter for <code>cattle.account_link.remove_time</code>.
+     * Setter for <code>cattle.service_index.remove_time</code>.
      */
     @Override
     public void setRemoveTime(Date value) {
@@ -207,7 +207,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
     }
 
     /**
-     * Getter for <code>cattle.account_link.remove_time</code>.
+     * Getter for <code>cattle.service_index.remove_time</code>.
      */
     @Column(name = "remove_time")
     @Override
@@ -216,7 +216,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
     }
 
     /**
-     * Setter for <code>cattle.account_link.data</code>.
+     * Setter for <code>cattle.service_index.data</code>.
      */
     @Override
     public void setData(Map<String,Object> value) {
@@ -224,7 +224,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
     }
 
     /**
-     * Getter for <code>cattle.account_link.data</code>.
+     * Getter for <code>cattle.service_index.data</code>.
      */
     @Column(name = "data", length = 65535)
     @Override
@@ -233,20 +233,71 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
     }
 
     /**
-     * Setter for <code>cattle.account_link.linked_account_id</code>.
+     * Setter for <code>cattle.service_index.service_index</code>.
      */
     @Override
-    public void setLinkedAccountId(Long value) {
+    public void setServiceIndex(String value) {
         set(11, value);
     }
 
     /**
-     * Getter for <code>cattle.account_link.linked_account_id</code>.
+     * Getter for <code>cattle.service_index.service_index</code>.
      */
-    @Column(name = "linked_account_id", precision = 19)
+    @Column(name = "service_index", length = 255)
     @Override
-    public Long getLinkedAccountId() {
-        return (Long) get(11);
+    public String getServiceIndex() {
+        return (String) get(11);
+    }
+
+    /**
+     * Setter for <code>cattle.service_index.launch_config_name</code>.
+     */
+    @Override
+    public void setLaunchConfigName(String value) {
+        set(12, value);
+    }
+
+    /**
+     * Getter for <code>cattle.service_index.launch_config_name</code>.
+     */
+    @Column(name = "launch_config_name", length = 255)
+    @Override
+    public String getLaunchConfigName() {
+        return (String) get(12);
+    }
+
+    /**
+     * Setter for <code>cattle.service_index.service_id</code>.
+     */
+    @Override
+    public void setServiceId(Long value) {
+        set(13, value);
+    }
+
+    /**
+     * Getter for <code>cattle.service_index.service_id</code>.
+     */
+    @Column(name = "service_id", precision = 19)
+    @Override
+    public Long getServiceId() {
+        return (Long) get(13);
+    }
+
+    /**
+     * Setter for <code>cattle.service_index.address</code>.
+     */
+    @Override
+    public void setAddress(String value) {
+        set(14, value);
+    }
+
+    /**
+     * Getter for <code>cattle.service_index.address</code>.
+     */
+    @Column(name = "address", length = 255)
+    @Override
+    public String getAddress() {
+        return (String) get(14);
     }
 
     // -------------------------------------------------------------------------
@@ -262,23 +313,23 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
     }
 
     // -------------------------------------------------------------------------
-    // Record12 type implementation
+    // Record15 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row12<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long> fieldsRow() {
-        return (Row12) super.fieldsRow();
+    public Row15<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, Long, String> fieldsRow() {
+        return (Row15) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row12<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long> valuesRow() {
-        return (Row12) super.valuesRow();
+    public Row15<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, Long, String> valuesRow() {
+        return (Row15) super.valuesRow();
     }
 
     /**
@@ -286,7 +337,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
      */
     @Override
     public Field<Long> field1() {
-        return AccountLinkTable.ACCOUNT_LINK.ID;
+        return ServiceIndexTable.SERVICE_INDEX.ID;
     }
 
     /**
@@ -294,7 +345,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
      */
     @Override
     public Field<String> field2() {
-        return AccountLinkTable.ACCOUNT_LINK.NAME;
+        return ServiceIndexTable.SERVICE_INDEX.NAME;
     }
 
     /**
@@ -302,7 +353,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
      */
     @Override
     public Field<Long> field3() {
-        return AccountLinkTable.ACCOUNT_LINK.ACCOUNT_ID;
+        return ServiceIndexTable.SERVICE_INDEX.ACCOUNT_ID;
     }
 
     /**
@@ -310,7 +361,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
      */
     @Override
     public Field<String> field4() {
-        return AccountLinkTable.ACCOUNT_LINK.KIND;
+        return ServiceIndexTable.SERVICE_INDEX.KIND;
     }
 
     /**
@@ -318,7 +369,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
      */
     @Override
     public Field<String> field5() {
-        return AccountLinkTable.ACCOUNT_LINK.UUID;
+        return ServiceIndexTable.SERVICE_INDEX.UUID;
     }
 
     /**
@@ -326,7 +377,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
      */
     @Override
     public Field<String> field6() {
-        return AccountLinkTable.ACCOUNT_LINK.DESCRIPTION;
+        return ServiceIndexTable.SERVICE_INDEX.DESCRIPTION;
     }
 
     /**
@@ -334,7 +385,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
      */
     @Override
     public Field<String> field7() {
-        return AccountLinkTable.ACCOUNT_LINK.STATE;
+        return ServiceIndexTable.SERVICE_INDEX.STATE;
     }
 
     /**
@@ -342,7 +393,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
      */
     @Override
     public Field<Date> field8() {
-        return AccountLinkTable.ACCOUNT_LINK.CREATED;
+        return ServiceIndexTable.SERVICE_INDEX.CREATED;
     }
 
     /**
@@ -350,7 +401,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
      */
     @Override
     public Field<Date> field9() {
-        return AccountLinkTable.ACCOUNT_LINK.REMOVED;
+        return ServiceIndexTable.SERVICE_INDEX.REMOVED;
     }
 
     /**
@@ -358,7 +409,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
      */
     @Override
     public Field<Date> field10() {
-        return AccountLinkTable.ACCOUNT_LINK.REMOVE_TIME;
+        return ServiceIndexTable.SERVICE_INDEX.REMOVE_TIME;
     }
 
     /**
@@ -366,15 +417,39 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
      */
     @Override
     public Field<Map<String,Object>> field11() {
-        return AccountLinkTable.ACCOUNT_LINK.DATA;
+        return ServiceIndexTable.SERVICE_INDEX.DATA;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Field<Long> field12() {
-        return AccountLinkTable.ACCOUNT_LINK.LINKED_ACCOUNT_ID;
+    public Field<String> field12() {
+        return ServiceIndexTable.SERVICE_INDEX.SERVICE_INDEX_;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Field<String> field13() {
+        return ServiceIndexTable.SERVICE_INDEX.LAUNCH_CONFIG_NAME;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Field<Long> field14() {
+        return ServiceIndexTable.SERVICE_INDEX.SERVICE_ID;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Field<String> field15() {
+        return ServiceIndexTable.SERVICE_INDEX.ADDRESS;
     }
 
     /**
@@ -469,15 +544,39 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Long value12() {
-        return getLinkedAccountId();
+    public String value12() {
+        return getServiceIndex();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public AccountLinkRecord value1(Long value) {
+    public String value13() {
+        return getLaunchConfigName();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Long value14() {
+        return getServiceId();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String value15() {
+        return getAddress();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ServiceIndexRecord value1(Long value) {
         setId(value);
         return this;
     }
@@ -486,7 +585,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
      * {@inheritDoc}
      */
     @Override
-    public AccountLinkRecord value2(String value) {
+    public ServiceIndexRecord value2(String value) {
         setName(value);
         return this;
     }
@@ -495,7 +594,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
      * {@inheritDoc}
      */
     @Override
-    public AccountLinkRecord value3(Long value) {
+    public ServiceIndexRecord value3(Long value) {
         setAccountId(value);
         return this;
     }
@@ -504,7 +603,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
      * {@inheritDoc}
      */
     @Override
-    public AccountLinkRecord value4(String value) {
+    public ServiceIndexRecord value4(String value) {
         setKind(value);
         return this;
     }
@@ -513,7 +612,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
      * {@inheritDoc}
      */
     @Override
-    public AccountLinkRecord value5(String value) {
+    public ServiceIndexRecord value5(String value) {
         setUuid(value);
         return this;
     }
@@ -522,7 +621,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
      * {@inheritDoc}
      */
     @Override
-    public AccountLinkRecord value6(String value) {
+    public ServiceIndexRecord value6(String value) {
         setDescription(value);
         return this;
     }
@@ -531,7 +630,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
      * {@inheritDoc}
      */
     @Override
-    public AccountLinkRecord value7(String value) {
+    public ServiceIndexRecord value7(String value) {
         setState(value);
         return this;
     }
@@ -540,7 +639,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
      * {@inheritDoc}
      */
     @Override
-    public AccountLinkRecord value8(Date value) {
+    public ServiceIndexRecord value8(Date value) {
         setCreated(value);
         return this;
     }
@@ -549,7 +648,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
      * {@inheritDoc}
      */
     @Override
-    public AccountLinkRecord value9(Date value) {
+    public ServiceIndexRecord value9(Date value) {
         setRemoved(value);
         return this;
     }
@@ -558,7 +657,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
      * {@inheritDoc}
      */
     @Override
-    public AccountLinkRecord value10(Date value) {
+    public ServiceIndexRecord value10(Date value) {
         setRemoveTime(value);
         return this;
     }
@@ -567,7 +666,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
      * {@inheritDoc}
      */
     @Override
-    public AccountLinkRecord value11(Map<String,Object> value) {
+    public ServiceIndexRecord value11(Map<String,Object> value) {
         setData(value);
         return this;
     }
@@ -576,8 +675,8 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
      * {@inheritDoc}
      */
     @Override
-    public AccountLinkRecord value12(Long value) {
-        setLinkedAccountId(value);
+    public ServiceIndexRecord value12(String value) {
+        setServiceIndex(value);
         return this;
     }
 
@@ -585,7 +684,34 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
      * {@inheritDoc}
      */
     @Override
-    public AccountLinkRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, Long value12) {
+    public ServiceIndexRecord value13(String value) {
+        setLaunchConfigName(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ServiceIndexRecord value14(Long value) {
+        setServiceId(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ServiceIndexRecord value15(String value) {
+        setAddress(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ServiceIndexRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, String value12, String value13, Long value14, String value15) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -598,6 +724,9 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
         value10(value10);
         value11(value11);
         value12(value12);
+        value13(value13);
+        value14(value14);
+        value15(value15);
         return this;
     }
 
@@ -609,7 +738,7 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
      * {@inheritDoc}
      */
     @Override
-    public void from(AccountLink from) {
+    public void from(ServiceIndex from) {
         setId(from.getId());
         setName(from.getName());
         setAccountId(from.getAccountId());
@@ -621,14 +750,17 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
         setRemoved(from.getRemoved());
         setRemoveTime(from.getRemoveTime());
         setData(from.getData());
-        setLinkedAccountId(from.getLinkedAccountId());
+        setServiceIndex(from.getServiceIndex());
+        setLaunchConfigName(from.getLaunchConfigName());
+        setServiceId(from.getServiceId());
+        setAddress(from.getAddress());
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public <E extends AccountLink> E into(E into) {
+    public <E extends ServiceIndex> E into(E into) {
         into.from(this);
         return into;
     }
@@ -638,17 +770,17 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
     // -------------------------------------------------------------------------
 
     /**
-     * Create a detached AccountLinkRecord
+     * Create a detached ServiceIndexRecord
      */
-    public AccountLinkRecord() {
-        super(AccountLinkTable.ACCOUNT_LINK);
+    public ServiceIndexRecord() {
+        super(ServiceIndexTable.SERVICE_INDEX);
     }
 
     /**
-     * Create a detached, initialised AccountLinkRecord
+     * Create a detached, initialised ServiceIndexRecord
      */
-    public AccountLinkRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Long linkedAccountId) {
-        super(AccountLinkTable.ACCOUNT_LINK);
+    public ServiceIndexRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String serviceIndex, String launchConfigName, Long serviceId, String address) {
+        super(ServiceIndexTable.SERVICE_INDEX);
 
         set(0, id);
         set(1, name);
@@ -661,6 +793,9 @@ public class AccountLinkRecord extends UpdatableRecordImpl<AccountLinkRecord> im
         set(8, removed);
         set(9, removeTime);
         set(10, data);
-        set(11, linkedAccountId);
+        set(11, serviceIndex);
+        set(12, launchConfigName);
+        set(13, serviceId);
+        set(14, address);
     }
 }

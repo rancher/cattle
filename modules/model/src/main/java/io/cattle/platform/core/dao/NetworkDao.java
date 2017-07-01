@@ -11,8 +11,6 @@ public interface NetworkDao {
 
     Network getNetworkByName(long accountId, String name);
 
-    Subnet addVIPSubnet(long accountId);
-
     Network getDefaultNetwork(Long accountId);
 
     List<? extends Network> getActiveNetworks(Long accountId);

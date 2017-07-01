@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class StoragePoolTable extends TableImpl<StoragePoolRecord> {
 
-    private static final long serialVersionUID = 222528873;
+    private static final long serialVersionUID = -414418982;
 
     /**
      * The reference instance of <code>cattle.storage_pool</code>
@@ -129,6 +129,11 @@ public class StoragePoolTable extends TableImpl<StoragePoolRecord> {
      * The column <code>cattle.storage_pool.agent_id</code>.
      */
     public final TableField<StoragePoolRecord, Long> AGENT_ID = createField("agent_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
+     * The column <code>cattle.storage_pool.zone_id</code>.
+     */
+    public final TableField<StoragePoolRecord, Long> ZONE_ID = createField("zone_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
      * The column <code>cattle.storage_pool.external_id</code>.

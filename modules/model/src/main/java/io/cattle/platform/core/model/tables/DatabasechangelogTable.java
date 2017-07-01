@@ -32,7 +32,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class DatabasechangelogTable extends TableImpl<DatabasechangelogRecord> {
 
-    private static final long serialVersionUID = -185729200;
+    private static final long serialVersionUID = -403556637;
 
     /**
      * The reference instance of <code>cattle.DATABASECHANGELOG</code>
@@ -106,6 +106,11 @@ public class DatabasechangelogTable extends TableImpl<DatabasechangelogRecord> {
      * The column <code>cattle.DATABASECHANGELOG.CONTEXTS</code>.
      */
     public final TableField<DatabasechangelogRecord, String> CONTEXTS = createField("CONTEXTS", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
+
+    /**
+     * The column <code>cattle.DATABASECHANGELOG.LABELS</code>.
+     */
+    public final TableField<DatabasechangelogRecord, String> LABELS = createField("LABELS", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
     /**
      * The column <code>cattle.DATABASECHANGELOG.DEPLOYMENT_ID</code>.

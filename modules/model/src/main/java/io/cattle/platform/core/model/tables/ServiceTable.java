@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ServiceTable extends TableImpl<ServiceRecord> {
 
-    private static final long serialVersionUID = 1890602041;
+    private static final long serialVersionUID = -1503153732;
 
     /**
      * The reference instance of <code>cattle.service</code>
@@ -126,9 +126,9 @@ public class ServiceTable extends TableImpl<ServiceRecord> {
     public final TableField<ServiceRecord, Long> CREATE_INDEX = createField("create_index", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
-     * The column <code>cattle.service.selector_container</code>.
+     * The column <code>cattle.service.selector</code>.
      */
-    public final TableField<ServiceRecord, String> SELECTOR_CONTAINER = createField("selector_container", org.jooq.impl.SQLDataType.VARCHAR.length(4096), this, "");
+    public final TableField<ServiceRecord, String> SELECTOR = createField("selector", org.jooq.impl.SQLDataType.VARCHAR.length(4096), this, "");
 
     /**
      * The column <code>cattle.service.external_id</code>.
@@ -144,11 +144,6 @@ public class ServiceTable extends TableImpl<ServiceRecord> {
      * The column <code>cattle.service.system</code>.
      */
     public final TableField<ServiceRecord, Boolean> SYSTEM = createField("system", org.jooq.impl.SQLDataType.BIT.nullable(false).defaultValue(org.jooq.impl.DSL.inline("b'0'", org.jooq.impl.SQLDataType.BIT)), this, "");
-
-    /**
-     * The column <code>cattle.service.skip</code>.
-     */
-    public final TableField<ServiceRecord, Boolean> SKIP = createField("skip", org.jooq.impl.SQLDataType.BIT.nullable(false).defaultValue(org.jooq.impl.DSL.inline("b'0'", org.jooq.impl.SQLDataType.BIT)), this, "");
 
     /**
      * The column <code>cattle.service.previous_revision_id</code>.

@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class InstanceTable extends TableImpl<InstanceRecord> {
 
-    private static final long serialVersionUID = 1748513001;
+    private static final long serialVersionUID = -731335998;
 
     /**
      * The reference instance of <code>cattle.instance</code>
@@ -109,11 +109,6 @@ public class InstanceTable extends TableImpl<InstanceRecord> {
      * The column <code>cattle.instance.data</code>.
      */
     public final TableField<InstanceRecord, Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB, this, "", new DataConverter());
-
-    /**
-     * The column <code>cattle.instance.compute</code>.
-     */
-    public final TableField<InstanceRecord, Long> COMPUTE = createField("compute", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
      * The column <code>cattle.instance.memory_mb</code>.
@@ -191,29 +186,9 @@ public class InstanceTable extends TableImpl<InstanceRecord> {
     public final TableField<InstanceRecord, Long> CREATE_INDEX = createField("create_index", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
-     * The column <code>cattle.instance.deployment_unit_uuid</code>.
-     */
-    public final TableField<InstanceRecord, String> DEPLOYMENT_UNIT_UUID = createField("deployment_unit_uuid", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
-
-    /**
      * The column <code>cattle.instance.version</code>.
      */
     public final TableField<InstanceRecord, String> VERSION = createField("version", org.jooq.impl.SQLDataType.VARCHAR.length(255).defaultValue(org.jooq.impl.DSL.inline("0", org.jooq.impl.SQLDataType.VARCHAR)), this, "");
-
-    /**
-     * The column <code>cattle.instance.health_updated</code>.
-     */
-    public final TableField<InstanceRecord, Date> HEALTH_UPDATED = createField("health_updated", org.jooq.impl.SQLDataType.TIMESTAMP, this, "", new DateConverter());
-
-    /**
-     * The column <code>cattle.instance.dns_internal</code>.
-     */
-    public final TableField<InstanceRecord, String> DNS_INTERNAL = createField("dns_internal", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
-
-    /**
-     * The column <code>cattle.instance.dns_search_internal</code>.
-     */
-    public final TableField<InstanceRecord, String> DNS_SEARCH_INTERNAL = createField("dns_search_internal", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
     /**
      * The column <code>cattle.instance.memory_reservation</code>.

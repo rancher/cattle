@@ -4,16 +4,12 @@
 package io.cattle.platform.core.model;
 
 
-import io.cattle.platform.core.model.tables.AccountLinkTable;
 import io.cattle.platform.core.model.tables.AccountTable;
 import io.cattle.platform.core.model.tables.AgentTable;
 import io.cattle.platform.core.model.tables.AuditLogTable;
 import io.cattle.platform.core.model.tables.AuthTokenTable;
 import io.cattle.platform.core.model.tables.CertificateTable;
-import io.cattle.platform.core.model.tables.ClusterHostMapTable;
 import io.cattle.platform.core.model.tables.ClusterMembershipTable;
-import io.cattle.platform.core.model.tables.ConfigItemStatusTable;
-import io.cattle.platform.core.model.tables.ConfigItemTable;
 import io.cattle.platform.core.model.tables.CredentialTable;
 import io.cattle.platform.core.model.tables.DataTable;
 import io.cattle.platform.core.model.tables.DatabasechangeloglockTable;
@@ -37,9 +33,8 @@ import io.cattle.platform.core.model.tables.ResourcePoolTable;
 import io.cattle.platform.core.model.tables.RevisionTable;
 import io.cattle.platform.core.model.tables.ScheduledUpgradeTable;
 import io.cattle.platform.core.model.tables.SecretTable;
-import io.cattle.platform.core.model.tables.ServiceConsumeMapTable;
 import io.cattle.platform.core.model.tables.ServiceEventTable;
-import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
+import io.cattle.platform.core.model.tables.ServiceIndexTable;
 import io.cattle.platform.core.model.tables.ServiceLogTable;
 import io.cattle.platform.core.model.tables.ServiceTable;
 import io.cattle.platform.core.model.tables.SettingTable;
@@ -48,21 +43,16 @@ import io.cattle.platform.core.model.tables.StorageDriverTable;
 import io.cattle.platform.core.model.tables.StoragePoolHostMapTable;
 import io.cattle.platform.core.model.tables.StoragePoolTable;
 import io.cattle.platform.core.model.tables.SubnetTable;
-import io.cattle.platform.core.model.tables.TaskInstanceTable;
-import io.cattle.platform.core.model.tables.TaskTable;
 import io.cattle.platform.core.model.tables.UserPreferenceTable;
+import io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable;
 import io.cattle.platform.core.model.tables.VolumeTable;
 import io.cattle.platform.core.model.tables.VolumeTemplateTable;
-import io.cattle.platform.core.model.tables.records.AccountLinkRecord;
 import io.cattle.platform.core.model.tables.records.AccountRecord;
 import io.cattle.platform.core.model.tables.records.AgentRecord;
 import io.cattle.platform.core.model.tables.records.AuditLogRecord;
 import io.cattle.platform.core.model.tables.records.AuthTokenRecord;
 import io.cattle.platform.core.model.tables.records.CertificateRecord;
-import io.cattle.platform.core.model.tables.records.ClusterHostMapRecord;
 import io.cattle.platform.core.model.tables.records.ClusterMembershipRecord;
-import io.cattle.platform.core.model.tables.records.ConfigItemRecord;
-import io.cattle.platform.core.model.tables.records.ConfigItemStatusRecord;
 import io.cattle.platform.core.model.tables.records.CredentialRecord;
 import io.cattle.platform.core.model.tables.records.DataRecord;
 import io.cattle.platform.core.model.tables.records.DatabasechangeloglockRecord;
@@ -86,9 +76,8 @@ import io.cattle.platform.core.model.tables.records.ResourcePoolRecord;
 import io.cattle.platform.core.model.tables.records.RevisionRecord;
 import io.cattle.platform.core.model.tables.records.ScheduledUpgradeRecord;
 import io.cattle.platform.core.model.tables.records.SecretRecord;
-import io.cattle.platform.core.model.tables.records.ServiceConsumeMapRecord;
 import io.cattle.platform.core.model.tables.records.ServiceEventRecord;
-import io.cattle.platform.core.model.tables.records.ServiceExposeMapRecord;
+import io.cattle.platform.core.model.tables.records.ServiceIndexRecord;
 import io.cattle.platform.core.model.tables.records.ServiceLogRecord;
 import io.cattle.platform.core.model.tables.records.ServiceRecord;
 import io.cattle.platform.core.model.tables.records.SettingRecord;
@@ -97,10 +86,9 @@ import io.cattle.platform.core.model.tables.records.StorageDriverRecord;
 import io.cattle.platform.core.model.tables.records.StoragePoolHostMapRecord;
 import io.cattle.platform.core.model.tables.records.StoragePoolRecord;
 import io.cattle.platform.core.model.tables.records.SubnetRecord;
-import io.cattle.platform.core.model.tables.records.TaskInstanceRecord;
-import io.cattle.platform.core.model.tables.records.TaskRecord;
 import io.cattle.platform.core.model.tables.records.UserPreferenceRecord;
 import io.cattle.platform.core.model.tables.records.VolumeRecord;
+import io.cattle.platform.core.model.tables.records.VolumeStoragePoolMapRecord;
 import io.cattle.platform.core.model.tables.records.VolumeTemplateRecord;
 
 import javax.annotation.Generated;
@@ -130,15 +118,11 @@ public class Keys {
     // -------------------------------------------------------------------------
 
     public static final Identity<AccountRecord, Long> IDENTITY_ACCOUNT = Identities0.IDENTITY_ACCOUNT;
-    public static final Identity<AccountLinkRecord, Long> IDENTITY_ACCOUNT_LINK = Identities0.IDENTITY_ACCOUNT_LINK;
     public static final Identity<AgentRecord, Long> IDENTITY_AGENT = Identities0.IDENTITY_AGENT;
     public static final Identity<AuditLogRecord, Long> IDENTITY_AUDIT_LOG = Identities0.IDENTITY_AUDIT_LOG;
     public static final Identity<AuthTokenRecord, Long> IDENTITY_AUTH_TOKEN = Identities0.IDENTITY_AUTH_TOKEN;
     public static final Identity<CertificateRecord, Long> IDENTITY_CERTIFICATE = Identities0.IDENTITY_CERTIFICATE;
-    public static final Identity<ClusterHostMapRecord, Long> IDENTITY_CLUSTER_HOST_MAP = Identities0.IDENTITY_CLUSTER_HOST_MAP;
     public static final Identity<ClusterMembershipRecord, Long> IDENTITY_CLUSTER_MEMBERSHIP = Identities0.IDENTITY_CLUSTER_MEMBERSHIP;
-    public static final Identity<ConfigItemRecord, Long> IDENTITY_CONFIG_ITEM = Identities0.IDENTITY_CONFIG_ITEM;
-    public static final Identity<ConfigItemStatusRecord, Long> IDENTITY_CONFIG_ITEM_STATUS = Identities0.IDENTITY_CONFIG_ITEM_STATUS;
     public static final Identity<CredentialRecord, Long> IDENTITY_CREDENTIAL = Identities0.IDENTITY_CREDENTIAL;
     public static final Identity<DataRecord, Long> IDENTITY_DATA = Identities0.IDENTITY_DATA;
     public static final Identity<DeploymentUnitRecord, Long> IDENTITY_DEPLOYMENT_UNIT = Identities0.IDENTITY_DEPLOYMENT_UNIT;
@@ -163,19 +147,17 @@ public class Keys {
     public static final Identity<ScheduledUpgradeRecord, Long> IDENTITY_SCHEDULED_UPGRADE = Identities0.IDENTITY_SCHEDULED_UPGRADE;
     public static final Identity<SecretRecord, Long> IDENTITY_SECRET = Identities0.IDENTITY_SECRET;
     public static final Identity<ServiceRecord, Long> IDENTITY_SERVICE = Identities0.IDENTITY_SERVICE;
-    public static final Identity<ServiceConsumeMapRecord, Long> IDENTITY_SERVICE_CONSUME_MAP = Identities0.IDENTITY_SERVICE_CONSUME_MAP;
     public static final Identity<ServiceEventRecord, Long> IDENTITY_SERVICE_EVENT = Identities0.IDENTITY_SERVICE_EVENT;
-    public static final Identity<ServiceExposeMapRecord, Long> IDENTITY_SERVICE_EXPOSE_MAP = Identities0.IDENTITY_SERVICE_EXPOSE_MAP;
+    public static final Identity<ServiceIndexRecord, Long> IDENTITY_SERVICE_INDEX = Identities0.IDENTITY_SERVICE_INDEX;
     public static final Identity<ServiceLogRecord, Long> IDENTITY_SERVICE_LOG = Identities0.IDENTITY_SERVICE_LOG;
     public static final Identity<SettingRecord, Long> IDENTITY_SETTING = Identities0.IDENTITY_SETTING;
     public static final Identity<StorageDriverRecord, Long> IDENTITY_STORAGE_DRIVER = Identities0.IDENTITY_STORAGE_DRIVER;
     public static final Identity<StoragePoolRecord, Long> IDENTITY_STORAGE_POOL = Identities0.IDENTITY_STORAGE_POOL;
     public static final Identity<StoragePoolHostMapRecord, Long> IDENTITY_STORAGE_POOL_HOST_MAP = Identities0.IDENTITY_STORAGE_POOL_HOST_MAP;
     public static final Identity<SubnetRecord, Long> IDENTITY_SUBNET = Identities0.IDENTITY_SUBNET;
-    public static final Identity<TaskRecord, Long> IDENTITY_TASK = Identities0.IDENTITY_TASK;
-    public static final Identity<TaskInstanceRecord, Long> IDENTITY_TASK_INSTANCE = Identities0.IDENTITY_TASK_INSTANCE;
     public static final Identity<UserPreferenceRecord, Long> IDENTITY_USER_PREFERENCE = Identities0.IDENTITY_USER_PREFERENCE;
     public static final Identity<VolumeRecord, Long> IDENTITY_VOLUME = Identities0.IDENTITY_VOLUME;
+    public static final Identity<VolumeStoragePoolMapRecord, Long> IDENTITY_VOLUME_STORAGE_POOL_MAP = Identities0.IDENTITY_VOLUME_STORAGE_POOL_MAP;
     public static final Identity<VolumeTemplateRecord, Long> IDENTITY_VOLUME_TEMPLATE = Identities0.IDENTITY_VOLUME_TEMPLATE;
 
     // -------------------------------------------------------------------------
@@ -184,8 +166,6 @@ public class Keys {
 
     public static final UniqueKey<AccountRecord> KEY_ACCOUNT_PRIMARY = UniqueKeys0.KEY_ACCOUNT_PRIMARY;
     public static final UniqueKey<AccountRecord> KEY_ACCOUNT_IDX_ACCOUNT_UUID = UniqueKeys0.KEY_ACCOUNT_IDX_ACCOUNT_UUID;
-    public static final UniqueKey<AccountLinkRecord> KEY_ACCOUNT_LINK_PRIMARY = UniqueKeys0.KEY_ACCOUNT_LINK_PRIMARY;
-    public static final UniqueKey<AccountLinkRecord> KEY_ACCOUNT_LINK_IDX_ACCOUNT_LINK_UUID = UniqueKeys0.KEY_ACCOUNT_LINK_IDX_ACCOUNT_LINK_UUID;
     public static final UniqueKey<AgentRecord> KEY_AGENT_PRIMARY = UniqueKeys0.KEY_AGENT_PRIMARY;
     public static final UniqueKey<AgentRecord> KEY_AGENT_IDX_AGENT_UUID = UniqueKeys0.KEY_AGENT_IDX_AGENT_UUID;
     public static final UniqueKey<AuditLogRecord> KEY_AUDIT_LOG_PRIMARY = UniqueKeys0.KEY_AUDIT_LOG_PRIMARY;
@@ -194,14 +174,8 @@ public class Keys {
     public static final UniqueKey<AuthTokenRecord> KEY_AUTH_TOKEN_KEY = UniqueKeys0.KEY_AUTH_TOKEN_KEY;
     public static final UniqueKey<CertificateRecord> KEY_CERTIFICATE_PRIMARY = UniqueKeys0.KEY_CERTIFICATE_PRIMARY;
     public static final UniqueKey<CertificateRecord> KEY_CERTIFICATE_IDX_CERT_DATA_UUID = UniqueKeys0.KEY_CERTIFICATE_IDX_CERT_DATA_UUID;
-    public static final UniqueKey<ClusterHostMapRecord> KEY_CLUSTER_HOST_MAP_PRIMARY = UniqueKeys0.KEY_CLUSTER_HOST_MAP_PRIMARY;
-    public static final UniqueKey<ClusterHostMapRecord> KEY_CLUSTER_HOST_MAP_IDX_CLUSTER_HOST_MAP_UUID = UniqueKeys0.KEY_CLUSTER_HOST_MAP_IDX_CLUSTER_HOST_MAP_UUID;
     public static final UniqueKey<ClusterMembershipRecord> KEY_CLUSTER_MEMBERSHIP_PRIMARY = UniqueKeys0.KEY_CLUSTER_MEMBERSHIP_PRIMARY;
     public static final UniqueKey<ClusterMembershipRecord> KEY_CLUSTER_MEMBERSHIP_IDX_CLUSTER_MEMBERSHIP_UUID = UniqueKeys0.KEY_CLUSTER_MEMBERSHIP_IDX_CLUSTER_MEMBERSHIP_UUID;
-    public static final UniqueKey<ConfigItemRecord> KEY_CONFIG_ITEM_PRIMARY = UniqueKeys0.KEY_CONFIG_ITEM_PRIMARY;
-    public static final UniqueKey<ConfigItemRecord> KEY_CONFIG_ITEM_IDX_CONFIG_ITEM__NAME = UniqueKeys0.KEY_CONFIG_ITEM_IDX_CONFIG_ITEM__NAME;
-    public static final UniqueKey<ConfigItemStatusRecord> KEY_CONFIG_ITEM_STATUS_PRIMARY = UniqueKeys0.KEY_CONFIG_ITEM_STATUS_PRIMARY;
-    public static final UniqueKey<ConfigItemStatusRecord> KEY_CONFIG_ITEM_STATUS_IDX_CONFIG_ITEM_STATUS_RESOURCE = UniqueKeys0.KEY_CONFIG_ITEM_STATUS_IDX_CONFIG_ITEM_STATUS_RESOURCE;
     public static final UniqueKey<CredentialRecord> KEY_CREDENTIAL_PRIMARY = UniqueKeys0.KEY_CREDENTIAL_PRIMARY;
     public static final UniqueKey<CredentialRecord> KEY_CREDENTIAL_IDX_CREDENTIAL_UUID = UniqueKeys0.KEY_CREDENTIAL_IDX_CREDENTIAL_UUID;
     public static final UniqueKey<DataRecord> KEY_DATA_PRIMARY = UniqueKeys0.KEY_DATA_PRIMARY;
@@ -250,12 +224,10 @@ public class Keys {
     public static final UniqueKey<SecretRecord> KEY_SECRET_IDX_SECRET_UUID = UniqueKeys0.KEY_SECRET_IDX_SECRET_UUID;
     public static final UniqueKey<ServiceRecord> KEY_SERVICE_PRIMARY = UniqueKeys0.KEY_SERVICE_PRIMARY;
     public static final UniqueKey<ServiceRecord> KEY_SERVICE_IDX_SERVICE_UUID = UniqueKeys0.KEY_SERVICE_IDX_SERVICE_UUID;
-    public static final UniqueKey<ServiceConsumeMapRecord> KEY_SERVICE_CONSUME_MAP_PRIMARY = UniqueKeys0.KEY_SERVICE_CONSUME_MAP_PRIMARY;
-    public static final UniqueKey<ServiceConsumeMapRecord> KEY_SERVICE_CONSUME_MAP_IDX_SERVICE_CONSUME_MAP_UUID = UniqueKeys0.KEY_SERVICE_CONSUME_MAP_IDX_SERVICE_CONSUME_MAP_UUID;
     public static final UniqueKey<ServiceEventRecord> KEY_SERVICE_EVENT_PRIMARY = UniqueKeys0.KEY_SERVICE_EVENT_PRIMARY;
     public static final UniqueKey<ServiceEventRecord> KEY_SERVICE_EVENT_IDX_SERVICE_EVENT_UUID = UniqueKeys0.KEY_SERVICE_EVENT_IDX_SERVICE_EVENT_UUID;
-    public static final UniqueKey<ServiceExposeMapRecord> KEY_SERVICE_EXPOSE_MAP_PRIMARY = UniqueKeys0.KEY_SERVICE_EXPOSE_MAP_PRIMARY;
-    public static final UniqueKey<ServiceExposeMapRecord> KEY_SERVICE_EXPOSE_MAP_IDX_SERVICE_INSTANCE_MAP_UUID = UniqueKeys0.KEY_SERVICE_EXPOSE_MAP_IDX_SERVICE_INSTANCE_MAP_UUID;
+    public static final UniqueKey<ServiceIndexRecord> KEY_SERVICE_INDEX_PRIMARY = UniqueKeys0.KEY_SERVICE_INDEX_PRIMARY;
+    public static final UniqueKey<ServiceIndexRecord> KEY_SERVICE_INDEX_IDX_SERVICE_SUFFIX_UUID = UniqueKeys0.KEY_SERVICE_INDEX_IDX_SERVICE_SUFFIX_UUID;
     public static final UniqueKey<ServiceLogRecord> KEY_SERVICE_LOG_PRIMARY = UniqueKeys0.KEY_SERVICE_LOG_PRIMARY;
     public static final UniqueKey<SettingRecord> KEY_SETTING_PRIMARY = UniqueKeys0.KEY_SETTING_PRIMARY;
     public static final UniqueKey<StorageDriverRecord> KEY_STORAGE_DRIVER_PRIMARY = UniqueKeys0.KEY_STORAGE_DRIVER_PRIMARY;
@@ -266,13 +238,12 @@ public class Keys {
     public static final UniqueKey<StoragePoolHostMapRecord> KEY_STORAGE_POOL_HOST_MAP_IDX_STORAGE_POOL_HOST_MAP_UUID = UniqueKeys0.KEY_STORAGE_POOL_HOST_MAP_IDX_STORAGE_POOL_HOST_MAP_UUID;
     public static final UniqueKey<SubnetRecord> KEY_SUBNET_PRIMARY = UniqueKeys0.KEY_SUBNET_PRIMARY;
     public static final UniqueKey<SubnetRecord> KEY_SUBNET_IDX_SUBNET_UUID = UniqueKeys0.KEY_SUBNET_IDX_SUBNET_UUID;
-    public static final UniqueKey<TaskRecord> KEY_TASK_PRIMARY = UniqueKeys0.KEY_TASK_PRIMARY;
-    public static final UniqueKey<TaskRecord> KEY_TASK_IDX_TASK_NAME = UniqueKeys0.KEY_TASK_IDX_TASK_NAME;
-    public static final UniqueKey<TaskInstanceRecord> KEY_TASK_INSTANCE_PRIMARY = UniqueKeys0.KEY_TASK_INSTANCE_PRIMARY;
     public static final UniqueKey<UserPreferenceRecord> KEY_USER_PREFERENCE_PRIMARY = UniqueKeys0.KEY_USER_PREFERENCE_PRIMARY;
     public static final UniqueKey<UserPreferenceRecord> KEY_USER_PREFERENCE_IDX_USER_PREFERENCE_UUID = UniqueKeys0.KEY_USER_PREFERENCE_IDX_USER_PREFERENCE_UUID;
     public static final UniqueKey<VolumeRecord> KEY_VOLUME_PRIMARY = UniqueKeys0.KEY_VOLUME_PRIMARY;
     public static final UniqueKey<VolumeRecord> KEY_VOLUME_IDX_VOLUME_UUID = UniqueKeys0.KEY_VOLUME_IDX_VOLUME_UUID;
+    public static final UniqueKey<VolumeStoragePoolMapRecord> KEY_VOLUME_STORAGE_POOL_MAP_PRIMARY = UniqueKeys0.KEY_VOLUME_STORAGE_POOL_MAP_PRIMARY;
+    public static final UniqueKey<VolumeStoragePoolMapRecord> KEY_VOLUME_STORAGE_POOL_MAP_IDX_VOLUME_STORAGE_POOL_MAP_UUID = UniqueKeys0.KEY_VOLUME_STORAGE_POOL_MAP_IDX_VOLUME_STORAGE_POOL_MAP_UUID;
     public static final UniqueKey<VolumeTemplateRecord> KEY_VOLUME_TEMPLATE_PRIMARY = UniqueKeys0.KEY_VOLUME_TEMPLATE_PRIMARY;
     public static final UniqueKey<VolumeTemplateRecord> KEY_VOLUME_TEMPLATE_IDX_VOLUME_TEMPLATE_UUID = UniqueKeys0.KEY_VOLUME_TEMPLATE_IDX_VOLUME_TEMPLATE_UUID;
 
@@ -281,8 +252,6 @@ public class Keys {
     // -------------------------------------------------------------------------
 
     public static final ForeignKey<AccountRecord, ProjectTemplateRecord> FK_ACCOUNT__PROJECT_TEMPLATE_ID = ForeignKeys0.FK_ACCOUNT__PROJECT_TEMPLATE_ID;
-    public static final ForeignKey<AccountLinkRecord, AccountRecord> FK_ACCOUNT_LINK__ACCOUNT_ID = ForeignKeys0.FK_ACCOUNT_LINK__ACCOUNT_ID;
-    public static final ForeignKey<AccountLinkRecord, AccountRecord> FK_ACCOUNT_LINK__LINKED_ACCOUNT_ID = ForeignKeys0.FK_ACCOUNT_LINK__LINKED_ACCOUNT_ID;
     public static final ForeignKey<AgentRecord, AccountRecord> FK_AGENT__ACCOUNT_ID = ForeignKeys0.FK_AGENT__ACCOUNT_ID;
     public static final ForeignKey<AgentRecord, AccountRecord> FK_AGENT__RESOURCE_ACCOUNT_ID = ForeignKeys0.FK_AGENT__RESOURCE_ACCOUNT_ID;
     public static final ForeignKey<AuditLogRecord, AccountRecord> FK_AUDIT_LOG__ACCOUNT_ID = ForeignKeys0.FK_AUDIT_LOG__ACCOUNT_ID;
@@ -290,15 +259,6 @@ public class Keys {
     public static final ForeignKey<AuthTokenRecord, AccountRecord> FK_AUTH_TOKEN__ACCOUNT_ID = ForeignKeys0.FK_AUTH_TOKEN__ACCOUNT_ID;
     public static final ForeignKey<AuthTokenRecord, AccountRecord> AUTH_TOKEN_IBFK_1 = ForeignKeys0.AUTH_TOKEN_IBFK_1;
     public static final ForeignKey<CertificateRecord, AccountRecord> FK_CERT_DATA__ACCOUNT_ID = ForeignKeys0.FK_CERT_DATA__ACCOUNT_ID;
-    public static final ForeignKey<ClusterHostMapRecord, HostRecord> FK_CLUSTER_HOST_MAP__HOST_ID = ForeignKeys0.FK_CLUSTER_HOST_MAP__HOST_ID;
-    public static final ForeignKey<ClusterHostMapRecord, HostRecord> FK_HOST_HOST_MAP__HOST_ID = ForeignKeys0.FK_HOST_HOST_MAP__HOST_ID;
-    public static final ForeignKey<ConfigItemStatusRecord, ConfigItemRecord> FK_CONFIG_ITEM__NAME = ForeignKeys0.FK_CONFIG_ITEM__NAME;
-    public static final ForeignKey<ConfigItemStatusRecord, AgentRecord> FK_CONFIG_ITEM__AGENT_ID = ForeignKeys0.FK_CONFIG_ITEM__AGENT_ID;
-    public static final ForeignKey<ConfigItemStatusRecord, AccountRecord> FK_CONFIG_ITEM__ACCOUNT_ID = ForeignKeys0.FK_CONFIG_ITEM__ACCOUNT_ID;
-    public static final ForeignKey<ConfigItemStatusRecord, ServiceRecord> FK_CONFIG_ITEM__SERVICE_ID = ForeignKeys0.FK_CONFIG_ITEM__SERVICE_ID;
-    public static final ForeignKey<ConfigItemStatusRecord, StackRecord> FK_CONFIG_ITEM__ENVIRONMENT_ID = ForeignKeys0.FK_CONFIG_ITEM__ENVIRONMENT_ID;
-    public static final ForeignKey<ConfigItemStatusRecord, HostRecord> FK_CONFIG_ITEM__HOST_ID = ForeignKeys0.FK_CONFIG_ITEM__HOST_ID;
-    public static final ForeignKey<ConfigItemStatusRecord, DeploymentUnitRecord> FK_CONFIG_ITEM__DEPLOYMENT_UNIT_ID = ForeignKeys0.FK_CONFIG_ITEM__DEPLOYMENT_UNIT_ID;
     public static final ForeignKey<CredentialRecord, AccountRecord> FK_CREDENTIAL__ACCOUNT_ID = ForeignKeys0.FK_CREDENTIAL__ACCOUNT_ID;
     public static final ForeignKey<CredentialRecord, StoragePoolRecord> FK_CREDENTIAL__REGISTRY_ID = ForeignKeys0.FK_CREDENTIAL__REGISTRY_ID;
     public static final ForeignKey<DeploymentUnitRecord, AccountRecord> FK_DEPLOYMENT_UNIT__ACCOUNT_ID = ForeignKeys0.FK_DEPLOYMENT_UNIT__ACCOUNT_ID;
@@ -352,15 +312,11 @@ public class Keys {
     public static final ForeignKey<ServiceRecord, StackRecord> FK_SERVICE__ENVIRONMENT_ID = ForeignKeys0.FK_SERVICE__ENVIRONMENT_ID;
     public static final ForeignKey<ServiceRecord, RevisionRecord> FK_SERVICE__PREVIOUS_REVISION_ID = ForeignKeys0.FK_SERVICE__PREVIOUS_REVISION_ID;
     public static final ForeignKey<ServiceRecord, RevisionRecord> FK_SERVICE__REVISION_ID = ForeignKeys0.FK_SERVICE__REVISION_ID;
-    public static final ForeignKey<ServiceConsumeMapRecord, ServiceRecord> FK_SERVICE_CONSUME_MAP__SERVICE_ID = ForeignKeys0.FK_SERVICE_CONSUME_MAP__SERVICE_ID;
-    public static final ForeignKey<ServiceConsumeMapRecord, ServiceRecord> FK_SERVICE_CONSUME_MAP__CONSUMED_SERVICE_ID = ForeignKeys0.FK_SERVICE_CONSUME_MAP__CONSUMED_SERVICE_ID;
-    public static final ForeignKey<ServiceConsumeMapRecord, AccountRecord> FK_SERVICE_CONSUME_MAP__ACCOUNT_ID = ForeignKeys0.FK_SERVICE_CONSUME_MAP__ACCOUNT_ID;
     public static final ForeignKey<ServiceEventRecord, AccountRecord> FK_SERVICE_EVENT__ACCOUNT_ID = ForeignKeys0.FK_SERVICE_EVENT__ACCOUNT_ID;
     public static final ForeignKey<ServiceEventRecord, HostRecord> FK_SERVICE_EVENT__HOST_ID = ForeignKeys0.FK_SERVICE_EVENT__HOST_ID;
     public static final ForeignKey<ServiceEventRecord, InstanceRecord> FK_SERVICE_EVENT__INSTANCE_ID = ForeignKeys0.FK_SERVICE_EVENT__INSTANCE_ID;
-    public static final ForeignKey<ServiceExposeMapRecord, ServiceRecord> FK_SERVICE_INSTANCE_MAP__SERVICE_ID = ForeignKeys0.FK_SERVICE_INSTANCE_MAP__SERVICE_ID;
-    public static final ForeignKey<ServiceExposeMapRecord, InstanceRecord> FK_SERVICE_INSTANCE_MAP__INSTANCE_ID = ForeignKeys0.FK_SERVICE_INSTANCE_MAP__INSTANCE_ID;
-    public static final ForeignKey<ServiceExposeMapRecord, AccountRecord> FK_SERVICE_EXPOSE_MAP__ACCOUNT_ID = ForeignKeys0.FK_SERVICE_EXPOSE_MAP__ACCOUNT_ID;
+    public static final ForeignKey<ServiceIndexRecord, AccountRecord> FK_SERVICE_SUFFIX__ACCOUNT_ID = ForeignKeys0.FK_SERVICE_SUFFIX__ACCOUNT_ID;
+    public static final ForeignKey<ServiceIndexRecord, ServiceRecord> FK_SERVICE_SUFFIX__SERVICE_ID = ForeignKeys0.FK_SERVICE_SUFFIX__SERVICE_ID;
     public static final ForeignKey<ServiceLogRecord, AccountRecord> FK_SERVICE_LOG__ACCOUNT_ID = ForeignKeys0.FK_SERVICE_LOG__ACCOUNT_ID;
     public static final ForeignKey<ServiceLogRecord, ServiceRecord> FK_SERVICE_LOG__SERVICE_ID = ForeignKeys0.FK_SERVICE_LOG__SERVICE_ID;
     public static final ForeignKey<ServiceLogRecord, InstanceRecord> FK_SERVICE_LOG__INSTANCE_ID = ForeignKeys0.FK_SERVICE_LOG__INSTANCE_ID;
@@ -374,7 +330,6 @@ public class Keys {
     public static final ForeignKey<StoragePoolHostMapRecord, HostRecord> FK_STORAGE_POOL_HOST_MAP__HOST_ID = ForeignKeys0.FK_STORAGE_POOL_HOST_MAP__HOST_ID;
     public static final ForeignKey<SubnetRecord, AccountRecord> FK_SUBNET__ACCOUNT_ID = ForeignKeys0.FK_SUBNET__ACCOUNT_ID;
     public static final ForeignKey<SubnetRecord, NetworkRecord> FK_SUBNET__NETWORK_ID = ForeignKeys0.FK_SUBNET__NETWORK_ID;
-    public static final ForeignKey<TaskInstanceRecord, TaskRecord> FK_TASK_INSTANCE__TASK_ID = ForeignKeys0.FK_TASK_INSTANCE__TASK_ID;
     public static final ForeignKey<UserPreferenceRecord, AccountRecord> FK_USER_PREFERENCE__ACCOUNT_ID = ForeignKeys0.FK_USER_PREFERENCE__ACCOUNT_ID;
     public static final ForeignKey<VolumeRecord, AccountRecord> FK_VOLUME__ACCOUNT_ID = ForeignKeys0.FK_VOLUME__ACCOUNT_ID;
     public static final ForeignKey<VolumeRecord, HostRecord> FK_VOLUME__HOST_ID = ForeignKeys0.FK_VOLUME__HOST_ID;
@@ -383,6 +338,8 @@ public class Keys {
     public static final ForeignKey<VolumeRecord, VolumeTemplateRecord> FK_VOLUME__VOLUME_TEMPLATE_ID = ForeignKeys0.FK_VOLUME__VOLUME_TEMPLATE_ID;
     public static final ForeignKey<VolumeRecord, StorageDriverRecord> FK_VOLUME__STORAGE_DRIVER_ID = ForeignKeys0.FK_VOLUME__STORAGE_DRIVER_ID;
     public static final ForeignKey<VolumeRecord, StoragePoolRecord> FK_VOLUME__STORAGE_POOL_ID = ForeignKeys0.FK_VOLUME__STORAGE_POOL_ID;
+    public static final ForeignKey<VolumeStoragePoolMapRecord, VolumeRecord> FK_VOLUME_STORAGE_POOL_MAP__VOLUME_ID = ForeignKeys0.FK_VOLUME_STORAGE_POOL_MAP__VOLUME_ID;
+    public static final ForeignKey<VolumeStoragePoolMapRecord, StoragePoolRecord> FK_VOLUME_STORAGE_POOL_MAP__STORAGE_POOL_ID = ForeignKeys0.FK_VOLUME_STORAGE_POOL_MAP__STORAGE_POOL_ID;
     public static final ForeignKey<VolumeTemplateRecord, AccountRecord> FK_VOLUME_TEMPLATE__ACCOUNT_ID = ForeignKeys0.FK_VOLUME_TEMPLATE__ACCOUNT_ID;
     public static final ForeignKey<VolumeTemplateRecord, StackRecord> FK_VOLUME_TEMPLATE__ENVIRONMENT_ID = ForeignKeys0.FK_VOLUME_TEMPLATE__ENVIRONMENT_ID;
 
@@ -392,15 +349,11 @@ public class Keys {
 
     private static class Identities0 extends AbstractKeys {
         public static Identity<AccountRecord, Long> IDENTITY_ACCOUNT = createIdentity(AccountTable.ACCOUNT, AccountTable.ACCOUNT.ID);
-        public static Identity<AccountLinkRecord, Long> IDENTITY_ACCOUNT_LINK = createIdentity(AccountLinkTable.ACCOUNT_LINK, AccountLinkTable.ACCOUNT_LINK.ID);
         public static Identity<AgentRecord, Long> IDENTITY_AGENT = createIdentity(AgentTable.AGENT, AgentTable.AGENT.ID);
         public static Identity<AuditLogRecord, Long> IDENTITY_AUDIT_LOG = createIdentity(AuditLogTable.AUDIT_LOG, AuditLogTable.AUDIT_LOG.ID);
         public static Identity<AuthTokenRecord, Long> IDENTITY_AUTH_TOKEN = createIdentity(AuthTokenTable.AUTH_TOKEN, AuthTokenTable.AUTH_TOKEN.ID);
         public static Identity<CertificateRecord, Long> IDENTITY_CERTIFICATE = createIdentity(CertificateTable.CERTIFICATE, CertificateTable.CERTIFICATE.ID);
-        public static Identity<ClusterHostMapRecord, Long> IDENTITY_CLUSTER_HOST_MAP = createIdentity(ClusterHostMapTable.CLUSTER_HOST_MAP, ClusterHostMapTable.CLUSTER_HOST_MAP.ID);
         public static Identity<ClusterMembershipRecord, Long> IDENTITY_CLUSTER_MEMBERSHIP = createIdentity(ClusterMembershipTable.CLUSTER_MEMBERSHIP, ClusterMembershipTable.CLUSTER_MEMBERSHIP.ID);
-        public static Identity<ConfigItemRecord, Long> IDENTITY_CONFIG_ITEM = createIdentity(ConfigItemTable.CONFIG_ITEM, ConfigItemTable.CONFIG_ITEM.ID);
-        public static Identity<ConfigItemStatusRecord, Long> IDENTITY_CONFIG_ITEM_STATUS = createIdentity(ConfigItemStatusTable.CONFIG_ITEM_STATUS, ConfigItemStatusTable.CONFIG_ITEM_STATUS.ID);
         public static Identity<CredentialRecord, Long> IDENTITY_CREDENTIAL = createIdentity(CredentialTable.CREDENTIAL, CredentialTable.CREDENTIAL.ID);
         public static Identity<DataRecord, Long> IDENTITY_DATA = createIdentity(DataTable.DATA, DataTable.DATA.ID);
         public static Identity<DeploymentUnitRecord, Long> IDENTITY_DEPLOYMENT_UNIT = createIdentity(DeploymentUnitTable.DEPLOYMENT_UNIT, DeploymentUnitTable.DEPLOYMENT_UNIT.ID);
@@ -425,27 +378,23 @@ public class Keys {
         public static Identity<ScheduledUpgradeRecord, Long> IDENTITY_SCHEDULED_UPGRADE = createIdentity(ScheduledUpgradeTable.SCHEDULED_UPGRADE, ScheduledUpgradeTable.SCHEDULED_UPGRADE.ID);
         public static Identity<SecretRecord, Long> IDENTITY_SECRET = createIdentity(SecretTable.SECRET, SecretTable.SECRET.ID);
         public static Identity<ServiceRecord, Long> IDENTITY_SERVICE = createIdentity(ServiceTable.SERVICE, ServiceTable.SERVICE.ID);
-        public static Identity<ServiceConsumeMapRecord, Long> IDENTITY_SERVICE_CONSUME_MAP = createIdentity(ServiceConsumeMapTable.SERVICE_CONSUME_MAP, ServiceConsumeMapTable.SERVICE_CONSUME_MAP.ID);
         public static Identity<ServiceEventRecord, Long> IDENTITY_SERVICE_EVENT = createIdentity(ServiceEventTable.SERVICE_EVENT, ServiceEventTable.SERVICE_EVENT.ID);
-        public static Identity<ServiceExposeMapRecord, Long> IDENTITY_SERVICE_EXPOSE_MAP = createIdentity(ServiceExposeMapTable.SERVICE_EXPOSE_MAP, ServiceExposeMapTable.SERVICE_EXPOSE_MAP.ID);
+        public static Identity<ServiceIndexRecord, Long> IDENTITY_SERVICE_INDEX = createIdentity(ServiceIndexTable.SERVICE_INDEX, ServiceIndexTable.SERVICE_INDEX.ID);
         public static Identity<ServiceLogRecord, Long> IDENTITY_SERVICE_LOG = createIdentity(ServiceLogTable.SERVICE_LOG, ServiceLogTable.SERVICE_LOG.ID);
         public static Identity<SettingRecord, Long> IDENTITY_SETTING = createIdentity(SettingTable.SETTING, SettingTable.SETTING.ID);
         public static Identity<StorageDriverRecord, Long> IDENTITY_STORAGE_DRIVER = createIdentity(StorageDriverTable.STORAGE_DRIVER, StorageDriverTable.STORAGE_DRIVER.ID);
         public static Identity<StoragePoolRecord, Long> IDENTITY_STORAGE_POOL = createIdentity(StoragePoolTable.STORAGE_POOL, StoragePoolTable.STORAGE_POOL.ID);
         public static Identity<StoragePoolHostMapRecord, Long> IDENTITY_STORAGE_POOL_HOST_MAP = createIdentity(StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP, StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP.ID);
         public static Identity<SubnetRecord, Long> IDENTITY_SUBNET = createIdentity(SubnetTable.SUBNET, SubnetTable.SUBNET.ID);
-        public static Identity<TaskRecord, Long> IDENTITY_TASK = createIdentity(TaskTable.TASK, TaskTable.TASK.ID);
-        public static Identity<TaskInstanceRecord, Long> IDENTITY_TASK_INSTANCE = createIdentity(TaskInstanceTable.TASK_INSTANCE, TaskInstanceTable.TASK_INSTANCE.ID);
         public static Identity<UserPreferenceRecord, Long> IDENTITY_USER_PREFERENCE = createIdentity(UserPreferenceTable.USER_PREFERENCE, UserPreferenceTable.USER_PREFERENCE.ID);
         public static Identity<VolumeRecord, Long> IDENTITY_VOLUME = createIdentity(VolumeTable.VOLUME, VolumeTable.VOLUME.ID);
+        public static Identity<VolumeStoragePoolMapRecord, Long> IDENTITY_VOLUME_STORAGE_POOL_MAP = createIdentity(VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP, VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP.ID);
         public static Identity<VolumeTemplateRecord, Long> IDENTITY_VOLUME_TEMPLATE = createIdentity(VolumeTemplateTable.VOLUME_TEMPLATE, VolumeTemplateTable.VOLUME_TEMPLATE.ID);
     }
 
     private static class UniqueKeys0 extends AbstractKeys {
         public static final UniqueKey<AccountRecord> KEY_ACCOUNT_PRIMARY = createUniqueKey(AccountTable.ACCOUNT, "KEY_account_PRIMARY", AccountTable.ACCOUNT.ID);
         public static final UniqueKey<AccountRecord> KEY_ACCOUNT_IDX_ACCOUNT_UUID = createUniqueKey(AccountTable.ACCOUNT, "KEY_account_idx_account_uuid", AccountTable.ACCOUNT.UUID);
-        public static final UniqueKey<AccountLinkRecord> KEY_ACCOUNT_LINK_PRIMARY = createUniqueKey(AccountLinkTable.ACCOUNT_LINK, "KEY_account_link_PRIMARY", AccountLinkTable.ACCOUNT_LINK.ID);
-        public static final UniqueKey<AccountLinkRecord> KEY_ACCOUNT_LINK_IDX_ACCOUNT_LINK_UUID = createUniqueKey(AccountLinkTable.ACCOUNT_LINK, "KEY_account_link_idx_account_link_uuid", AccountLinkTable.ACCOUNT_LINK.UUID);
         public static final UniqueKey<AgentRecord> KEY_AGENT_PRIMARY = createUniqueKey(AgentTable.AGENT, "KEY_agent_PRIMARY", AgentTable.AGENT.ID);
         public static final UniqueKey<AgentRecord> KEY_AGENT_IDX_AGENT_UUID = createUniqueKey(AgentTable.AGENT, "KEY_agent_idx_agent_uuid", AgentTable.AGENT.UUID);
         public static final UniqueKey<AuditLogRecord> KEY_AUDIT_LOG_PRIMARY = createUniqueKey(AuditLogTable.AUDIT_LOG, "KEY_audit_log_PRIMARY", AuditLogTable.AUDIT_LOG.ID);
@@ -454,14 +403,8 @@ public class Keys {
         public static final UniqueKey<AuthTokenRecord> KEY_AUTH_TOKEN_KEY = createUniqueKey(AuthTokenTable.AUTH_TOKEN, "KEY_auth_token_key", AuthTokenTable.AUTH_TOKEN.KEY);
         public static final UniqueKey<CertificateRecord> KEY_CERTIFICATE_PRIMARY = createUniqueKey(CertificateTable.CERTIFICATE, "KEY_certificate_PRIMARY", CertificateTable.CERTIFICATE.ID);
         public static final UniqueKey<CertificateRecord> KEY_CERTIFICATE_IDX_CERT_DATA_UUID = createUniqueKey(CertificateTable.CERTIFICATE, "KEY_certificate_idx_cert_data_uuid", CertificateTable.CERTIFICATE.UUID);
-        public static final UniqueKey<ClusterHostMapRecord> KEY_CLUSTER_HOST_MAP_PRIMARY = createUniqueKey(ClusterHostMapTable.CLUSTER_HOST_MAP, "KEY_cluster_host_map_PRIMARY", ClusterHostMapTable.CLUSTER_HOST_MAP.ID);
-        public static final UniqueKey<ClusterHostMapRecord> KEY_CLUSTER_HOST_MAP_IDX_CLUSTER_HOST_MAP_UUID = createUniqueKey(ClusterHostMapTable.CLUSTER_HOST_MAP, "KEY_cluster_host_map_idx_cluster_host_map_uuid", ClusterHostMapTable.CLUSTER_HOST_MAP.UUID);
         public static final UniqueKey<ClusterMembershipRecord> KEY_CLUSTER_MEMBERSHIP_PRIMARY = createUniqueKey(ClusterMembershipTable.CLUSTER_MEMBERSHIP, "KEY_cluster_membership_PRIMARY", ClusterMembershipTable.CLUSTER_MEMBERSHIP.ID);
         public static final UniqueKey<ClusterMembershipRecord> KEY_CLUSTER_MEMBERSHIP_IDX_CLUSTER_MEMBERSHIP_UUID = createUniqueKey(ClusterMembershipTable.CLUSTER_MEMBERSHIP, "KEY_cluster_membership_idx_cluster_membership_uuid", ClusterMembershipTable.CLUSTER_MEMBERSHIP.UUID);
-        public static final UniqueKey<ConfigItemRecord> KEY_CONFIG_ITEM_PRIMARY = createUniqueKey(ConfigItemTable.CONFIG_ITEM, "KEY_config_item_PRIMARY", ConfigItemTable.CONFIG_ITEM.ID);
-        public static final UniqueKey<ConfigItemRecord> KEY_CONFIG_ITEM_IDX_CONFIG_ITEM__NAME = createUniqueKey(ConfigItemTable.CONFIG_ITEM, "KEY_config_item_idx_config_item__name", ConfigItemTable.CONFIG_ITEM.NAME);
-        public static final UniqueKey<ConfigItemStatusRecord> KEY_CONFIG_ITEM_STATUS_PRIMARY = createUniqueKey(ConfigItemStatusTable.CONFIG_ITEM_STATUS, "KEY_config_item_status_PRIMARY", ConfigItemStatusTable.CONFIG_ITEM_STATUS.ID);
-        public static final UniqueKey<ConfigItemStatusRecord> KEY_CONFIG_ITEM_STATUS_IDX_CONFIG_ITEM_STATUS_RESOURCE = createUniqueKey(ConfigItemStatusTable.CONFIG_ITEM_STATUS, "KEY_config_item_status_idx_config_item_status_resource", ConfigItemStatusTable.CONFIG_ITEM_STATUS.NAME, ConfigItemStatusTable.CONFIG_ITEM_STATUS.RESOURCE_TYPE, ConfigItemStatusTable.CONFIG_ITEM_STATUS.RESOURCE_ID);
         public static final UniqueKey<CredentialRecord> KEY_CREDENTIAL_PRIMARY = createUniqueKey(CredentialTable.CREDENTIAL, "KEY_credential_PRIMARY", CredentialTable.CREDENTIAL.ID);
         public static final UniqueKey<CredentialRecord> KEY_CREDENTIAL_IDX_CREDENTIAL_UUID = createUniqueKey(CredentialTable.CREDENTIAL, "KEY_credential_idx_credential_uuid", CredentialTable.CREDENTIAL.UUID);
         public static final UniqueKey<DataRecord> KEY_DATA_PRIMARY = createUniqueKey(DataTable.DATA, "KEY_data_PRIMARY", DataTable.DATA.ID);
@@ -510,12 +453,10 @@ public class Keys {
         public static final UniqueKey<SecretRecord> KEY_SECRET_IDX_SECRET_UUID = createUniqueKey(SecretTable.SECRET, "KEY_secret_idx_secret_uuid", SecretTable.SECRET.UUID);
         public static final UniqueKey<ServiceRecord> KEY_SERVICE_PRIMARY = createUniqueKey(ServiceTable.SERVICE, "KEY_service_PRIMARY", ServiceTable.SERVICE.ID);
         public static final UniqueKey<ServiceRecord> KEY_SERVICE_IDX_SERVICE_UUID = createUniqueKey(ServiceTable.SERVICE, "KEY_service_idx_service_uuid", ServiceTable.SERVICE.UUID);
-        public static final UniqueKey<ServiceConsumeMapRecord> KEY_SERVICE_CONSUME_MAP_PRIMARY = createUniqueKey(ServiceConsumeMapTable.SERVICE_CONSUME_MAP, "KEY_service_consume_map_PRIMARY", ServiceConsumeMapTable.SERVICE_CONSUME_MAP.ID);
-        public static final UniqueKey<ServiceConsumeMapRecord> KEY_SERVICE_CONSUME_MAP_IDX_SERVICE_CONSUME_MAP_UUID = createUniqueKey(ServiceConsumeMapTable.SERVICE_CONSUME_MAP, "KEY_service_consume_map_idx_service_consume_map_uuid", ServiceConsumeMapTable.SERVICE_CONSUME_MAP.UUID);
         public static final UniqueKey<ServiceEventRecord> KEY_SERVICE_EVENT_PRIMARY = createUniqueKey(ServiceEventTable.SERVICE_EVENT, "KEY_service_event_PRIMARY", ServiceEventTable.SERVICE_EVENT.ID);
         public static final UniqueKey<ServiceEventRecord> KEY_SERVICE_EVENT_IDX_SERVICE_EVENT_UUID = createUniqueKey(ServiceEventTable.SERVICE_EVENT, "KEY_service_event_idx_service_event_uuid", ServiceEventTable.SERVICE_EVENT.UUID);
-        public static final UniqueKey<ServiceExposeMapRecord> KEY_SERVICE_EXPOSE_MAP_PRIMARY = createUniqueKey(ServiceExposeMapTable.SERVICE_EXPOSE_MAP, "KEY_service_expose_map_PRIMARY", ServiceExposeMapTable.SERVICE_EXPOSE_MAP.ID);
-        public static final UniqueKey<ServiceExposeMapRecord> KEY_SERVICE_EXPOSE_MAP_IDX_SERVICE_INSTANCE_MAP_UUID = createUniqueKey(ServiceExposeMapTable.SERVICE_EXPOSE_MAP, "KEY_service_expose_map_idx_service_instance_map_uuid", ServiceExposeMapTable.SERVICE_EXPOSE_MAP.UUID);
+        public static final UniqueKey<ServiceIndexRecord> KEY_SERVICE_INDEX_PRIMARY = createUniqueKey(ServiceIndexTable.SERVICE_INDEX, "KEY_service_index_PRIMARY", ServiceIndexTable.SERVICE_INDEX.ID);
+        public static final UniqueKey<ServiceIndexRecord> KEY_SERVICE_INDEX_IDX_SERVICE_SUFFIX_UUID = createUniqueKey(ServiceIndexTable.SERVICE_INDEX, "KEY_service_index_idx_service_suffix_uuid", ServiceIndexTable.SERVICE_INDEX.UUID);
         public static final UniqueKey<ServiceLogRecord> KEY_SERVICE_LOG_PRIMARY = createUniqueKey(ServiceLogTable.SERVICE_LOG, "KEY_service_log_PRIMARY", ServiceLogTable.SERVICE_LOG.ID);
         public static final UniqueKey<SettingRecord> KEY_SETTING_PRIMARY = createUniqueKey(SettingTable.SETTING, "KEY_setting_PRIMARY", SettingTable.SETTING.ID);
         public static final UniqueKey<StorageDriverRecord> KEY_STORAGE_DRIVER_PRIMARY = createUniqueKey(StorageDriverTable.STORAGE_DRIVER, "KEY_storage_driver_PRIMARY", StorageDriverTable.STORAGE_DRIVER.ID);
@@ -526,21 +467,18 @@ public class Keys {
         public static final UniqueKey<StoragePoolHostMapRecord> KEY_STORAGE_POOL_HOST_MAP_IDX_STORAGE_POOL_HOST_MAP_UUID = createUniqueKey(StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP, "KEY_storage_pool_host_map_idx_storage_pool_host_map_uuid", StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP.UUID);
         public static final UniqueKey<SubnetRecord> KEY_SUBNET_PRIMARY = createUniqueKey(SubnetTable.SUBNET, "KEY_subnet_PRIMARY", SubnetTable.SUBNET.ID);
         public static final UniqueKey<SubnetRecord> KEY_SUBNET_IDX_SUBNET_UUID = createUniqueKey(SubnetTable.SUBNET, "KEY_subnet_idx_subnet_uuid", SubnetTable.SUBNET.UUID);
-        public static final UniqueKey<TaskRecord> KEY_TASK_PRIMARY = createUniqueKey(TaskTable.TASK, "KEY_task_PRIMARY", TaskTable.TASK.ID);
-        public static final UniqueKey<TaskRecord> KEY_TASK_IDX_TASK_NAME = createUniqueKey(TaskTable.TASK, "KEY_task_idx_task_name", TaskTable.TASK.NAME);
-        public static final UniqueKey<TaskInstanceRecord> KEY_TASK_INSTANCE_PRIMARY = createUniqueKey(TaskInstanceTable.TASK_INSTANCE, "KEY_task_instance_PRIMARY", TaskInstanceTable.TASK_INSTANCE.ID);
         public static final UniqueKey<UserPreferenceRecord> KEY_USER_PREFERENCE_PRIMARY = createUniqueKey(UserPreferenceTable.USER_PREFERENCE, "KEY_user_preference_PRIMARY", UserPreferenceTable.USER_PREFERENCE.ID);
         public static final UniqueKey<UserPreferenceRecord> KEY_USER_PREFERENCE_IDX_USER_PREFERENCE_UUID = createUniqueKey(UserPreferenceTable.USER_PREFERENCE, "KEY_user_preference_idx_user_preference_uuid", UserPreferenceTable.USER_PREFERENCE.UUID);
         public static final UniqueKey<VolumeRecord> KEY_VOLUME_PRIMARY = createUniqueKey(VolumeTable.VOLUME, "KEY_volume_PRIMARY", VolumeTable.VOLUME.ID);
         public static final UniqueKey<VolumeRecord> KEY_VOLUME_IDX_VOLUME_UUID = createUniqueKey(VolumeTable.VOLUME, "KEY_volume_idx_volume_uuid", VolumeTable.VOLUME.UUID);
+        public static final UniqueKey<VolumeStoragePoolMapRecord> KEY_VOLUME_STORAGE_POOL_MAP_PRIMARY = createUniqueKey(VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP, "KEY_volume_storage_pool_map_PRIMARY", VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP.ID);
+        public static final UniqueKey<VolumeStoragePoolMapRecord> KEY_VOLUME_STORAGE_POOL_MAP_IDX_VOLUME_STORAGE_POOL_MAP_UUID = createUniqueKey(VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP, "KEY_volume_storage_pool_map_idx_volume_storage_pool_map_uuid", VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP.UUID);
         public static final UniqueKey<VolumeTemplateRecord> KEY_VOLUME_TEMPLATE_PRIMARY = createUniqueKey(VolumeTemplateTable.VOLUME_TEMPLATE, "KEY_volume_template_PRIMARY", VolumeTemplateTable.VOLUME_TEMPLATE.ID);
         public static final UniqueKey<VolumeTemplateRecord> KEY_VOLUME_TEMPLATE_IDX_VOLUME_TEMPLATE_UUID = createUniqueKey(VolumeTemplateTable.VOLUME_TEMPLATE, "KEY_volume_template_idx_volume_template_uuid", VolumeTemplateTable.VOLUME_TEMPLATE.UUID);
     }
 
     private static class ForeignKeys0 extends AbstractKeys {
         public static final ForeignKey<AccountRecord, ProjectTemplateRecord> FK_ACCOUNT__PROJECT_TEMPLATE_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_PROJECT_TEMPLATE_PRIMARY, AccountTable.ACCOUNT, "fk_account__project_template_id", AccountTable.ACCOUNT.PROJECT_TEMPLATE_ID);
-        public static final ForeignKey<AccountLinkRecord, AccountRecord> FK_ACCOUNT_LINK__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, AccountLinkTable.ACCOUNT_LINK, "fk_account_link__account_id", AccountLinkTable.ACCOUNT_LINK.ACCOUNT_ID);
-        public static final ForeignKey<AccountLinkRecord, AccountRecord> FK_ACCOUNT_LINK__LINKED_ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, AccountLinkTable.ACCOUNT_LINK, "fk_account_link__linked_account_id", AccountLinkTable.ACCOUNT_LINK.LINKED_ACCOUNT_ID);
         public static final ForeignKey<AgentRecord, AccountRecord> FK_AGENT__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, AgentTable.AGENT, "fk_agent__account_id", AgentTable.AGENT.ACCOUNT_ID);
         public static final ForeignKey<AgentRecord, AccountRecord> FK_AGENT__RESOURCE_ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, AgentTable.AGENT, "fk_agent__resource_account_id", AgentTable.AGENT.RESOURCE_ACCOUNT_ID);
         public static final ForeignKey<AuditLogRecord, AccountRecord> FK_AUDIT_LOG__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, AuditLogTable.AUDIT_LOG, "fk_audit_log__account_id", AuditLogTable.AUDIT_LOG.ACCOUNT_ID);
@@ -548,15 +486,6 @@ public class Keys {
         public static final ForeignKey<AuthTokenRecord, AccountRecord> FK_AUTH_TOKEN__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, AuthTokenTable.AUTH_TOKEN, "fk_auth_token__account_id", AuthTokenTable.AUTH_TOKEN.ACCOUNT_ID);
         public static final ForeignKey<AuthTokenRecord, AccountRecord> AUTH_TOKEN_IBFK_1 = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, AuthTokenTable.AUTH_TOKEN, "auth_token_ibfk_1", AuthTokenTable.AUTH_TOKEN.AUTHENTICATED_AS_ACCOUNT_ID);
         public static final ForeignKey<CertificateRecord, AccountRecord> FK_CERT_DATA__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, CertificateTable.CERTIFICATE, "fk_cert_data__account_id", CertificateTable.CERTIFICATE.ACCOUNT_ID);
-        public static final ForeignKey<ClusterHostMapRecord, HostRecord> FK_CLUSTER_HOST_MAP__HOST_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_HOST_PRIMARY, ClusterHostMapTable.CLUSTER_HOST_MAP, "fk_cluster_host_map__host_id", ClusterHostMapTable.CLUSTER_HOST_MAP.CLUSTER_ID);
-        public static final ForeignKey<ClusterHostMapRecord, HostRecord> FK_HOST_HOST_MAP__HOST_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_HOST_PRIMARY, ClusterHostMapTable.CLUSTER_HOST_MAP, "fk_host_host_map__host_id", ClusterHostMapTable.CLUSTER_HOST_MAP.HOST_ID);
-        public static final ForeignKey<ConfigItemStatusRecord, ConfigItemRecord> FK_CONFIG_ITEM__NAME = createForeignKey(io.cattle.platform.core.model.Keys.KEY_CONFIG_ITEM_IDX_CONFIG_ITEM__NAME, ConfigItemStatusTable.CONFIG_ITEM_STATUS, "fk_config_item__name", ConfigItemStatusTable.CONFIG_ITEM_STATUS.NAME);
-        public static final ForeignKey<ConfigItemStatusRecord, AgentRecord> FK_CONFIG_ITEM__AGENT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_AGENT_PRIMARY, ConfigItemStatusTable.CONFIG_ITEM_STATUS, "fk_config_item__agent_id", ConfigItemStatusTable.CONFIG_ITEM_STATUS.AGENT_ID);
-        public static final ForeignKey<ConfigItemStatusRecord, AccountRecord> FK_CONFIG_ITEM__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, ConfigItemStatusTable.CONFIG_ITEM_STATUS, "fk_config_item__account_id", ConfigItemStatusTable.CONFIG_ITEM_STATUS.ACCOUNT_ID);
-        public static final ForeignKey<ConfigItemStatusRecord, ServiceRecord> FK_CONFIG_ITEM__SERVICE_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_SERVICE_PRIMARY, ConfigItemStatusTable.CONFIG_ITEM_STATUS, "fk_config_item__service_id", ConfigItemStatusTable.CONFIG_ITEM_STATUS.SERVICE_ID);
-        public static final ForeignKey<ConfigItemStatusRecord, StackRecord> FK_CONFIG_ITEM__ENVIRONMENT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ENVIRONMENT_PRIMARY, ConfigItemStatusTable.CONFIG_ITEM_STATUS, "fk_config_item__environment_id", ConfigItemStatusTable.CONFIG_ITEM_STATUS.STACK_ID);
-        public static final ForeignKey<ConfigItemStatusRecord, HostRecord> FK_CONFIG_ITEM__HOST_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_HOST_PRIMARY, ConfigItemStatusTable.CONFIG_ITEM_STATUS, "fk_config_item__host_id", ConfigItemStatusTable.CONFIG_ITEM_STATUS.HOST_ID);
-        public static final ForeignKey<ConfigItemStatusRecord, DeploymentUnitRecord> FK_CONFIG_ITEM__DEPLOYMENT_UNIT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_DEPLOYMENT_UNIT_PRIMARY, ConfigItemStatusTable.CONFIG_ITEM_STATUS, "fk_config_item__deployment_unit_id", ConfigItemStatusTable.CONFIG_ITEM_STATUS.DEPLOYMENT_UNIT_ID);
         public static final ForeignKey<CredentialRecord, AccountRecord> FK_CREDENTIAL__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, CredentialTable.CREDENTIAL, "fk_credential__account_id", CredentialTable.CREDENTIAL.ACCOUNT_ID);
         public static final ForeignKey<CredentialRecord, StoragePoolRecord> FK_CREDENTIAL__REGISTRY_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_STORAGE_POOL_PRIMARY, CredentialTable.CREDENTIAL, "fk_credential__registry_id", CredentialTable.CREDENTIAL.REGISTRY_ID);
         public static final ForeignKey<DeploymentUnitRecord, AccountRecord> FK_DEPLOYMENT_UNIT__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, DeploymentUnitTable.DEPLOYMENT_UNIT, "fk_deployment_unit__account_id", DeploymentUnitTable.DEPLOYMENT_UNIT.ACCOUNT_ID);
@@ -610,15 +539,11 @@ public class Keys {
         public static final ForeignKey<ServiceRecord, StackRecord> FK_SERVICE__ENVIRONMENT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ENVIRONMENT_PRIMARY, ServiceTable.SERVICE, "fk_service__environment_id", ServiceTable.SERVICE.STACK_ID);
         public static final ForeignKey<ServiceRecord, RevisionRecord> FK_SERVICE__PREVIOUS_REVISION_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_REVISION_PRIMARY, ServiceTable.SERVICE, "fk_service__previous_revision_id", ServiceTable.SERVICE.PREVIOUS_REVISION_ID);
         public static final ForeignKey<ServiceRecord, RevisionRecord> FK_SERVICE__REVISION_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_REVISION_PRIMARY, ServiceTable.SERVICE, "fk_service__revision_id", ServiceTable.SERVICE.REVISION_ID);
-        public static final ForeignKey<ServiceConsumeMapRecord, ServiceRecord> FK_SERVICE_CONSUME_MAP__SERVICE_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_SERVICE_PRIMARY, ServiceConsumeMapTable.SERVICE_CONSUME_MAP, "fk_service_consume_map__service_id", ServiceConsumeMapTable.SERVICE_CONSUME_MAP.SERVICE_ID);
-        public static final ForeignKey<ServiceConsumeMapRecord, ServiceRecord> FK_SERVICE_CONSUME_MAP__CONSUMED_SERVICE_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_SERVICE_PRIMARY, ServiceConsumeMapTable.SERVICE_CONSUME_MAP, "fk_service_consume_map__consumed_service_id", ServiceConsumeMapTable.SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID);
-        public static final ForeignKey<ServiceConsumeMapRecord, AccountRecord> FK_SERVICE_CONSUME_MAP__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, ServiceConsumeMapTable.SERVICE_CONSUME_MAP, "fk_service_consume_map__account_id", ServiceConsumeMapTable.SERVICE_CONSUME_MAP.ACCOUNT_ID);
         public static final ForeignKey<ServiceEventRecord, AccountRecord> FK_SERVICE_EVENT__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, ServiceEventTable.SERVICE_EVENT, "fk_service_event__account_id", ServiceEventTable.SERVICE_EVENT.ACCOUNT_ID);
         public static final ForeignKey<ServiceEventRecord, HostRecord> FK_SERVICE_EVENT__HOST_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_HOST_PRIMARY, ServiceEventTable.SERVICE_EVENT, "fk_service_event__host_id", ServiceEventTable.SERVICE_EVENT.HOST_ID);
         public static final ForeignKey<ServiceEventRecord, InstanceRecord> FK_SERVICE_EVENT__INSTANCE_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_INSTANCE_PRIMARY, ServiceEventTable.SERVICE_EVENT, "fk_service_event__instance_id", ServiceEventTable.SERVICE_EVENT.INSTANCE_ID);
-        public static final ForeignKey<ServiceExposeMapRecord, ServiceRecord> FK_SERVICE_INSTANCE_MAP__SERVICE_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_SERVICE_PRIMARY, ServiceExposeMapTable.SERVICE_EXPOSE_MAP, "fk_service_instance_map__service_id", ServiceExposeMapTable.SERVICE_EXPOSE_MAP.SERVICE_ID);
-        public static final ForeignKey<ServiceExposeMapRecord, InstanceRecord> FK_SERVICE_INSTANCE_MAP__INSTANCE_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_INSTANCE_PRIMARY, ServiceExposeMapTable.SERVICE_EXPOSE_MAP, "fk_service_instance_map__instance_id", ServiceExposeMapTable.SERVICE_EXPOSE_MAP.INSTANCE_ID);
-        public static final ForeignKey<ServiceExposeMapRecord, AccountRecord> FK_SERVICE_EXPOSE_MAP__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, ServiceExposeMapTable.SERVICE_EXPOSE_MAP, "fk_service_expose_map__account_id", ServiceExposeMapTable.SERVICE_EXPOSE_MAP.ACCOUNT_ID);
+        public static final ForeignKey<ServiceIndexRecord, AccountRecord> FK_SERVICE_SUFFIX__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, ServiceIndexTable.SERVICE_INDEX, "fk_service_suffix__account_id", ServiceIndexTable.SERVICE_INDEX.ACCOUNT_ID);
+        public static final ForeignKey<ServiceIndexRecord, ServiceRecord> FK_SERVICE_SUFFIX__SERVICE_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_SERVICE_PRIMARY, ServiceIndexTable.SERVICE_INDEX, "fk_service_suffix__service_id", ServiceIndexTable.SERVICE_INDEX.SERVICE_ID);
         public static final ForeignKey<ServiceLogRecord, AccountRecord> FK_SERVICE_LOG__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, ServiceLogTable.SERVICE_LOG, "fk_service_log__account_id", ServiceLogTable.SERVICE_LOG.ACCOUNT_ID);
         public static final ForeignKey<ServiceLogRecord, ServiceRecord> FK_SERVICE_LOG__SERVICE_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_SERVICE_PRIMARY, ServiceLogTable.SERVICE_LOG, "fk_service_log__service_id", ServiceLogTable.SERVICE_LOG.SERVICE_ID);
         public static final ForeignKey<ServiceLogRecord, InstanceRecord> FK_SERVICE_LOG__INSTANCE_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_INSTANCE_PRIMARY, ServiceLogTable.SERVICE_LOG, "fk_service_log__instance_id", ServiceLogTable.SERVICE_LOG.INSTANCE_ID);
@@ -632,7 +557,6 @@ public class Keys {
         public static final ForeignKey<StoragePoolHostMapRecord, HostRecord> FK_STORAGE_POOL_HOST_MAP__HOST_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_HOST_PRIMARY, StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP, "fk_storage_pool_host_map__host_id", StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP.HOST_ID);
         public static final ForeignKey<SubnetRecord, AccountRecord> FK_SUBNET__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, SubnetTable.SUBNET, "fk_subnet__account_id", SubnetTable.SUBNET.ACCOUNT_ID);
         public static final ForeignKey<SubnetRecord, NetworkRecord> FK_SUBNET__NETWORK_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_NETWORK_PRIMARY, SubnetTable.SUBNET, "fk_subnet__network_id", SubnetTable.SUBNET.NETWORK_ID);
-        public static final ForeignKey<TaskInstanceRecord, TaskRecord> FK_TASK_INSTANCE__TASK_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_TASK_PRIMARY, TaskInstanceTable.TASK_INSTANCE, "fk_task_instance__task_id", TaskInstanceTable.TASK_INSTANCE.TASK_ID);
         public static final ForeignKey<UserPreferenceRecord, AccountRecord> FK_USER_PREFERENCE__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, UserPreferenceTable.USER_PREFERENCE, "fk_user_preference__account_id", UserPreferenceTable.USER_PREFERENCE.ACCOUNT_ID);
         public static final ForeignKey<VolumeRecord, AccountRecord> FK_VOLUME__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, VolumeTable.VOLUME, "fk_volume__account_id", VolumeTable.VOLUME.ACCOUNT_ID);
         public static final ForeignKey<VolumeRecord, HostRecord> FK_VOLUME__HOST_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_HOST_PRIMARY, VolumeTable.VOLUME, "fk_volume__host_id", VolumeTable.VOLUME.HOST_ID);
@@ -641,6 +565,8 @@ public class Keys {
         public static final ForeignKey<VolumeRecord, VolumeTemplateRecord> FK_VOLUME__VOLUME_TEMPLATE_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_VOLUME_TEMPLATE_PRIMARY, VolumeTable.VOLUME, "fk_volume__volume_template_id", VolumeTable.VOLUME.VOLUME_TEMPLATE_ID);
         public static final ForeignKey<VolumeRecord, StorageDriverRecord> FK_VOLUME__STORAGE_DRIVER_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_STORAGE_DRIVER_PRIMARY, VolumeTable.VOLUME, "fk_volume__storage_driver_id", VolumeTable.VOLUME.STORAGE_DRIVER_ID);
         public static final ForeignKey<VolumeRecord, StoragePoolRecord> FK_VOLUME__STORAGE_POOL_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_STORAGE_POOL_PRIMARY, VolumeTable.VOLUME, "fk_volume__storage_pool_id", VolumeTable.VOLUME.STORAGE_POOL_ID);
+        public static final ForeignKey<VolumeStoragePoolMapRecord, VolumeRecord> FK_VOLUME_STORAGE_POOL_MAP__VOLUME_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_VOLUME_PRIMARY, VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP, "fk_volume_storage_pool_map__volume_id", VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP.VOLUME_ID);
+        public static final ForeignKey<VolumeStoragePoolMapRecord, StoragePoolRecord> FK_VOLUME_STORAGE_POOL_MAP__STORAGE_POOL_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_STORAGE_POOL_PRIMARY, VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP, "fk_volume_storage_pool_map__storage_pool_id", VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID);
         public static final ForeignKey<VolumeTemplateRecord, AccountRecord> FK_VOLUME_TEMPLATE__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, VolumeTemplateTable.VOLUME_TEMPLATE, "fk_volume_template__account_id", VolumeTemplateTable.VOLUME_TEMPLATE.ACCOUNT_ID);
         public static final ForeignKey<VolumeTemplateRecord, StackRecord> FK_VOLUME_TEMPLATE__ENVIRONMENT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ENVIRONMENT_PRIMARY, VolumeTemplateTable.VOLUME_TEMPLATE, "fk_volume_template__environment_id", VolumeTemplateTable.VOLUME_TEMPLATE.STACK_ID);
     }

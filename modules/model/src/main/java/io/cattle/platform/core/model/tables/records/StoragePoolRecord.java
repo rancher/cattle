@@ -21,8 +21,8 @@ import javax.persistence.Table;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record19;
-import org.jooq.Row19;
+import org.jooq.Record20;
+import org.jooq.Row20;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -39,9 +39,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "storage_pool", schema = "cattle")
-public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> implements TableRecordJaxb, Record19<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, Long, Boolean, Long, String, String, String, Long>, StoragePool {
+public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> implements TableRecordJaxb, Record20<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, Long, Boolean, Long, Long, String, String, String, Long>, StoragePool {
 
-    private static final long serialVersionUID = 1422526983;
+    private static final long serialVersionUID = 63637572;
 
     /**
      * Setter for <code>cattle.storage_pool.id</code>.
@@ -301,11 +301,28 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
     }
 
     /**
+     * Setter for <code>cattle.storage_pool.zone_id</code>.
+     */
+    @Override
+    public void setZoneId(Long value) {
+        set(15, value);
+    }
+
+    /**
+     * Getter for <code>cattle.storage_pool.zone_id</code>.
+     */
+    @Column(name = "zone_id", precision = 19)
+    @Override
+    public Long getZoneId() {
+        return (Long) get(15);
+    }
+
+    /**
      * Setter for <code>cattle.storage_pool.external_id</code>.
      */
     @Override
     public void setExternalId(String value) {
-        set(15, value);
+        set(16, value);
     }
 
     /**
@@ -314,7 +331,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
     @Column(name = "external_id", length = 128)
     @Override
     public String getExternalId() {
-        return (String) get(15);
+        return (String) get(16);
     }
 
     /**
@@ -322,7 +339,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      */
     @Override
     public void setDriverName(String value) {
-        set(16, value);
+        set(17, value);
     }
 
     /**
@@ -331,7 +348,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
     @Column(name = "driver_name", length = 255)
     @Override
     public String getDriverName() {
-        return (String) get(16);
+        return (String) get(17);
     }
 
     /**
@@ -339,7 +356,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      */
     @Override
     public void setVolumeAccessMode(String value) {
-        set(17, value);
+        set(18, value);
     }
 
     /**
@@ -348,7 +365,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
     @Column(name = "volume_access_mode", length = 255)
     @Override
     public String getVolumeAccessMode() {
-        return (String) get(17);
+        return (String) get(18);
     }
 
     /**
@@ -356,7 +373,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      */
     @Override
     public void setStorageDriverId(Long value) {
-        set(18, value);
+        set(19, value);
     }
 
     /**
@@ -365,7 +382,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
     @Column(name = "storage_driver_id", precision = 19)
     @Override
     public Long getStorageDriverId() {
-        return (Long) get(18);
+        return (Long) get(19);
     }
 
     // -------------------------------------------------------------------------
@@ -381,23 +398,23 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
     }
 
     // -------------------------------------------------------------------------
-    // Record19 type implementation
+    // Record20 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row19<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, Long, Boolean, Long, String, String, String, Long> fieldsRow() {
-        return (Row19) super.fieldsRow();
+    public Row20<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, Long, Boolean, Long, Long, String, String, String, Long> fieldsRow() {
+        return (Row20) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row19<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, Long, Boolean, Long, String, String, String, Long> valuesRow() {
-        return (Row19) super.valuesRow();
+    public Row20<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, Long, Boolean, Long, Long, String, String, String, Long> valuesRow() {
+        return (Row20) super.valuesRow();
     }
 
     /**
@@ -524,8 +541,8 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field16() {
-        return StoragePoolTable.STORAGE_POOL.EXTERNAL_ID;
+    public Field<Long> field16() {
+        return StoragePoolTable.STORAGE_POOL.ZONE_ID;
     }
 
     /**
@@ -533,7 +550,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      */
     @Override
     public Field<String> field17() {
-        return StoragePoolTable.STORAGE_POOL.DRIVER_NAME;
+        return StoragePoolTable.STORAGE_POOL.EXTERNAL_ID;
     }
 
     /**
@@ -541,6 +558,14 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      */
     @Override
     public Field<String> field18() {
+        return StoragePoolTable.STORAGE_POOL.DRIVER_NAME;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Field<String> field19() {
         return StoragePoolTable.STORAGE_POOL.VOLUME_ACCESS_MODE;
     }
 
@@ -548,7 +573,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Field<Long> field19() {
+    public Field<Long> field20() {
         return StoragePoolTable.STORAGE_POOL.STORAGE_DRIVER_ID;
     }
 
@@ -676,8 +701,8 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public String value16() {
-        return getExternalId();
+    public Long value16() {
+        return getZoneId();
     }
 
     /**
@@ -685,7 +710,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      */
     @Override
     public String value17() {
-        return getDriverName();
+        return getExternalId();
     }
 
     /**
@@ -693,6 +718,14 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      */
     @Override
     public String value18() {
+        return getDriverName();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String value19() {
         return getVolumeAccessMode();
     }
 
@@ -700,7 +733,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Long value19() {
+    public Long value20() {
         return getStorageDriverId();
     }
 
@@ -843,8 +876,8 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public StoragePoolRecord value16(String value) {
-        setExternalId(value);
+    public StoragePoolRecord value16(Long value) {
+        setZoneId(value);
         return this;
     }
 
@@ -853,7 +886,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      */
     @Override
     public StoragePoolRecord value17(String value) {
-        setDriverName(value);
+        setExternalId(value);
         return this;
     }
 
@@ -862,6 +895,15 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      */
     @Override
     public StoragePoolRecord value18(String value) {
+        setDriverName(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public StoragePoolRecord value19(String value) {
         setVolumeAccessMode(value);
         return this;
     }
@@ -870,7 +912,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public StoragePoolRecord value19(Long value) {
+    public StoragePoolRecord value20(Long value) {
         setStorageDriverId(value);
         return this;
     }
@@ -879,7 +921,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public StoragePoolRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, Long value12, Long value13, Boolean value14, Long value15, String value16, String value17, String value18, Long value19) {
+    public StoragePoolRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, Long value12, Long value13, Boolean value14, Long value15, Long value16, String value17, String value18, String value19, Long value20) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -899,6 +941,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
         value17(value17);
         value18(value18);
         value19(value19);
+        value20(value20);
         return this;
     }
 
@@ -926,6 +969,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
         setVirtualTotalSizeMb(from.getVirtualTotalSizeMb());
         setExternal(from.getExternal());
         setAgentId(from.getAgentId());
+        setZoneId(from.getZoneId());
         setExternalId(from.getExternalId());
         setDriverName(from.getDriverName());
         setVolumeAccessMode(from.getVolumeAccessMode());
@@ -955,7 +999,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
     /**
      * Create a detached, initialised StoragePoolRecord
      */
-    public StoragePoolRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Long physicalTotalSizeMb, Long virtualTotalSizeMb, Boolean external, Long agentId, String externalId, String driverName, String volumeAccessMode, Long storageDriverId) {
+    public StoragePoolRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Long physicalTotalSizeMb, Long virtualTotalSizeMb, Boolean external, Long agentId, Long zoneId, String externalId, String driverName, String volumeAccessMode, Long storageDriverId) {
         super(StoragePoolTable.STORAGE_POOL);
 
         set(0, id);
@@ -973,9 +1017,10 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
         set(12, virtualTotalSizeMb);
         set(13, external);
         set(14, agentId);
-        set(15, externalId);
-        set(16, driverName);
-        set(17, volumeAccessMode);
-        set(18, storageDriverId);
+        set(15, zoneId);
+        set(16, externalId);
+        set(17, driverName);
+        set(18, volumeAccessMode);
+        set(19, storageDriverId);
     }
 }

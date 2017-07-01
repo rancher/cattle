@@ -103,13 +103,4 @@ public class DataDaoImpl extends AbstractJooqDao implements DataDao {
         }
     }
 
-
-    public LockManager getLockManager() {
-        return lockManager;
-    }
-
-    public ObjectManager getObjectManager() {
-        return objectManager;
-    }
-
 }

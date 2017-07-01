@@ -29,16 +29,16 @@ import javax.persistence.Table;
 )
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
-@Table(name = "cluster_host_map", schema = "cattle")
-public interface ClusterHostMap extends Serializable {
+@Table(name = "volume_storage_pool_map", schema = "cattle")
+public interface VolumeStoragePoolMap extends Serializable {
 
     /**
-     * Setter for <code>cattle.cluster_host_map.id</code>.
+     * Setter for <code>cattle.volume_storage_pool_map.id</code>.
      */
     public void setId(Long value);
 
     /**
-     * Getter for <code>cattle.cluster_host_map.id</code>.
+     * Getter for <code>cattle.volume_storage_pool_map.id</code>.
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,137 +46,137 @@ public interface ClusterHostMap extends Serializable {
     public Long getId();
 
     /**
-     * Setter for <code>cattle.cluster_host_map.name</code>.
+     * Setter for <code>cattle.volume_storage_pool_map.name</code>.
      */
     public void setName(String value);
 
     /**
-     * Getter for <code>cattle.cluster_host_map.name</code>.
+     * Getter for <code>cattle.volume_storage_pool_map.name</code>.
      */
     @Column(name = "name", length = 255)
     public String getName();
 
     /**
-     * Setter for <code>cattle.cluster_host_map.kind</code>.
+     * Setter for <code>cattle.volume_storage_pool_map.kind</code>.
      */
     public void setKind(String value);
 
     /**
-     * Getter for <code>cattle.cluster_host_map.kind</code>.
+     * Getter for <code>cattle.volume_storage_pool_map.kind</code>.
      */
     @Column(name = "kind", nullable = false, length = 255)
     public String getKind();
 
     /**
-     * Setter for <code>cattle.cluster_host_map.uuid</code>.
+     * Setter for <code>cattle.volume_storage_pool_map.uuid</code>.
      */
     public void setUuid(String value);
 
     /**
-     * Getter for <code>cattle.cluster_host_map.uuid</code>.
+     * Getter for <code>cattle.volume_storage_pool_map.uuid</code>.
      */
     @Column(name = "uuid", unique = true, nullable = false, length = 128)
     public String getUuid();
 
     /**
-     * Setter for <code>cattle.cluster_host_map.description</code>.
+     * Setter for <code>cattle.volume_storage_pool_map.description</code>.
      */
     public void setDescription(String value);
 
     /**
-     * Getter for <code>cattle.cluster_host_map.description</code>.
+     * Getter for <code>cattle.volume_storage_pool_map.description</code>.
      */
     @Column(name = "description", length = 1024)
     public String getDescription();
 
     /**
-     * Setter for <code>cattle.cluster_host_map.state</code>.
+     * Setter for <code>cattle.volume_storage_pool_map.state</code>.
      */
     public void setState(String value);
 
     /**
-     * Getter for <code>cattle.cluster_host_map.state</code>.
+     * Getter for <code>cattle.volume_storage_pool_map.state</code>.
      */
     @Column(name = "state", nullable = false, length = 128)
     public String getState();
 
     /**
-     * Setter for <code>cattle.cluster_host_map.created</code>.
+     * Setter for <code>cattle.volume_storage_pool_map.created</code>.
      */
     public void setCreated(Date value);
 
     /**
-     * Getter for <code>cattle.cluster_host_map.created</code>.
+     * Getter for <code>cattle.volume_storage_pool_map.created</code>.
      */
     @Column(name = "created")
     public Date getCreated();
 
     /**
-     * Setter for <code>cattle.cluster_host_map.removed</code>.
+     * Setter for <code>cattle.volume_storage_pool_map.removed</code>.
      */
     public void setRemoved(Date value);
 
     /**
-     * Getter for <code>cattle.cluster_host_map.removed</code>.
+     * Getter for <code>cattle.volume_storage_pool_map.removed</code>.
      */
     @Column(name = "removed")
     public Date getRemoved();
 
     /**
-     * Setter for <code>cattle.cluster_host_map.remove_time</code>.
+     * Setter for <code>cattle.volume_storage_pool_map.remove_time</code>.
      */
     public void setRemoveTime(Date value);
 
     /**
-     * Getter for <code>cattle.cluster_host_map.remove_time</code>.
+     * Getter for <code>cattle.volume_storage_pool_map.remove_time</code>.
      */
     @Column(name = "remove_time")
     public Date getRemoveTime();
 
     /**
-     * Setter for <code>cattle.cluster_host_map.data</code>.
+     * Setter for <code>cattle.volume_storage_pool_map.data</code>.
      */
     public void setData(Map<String,Object> value);
 
     /**
-     * Getter for <code>cattle.cluster_host_map.data</code>.
+     * Getter for <code>cattle.volume_storage_pool_map.data</code>.
      */
     @Column(name = "data", length = 16777215)
     public Map<String,Object> getData();
 
     /**
-     * Setter for <code>cattle.cluster_host_map.cluster_id</code>.
+     * Setter for <code>cattle.volume_storage_pool_map.volume_id</code>.
      */
-    public void setClusterId(Long value);
+    public void setVolumeId(Long value);
 
     /**
-     * Getter for <code>cattle.cluster_host_map.cluster_id</code>.
+     * Getter for <code>cattle.volume_storage_pool_map.volume_id</code>.
      */
-    @Column(name = "cluster_id", precision = 19)
-    public Long getClusterId();
+    @Column(name = "volume_id", precision = 19)
+    public Long getVolumeId();
 
     /**
-     * Setter for <code>cattle.cluster_host_map.host_id</code>.
+     * Setter for <code>cattle.volume_storage_pool_map.storage_pool_id</code>.
      */
-    public void setHostId(Long value);
+    public void setStoragePoolId(Long value);
 
     /**
-     * Getter for <code>cattle.cluster_host_map.host_id</code>.
+     * Getter for <code>cattle.volume_storage_pool_map.storage_pool_id</code>.
      */
-    @Column(name = "host_id", precision = 19)
-    public Long getHostId();
+    @Column(name = "storage_pool_id", precision = 19)
+    public Long getStoragePoolId();
 
     // -------------------------------------------------------------------------
     // FROM and INTO
     // -------------------------------------------------------------------------
 
     /**
-     * Load data from another generated Record/POJO implementing the common interface ClusterHostMap
+     * Load data from another generated Record/POJO implementing the common interface VolumeStoragePoolMap
      */
-    public void from(io.cattle.platform.core.model.ClusterHostMap from);
+    public void from(io.cattle.platform.core.model.VolumeStoragePoolMap from);
 
     /**
-     * Copy data into another generated Record/POJO implementing the common interface ClusterHostMap
+     * Copy data into another generated Record/POJO implementing the common interface VolumeStoragePoolMap
      */
-    public <E extends io.cattle.platform.core.model.ClusterHostMap> E into(E into);
+    public <E extends io.cattle.platform.core.model.VolumeStoragePoolMap> E into(E into);
 }

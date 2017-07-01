@@ -8,14 +8,11 @@ import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.tables.records.HostRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
-import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
-import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,17 +28,10 @@ import org.jooq.RecordHandler;
 
 public class HostDaoImpl extends AbstractJooqDao implements HostDao {
 
-    ObjectManager objectManager;
-    GenericResourceDao genericResourceDao;
-    TransactionDelegate transaction;
     Long startTime;
 
-
-    public HostDaoImpl(Configuration configuration, ObjectManager objectManager, GenericResourceDao genericResourceDao, TransactionDelegate transaction) {
+    public HostDaoImpl(Configuration configuration) {
         super(configuration);
-        this.objectManager = objectManager;
-        this.genericResourceDao = genericResourceDao;
-        this.transaction = transaction;
     }
 
     @Override

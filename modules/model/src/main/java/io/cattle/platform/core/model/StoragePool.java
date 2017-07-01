@@ -200,6 +200,17 @@ public interface StoragePool extends Serializable {
     public Long getAgentId();
 
     /**
+     * Setter for <code>cattle.storage_pool.zone_id</code>.
+     */
+    public void setZoneId(Long value);
+
+    /**
+     * Getter for <code>cattle.storage_pool.zone_id</code>.
+     */
+    @Column(name = "zone_id", precision = 19)
+    public Long getZoneId();
+
+    /**
      * Setter for <code>cattle.storage_pool.external_id</code>.
      */
     public void setExternalId(String value);

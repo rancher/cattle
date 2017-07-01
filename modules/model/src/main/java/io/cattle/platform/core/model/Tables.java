@@ -4,16 +4,12 @@
 package io.cattle.platform.core.model;
 
 
-import io.cattle.platform.core.model.tables.AccountLinkTable;
 import io.cattle.platform.core.model.tables.AccountTable;
 import io.cattle.platform.core.model.tables.AgentTable;
 import io.cattle.platform.core.model.tables.AuditLogTable;
 import io.cattle.platform.core.model.tables.AuthTokenTable;
 import io.cattle.platform.core.model.tables.CertificateTable;
-import io.cattle.platform.core.model.tables.ClusterHostMapTable;
 import io.cattle.platform.core.model.tables.ClusterMembershipTable;
-import io.cattle.platform.core.model.tables.ConfigItemStatusTable;
-import io.cattle.platform.core.model.tables.ConfigItemTable;
 import io.cattle.platform.core.model.tables.CredentialTable;
 import io.cattle.platform.core.model.tables.DataTable;
 import io.cattle.platform.core.model.tables.DatabasechangelogTable;
@@ -38,9 +34,8 @@ import io.cattle.platform.core.model.tables.ResourcePoolTable;
 import io.cattle.platform.core.model.tables.RevisionTable;
 import io.cattle.platform.core.model.tables.ScheduledUpgradeTable;
 import io.cattle.platform.core.model.tables.SecretTable;
-import io.cattle.platform.core.model.tables.ServiceConsumeMapTable;
 import io.cattle.platform.core.model.tables.ServiceEventTable;
-import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
+import io.cattle.platform.core.model.tables.ServiceIndexTable;
 import io.cattle.platform.core.model.tables.ServiceLogTable;
 import io.cattle.platform.core.model.tables.ServiceTable;
 import io.cattle.platform.core.model.tables.SettingTable;
@@ -49,9 +44,8 @@ import io.cattle.platform.core.model.tables.StorageDriverTable;
 import io.cattle.platform.core.model.tables.StoragePoolHostMapTable;
 import io.cattle.platform.core.model.tables.StoragePoolTable;
 import io.cattle.platform.core.model.tables.SubnetTable;
-import io.cattle.platform.core.model.tables.TaskInstanceTable;
-import io.cattle.platform.core.model.tables.TaskTable;
 import io.cattle.platform.core.model.tables.UserPreferenceTable;
+import io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable;
 import io.cattle.platform.core.model.tables.VolumeTable;
 import io.cattle.platform.core.model.tables.VolumeTemplateTable;
 
@@ -77,11 +71,6 @@ public class Tables {
     public static final AccountTable ACCOUNT = io.cattle.platform.core.model.tables.AccountTable.ACCOUNT;
 
     /**
-     * The table <code>cattle.account_link</code>.
-     */
-    public static final AccountLinkTable ACCOUNT_LINK = io.cattle.platform.core.model.tables.AccountLinkTable.ACCOUNT_LINK;
-
-    /**
      * The table <code>cattle.agent</code>.
      */
     public static final AgentTable AGENT = io.cattle.platform.core.model.tables.AgentTable.AGENT;
@@ -102,24 +91,9 @@ public class Tables {
     public static final CertificateTable CERTIFICATE = io.cattle.platform.core.model.tables.CertificateTable.CERTIFICATE;
 
     /**
-     * The table <code>cattle.cluster_host_map</code>.
-     */
-    public static final ClusterHostMapTable CLUSTER_HOST_MAP = io.cattle.platform.core.model.tables.ClusterHostMapTable.CLUSTER_HOST_MAP;
-
-    /**
      * The table <code>cattle.cluster_membership</code>.
      */
     public static final ClusterMembershipTable CLUSTER_MEMBERSHIP = io.cattle.platform.core.model.tables.ClusterMembershipTable.CLUSTER_MEMBERSHIP;
-
-    /**
-     * The table <code>cattle.config_item</code>.
-     */
-    public static final ConfigItemTable CONFIG_ITEM = io.cattle.platform.core.model.tables.ConfigItemTable.CONFIG_ITEM;
-
-    /**
-     * The table <code>cattle.config_item_status</code>.
-     */
-    public static final ConfigItemStatusTable CONFIG_ITEM_STATUS = io.cattle.platform.core.model.tables.ConfigItemStatusTable.CONFIG_ITEM_STATUS;
 
     /**
      * The table <code>cattle.credential</code>.
@@ -252,19 +226,14 @@ public class Tables {
     public static final ServiceTable SERVICE = io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 
     /**
-     * The table <code>cattle.service_consume_map</code>.
-     */
-    public static final ServiceConsumeMapTable SERVICE_CONSUME_MAP = io.cattle.platform.core.model.tables.ServiceConsumeMapTable.SERVICE_CONSUME_MAP;
-
-    /**
      * The table <code>cattle.service_event</code>.
      */
     public static final ServiceEventTable SERVICE_EVENT = io.cattle.platform.core.model.tables.ServiceEventTable.SERVICE_EVENT;
 
     /**
-     * The table <code>cattle.service_expose_map</code>.
+     * The table <code>cattle.service_index</code>.
      */
-    public static final ServiceExposeMapTable SERVICE_EXPOSE_MAP = io.cattle.platform.core.model.tables.ServiceExposeMapTable.SERVICE_EXPOSE_MAP;
+    public static final ServiceIndexTable SERVICE_INDEX = io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX;
 
     /**
      * The table <code>cattle.service_log</code>.
@@ -297,16 +266,6 @@ public class Tables {
     public static final SubnetTable SUBNET = io.cattle.platform.core.model.tables.SubnetTable.SUBNET;
 
     /**
-     * The table <code>cattle.task</code>.
-     */
-    public static final TaskTable TASK = io.cattle.platform.core.model.tables.TaskTable.TASK;
-
-    /**
-     * The table <code>cattle.task_instance</code>.
-     */
-    public static final TaskInstanceTable TASK_INSTANCE = io.cattle.platform.core.model.tables.TaskInstanceTable.TASK_INSTANCE;
-
-    /**
      * The table <code>cattle.user_preference</code>.
      */
     public static final UserPreferenceTable USER_PREFERENCE = io.cattle.platform.core.model.tables.UserPreferenceTable.USER_PREFERENCE;
@@ -315,6 +274,11 @@ public class Tables {
      * The table <code>cattle.volume</code>.
      */
     public static final VolumeTable VOLUME = io.cattle.platform.core.model.tables.VolumeTable.VOLUME;
+
+    /**
+     * The table <code>cattle.volume_storage_pool_map</code>.
+     */
+    public static final VolumeStoragePoolMapTable VOLUME_STORAGE_POOL_MAP = io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP;
 
     /**
      * The table <code>cattle.volume_template</code>.

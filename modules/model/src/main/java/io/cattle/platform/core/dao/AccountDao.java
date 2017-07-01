@@ -23,9 +23,4 @@ public interface AccountDao {
 
     List<String> getAccountActiveStates();
 
-    void generateAccountLinks(Account account, List<? extends Long> links);
-
-    // links for the accounts linked to target account both ways
-    List<Long> getLinkedAccounts(long accountId);
-
 }

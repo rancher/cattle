@@ -156,17 +156,6 @@ public interface Instance extends Serializable {
     public Map<String,Object> getData();
 
     /**
-     * Setter for <code>cattle.instance.compute</code>.
-     */
-    public void setCompute(Long value);
-
-    /**
-     * Getter for <code>cattle.instance.compute</code>.
-     */
-    @Column(name = "compute", precision = 19)
-    public Long getCompute();
-
-    /**
      * Setter for <code>cattle.instance.memory_mb</code>.
      */
     public void setMemoryMb(Long value);
@@ -332,17 +321,6 @@ public interface Instance extends Serializable {
     public Long getCreateIndex();
 
     /**
-     * Setter for <code>cattle.instance.deployment_unit_uuid</code>.
-     */
-    public void setDeploymentUnitUuid(String value);
-
-    /**
-     * Getter for <code>cattle.instance.deployment_unit_uuid</code>.
-     */
-    @Column(name = "deployment_unit_uuid", length = 128)
-    public String getDeploymentUnitUuid();
-
-    /**
      * Setter for <code>cattle.instance.version</code>.
      */
     public void setVersion(String value);
@@ -352,39 +330,6 @@ public interface Instance extends Serializable {
      */
     @Column(name = "version", length = 255)
     public String getVersion();
-
-    /**
-     * Setter for <code>cattle.instance.health_updated</code>.
-     */
-    public void setHealthUpdated(Date value);
-
-    /**
-     * Getter for <code>cattle.instance.health_updated</code>.
-     */
-    @Column(name = "health_updated")
-    public Date getHealthUpdated();
-
-    /**
-     * Setter for <code>cattle.instance.dns_internal</code>.
-     */
-    public void setDnsInternal(String value);
-
-    /**
-     * Getter for <code>cattle.instance.dns_internal</code>.
-     */
-    @Column(name = "dns_internal", length = 255)
-    public String getDnsInternal();
-
-    /**
-     * Setter for <code>cattle.instance.dns_search_internal</code>.
-     */
-    public void setDnsSearchInternal(String value);
-
-    /**
-     * Getter for <code>cattle.instance.dns_search_internal</code>.
-     */
-    @Column(name = "dns_search_internal", length = 255)
-    public String getDnsSearchInternal();
 
     /**
      * Setter for <code>cattle.instance.memory_reservation</code>.

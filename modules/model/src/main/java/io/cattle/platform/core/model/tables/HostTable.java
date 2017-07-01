@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class HostTable extends TableImpl<HostRecord> {
 
-    private static final long serialVersionUID = 1275722196;
+    private static final long serialVersionUID = 538347138;
 
     /**
      * The reference instance of <code>cattle.host</code>
@@ -114,16 +114,6 @@ public class HostTable extends TableImpl<HostRecord> {
      * The column <code>cattle.host.uri</code>.
      */
     public final TableField<HostRecord, String> URI = createField("uri", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
-
-    /**
-     * The column <code>cattle.host.compute_free</code>.
-     */
-    public final TableField<HostRecord, Long> COMPUTE_FREE = createField("compute_free", org.jooq.impl.SQLDataType.BIGINT, this, "");
-
-    /**
-     * The column <code>cattle.host.compute_total</code>.
-     */
-    public final TableField<HostRecord, Long> COMPUTE_TOTAL = createField("compute_total", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
      * The column <code>cattle.host.agent_id</code>.

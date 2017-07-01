@@ -9,7 +9,6 @@ import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
-import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.StoragePoolDao;
 import io.cattle.platform.core.model.Host;
@@ -39,15 +38,13 @@ public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDa
     public static final Set<String> UNMANGED_STORAGE_POOLS = new HashSet<>(Arrays.asList(new String[]{"docker", "sim"}));
 
     GenericResourceDao resourceDao;
-    GenericMapDao genericMapDao;
     ObjectManager objectManager;
     TransactionDelegate transaction;
 
-    public StoragePoolDaoImpl(Configuration configuration, GenericResourceDao resourceDao, GenericMapDao genericMapDao, ObjectManager objectManager,
+    public StoragePoolDaoImpl(Configuration configuration, GenericResourceDao resourceDao, ObjectManager objectManager,
             TransactionDelegate transaction) {
         super(configuration);
         this.resourceDao = resourceDao;
-        this.genericMapDao = genericMapDao;
         this.objectManager = objectManager;
         this.transaction = transaction;
     }

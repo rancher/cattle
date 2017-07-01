@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class VolumeTable extends TableImpl<VolumeRecord> {
 
-    private static final long serialVersionUID = -2099959639;
+    private static final long serialVersionUID = -108178624;
 
     /**
      * The reference instance of <code>cattle.volume</code>
@@ -119,11 +119,6 @@ public class VolumeTable extends TableImpl<VolumeRecord> {
      * The column <code>cattle.volume.virtual_size_mb</code>.
      */
     public final TableField<VolumeRecord, Long> VIRTUAL_SIZE_MB = createField("virtual_size_mb", org.jooq.impl.SQLDataType.BIGINT, this, "");
-
-    /**
-     * The column <code>cattle.volume.format</code>.
-     */
-    public final TableField<VolumeRecord, String> FORMAT = createField("format", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
     /**
      * The column <code>cattle.volume.uri</code>.

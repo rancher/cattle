@@ -4,8 +4,8 @@
 package io.cattle.platform.core.model.tables.records;
 
 
-import io.cattle.platform.core.model.ClusterHostMap;
-import io.cattle.platform.core.model.tables.ClusterHostMapTable;
+import io.cattle.platform.core.model.VolumeStoragePoolMap;
+import io.cattle.platform.core.model.tables.VolumeStoragePoolMapTable;
 import io.cattle.platform.db.jooq.utils.TableRecordJaxb;
 
 import java.util.Date;
@@ -38,13 +38,13 @@ import org.jooq.impl.UpdatableRecordImpl;
 )
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
-@Table(name = "cluster_host_map", schema = "cattle")
-public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapRecord> implements TableRecordJaxb, Record12<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, Long>, ClusterHostMap {
+@Table(name = "volume_storage_pool_map", schema = "cattle")
+public class VolumeStoragePoolMapRecord extends UpdatableRecordImpl<VolumeStoragePoolMapRecord> implements TableRecordJaxb, Record12<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, Long>, VolumeStoragePoolMap {
 
-    private static final long serialVersionUID = 1959900304;
+    private static final long serialVersionUID = 871783002;
 
     /**
-     * Setter for <code>cattle.cluster_host_map.id</code>.
+     * Setter for <code>cattle.volume_storage_pool_map.id</code>.
      */
     @Override
     public void setId(Long value) {
@@ -52,7 +52,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
     }
 
     /**
-     * Getter for <code>cattle.cluster_host_map.id</code>.
+     * Getter for <code>cattle.volume_storage_pool_map.id</code>.
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -63,7 +63,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
     }
 
     /**
-     * Setter for <code>cattle.cluster_host_map.name</code>.
+     * Setter for <code>cattle.volume_storage_pool_map.name</code>.
      */
     @Override
     public void setName(String value) {
@@ -71,7 +71,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
     }
 
     /**
-     * Getter for <code>cattle.cluster_host_map.name</code>.
+     * Getter for <code>cattle.volume_storage_pool_map.name</code>.
      */
     @Column(name = "name", length = 255)
     @Override
@@ -80,7 +80,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
     }
 
     /**
-     * Setter for <code>cattle.cluster_host_map.kind</code>.
+     * Setter for <code>cattle.volume_storage_pool_map.kind</code>.
      */
     @Override
     public void setKind(String value) {
@@ -88,7 +88,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
     }
 
     /**
-     * Getter for <code>cattle.cluster_host_map.kind</code>.
+     * Getter for <code>cattle.volume_storage_pool_map.kind</code>.
      */
     @Column(name = "kind", nullable = false, length = 255)
     @Override
@@ -97,7 +97,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
     }
 
     /**
-     * Setter for <code>cattle.cluster_host_map.uuid</code>.
+     * Setter for <code>cattle.volume_storage_pool_map.uuid</code>.
      */
     @Override
     public void setUuid(String value) {
@@ -105,7 +105,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
     }
 
     /**
-     * Getter for <code>cattle.cluster_host_map.uuid</code>.
+     * Getter for <code>cattle.volume_storage_pool_map.uuid</code>.
      */
     @Column(name = "uuid", unique = true, nullable = false, length = 128)
     @Override
@@ -114,7 +114,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
     }
 
     /**
-     * Setter for <code>cattle.cluster_host_map.description</code>.
+     * Setter for <code>cattle.volume_storage_pool_map.description</code>.
      */
     @Override
     public void setDescription(String value) {
@@ -122,7 +122,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
     }
 
     /**
-     * Getter for <code>cattle.cluster_host_map.description</code>.
+     * Getter for <code>cattle.volume_storage_pool_map.description</code>.
      */
     @Column(name = "description", length = 1024)
     @Override
@@ -131,7 +131,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
     }
 
     /**
-     * Setter for <code>cattle.cluster_host_map.state</code>.
+     * Setter for <code>cattle.volume_storage_pool_map.state</code>.
      */
     @Override
     public void setState(String value) {
@@ -139,7 +139,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
     }
 
     /**
-     * Getter for <code>cattle.cluster_host_map.state</code>.
+     * Getter for <code>cattle.volume_storage_pool_map.state</code>.
      */
     @Column(name = "state", nullable = false, length = 128)
     @Override
@@ -148,7 +148,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
     }
 
     /**
-     * Setter for <code>cattle.cluster_host_map.created</code>.
+     * Setter for <code>cattle.volume_storage_pool_map.created</code>.
      */
     @Override
     public void setCreated(Date value) {
@@ -156,7 +156,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
     }
 
     /**
-     * Getter for <code>cattle.cluster_host_map.created</code>.
+     * Getter for <code>cattle.volume_storage_pool_map.created</code>.
      */
     @Column(name = "created")
     @Override
@@ -165,7 +165,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
     }
 
     /**
-     * Setter for <code>cattle.cluster_host_map.removed</code>.
+     * Setter for <code>cattle.volume_storage_pool_map.removed</code>.
      */
     @Override
     public void setRemoved(Date value) {
@@ -173,7 +173,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
     }
 
     /**
-     * Getter for <code>cattle.cluster_host_map.removed</code>.
+     * Getter for <code>cattle.volume_storage_pool_map.removed</code>.
      */
     @Column(name = "removed")
     @Override
@@ -182,7 +182,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
     }
 
     /**
-     * Setter for <code>cattle.cluster_host_map.remove_time</code>.
+     * Setter for <code>cattle.volume_storage_pool_map.remove_time</code>.
      */
     @Override
     public void setRemoveTime(Date value) {
@@ -190,7 +190,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
     }
 
     /**
-     * Getter for <code>cattle.cluster_host_map.remove_time</code>.
+     * Getter for <code>cattle.volume_storage_pool_map.remove_time</code>.
      */
     @Column(name = "remove_time")
     @Override
@@ -199,7 +199,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
     }
 
     /**
-     * Setter for <code>cattle.cluster_host_map.data</code>.
+     * Setter for <code>cattle.volume_storage_pool_map.data</code>.
      */
     @Override
     public void setData(Map<String,Object> value) {
@@ -207,7 +207,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
     }
 
     /**
-     * Getter for <code>cattle.cluster_host_map.data</code>.
+     * Getter for <code>cattle.volume_storage_pool_map.data</code>.
      */
     @Column(name = "data", length = 16777215)
     @Override
@@ -216,36 +216,36 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
     }
 
     /**
-     * Setter for <code>cattle.cluster_host_map.cluster_id</code>.
+     * Setter for <code>cattle.volume_storage_pool_map.volume_id</code>.
      */
     @Override
-    public void setClusterId(Long value) {
+    public void setVolumeId(Long value) {
         set(10, value);
     }
 
     /**
-     * Getter for <code>cattle.cluster_host_map.cluster_id</code>.
+     * Getter for <code>cattle.volume_storage_pool_map.volume_id</code>.
      */
-    @Column(name = "cluster_id", precision = 19)
+    @Column(name = "volume_id", precision = 19)
     @Override
-    public Long getClusterId() {
+    public Long getVolumeId() {
         return (Long) get(10);
     }
 
     /**
-     * Setter for <code>cattle.cluster_host_map.host_id</code>.
+     * Setter for <code>cattle.volume_storage_pool_map.storage_pool_id</code>.
      */
     @Override
-    public void setHostId(Long value) {
+    public void setStoragePoolId(Long value) {
         set(11, value);
     }
 
     /**
-     * Getter for <code>cattle.cluster_host_map.host_id</code>.
+     * Getter for <code>cattle.volume_storage_pool_map.storage_pool_id</code>.
      */
-    @Column(name = "host_id", precision = 19)
+    @Column(name = "storage_pool_id", precision = 19)
     @Override
-    public Long getHostId() {
+    public Long getStoragePoolId() {
         return (Long) get(11);
     }
 
@@ -286,7 +286,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
      */
     @Override
     public Field<Long> field1() {
-        return ClusterHostMapTable.CLUSTER_HOST_MAP.ID;
+        return VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP.ID;
     }
 
     /**
@@ -294,7 +294,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
      */
     @Override
     public Field<String> field2() {
-        return ClusterHostMapTable.CLUSTER_HOST_MAP.NAME;
+        return VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP.NAME;
     }
 
     /**
@@ -302,7 +302,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
      */
     @Override
     public Field<String> field3() {
-        return ClusterHostMapTable.CLUSTER_HOST_MAP.KIND;
+        return VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP.KIND;
     }
 
     /**
@@ -310,7 +310,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
      */
     @Override
     public Field<String> field4() {
-        return ClusterHostMapTable.CLUSTER_HOST_MAP.UUID;
+        return VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP.UUID;
     }
 
     /**
@@ -318,7 +318,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
      */
     @Override
     public Field<String> field5() {
-        return ClusterHostMapTable.CLUSTER_HOST_MAP.DESCRIPTION;
+        return VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP.DESCRIPTION;
     }
 
     /**
@@ -326,7 +326,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
      */
     @Override
     public Field<String> field6() {
-        return ClusterHostMapTable.CLUSTER_HOST_MAP.STATE;
+        return VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP.STATE;
     }
 
     /**
@@ -334,7 +334,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
      */
     @Override
     public Field<Date> field7() {
-        return ClusterHostMapTable.CLUSTER_HOST_MAP.CREATED;
+        return VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP.CREATED;
     }
 
     /**
@@ -342,7 +342,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
      */
     @Override
     public Field<Date> field8() {
-        return ClusterHostMapTable.CLUSTER_HOST_MAP.REMOVED;
+        return VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP.REMOVED;
     }
 
     /**
@@ -350,7 +350,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
      */
     @Override
     public Field<Date> field9() {
-        return ClusterHostMapTable.CLUSTER_HOST_MAP.REMOVE_TIME;
+        return VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP.REMOVE_TIME;
     }
 
     /**
@@ -358,7 +358,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
      */
     @Override
     public Field<Map<String,Object>> field10() {
-        return ClusterHostMapTable.CLUSTER_HOST_MAP.DATA;
+        return VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP.DATA;
     }
 
     /**
@@ -366,7 +366,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
      */
     @Override
     public Field<Long> field11() {
-        return ClusterHostMapTable.CLUSTER_HOST_MAP.CLUSTER_ID;
+        return VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP.VOLUME_ID;
     }
 
     /**
@@ -374,7 +374,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
      */
     @Override
     public Field<Long> field12() {
-        return ClusterHostMapTable.CLUSTER_HOST_MAP.HOST_ID;
+        return VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP.STORAGE_POOL_ID;
     }
 
     /**
@@ -462,7 +462,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
      */
     @Override
     public Long value11() {
-        return getClusterId();
+        return getVolumeId();
     }
 
     /**
@@ -470,14 +470,14 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
      */
     @Override
     public Long value12() {
-        return getHostId();
+        return getStoragePoolId();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public ClusterHostMapRecord value1(Long value) {
+    public VolumeStoragePoolMapRecord value1(Long value) {
         setId(value);
         return this;
     }
@@ -486,7 +486,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
      * {@inheritDoc}
      */
     @Override
-    public ClusterHostMapRecord value2(String value) {
+    public VolumeStoragePoolMapRecord value2(String value) {
         setName(value);
         return this;
     }
@@ -495,7 +495,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
      * {@inheritDoc}
      */
     @Override
-    public ClusterHostMapRecord value3(String value) {
+    public VolumeStoragePoolMapRecord value3(String value) {
         setKind(value);
         return this;
     }
@@ -504,7 +504,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
      * {@inheritDoc}
      */
     @Override
-    public ClusterHostMapRecord value4(String value) {
+    public VolumeStoragePoolMapRecord value4(String value) {
         setUuid(value);
         return this;
     }
@@ -513,7 +513,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
      * {@inheritDoc}
      */
     @Override
-    public ClusterHostMapRecord value5(String value) {
+    public VolumeStoragePoolMapRecord value5(String value) {
         setDescription(value);
         return this;
     }
@@ -522,7 +522,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
      * {@inheritDoc}
      */
     @Override
-    public ClusterHostMapRecord value6(String value) {
+    public VolumeStoragePoolMapRecord value6(String value) {
         setState(value);
         return this;
     }
@@ -531,7 +531,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
      * {@inheritDoc}
      */
     @Override
-    public ClusterHostMapRecord value7(Date value) {
+    public VolumeStoragePoolMapRecord value7(Date value) {
         setCreated(value);
         return this;
     }
@@ -540,7 +540,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
      * {@inheritDoc}
      */
     @Override
-    public ClusterHostMapRecord value8(Date value) {
+    public VolumeStoragePoolMapRecord value8(Date value) {
         setRemoved(value);
         return this;
     }
@@ -549,7 +549,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
      * {@inheritDoc}
      */
     @Override
-    public ClusterHostMapRecord value9(Date value) {
+    public VolumeStoragePoolMapRecord value9(Date value) {
         setRemoveTime(value);
         return this;
     }
@@ -558,7 +558,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
      * {@inheritDoc}
      */
     @Override
-    public ClusterHostMapRecord value10(Map<String,Object> value) {
+    public VolumeStoragePoolMapRecord value10(Map<String,Object> value) {
         setData(value);
         return this;
     }
@@ -567,8 +567,8 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
      * {@inheritDoc}
      */
     @Override
-    public ClusterHostMapRecord value11(Long value) {
-        setClusterId(value);
+    public VolumeStoragePoolMapRecord value11(Long value) {
+        setVolumeId(value);
         return this;
     }
 
@@ -576,8 +576,8 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
      * {@inheritDoc}
      */
     @Override
-    public ClusterHostMapRecord value12(Long value) {
-        setHostId(value);
+    public VolumeStoragePoolMapRecord value12(Long value) {
+        setStoragePoolId(value);
         return this;
     }
 
@@ -585,7 +585,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
      * {@inheritDoc}
      */
     @Override
-    public ClusterHostMapRecord values(Long value1, String value2, String value3, String value4, String value5, String value6, Date value7, Date value8, Date value9, Map<String,Object> value10, Long value11, Long value12) {
+    public VolumeStoragePoolMapRecord values(Long value1, String value2, String value3, String value4, String value5, String value6, Date value7, Date value8, Date value9, Map<String,Object> value10, Long value11, Long value12) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -609,7 +609,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
      * {@inheritDoc}
      */
     @Override
-    public void from(ClusterHostMap from) {
+    public void from(VolumeStoragePoolMap from) {
         setId(from.getId());
         setName(from.getName());
         setKind(from.getKind());
@@ -620,15 +620,15 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
         setRemoved(from.getRemoved());
         setRemoveTime(from.getRemoveTime());
         setData(from.getData());
-        setClusterId(from.getClusterId());
-        setHostId(from.getHostId());
+        setVolumeId(from.getVolumeId());
+        setStoragePoolId(from.getStoragePoolId());
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public <E extends ClusterHostMap> E into(E into) {
+    public <E extends VolumeStoragePoolMap> E into(E into) {
         into.from(this);
         return into;
     }
@@ -638,17 +638,17 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
     // -------------------------------------------------------------------------
 
     /**
-     * Create a detached ClusterHostMapRecord
+     * Create a detached VolumeStoragePoolMapRecord
      */
-    public ClusterHostMapRecord() {
-        super(ClusterHostMapTable.CLUSTER_HOST_MAP);
+    public VolumeStoragePoolMapRecord() {
+        super(VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP);
     }
 
     /**
-     * Create a detached, initialised ClusterHostMapRecord
+     * Create a detached, initialised VolumeStoragePoolMapRecord
      */
-    public ClusterHostMapRecord(Long id, String name, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Long clusterId, Long hostId) {
-        super(ClusterHostMapTable.CLUSTER_HOST_MAP);
+    public VolumeStoragePoolMapRecord(Long id, String name, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Long volumeId, Long storagePoolId) {
+        super(VolumeStoragePoolMapTable.VOLUME_STORAGE_POOL_MAP);
 
         set(0, id);
         set(1, name);
@@ -660,7 +660,7 @@ public class ClusterHostMapRecord extends UpdatableRecordImpl<ClusterHostMapReco
         set(7, removed);
         set(8, removeTime);
         set(9, data);
-        set(10, clusterId);
-        set(11, hostId);
+        set(10, volumeId);
+        set(11, storagePoolId);
     }
 }

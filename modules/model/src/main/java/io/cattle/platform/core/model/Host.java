@@ -167,28 +167,6 @@ public interface Host extends Serializable {
     public String getUri();
 
     /**
-     * Setter for <code>cattle.host.compute_free</code>.
-     */
-    public void setComputeFree(Long value);
-
-    /**
-     * Getter for <code>cattle.host.compute_free</code>.
-     */
-    @Column(name = "compute_free", precision = 19)
-    public Long getComputeFree();
-
-    /**
-     * Setter for <code>cattle.host.compute_total</code>.
-     */
-    public void setComputeTotal(Long value);
-
-    /**
-     * Getter for <code>cattle.host.compute_total</code>.
-     */
-    @Column(name = "compute_total", precision = 19)
-    public Long getComputeTotal();
-
-    /**
      * Setter for <code>cattle.host.agent_id</code>.
      */
     public void setAgentId(Long value);

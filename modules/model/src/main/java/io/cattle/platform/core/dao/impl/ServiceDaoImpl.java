@@ -3,8 +3,6 @@ package io.cattle.platform.core.dao.impl;
 import static io.cattle.platform.core.model.tables.CertificateTable.*;
 import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
-import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
-import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
@@ -22,12 +20,9 @@ import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.VolumeTemplate;
-import io.cattle.platform.core.model.tables.InstanceTable;
-import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
 import io.cattle.platform.core.model.tables.VolumeTable;
 import io.cattle.platform.core.model.tables.VolumeTemplateTable;
 import io.cattle.platform.core.model.tables.records.DeploymentUnitRecord;
@@ -37,13 +32,11 @@ import io.cattle.platform.core.model.tables.records.VolumeTemplateRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.engine.handler.ProcessHandler;
-import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
-import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 
 import java.util.ArrayList;
@@ -53,26 +46,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.jooq.Condition;
 import org.jooq.Configuration;
-import org.jooq.Record2;
-import org.jooq.Record6;
-import org.jooq.RecordHandler;
 
 public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
 
     ObjectManager objectManager;
-    JsonMapper jsonMapper;
     LockManager lockManager;
     GenericResourceDao resourceDao;
     TransactionDelegate transaction;
 
-    public ServiceDaoImpl(Configuration configuration, ObjectManager objectManager, JsonMapper jsonMapper, LockManager lockManager,
+    public ServiceDaoImpl(Configuration configuration, ObjectManager objectManager, LockManager lockManager,
             GenericResourceDao resourceDao, TransactionDelegate transaction) {
         super(configuration);
         this.objectManager = objectManager;
-        this.jsonMapper = jsonMapper;
         this.lockManager = lockManager;
         this.resourceDao = resourceDao;
         this.transaction = transaction;
@@ -85,92 +72,6 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                 .and(SERVICE.REMOVED.isNull())
                 .and(SERVICE.EXTERNAL_ID.eq(externalId))
                 .fetchAny();
-    }
-
-    @Override
-    public Map<Long, List<Object>> getServicesForInstances(List<Long> ids, final IdFormatter idFormatter) {
-        final Map<Long, List<Object>> result = new HashMap<>();
-        create().select(SERVICE_EXPOSE_MAP.INSTANCE_ID, SERVICE_EXPOSE_MAP.SERVICE_ID)
-            .from(SERVICE_EXPOSE_MAP)
-            .join(SERVICE)
-                .on(SERVICE.ID.eq(SERVICE_EXPOSE_MAP.SERVICE_ID))
-            .where(SERVICE_EXPOSE_MAP.REMOVED.isNull()
-                    .and(SERVICE.REMOVED.isNull())
-                    .and(SERVICE_EXPOSE_MAP.INSTANCE_ID.in(ids)))
-            .fetchInto(new RecordHandler<Record2<Long, Long>>() {
-                @Override
-                public void next(Record2<Long, Long> record) {
-                    Long serviceId = record.getValue(SERVICE_EXPOSE_MAP.SERVICE_ID);
-                    Long instanceId = record.getValue(SERVICE_EXPOSE_MAP.INSTANCE_ID);
-                    List<Object> list = result.get(instanceId);
-                    if (list == null) {
-                        list = new ArrayList<>();
-                        result.put(instanceId, list);
-                    }
-                    list.add(idFormatter.formatId("service", serviceId));
-                }
-            });
-
-        return result;
-    }
-
-    @Override
-    public Map<Long, List<Object>> getInstances(List<Long> ids, final IdFormatter idFormatter) {
-        final Map<Long, List<Object>> result = new HashMap<>();
-        create().select(SERVICE_EXPOSE_MAP.INSTANCE_ID, SERVICE_EXPOSE_MAP.SERVICE_ID)
-            .from(SERVICE_EXPOSE_MAP)
-            .join(INSTANCE)
-                .on(INSTANCE.ID.eq(SERVICE_EXPOSE_MAP.INSTANCE_ID))
-            .where(SERVICE_EXPOSE_MAP.REMOVED.isNull()
-                    .and(INSTANCE.REMOVED.isNull())
-                    .and(SERVICE_EXPOSE_MAP.SERVICE_ID.in(ids))
-                    .and(SERVICE_EXPOSE_MAP.REMOVED.isNull()))
-            .fetchInto(new RecordHandler<Record2<Long, Long>>() {
-                @Override
-                public void next(Record2<Long, Long> record) {
-                    Long serviceId = record.getValue(SERVICE_EXPOSE_MAP.SERVICE_ID);
-                    Long instanceId = record.getValue(SERVICE_EXPOSE_MAP.INSTANCE_ID);
-                    List<Object> list = result.get(serviceId);
-                    if (list == null) {
-                        list = new ArrayList<>();
-                        result.put(serviceId, list);
-                    }
-                    list.add(idFormatter.formatId(InstanceConstants.TYPE, instanceId));
-                }
-            });
-        return result;
-    }
-
-    @Override
-    public Map<Long, List<ServiceLink>> getServiceLinks(List<Long> ids) {
-        final Map<Long, List<ServiceLink>> result = new HashMap<>();
-        create().select(SERVICE_CONSUME_MAP.NAME, SERVICE_CONSUME_MAP.SERVICE_ID, SERVICE.ID,
-                SERVICE.NAME, STACK.ID, STACK.NAME)
-            .from(SERVICE_CONSUME_MAP)
-            .join(SERVICE)
-                .on(SERVICE.ID.eq(SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID))
-            .join(STACK)
-                .on(STACK.ID.eq(SERVICE.STACK_ID))
-            .where(SERVICE_CONSUME_MAP.SERVICE_ID.in(ids)
-                    .and(SERVICE_CONSUME_MAP.REMOVED.isNull()))
-            .fetchInto(new RecordHandler<Record6<String, Long, Long, String, Long, String>>(){
-                @Override
-                public void next(Record6<String, Long, Long, String, Long, String> record) {
-                    Long serviceId = record.getValue(SERVICE_CONSUME_MAP.SERVICE_ID);
-                    List<ServiceLink> links = result.get(serviceId);
-                    if (links == null) {
-                        links = new ArrayList<>();
-                        result.put(serviceId, links);
-                    }
-                    links.add(new ServiceLink(
-                            record.getValue(SERVICE_CONSUME_MAP.NAME),
-                            record.getValue(SERVICE.NAME),
-                            record.getValue(SERVICE.ID),
-                            record.getValue(STACK.ID),
-                            record.getValue(STACK.NAME)));
-                }
-            });
-        return result;
     }
 
     @Override
@@ -294,42 +195,23 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
     @Override
     public List<Instance> getInstancesToGarbageCollect(Service service) {
         return create()
-                        .select(INSTANCE.fields())
-                        .from(INSTANCE)
-                        .join(SERVICE_EXPOSE_MAP)
-                        .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID))
-                        .where(INSTANCE.REMOVED.isNull())
-                        .and(INSTANCE.STATE.notIn(CommonStatesConstants.REMOVING))
-                        .and(SERVICE_EXPOSE_MAP.UPGRADE.eq(true))
-                        .and(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(service.getId()))
-                        .fetchInto(InstanceRecord.class);
+                .select(INSTANCE.fields())
+                .from(INSTANCE)
+                .where(INSTANCE.REMOVED.isNull())
+                    .and(INSTANCE.STATE.ne(CommonStatesConstants.REMOVING))
+                    .and(INSTANCE.DESIRED.isFalse())
+                    .and(INSTANCE.SERVICE_ID.eq(service.getId()))
+                .fetchInto(InstanceRecord.class);
     }
 
     @Override
-    public List<InstanceData> getInstanceData(Long id, String uuid) {
-        MultiRecordMapper<InstanceData> mapper = new MultiRecordMapper<InstanceData>() {
-            @Override
-            protected InstanceData map(List<Object> input) {
-                InstanceData data = new InstanceData();
-                data.instance = (Instance)input.get(0);
-                data.serviceExposeMap = (ServiceExposeMap)input.get(1);
-                return data;
-            }
-        };
-
-        InstanceTable instance = mapper.add(INSTANCE);
-        ServiceExposeMapTable serviceExposeMap = mapper.add(SERVICE_EXPOSE_MAP);
-
+    public List<? extends Instance> getInstanceByDeploymentUnit(Long id) {
         return create()
-            .select(mapper.fields())
-            .from(instance)
-            .leftOuterJoin(serviceExposeMap)
-                .on(instance.SERVICE_ID.eq(serviceExposeMap.SERVICE_ID)
-                        .and(instance.ID.eq(serviceExposeMap.INSTANCE_ID))
-                        .and(serviceExposeMap.MANAGED.isTrue()))
-            .where(instance.REMOVED.isNull()
-                .and(instance.DEPLOYMENT_UNIT_ID.eq(id)))
-            .fetch().map(mapper);
+            .select(INSTANCE.fields())
+            .from(INSTANCE)
+            .where(INSTANCE.REMOVED.isNull()
+                .and(INSTANCE.DEPLOYMENT_UNIT_ID.eq(id)))
+            .fetchInto(InstanceRecord.class);
     }
 
     @Override
@@ -358,31 +240,9 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
     }
 
     @Override
-    public Pair<Instance, ServiceExposeMap> createServiceInstance(final Map<String, Object> properties, Long serviceId, Long createIndex) {
-        return transaction.doInTransactionResult(() -> {
-            properties.put(InstanceConstants.FIELD_CREATE_INDEX, createIndex);
-            Instance instance = objectManager.create(Instance.class, properties);
-
-            Map<String, String> labels = CollectionUtils.toMap(properties.get(InstanceConstants.FIELD_LABELS));
-            String dnsPrefix = labels.get(ServiceConstants.LABEL_SERVICE_LAUNCH_CONFIG);
-            if (ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME.equalsIgnoreCase(dnsPrefix)) {
-                dnsPrefix = null;
-            }
-
-            ServiceExposeMap map = null;
-
-            if (serviceId != null ) {
-                map = objectManager.create(ServiceExposeMap.class,
-                    SERVICE_EXPOSE_MAP.STATE, CommonStatesConstants.ACTIVE,
-                    SERVICE_EXPOSE_MAP.INSTANCE_ID, instance.getId(),
-                    SERVICE_EXPOSE_MAP.SERVICE_ID, serviceId,
-                    SERVICE_EXPOSE_MAP.ACCOUNT_ID, instance.getAccountId(),
-                    SERVICE_EXPOSE_MAP.DNS_PREFIX, dnsPrefix,
-                    SERVICE_EXPOSE_MAP.MANAGED, true);
-            }
-
-            return Pair.of(instance, map);
-        });
+    public Instance createServiceInstance(final Map<String, Object> properties, Long serviceId, Long createIndex) {
+        properties.put(InstanceConstants.FIELD_CREATE_INDEX, createIndex);
+        return objectManager.create(Instance.class, properties);
     }
 
     @Override

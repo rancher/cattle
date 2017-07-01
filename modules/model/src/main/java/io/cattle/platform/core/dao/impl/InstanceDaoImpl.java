@@ -12,9 +12,7 @@ import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.GenericObject;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
-import io.cattle.platform.core.model.tables.records.ServiceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
@@ -77,16 +75,6 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
         }
 
         return instance;
-    }
-
-    @Override
-    public List<? extends Service> findServicesFor(Instance instance) {
-        return create().select(SERVICE.fields())
-                .from(SERVICE)
-                .join(SERVICE_EXPOSE_MAP)
-                .on(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(SERVICE.ID))
-                .where(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(instance.getId()))
-                .fetchInto(ServiceRecord.class);
     }
 
     @Override

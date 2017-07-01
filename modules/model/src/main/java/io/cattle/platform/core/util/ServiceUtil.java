@@ -179,7 +179,7 @@ public class ServiceUtil {
                 ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME).get(
                 InstanceConstants.FIELD_IMAGE_UUID);
 
-        return (service.getSelectorContainer() != null
+        return (service.getSelector() != null
                 && (imageUUID == null || imageUUID.toString().toLowerCase()
                 .contains(ServiceConstants.IMAGE_NONE))) || isNoopLBService(service);
     }

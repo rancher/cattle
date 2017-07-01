@@ -9,8 +9,6 @@ import io.cattle.platform.core.model.tables.AgentTable;
 import io.cattle.platform.core.model.tables.AuditLogTable;
 import io.cattle.platform.core.model.tables.AuthTokenTable;
 import io.cattle.platform.core.model.tables.CertificateTable;
-import io.cattle.platform.core.model.tables.ClusterHostMapTable;
-import io.cattle.platform.core.model.tables.ConfigItemStatusTable;
 import io.cattle.platform.core.model.tables.CredentialTable;
 import io.cattle.platform.core.model.tables.DeploymentUnitTable;
 import io.cattle.platform.core.model.tables.DynamicSchemaTable;
@@ -28,9 +26,7 @@ import io.cattle.platform.core.model.tables.ProjectMemberTable;
 import io.cattle.platform.core.model.tables.ResourcePoolTable;
 import io.cattle.platform.core.model.tables.ScheduledUpgradeTable;
 import io.cattle.platform.core.model.tables.SecretTable;
-import io.cattle.platform.core.model.tables.ServiceConsumeMapTable;
 import io.cattle.platform.core.model.tables.ServiceEventTable;
-import io.cattle.platform.core.model.tables.ServiceExposeMapTable;
 import io.cattle.platform.core.model.tables.ServiceLogTable;
 import io.cattle.platform.core.model.tables.ServiceTable;
 import io.cattle.platform.core.model.tables.StackTable;
@@ -38,7 +34,6 @@ import io.cattle.platform.core.model.tables.StorageDriverTable;
 import io.cattle.platform.core.model.tables.StoragePoolHostMapTable;
 import io.cattle.platform.core.model.tables.StoragePoolTable;
 import io.cattle.platform.core.model.tables.SubnetTable;
-import io.cattle.platform.core.model.tables.TaskInstanceTable;
 import io.cattle.platform.core.model.tables.UserPreferenceTable;
 import io.cattle.platform.core.model.tables.VolumeTable;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
@@ -316,8 +311,6 @@ public class TableCleanup extends AbstractJooqDao implements Task {
                 CleanableTable.from(AgentTable.AGENT),
                 CleanableTable.from(AuthTokenTable.AUTH_TOKEN),
                 CleanableTable.from(CertificateTable.CERTIFICATE),
-                CleanableTable.from(ClusterHostMapTable.CLUSTER_HOST_MAP),
-                CleanableTable.from(ConfigItemStatusTable.CONFIG_ITEM_STATUS),
                 CleanableTable.from(CredentialTable.CREDENTIAL),
                 CleanableTable.from(DeploymentUnitTable.DEPLOYMENT_UNIT),
                 CleanableTable.from(DynamicSchemaTable.DYNAMIC_SCHEMA),
@@ -332,14 +325,11 @@ public class TableCleanup extends AbstractJooqDao implements Task {
                 CleanableTable.from(ProjectMemberTable.PROJECT_MEMBER),
                 CleanableTable.from(ResourcePoolTable.RESOURCE_POOL),
                 CleanableTable.from(ServiceTable.SERVICE),
-                CleanableTable.from(ServiceConsumeMapTable.SERVICE_CONSUME_MAP),
-                CleanableTable.from(ServiceExposeMapTable.SERVICE_EXPOSE_MAP),
                 CleanableTable.from(StackTable.STACK),
                 CleanableTable.from(StorageDriverTable.STORAGE_DRIVER),
                 CleanableTable.from(StoragePoolTable.STORAGE_POOL),
                 CleanableTable.from(StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP),
                 CleanableTable.from(SubnetTable.SUBNET),
-                CleanableTable.from(TaskInstanceTable.TASK_INSTANCE),
                 CleanableTable.from(UserPreferenceTable.USER_PREFERENCE),
                 CleanableTable.from(VolumeTable.VOLUME),
                 // These tables are cleaned through specialized logic but we need to keep them in the "other" list so that they

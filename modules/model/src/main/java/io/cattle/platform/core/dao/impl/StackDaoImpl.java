@@ -14,7 +14,6 @@ import io.cattle.platform.core.model.tables.records.ScheduledUpgradeRecord;
 import io.cattle.platform.core.model.tables.records.ServiceRecord;
 import io.cattle.platform.core.model.tables.records.StackRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
-import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.ArrayList;
@@ -32,11 +31,8 @@ import org.jooq.impl.DSL;
 
 public class StackDaoImpl extends AbstractJooqDao implements StackDao {
 
-    ObjectManager objectManager;
-
-    public StackDaoImpl(Configuration configuration, ObjectManager objectManager) {
+    public StackDaoImpl(Configuration configuration) {
         super(configuration);
-        this.objectManager = objectManager;
     }
 
     @Override
@@ -130,7 +126,7 @@ public class StackDaoImpl extends AbstractJooqDao implements StackDao {
                             .and(STACK.STATE.in(CommonStatesConstants.ACTIVE,
                             ServiceConstants.STATE_UPGRADED)))
                 .join(SERVICE)
-                    .on(SERVICE.STACK_ID.eq(STACK.ID).and(SERVICE.SKIP.isFalse()))
+                    .on(SERVICE.STACK_ID.eq(STACK.ID))
                 .where(SCHEDULED_UPGRADE.STATE.eq("scheduled")
                         .and(accountsToIgnore.size() == 0 ? DSL.trueCondition()
                                 : SCHEDULED_UPGRADE.ACCOUNT_ID.notIn(accountsToIgnore)))

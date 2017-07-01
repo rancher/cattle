@@ -161,6 +161,17 @@ public interface Databasechangelog extends Serializable {
     public String getContexts();
 
     /**
+     * Setter for <code>cattle.DATABASECHANGELOG.LABELS</code>.
+     */
+    public void setLabels(String value);
+
+    /**
+     * Getter for <code>cattle.DATABASECHANGELOG.LABELS</code>.
+     */
+    @Column(name = "LABELS", length = 255)
+    public String getLabels();
+
+    /**
      * Setter for <code>cattle.DATABASECHANGELOG.DEPLOYMENT_ID</code>.
      */
     public void setDeploymentId(String value);

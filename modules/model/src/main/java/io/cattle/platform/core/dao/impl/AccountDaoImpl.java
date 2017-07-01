@@ -1,6 +1,5 @@
 package io.cattle.platform.core.dao.impl;
 
-import static io.cattle.platform.core.model.tables.AccountLinkTable.*;
 import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.CredentialTable.*;
 import static io.cattle.platform.core.model.tables.ProjectMemberTable.*;
@@ -12,15 +11,11 @@ import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.core.model.AccountLink;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.process.ObjectProcessManager;
-import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.util.type.CollectionUtils;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -38,13 +33,10 @@ public class AccountDaoImpl extends AbstractJooqDao implements AccountDao {
             CommonStatesConstants.ACTIVE,
             ServiceConstants.STATE_UPGRADING);
 
-    ObjectProcessManager objectProcessManager;
     ObjectManager objectManager;
 
-    public AccountDaoImpl(Configuration configuration, ObjectManager objectManager,
-            ObjectProcessManager objectProcessManager) {
+    public AccountDaoImpl(Configuration configuration, ObjectManager objectManager) {
         super(configuration);
-        this.objectProcessManager = objectProcessManager;
         this.objectManager = objectManager;
     }
 
@@ -131,59 +123,6 @@ public class AccountDaoImpl extends AbstractJooqDao implements AccountDao {
     @Override
     public List<String> getAccountActiveStates() {
         return Arrays.asList(CommonStatesConstants.ACTIVE, ServiceConstants.STATE_UPGRADING);
-    }
-
-    @Override
-    public void generateAccountLinks(Account account, List<? extends Long> links) {
-        createNewAccountLinks(account, links);
-        deleteOldAccountLinks(account, links);
-    }
-
-    protected void createNewAccountLinks(Account account, List<? extends Long> newAccountIds) {
-        for (Long accountId : newAccountIds) {
-            AccountLink link = objectManager.findAny(AccountLink.class, ACCOUNT_LINK.ACCOUNT_ID,
-                    account.getId(),
-                    ACCOUNT_LINK.LINKED_ACCOUNT_ID, accountId,
-                    ACCOUNT_LINK.REMOVED, null);
-            if (link == null) {
-                link = objectManager.create(AccountLink.class, ACCOUNT_LINK.ACCOUNT_ID,
-                        account.getId(), ACCOUNT_LINK.LINKED_ACCOUNT_ID, accountId);
-            }
-            if (link.getState().equalsIgnoreCase(CommonStatesConstants.REQUESTED)) {
-                objectProcessManager.executeStandardProcess(StandardProcess.CREATE, link, null);
-            }
-        }
-    }
-
-    protected void deleteOldAccountLinks(Account account, List<? extends Long> newAccountIds) {
-        List<? extends AccountLink> allLinks = objectManager.find(AccountLink.class,
-                ACCOUNT_LINK.ACCOUNT_ID, account.getId(),
-                ACCOUNT_LINK.REMOVED, null);
-        for (AccountLink link : allLinks) {
-            if (!newAccountIds.contains(link.getLinkedAccountId())) {
-                objectProcessManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, link, null);
-            }
-        }
-    }
-
-    @Override
-    public List<Long> getLinkedAccounts(long accountId) {
-        List<Long> accountIds = new ArrayList<>();
-        List<Long> linkedToAccounts = Arrays.asList(create().select(ACCOUNT_LINK.LINKED_ACCOUNT_ID)
-                .from(ACCOUNT_LINK)
-                .where(ACCOUNT_LINK.ACCOUNT_ID.eq(accountId)
-                        .and(ACCOUNT_LINK.REMOVED.isNull()))
-                .fetch().intoArray(ACCOUNT_LINK.LINKED_ACCOUNT_ID));
-
-        List<Long> linkedFromAccounts = Arrays.asList(create().select(ACCOUNT_LINK.ACCOUNT_ID)
-                .from(ACCOUNT_LINK)
-                .where(ACCOUNT_LINK.LINKED_ACCOUNT_ID.eq(accountId)
-                        .and(ACCOUNT_LINK.REMOVED.isNull()))
-                .fetch().intoArray(ACCOUNT_LINK.ACCOUNT_ID));
-
-        accountIds.addAll(linkedToAccounts);
-        accountIds.addAll(linkedFromAccounts);
-        return accountIds;
     }
 
 }

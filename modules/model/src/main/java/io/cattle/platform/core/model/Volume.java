@@ -178,17 +178,6 @@ public interface Volume extends Serializable {
     public Long getVirtualSizeMb();
 
     /**
-     * Setter for <code>cattle.volume.format</code>.
-     */
-    public void setFormat(String value);
-
-    /**
-     * Getter for <code>cattle.volume.format</code>.
-     */
-    @Column(name = "format", length = 255)
-    public String getFormat();
-
-    /**
      * Setter for <code>cattle.volume.uri</code>.
      */
     public void setUri(String value);

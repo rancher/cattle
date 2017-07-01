@@ -189,15 +189,15 @@ public interface Service extends Serializable {
     public Long getCreateIndex();
 
     /**
-     * Setter for <code>cattle.service.selector_container</code>.
+     * Setter for <code>cattle.service.selector</code>.
      */
-    public void setSelectorContainer(String value);
+    public void setSelector(String value);
 
     /**
-     * Getter for <code>cattle.service.selector_container</code>.
+     * Getter for <code>cattle.service.selector</code>.
      */
-    @Column(name = "selector_container", length = 4096)
-    public String getSelectorContainer();
+    @Column(name = "selector", length = 4096)
+    public String getSelector();
 
     /**
      * Setter for <code>cattle.service.external_id</code>.
@@ -231,17 +231,6 @@ public interface Service extends Serializable {
      */
     @Column(name = "system", nullable = false, precision = 1)
     public Boolean getSystem();
-
-    /**
-     * Setter for <code>cattle.service.skip</code>.
-     */
-    public void setSkip(Boolean value);
-
-    /**
-     * Getter for <code>cattle.service.skip</code>.
-     */
-    @Column(name = "skip", nullable = false, precision = 1)
-    public Boolean getSkip();
 
     /**
      * Setter for <code>cattle.service.previous_revision_id</code>.

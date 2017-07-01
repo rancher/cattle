@@ -16,8 +16,8 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 import org.jooq.Field;
-import org.jooq.Record13;
-import org.jooq.Row13;
+import org.jooq.Record14;
+import org.jooq.Row14;
 import org.jooq.impl.TableRecordImpl;
 
 
@@ -34,9 +34,9 @@ import org.jooq.impl.TableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "DATABASECHANGELOG", schema = "cattle")
-public class DatabasechangelogRecord extends TableRecordImpl<DatabasechangelogRecord> implements TableRecordJaxb, Record13<String, String, String, Date, Integer, String, String, String, String, String, String, String, String>, Databasechangelog {
+public class DatabasechangelogRecord extends TableRecordImpl<DatabasechangelogRecord> implements TableRecordJaxb, Record14<String, String, String, Date, Integer, String, String, String, String, String, String, String, String, String>, Databasechangelog {
 
-    private static final long serialVersionUID = 901734913;
+    private static final long serialVersionUID = -1308641188;
 
     /**
      * Setter for <code>cattle.DATABASECHANGELOG.ID</code>.
@@ -243,11 +243,28 @@ public class DatabasechangelogRecord extends TableRecordImpl<DatabasechangelogRe
     }
 
     /**
+     * Setter for <code>cattle.DATABASECHANGELOG.LABELS</code>.
+     */
+    @Override
+    public void setLabels(String value) {
+        set(12, value);
+    }
+
+    /**
+     * Getter for <code>cattle.DATABASECHANGELOG.LABELS</code>.
+     */
+    @Column(name = "LABELS", length = 255)
+    @Override
+    public String getLabels() {
+        return (String) get(12);
+    }
+
+    /**
      * Setter for <code>cattle.DATABASECHANGELOG.DEPLOYMENT_ID</code>.
      */
     @Override
     public void setDeploymentId(String value) {
-        set(12, value);
+        set(13, value);
     }
 
     /**
@@ -256,27 +273,27 @@ public class DatabasechangelogRecord extends TableRecordImpl<DatabasechangelogRe
     @Column(name = "DEPLOYMENT_ID", length = 10)
     @Override
     public String getDeploymentId() {
-        return (String) get(12);
+        return (String) get(13);
     }
 
     // -------------------------------------------------------------------------
-    // Record13 type implementation
+    // Record14 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row13<String, String, String, Date, Integer, String, String, String, String, String, String, String, String> fieldsRow() {
-        return (Row13) super.fieldsRow();
+    public Row14<String, String, String, Date, Integer, String, String, String, String, String, String, String, String, String> fieldsRow() {
+        return (Row14) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row13<String, String, String, Date, Integer, String, String, String, String, String, String, String, String> valuesRow() {
-        return (Row13) super.valuesRow();
+    public Row14<String, String, String, Date, Integer, String, String, String, String, String, String, String, String, String> valuesRow() {
+        return (Row14) super.valuesRow();
     }
 
     /**
@@ -380,6 +397,14 @@ public class DatabasechangelogRecord extends TableRecordImpl<DatabasechangelogRe
      */
     @Override
     public Field<String> field13() {
+        return DatabasechangelogTable.DATABASECHANGELOG.LABELS;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Field<String> field14() {
         return DatabasechangelogTable.DATABASECHANGELOG.DEPLOYMENT_ID;
     }
 
@@ -484,6 +509,14 @@ public class DatabasechangelogRecord extends TableRecordImpl<DatabasechangelogRe
      */
     @Override
     public String value13() {
+        return getLabels();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String value14() {
         return getDeploymentId();
     }
 
@@ -600,6 +633,15 @@ public class DatabasechangelogRecord extends TableRecordImpl<DatabasechangelogRe
      */
     @Override
     public DatabasechangelogRecord value13(String value) {
+        setLabels(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DatabasechangelogRecord value14(String value) {
         setDeploymentId(value);
         return this;
     }
@@ -608,7 +650,7 @@ public class DatabasechangelogRecord extends TableRecordImpl<DatabasechangelogRe
      * {@inheritDoc}
      */
     @Override
-    public DatabasechangelogRecord values(String value1, String value2, String value3, Date value4, Integer value5, String value6, String value7, String value8, String value9, String value10, String value11, String value12, String value13) {
+    public DatabasechangelogRecord values(String value1, String value2, String value3, Date value4, Integer value5, String value6, String value7, String value8, String value9, String value10, String value11, String value12, String value13, String value14) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -622,6 +664,7 @@ public class DatabasechangelogRecord extends TableRecordImpl<DatabasechangelogRe
         value11(value11);
         value12(value12);
         value13(value13);
+        value14(value14);
         return this;
     }
 
@@ -646,6 +689,7 @@ public class DatabasechangelogRecord extends TableRecordImpl<DatabasechangelogRe
         setTag(from.getTag());
         setLiquibase(from.getLiquibase());
         setContexts(from.getContexts());
+        setLabels(from.getLabels());
         setDeploymentId(from.getDeploymentId());
     }
 
@@ -672,7 +716,7 @@ public class DatabasechangelogRecord extends TableRecordImpl<DatabasechangelogRe
     /**
      * Create a detached, initialised DatabasechangelogRecord
      */
-    public DatabasechangelogRecord(String id, String author, String filename, Date dateexecuted, Integer orderexecuted, String exectype, String md5sum, String description, String comments, String tag, String liquibase, String contexts, String deploymentId) {
+    public DatabasechangelogRecord(String id, String author, String filename, Date dateexecuted, Integer orderexecuted, String exectype, String md5sum, String description, String comments, String tag, String liquibase, String contexts, String labels, String deploymentId) {
         super(DatabasechangelogTable.DATABASECHANGELOG);
 
         set(0, id);
@@ -687,6 +731,7 @@ public class DatabasechangelogRecord extends TableRecordImpl<DatabasechangelogRe
         set(9, tag);
         set(10, liquibase);
         set(11, contexts);
-        set(12, deploymentId);
+        set(12, labels);
+        set(13, deploymentId);
     }
 }

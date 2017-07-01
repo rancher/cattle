@@ -38,7 +38,7 @@ import org.jooq.impl.UpdatableRecordImpl;
 @Table(name = "instance", schema = "cattle")
 public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implements TableRecordJaxb, Instance {
 
-    private static final long serialVersionUID = -1347192034;
+    private static final long serialVersionUID = 1476631730;
 
     /**
      * Setter for <code>cattle.instance.id</code>.
@@ -230,28 +230,11 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     }
 
     /**
-     * Setter for <code>cattle.instance.compute</code>.
-     */
-    @Override
-    public void setCompute(Long value) {
-        set(11, value);
-    }
-
-    /**
-     * Getter for <code>cattle.instance.compute</code>.
-     */
-    @Column(name = "compute", precision = 19)
-    @Override
-    public Long getCompute() {
-        return (Long) get(11);
-    }
-
-    /**
      * Setter for <code>cattle.instance.memory_mb</code>.
      */
     @Override
     public void setMemoryMb(Long value) {
-        set(12, value);
+        set(11, value);
     }
 
     /**
@@ -260,7 +243,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     @Column(name = "memory_mb", precision = 19)
     @Override
     public Long getMemoryMb() {
-        return (Long) get(12);
+        return (Long) get(11);
     }
 
     /**
@@ -268,7 +251,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
      */
     @Override
     public void setHostname(String value) {
-        set(13, value);
+        set(12, value);
     }
 
     /**
@@ -277,7 +260,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     @Column(name = "hostname", length = 255)
     @Override
     public String getHostname() {
-        return (String) get(13);
+        return (String) get(12);
     }
 
     /**
@@ -285,7 +268,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
      */
     @Override
     public void setInstanceTriggeredStop(String value) {
-        set(14, value);
+        set(13, value);
     }
 
     /**
@@ -294,7 +277,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     @Column(name = "instance_triggered_stop", length = 128)
     @Override
     public String getInstanceTriggeredStop() {
-        return (String) get(14);
+        return (String) get(13);
     }
 
     /**
@@ -302,7 +285,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
      */
     @Override
     public void setAgentId(Long value) {
-        set(15, value);
+        set(14, value);
     }
 
     /**
@@ -311,7 +294,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     @Column(name = "agent_id", precision = 19)
     @Override
     public Long getAgentId() {
-        return (Long) get(15);
+        return (Long) get(14);
     }
 
     /**
@@ -319,7 +302,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
      */
     @Override
     public void setDomain(String value) {
-        set(16, value);
+        set(15, value);
     }
 
     /**
@@ -328,7 +311,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     @Column(name = "domain", length = 128)
     @Override
     public String getDomain() {
-        return (String) get(16);
+        return (String) get(15);
     }
 
     /**
@@ -336,7 +319,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
      */
     @Override
     public void setFirstRunning(Date value) {
-        set(17, value);
+        set(16, value);
     }
 
     /**
@@ -345,7 +328,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     @Column(name = "first_running")
     @Override
     public Date getFirstRunning() {
-        return (Date) get(17);
+        return (Date) get(16);
     }
 
     /**
@@ -353,7 +336,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
      */
     @Override
     public void setToken(String value) {
-        set(18, value);
+        set(17, value);
     }
 
     /**
@@ -362,7 +345,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     @Column(name = "token", length = 255)
     @Override
     public String getToken() {
-        return (String) get(18);
+        return (String) get(17);
     }
 
     /**
@@ -370,7 +353,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
      */
     @Override
     public void setUserdata(String value) {
-        set(19, value);
+        set(18, value);
     }
 
     /**
@@ -379,7 +362,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     @Column(name = "userdata", length = 65535)
     @Override
     public String getUserdata() {
-        return (String) get(19);
+        return (String) get(18);
     }
 
     /**
@@ -387,7 +370,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
      */
     @Override
     public void setRegistryCredentialId(Long value) {
-        set(20, value);
+        set(19, value);
     }
 
     /**
@@ -396,7 +379,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     @Column(name = "registry_credential_id", precision = 19)
     @Override
     public Long getRegistryCredentialId() {
-        return (Long) get(20);
+        return (Long) get(19);
     }
 
     /**
@@ -404,7 +387,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
      */
     @Override
     public void setExternalId(String value) {
-        set(21, value);
+        set(20, value);
     }
 
     /**
@@ -413,7 +396,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     @Column(name = "external_id", length = 128)
     @Override
     public String getExternalId() {
-        return (String) get(21);
+        return (String) get(20);
     }
 
     /**
@@ -421,7 +404,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
      */
     @Override
     public void setNativeContainer(Boolean value) {
-        set(22, value);
+        set(21, value);
     }
 
     /**
@@ -430,7 +413,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     @Column(name = "native_container", nullable = false, precision = 1)
     @Override
     public Boolean getNativeContainer() {
-        return (Boolean) get(22);
+        return (Boolean) get(21);
     }
 
     /**
@@ -438,7 +421,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
      */
     @Override
     public void setNetworkContainerId(Long value) {
-        set(23, value);
+        set(22, value);
     }
 
     /**
@@ -447,7 +430,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     @Column(name = "network_container_id", precision = 19)
     @Override
     public Long getNetworkContainerId() {
-        return (Long) get(23);
+        return (Long) get(22);
     }
 
     /**
@@ -455,7 +438,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
      */
     @Override
     public void setHealthState(String value) {
-        set(24, value);
+        set(23, value);
     }
 
     /**
@@ -464,7 +447,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     @Column(name = "health_state", length = 128)
     @Override
     public String getHealthState() {
-        return (String) get(24);
+        return (String) get(23);
     }
 
     /**
@@ -472,7 +455,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
      */
     @Override
     public void setStartCount(Long value) {
-        set(25, value);
+        set(24, value);
     }
 
     /**
@@ -481,7 +464,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     @Column(name = "start_count", precision = 19)
     @Override
     public Long getStartCount() {
-        return (Long) get(25);
+        return (Long) get(24);
     }
 
     /**
@@ -489,7 +472,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
      */
     @Override
     public void setCreateIndex(Long value) {
-        set(26, value);
+        set(25, value);
     }
 
     /**
@@ -498,24 +481,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     @Column(name = "create_index", precision = 19)
     @Override
     public Long getCreateIndex() {
-        return (Long) get(26);
-    }
-
-    /**
-     * Setter for <code>cattle.instance.deployment_unit_uuid</code>.
-     */
-    @Override
-    public void setDeploymentUnitUuid(String value) {
-        set(27, value);
-    }
-
-    /**
-     * Getter for <code>cattle.instance.deployment_unit_uuid</code>.
-     */
-    @Column(name = "deployment_unit_uuid", length = 128)
-    @Override
-    public String getDeploymentUnitUuid() {
-        return (String) get(27);
+        return (Long) get(25);
     }
 
     /**
@@ -523,7 +489,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
      */
     @Override
     public void setVersion(String value) {
-        set(28, value);
+        set(26, value);
     }
 
     /**
@@ -532,58 +498,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     @Column(name = "version", length = 255)
     @Override
     public String getVersion() {
-        return (String) get(28);
-    }
-
-    /**
-     * Setter for <code>cattle.instance.health_updated</code>.
-     */
-    @Override
-    public void setHealthUpdated(Date value) {
-        set(29, value);
-    }
-
-    /**
-     * Getter for <code>cattle.instance.health_updated</code>.
-     */
-    @Column(name = "health_updated")
-    @Override
-    public Date getHealthUpdated() {
-        return (Date) get(29);
-    }
-
-    /**
-     * Setter for <code>cattle.instance.dns_internal</code>.
-     */
-    @Override
-    public void setDnsInternal(String value) {
-        set(30, value);
-    }
-
-    /**
-     * Getter for <code>cattle.instance.dns_internal</code>.
-     */
-    @Column(name = "dns_internal", length = 255)
-    @Override
-    public String getDnsInternal() {
-        return (String) get(30);
-    }
-
-    /**
-     * Setter for <code>cattle.instance.dns_search_internal</code>.
-     */
-    @Override
-    public void setDnsSearchInternal(String value) {
-        set(31, value);
-    }
-
-    /**
-     * Getter for <code>cattle.instance.dns_search_internal</code>.
-     */
-    @Column(name = "dns_search_internal", length = 255)
-    @Override
-    public String getDnsSearchInternal() {
-        return (String) get(31);
+        return (String) get(26);
     }
 
     /**
@@ -591,7 +506,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
      */
     @Override
     public void setMemoryReservation(Long value) {
-        set(32, value);
+        set(27, value);
     }
 
     /**
@@ -600,7 +515,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     @Column(name = "memory_reservation", precision = 19)
     @Override
     public Long getMemoryReservation() {
-        return (Long) get(32);
+        return (Long) get(27);
     }
 
     /**
@@ -608,7 +523,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
      */
     @Override
     public void setMilliCpuReservation(Long value) {
-        set(33, value);
+        set(28, value);
     }
 
     /**
@@ -617,7 +532,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     @Column(name = "milli_cpu_reservation", precision = 19)
     @Override
     public Long getMilliCpuReservation() {
-        return (Long) get(33);
+        return (Long) get(28);
     }
 
     /**
@@ -625,7 +540,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
      */
     @Override
     public void setSystem(Boolean value) {
-        set(34, value);
+        set(29, value);
     }
 
     /**
@@ -634,7 +549,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     @Column(name = "system", nullable = false, precision = 1)
     @Override
     public Boolean getSystem() {
-        return (Boolean) get(34);
+        return (Boolean) get(29);
     }
 
     /**
@@ -642,7 +557,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
      */
     @Override
     public void setServiceId(Long value) {
-        set(35, value);
+        set(30, value);
     }
 
     /**
@@ -651,7 +566,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     @Column(name = "service_id", precision = 19)
     @Override
     public Long getServiceId() {
-        return (Long) get(35);
+        return (Long) get(30);
     }
 
     /**
@@ -659,7 +574,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
      */
     @Override
     public void setStackId(Long value) {
-        set(36, value);
+        set(31, value);
     }
 
     /**
@@ -668,7 +583,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     @Column(name = "environment_id", precision = 19)
     @Override
     public Long getStackId() {
-        return (Long) get(36);
+        return (Long) get(31);
     }
 
     /**
@@ -676,7 +591,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
      */
     @Override
     public void setDeploymentUnitId(Long value) {
-        set(37, value);
+        set(32, value);
     }
 
     /**
@@ -685,7 +600,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     @Column(name = "deployment_unit_id", precision = 19)
     @Override
     public Long getDeploymentUnitId() {
-        return (Long) get(37);
+        return (Long) get(32);
     }
 
     /**
@@ -693,7 +608,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
      */
     @Override
     public void setRevisionId(Long value) {
-        set(38, value);
+        set(33, value);
     }
 
     /**
@@ -702,7 +617,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     @Column(name = "revision_id", precision = 19)
     @Override
     public Long getRevisionId() {
-        return (Long) get(38);
+        return (Long) get(33);
     }
 
     /**
@@ -710,7 +625,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
      */
     @Override
     public void setDesired(Boolean value) {
-        set(39, value);
+        set(34, value);
     }
 
     /**
@@ -719,7 +634,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     @Column(name = "desired", nullable = false, precision = 1)
     @Override
     public Boolean getDesired() {
-        return (Boolean) get(39);
+        return (Boolean) get(34);
     }
 
     /**
@@ -727,7 +642,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
      */
     @Override
     public void setHostId(Long value) {
-        set(40, value);
+        set(35, value);
     }
 
     /**
@@ -736,7 +651,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     @Column(name = "host_id", precision = 19)
     @Override
     public Long getHostId() {
-        return (Long) get(40);
+        return (Long) get(35);
     }
 
     /**
@@ -744,7 +659,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
      */
     @Override
     public void setNetworkId(Long value) {
-        set(41, value);
+        set(36, value);
     }
 
     /**
@@ -753,7 +668,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     @Column(name = "network_id", precision = 19)
     @Override
     public Long getNetworkId() {
-        return (Long) get(41);
+        return (Long) get(36);
     }
 
     /**
@@ -761,7 +676,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
      */
     @Override
     public void setServiceIndex(Integer value) {
-        set(42, value);
+        set(37, value);
     }
 
     /**
@@ -770,7 +685,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     @Column(name = "service_index", precision = 10)
     @Override
     public Integer getServiceIndex() {
-        return (Integer) get(42);
+        return (Integer) get(37);
     }
 
     // -------------------------------------------------------------------------
@@ -805,7 +720,6 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
         setRemoved(from.getRemoved());
         setRemoveTime(from.getRemoveTime());
         setData(from.getData());
-        setCompute(from.getCompute());
         setMemoryMb(from.getMemoryMb());
         setHostname(from.getHostname());
         setInstanceTriggeredStop(from.getInstanceTriggeredStop());
@@ -821,11 +735,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
         setHealthState(from.getHealthState());
         setStartCount(from.getStartCount());
         setCreateIndex(from.getCreateIndex());
-        setDeploymentUnitUuid(from.getDeploymentUnitUuid());
         setVersion(from.getVersion());
-        setHealthUpdated(from.getHealthUpdated());
-        setDnsInternal(from.getDnsInternal());
-        setDnsSearchInternal(from.getDnsSearchInternal());
         setMemoryReservation(from.getMemoryReservation());
         setMilliCpuReservation(from.getMilliCpuReservation());
         setSystem(from.getSystem());
@@ -862,7 +772,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     /**
      * Create a detached, initialised InstanceRecord
      */
-    public InstanceRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Long compute, Long memoryMb, String hostname, String instanceTriggeredStop, Long agentId, String domain, Date firstRunning, String token, String userdata, Long registryCredentialId, String externalId, Boolean nativeContainer, Long networkContainerId, String healthState, Long startCount, Long createIndex, String deploymentUnitUuid, String version, Date healthUpdated, String dnsInternal, String dnsSearchInternal, Long memoryReservation, Long milliCpuReservation, Boolean system, Long serviceId, Long environmentId, Long deploymentUnitId, Long revisionId, Boolean desired, Long hostId, Long networkId, Integer serviceIndex) {
+    public InstanceRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Long memoryMb, String hostname, String instanceTriggeredStop, Long agentId, String domain, Date firstRunning, String token, String userdata, Long registryCredentialId, String externalId, Boolean nativeContainer, Long networkContainerId, String healthState, Long startCount, Long createIndex, String version, Long memoryReservation, Long milliCpuReservation, Boolean system, Long serviceId, Long environmentId, Long deploymentUnitId, Long revisionId, Boolean desired, Long hostId, Long networkId, Integer serviceIndex) {
         super(InstanceTable.INSTANCE);
 
         set(0, id);
@@ -876,37 +786,32 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
         set(8, removed);
         set(9, removeTime);
         set(10, data);
-        set(11, compute);
-        set(12, memoryMb);
-        set(13, hostname);
-        set(14, instanceTriggeredStop);
-        set(15, agentId);
-        set(16, domain);
-        set(17, firstRunning);
-        set(18, token);
-        set(19, userdata);
-        set(20, registryCredentialId);
-        set(21, externalId);
-        set(22, nativeContainer);
-        set(23, networkContainerId);
-        set(24, healthState);
-        set(25, startCount);
-        set(26, createIndex);
-        set(27, deploymentUnitUuid);
-        set(28, version);
-        set(29, healthUpdated);
-        set(30, dnsInternal);
-        set(31, dnsSearchInternal);
-        set(32, memoryReservation);
-        set(33, milliCpuReservation);
-        set(34, system);
-        set(35, serviceId);
-        set(36, environmentId);
-        set(37, deploymentUnitId);
-        set(38, revisionId);
-        set(39, desired);
-        set(40, hostId);
-        set(41, networkId);
-        set(42, serviceIndex);
+        set(11, memoryMb);
+        set(12, hostname);
+        set(13, instanceTriggeredStop);
+        set(14, agentId);
+        set(15, domain);
+        set(16, firstRunning);
+        set(17, token);
+        set(18, userdata);
+        set(19, registryCredentialId);
+        set(20, externalId);
+        set(21, nativeContainer);
+        set(22, networkContainerId);
+        set(23, healthState);
+        set(24, startCount);
+        set(25, createIndex);
+        set(26, version);
+        set(27, memoryReservation);
+        set(28, milliCpuReservation);
+        set(29, system);
+        set(30, serviceId);
+        set(31, environmentId);
+        set(32, deploymentUnitId);
+        set(33, revisionId);
+        set(34, desired);
+        set(35, hostId);
+        set(36, networkId);
+        set(37, serviceIndex);
     }
 }
