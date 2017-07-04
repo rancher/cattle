@@ -2,7 +2,6 @@ package io.cattle.platform.core.dao;
 
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.Service;
 
 import java.util.List;
 
@@ -16,12 +15,6 @@ public interface InstanceDao {
      * @param instance
      * @return Services related to this instance
      */
-    List<? extends Service> findServicesFor(Instance instance);
-
     List<? extends Instance> listNonRemovedNonStackInstances(Account account);
-
-    List<? extends Instance> findInstanceByServiceName(long accountId, String serviceName);
-
-    List<? extends Instance> findInstanceByServiceName(long accountId, String serviceName, String stackName);
 
 }

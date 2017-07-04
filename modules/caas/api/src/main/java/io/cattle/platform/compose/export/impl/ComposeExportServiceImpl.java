@@ -6,14 +6,13 @@ import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
 
 import io.cattle.platform.compose.export.ComposeExportService;
 import io.cattle.platform.core.addon.LbConfig;
+import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.LoadBalancerInfoDao;
-import io.cattle.platform.core.dao.ServiceConsumeMapDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.VolumeTemplate;
 import io.cattle.platform.core.util.LBMetadataUtil.LBConfigMetadataStyle;
@@ -48,15 +47,12 @@ public class ComposeExportServiceImpl implements ComposeExportService {
     private final static String COMPOSE_PREFIX = "version: '2'\r\n";
 
     ObjectManager objectManager;
-    ServiceConsumeMapDao consumeMapDao;
     List<RancherConfigToComposeFormatter> formatters;
     LoadBalancerInfoDao lbInfoDao;
 
-    public ComposeExportServiceImpl(ObjectManager objectManager, ServiceConsumeMapDao consumeMapDao, LoadBalancerInfoDao lbInfoDao,
-            List<RancherConfigToComposeFormatter> formatters) {
+    public ComposeExportServiceImpl(ObjectManager objectManager, LoadBalancerInfoDao lbInfoDao, List<RancherConfigToComposeFormatter> formatters) {
         super();
         this.objectManager = objectManager;
-        this.consumeMapDao = consumeMapDao;
         this.formatters = formatters;
         this.lbInfoDao = lbInfoDao;
     }
@@ -295,7 +291,7 @@ public class ComposeExportServiceImpl implements ComposeExportService {
     @SuppressWarnings("unchecked")
     protected void populateSelectorServiceLabels(Service service,
             String launchConfigName, Map<String, Object> composeServiceData) {
-        String selectorContainer = service.getSelectorContainer();
+        String selectorContainer = service.getSelector();
         if (selectorContainer == null) {
             return;
         }
@@ -348,17 +344,13 @@ public class ComposeExportServiceImpl implements ComposeExportService {
         }
         List<String> serviceLinksWithNames = new ArrayList<>();
         List<String> externalLinksServices = new ArrayList<>();
-        List<? extends ServiceConsumeMap> consumedServiceMaps = consumeMapDao.findConsumedServices(service.getId());
-        for (ServiceConsumeMap consumedServiceMap : consumedServiceMaps) {
-            Service consumedService = objectManager.findOne(Service.class, SERVICE.ID,
-                    consumedServiceMap.getConsumedServiceId());
-
+        List<ServiceLink> links = DataAccessor.fieldObjectList(service, ServiceConstants.FIELD_SERVICE_LINKS, ServiceLink.class);
+        for (ServiceLink link : links) {
+            Service consumedService = objectManager.findOne(Service.class, SERVICE.ID, link.getServiceId());
             String linkName = consumedService.getName()
                     + ":"
-                    + (!StringUtils.isEmpty(consumedServiceMap.getName()) ? consumedServiceMap.getName()
-                            : consumedService
-                                    .getName());
-            if (servicesToExportIds.contains(consumedServiceMap.getConsumedServiceId())) {
+                    + (!StringUtils.isBlank(link.getName()) ? link.getName() : consumedService.getName());
+            if (servicesToExportIds.contains(link.getServiceId())) {
                 serviceLinksWithNames.add(linkName);
             } else if (!consumedService.getStackId().equals(service.getStackId())) {
                 Stack externalStack = objectManager.loadResource(Stack.class,

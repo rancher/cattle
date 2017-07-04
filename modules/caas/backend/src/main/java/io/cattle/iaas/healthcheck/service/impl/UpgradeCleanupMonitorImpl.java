@@ -1,7 +1,6 @@
 package io.cattle.iaas.healthcheck.service.impl;
 
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
-import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -40,12 +39,10 @@ public class UpgradeCleanupMonitorImpl extends AbstractJooqDao implements Task {
         List<? extends Instance> instances = create()
                 .select(INSTANCE.fields())
                 .from(INSTANCE)
-                .join(SERVICE_EXPOSE_MAP)
-                    .on(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(INSTANCE.ID))
                 .where(INSTANCE.REMOVED.isNull())
-                    .and(INSTANCE.STATE.notIn(CommonStatesConstants.REMOVING))
-                    .and(SERVICE_EXPOSE_MAP.UPGRADE.eq(true))
-                    .and(SERVICE_EXPOSE_MAP.UPGRADE_TIME.lt(new Date(System.currentTimeMillis() - REMOVE_DELAY.get() * 1000)))
+                    .and(INSTANCE.STATE.ne(CommonStatesConstants.REMOVING))
+                    .and(INSTANCE.DESIRED.isFalse())
+                    .and(INSTANCE.UPGRADE_TIME.lt(new Date(System.currentTimeMillis() - REMOVE_DELAY.get() * 1000)))
                 .fetchInto(InstanceRecord.class);
 
         for (Instance instance : instances) {

@@ -3,12 +3,16 @@ package io.cattle.platform.network.impl;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.dao.NetworkDao;
+import io.cattle.platform.core.model.DeploymentUnit;
+import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.network.IPAssignment;
 import io.cattle.platform.network.NetworkService;
+import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.resource.pool.PooledResource;
 import io.cattle.platform.resource.pool.PooledResourceOptions;
@@ -31,6 +35,7 @@ public class NetworkServiceImpl implements NetworkService {
         MODE_TO_KIND.put(NetworkConstants.NETWORK_MODE_CONTAINER, NetworkConstants.KIND_DOCKER_CONTAINER);
     }
 
+    ObjectManager objectManager;
     NetworkDao networkDao;
     JsonMapper jsonMapper;
     ResourcePoolManager poolManager;
@@ -81,7 +86,7 @@ public class NetworkServiceImpl implements NetworkService {
             if (requestedIp != null) {
                 options.setRequestedItem(requestedIp);
             }
-            PooledResource resource = poolManager.allocateOneResource(subnet, owner, options);
+            PooledResource resource = assignIpAddressFromSubnet(subnet, owner, options);
             if (resource != null) {
                 return new IPAssignment(resource.getName(), subnet);
             }
@@ -89,9 +94,24 @@ public class NetworkServiceImpl implements NetworkService {
         return null;
     }
 
+    private PooledResource assignIpAddressFromSubnet(Subnet subnet, Object owner, PooledResourceOptions options) {
+        if (owner instanceof Instance && ((Instance) owner).getDeploymentUnitId() != null && DataAccessor.fieldBool(owner, InstanceConstants.FIELD_RETAIN_IP)) {
+            DeploymentUnit unit = objectManager.loadResource(DeploymentUnit.class, ((Instance) owner).getDeploymentUnitId());
+            options.setSubOwner(DataAccessor.fieldString(owner, InstanceConstants.FIELD_LAUNCH_CONFIG_NAME));
+            return poolManager.allocateOneResource(subnet, unit, options);
+        }
+
+        return poolManager.allocateOneResource(subnet, owner, options);
+    }
+
     @Override
     public void releaseIpAddress(Network network, Object owner) {
         if (network == null) {
+            return;
+        }
+
+        if (owner instanceof Instance && ((Instance) owner).getDeploymentUnitId() != null && DataAccessor.fieldBool(owner, InstanceConstants.FIELD_RETAIN_IP)) {
+            // We don't release IPs for these, the DU release them
             return;
         }
 

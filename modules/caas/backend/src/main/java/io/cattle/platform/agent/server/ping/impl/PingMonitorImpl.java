@@ -9,6 +9,7 @@ import io.cattle.platform.agent.server.ping.dao.PingDao;
 import io.cattle.platform.agent.server.resource.impl.AgentResourcesMonitor;
 import io.cattle.platform.agent.util.AgentUtils;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.containersync.PingInstancesMonitor;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Agent;
@@ -18,7 +19,6 @@ import io.cattle.platform.engine.process.util.ProcessEngineUtils;
 import io.cattle.platform.engine.server.Cluster;
 import io.cattle.platform.eventing.EventCallOptions;
 import io.cattle.platform.framework.event.Ping;
-import io.cattle.platform.ha.monitor.PingInstancesMonitor;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.task.Task;
@@ -125,7 +125,7 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
     protected void pingSuccess(Long agentId, Ping pong) {
         status.getUnchecked(agentId).success();
         agentResourceManager.processPingReply(pong);
-        pingInstanceMonitor.pingReply(pong);
+        pingInstanceMonitor.processPingReply(pong);
     }
 
     protected void pingFailure(Long agentId) {

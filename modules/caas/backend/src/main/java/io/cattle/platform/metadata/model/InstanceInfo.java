@@ -37,6 +37,7 @@ public class InstanceInfo implements MetadataObject {
     Long networkId;
     Long startCount;
 
+    Set<Long> serviceIds;
     Set<PortInstance> ports;
     List<String> dns;
     List<String> dnsSearch;
@@ -73,6 +74,7 @@ public class InstanceInfo implements MetadataObject {
                 InstanceConstants.FIELD_HEALTHCHECK_STATES, HealthcheckState.class);
         this.links = DataAccessor.fieldMapRO(instance, InstanceConstants.FIELD_INSTANCE_LINKS);
         this.agentId = instance.getAccountId();
+        this.serviceIds = new HashSet<>(DataAccessor.fieldLongList(instance, InstanceConstants.FIELD_SERVICE_IDS));
 
         InstanceHealthCheck hc = DataAccessor.field(instance, InstanceConstants.FIELD_HEALTH_CHECK, InstanceHealthCheck.class);
         if (hc != null) {
@@ -189,6 +191,10 @@ public class InstanceInfo implements MetadataObject {
         return ports;
     }
 
+    public Set<Long> getServiceIds() {
+        return serviceIds;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -214,6 +220,7 @@ public class InstanceInfo implements MetadataObject {
         result = prime * result + ((primaryIp == null) ? 0 : primaryIp.hashCode());
         result = prime * result + ((primaryMacAddress == null) ? 0 : primaryMacAddress.hashCode());
         result = prime * result + ((serviceId == null) ? 0 : serviceId.hashCode());
+        result = prime * result + ((serviceIds == null) ? 0 : serviceIds.hashCode());
         result = prime * result + ((serviceIndex == null) ? 0 : serviceIndex.hashCode());
         result = prime * result + ((stackId == null) ? 0 : stackId.hashCode());
         result = prime * result + ((startCount == null) ? 0 : startCount.hashCode());
@@ -330,6 +337,11 @@ public class InstanceInfo implements MetadataObject {
             if (other.serviceId != null)
                 return false;
         } else if (!serviceId.equals(other.serviceId))
+            return false;
+        if (serviceIds == null) {
+            if (other.serviceIds != null)
+                return false;
+        } else if (!serviceIds.equals(other.serviceIds))
             return false;
         if (serviceIndex == null) {
             if (other.serviceIndex != null)

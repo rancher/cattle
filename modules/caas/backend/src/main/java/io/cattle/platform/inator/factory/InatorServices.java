@@ -7,10 +7,10 @@ import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.ServiceDao;
+import io.cattle.platform.engine.manager.LoopFactory;
 import io.cattle.platform.engine.manager.LoopManager;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockManager;
-import io.cattle.platform.loop.LoopFactoryImpl;
 import io.cattle.platform.network.NetworkService;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
@@ -40,14 +40,14 @@ public class InatorServices {
         if (id == null) {
             return;
         }
-        loopManager.kick(LoopFactoryImpl.DU_RECONCILE, ServiceConstants.KIND_DEPLOYMENT_UNIT, id, null);
+        loopManager.kick(LoopFactory.DU_RECONCILE, ServiceConstants.KIND_DEPLOYMENT_UNIT, id, null);
     }
 
     public void triggerServiceReconcile(Long id) {
         if (id == null) {
             return;
         }
-        loopManager.kick(LoopFactoryImpl.RECONCILE, ServiceConstants.KIND_SERVICE, id, null);
+        loopManager.kick(LoopFactory.RECONCILE, ServiceConstants.KIND_SERVICE, id, null);
     }
 
 }

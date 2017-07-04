@@ -35,7 +35,6 @@ import io.cattle.platform.core.model.tables.RevisionTable;
 import io.cattle.platform.core.model.tables.ScheduledUpgradeTable;
 import io.cattle.platform.core.model.tables.SecretTable;
 import io.cattle.platform.core.model.tables.ServiceEventTable;
-import io.cattle.platform.core.model.tables.ServiceIndexTable;
 import io.cattle.platform.core.model.tables.ServiceLogTable;
 import io.cattle.platform.core.model.tables.ServiceTable;
 import io.cattle.platform.core.model.tables.SettingTable;
@@ -73,7 +72,7 @@ import org.jooq.impl.SchemaImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class CattleTable extends SchemaImpl {
 
-    private static final long serialVersionUID = -825108826;
+    private static final long serialVersionUID = 1883254632;
 
     /**
      * The reference instance of <code>cattle</code>
@@ -246,11 +245,6 @@ public class CattleTable extends SchemaImpl {
     public final ServiceEventTable SERVICE_EVENT = io.cattle.platform.core.model.tables.ServiceEventTable.SERVICE_EVENT;
 
     /**
-     * The table <code>cattle.service_index</code>.
-     */
-    public final ServiceIndexTable SERVICE_INDEX = io.cattle.platform.core.model.tables.ServiceIndexTable.SERVICE_INDEX;
-
-    /**
      * The table <code>cattle.service_log</code>.
      */
     public final ServiceLogTable SERVICE_LOG = io.cattle.platform.core.model.tables.ServiceLogTable.SERVICE_LOG;
@@ -358,7 +352,6 @@ public class CattleTable extends SchemaImpl {
             SecretTable.SECRET,
             ServiceTable.SERVICE,
             ServiceEventTable.SERVICE_EVENT,
-            ServiceIndexTable.SERVICE_INDEX,
             ServiceLogTable.SERVICE_LOG,
             SettingTable.SETTING,
             StorageDriverTable.STORAGE_DRIVER,

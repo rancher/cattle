@@ -120,8 +120,7 @@ public class Framework {
     LockDelegatorImpl lockDelegator = new LockDelegatorImpl(lockManager, executorService);
     EventService eventService = new InMemoryEventService(retryTimeoutService, executorService, jsonMapper);
 
-    public Framework() throws IOException {
-        Bootstrap bootstrap = new Bootstrap();
+    public Framework(Bootstrap bootstrap) throws IOException {
         this.dataSource = bootstrap.dataSource;
         this.jooqConfig = bootstrap.jooqConfig;
         this.jsonMapper = bootstrap.jsonMapper;

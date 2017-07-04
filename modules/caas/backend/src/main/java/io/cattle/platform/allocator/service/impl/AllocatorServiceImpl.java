@@ -220,7 +220,7 @@ public class AllocatorServiceImpl implements AllocatorService {
     }
 
     protected List<Instance> getInstancesToAllocate(Instance instance) {
-        if (instance.getDeploymentUnitUuid() != null) {
+        if (instance.getDeploymentUnitId() != null) {
             return allocatorDao.getUnmappedDeploymentUnitInstances(instance.getDeploymentUnitId()).stream()
                     .map((i) -> {
                         /* We want to use the in memory instance, not the one read from the DB
@@ -291,8 +291,8 @@ public class AllocatorServiceImpl implements AllocatorService {
     protected LockDefinition getInstanceLockDef(Instance origInstance, List<Instance> instances, Set<Long> volumeIds) {
         List<LockDefinition> locks = allocationHelper.extractAllocationLockDefinitions(origInstance, instances);
 
-        if (origInstance.getDeploymentUnitUuid() != null) {
-            locks.add(new AllocateConstraintLock(AllocateConstraintLock.Type.DEPLOYMENT_UNIT, origInstance.getDeploymentUnitUuid()));
+        if (origInstance.getDeploymentUnitId() != null) {
+            locks.add(new AllocateConstraintLock(AllocateConstraintLock.Type.DEPLOYMENT_UNIT, origInstance.getDeploymentUnitId()));
         }
 
         List<Long> instancesIds = DataAccessor.fieldLongList(origInstance, InstanceConstants.FIELD_VOLUMES_FROM);

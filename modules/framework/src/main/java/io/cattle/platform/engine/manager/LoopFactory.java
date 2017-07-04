@@ -11,6 +11,7 @@ public interface LoopFactory {
     public static final String HEALTHCHECK_CLEANUP = "healthcheck-cleanup";
     public static final String SYSTEM_STACK = "system-stack";
     public static final String ENDPOINT_UPDATE = "endpoint-update";
+    public static final String SERVICE_MEMBERSHIP = "service-membership";
 
     Loop buildLoop(String name, String type, Long id);
 

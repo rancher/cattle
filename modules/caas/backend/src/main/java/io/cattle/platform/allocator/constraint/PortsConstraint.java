@@ -6,6 +6,7 @@ import io.cattle.platform.core.util.PortSpec;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class PortsConstraint extends HardConstraint implements Constraint {
 
@@ -25,7 +26,7 @@ public class PortsConstraint extends HardConstraint implements Constraint {
         }
 
         // TODO: Performance improvement. Move more of the filtering into the DB query itself
-        List<PortInstance> portsUsedByHost = candidate.getUsedPorts();
+        Set<PortInstance> portsUsedByHost = candidate.getUsedPorts();
         for (PortInstance portUsed : portsUsedByHost) {
             for (PortSpec requestedPort : ports) {
                 if (requestedPort.getPublicPort() != null &&

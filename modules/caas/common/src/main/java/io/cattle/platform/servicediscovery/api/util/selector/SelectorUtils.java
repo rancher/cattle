@@ -15,7 +15,7 @@ import com.google.common.cache.CacheBuilder;
 
 public class SelectorUtils {
     private static Cache<String, List<SelectorConstraint<?>>> cache = CacheBuilder.newBuilder()
-            .expireAfterWrite(3600, TimeUnit.SECONDS).build();
+            .expireAfterAccess(3600, TimeUnit.SECONDS).build();
 
     public static boolean isSelectorMatch(String selector, Map<String, String> labels) {
         if (StringUtils.isEmpty(selector)) {

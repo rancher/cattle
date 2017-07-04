@@ -11,6 +11,8 @@ public interface ResourcePoolManager {
 
     List<PooledResource> allocateResource(Object pool, Object owner, PooledResourceOptions options);
 
+    void releaseAllResources(Object owner);
+
     void releaseResource(Object pool, Object owner);
 
     void releaseResource(Object pool, Object owner, PooledResourceOptions options);

@@ -31,6 +31,7 @@ public class ServiceInfo implements MetadataObject  {
 
     List<String> externalIps;
     List<String> sidekicks;
+    Set<Long> instances;
     Set<PortInstance> ports;
     Map<String, Object> links;
     Map<String, String> labels;
@@ -57,7 +58,8 @@ public class ServiceInfo implements MetadataObject  {
         this.labels = DataAccessor.getLabels(service);
         this.metadata = DataAccessor.fieldMapRO(service, ServiceConstants.FIELD_METADATA);
         this.system = service.getSystem();
-        this.selector = service.getSelectorContainer();
+        this.selector = service.getSelector();
+        this.instances = new HashSet<>(DataAccessor.fieldLongList(service, ServiceConstants.FIELD_INSTANCE_IDS));
     }
 
     public long getId() {
@@ -137,6 +139,14 @@ public class ServiceInfo implements MetadataObject  {
         return ports;
     }
 
+    public String getSelector() {
+        return selector;
+    }
+
+    public Set<Long> getInstances() {
+        return instances;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -146,6 +156,7 @@ public class ServiceInfo implements MetadataObject  {
         result = prime * result + ((healthState == null) ? 0 : healthState.hashCode());
         result = prime * result + ((hostname == null) ? 0 : hostname.hashCode());
         result = prime * result + (int) (id ^ (id >>> 32));
+        result = prime * result + ((instances == null) ? 0 : instances.hashCode());
         result = prime * result + ((kind == null) ? 0 : kind.hashCode());
         result = prime * result + ((labels == null) ? 0 : labels.hashCode());
         result = prime * result + ((links == null) ? 0 : links.hashCode());
@@ -194,6 +205,11 @@ public class ServiceInfo implements MetadataObject  {
         } else if (!hostname.equals(other.hostname))
             return false;
         if (id != other.id)
+            return false;
+        if (instances == null) {
+            if (other.instances != null)
+                return false;
+        } else if (!instances.equals(other.instances))
             return false;
         if (kind == null) {
             if (other.kind != null)
@@ -268,10 +284,6 @@ public class ServiceInfo implements MetadataObject  {
         } else if (!vip.equals(other.vip))
             return false;
         return true;
-    }
-
-    public String getSelector() {
-        return selector;
     }
 
 }

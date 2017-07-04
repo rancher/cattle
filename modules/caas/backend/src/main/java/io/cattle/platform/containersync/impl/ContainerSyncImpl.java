@@ -52,6 +52,17 @@ public class ContainerSyncImpl implements ContainerSync {
     ScheduledExecutorService scheduledExecutorService;
     Cluster cluster;
 
+    public ContainerSyncImpl(ObjectManager objectManager, ObjectProcessManager processManager, InstanceDao instanceDao, LockManager lockManager,
+            GenericResourceDao resourceDao, ScheduledExecutorService scheduledExecutorService, Cluster cluster) {
+        this.objectManager = objectManager;
+        this.processManager = processManager;
+        this.instanceDao = instanceDao;
+        this.lockManager = lockManager;
+        this.resourceDao = resourceDao;
+        this.scheduledExecutorService = scheduledExecutorService;
+        this.cluster = cluster;
+    }
+
     @Override
     public void containerEvent(ContainerEventEvent eventEvent) {
         if (cluster.isInPartition(Long.parseLong(eventEvent.getResourceId()))) {

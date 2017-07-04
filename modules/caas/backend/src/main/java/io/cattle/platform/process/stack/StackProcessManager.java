@@ -1,4 +1,4 @@
-package io.cattle.platform.servicediscovery.process;
+package io.cattle.platform.process.stack;
 
 import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
 import static io.cattle.platform.core.model.tables.HostTable.*;

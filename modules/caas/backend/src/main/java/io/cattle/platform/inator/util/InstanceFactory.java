@@ -99,6 +99,7 @@ public class InstanceFactory {
         fields.put(InstanceConstants.FIELD_DEPLOYMENT_UNIT_UUID, unit.getUuid());
         fields.put(InstanceConstants.FIELD_DEPLOYMENT_UNIT_ID, unit.getId());
         fields.put(InstanceConstants.FIELD_STACK_ID, stack.getId());
+        fields.put(InstanceConstants.FIELD_SERVICE_INDEX, unit.getServiceIndex());
         fields.put(ObjectMetaDataManager.ACCOUNT_FIELD, stack.getAccountId());
         fields.put(InstanceConstants.FIELD_REQUESTED_HOST_ID, unit.getHostId());
         if (!fields.containsKey(ObjectMetaDataManager.KIND_FIELD)) {
@@ -107,10 +108,6 @@ public class InstanceFactory {
 
         if (revision != null) {
             addServiceFields(fields, stack, revision, unit, launchConfigName);
-        }
-
-        if (serviceIndex != null) {
-            addServiceIndexFields(fields, serviceIndex);
         }
     }
 
@@ -129,12 +126,6 @@ public class InstanceFactory {
         Map<String, String> toLabels = getLabels(fields);
         toLabels.putAll(labels);
         setLabels(fields, toLabels);
-    }
-
-    protected static void addServiceIndexFields(Map<String, Object> fields, ServiceIndex serviceIndex) {
-        fields.put(InstanceConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX_ID, serviceIndex.getId());
-        fields.put(InstanceConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX, serviceIndex.getServiceIndex());
-        fields.put(InstanceConstants.FIELD_ALLOCATED_IP_ADDRESS, serviceIndex.getAddress());
     }
 
     protected static Map<String, String> createServiceLabels(Map<String, Object> fields, RevisionWrapper service, StackWrapper stack,

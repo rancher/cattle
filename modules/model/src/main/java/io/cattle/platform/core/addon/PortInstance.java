@@ -6,7 +6,7 @@ import io.github.ibuildthecloud.gdapi.annotation.Type;
 
 import org.weakref.jmx.com.google.common.base.Objects;
 
-@Type(list = false)
+@Type(list = false, name = "PublicEndpoint")
 public class PortInstance {
     /**
      * The IP the user requested. Typically this is null or 0.0.0.0

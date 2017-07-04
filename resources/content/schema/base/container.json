@@ -1,5 +1,9 @@
 {
     "resourceFields": {
+        "retainIp": {
+          "type": "boolean",
+          "nullable": true
+        },
         "environment": {
             "type": "map[string]",
             "create": true,

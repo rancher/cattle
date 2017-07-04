@@ -13,7 +13,7 @@ import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.engine.manager.LoopManager;
 import io.cattle.platform.engine.model.Trigger;
 import io.cattle.platform.engine.process.ProcessInstance;
-import io.cattle.platform.loop.LoopFactoryImpl;
+import io.cattle.platform.loop.factory.LoopFactoryImpl;
 import io.cattle.platform.object.ObjectManager;
 
 import java.util.Arrays;

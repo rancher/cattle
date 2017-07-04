@@ -39,10 +39,9 @@ public interface ServiceDao {
 
     Long getNextCreate(Long serviceId);
 
-    List<? extends Service> findServiceByName(long accountId, String serviceName);
+    Service findServiceByName(long accountId, String serviceName);
 
-    List<? extends Service> findServiceByName(long accountId, String serviceName, String stackName);
-
+    Service findServiceByName(long accountId, String serviceName, String stackName);
 
     List<? extends VolumeTemplate> getVolumeTemplates(Long stackId);
 

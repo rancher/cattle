@@ -9,6 +9,7 @@ public class FrameworkEvents {
     public static final String RESOURCE_PROGRESS = "resource.progress";
     public static final String PING = "ping";
     public static final String EXECUTE_TASK = "execute.task";
+    public static final String INSPECT = "compute.instance.inspect";
 
     public static final String ACCOUNT_QUALIFIER = "account";
 

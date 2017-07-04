@@ -21,7 +21,6 @@ public class InstanceConstants {
     public static final String TYPE_CONTAINER = "container";
 
     public static final String FIELD_AGENT_INSTANCE = "agentInstance";
-    public static final String FIELD_ALLOCATED_IP_ADDRESS = "allocatedIpAddress";
     public static final String FIELD_BLKIO_DEVICE_OPTIONS = "blkioDeviceOptions";
     public static final String FIELD_BLKIO_WEIGHT = "blkioWeight";
     public static final String FIELD_BUILD = "build";
@@ -97,13 +96,14 @@ public class InstanceConstants {
     public static final String FIELD_REQUESTED_HOST_ID = "requestedHostId";
     public static final String FIELD_REQUESTED_IP_ADDRESS = "requestedIpAddress";
     public static final String FIELD_RESTART_POLICY = "restartPolicy";
+    public static final String FIELD_RETAIN_IP = "retainIp";
     public static final String FIELD_REVISION_CONFIG = "config";
     public static final String FIELD_REVISION_ID = "revisionId";
     public static final String FIELD_SECRETS = "secrets";
     public static final String FIELD_SECURITY_OPT = "securityOpt";
     public static final String FIELD_SERVICE_ID = "serviceId";
     public static final String FIELD_SERVICE_IDS = "serviceIds";
-    public static final String FIELD_SERVICE_INSTANCE_SERVICE_INDEX = "serviceIndex";
+    public static final String FIELD_SERVICE_INDEX = "serviceIndex";
     public static final String FIELD_SHM_SIZE = "shmSize";
     public static final String FIELD_SHOULD_RESTART = "shouldRestart";
     public static final String FIELD_SIDEKICK_TO = "sidekickTo";

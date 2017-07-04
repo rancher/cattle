@@ -33,7 +33,6 @@ public class AccountConstants {
     public static final String FIELD_CREATED_STACKS = "createdStackIds";
     public static final String FIELD_STARTED_STACKS = "startedStackIds";
     public static final String FIELD_VERSION = "version";
-    public static final String FIELD_ACCOUNT_LINKS = "projectLinks";
     public static final String FIELD_HOST_REMOVE_DELAY = "hostRemoveDelaySeconds";
     public static final String FIELD_SCHEDULED_UPGRADE_DELAY = "scheduledUpgradeDelayMinutes";
 

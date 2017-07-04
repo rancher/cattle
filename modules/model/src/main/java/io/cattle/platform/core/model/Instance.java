@@ -452,6 +452,17 @@ public interface Instance extends Serializable {
     @Column(name = "service_index", precision = 10)
     public Integer getServiceIndex();
 
+    /**
+     * Setter for <code>cattle.instance.upgrade_time</code>.
+     */
+    public void setUpgradeTime(Date value);
+
+    /**
+     * Getter for <code>cattle.instance.upgrade_time</code>.
+     */
+    @Column(name = "upgrade_time")
+    public Date getUpgradeTime();
+
     // -------------------------------------------------------------------------
     // FROM and INTO
     // -------------------------------------------------------------------------

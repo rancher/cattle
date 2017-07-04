@@ -8,7 +8,7 @@ import io.cattle.platform.inator.Deployinator;
 import io.cattle.platform.inator.factory.InatorFactoryinator;
 import io.cattle.platform.inator.factory.InatorServices;
 import io.cattle.platform.inator.impl.DeployinatorImpl;
-import io.cattle.platform.loop.LoopFactoryImpl;
+import io.cattle.platform.loop.factory.LoopFactoryImpl;
 
 public class Reconcile {
 
@@ -48,8 +48,7 @@ public class Reconcile {
         InatorFactoryinator inatorFactoryinator = new InatorFactoryinator(inatorServices);
         ActivityService activityService = new ActivityService(f.objectManager, f.eventService);
         Deployinator deployinator = new DeployinatorImpl(inatorFactoryinator, f.objectManager, f.lockManager, activityService, b.serviceLifecycleManager);
-        LoopFactory loopFactory = new LoopFactoryImpl(deployinator, b.serviceLifecycleManager, f.objectManager, activityService,
-                f.processManager, b.envResourceManager, f.eventService, d.hostDao, b.catalogService);
+        LoopFactory loopFactory = new LoopFactoryImpl(activityService, b.catalogService, deployinator, b.envResourceManager, f.eventService, d.hostDao, b.loopManager, f.objectManager, f.processManager, f.scheduledExecutorService, b.serviceLifecycleManager);
         loopManager = new LoopManagerImpl(loopFactory, f.executorService, f.objectManager, f.scheduledExecutorService);
 
         inatorServices.loopManager = loopManager;

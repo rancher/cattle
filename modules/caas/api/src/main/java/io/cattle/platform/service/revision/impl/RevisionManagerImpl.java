@@ -3,10 +3,8 @@ package io.cattle.platform.service.revision.impl;
 import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.RevisionTable.*;
-import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 
-import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
@@ -15,7 +13,6 @@ import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Revision;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.iaas.api.service.RevisionDiffomatic;
 import io.cattle.platform.iaas.api.service.RevisionManager;
@@ -363,14 +360,6 @@ public class RevisionManagerImpl implements RevisionManager {
         for (Instance instance : instances) {
             instance.setServiceId(service.getId());
             objectManager.persist(instance);
-
-            objectManager.create(ServiceExposeMap.class,
-                    SERVICE_EXPOSE_MAP.STATE, CommonStatesConstants.ACTIVE,
-                    SERVICE_EXPOSE_MAP.INSTANCE_ID, instance.getId(),
-                    SERVICE_EXPOSE_MAP.SERVICE_ID, service.getId(),
-                    SERVICE_EXPOSE_MAP.ACCOUNT_ID, instance.getAccountId(),
-                    SERVICE_EXPOSE_MAP.DNS_PREFIX, null,
-                    SERVICE_EXPOSE_MAP.MANAGED, true);
         }
 
         revision.setServiceId(service.getId());

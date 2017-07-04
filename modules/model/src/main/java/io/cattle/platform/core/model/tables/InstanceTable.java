@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class InstanceTable extends TableImpl<InstanceRecord> {
 
-    private static final long serialVersionUID = -731335998;
+    private static final long serialVersionUID = -903759312;
 
     /**
      * The reference instance of <code>cattle.instance</code>
@@ -244,6 +244,11 @@ public class InstanceTable extends TableImpl<InstanceRecord> {
      * The column <code>cattle.instance.service_index</code>.
      */
     public final TableField<InstanceRecord, Integer> SERVICE_INDEX = createField("service_index", org.jooq.impl.SQLDataType.INTEGER, this, "");
+
+    /**
+     * The column <code>cattle.instance.upgrade_time</code>.
+     */
+    public final TableField<InstanceRecord, Date> UPGRADE_TIME = createField("upgrade_time", org.jooq.impl.SQLDataType.TIMESTAMP, this, "", new DateConverter());
 
     /**
      * Create a <code>cattle.instance</code> table reference

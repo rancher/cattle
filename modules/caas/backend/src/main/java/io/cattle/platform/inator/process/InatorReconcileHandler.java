@@ -6,10 +6,10 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.handler.CompletableLogic;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessHandler;
+import io.cattle.platform.engine.manager.LoopFactory;
 import io.cattle.platform.engine.manager.LoopManager;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
-import io.cattle.platform.loop.LoopFactoryImpl;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.ObjectUtils;
 
@@ -39,9 +39,9 @@ public class InatorReconcileHandler implements ProcessHandler, CompletableLogic 
 
         ListenableFuture<?> future = null;
         if (resource instanceof Service) {
-            future = loopManager.kick(LoopFactoryImpl.RECONCILE, type, id, resource);
+            future = loopManager.kick(LoopFactory.RECONCILE, type, id, resource);
         } else if (resource instanceof DeploymentUnit) {
-            future = loopManager.kick(LoopFactoryImpl.DU_RECONCILE, type, id, resource);
+            future = loopManager.kick(LoopFactory.DU_RECONCILE, type, id, resource);
         }
 
         return new HandlerResult().withFuture(future);

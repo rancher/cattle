@@ -2,7 +2,6 @@ package io.cattle.platform.inator.wrapper;
 
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.inator.factory.InatorServices;
 import io.cattle.platform.inator.launchconfig.LaunchConfig;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
@@ -29,15 +28,13 @@ public class InstanceWrapper implements BasicStateWrapper {
             InstanceConstants.STATE_RUNNING);
 
     Instance instance;
-    ServiceExposeMap serviceExposeMap;
     LaunchConfig launchConfig;
     InatorServices svc;
 
-    public InstanceWrapper(Instance instance, ServiceExposeMap serviceExposeMap, InatorServices svc) {
+    public InstanceWrapper(Instance instance, InatorServices svc) {
         super();
         this.instance = instance;
         this.svc = svc;
-        this.serviceExposeMap = serviceExposeMap;
     }
 
     @Override
@@ -131,32 +128,22 @@ public class InstanceWrapper implements BasicStateWrapper {
     }
 
     public void setDesired(boolean desired) {
+        boolean changed = false;
         if (instance.getDesired().booleanValue() != desired) {
             instance.setDesired(desired);
-            svc.objectManager.persist(instance);
-        }
-
-        if (serviceExposeMap == null) {
-            return;
-        }
-
-        boolean changed = false;
-        // If desired, then upgrade should be false
-        if (serviceExposeMap.getUpgrade().booleanValue() == desired) {
-            serviceExposeMap.setUpgrade(!desired);
             changed = true;
         }
 
-        if (desired && serviceExposeMap.getUpgradeTime() != null) {
-            serviceExposeMap.setUpgradeTime(null);
+        if (desired && instance.getUpgradeTime() != null) {
+            instance.setUpgradeTime(null);
             changed = true;
-        } else if (!desired && serviceExposeMap.getUpgradeTime() == null) {
-            serviceExposeMap.setUpgradeTime(new Date());
+        } else if (!desired && instance.getUpgradeTime() == null) {
+            instance.setUpgradeTime(new Date());
             changed = true;
         }
 
         if (changed) {
-            svc.objectManager.persist(serviceExposeMap);
+            svc.objectManager.persist(instance);
         }
     }
 

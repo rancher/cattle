@@ -21,15 +21,7 @@ public interface EnvironmentResourceManager {
 
     Stream<HostInfo> iterateHosts(QueryOptions options, List<String> orderedHostUUIDs);
 
-    void changed(long accountId, List<?> objects);
-
-    void changed(long accountId, Object objects);
-
-    List<Long> getAgentProviderIgnoreHealth(String providedServiceLabel, long accountId);
-
     List<Long> getAgentProvider(String providedServiceLabel, long accountId);
-
-    List<Long> getAvailableHealthCheckHosts(long accountId);
 
     Metadata getMetadata(long accountId);
 

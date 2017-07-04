@@ -136,8 +136,6 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
     public void preRemove(Instance instance)  {
         agentLifecycle.preRemove(instance);
 
-        serviceLifecycle.preRemove(instance);
-
         volumeLifecycle.preRemove(instance);
 
         allocationLifecycle.preRemove(instance);

@@ -109,13 +109,6 @@ public class RevisionWrapper {
                 .as(Boolean.class);
     }
 
-    public boolean isRetainIP() {
-        return DataAccessor.fromMap(getConfig())
-                .withDefault(false)
-                .withKey(ServiceConstants.FIELD_RETAIN_IP)
-                .as(Boolean.class);
-    }
-
     protected Map<String, VolumeTemplate> getVolumeTemplates() {
         if (stack == null) {
             return Collections.emptyMap();

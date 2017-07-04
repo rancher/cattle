@@ -4,7 +4,7 @@ import io.cattle.platform.agent.connection.simulator.AgentConnectionSimulator;
 import io.cattle.platform.agent.connection.simulator.AgentSimulatorEventProcessor;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
-import io.cattle.platform.process.containerevent.ContainerEventCreate;
+import io.cattle.platform.framework.event.FrameworkEvents;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.HashMap;
@@ -14,11 +14,11 @@ public class SimulatorInstanceInspectProcessor implements AgentSimulatorEventPro
 
     @Override
     public Event handle(AgentConnectionSimulator simulator, Event event) throws Exception {
-        if (!ContainerSyncImpl.INSTANCE_INSPECT_EVENT_NAME.equals(event.getName())) {
+        if (!FrameworkEvents.INSPECT.equals(event.getName())) {
             return null;
         }
 
-        Map<String, Object> inner = new HashMap<String, Object>();
+        Map<String, Object> inner = new HashMap<>();
         inner.put("instanceInspect", null);
         return EventVO.reply(event).withData(CollectionUtils.asMap("data", inner));
     }

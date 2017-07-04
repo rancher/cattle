@@ -163,7 +163,7 @@ public class ComposeExportConfigItem {
     public static final ComposeExportConfigItem METADATA = new ComposeExportConfigItem(
             ServiceConstants.FIELD_METADATA, ServiceConstants.FIELD_METADATA, false, false, false);
     public static final ComposeExportConfigItem RETAIN_IP = new ComposeExportConfigItem(
-            ServiceConstants.FIELD_RETAIN_IP, "retain_ip", false, false, false);
+            InstanceConstants.FIELD_RETAIN_IP, "retain_ip", false, false, false);
 
     public static final ComposeExportConfigItem LB_CONFIG = new ComposeExportConfigItem(
             ServiceConstants.FIELD_LB_CONFIG,

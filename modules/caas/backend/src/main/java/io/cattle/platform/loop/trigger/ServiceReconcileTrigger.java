@@ -14,7 +14,7 @@ import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.engine.manager.LoopManager;
 import io.cattle.platform.engine.model.Trigger;
 import io.cattle.platform.engine.process.ProcessInstance;
-import io.cattle.platform.loop.LoopFactoryImpl;
+import io.cattle.platform.loop.factory.LoopFactoryImpl;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 

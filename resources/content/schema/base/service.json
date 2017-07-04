@@ -69,19 +69,12 @@
             "required": false,
             "nullable": true
         },
-        "retainIp": {
-          "type": "boolean",
-          "nullable": true,
-           "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
         "assignServiceIpAddress": {
           "type": "boolean",
           "nullable": false,
           "default": false
         },
-        "selectorContainer":{
+        "selector":{
              "attributes" : {
                 "scheduleUpdate" : true
             }
@@ -91,13 +84,8 @@
             "nullable": true,
             "default": false
         },
-        "serviceIndexStrategy": {
-            "type": "string",
-            "required": false,
-            "nullable": false
-        },
         "linkedServices": {
-            "type": "map[reference[service]]",
+            "type": "array[serviceLink]",
             "nullable": true
         },
         "instanceIds": {
@@ -116,12 +104,6 @@
              "attributes" : {
                 "scheduleUpdate" : true
             }
-        },
-        "executionCount": {
-            "type": "int"
-        },
-        "executionPeriodStart": {
-            "type": "date"
         },
         "batchSize": {
             "type": "int",
@@ -192,11 +174,7 @@
             "nullable": true,
             "attributes" : {
                 "scheduleUpdate" : true
-            },
-        "healthCheck": {
-            "type": "instanceHealthCheck",
-            "nullable": true
-        }
+            }
         },
         "hostname": {
             "type": "string",
@@ -220,7 +198,7 @@
         "upgradeLastRun": {
             "type": "int"
         },
-         "networkDriver":{
+        "networkDriver":{
             "type": "networkDriver",
             "nullable": true,
             "attributes" : {
@@ -240,18 +218,6 @@
     "resourceActions" : {
         "certificate" : {
         },
-        "addservicelink" : {
-            "input" : "addRemoveServiceLinkInput",
-            "output" : "service"
-        },
-        "removeservicelink" : {
-            "input" : "addRemoveServiceLinkInput",
-            "output" : "service"
-        },
-        "setservicelinks" : {
-            "input" : "setServiceLinksInput",
-            "output" : "service"
-        },
         "upgrade" : {
             "input" : "serviceUpgrade",
             "output" : "service"
@@ -266,7 +232,7 @@
             "input" : "serviceRollback",
             "output" : "service"
         },
-         "garbagecollect" : {
+        "garbagecollect" : {
             "output" : "service"
         }
     }

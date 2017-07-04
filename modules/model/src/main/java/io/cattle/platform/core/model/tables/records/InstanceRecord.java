@@ -38,7 +38,7 @@ import org.jooq.impl.UpdatableRecordImpl;
 @Table(name = "instance", schema = "cattle")
 public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implements TableRecordJaxb, Instance {
 
-    private static final long serialVersionUID = 1476631730;
+    private static final long serialVersionUID = 1020472126;
 
     /**
      * Setter for <code>cattle.instance.id</code>.
@@ -688,6 +688,23 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
         return (Integer) get(37);
     }
 
+    /**
+     * Setter for <code>cattle.instance.upgrade_time</code>.
+     */
+    @Override
+    public void setUpgradeTime(Date value) {
+        set(38, value);
+    }
+
+    /**
+     * Getter for <code>cattle.instance.upgrade_time</code>.
+     */
+    @Column(name = "upgrade_time")
+    @Override
+    public Date getUpgradeTime() {
+        return (Date) get(38);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -747,6 +764,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
         setHostId(from.getHostId());
         setNetworkId(from.getNetworkId());
         setServiceIndex(from.getServiceIndex());
+        setUpgradeTime(from.getUpgradeTime());
     }
 
     /**
@@ -772,7 +790,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     /**
      * Create a detached, initialised InstanceRecord
      */
-    public InstanceRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Long memoryMb, String hostname, String instanceTriggeredStop, Long agentId, String domain, Date firstRunning, String token, String userdata, Long registryCredentialId, String externalId, Boolean nativeContainer, Long networkContainerId, String healthState, Long startCount, Long createIndex, String version, Long memoryReservation, Long milliCpuReservation, Boolean system, Long serviceId, Long environmentId, Long deploymentUnitId, Long revisionId, Boolean desired, Long hostId, Long networkId, Integer serviceIndex) {
+    public InstanceRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Long memoryMb, String hostname, String instanceTriggeredStop, Long agentId, String domain, Date firstRunning, String token, String userdata, Long registryCredentialId, String externalId, Boolean nativeContainer, Long networkContainerId, String healthState, Long startCount, Long createIndex, String version, Long memoryReservation, Long milliCpuReservation, Boolean system, Long serviceId, Long environmentId, Long deploymentUnitId, Long revisionId, Boolean desired, Long hostId, Long networkId, Integer serviceIndex, Date upgradeTime) {
         super(InstanceTable.INSTANCE);
 
         set(0, id);
@@ -813,5 +831,6 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
         set(35, hostId);
         set(36, networkId);
         set(37, serviceIndex);
+        set(38, upgradeTime);
     }
 }

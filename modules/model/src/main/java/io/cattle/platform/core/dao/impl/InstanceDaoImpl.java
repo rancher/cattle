@@ -2,9 +2,6 @@ package io.cattle.platform.core.dao.impl;
 
 import static io.cattle.platform.core.model.tables.GenericObjectTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
-import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
-import static io.cattle.platform.core.model.tables.ServiceTable.*;
-import static io.cattle.platform.core.model.tables.StackTable.*;
 
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -86,41 +83,6 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
                 .and(INSTANCE.STACK_ID.isNull())
                 .fetchInto(InstanceRecord.class);
 
-    }
-
-    @Override
-    public List<? extends Instance> findInstanceByServiceName(long accountId, String serviceName) {
-        return create().select(INSTANCE.fields())
-            .from(INSTANCE)
-            .join(SERVICE_EXPOSE_MAP)
-                .on(INSTANCE.ID.eq(SERVICE_EXPOSE_MAP.INSTANCE_ID))
-            .join(SERVICE)
-                .on(SERVICE.ID.eq(SERVICE_EXPOSE_MAP.SERVICE_ID))
-            .where(INSTANCE.STATE.eq(InstanceConstants.STATE_RUNNING)
-                    .and(INSTANCE.ACCOUNT_ID.eq(accountId))
-                    .and(SERVICE_EXPOSE_MAP.REMOVED.isNull())
-                    .and(SERVICE.REMOVED.isNull())
-                    .and(SERVICE.NAME.eq(serviceName)))
-            .fetchInto(InstanceRecord.class);
-    }
-
-    @Override
-    public List<? extends Instance> findInstanceByServiceName(long accountId, String serviceName, String stackName) {
-        return create().select(INSTANCE.fields())
-            .from(INSTANCE)
-            .join(SERVICE_EXPOSE_MAP)
-                .on(INSTANCE.ID.eq(SERVICE_EXPOSE_MAP.INSTANCE_ID))
-            .join(SERVICE)
-                .on(SERVICE.ID.eq(SERVICE_EXPOSE_MAP.SERVICE_ID))
-            .join(STACK)
-                .on(STACK.ID.eq(SERVICE.STACK_ID))
-            .where(INSTANCE.STATE.eq(InstanceConstants.STATE_RUNNING)
-                    .and(INSTANCE.ACCOUNT_ID.eq(accountId))
-                    .and(SERVICE_EXPOSE_MAP.REMOVED.isNull())
-                    .and(SERVICE.REMOVED.isNull())
-                    .and(SERVICE.NAME.eq(serviceName))
-                    .and(STACK.NAME.eq(stackName)))
-            .fetchInto(InstanceRecord.class);
     }
 
     protected Map<String, Object> lookupCacheInstanceData(long instanceId) {

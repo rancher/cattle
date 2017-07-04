@@ -108,6 +108,21 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
     }
 
     @Override
+    public void releaseAllResources(Object owner) {
+        String ownerType = getResourceType(owner);
+        long ownerId = getResourceId(owner);
+
+        Map<Object, Object> keys = CollectionUtils.asMap(
+                RESOURCE_POOL.OWNER_TYPE, ownerType,
+                RESOURCE_POOL.OWNER_ID, ownerId);
+
+        for (ResourcePool resource : objectManager.find(ResourcePool.class, keys)) {
+            log.info("Releasing [{}] id [{}] from owner [{}:{}]", resource.getItem(), resource.getId(), ownerType, ownerId);
+            objectManager.delete(resource);
+        }
+    }
+
+    @Override
     public PooledResource allocateOneResource(Object pool, Object owner, PooledResourceOptions options) {
         List<PooledResource> resources = allocateResource(pool, owner, options);
         return (resources == null || resources.size() == 0) ? null : resources.get(0);

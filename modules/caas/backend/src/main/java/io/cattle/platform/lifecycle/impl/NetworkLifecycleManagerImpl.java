@@ -167,21 +167,10 @@ public class NetworkLifecycleManagerImpl implements NetworkLifecycleManager {
     }
 
     private IPAssignment allocateIp(Instance instance, Network network) throws LifecycleException {
-        IPAssignment ip = null;
-        String requestedIp = null;
-        if (instance != null) {
-            String allocatedIpAddress = fieldString(instance, InstanceConstants.FIELD_ALLOCATED_IP_ADDRESS);
-            if (allocatedIpAddress != null) {
-                ip = new IPAssignment(allocatedIpAddress, null);
-            }
-            requestedIp = fieldString(instance, InstanceConstants.FIELD_REQUESTED_IP_ADDRESS);
-        }
-
+        String requestedIp = fieldString(instance, InstanceConstants.FIELD_REQUESTED_IP_ADDRESS);
+        IPAssignment ip = networkService.assignIpAddress(network, instance, requestedIp);
         if (ip == null) {
-            ip = networkService.assignIpAddress(network, instance, requestedIp);
-            if (ip == null) {
-                throw new LifecycleException("Failed to allocate IP from subnet");
-            }
+            throw new LifecycleException("Failed to allocate IP from subnet");
         }
 
         return ip;

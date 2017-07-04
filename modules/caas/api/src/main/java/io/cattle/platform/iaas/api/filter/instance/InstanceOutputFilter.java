@@ -2,7 +2,6 @@ package io.cattle.platform.iaas.api.filter.instance;
 
 import io.cattle.platform.core.addon.MountEntry;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.docker.transform.DockerTransformer;
@@ -21,13 +20,11 @@ import java.util.Map;
 
 public class InstanceOutputFilter extends CachedOutputFilter<Map<Long, Map<String, Object>>> {
 
-    ServiceDao serviceDao;
     VolumeDao volumeDao;
     DockerTransformer transformer;
 
-    public InstanceOutputFilter(ServiceDao serviceDao, VolumeDao volumeDao, DockerTransformer transformer) {
+    public InstanceOutputFilter(VolumeDao volumeDao, DockerTransformer transformer) {
         super();
-        this.serviceDao = serviceDao;
         this.volumeDao = volumeDao;
         this.transformer = transformer;
     }
@@ -75,12 +72,6 @@ public class InstanceOutputFilter extends CachedOutputFilter<Map<Long, Map<Strin
         Map<Long, Map<String, Object>> result = new HashMap<>();
         List<Long> ids = getIds(apiRequest);
         IdFormatter idF = ApiContext.getContext().getIdFormatter();
-
-        for (Map.Entry<Long, List<Object>> entry : serviceDao.getServicesForInstances(ids, idF).entrySet()) {
-            Map<String, Object> fields = new HashMap<>();
-            fields.put(InstanceConstants.FIELD_SERVICE_IDS, entry.getValue());
-            result.put(entry.getKey(), fields);
-        }
 
         for (Map.Entry<Long, List<MountEntry>> entry : volumeDao.getMountsForInstances(ids, idF).entrySet()) {
             Map<String, Object> fields = result.get(entry.getKey());

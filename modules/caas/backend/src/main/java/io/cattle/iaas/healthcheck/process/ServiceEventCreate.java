@@ -8,10 +8,10 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.ServiceEvent;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessHandler;
+import io.cattle.platform.engine.manager.LoopFactory;
 import io.cattle.platform.engine.manager.LoopManager;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
-import io.cattle.platform.loop.LoopFactoryImpl;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 
@@ -74,7 +74,7 @@ public class ServiceEventCreate implements ProcessHandler {
 
         if (changed) {
             objectManager.setFields(instance, InstanceConstants.FIELD_HEALTHCHECK_STATES, hcStates);
-            loopManager.kick(LoopFactoryImpl.HEALTHSTATE_CALCULATE, AccountConstants.TYPE, instance.getAccountId(), null);
+            loopManager.kick(LoopFactory.HEALTHSTATE_CALCULATE, AccountConstants.TYPE, instance.getAccountId(), null);
         }
 
         return null;

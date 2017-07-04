@@ -20,9 +20,6 @@
         },
         "isHostPath": {
         	"create": true
-        },
-        "format": {
-        	"create": true
         }
     }
 }

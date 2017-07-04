@@ -34,7 +34,6 @@ import io.cattle.platform.core.model.tables.RevisionTable;
 import io.cattle.platform.core.model.tables.ScheduledUpgradeTable;
 import io.cattle.platform.core.model.tables.SecretTable;
 import io.cattle.platform.core.model.tables.ServiceEventTable;
-import io.cattle.platform.core.model.tables.ServiceIndexTable;
 import io.cattle.platform.core.model.tables.ServiceLogTable;
 import io.cattle.platform.core.model.tables.ServiceTable;
 import io.cattle.platform.core.model.tables.SettingTable;
@@ -77,7 +76,6 @@ import io.cattle.platform.core.model.tables.records.RevisionRecord;
 import io.cattle.platform.core.model.tables.records.ScheduledUpgradeRecord;
 import io.cattle.platform.core.model.tables.records.SecretRecord;
 import io.cattle.platform.core.model.tables.records.ServiceEventRecord;
-import io.cattle.platform.core.model.tables.records.ServiceIndexRecord;
 import io.cattle.platform.core.model.tables.records.ServiceLogRecord;
 import io.cattle.platform.core.model.tables.records.ServiceRecord;
 import io.cattle.platform.core.model.tables.records.SettingRecord;
@@ -148,7 +146,6 @@ public class Keys {
     public static final Identity<SecretRecord, Long> IDENTITY_SECRET = Identities0.IDENTITY_SECRET;
     public static final Identity<ServiceRecord, Long> IDENTITY_SERVICE = Identities0.IDENTITY_SERVICE;
     public static final Identity<ServiceEventRecord, Long> IDENTITY_SERVICE_EVENT = Identities0.IDENTITY_SERVICE_EVENT;
-    public static final Identity<ServiceIndexRecord, Long> IDENTITY_SERVICE_INDEX = Identities0.IDENTITY_SERVICE_INDEX;
     public static final Identity<ServiceLogRecord, Long> IDENTITY_SERVICE_LOG = Identities0.IDENTITY_SERVICE_LOG;
     public static final Identity<SettingRecord, Long> IDENTITY_SETTING = Identities0.IDENTITY_SETTING;
     public static final Identity<StorageDriverRecord, Long> IDENTITY_STORAGE_DRIVER = Identities0.IDENTITY_STORAGE_DRIVER;
@@ -226,8 +223,6 @@ public class Keys {
     public static final UniqueKey<ServiceRecord> KEY_SERVICE_IDX_SERVICE_UUID = UniqueKeys0.KEY_SERVICE_IDX_SERVICE_UUID;
     public static final UniqueKey<ServiceEventRecord> KEY_SERVICE_EVENT_PRIMARY = UniqueKeys0.KEY_SERVICE_EVENT_PRIMARY;
     public static final UniqueKey<ServiceEventRecord> KEY_SERVICE_EVENT_IDX_SERVICE_EVENT_UUID = UniqueKeys0.KEY_SERVICE_EVENT_IDX_SERVICE_EVENT_UUID;
-    public static final UniqueKey<ServiceIndexRecord> KEY_SERVICE_INDEX_PRIMARY = UniqueKeys0.KEY_SERVICE_INDEX_PRIMARY;
-    public static final UniqueKey<ServiceIndexRecord> KEY_SERVICE_INDEX_IDX_SERVICE_SUFFIX_UUID = UniqueKeys0.KEY_SERVICE_INDEX_IDX_SERVICE_SUFFIX_UUID;
     public static final UniqueKey<ServiceLogRecord> KEY_SERVICE_LOG_PRIMARY = UniqueKeys0.KEY_SERVICE_LOG_PRIMARY;
     public static final UniqueKey<SettingRecord> KEY_SETTING_PRIMARY = UniqueKeys0.KEY_SETTING_PRIMARY;
     public static final UniqueKey<StorageDriverRecord> KEY_STORAGE_DRIVER_PRIMARY = UniqueKeys0.KEY_STORAGE_DRIVER_PRIMARY;
@@ -315,8 +310,6 @@ public class Keys {
     public static final ForeignKey<ServiceEventRecord, AccountRecord> FK_SERVICE_EVENT__ACCOUNT_ID = ForeignKeys0.FK_SERVICE_EVENT__ACCOUNT_ID;
     public static final ForeignKey<ServiceEventRecord, HostRecord> FK_SERVICE_EVENT__HOST_ID = ForeignKeys0.FK_SERVICE_EVENT__HOST_ID;
     public static final ForeignKey<ServiceEventRecord, InstanceRecord> FK_SERVICE_EVENT__INSTANCE_ID = ForeignKeys0.FK_SERVICE_EVENT__INSTANCE_ID;
-    public static final ForeignKey<ServiceIndexRecord, AccountRecord> FK_SERVICE_SUFFIX__ACCOUNT_ID = ForeignKeys0.FK_SERVICE_SUFFIX__ACCOUNT_ID;
-    public static final ForeignKey<ServiceIndexRecord, ServiceRecord> FK_SERVICE_SUFFIX__SERVICE_ID = ForeignKeys0.FK_SERVICE_SUFFIX__SERVICE_ID;
     public static final ForeignKey<ServiceLogRecord, AccountRecord> FK_SERVICE_LOG__ACCOUNT_ID = ForeignKeys0.FK_SERVICE_LOG__ACCOUNT_ID;
     public static final ForeignKey<ServiceLogRecord, ServiceRecord> FK_SERVICE_LOG__SERVICE_ID = ForeignKeys0.FK_SERVICE_LOG__SERVICE_ID;
     public static final ForeignKey<ServiceLogRecord, InstanceRecord> FK_SERVICE_LOG__INSTANCE_ID = ForeignKeys0.FK_SERVICE_LOG__INSTANCE_ID;
@@ -379,7 +372,6 @@ public class Keys {
         public static Identity<SecretRecord, Long> IDENTITY_SECRET = createIdentity(SecretTable.SECRET, SecretTable.SECRET.ID);
         public static Identity<ServiceRecord, Long> IDENTITY_SERVICE = createIdentity(ServiceTable.SERVICE, ServiceTable.SERVICE.ID);
         public static Identity<ServiceEventRecord, Long> IDENTITY_SERVICE_EVENT = createIdentity(ServiceEventTable.SERVICE_EVENT, ServiceEventTable.SERVICE_EVENT.ID);
-        public static Identity<ServiceIndexRecord, Long> IDENTITY_SERVICE_INDEX = createIdentity(ServiceIndexTable.SERVICE_INDEX, ServiceIndexTable.SERVICE_INDEX.ID);
         public static Identity<ServiceLogRecord, Long> IDENTITY_SERVICE_LOG = createIdentity(ServiceLogTable.SERVICE_LOG, ServiceLogTable.SERVICE_LOG.ID);
         public static Identity<SettingRecord, Long> IDENTITY_SETTING = createIdentity(SettingTable.SETTING, SettingTable.SETTING.ID);
         public static Identity<StorageDriverRecord, Long> IDENTITY_STORAGE_DRIVER = createIdentity(StorageDriverTable.STORAGE_DRIVER, StorageDriverTable.STORAGE_DRIVER.ID);
@@ -455,8 +447,6 @@ public class Keys {
         public static final UniqueKey<ServiceRecord> KEY_SERVICE_IDX_SERVICE_UUID = createUniqueKey(ServiceTable.SERVICE, "KEY_service_idx_service_uuid", ServiceTable.SERVICE.UUID);
         public static final UniqueKey<ServiceEventRecord> KEY_SERVICE_EVENT_PRIMARY = createUniqueKey(ServiceEventTable.SERVICE_EVENT, "KEY_service_event_PRIMARY", ServiceEventTable.SERVICE_EVENT.ID);
         public static final UniqueKey<ServiceEventRecord> KEY_SERVICE_EVENT_IDX_SERVICE_EVENT_UUID = createUniqueKey(ServiceEventTable.SERVICE_EVENT, "KEY_service_event_idx_service_event_uuid", ServiceEventTable.SERVICE_EVENT.UUID);
-        public static final UniqueKey<ServiceIndexRecord> KEY_SERVICE_INDEX_PRIMARY = createUniqueKey(ServiceIndexTable.SERVICE_INDEX, "KEY_service_index_PRIMARY", ServiceIndexTable.SERVICE_INDEX.ID);
-        public static final UniqueKey<ServiceIndexRecord> KEY_SERVICE_INDEX_IDX_SERVICE_SUFFIX_UUID = createUniqueKey(ServiceIndexTable.SERVICE_INDEX, "KEY_service_index_idx_service_suffix_uuid", ServiceIndexTable.SERVICE_INDEX.UUID);
         public static final UniqueKey<ServiceLogRecord> KEY_SERVICE_LOG_PRIMARY = createUniqueKey(ServiceLogTable.SERVICE_LOG, "KEY_service_log_PRIMARY", ServiceLogTable.SERVICE_LOG.ID);
         public static final UniqueKey<SettingRecord> KEY_SETTING_PRIMARY = createUniqueKey(SettingTable.SETTING, "KEY_setting_PRIMARY", SettingTable.SETTING.ID);
         public static final UniqueKey<StorageDriverRecord> KEY_STORAGE_DRIVER_PRIMARY = createUniqueKey(StorageDriverTable.STORAGE_DRIVER, "KEY_storage_driver_PRIMARY", StorageDriverTable.STORAGE_DRIVER.ID);
@@ -542,8 +532,6 @@ public class Keys {
         public static final ForeignKey<ServiceEventRecord, AccountRecord> FK_SERVICE_EVENT__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, ServiceEventTable.SERVICE_EVENT, "fk_service_event__account_id", ServiceEventTable.SERVICE_EVENT.ACCOUNT_ID);
         public static final ForeignKey<ServiceEventRecord, HostRecord> FK_SERVICE_EVENT__HOST_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_HOST_PRIMARY, ServiceEventTable.SERVICE_EVENT, "fk_service_event__host_id", ServiceEventTable.SERVICE_EVENT.HOST_ID);
         public static final ForeignKey<ServiceEventRecord, InstanceRecord> FK_SERVICE_EVENT__INSTANCE_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_INSTANCE_PRIMARY, ServiceEventTable.SERVICE_EVENT, "fk_service_event__instance_id", ServiceEventTable.SERVICE_EVENT.INSTANCE_ID);
-        public static final ForeignKey<ServiceIndexRecord, AccountRecord> FK_SERVICE_SUFFIX__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, ServiceIndexTable.SERVICE_INDEX, "fk_service_suffix__account_id", ServiceIndexTable.SERVICE_INDEX.ACCOUNT_ID);
-        public static final ForeignKey<ServiceIndexRecord, ServiceRecord> FK_SERVICE_SUFFIX__SERVICE_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_SERVICE_PRIMARY, ServiceIndexTable.SERVICE_INDEX, "fk_service_suffix__service_id", ServiceIndexTable.SERVICE_INDEX.SERVICE_ID);
         public static final ForeignKey<ServiceLogRecord, AccountRecord> FK_SERVICE_LOG__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, ServiceLogTable.SERVICE_LOG, "fk_service_log__account_id", ServiceLogTable.SERVICE_LOG.ACCOUNT_ID);
         public static final ForeignKey<ServiceLogRecord, ServiceRecord> FK_SERVICE_LOG__SERVICE_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_SERVICE_PRIMARY, ServiceLogTable.SERVICE_LOG, "fk_service_log__service_id", ServiceLogTable.SERVICE_LOG.SERVICE_ID);
         public static final ForeignKey<ServiceLogRecord, InstanceRecord> FK_SERVICE_LOG__INSTANCE_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_INSTANCE_PRIMARY, ServiceLogTable.SERVICE_LOG, "fk_service_log__instance_id", ServiceLogTable.SERVICE_LOG.INSTANCE_ID);

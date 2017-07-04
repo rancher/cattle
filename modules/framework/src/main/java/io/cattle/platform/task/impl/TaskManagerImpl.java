@@ -7,7 +7,6 @@ import io.cattle.platform.framework.event.ExecuteTask;
 import io.cattle.platform.task.Task;
 import io.cattle.platform.task.TaskManager;
 import io.cattle.platform.task.TaskOptions;
-import io.cattle.platform.task.dao.TaskDao;
 import io.cattle.platform.util.type.InitializationTask;
 
 import java.util.HashMap;
@@ -39,13 +38,11 @@ public class TaskManagerImpl implements TaskManager, InitializationTask, Runnabl
     Map<String, ScheduledFuture<?>> futures = new ConcurrentHashMap<>();
     Map<String, Runnable> runnables = new ConcurrentHashMap<>();
     Map<String, Task> taskMap = new HashMap<>();
-    TaskDao taskDao;
 
-    public TaskManagerImpl(ScheduledExecutorService executorService, EventService eventService, TaskDao taskDao, List<Task> tasks) {
+    public TaskManagerImpl(ScheduledExecutorService executorService, EventService eventService, List<Task> tasks) {
         super();
         this.executorService = executorService;
         this.eventService = eventService;
-        this.taskDao = taskDao;
         this.tasks = tasks;
     }
 
@@ -109,7 +106,6 @@ public class TaskManagerImpl implements TaskManager, InitializationTask, Runnabl
                     }
                 }
             };
-            taskDao.register(name);
             runnables.put(name, runnable);
             taskMap.put(name, task);
 

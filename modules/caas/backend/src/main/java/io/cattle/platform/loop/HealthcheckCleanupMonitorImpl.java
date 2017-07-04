@@ -1,4 +1,4 @@
-package io.cattle.iaas.healthcheck.service.impl;
+package io.cattle.platform.loop;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.HealthcheckConstants;

@@ -2,6 +2,7 @@ package io.cattle.platform.app;
 
 import io.cattle.platform.app.components.Api;
 import io.cattle.platform.app.components.Backend;
+import io.cattle.platform.app.components.Bootstrap;
 import io.cattle.platform.app.components.Common;
 import io.cattle.platform.app.components.DataAccess;
 import io.cattle.platform.app.components.Framework;
@@ -21,6 +22,7 @@ public class Cattle {
     private static final Logger CONSOLE_LOG = LoggerFactory.getLogger("ConsoleStatus");
 
     Api api;
+    Bootstrap bootstrap;
     Framework framework;
     Model model;
     DataAccess dataAccess;
@@ -38,7 +40,8 @@ public class Cattle {
     }
 
     private void init() throws IOException {
-        time("FRAMEWORK ", () -> framework = new Framework());
+        time("BOOTSTRAP ", () -> bootstrap = new Bootstrap());
+        time("FRAMEWORK ", () -> framework = new Framework(bootstrap));
         time("MODEL     ", () -> model = new Model(framework));
         time("DATAACCESS", () -> dataAccess = new DataAccess(framework));
         time("COMMON    ", () -> common = new Common(framework, dataAccess));

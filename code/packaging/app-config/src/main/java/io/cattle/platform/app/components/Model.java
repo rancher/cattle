@@ -2,6 +2,7 @@ package io.cattle.platform.app.components;
 
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.pubsub.model.Publish;
+import io.cattle.platform.api.pubsub.model.Subscribe;
 import io.cattle.platform.core.addon.ActiveSetting;
 import io.cattle.platform.core.addon.BlkioDeviceOption;
 import io.cattle.platform.core.addon.CatalogTemplate;
@@ -59,8 +60,6 @@ import io.github.ibuildthecloud.gdapi.doc.FieldDocumentation;
 import io.github.ibuildthecloud.gdapi.doc.TypeDocumentation;
 
 import java.util.Arrays;
-
-import com.google.common.eventbus.Subscribe;
 
 public class Model {
 
@@ -327,7 +326,6 @@ public class Model {
     private TypeSet named() {
         return TypeSet.ofNames(
                 "addOutputsInput",
-                "addRemoveServiceLinkInput",
                 "changeSecretInput",
                 "apiKey,parent=credential",
                 "composeConfigInput",
@@ -341,7 +339,6 @@ public class Model {
                 "registry,parent=storagePool",
                 "registryCredential,parent=credential",
                 "setProjectMembersInput",
-                "setServiceLinksInput",
                 "virtualMachine,parent=container",
                 "storageDriverService,parent=service",
                 "networkDriverService,parent=service",

@@ -4,8 +4,6 @@ import io.github.ibuildthecloud.gdapi.annotation.Type;
 
 @Type(list = false)
 public class ServiceLink {
-    // This field is not used publically through the API, only on the backend
-    long consumingServiceId;
     long serviceId;
     String name;
 
@@ -32,14 +30,6 @@ public class ServiceLink {
 
     public void setServiceId(long serviceId) {
         this.serviceId = serviceId;
-    }
-
-    public long getConsumingServiceId() {
-        return consumingServiceId;
-    }
-
-    public void setConsumingServiceId(long consumingServiceId) {
-        this.consumingServiceId = consumingServiceId;
     }
 
     public String getUuid() {

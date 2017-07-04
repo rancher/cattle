@@ -10,7 +10,7 @@ public class AllocateConstraintLock extends AbstractBlockingLockDefintion {
         PORT,
         VOLUME
     }
-    public AllocateConstraintLock(Type type, String constraintId) {
+    public AllocateConstraintLock(Type type, Object constraintId) {
         super("ALLOCATE.CONSTRAINT." + type + "." + constraintId);
     }
 }

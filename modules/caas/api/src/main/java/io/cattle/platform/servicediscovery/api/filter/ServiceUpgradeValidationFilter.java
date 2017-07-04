@@ -9,7 +9,6 @@ import io.cattle.platform.iaas.api.service.RevisionDiffomatic;
 import io.cattle.platform.iaas.api.service.RevisionManager;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ActionHandler;
@@ -60,14 +59,6 @@ public class ServiceUpgradeValidationFilter extends AbstractValidationFilter {
         if (strategy.getLaunchConfig() == null && strategy.getSecondaryLaunchConfigs() == null) {
             ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION,
                     "LaunchConfig/secondaryLaunchConfigs need to be specified for inService strategy");
-        }
-
-        if (DataAccessor.fieldBool(service, ServiceConstants.FIELD_RETAIN_IP)) {
-            if (strategy.getStartFirst()) {
-                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION,
-                        "StartFirst option can't be used for service with "
-                                + ServiceConstants.FIELD_RETAIN_IP + " field set");
-            }
         }
 
         if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {

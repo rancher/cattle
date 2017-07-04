@@ -1,4 +1,4 @@
-package io.cattle.platform.endpoint.loop;
+package io.cattle.platform.loop;
 
 import static java.util.stream.Collectors.*;
 

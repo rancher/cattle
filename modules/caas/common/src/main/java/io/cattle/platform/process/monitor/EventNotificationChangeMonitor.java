@@ -4,8 +4,6 @@ import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Mount;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.core.model.ServiceConsumeMap;
-import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.StoragePoolHostMap;
@@ -44,13 +42,6 @@ public class EventNotificationChangeMonitor extends io.cattle.platform.engine.pr
         Object obj = state.getResource();
         if (obj instanceof Service) {
             sendChange(Stack.class, accountId, ((Service) obj).getStackId(), schedule, context);
-        } else if (obj instanceof ServiceConsumeMap) {
-            sendChange(Service.class, accountId, ((ServiceConsumeMap) obj).getServiceId(), schedule, context);
-            // accountId is null to handle cross environment service links case
-            sendChange(Service.class, null, ((ServiceConsumeMap) obj).getConsumedServiceId(), schedule, context);
-        } else if (obj instanceof ServiceExposeMap) {
-            sendChange(Service.class, accountId, ((ServiceExposeMap) obj).getServiceId(), schedule, context);
-            sendChange(Instance.class, accountId, ((ServiceExposeMap) obj).getInstanceId(), schedule, context);
         } else if (obj instanceof StoragePoolHostMap) {
             sendChange(StoragePool.class, accountId, ((StoragePoolHostMap) obj).getStoragePoolId(), schedule, context);
             sendChange(Host.class, accountId, ((StoragePoolHostMap) obj).getHostId(), schedule, context);

@@ -1,6 +1,5 @@
 package io.cattle.platform.process.account;
 
-import static io.cattle.platform.core.model.tables.AccountLinkTable.*;
 import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.CredentialTable.*;
 import static io.cattle.platform.core.model.tables.NetworkTable.*;
@@ -15,7 +14,6 @@ import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.core.model.AccountLink;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.Credential;
@@ -34,13 +32,10 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
-import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -120,12 +115,6 @@ public class AccountProcessManager {
             }
         }
 
-        List<? extends Long> accountLinks = DataAccessor.fromMap(state.getData()).withKey(
-                AccountConstants.FIELD_ACCOUNT_LINKS).withDefault(Collections.EMPTY_LIST)
-            .asList(Long.class);
-
-        accountDao.generateAccountLinks(account, accountLinks);
-
         return setupNetworking(account);
     }
 
@@ -157,15 +146,6 @@ public class AccountProcessManager {
             purge(state, process);
         }
 
-        accountDao.generateAccountLinks(account, new ArrayList<Long>());
-
-        List<? extends AccountLink> refsBy = objectManager.find(AccountLink.class,
-                ACCOUNT_LINK.LINKED_ACCOUNT_ID, account.getId(),
-                ACCOUNT_LINK.REMOVED, null);
-        for (AccountLink refBy : refsBy) {
-            processManager.scheduleStandardProcessAsync(StandardProcess.REMOVE, refBy, null);
-        }
-
         return null;
     }
 
@@ -184,18 +164,6 @@ public class AccountProcessManager {
         }
 
         accountDao.deleteProjectMemberEntries(account);
-        return null;
-    }
-
-    public HandlerResult update(ProcessState state, ProcessInstance process) {
-        Account account = (Account) state.getResource();
-        List<? extends Long> accountLinks = DataAccessor
-                .fromMap(state.getData())
-                .withKey(AccountConstants.FIELD_ACCOUNT_LINKS)
-                .withDefault(Collections.EMPTY_LIST)
-                .asList(Long.class);
-
-        accountDao.generateAccountLinks(account, accountLinks);
         return null;
     }
 

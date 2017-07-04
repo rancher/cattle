@@ -1,4 +1,4 @@
-package io.cattle.platform.systemstack.loop;
+package io.cattle.platform.loop;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;

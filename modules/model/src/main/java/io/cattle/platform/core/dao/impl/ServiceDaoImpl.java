@@ -27,6 +27,7 @@ import io.cattle.platform.core.model.tables.VolumeTable;
 import io.cattle.platform.core.model.tables.VolumeTemplateTable;
 import io.cattle.platform.core.model.tables.records.DeploymentUnitRecord;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
+import io.cattle.platform.core.model.tables.records.ServiceRecord;
 import io.cattle.platform.core.model.tables.records.StackRecord;
 import io.cattle.platform.core.model.tables.records.VolumeTemplateRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
@@ -140,7 +141,7 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
             Long hostId, String serviceIndex, Long revisionId, boolean active) {
         Map<Object, Object> params = new HashMap<>();
         params.put("accountId", accountId);
-        params.put(InstanceConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX, serviceIndex);
+        params.put(InstanceConstants.FIELD_SERVICE_INDEX, serviceIndex);
         params.put(InstanceConstants.FIELD_SERVICE_ID, serviceId);
         params.put(InstanceConstants.FIELD_STACK_ID, stackId);
         params.put(INSTANCE.HOST_ID, hostId);
@@ -277,6 +278,29 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                     .on(volume.VOLUME_TEMPLATE_ID.eq(volumeTemplate.ID))
                 .where(volume.DEPLOYMENT_UNIT_ID.eq(deploymentUnitId))
                 .fetch().map(mapper);
+    }
+
+    @Override
+    public Service findServiceByName(long accountId, String serviceName) {
+        return create().select(SERVICE.fields())
+                .from(SERVICE)
+                .where(SERVICE.REMOVED.isNull()
+                        .and(SERVICE.ACCOUNT_ID.eq(accountId))
+                        .and(SERVICE.NAME.eq(serviceName)))
+                .fetchAnyInto(ServiceRecord.class);
+    }
+
+    @Override
+    public Service findServiceByName(long accountId, String serviceName, String stackName) {
+        return create().select(SERVICE.fields())
+                .from(SERVICE)
+                .join(STACK)
+                    .on(STACK.ID.eq(SERVICE.STACK_ID))
+                .where(SERVICE.REMOVED.isNull()
+                        .and(SERVICE.ACCOUNT_ID.eq(accountId))
+                        .and(SERVICE.NAME.eq(serviceName))
+                        .and(STACK.NAME.eq(stackName)))
+                .fetchAnyInto(ServiceRecord.class);
     }
 
 }

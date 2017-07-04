@@ -1,9 +1,7 @@
 package io.cattle.platform.servicediscovery.api.filter;
 
 import io.cattle.platform.core.constants.ServiceConstants;
-import io.cattle.platform.core.dao.ServiceExposeMapDao;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -13,14 +11,10 @@ import io.github.ibuildthecloud.gdapi.request.resource.ActionHandler;
 public class ServiceRestartValidationFilter extends AbstractValidationFilter {
 
     ObjectManager objectManager;
-    JsonMapper jsonMapper;
-    ServiceExposeMapDao exposeMapDao;
 
-    public ServiceRestartValidationFilter(ObjectManager objectManager, JsonMapper jsonMapper, ServiceExposeMapDao exposeMapDao) {
+    public ServiceRestartValidationFilter(ObjectManager objectManager) {
         super();
         this.objectManager = objectManager;
-        this.jsonMapper = jsonMapper;
-        this.exposeMapDao = exposeMapDao;
     }
 
     @Override

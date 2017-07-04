@@ -1,4 +1,4 @@
-package io.cattle.platform.healthcheck.loop;
+package io.cattle.platform.loop;
 
 import io.cattle.platform.core.addon.HealthcheckState;
 import io.cattle.platform.core.constants.CommonStatesConstants;

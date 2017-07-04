@@ -1,6 +1,7 @@
 package io.cattle.platform.host.stats.api;
 
-import io.cattle.platform.core.dao.ServiceExposeMapDao;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+
 import io.cattle.platform.core.dao.StackDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
@@ -32,16 +33,14 @@ public class ServiceContainerStatsLinkHandler implements LinkHandler {
     HostApiService hostApiService;
     ObjectManager objectManager;
     TokenService tokenService;
-    ServiceExposeMapDao exposeDao;
     StackDao stackDao;
 
     public ServiceContainerStatsLinkHandler(HostApiService hostApiService, ObjectManager objectManager, TokenService tokenService,
-            ServiceExposeMapDao exposeDao, StackDao stackDao) {
+            StackDao stackDao) {
         super();
         this.hostApiService = hostApiService;
         this.objectManager = objectManager;
         this.tokenService = tokenService;
-        this.exposeDao = exposeDao;
         this.stackDao = stackDao;
     }
 
@@ -64,7 +63,11 @@ public class ServiceContainerStatsLinkHandler implements LinkHandler {
         Map<Long, Map<String, Object>> containersByHost = new HashMap<>();
 
         for (Service service : services) {
-            for (Instance instance : exposeDao.listServiceManagedInstances(service)) {
+            List<Instance> instances = objectManager.find(Instance.class,
+                    INSTANCE.SERVICE_ID, service.getId(),
+                    INSTANCE.REMOVED, null);
+
+            for (Instance instance : instances) {
                 Long hostId = instance.getHostId();
                 if (hostId == null) {
                     continue;

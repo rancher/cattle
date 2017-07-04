@@ -4,16 +4,11 @@ package io.cattle.platform.inator.launchconfig.impl;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.addon.InstanceHealthCheck.Strategy;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.Network;
-import io.cattle.platform.core.model.ServiceExposeMap;
-import io.cattle.platform.core.model.ServiceIndex;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.VolumeTemplate;
 import io.cattle.platform.core.util.ServiceUtil;
-import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.inator.InatorContext;
 import io.cattle.platform.inator.InstanceBindable;
 import io.cattle.platform.inator.Unit;
@@ -28,7 +23,6 @@ import io.cattle.platform.inator.wrapper.DeploymentUnitWrapper;
 import io.cattle.platform.inator.wrapper.InstanceWrapper;
 import io.cattle.platform.inator.wrapper.RevisionWrapper;
 import io.cattle.platform.inator.wrapper.StackWrapper;
-import io.cattle.platform.network.IPAssignment;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -41,7 +35,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 public class ServiceLaunchConfig implements LaunchConfig {
 
@@ -135,8 +128,8 @@ public class ServiceLaunchConfig implements LaunchConfig {
 
     @Override
     public InstanceWrapper create(InatorContext context, StackWrapper stack, DeploymentUnitWrapper unit) {
-        Pair<Instance, ServiceExposeMap> pair = createInstance(stack, currentService, unit, context, unit.getServiceIndex());
-        return new InstanceWrapper(pair.getLeft(), pair.getRight(), svc);
+        Instance instance = createInstance(stack, currentService, unit, context, unit.getServiceIndex());
+        return new InstanceWrapper(instance, svc);
     }
 
     @Override
@@ -169,50 +162,7 @@ public class ServiceLaunchConfig implements LaunchConfig {
         return true;
     }
 
-    protected ServiceIndex createServiceIndex(RevisionWrapper service, String index) {
-        ServiceIndex serviceIndex = svc.serviceDao.createServiceIndex(service.getServiceId(), name, index);
-
-        // allocate ip address if not set
-        if (service.isRetainIP()) {
-            String requestedIP = getRequestedIP();
-            allocateIpToServiceIndex(service.getAccountId(), serviceIndex, requestedIP);
-        }
-
-        return serviceIndex;
-    }
-
-    protected void allocateIpToServiceIndex(long accountId, ServiceIndex serviceIndex, String requestedIp) {
-        String networkMode = svc.networkService.getNetworkMode(lc);
-        if (StringUtils.isBlank(networkMode) || !StringUtils.isEmpty(serviceIndex.getAddress())) {
-            return;
-        }
-
-        Network ntwk = svc.networkService.resolveNetwork(accountId, networkMode.toString());
-        if (svc.networkService.shouldAssignIpAddress(ntwk)) {
-            IPAssignment assignment = svc.networkService.assignIpAddress(ntwk, serviceIndex, requestedIp);
-            if (assignment != null) {
-                svc.objectManager.setFields(serviceIndex, IpAddressConstants.FIELD_ADDRESS, assignment.getIpAddress());
-            }
-        }
-    }
-
-    protected String getRequestedIP() {
-        String requestedIP = DataAccessor.fromMap(lc)
-                .withKey(InstanceConstants.FIELD_REQUESTED_IP_ADDRESS)
-                .as(String.class);
-
-        if (!StringUtils.isBlank(requestedIP)) {
-            return requestedIP;
-        }
-
-        // can be passed via labels
-        Map<String, Object> labels = CollectionUtils.toMap(DataAccessor.fromMap(lc)
-                .withKey(InstanceConstants.FIELD_LABELS)
-                .get());
-        return DataAccessor.fromMap(labels).withKey(SystemLabels.LABEL_REQUESTED_IP).as(String.class);
-    }
-
-    protected Pair<Instance, ServiceExposeMap> createInstance(StackWrapper stack, RevisionWrapper service,
+    protected Instance createInstance(StackWrapper stack, RevisionWrapper service,
             DeploymentUnitWrapper unit, InatorContext context, int index) {
         String instanceName = getInstanceName(stack, service, index);
 
@@ -221,14 +171,12 @@ public class ServiceLaunchConfig implements LaunchConfig {
                 service,
                 unit,
                 name,
-                index,
                 instanceName);
 
         bindDependencies(context, instanceData);
 
         Long next = svc.serviceDao.getNextCreate(service.getServiceId());
-        Pair<Instance, ServiceExposeMap> pair =  svc.serviceDao.createServiceInstance(instanceData, service.getServiceId(), next);
-        return pair;
+        return svc.serviceDao.createServiceInstance(instanceData, service.getServiceId(), next);
     }
 
     protected void bindDependencies(InatorContext context, Map<String, Object> instanceData) {

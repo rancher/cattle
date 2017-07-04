@@ -28,8 +28,8 @@ public class SubSchemaFactory extends AbstractSchemaFactory implements SchemaFac
     SchemaFactory schemaFactory;
     String id;
     Map<String, Schema> schemaMap;
-    List<SchemaImpl> schemaList = new ArrayList<SchemaImpl>();
-    List<SchemaPostProcessor> postProcessors = new ArrayList<SchemaPostProcessor>();
+    List<SchemaImpl> schemaList = new ArrayList<>();
+    List<SchemaPostProcessor> postProcessors = new ArrayList<>();
     boolean init = false;
 
     public synchronized void init() {
@@ -37,13 +37,13 @@ public class SubSchemaFactory extends AbstractSchemaFactory implements SchemaFac
             return;
         }
 
-        schemaMap = new HashMap<String, Schema>();
+        schemaMap = new HashMap<>();
 
         if (schemaFactory instanceof SubSchemaFactory) {
             ((SubSchemaFactory)schemaFactory).init();
         }
 
-        List<SchemaImpl> result = new ArrayList<SchemaImpl>();
+        List<SchemaImpl> result = new ArrayList<>();
 
         for (Schema schema : schemaFactory.listSchemas()) {
             if (schema instanceof SchemaImpl) {
@@ -100,12 +100,15 @@ public class SubSchemaFactory extends AbstractSchemaFactory implements SchemaFac
         Map<String, Field> fields = schema.getResourceFields();
         Map<String, Filter> filters = schema.getCollectionFilters();
 
-        for (String name : new HashSet<String>(fields.keySet())) {
+        for (String name : new HashSet<>(fields.keySet())) {
             Field field = fields.get(name);
 
             List<FieldType> subTypeEnums = field.getSubTypeEnums();
             List<String> subTypes = field.getSubTypes();
 
+            if (subTypeEnums == null) {
+                throw new IllegalStateException("Failed to find type for field " + schema.getId() + "." + name);
+            }
             for (int i = 0; i < subTypeEnums.size(); i++) {
                 if (subTypeEnums.get(i) == FieldType.TYPE && !schemaMap.containsKey(subTypes.get(i)) && !"type".equals(subTypes.get(i))) {
                     fields.remove(name);

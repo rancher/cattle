@@ -2,14 +2,6 @@
     "collectionMethods": ["GET", "POST"],
     "resourceMethods" : ["GET"],
     "resourceFields": {
-        "id": {
-        },
-        "externalTimestamp": {
-            "create": true
-        },
-        "externalFrom": {
-            "create": true
-        },
         "reportedHostUuid": {
             "create": true
         },
@@ -17,9 +9,6 @@
             "create": true
         },
         "externalStatus": {
-            "create": true
-        },
-        "data": {
             "create": true
         },
         "dockerInspect": {

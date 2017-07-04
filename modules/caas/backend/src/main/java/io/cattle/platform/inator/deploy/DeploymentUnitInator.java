@@ -3,7 +3,6 @@ package io.cattle.platform.inator.deploy;
 import io.cattle.platform.core.dao.ServiceDao.VolumeData;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Revision;
-import io.cattle.platform.core.model.ServiceExposeMap;
 import io.cattle.platform.inator.Inator;
 import io.cattle.platform.inator.InatorContext;
 import io.cattle.platform.inator.Result;
@@ -57,8 +56,8 @@ public class DeploymentUnitInator implements Inator {
     }
 
     protected List<Unit> collectInstances() {
-        return svc.serviceDao.getInstanceData(unit.getId(), unit.getUuid()).stream()
-            .map((x) -> (Unit)toInstanceUnit(x.instance, x.serviceExposeMap))
+        return svc.serviceDao.getInstanceByDeploymentUnit(unit.getId()).stream()
+            .map((x) -> (Unit)toInstanceUnit(x))
             .collect(Collectors.toList());
     }
 
@@ -135,13 +134,13 @@ public class DeploymentUnitInator implements Inator {
         return revisionWrapper;
     }
 
-    protected InstanceUnit toInstanceUnit(Instance instance, ServiceExposeMap serviceExposeMap) {
+    protected InstanceUnit toInstanceUnit(Instance instance) {
         RevisionWrapper revisionWrapper = revisions.get(instance.getRevisionId());
         if (revisionWrapper == null) {
             revisionWrapper = buildRevisionWrapper(instance.getRevisionId());
         }
 
-        InstanceWrapper instanceWrapper = new InstanceWrapper(instance, serviceExposeMap, svc);
+        InstanceWrapper instanceWrapper = new InstanceWrapper(instance, svc);
         return new InstanceUnit(instanceWrapper, revisionWrapper.getLaunchConfig(instanceWrapper.getLaunchConfigName()));
     }
 

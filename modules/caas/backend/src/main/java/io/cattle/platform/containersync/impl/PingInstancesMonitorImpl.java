@@ -16,6 +16,7 @@ import io.cattle.platform.environment.EnvironmentResourceManager;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
+import io.cattle.platform.framework.event.FrameworkEvents;
 import io.cattle.platform.framework.event.Ping;
 import io.cattle.platform.framework.event.data.PingData;
 import io.cattle.platform.metadata.model.HostInfo;
@@ -178,7 +179,7 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
     }
 
     private Event newInspectEvent(String externalId) {
-        return EventVO.newEvent("compute.instance.inspect")
+        return EventVO.newEvent(FrameworkEvents.INSPECT)
                 .withData(CollectionUtils.asMap(
                     "instanceInspect", CollectionUtils.asMap(
                         "kind", "docker",

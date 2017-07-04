@@ -19,5 +19,15 @@
             <artifactId>cattle-caas-backend</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.cattle</groupId>
+            <artifactId>cattle-resources</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.cattle</groupId>
+            <artifactId>cattle-framework-launcher</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
