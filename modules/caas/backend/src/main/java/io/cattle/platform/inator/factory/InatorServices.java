@@ -9,6 +9,7 @@ import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.engine.manager.LoopFactory;
 import io.cattle.platform.engine.manager.LoopManager;
+import io.cattle.platform.environment.EnvironmentResourceManager;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.network.NetworkService;
@@ -35,6 +36,7 @@ public class InatorServices {
     public HostDao hostDao;
     public DataDao dataDao;
     public LoopManager loopManager;
+    public EnvironmentResourceManager envResourceManager;
 
     public void triggerDeploymentUnitReconcile(Long id) {
         if (id == null) {

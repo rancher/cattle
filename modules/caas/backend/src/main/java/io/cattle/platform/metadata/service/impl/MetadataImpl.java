@@ -153,4 +153,9 @@ public class MetadataImpl implements Metadata {
         });
     }
 
+    @Override
+    public HostInfo getHost(String uuid) {
+        return hosts.get(uuid);
+    }
+
 }

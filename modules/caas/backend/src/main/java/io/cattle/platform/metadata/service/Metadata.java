@@ -20,6 +20,8 @@ public interface Metadata {
 
     Collection<NetworkInfo> getNetworks();
 
+    HostInfo getHost(String uuid);
+
     void remove(String uuid);
 
     void changed(Object obj);

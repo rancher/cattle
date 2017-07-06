@@ -35,7 +35,7 @@ public class CattleFilter implements Filter {
     private static final DynamicStringProperty LOCALIZATION = ArchaiusUtil.getString("localization");
     private static final DynamicStringProperty SERVER_VERSION = ArchaiusUtil.getString("rancher.server.version");
 
-    Cattle cattle;
+    Cattle cattle = new Cattle();
     IndexFile indexFile = new IndexFile();
 
     @Override

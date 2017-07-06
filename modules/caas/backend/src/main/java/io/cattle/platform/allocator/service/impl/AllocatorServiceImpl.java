@@ -41,6 +41,7 @@ import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.lock.definition.LockDefinition;
+import io.cattle.platform.metadata.model.HostInfo;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
@@ -550,9 +551,20 @@ public class AllocatorServiceImpl implements AllocatorService {
         if (attempt.getRequestedHostId() == null) {
             orderedHostUUIDs = callExternalSchedulerForHosts(attempt);
         }
-        return envResourceManager.iterateHosts(options, orderedHostUUIDs).map((x) -> {
-            return new AllocationCandidate(x.getId(), x.getUuid(), x.getPorts(), options.getAccountId());
-        }).iterator();
+
+        Iterator<HostInfo> iter = envResourceManager.iterateHosts(options, orderedHostUUIDs);
+        return new Iterator<AllocationCandidate>() {
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public AllocationCandidate next() {
+                HostInfo host = iter.next();
+                return new AllocationCandidate(host.getId(), host.getUuid(), host.getPorts(), options.getAccountId());
+            }
+        };
     }
 
     protected void releaseAllocation(Instance instance) {

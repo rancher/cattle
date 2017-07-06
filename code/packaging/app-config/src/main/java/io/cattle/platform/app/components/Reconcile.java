@@ -44,6 +44,7 @@ public class Reconcile {
         inatorServices.instanceDao = d.instanceDao;
         inatorServices.hostDao = d.hostDao;
         inatorServices.dataDao = d.dataDao;
+        inatorServices.envResourceManager = b.envResourceManager;
 
         InatorFactoryinator inatorFactoryinator = new InatorFactoryinator(inatorServices);
         ActivityService activityService = new ActivityService(f.objectManager, f.eventService);

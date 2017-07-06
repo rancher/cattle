@@ -4,6 +4,8 @@ import static java.util.stream.Collectors.*;
 
 import io.cattle.platform.core.cache.QueryOptions;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.HealthcheckConstants;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
@@ -15,17 +17,23 @@ import io.cattle.platform.environment.EnvironmentResourceManager;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.metadata.model.HostInfo;
+import io.cattle.platform.metadata.model.InstanceInfo;
 import io.cattle.platform.metadata.service.Metadata;
 import io.cattle.platform.metadata.service.MetadataObjectFactory;
 import io.cattle.platform.metadata.service.impl.MetadataImpl;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
+import com.google.common.base.Objects;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -90,9 +98,13 @@ public class EnvironmentResourceManagerImpl implements EnvironmentResourceManage
     }
 
     @Override
-    public boolean hostHasContainerLabel(long accountId, long hostId, String labelKey, String labelValue) {
-        // TODO Auto-generated method stub
-        return false;
+    public boolean hostHasContainerLabel(long accountId, String hostUuid, String labelKey, String labelValue) {
+        HostInfo host = getMetadata(accountId).getHost(hostUuid);
+        if (host == null) {
+            return false;
+        }
+
+        return Objects.equal(labelValue, host.getLabels().get(labelKey));
     }
 
     @Override
@@ -105,26 +117,100 @@ public class EnvironmentResourceManagerImpl implements EnvironmentResourceManage
 
     @Override
     public List<? extends Long> getHosts(long accountId) {
-        // TODO Auto-generated method stub
-        return null;
+        return getMetadata(accountId).getHosts().stream()
+                .map((host) -> host.getId())
+                .collect(toList());
     }
 
     @Override
-    public Map<String, String[]> getLabelsForHost(long accountId, long hostId) {
-        // TODO Auto-generated method stub
-        return null;
+    public Map<String, String> getLabelsForHost(long accountId, String hostUuid) {
+        HostInfo hostInfo = getMetadata(accountId).getHost(hostUuid);
+        return hostInfo == null ? Collections.emptyMap() : hostInfo.getLabels();
     }
 
     @Override
-    public Stream<HostInfo> iterateHosts(QueryOptions options, List<String> orderedHostUUIDs) {
-        // TODO Auto-generated method stub
-        return null;
+    public Iterator<HostInfo> iterateHosts(QueryOptions options, List<String> orderedHostUUIDs) {
+        return new Iterator<HostInfo>() {
+            HostInfo next;
+            int orderedIndex;
+            int restIndex;
+            List<HostInfo> rest;
+            Metadata metadata = getMetadata(options.getAccountId());
+            Set<String> ignore = new HashSet<>(orderedHostUUIDs);
+
+            @Override
+            public boolean hasNext() {
+                return next != null;
+            }
+
+            @Override
+            public HostInfo next() {
+                HostInfo result = next;
+                advance();
+                return result;
+            }
+
+            private void advance() {
+                if (options.getRequestedHostId() != null) {
+                    if (next != null) {
+                        next = null;
+                        return;
+                    }
+
+                    next = metadata.getHosts().stream()
+                            .filter((host) -> host.getId() == options.getRequestedHostId().longValue())
+                            .findFirst().get();
+                    return;
+                }
+
+                for (; orderedIndex < orderedHostUUIDs.size() ; orderedIndex++) {
+                    next = metadata.getHost(orderedHostUUIDs.get(orderedIndex));
+                    if (!ignore.contains(next.getUuid()) && validHost(next)) {
+                        orderedIndex++;
+                        return;
+                    }
+                }
+
+                if (rest == null) {
+                    rest = new ArrayList<>(metadata.getHosts());
+                    Collections.shuffle(rest);
+                }
+
+                for (; restIndex < rest.size() ; restIndex++) {
+                    next = rest.get(restIndex);
+                    if (validHost(next)) {
+                        restIndex++;
+                        return;
+                    }
+                }
+
+                next = null;
+            }
+        };
     }
 
     @Override
     public List<Long> getAgentProvider(String providedServiceLabel, long accountId) {
-        // TODO Auto-generated method stub
-        return null;
+        return getMetadata(accountId).getInstances().stream()
+            .filter((instance) -> instance.getAgentId() != null)
+            .filter(this::healthyAndActive)
+            .filter((instance) -> instance.getLabels().containsKey(providedServiceLabel))
+            .map((instance) -> instance.getId())
+            .collect(toList());
+    }
+
+    private boolean healthyAndActive(InstanceInfo instance) {
+        return HealthcheckConstants.HEALTH_STATE_HEALTHY.equals(instance.getHealthState()) &&
+                InstanceConstants.STATE_RUNNING.equals(instance.getState());
+
+    }
+
+    private boolean validHost(HostInfo hostInfo) {
+        if (hostInfo == null) {
+            return false;
+        }
+        return CommonStatesConstants.ACTIVE.equals(hostInfo.getAgentState()) &&
+                CommonStatesConstants.ACTIVE.equals(hostInfo.getState());
     }
 
 }

@@ -3,7 +3,6 @@ package io.cattle.platform.allocator.constraint;
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.AffinityOps;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.service.AllocationCandidate;
-import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.environment.EnvironmentResourceManager;
 
 import java.util.Map;
@@ -19,7 +18,6 @@ public class HostAffinityConstraint implements Constraint {
     String labelValue;
     EnvironmentResourceManager envResourceManager;
 
-    // TODO: Might actually do an early lookup for host lists as an optimization
     public HostAffinityConstraint(AffinityConstraintDefinition def, EnvironmentResourceManager envResourceManager) {
         this.op = def.op;
         this.labelKey = def.key;
@@ -34,21 +32,17 @@ public class HostAffinityConstraint implements Constraint {
         }
 
         if (op == AffinityOps.SOFT_EQ || op == AffinityOps.EQ) {
-            Map<String, String[]> labelsForHost = envResourceManager.getLabelsForHost(candidate.getAccountId(), candidate.getHost());
-            if (labelsForHost.get(labelKey) == null) { // key doesn't exist
+            Map<String, String> labelsForHost = envResourceManager.getLabelsForHost(candidate.getAccountId(), candidate.getHostUuid());
+            String value = labelsForHost.get(labelsForHost);
+            if (value == null) { // key doesn't exist
                 return false;
             }
-            String value = labelsForHost.get(labelKey)[0];
-            String hostLabelMapState = labelsForHost.get(labelKey)[1];
-            if (!labelValue.equals(value) || CommonStatesConstants.REMOVING.equals(hostLabelMapState)) {
+            if (!labelValue.equals(value)) {
                 return false;
             }
         } else {
-            Map<String, String[]> labelsForHost = envResourceManager.getLabelsForHost(candidate.getAccountId(), candidate.getHost());
-            if (labelsForHost.get(labelKey) != null
-                    && labelValue.equals(labelsForHost.get(labelKey)[0])
-                    && (CommonStatesConstants.CREATING.equals(labelsForHost.get(labelKey)[1])
-                            || CommonStatesConstants.CREATED.equals(labelsForHost.get(labelKey)[1]))) {
+            Map<String, String> labelsForHost = envResourceManager.getLabelsForHost(candidate.getAccountId(), candidate.getHostUuid());
+            if (labelValue.equals(labelsForHost.get(labelKey))) {
                 return false;
             }
         }

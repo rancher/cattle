@@ -224,7 +224,9 @@ public class ServiceLaunchConfig implements LaunchConfig {
             return;
         }
 
-        svc.instanceDao.updatePorts(instance.getInternal(), newPortList);
+        svc.envResourceManager.getMetadata(instance.getInternal().getAccountId()).modify(Instance.class, instance.getId(), (i) -> {
+            return svc.objectManager.setFields(i, InstanceConstants.FIELD_PORTS, newPorts);
+        });
     }
 
     protected Object convertUnitRefsToInstanceIds(Map<UnitRef, Unit> units, UnitRefList refOrList) {
