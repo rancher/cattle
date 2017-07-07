@@ -5,7 +5,7 @@
         <artifactId>cattle-parent</artifactId>
         <groupId>io.cattle</groupId>
         <version>0.5.0-SNAPSHOT</version>
-        <relativePath>../../code/parent/pom.xml</relativePath>
+        <relativePath>../parent/pom.xml</relativePath>
     </parent>
     <dependencies>
         <dependency>
@@ -67,10 +67,6 @@
         <dependency>
             <groupId>com.mattbertolini</groupId>
             <artifactId>liquibase-slf4j</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
