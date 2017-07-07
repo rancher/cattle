@@ -1,28 +1,751 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.2.xsd">
     <property name="mediumtext" value="TEXT" dbms="postgresql" />
     <property name="mediumtext" value="MEDIUMTEXT" />
     <property name="mediumtext" value="varchar" dbms="H2" />
     <changeSet author="rancher (generated)" id="dump1">
-        <createTable tableName="backoff">
+        <createTable tableName="account">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="resource_type" type="VARCHAR(128)">
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="kind" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="resource_id" type="BIGINT">
+            <column name="uuid" type="VARCHAR(128)">
                 <constraints nullable="false"/>
             </column>
-            <column name="count" type="BIGINT">
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
                 <constraints nullable="false"/>
             </column>
-            <column name="period" type="BIGINT">
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="MEDIUMTEXT"/>
+            <column name="external_id" type="VARCHAR(255)"/>
+            <column name="external_id_type" type="VARCHAR(128)"/>
+            <column name="health_state" type="VARCHAR(128)"/>
+            <column name="project_template_id" type="BIGINT"/>
+            <column name="default_network_id" type="BIGINT"/>
+            <column name="version" type="VARCHAR(128)"/>
+            <column defaultValueNumeric="0" name="revision" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump2">
+        <createTable tableName="agent">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="MEDIUMTEXT"/>
+            <column name="uri" type="VARCHAR(255)"/>
+            <column defaultValueNumeric="1" name="managed_config" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="resource_account_id" type="BIGINT"/>
+        </createTable>
+        <createTable tableName="audit_log">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="account_id" type="BIGINT"/>
+            <column name="authenticated_as_account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="auth_type" type="VARCHAR(255)"/>
+            <column name="event_type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="resource_type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="resource_id" type="BIGINT"/>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="created" type="datetime"/>
+            <column name="data" type="MEDIUMTEXT"/>
+            <column name="authenticated_as_identity_id" type="VARCHAR(255)"/>
+            <column name="runtime" type="BIGINT"/>
+            <column name="client_ip" type="VARCHAR(255)"/>
+        </createTable>
+        <createTable tableName="auth_token">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="account_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="expires" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="key" type="VARCHAR(40)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value" type="MEDIUMTEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="provider" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="authenticated_as_account_id" type="BIGINT"/>
+        </createTable>
+        <createTable tableName="catalog">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="created_at" type="datetime"/>
+            <column name="updated_at" type="datetime"/>
+            <column name="environment_id" type="VARCHAR(255)"/>
+            <column name="name" type="VARCHAR(1024)"/>
+            <column name="url" type="VARCHAR(1024)"/>
+            <column name="branch" type="VARCHAR(1024)"/>
+            <column name="commit" type="VARCHAR(1024)"/>
+            <column name="type" type="VARCHAR(255)"/>
+            <column name="kind" type="VARCHAR(255)"/>
+        </createTable>
+        <createTable tableName="catalog_category">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="created_at" type="datetime"/>
+            <column name="updated_at" type="datetime"/>
+            <column name="name" type="VARCHAR(1024)"/>
+        </createTable>
+        <createTable tableName="catalog_file">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="created_at" type="datetime"/>
+            <column name="updated_at" type="datetime"/>
+            <column name="version_id" type="BIGINT"/>
+            <column name="name" type="VARCHAR(1024)"/>
+            <column name="contents" type="MEDIUMBLOB"/>
+        </createTable>
+        <createTable tableName="catalog_label">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="created_at" type="datetime"/>
+            <column name="updated_at" type="datetime"/>
+            <column name="template_id" type="BIGINT"/>
+            <column name="key" type="VARCHAR(1024)"/>
+            <column name="value" type="VARCHAR(1024)"/>
+        </createTable>
+        <createTable tableName="catalog_template">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="created_at" type="datetime"/>
+            <column name="updated_at" type="datetime"/>
+            <column name="environment_id" type="VARCHAR(255)"/>
+            <column name="catalog_id" type="BIGINT"/>
+            <column name="name" type="VARCHAR(1024)"/>
+            <column name="is_system" type="VARCHAR(255)"/>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="default_version" type="VARCHAR(1024)"/>
+            <column name="path" type="VARCHAR(1024)"/>
+            <column name="maintainer" type="VARCHAR(1024)"/>
+            <column name="license" type="MEDIUMTEXT"/>
+            <column name="project_url" type="VARCHAR(1024)"/>
+            <column name="upgrade_from" type="VARCHAR(1024)"/>
+            <column name="folder_name" type="VARCHAR(1024)"/>
+            <column name="catalog" type="VARCHAR(1024)"/>
+            <column name="base" type="VARCHAR(1024)"/>
+            <column name="icon" type="MEDIUMTEXT"/>
+            <column name="icon_filename" type="VARCHAR(255)"/>
+            <column name="readme" type="MEDIUMBLOB"/>
+        </createTable>
+        <createTable tableName="catalog_template_category">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="created_at" type="datetime"/>
+            <column name="updated_at" type="datetime"/>
+            <column name="template_id" type="BIGINT"/>
+            <column name="category_id" type="BIGINT"/>
+        </createTable>
+        <createTable tableName="catalog_version">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="created_at" type="datetime"/>
+            <column name="updated_at" type="datetime"/>
+            <column name="template_id" type="BIGINT"/>
+            <column name="revision" type="BIGINT"/>
+            <column name="version" type="VARCHAR(1024)"/>
+            <column name="minimum_rancher_version" type="VARCHAR(1024)"/>
+            <column name="maximum_rancher_version" type="VARCHAR(1024)"/>
+            <column name="upgrade_from" type="VARCHAR(1024)"/>
+            <column name="readme" type="MEDIUMBLOB"/>
+        </createTable>
+        <createTable tableName="catalog_version_label">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="version_id" type="BIGINT"/>
+            <column name="key" type="VARCHAR(1024)"/>
+            <column name="value" type="VARCHAR(1024)"/>
+            <column name="created_at" type="datetime"/>
+            <column name="updated_at" type="datetime"/>
+        </createTable>
+        <createTable tableName="certificate">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="MEDIUMTEXT"/>
+            <column name="cert_chain" type="TEXT"/>
+            <column name="cert" type="TEXT"/>
+            <column name="key" type="TEXT"/>
+        </createTable>
+        <createTable tableName="cluster_membership">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="heartbeat" type="BIGINT"/>
+            <column name="config" type="MEDIUMTEXT"/>
+            <column defaultValueNumeric="0" name="clustered" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="credential">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="MEDIUMTEXT"/>
+            <column name="public_value" type="VARCHAR(4096)"/>
+            <column name="secret_value" type="VARCHAR(4096)"/>
+            <column name="registry_id" type="BIGINT"/>
+        </createTable>
+        <createTable tableName="data">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueNumeric="1" name="visible" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="deployment_unit">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="TEXT"/>
+            <column name="service_index" type="VARCHAR(255)"/>
+            <column name="service_id" type="BIGINT"/>
+            <column name="environment_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="health_state" type="VARCHAR(255)"/>
+            <column name="host_id" type="BIGINT"/>
+            <column name="requested_revision_id" type="BIGINT"/>
+            <column name="revision_id" type="BIGINT"/>
+        </createTable>
+        <createTable tableName="dynamic_schema">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="data" type="TEXT"/>
+            <column name="parent" type="VARCHAR(255)"/>
+            <column name="definition" type="MEDIUMTEXT"/>
+            <column name="service_id" type="BIGINT"/>
+            <column name="removed" type="datetime"/>
+        </createTable>
+        <createTable tableName="dynamic_schema_role">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="dynamic_schema_id" type="BIGINT"/>
+            <column name="role" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="environment">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="MEDIUMTEXT"/>
+            <column name="external_id" type="VARCHAR(128)"/>
+            <column name="health_state" type="VARCHAR(128)"/>
+            <column name="folder" type="VARCHAR(255)"/>
+            <column defaultValueNumeric="0" name="system" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="external_event">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="data" type="TEXT"/>
+            <column name="external_id" type="VARCHAR(255)"/>
+            <column name="event_type" type="VARCHAR(255)"/>
+            <column name="reported_account_id" type="BIGINT"/>
+        </createTable>
+        <createTable tableName="generic_object">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="MEDIUMTEXT"/>
+            <column name="key" type="VARCHAR(255)"/>
+        </createTable>
+        <createTable tableName="host">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="MEDIUMTEXT"/>
+            <column name="uri" type="VARCHAR(255)"/>
+            <column name="agent_id" type="BIGINT"/>
+            <column defaultValueNumeric="0" name="is_public" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="agent_state" type="VARCHAR(128)"/>
+            <column name="local_storage_mb" type="BIGINT"/>
+            <column name="memory" type="BIGINT"/>
+            <column name="milli_cpu" type="BIGINT"/>
+            <column name="environment_id" type="BIGINT"/>
+            <column name="remove_after" type="datetime"/>
+            <column name="host_template_id" type="BIGINT"/>
+            <column name="external_id" type="VARCHAR(128)"/>
+        </createTable>
+        <createTable tableName="host_template">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="MEDIUMTEXT"/>
+            <column name="driver" type="VARCHAR(255)"/>
+            <column name="flavor_prefix" type="VARCHAR(255)"/>
+        </createTable>
+        <createTable tableName="instance">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="MEDIUMTEXT"/>
+            <column name="memory_mb" type="BIGINT"/>
+            <column name="hostname" type="VARCHAR(255)"/>
+            <column name="instance_triggered_stop" type="VARCHAR(128)"/>
+            <column name="agent_id" type="BIGINT"/>
+            <column name="domain" type="VARCHAR(128)"/>
+            <column name="first_running" type="datetime"/>
+            <column name="token" type="VARCHAR(255)"/>
+            <column name="userdata" type="TEXT"/>
+            <column name="registry_credential_id" type="BIGINT"/>
+            <column name="external_id" type="VARCHAR(128)"/>
+            <column defaultValueNumeric="0" name="native_container" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="network_container_id" type="BIGINT"/>
+            <column name="health_state" type="VARCHAR(128)"/>
+            <column name="start_count" type="BIGINT"/>
+            <column name="create_index" type="BIGINT"/>
+            <column defaultValue="0" name="version" type="VARCHAR(255)"/>
+            <column name="memory_reservation" type="BIGINT"/>
+            <column name="milli_cpu_reservation" type="BIGINT"/>
+            <column defaultValueNumeric="0" name="system" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="service_id" type="BIGINT"/>
+            <column name="environment_id" type="BIGINT"/>
+            <column name="deployment_unit_id" type="BIGINT"/>
+            <column name="revision_id" type="BIGINT"/>
+            <column defaultValueNumeric="1" name="desired" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="host_id" type="BIGINT"/>
+            <column name="network_id" type="BIGINT"/>
+            <column name="service_index" type="INT"/>
+            <column name="upgrade_time" type="datetime"/>
+        </createTable>
+        <createTable tableName="machine_driver">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="TEXT"/>
+            <column name="uri" type="VARCHAR(255)"/>
+            <column name="md5checksum" type="VARCHAR(255)"/>
+        </createTable>
+        <createTable tableName="mount">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="MEDIUMTEXT"/>
+            <column name="volume_id" type="BIGINT"/>
+            <column name="instance_id" type="BIGINT"/>
+            <column name="permissions" type="VARCHAR(128)"/>
+            <column name="path" type="VARCHAR(512)"/>
+        </createTable>
+        <createTable tableName="network">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="MEDIUMTEXT"/>
+            <column defaultValueNumeric="0" name="is_public" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="domain" type="VARCHAR(128)"/>
+            <column name="network_driver_id" type="BIGINT"/>
+        </createTable>
+        <createTable tableName="network_driver">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="MEDIUMTEXT"/>
+            <column name="service_id" type="BIGINT"/>
+        </createTable>
+        <createTable tableName="process_execution">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="process_instance_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="log" type="MEDIUMTEXT"/>
+            <column name="created" type="datetime"/>
+        </createTable>
+        <createTable tableName="process_instance">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="start_time" type="datetime"/>
+            <column name="end_time" type="datetime"/>
+            <column name="data" type="MEDIUMTEXT"/>
+            <column defaultValueNumeric="0" name="priority" type="INT"/>
+            <column name="process_name" type="VARCHAR(128)"/>
+            <column name="resource_type" type="VARCHAR(128)"/>
+            <column name="resource_id" type="VARCHAR(128)"/>
+            <column name="result" type="VARCHAR(128)"/>
+            <column name="exit_reason" type="VARCHAR(128)"/>
+            <column name="phase" type="VARCHAR(128)"/>
+            <column name="start_process_server_id" type="VARCHAR(128)"/>
+            <column name="running_process_server_id" type="VARCHAR(128)"/>
+            <column defaultValueNumeric="0" name="execution_count" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="run_after" type="datetime"/>
+            <column name="account_id" type="BIGINT"/>
+        </createTable>
+        <createTable tableName="project_member">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="MEDIUMTEXT"/>
+            <column name="external_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="project_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="external_id_type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="project_template">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="MEDIUMTEXT"/>
+            <column defaultValueNumeric="0" name="is_public" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="external_id" type="VARCHAR(255)"/>
+        </createTable>
+        <createTable tableName="resource_pool">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="MEDIUMTEXT"/>
+            <column name="pool_type" type="VARCHAR(255)"/>
+            <column name="pool_id" type="BIGINT"/>
+            <column name="item" type="VARCHAR(255)"/>
+            <column name="owner_type" type="VARCHAR(255)"/>
+            <column name="owner_id" type="BIGINT"/>
+            <column defaultValue="default" name="qualifier" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sub_owner" type="VARCHAR(255)"/>
+        </createTable>
         <createTable tableName="revision">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints primaryKey="true"/>
@@ -42,120 +765,751 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="${mediumtext}"/>
+            <column name="data" type="MEDIUMTEXT"/>
             <column name="service_id" type="BIGINT"/>
         </createTable>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump4">
-        <addColumn tableName="config_item_status">
-            <column name="deployment_unit_id" type="BIGINT"/>
-        </addColumn>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump5">
-        <addColumn tableName="instance">
-            <column name="deployment_unit_id" type="BIGINT"/>
-        </addColumn>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump6">
-        <addColumn tableName="service_log">
-            <column name="deployment_unit_id" type="BIGINT"/>
-        </addColumn>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump7">
-        <addColumn tableName="deployment_unit">
-            <column name="environment_id" type="BIGINT">
+        <createTable tableName="scheduled_upgrade">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
-        </addColumn>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump8">
-        <addColumn tableName="deployment_unit">
-            <column name="health_state" type="VARCHAR(255)"/>
-        </addColumn>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump9">
-        <addColumn tableName="deployment_unit">
-            <column name="host_id" type="BIGINT"/>
-        </addColumn>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump11">
-        <addColumn tableName="service">
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="run_after" type="datetime"/>
+            <column name="data" type="MEDIUMTEXT"/>
+            <column name="environment_id" type="BIGINT"/>
+            <column name="started" type="datetime"/>
+            <column name="finished" type="datetime"/>
+            <column defaultValueNumeric="0" name="priority" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="secret">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="MEDIUMTEXT"/>
+            <column name="value" type="MEDIUMTEXT"/>
+            <column name="environment_id" type="BIGINT"/>
+        </createTable>
+        <createTable tableName="service">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="MEDIUMTEXT"/>
+            <column name="environment_id" type="BIGINT"/>
+            <column name="vip" type="VARCHAR(255)"/>
+            <column name="create_index" type="BIGINT"/>
+            <column name="selector" type="VARCHAR(4096)"/>
+            <column name="external_id" type="VARCHAR(255)"/>
+            <column name="health_state" type="VARCHAR(128)"/>
+            <column defaultValueNumeric="0" name="system" type="BIT">
+                <constraints nullable="false"/>
+            </column>
             <column name="previous_revision_id" type="BIGINT"/>
-        </addColumn>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump12">
-        <addColumn tableName="deployment_unit">
-            <column name="requested_revision_id" type="BIGINT"/>
-        </addColumn>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump13">
-        <addColumn tableName="deployment_unit">
             <column name="revision_id" type="BIGINT"/>
-        </addColumn>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump14">
-        <addColumn tableName="service">
-            <column name="revision_id" type="BIGINT"/>
-        </addColumn>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump15">
-        <addColumn tableName="instance">
-            <column name="revision_id" type="BIGINT"/>
-        </addColumn>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump16">
-        <addColumn tableName="resource_pool">
-            <column name="sub_owner" type="VARCHAR(255)"/>
-        </addColumn>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump17">
-        <addColumn tableName="service_expose_map">
-            <column name="upgrade_time" type="datetime"/>
-        </addColumn>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump18">
+        </createTable>
+        <createTable tableName="service_event">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="MEDIUMTEXT"/>
+            <column name="host_id" type="BIGINT"/>
+            <column name="healthcheck_uuid" type="VARCHAR(255)"/>
+            <column name="instance_id" type="BIGINT"/>
+            <column name="reported_health" type="VARCHAR(255)"/>
+            <column name="external_timestamp" type="BIGINT"/>
+        </createTable>
+        <createTable tableName="service_log">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="created" type="datetime"/>
+            <column name="data" type="TEXT"/>
+            <column name="end_time" type="datetime"/>
+            <column name="event_type" type="VARCHAR(255)"/>
+            <column name="service_id" type="BIGINT"/>
+            <column name="instance_id" type="BIGINT"/>
+            <column name="transaction_id" type="VARCHAR(255)"/>
+            <column defaultValueNumeric="0" name="sub_log" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="level" type="VARCHAR(255)"/>
+            <column name="deployment_unit_id" type="BIGINT"/>
+        </createTable>
+        <createTable tableName="setting">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value" type="MEDIUMTEXT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="storage_driver">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="MEDIUMTEXT"/>
+            <column name="service_id" type="BIGINT"/>
+        </createTable>
+        <createTable tableName="storage_pool">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="MEDIUMTEXT"/>
+            <column name="physical_total_size_mb" type="BIGINT"/>
+            <column name="virtual_total_size_mb" type="BIGINT"/>
+            <column defaultValueNumeric="0" name="external" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="agent_id" type="BIGINT"/>
+            <column name="zone_id" type="BIGINT"/>
+            <column name="external_id" type="VARCHAR(128)"/>
+            <column name="driver_name" type="VARCHAR(255)"/>
+            <column name="volume_access_mode" type="VARCHAR(255)"/>
+            <column name="storage_driver_id" type="BIGINT"/>
+        </createTable>
+        <createTable tableName="storage_pool_host_map">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="MEDIUMTEXT"/>
+            <column name="storage_pool_id" type="BIGINT"/>
+            <column name="host_id" type="BIGINT"/>
+        </createTable>
+        <createTable tableName="subnet">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="MEDIUMTEXT"/>
+            <column name="network_address" type="VARCHAR(255)"/>
+            <column name="cidr_size" type="INT"/>
+            <column name="start_address" type="VARCHAR(255)"/>
+            <column name="end_address" type="VARCHAR(255)"/>
+            <column name="gateway" type="VARCHAR(255)"/>
+            <column name="network_id" type="BIGINT"/>
+            <column defaultValueNumeric="0" name="is_public" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="ui_challenge">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="account_id" type="VARCHAR(255)"/>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="token" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="data" type="MEDIUMTEXT"/>
+            <column name="request" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="user_preference">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="MEDIUMTEXT"/>
+            <column name="value" type="MEDIUMTEXT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="volume">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="MEDIUMTEXT"/>
+            <column name="physical_size_mb" type="BIGINT"/>
+            <column name="virtual_size_mb" type="BIGINT"/>
+            <column name="uri" type="VARCHAR(255)"/>
+            <column name="external_id" type="VARCHAR(128)"/>
+            <column name="access_mode" type="VARCHAR(255)"/>
+            <column name="host_id" type="BIGINT"/>
+            <column name="deployment_unit_id" type="BIGINT"/>
+            <column name="environment_id" type="BIGINT"/>
+            <column name="volume_template_id" type="BIGINT"/>
+            <column name="storage_driver_id" type="BIGINT"/>
+            <column name="size_mb" type="BIGINT"/>
+            <column name="storage_pool_id" type="BIGINT"/>
+        </createTable>
+        <createTable tableName="volume_storage_pool_map">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="MEDIUMTEXT"/>
+            <column name="volume_id" type="BIGINT"/>
+            <column name="storage_pool_id" type="BIGINT"/>
+        </createTable>
+        <createTable tableName="volume_template">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="TEXT"/>
+            <column name="driver" type="VARCHAR(255)"/>
+            <column name="environment_id" type="BIGINT"/>
+            <column defaultValueNumeric="0" name="external" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueNumeric="0" name="per_container" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_account_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="account"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_agent_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="agent"/>
+        <addUniqueConstraint columnNames="key" constraintName="idx_auth_token_key" deferrable="false" disabled="false" initiallyDeferred="false" tableName="auth_token"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_cert_data_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="certificate"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_cluster_membership_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="cluster_membership"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_credential_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="credential"/>
+        <addUniqueConstraint columnNames="name" constraintName="idx_data_name" deferrable="false" disabled="false" initiallyDeferred="false" tableName="data"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_deployment_unit_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="deployment_unit"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_dynamic_schema_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="dynamic_schema"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_environment_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="environment"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_external_event_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="external_event"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_generic_object_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="generic_object"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_host_template_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="host_template"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_host_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="host"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_instance_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="instance"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_machine_driver_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="machine_driver"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_mount_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="mount"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_network_driver_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="network_driver"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_network_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="network"/>
+        <addUniqueConstraint columnNames="pool_type, pool_id, qualifier, item" constraintName="idx_pool_item2" deferrable="false" disabled="false" initiallyDeferred="false" tableName="resource_pool"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_process_execution__uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="process_execution"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_project_member_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="project_member"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_project_template_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="project_template"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_resource_pool_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="resource_pool"/>
         <addUniqueConstraint columnNames="uuid" constraintName="idx_revision_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="revision"/>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump19">
-        <addForeignKeyConstraint baseColumnNames="deployment_unit_id" baseTableName="config_item_status" constraintName="fk_config_item__deployment_unit_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="deployment_unit"/>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump20">
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_scheduled_upgrade_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="scheduled_upgrade"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_secret_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="secret"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_service_event_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="service_event"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_service_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="service"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_storage_driver_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="storage_driver"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_storage_pool_host_map_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="storage_pool_host_map"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_storage_pool_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="storage_pool"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_subnet_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="subnet"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_user_preference_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="user_preference"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_volume_storage_pool_map_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="volume_storage_pool_map"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_volume_template_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="volume_template"/>
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_volume_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="volume"/>
+        <addUniqueConstraint columnNames="key" constraintName="key" deferrable="false" disabled="false" initiallyDeferred="false" tableName="auth_token"/>
+        <addUniqueConstraint columnNames="token" constraintName="token" deferrable="false" disabled="false" initiallyDeferred="false" tableName="ui_challenge"/>
+        <addForeignKeyConstraint baseColumnNames="authenticated_as_account_id" baseTableName="auth_token" constraintName="auth_token_ibfk_1" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="project_template_id" baseTableName="account" constraintName="fk_account__project_template_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="project_template"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="agent" constraintName="fk_agent__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="resource_account_id" baseTableName="agent" constraintName="fk_agent__resource_account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="audit_log" constraintName="fk_audit_log__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="authenticated_as_account_id" baseTableName="audit_log" constraintName="fk_audit_log__authenticated_as_account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="auth_token" constraintName="fk_auth_token__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="version_id" baseTableName="catalog_file" constraintName="fk_catalog_file__version_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="catalog_version"/>
+        <addForeignKeyConstraint baseColumnNames="template_id" baseTableName="catalog_label" constraintName="fk_catalog_label__template_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="catalog_template"/>
+        <addForeignKeyConstraint baseColumnNames="category_id" baseTableName="catalog_template_category" constraintName="fk_catalog_t_catalog__category_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="catalog_category"/>
+        <addForeignKeyConstraint baseColumnNames="template_id" baseTableName="catalog_template_category" constraintName="fk_catalog_t_category__template_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="catalog_template"/>
+        <addForeignKeyConstraint baseColumnNames="catalog_id" baseTableName="catalog_template" constraintName="fk_catalog_template__catalog_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="catalog"/>
+        <addForeignKeyConstraint baseColumnNames="template_id" baseTableName="catalog_version" constraintName="fk_catalog_template__template_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="catalog_template"/>
+        <addForeignKeyConstraint baseColumnNames="version_id" baseTableName="catalog_version_label" constraintName="fk_catalog_v_l__version_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="catalog_version"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="certificate" constraintName="fk_cert_data__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="credential" constraintName="fk_credential__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="registry_id" baseTableName="credential" constraintName="fk_credential__registry_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="storage_pool"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="deployment_unit" constraintName="fk_deployment_unit__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
         <addForeignKeyConstraint baseColumnNames="environment_id" baseTableName="deployment_unit" constraintName="fk_deployment_unit__environment_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="environment"/>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump21">
         <addForeignKeyConstraint baseColumnNames="host_id" baseTableName="deployment_unit" constraintName="fk_deployment_unit__host_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="host"/>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump22">
         <addForeignKeyConstraint baseColumnNames="revision_id" baseTableName="deployment_unit" constraintName="fk_deployment_unit__revision_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="revision"/>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump23">
+        <addForeignKeyConstraint baseColumnNames="service_id" baseTableName="deployment_unit" constraintName="fk_deployment_unit__service_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="service"/>
         <addForeignKeyConstraint baseColumnNames="requested_revision_id" baseTableName="deployment_unit" constraintName="fk_deployment_unit_requested_revision_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="revision"/>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump24">
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="dynamic_schema" constraintName="fk_dynamic_schema__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="service_id" baseTableName="dynamic_schema" constraintName="fk_dynamic_schema__service_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="service"/>
+        <addForeignKeyConstraint baseColumnNames="dynamic_schema_id" baseTableName="dynamic_schema_role" constraintName="fk_dynamic_schema_role_dynamic_schema_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="dynamic_schema"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="environment" constraintName="fk_environment__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="external_event" constraintName="fk_external_event__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="reported_account_id" baseTableName="external_event" constraintName="fk_external_event__reported_account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="generic_object" constraintName="fk_generic_object__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="host" constraintName="fk_host__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="agent_id" baseTableName="host" constraintName="fk_host__agent_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="agent"/>
+        <addForeignKeyConstraint baseColumnNames="environment_id" baseTableName="host" constraintName="fk_host__environment_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="environment"/>
+        <addForeignKeyConstraint baseColumnNames="host_template_id" baseTableName="host" constraintName="fk_host__host_template_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="host_template"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="host_template" constraintName="fk_host_template__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="instance" constraintName="fk_instance__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="agent_id" baseTableName="instance" constraintName="fk_instance__agent_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="agent"/>
         <addForeignKeyConstraint baseColumnNames="deployment_unit_id" baseTableName="instance" constraintName="fk_instance__deployment_unit_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="deployment_unit"/>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump25">
+        <addForeignKeyConstraint baseColumnNames="environment_id" baseTableName="instance" constraintName="fk_instance__environment_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="environment"/>
+        <addForeignKeyConstraint baseColumnNames="host_id" baseTableName="instance" constraintName="fk_instance__host_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="host"/>
+        <addForeignKeyConstraint baseColumnNames="network_container_id" baseTableName="instance" constraintName="fk_instance__instance_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="instance"/>
+        <addForeignKeyConstraint baseColumnNames="network_id" baseTableName="instance" constraintName="fk_instance__network_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="network"/>
+        <addForeignKeyConstraint baseColumnNames="registry_credential_id" baseTableName="instance" constraintName="fk_instance__registry_credential_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="credential"/>
         <addForeignKeyConstraint baseColumnNames="revision_id" baseTableName="instance" constraintName="fk_instance__revision_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="revision"/>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump26">
-        <addForeignKeyConstraint baseColumnNames="previous_revision_id" baseTableName="service" constraintName="fk_service__previous_revision_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="revision"/>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump27">
-        <addForeignKeyConstraint baseColumnNames="revision_id" baseTableName="service" constraintName="fk_service__revision_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="revision"/>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump28">
-        <addForeignKeyConstraint baseColumnNames="deployment_unit_id" baseTableName="service_log" constraintName="fk_service_log__deployment_unit_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="deployment_unit"/>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump29">
+        <addForeignKeyConstraint baseColumnNames="service_id" baseTableName="instance" constraintName="fk_instance__service_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="service"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="mount" constraintName="fk_mount__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="instance_id" baseTableName="mount" constraintName="fk_mount__instance_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="instance"/>
+        <addForeignKeyConstraint baseColumnNames="volume_id" baseTableName="mount" constraintName="fk_mount__volume_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="volume"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="network" constraintName="fk_network__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="network_driver_id" baseTableName="network" constraintName="fk_network__network_driver_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="network_driver"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="network_driver" constraintName="fk_network_driver__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="service_id" baseTableName="network_driver" constraintName="fk_network_driver__service_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="service"/>
+        <addForeignKeyConstraint baseColumnNames="process_instance_id" baseTableName="process_execution" constraintName="fk_process_execution_process_instance_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="process_instance"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="process_instance" constraintName="fk_process_instance__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="project_member" constraintName="fk_project_member__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="project_member" constraintName="fk_project_member__project_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="project_template" constraintName="fk_project_template__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="resource_pool" constraintName="fk_resource_pool__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
         <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="revision" constraintName="fk_revision__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump31">
         <addForeignKeyConstraint baseColumnNames="service_id" baseTableName="revision" constraintName="fk_revision__service_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="service"/>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump32">
-        <dropIndex indexName="idx_pool_owner2" tableName="resource_pool"/>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump33">
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="scheduled_upgrade" constraintName="fk_scheduled_upgrade__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="environment_id" baseTableName="scheduled_upgrade" constraintName="fk_scheduled_upgrade__environment_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="environment"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="secret" constraintName="fk_secret__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="environment_id" baseTableName="secret" constraintName="fk_secret__environment_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="environment"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="service" constraintName="fk_service__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="environment_id" baseTableName="service" constraintName="fk_service__environment_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="environment"/>
+        <addForeignKeyConstraint baseColumnNames="previous_revision_id" baseTableName="service" constraintName="fk_service__previous_revision_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="revision"/>
+        <addForeignKeyConstraint baseColumnNames="revision_id" baseTableName="service" constraintName="fk_service__revision_id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="revision"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="service_event" constraintName="fk_service_event__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="host_id" baseTableName="service_event" constraintName="fk_service_event__host_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="host"/>
+        <addForeignKeyConstraint baseColumnNames="instance_id" baseTableName="service_event" constraintName="fk_service_event__instance_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="instance"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="service_log" constraintName="fk_service_log__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="deployment_unit_id" baseTableName="service_log" constraintName="fk_service_log__deployment_unit_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="deployment_unit"/>
+        <addForeignKeyConstraint baseColumnNames="instance_id" baseTableName="service_log" constraintName="fk_service_log__instance_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="instance"/>
+        <addForeignKeyConstraint baseColumnNames="service_id" baseTableName="service_log" constraintName="fk_service_log__service_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="service"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="storage_driver" constraintName="fk_storage_driver__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="storage_driver_id" baseTableName="storage_pool" constraintName="fk_storage_driver__id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="storage_driver"/>
+        <addForeignKeyConstraint baseColumnNames="service_id" baseTableName="storage_driver" constraintName="fk_storage_driver__service_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="service"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="storage_pool" constraintName="fk_storage_pool__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="agent_id" baseTableName="storage_pool" constraintName="fk_storage_pool__agent_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="agent"/>
+        <addForeignKeyConstraint baseColumnNames="host_id" baseTableName="storage_pool_host_map" constraintName="fk_storage_pool_host_map__host_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="host"/>
+        <addForeignKeyConstraint baseColumnNames="storage_pool_id" baseTableName="storage_pool_host_map" constraintName="fk_storage_pool_host_map__storage_pool_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="storage_pool"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="subnet" constraintName="fk_subnet__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="network_id" baseTableName="subnet" constraintName="fk_subnet__network_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="network"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="user_preference" constraintName="fk_user_preference__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="volume" constraintName="fk_volume__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="deployment_unit_id" baseTableName="volume" constraintName="fk_volume__deployment_unit_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="deployment_unit"/>
+        <addForeignKeyConstraint baseColumnNames="environment_id" baseTableName="volume" constraintName="fk_volume__environment_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="environment"/>
+        <addForeignKeyConstraint baseColumnNames="host_id" baseTableName="volume" constraintName="fk_volume__host_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="host"/>
+        <addForeignKeyConstraint baseColumnNames="storage_driver_id" baseTableName="volume" constraintName="fk_volume__storage_driver_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="storage_driver"/>
+        <addForeignKeyConstraint baseColumnNames="storage_pool_id" baseTableName="volume" constraintName="fk_volume__storage_pool_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="storage_pool"/>
+        <addForeignKeyConstraint baseColumnNames="volume_template_id" baseTableName="volume" constraintName="fk_volume__volume_template_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="volume_template"/>
+        <addForeignKeyConstraint baseColumnNames="storage_pool_id" baseTableName="volume_storage_pool_map" constraintName="fk_volume_storage_pool_map__storage_pool_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="storage_pool"/>
+        <addForeignKeyConstraint baseColumnNames="volume_id" baseTableName="volume_storage_pool_map" constraintName="fk_volume_storage_pool_map__volume_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="volume"/>
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="volume_template" constraintName="fk_volume_template__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+        <addForeignKeyConstraint baseColumnNames="environment_id" baseTableName="volume_template" constraintName="fk_volume_template__environment_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="environment"/>
+        <createIndex indexName="created_token" tableName="ui_challenge" unique="false">
+            <column name="created"/>
+            <column name="token"/>
+        </createIndex>
+        <createIndex indexName="fk_agent__uri" tableName="agent" unique="false">
+            <column name="uri"/>
+        </createIndex>
+        <createIndex indexName="fk_storage_pool__zone_id" tableName="storage_pool" unique="false">
+            <column name="zone_id"/>
+        </createIndex>
+        <createIndex indexName="idx_account_name" tableName="account" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_account_remove_time" tableName="account" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+        <createIndex indexName="idx_account_removed" tableName="account" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_account_state" tableName="account" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_agent_name" tableName="agent" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_agent_remove_time" tableName="agent" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+        <createIndex indexName="idx_agent_removed" tableName="agent" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_agent_state" tableName="agent" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_audit_log_client_ip" tableName="audit_log" unique="false">
+            <column name="client_ip"/>
+        </createIndex>
+        <createIndex indexName="idx_audit_log_created" tableName="audit_log" unique="false">
+            <column name="created"/>
+        </createIndex>
+        <createIndex indexName="idx_audit_log_event_type" tableName="audit_log" unique="false">
+            <column name="event_type"/>
+        </createIndex>
+        <createIndex indexName="idx_auth_token_expires" tableName="auth_token" unique="false">
+            <column name="expires"/>
+        </createIndex>
+        <createIndex indexName="idx_catalog_environment_id" tableName="catalog" unique="false">
+            <column name="environment_id"/>
+        </createIndex>
+        <createIndex indexName="idx_catalog_template_environment_id" tableName="catalog_template" unique="false">
+            <column name="environment_id"/>
+        </createIndex>
+        <createIndex indexName="idx_cert_data_name" tableName="certificate" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_cert_data_remove_time" tableName="certificate" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+        <createIndex indexName="idx_cert_data_removed" tableName="certificate" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_cert_data_state" tableName="certificate" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_cluster_membership_name" tableName="cluster_membership" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_credential_name" tableName="credential" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_credential_remove_time" tableName="credential" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+        <createIndex indexName="idx_credential_removed" tableName="credential" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_credential_state" tableName="credential" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_deployment_unit_name" tableName="deployment_unit" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_deployment_unit_remove_time" tableName="deployment_unit" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+        <createIndex indexName="idx_deployment_unit_removed" tableName="deployment_unit" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_deployment_unit_state" tableName="deployment_unit" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_dynamic_schema_name" tableName="dynamic_schema" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_dynamic_schema_removed" tableName="dynamic_schema" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_dynamic_schema_state" tableName="dynamic_schema" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_environment_external_id" tableName="environment" unique="false">
+            <column name="external_id"/>
+        </createIndex>
+        <createIndex indexName="idx_environment_name" tableName="environment" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_environment_remove_time" tableName="environment" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+        <createIndex indexName="idx_environment_removed" tableName="environment" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_environment_state" tableName="environment" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_external_event_state" tableName="external_event" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_external_ids" tableName="account" unique="false">
+            <column name="external_id"/>
+            <column name="external_id_type"/>
+        </createIndex>
+        <createIndex indexName="idx_generic_object_key" tableName="generic_object" unique="false">
+            <column name="key"/>
+        </createIndex>
+        <createIndex indexName="idx_generic_object_name" tableName="generic_object" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_generic_object_remove_time" tableName="generic_object" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+        <createIndex indexName="idx_generic_object_removed" tableName="generic_object" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_generic_object_state" tableName="generic_object" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_host__external_id" tableName="host" unique="false">
+            <column name="external_id"/>
+        </createIndex>
+        <createIndex indexName="idx_host__remove_after" tableName="host" unique="false">
+            <column name="remove_after"/>
+        </createIndex>
+        <createIndex indexName="idx_host_is_public" tableName="host" unique="false">
+            <column name="is_public"/>
+        </createIndex>
+        <createIndex indexName="idx_host_name" tableName="host" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_host_remove_time" tableName="host" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+        <createIndex indexName="idx_host_removed" tableName="host" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_host_state" tableName="host" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_host_template_name" tableName="host_template" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_host_template_remove_time" tableName="host_template" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+        <createIndex indexName="idx_host_template_removed" tableName="host_template" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_host_template_state" tableName="host_template" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_instance_external_id" tableName="instance" unique="false">
+            <column name="external_id"/>
+        </createIndex>
+        <createIndex indexName="idx_instance_name" tableName="instance" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_instance_remove_time" tableName="instance" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+        <createIndex indexName="idx_instance_removed" tableName="instance" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_instance_state" tableName="instance" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_machine_driver_name" tableName="machine_driver" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_machine_driver_remove_time" tableName="machine_driver" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+        <createIndex indexName="idx_machine_driver_removed" tableName="machine_driver" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_machine_driver_state" tableName="machine_driver" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_mount_name" tableName="mount" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_mount_remove_time" tableName="mount" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+        <createIndex indexName="idx_mount_removed" tableName="mount" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_mount_state" tableName="mount" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_network_driver_name" tableName="network_driver" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_network_driver_remove_time" tableName="network_driver" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+        <createIndex indexName="idx_network_driver_removed" tableName="network_driver" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_network_driver_state" tableName="network_driver" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_network_name" tableName="network" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_network_remove_time" tableName="network" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+        <createIndex indexName="idx_network_removed" tableName="network" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_network_state" tableName="network" unique="false">
+            <column name="state"/>
+        </createIndex>
         <createIndex indexName="idx_pool_owner2" tableName="resource_pool" unique="false">
             <column name="pool_type"/>
             <column name="pool_id"/>
@@ -164,38 +1518,223 @@
             <column name="owner_id"/>
             <column name="sub_owner"/>
         </createIndex>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump34">
-        <createIndex indexName="idx_revision_name" tableName="revision" unique="false">
-            <column name="name"/>
+        <createIndex indexName="idx_process_instance_end_time" tableName="process_instance" unique="false">
+            <column name="end_time"/>
         </createIndex>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump35">
-        <createIndex indexName="idx_revision_remove_time" tableName="revision" unique="false">
-            <column name="remove_time"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump36">
-        <createIndex indexName="idx_revision_removed" tableName="revision" unique="false">
-            <column name="removed"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump37">
-        <createIndex indexName="idx_revision_state" tableName="revision" unique="false">
-            <column name="state"/>
-        </createIndex>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump38">
-        <createIndex indexName="resource_type" tableName="backoff" unique="false">
+        <createIndex indexName="idx_process_instance_et_rt_ri" tableName="process_instance" unique="false">
+            <column name="end_time"/>
             <column name="resource_type"/>
             <column name="resource_id"/>
         </createIndex>
-    </changeSet>
-    <changeSet author="rancher (generated)" id="dump40">
-        <addColumn tableName="instance">
-            <column defaultValueNumeric="1" defaultValueBoolean="true" name="desired" type="BIT">
-                <constraints nullable="false"/>
-            </column>
-        </addColumn>
+        <createIndex indexName="idx_process_instance_priority" tableName="process_instance" unique="false">
+            <column name="priority"/>
+        </createIndex>
+        <createIndex indexName="idx_process_instance_run_after" tableName="process_instance" unique="false">
+            <column name="run_after"/>
+        </createIndex>
+        <createIndex indexName="idx_process_instance_start_time" tableName="process_instance" unique="false">
+            <column name="start_time"/>
+        </createIndex>
+        <createIndex indexName="idx_processs_execution_created_time" tableName="process_execution" unique="false">
+            <column name="created"/>
+        </createIndex>
+        <createIndex indexName="idx_project_member_name" tableName="project_member" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_project_member_remove_time" tableName="project_member" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+        <createIndex indexName="idx_project_member_removed" tableName="project_member" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_project_member_state" tableName="project_member" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_project_template_external_id" tableName="project_template" unique="false">
+            <column name="external_id"/>
+        </createIndex>
+        <createIndex indexName="idx_project_template_is_public" tableName="project_template" unique="false">
+            <column name="is_public"/>
+        </createIndex>
+        <createIndex indexName="idx_project_template_name" tableName="project_template" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_project_template_remove_time" tableName="project_template" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+        <createIndex indexName="idx_project_template_removed" tableName="project_template" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_project_template_state" tableName="project_template" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_resource_pool_name" tableName="resource_pool" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_resource_pool_remove_time" tableName="resource_pool" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+        <createIndex indexName="idx_resource_pool_removed" tableName="resource_pool" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_resource_pool_state" tableName="resource_pool" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_revision_name" tableName="revision" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_revision_remove_time" tableName="revision" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+        <createIndex indexName="idx_revision_removed" tableName="revision" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_revision_state" tableName="revision" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_secret_name" tableName="secret" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_secret_remove_time" tableName="secret" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+        <createIndex indexName="idx_secret_removed" tableName="secret" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_secret_state" tableName="secret" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_service_event_name" tableName="service_event" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_service_event_remove_time" tableName="service_event" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+        <createIndex indexName="idx_service_event_removed" tableName="service_event" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_service_event_state" tableName="service_event" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_service_external_id" tableName="service" unique="false">
+            <column name="external_id"/>
+        </createIndex>
+        <createIndex indexName="idx_service_name" tableName="service" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_service_remove_time" tableName="service" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+        <createIndex indexName="idx_service_removed" tableName="service" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_service_state" tableName="service" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_setting_name" tableName="setting" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_storage_driver_name" tableName="storage_driver" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_storage_driver_remove_time" tableName="storage_driver" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+        <createIndex indexName="idx_storage_driver_removed" tableName="storage_driver" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_storage_driver_state" tableName="storage_driver" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_storage_pool_host_map_name" tableName="storage_pool_host_map" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_storage_pool_host_map_remove_time" tableName="storage_pool_host_map" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+        <createIndex indexName="idx_storage_pool_host_map_removed" tableName="storage_pool_host_map" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_storage_pool_host_map_state" tableName="storage_pool_host_map" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_storage_pool_name" tableName="storage_pool" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_storage_pool_remove_time" tableName="storage_pool" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+        <createIndex indexName="idx_storage_pool_removed" tableName="storage_pool" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_storage_pool_state" tableName="storage_pool" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_subnet_name" tableName="subnet" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_subnet_remove_time" tableName="subnet" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+        <createIndex indexName="idx_subnet_removed" tableName="subnet" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_subnet_state" tableName="subnet" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_user_preference_name" tableName="user_preference" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_user_preference_remove_time" tableName="user_preference" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+        <createIndex indexName="idx_user_preference_removed" tableName="user_preference" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_user_preference_state" tableName="user_preference" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_volume_external_id" tableName="volume" unique="false">
+            <column name="external_id"/>
+        </createIndex>
+        <createIndex indexName="idx_volume_name" tableName="volume" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_volume_remove_time" tableName="volume" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+        <createIndex indexName="idx_volume_removed" tableName="volume" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_volume_state" tableName="volume" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_volume_storage_pool_map_name" tableName="volume_storage_pool_map" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_volume_storage_pool_map_remove_time" tableName="volume_storage_pool_map" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+        <createIndex indexName="idx_volume_storage_pool_map_removed" tableName="volume_storage_pool_map" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_volume_storage_pool_map_state" tableName="volume_storage_pool_map" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_volume_template_name" tableName="volume_template" unique="false">
+            <column name="name"/>
+        </createIndex>
+        <createIndex indexName="idx_volume_template_remove_time" tableName="volume_template" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+        <createIndex indexName="idx_volume_template_removed" tableName="volume_template" unique="false">
+            <column name="removed"/>
+        </createIndex>
+        <createIndex indexName="idx_volume_template_state" tableName="volume_template" unique="false">
+            <column name="state"/>
+        </createIndex>
+        <createIndex indexName="idx_volume_uri" tableName="volume" unique="false">
+            <column name="uri"/>
+        </createIndex>
     </changeSet>
 </databaseChangeLog>
