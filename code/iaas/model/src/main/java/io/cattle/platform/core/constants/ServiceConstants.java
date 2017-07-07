@@ -91,6 +91,8 @@ public class ServiceConstants {
     public static final String FIELD_VOLUME_TEMPLATE_ID = "volumeTemplateId";
     public static final String FIELD_DEPLOYMENT_UNIT_ID = "deploymentUnitId";
     public static final String FIELD_SERVICE_INDEX_STRATEGY = "serviceIndexStrategy";
+    
+    public static final String FIELD_SECRETS = "secrets";
 
     public static final String ACTION_SERVICE_ACTIVATE = "activate";
     public static final String ACTION_SERVICE_CREATE = "create";
@@ -175,7 +177,7 @@ public class ServiceConstants {
     public static final String SERVICE_INDEX_DU_STRATEGY = "deploymentUnitBased";
 
     public static final String PROCESS_DATA_SERVICE_RECONCILE = "reconcileState";
-
+    
     public static boolean isSystem(Stack stack) {
         return stack.getSystem() || DataAccessor.fieldBool(stack, FIELD_SYSTEM)|| DataAccessor.fieldBool(stack, "isSystem");
     }

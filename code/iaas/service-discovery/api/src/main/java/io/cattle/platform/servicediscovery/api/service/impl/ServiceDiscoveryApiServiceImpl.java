@@ -14,6 +14,7 @@ import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.DataDao;
 import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.Secret;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceConsumeMap;
 import io.cattle.platform.core.model.Stack;
@@ -86,6 +87,13 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
     DataDao dataDao;
 
     private final static String COMPOSE_PREFIX = "version: '2'\r\n";
+    private final static String UID = "uid";
+    private final static String GID = "gid";
+    private final static String MODE = "mode";
+    private final static String NAME = "name";
+    private final static String SECRET_ID = "secretId";
+    private final static String SOURCE = "source";
+    private final static String TARGET = "target";
     
     @Override
     public void addServiceLink(Service service, ServiceLink serviceLink) {
@@ -168,6 +176,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
         Collection<Long> servicesToExportIds = CollectionUtils.collect(servicesToExport,
                 TransformerUtils.invokerTransformer("getId"));
         Map<String, Object> volumesData = new HashMap<String, Object>();
+        Map<String, Object> secretsData = new HashMap<>();
         for (Service service : servicesToExport) {
             List<String> launchConfigNames = ServiceDiscoveryUtil.getServiceLaunchConfigNames(service);
             for (String launchConfigName : launchConfigNames) {
@@ -196,6 +205,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                     populateTmpfs(cattleServiceData, composeServiceData);
                     populateUlimit(cattleServiceData, composeServiceData);
                     populateBlkioOptions(cattleServiceData, composeServiceData);
+                    populateSecrets(cattleServiceData, composeServiceData, secretsData);
                     translateV1VolumesToV2(cattleServiceData, composeServiceData, volumesData);
                 }
                 if (!composeServiceData.isEmpty()) {
@@ -225,6 +235,9 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
         }
         if (!volumesData.isEmpty()) {
             data.put("volumes", volumesData);
+        }
+        if (!secretsData.isEmpty()) {
+            data.put("secrets", secretsData);
         }
         return data;
     }
@@ -373,6 +386,57 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                 }
             }
         }
+    }
+    
+    @SuppressWarnings("unchecked")
+    private void populateSecrets(Map<String, Object> cattleServiceData, Map<String, Object> composeServiceData, Map<String, Object> secretsData) {
+        Object secrets = cattleServiceData.get(ServiceConstants.FIELD_SECRETS);
+        if (secrets instanceof List<?>) {
+            // we need to support two cases here. Long syntax and short syntax. If everything is default and filename matches secret name, then we 
+            // only export short syntax.
+            if (!((List<?>) secrets).isEmpty()) {
+                List<Object> list = (List<Object>) secrets;
+                List<Object> secretEntries = new ArrayList<>();
+                for (Object secret : list) {
+                    if (secret instanceof Map) {
+                        Map<String, Object> secretOpts = (Map<String, Object>) secret;
+                        String secretId = secretOpts.get(SECRET_ID).toString();
+                        Secret secretObj = objectManager.loadResource(Secret.class, secretId);
+                        String secretName = secretObj.getName(); 
+                        if (isShortSyntax(secretOpts)) {
+                            secretEntries.add(secretName);
+                        } else {
+                            String uid = secretOpts.get(UID).toString();
+                            String gid = secretOpts.get(GID).toString();
+                            String mode = secretOpts.get(MODE).toString();
+                            String filename = secretOpts.get(NAME).toString();
+                            Map<String, String> secretMap = new HashMap<>();
+                            secretMap.put(SOURCE, secretName);
+                            secretMap.put(TARGET, filename);
+                            secretMap.put(UID, uid);
+                            secretMap.put(GID, gid);
+                            secretMap.put(MODE, mode);
+                            secretEntries.add(secretMap);
+                        }
+                        
+                        Map<String, Object> secretTemplatesOpts = new HashMap<>();
+                        //TODO: add file opts
+                        secretTemplatesOpts.put("external", "true");
+                        secretsData.put(secretName, secretTemplatesOpts);
+                    }
+                }
+                if (!secretEntries.isEmpty()) {
+                    composeServiceData.put("secrets", secretEntries);
+                }
+            }
+        }
+    }
+    
+    private boolean isShortSyntax(Map<String, Object> secretOpts) {
+        if (secretOpts.get(UID) == null && secretOpts.get(GID) == null && secretOpts.get(MODE) == null) {
+            return true;
+        }
+        return false;
     }
 
     @SuppressWarnings("unchecked")
