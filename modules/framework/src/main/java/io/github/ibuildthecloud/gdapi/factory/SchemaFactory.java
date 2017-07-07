@@ -8,7 +8,7 @@ public interface SchemaFactory {
 
     String getId();
 
-    List<Schema> listSchemas();
+    List<? extends Schema> listSchemas();
 
     String getSchemaName(Class<?> clz);
 

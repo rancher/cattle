@@ -8,6 +8,10 @@ import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.exception.FailedToAcquireLockException;
+import org.apache.cloudstack.managed.context.ManagedContextRunnable;
+import org.apache.cloudstack.managed.context.NoExceptionRunnable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -17,12 +21,6 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
-
-import org.apache.cloudstack.managed.context.ManagedContextRunnable;
-import org.apache.cloudstack.managed.context.NoExceptionRunnable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 public abstract class AbstractThreadPoolingEventService extends AbstractEventService {
 
@@ -111,11 +109,6 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
             @Override
             protected void doRun() throws Exception {
                 try {
-                    Map<String, Object> context = event.getContext();
-                    if (context != null) {
-                        MDC.setContextMap(context);
-                    }
-
                     listener.onEvent(event);
                 } catch (FailedToAcquireLockException e) {
                     log.trace("Failed to acquire lock on event [{}], this is probably normal", event, e);

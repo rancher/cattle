@@ -4,13 +4,11 @@ import com.netflix.config.AbstractPollingScheduler;
 import com.netflix.config.DynamicConfiguration;
 import com.netflix.config.PolledConfigurationSource;
 
+import java.util.Iterator;
+
 public class NamedDynamicConfiguration extends DynamicConfiguration implements NamedConfigurationSource {
 
-    String sourceName;
-
-    public NamedDynamicConfiguration() {
-        super();
-    }
+    private String sourceName;
 
     public NamedDynamicConfiguration(PolledConfigurationSource source, AbstractPollingScheduler scheduler, String sourceName) {
         super(source, scheduler);
@@ -22,8 +20,9 @@ public class NamedDynamicConfiguration extends DynamicConfiguration implements N
         return sourceName;
     }
 
-    public void setSourceName(String sourceName) {
-        this.sourceName = sourceName;
+    @Override
+    @SuppressWarnings("unchecked")
+    public Iterator<String> getKeys() {
+        return (Iterator<String>) super.getKeys();
     }
-
 }

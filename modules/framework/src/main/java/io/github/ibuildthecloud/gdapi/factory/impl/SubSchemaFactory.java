@@ -86,7 +86,7 @@ public class SubSchemaFactory extends AbstractSchemaFactory implements SchemaFac
         init = true;
     }
 
-    protected static void serializeSchema(List<Schema> schemaList, String id) {
+    protected static void serializeSchema(List<? extends Schema> schemaList, String id) {
         try(FileOutputStream fos = new FileOutputStream(new File(id + ".ser"))) {
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(schemaList);
@@ -131,10 +131,9 @@ public class SubSchemaFactory extends AbstractSchemaFactory implements SchemaFac
         return id;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public List<Schema> listSchemas() {
-        return (List)schemaList;
+    public List<? extends Schema> listSchemas() {
+        return schemaList;
     }
 
     @Override

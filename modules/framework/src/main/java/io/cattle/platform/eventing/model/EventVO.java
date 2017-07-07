@@ -1,31 +1,23 @@
 package io.cattle.platform.eventing.model;
 
-import io.cattle.platform.eventing.exception.EventExecutionException;
-
+import javax.xml.bind.annotation.XmlTransient;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Map;
-
-import javax.xml.bind.annotation.XmlTransient;
-
-import org.slf4j.MDC;
 
 public class EventVO<T> implements Event {
 
-    String id, name, replyTo, resourceId, resourceType, publisher, transitioning, transitioningMessage, transitioningInternalMessage;
-    String[] previousIds, previousNames;
-    T data;
-    Date time;
-    Long timeoutMillis;
-    String listenerKey;
-    Integer transitioningProgress;
-    Map<String, Object> context;
+    private String id, name, replyTo, resourceId, resourceType, transitioning, transitioningMessage, transitioningInternalMessage;
+    private String[] previousIds, previousNames;
+    private T data;
+    private Date time;
+    private Long timeoutMillis;
+    private String listenerKey;
+    private Integer transitioningProgress;
 
     @SuppressWarnings("unchecked")
     public EventVO() {
         id = io.cattle.platform.util.resource.UUID.randomUUID().toString();
         time = new Date();
-        context = MDC.getMDCAdapter().getCopyOfContextMap();
     }
 
     public EventVO(Event event) {
@@ -42,40 +34,17 @@ public class EventVO<T> implements Event {
         this.previousNames = event.getPreviousNames();
         this.data = (T) event.getData();
         this.time = event.getTime();
-        this.publisher = event.getPublisher();
         this.resourceId = event.getResourceId();
         this.resourceType = event.getResourceType();
         this.transitioning = event.getTransitioning();
         this.transitioningMessage = event.getTransitioningMessage();
         this.transitioningInternalMessage = event.getTransitioningInternalMessage();
         this.transitioningProgress = event.getTransitioningProgress();
-        this.context = event.getContext();
         this.timeoutMillis = event.getTimeoutMillis();
     }
 
-    public static EventVO<Object> replyWithException(Event request, Class<? extends EventExecutionException> clz,
-                                                     String message) {
-        EventVO<Object> reply = reply(request);
-        reply.setTransitioning(TRANSITIONING_ERROR);
-        reply.setTransitioningInternalMessage("class:" + clz.getCanonicalName());
-        reply.setTransitioningMessage(message);
-
-        return reply;
-    }
-
     public static EventVO<Object> reply(Event request) {
-        String[] previousIds = request.getPreviousIds();
-        if (previousIds != null && previousIds.length > 0) {
-            String[] newIds = new String[previousIds.length + 1];
-            System.arraycopy(previousIds, 0, newIds, 1, previousIds.length);
-            newIds[0] = request.getId();
-
-            previousIds = newIds;
-        } else {
-            previousIds = new String[] { request.getId() };
-        }
-
-        EventVO<Object> event = new EventVO<Object>();
+        EventVO<Object> event = new EventVO<>();
         event.setName(request.getReplyTo());
         event.setPreviousNames(prepend(request.getPreviousNames(), request.getName()));
         event.setPreviousIds(prepend(request.getPreviousIds(), request.getId()));
@@ -85,7 +54,7 @@ public class EventVO<T> implements Event {
         return event;
     }
 
-    protected static String[] prepend(String[] array, String value) {
+    private static String[] prepend(String[] array, String value) {
         if (array != null && array.length > 0) {
             String[] newIds = new String[array.length + 1];
             System.arraycopy(array, 0, newIds, 1, array.length);
@@ -100,7 +69,7 @@ public class EventVO<T> implements Event {
     }
 
     public static <T> EventVO<T> newEvent(String name) {
-        return new EventVO<T>(name);
+        return new EventVO<>(name);
     }
 
     public EventVO(String name) {
@@ -175,20 +144,6 @@ public class EventVO<T> implements Event {
 
     public EventVO<T> withTime(Date time) {
         this.time = time;
-        return this;
-    }
-
-    @Override
-    public String getPublisher() {
-        return publisher;
-    }
-
-    public void setPublisher(String publisher) {
-        this.publisher = publisher;
-    }
-
-    public EventVO<T> withPublisher(String publisher) {
-        this.publisher = publisher;
         return this;
     }
 
@@ -319,15 +274,6 @@ public class EventVO<T> implements Event {
     }
 
     @Override
-    public Map<String, Object> getContext() {
-        return context;
-    }
-
-    public void setContext(Map<String, Object> context) {
-        this.context = context;
-    }
-
-    @Override
     public Long getTimeoutMillis() {
         return timeoutMillis;
     }
@@ -341,17 +287,25 @@ public class EventVO<T> implements Event {
         return this;
     }
 
-    public EventVO<T> withContext(Map<String, Object> context) {
-        this.context = context;
-        return this;
-    }
-
     @Override
     public String toString() {
-        return "EventVO [id=" + id + ", name=" + name + ", previousNames=" + Arrays.toString(previousNames) + ", replyTo=" + replyTo + ", resourceId="
-                + resourceId + ", resourceType=" + resourceType + ", publisher=" + publisher + ", transitioning=" + transitioning + ", transitioningMessage="
-                + transitioningMessage + ", transitioningInternalMessage=" + transitioningInternalMessage + ", previousIds=" + Arrays.toString(previousIds)
-                + ", data=" + data + ", time=" + time + ", listenerKey=" + listenerKey + ", transitioningProgress=" + transitioningProgress + "]";
+        return "EventVO{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", replyTo='" + replyTo + '\'' +
+                ", resourceId='" + resourceId + '\'' +
+                ", resourceType='" + resourceType + '\'' +
+                ", transitioning='" + transitioning + '\'' +
+                ", transitioningMessage='" + transitioningMessage + '\'' +
+                ", transitioningInternalMessage='" + transitioningInternalMessage + '\'' +
+                ", previousIds=" + Arrays.toString(previousIds) +
+                ", previousNames=" + Arrays.toString(previousNames) +
+                ", data=" + data +
+                ", time=" + time +
+                ", timeoutMillis=" + timeoutMillis +
+                ", listenerKey='" + listenerKey + '\'' +
+                ", transitioningProgress=" + transitioningProgress +
+                '}';
     }
 
 }

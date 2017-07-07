@@ -1,19 +1,18 @@
 package io.cattle.platform.eventing.model;
 
 import java.util.Date;
-import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 public interface Event {
 
-    public static final String TRANSITIONING_YES = "yes";
-    public static final String TRANSITIONING_NO = "no";
-    public static final String TRANSITIONING_ERROR = "error";
+    String TRANSITIONING_YES = "yes";
+    String TRANSITIONING_NO = "no";
+    String TRANSITIONING_ERROR = "error";
 
-    public static final String REPLY_PREFIX = "reply.";
-    public static final String REPLY_SUFFIX = ".reply";
+    String REPLY_PREFIX = "reply.";
+    String REPLY_SUFFIX = ".reply";
 
     String getId();
 
@@ -51,10 +50,4 @@ public interface Event {
 
     @JsonInclude(Include.NON_EMPTY)
     Long getTimeoutMillis();
-
-    @JsonInclude(Include.NON_EMPTY)
-    String getPublisher();
-
-    @JsonInclude(Include.NON_EMPTY)
-    Map<String, Object> getContext();
 }

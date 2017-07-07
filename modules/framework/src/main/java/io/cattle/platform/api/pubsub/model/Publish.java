@@ -31,9 +31,6 @@ public interface Publish {
     Long getTime();
 
     @Field(create = true)
-    String getPublisher();
-
-    @Field(create = true)
     String getTransitioning();
 
     @Field(create = true)

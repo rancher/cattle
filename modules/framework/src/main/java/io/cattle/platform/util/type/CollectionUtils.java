@@ -1,12 +1,12 @@
 package io.cattle.platform.util.type;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -15,8 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class CollectionUtils {
 
@@ -58,9 +56,7 @@ public class CollectionUtils {
         if (values == null) {
             try {
                 values = (V) clz.newInstance();
-            } catch (InstantiationException e) {
-                throw new IllegalArgumentException("Failed to create collection class", e);
-            } catch (IllegalAccessException e) {
+            } catch (InstantiationException|IllegalAccessException e) {
                 throw new IllegalArgumentException("Failed to create collection class", e);
             }
 
@@ -76,7 +72,7 @@ public class CollectionUtils {
         } else if (obj == null) {
             return Collections.emptyList();
         } else {
-            return Arrays.asList(obj);
+            return Collections.singletonList(obj);
         }
     }
 
@@ -127,7 +123,7 @@ public class CollectionUtils {
         if (obj == null) {
             return Collections.emptyList();
         }
-        return Arrays.asList(obj);
+        return Collections.singletonList(obj);
     }
 
     @SuppressWarnings("unchecked")
@@ -161,24 +157,21 @@ public class CollectionUtils {
 
         Set<String> includes = getSetting(key + ".include");
 
-        Set<Object> ordered = new TreeSet<>(new Comparator<Object>() {
-            @Override
-            public int compare(Object o1, Object o2) {
-                int left = PriorityUtils.getPriority(o1);
-                int right = PriorityUtils.getPriority(o2);
-                if (left < right) {
-                    return -1;
-                } else if (left > right) {
-                    return 1;
-                }
-                String leftName = objectToName.get(o1);
-                String rightName = objectToName.get(o2);
-                int comparisonResult = leftName.compareTo(rightName);
-                if (comparisonResult == 0 && !o1.equals(o2)) {
-                    throw new RuntimeException("Trying to add 2 objects with the same name: " + leftName + ".  Second object is ignored!");
-                }
-                return comparisonResult;
+        Set<Object> ordered = new TreeSet<>((o1, o2) -> {
+            int left = PriorityUtils.getPriority(o1);
+            int right = PriorityUtils.getPriority(o2);
+            if (left < right) {
+                return -1;
+            } else if (left > right) {
+                return 1;
             }
+            String leftName = objectToName.get(o1);
+            String rightName = objectToName.get(o2);
+            int comparisonResult = leftName.compareTo(rightName);
+            if (comparisonResult == 0 && !o1.equals(o2)) {
+                throw new RuntimeException("Trying to add 2 objects with the same name: " + leftName + ".  Second object is ignored!");
+            }
+            return comparisonResult;
         });
 
         if (objects != null) {
@@ -208,10 +201,7 @@ public class CollectionUtils {
 
         Set<String> result = new HashSet<>();
 
-        for (String part : value.trim().split("\\s*,\\s*")) {
-            result.add(part);
-        }
-
+        Collections.addAll(result, value.trim().split("\\s*,\\s*"));
         return result;
     }
 
@@ -219,6 +209,7 @@ public class CollectionUtils {
         return ArchaiusUtil.getString(key).get();
     }
 
+    @SafeVarargs
     public static <T> Set<T> set(@SuppressWarnings("unchecked") T... object) {
         return new HashSet<>(Arrays.asList(object));
     }

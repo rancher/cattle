@@ -192,9 +192,7 @@ public class Api {
     DataAccess d;
 
     ApiRequestFilterDelegate apiRequestFilterDelegate;
-    Auth auth;
     ContainerProxyActionHandler containerProxyActionHandler;
-    HostApiService hostApiService;
     ReferenceValidator referenceValidator;
     ResponseConverter responseConverter;
     Versions versions;
@@ -430,7 +428,7 @@ public class Api {
                 Arrays.asList(resourceChangeEventProcessor));
 
         c.router.resourceManager(Subscribe.class, new SubscribeManager(jettyWebSocketSubcriptionHandler));
-        c.router.resourceManager(Publish.class, new PublishManager(f.objectManager, f.eventService));
+        c.router.resourceManager(Publish.class, new PublishManager(f.eventService));
     }
 
     private void setupApiCommon() {

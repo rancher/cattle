@@ -2,6 +2,7 @@
 **/target*
 resources/local
 resources/content/db/mysql/*.gz
+resources/content/db/mysql/dump*.sql
 runtime
 tests/integration*/.tox
 tests/integration*/.venv

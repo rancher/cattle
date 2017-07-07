@@ -10,9 +10,6 @@
         "previousIds": {
             "create": true
         },
-        "publisher": {
-            "create": true
-        },
         "resourceId": {
             "create": true
         },

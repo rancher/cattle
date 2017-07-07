@@ -3,6 +3,7 @@
 
 /.cache
 /.dapper
+/.gradle
 /.idea
 /.m2
 

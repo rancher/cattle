@@ -1,0 +1,6 @@
+dependencies {
+  compile project(':cattle-framework')
+  compile group: 'org.jooq', name: 'jooq-codegen', version: '3.9.3'
+  compile group: 'org.mariadb.jdbc', name: 'mariadb-java-client', version: '1.5.8'
+  runtime group: 'org.postgresql', name: 'postgresql', version: '9.4.1212.jre7'
+}

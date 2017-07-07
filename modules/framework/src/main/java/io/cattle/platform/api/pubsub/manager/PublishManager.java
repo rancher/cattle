@@ -9,7 +9,6 @@ import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.framework.event.FrameworkEvents;
-import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
@@ -22,14 +21,11 @@ import java.util.regex.Pattern;
 
 public class PublishManager extends AbstractNoOpResourceManager {
 
-    final static Pattern SERVICE_PATTERN = Pattern.compile("^service\\.[a-z.]+$");
+    private final static Pattern SERVICE_PATTERN = Pattern.compile("^service\\.[a-z.]+$");
 
-    ObjectManager objectManager;
-    EventService eventService;
+    private EventService eventService;
 
-    public PublishManager(ObjectManager objectManager, EventService eventService) {
-        super();
-        this.objectManager = objectManager;
+    public PublishManager(EventService eventService) {
         this.eventService = eventService;
     }
 
@@ -55,16 +51,12 @@ public class PublishManager extends AbstractNoOpResourceManager {
         return publish;
     }
 
-    protected boolean isServiceEvent(Event event) {
+    private boolean isServiceEvent(Event event) {
         String eventName = event.getName();
-        if (eventName == null) {
-            return false;
-        }
-
-        return SERVICE_PATTERN.matcher(eventName).matches();
+        return eventName != null && SERVICE_PATTERN.matcher(eventName).matches();
     }
 
-    protected Event createEvent(Publish publish) {
+    private Event createEvent(Publish publish) {
         EventVO<Object> event = new EventVO<>();
 
         if (publish.getId() != null) {
@@ -76,7 +68,6 @@ public class PublishManager extends AbstractNoOpResourceManager {
         event.setResourceId(getResourceId(publish.getResourceId()));
         event.setResourceType(publish.getResourceType());
         event.setData(publish.getData());
-        event.setPublisher(publish.getPublisher());
         event.setTransitioning(publish.getTransitioning());
         event.setTransitioningInternalMessage(publish.getTransitioningInternalMessage());
         event.setTransitioningMessage(publish.getTransitioningMessage());

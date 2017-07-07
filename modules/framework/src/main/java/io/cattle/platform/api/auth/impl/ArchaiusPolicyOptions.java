@@ -1,21 +1,20 @@
 package io.cattle.platform.api.auth.impl;
 
+import com.netflix.config.DynamicBooleanProperty;
+import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.netflix.config.DynamicBooleanProperty;
-import com.netflix.config.DynamicStringProperty;
-
 public class ArchaiusPolicyOptions implements PolicyOptions {
 
     private static String PROP_FORMAT = "account.type.%s.%s";
 
-    Map<String, DynamicBooleanProperty> bools = new ConcurrentHashMap<String, DynamicBooleanProperty>();
-    Map<String, DynamicStringProperty> strings = new ConcurrentHashMap<String, DynamicStringProperty>();
-    Map<String, OptionCallback> callbacks = new HashMap<String, OptionCallback>();
+    Map<String, DynamicBooleanProperty> bools = new ConcurrentHashMap<>();
+    Map<String, DynamicStringProperty> strings = new ConcurrentHashMap<>();
+    Map<String, OptionCallback> callbacks = new HashMap<>();
     String name;
 
     public ArchaiusPolicyOptions(String name) {

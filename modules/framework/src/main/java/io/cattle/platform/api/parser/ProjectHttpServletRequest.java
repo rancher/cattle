@@ -1,20 +1,19 @@
 package io.cattle.platform.api.parser;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-
 public class ProjectHttpServletRequest extends HttpServletRequestWrapper {
 
-    public static final String PROJECT_HEADER = "X-API-Project-Id";
+    private static final String PROJECT_HEADER = "X-API-Project-Id";
 
-    String projectId;
-    String servletPath;
+    private String projectId;
+    private String servletPath;
 
     public ProjectHttpServletRequest(HttpServletRequest request, String projectId, String servletPath) {
         super(request);
@@ -40,10 +39,9 @@ public class ProjectHttpServletRequest extends HttpServletRequestWrapper {
         }
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
-    public Enumeration getHeaderNames() {
-        Set names = new HashSet(Collections.list(super.getHeaderNames()));
+    public Enumeration<String> getHeaderNames() {
+        Set<String> names = new HashSet<>(Collections.list(super.getHeaderNames()));
         names.add(PROJECT_HEADER);
         return Collections.enumeration(names);
     }
