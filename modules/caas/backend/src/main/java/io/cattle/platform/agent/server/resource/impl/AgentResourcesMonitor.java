@@ -65,14 +65,16 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
     Cache<String, Boolean> resourceCache;
     EnvironmentResourceManager envResourceManager;
 
-    public AgentResourcesMonitor(AgentDao agentDao, StoragePoolDao storagePoolDao, ObjectManager objectManager, LockManager lockManager,
-            EventService eventService) {
+    public AgentResourcesMonitor(AgentDao agentDao, StoragePoolDao storagePoolDao, GenericResourceDao resourceDao, ObjectManager objectManager,
+            LockManager lockManager, EventService eventService, EnvironmentResourceManager envResourceManager) {
         super();
         this.agentDao = agentDao;
         this.storagePoolDao = storagePoolDao;
+        this.resourceDao = resourceDao;
         this.objectManager = objectManager;
         this.lockManager = lockManager;
         this.eventService = eventService;
+        this.envResourceManager = envResourceManager;
 
         buildCache();
         CACHE_RESOURCE.addCallback(new Runnable() {

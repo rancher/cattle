@@ -43,7 +43,7 @@ public class RequestUtils {
         return POST.isMethod(method) || PUT.isMethod(method);
     }
 
-    public static String getSingularStringValue(String key, Map<String, Object> params) {
+    public static String getSingularStringValue(String key, Map<String, ?> params) {
         Object obj = params.get(key);
         Object singleObj = makeSingular(obj);
         return Objects.toString(singleObj, null);

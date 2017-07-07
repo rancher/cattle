@@ -85,7 +85,6 @@ public class ObjectDataPostInstantiationHandler implements ObjectPostInstantiati
         }
         finalData.putAll(inputData);
 
-        overlay(finalData, OPTIONS, getMap(inputData.get(OPTIONS)));
         overlay(finalData, FIELDS, getFieldData(instance, properties));
 
         return finalData;

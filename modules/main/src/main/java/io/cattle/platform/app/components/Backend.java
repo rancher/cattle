@@ -207,14 +207,6 @@ public class Backend {
     private void setupBackendService() {
         imageCredentialLookup = new DockerImageCredentialLookup(f.jooqConfig);
         progress = new ProcessProgressImpl(f.objectManager, f.eventService);
-        allocationHelper = new AllocationHelperImpl(d.instanceDao, f.objectManager, envResourceManager);
-        allocatorService = new AllocatorServiceImpl(d.agentDao, c.agentLocator, d.genericMapDao, d.allocatorDao, f.lockManager, f.objectManager,f. processManager, allocationHelper, d.volumeDao, envResourceManager,
-                new AccountConstraintsProvider(),
-                new BaseConstraintsProvider(d.allocatorDao),
-                new AffinityConstraintsProvider(allocationHelper),
-                new PortsConstraintProvider(f.objectManager),
-                new VolumeAccessModeConstraintProvider(d.allocatorDao, f.objectManager));
-        allocationLifecycleManager = new AllocationLifecycleManagerImpl(allocatorService, d.volumeDao, f.objectManager);
         backPopulater = new BackPopulaterImpl(f.jsonMapper, d.volumeDao, f.lockManager, c.dockerTransformer, d.instanceDao, f.objectManager, f.processManager);
         restartLifecycleManager = new RestartLifecycleManagerImpl(backPopulater);
         agentInstanceFactory = new AgentInstanceFactoryImpl(f.objectManager, d.agentDao, d.resourceDao, f.resourceMonitor, f.processManager);
@@ -227,16 +219,26 @@ public class Backend {
         secretsLifecycleManager = new SecretsLifecycleManagerImpl(c.tokenService, d.storageDriverDao);
         loadBalancerService = new LoadBalancerServiceImpl(f.jsonMapper, f.lockManager, f.objectManager);
         serviceLifecycleManager = new ServiceLifecycleManagerImpl(f.objectManager, f.resourcePoolManager, networkService, d.serviceDao, c.revisionManager, loadBalancerService);
-        instanceLifecycleManager = new InstanceLifecycleManagerImpl(k8sLifecycleManager, virtualMachineLifecycleManager, volumeLifecycleManager, f.objectManager, imageCredentialLookup, d.serviceDao, f.transaction, networkLifecycleManager, agentLifecycleManager, backPopulater, restartLifecycleManager, secretsLifecycleManager, allocationLifecycleManager, serviceLifecycleManager);
         catalogService = new CatalogServiceImpl(f.jsonMapper, d.resourceDao, f.objectManager, f.processManager);
         projectTemplateService = new ProjectTemplateService(catalogService, f.executorService, f.objectManager, d.resourceDao, f.lockManager);
         upgradeManager = new UpgradeManager(catalogService, d.stackDao, d.resourceDao, f.lockManager, f.processManager);
-        agentResourcesMonitor = new AgentResourcesMonitor(d.agentDao, d.storagePoolDao, f.objectManager, f.lockManager, f.eventService);
-        pingInstancesMonitor = new PingInstancesMonitorImpl(f.objectManager, envResourceManager, f.eventService, c.agentLocator);
         containerSync = new ContainerSyncImpl(f.objectManager, f.processManager, d.instanceDao, f.lockManager, d.resourceDao, f.scheduledExecutorService, f.cluster);
 
         Reconcile reconcile = new Reconcile(f, d, c, this);
         loopManager = reconcile.loopManager;
+        envResourceManager = reconcile.envResourceManager;
+        allocationHelper = reconcile.allocationHelper;
+
+        allocatorService = new AllocatorServiceImpl(d.agentDao, c.agentLocator, d.genericMapDao, d.allocatorDao, f.lockManager, f.objectManager,f. processManager, allocationHelper, d.volumeDao, envResourceManager,
+                new AccountConstraintsProvider(),
+                new BaseConstraintsProvider(d.allocatorDao),
+                new AffinityConstraintsProvider(allocationHelper),
+                new PortsConstraintProvider(f.objectManager),
+                new VolumeAccessModeConstraintProvider(d.allocatorDao, f.objectManager));
+        allocationLifecycleManager = new AllocationLifecycleManagerImpl(allocatorService, d.volumeDao, f.objectManager);
+        pingInstancesMonitor = new PingInstancesMonitorImpl(f.objectManager, envResourceManager, f.eventService, c.agentLocator);
+        agentResourcesMonitor = new AgentResourcesMonitor(d.agentDao, d.storagePoolDao, d.resourceDao, f.objectManager, f.lockManager, f.eventService, envResourceManager);
+        instanceLifecycleManager = new InstanceLifecycleManagerImpl(k8sLifecycleManager, virtualMachineLifecycleManager, volumeLifecycleManager, f.objectManager, imageCredentialLookup, d.serviceDao, f.transaction, networkLifecycleManager, agentLifecycleManager, backPopulater, restartLifecycleManager, secretsLifecycleManager, allocationLifecycleManager, serviceLifecycleManager);
     }
 
     private void addTriggers() {

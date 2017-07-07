@@ -1,7 +1,6 @@
 package io.cattle.platform.process.builder;
 
 import io.cattle.platform.engine.manager.impl.ProcessRecordDao;
-import io.cattle.platform.engine.process.ProcessDefinition;
 import io.cattle.platform.engine.process.ProcessHandlerRegistry;
 import io.cattle.platform.engine.process.impl.ResourceStatesDefinition;
 import io.cattle.platform.json.JsonMapper;
@@ -18,7 +17,6 @@ import org.apache.commons.lang3.StringUtils;
 
 public class ResourceProcessBuilder {
 
-    Map<String, ProcessDefinition> processDefintions;
     ObjectManager objectManager;
     JsonMapper jsonMapper;
     ProcessRecordDao processRecordDao;
@@ -27,9 +25,8 @@ public class ResourceProcessBuilder {
     String name, start, transitioning, stateField, done, resourceType;
     Map<String, String> renames = Collections.emptyMap();
 
-    public ResourceProcessBuilder(Map<String, ProcessDefinition> processDefinition, ObjectManager objectManager, JsonMapper jsonMapper,
-            ProcessRecordDao processRecordDao, ProcessHandlerRegistry processRegistry) {
-        this.processDefintions = processDefinition;
+    public ResourceProcessBuilder(ObjectManager objectManager, JsonMapper jsonMapper, ProcessRecordDao processRecordDao,
+            ProcessHandlerRegistry processRegistry) {
         this.objectManager = objectManager;
         this.jsonMapper = jsonMapper;
         this.processRecordDao = processRecordDao;
@@ -49,7 +46,7 @@ public class ResourceProcessBuilder {
         GenericResourceProcessDefinition def = new GenericResourceProcessDefinition(name, processRegistry, resourceType, resourceStatesDefinition,
                 objectManager, jsonMapper, processRecordDao);
 
-        processDefintions.put(def.getName(), def);
+        processRegistry.addProcess(def);
     }
 
     protected Set<String> getSet(String values, Map<String, String> renames) {

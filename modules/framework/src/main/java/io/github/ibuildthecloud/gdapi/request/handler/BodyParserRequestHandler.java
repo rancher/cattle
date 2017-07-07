@@ -112,7 +112,7 @@ public class BodyParserRequestHandler implements ApiRequestHandler {
          * Notice that this loop makes the value singular if it can. This is because the request params are always a String[] from the
          * HttpServletRequest.getParametersMap()
          */
-        for (Map.Entry<String, Object> entry : request.getRequestParams().entrySet()) {
+        for (Map.Entry<String, String[]> entry : request.getRequestParams().entrySet()) {
             result.put(entry.getKey(), RequestUtils.makeSingularIfCan(entry.getValue()));
         }
 

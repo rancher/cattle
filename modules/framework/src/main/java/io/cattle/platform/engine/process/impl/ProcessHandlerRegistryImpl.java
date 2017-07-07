@@ -81,4 +81,9 @@ public class ProcessHandlerRegistryImpl implements ProcessHandlerRegistry, Proce
         return this;
     }
 
+    @Override
+    public void addProcess(ProcessDefinition processDefinition) {
+        processDefinitions.put(processDefinition.getName(), processDefinition);
+    }
+
 }

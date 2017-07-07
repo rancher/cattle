@@ -10,7 +10,6 @@
     <packaging>pom</packaging>
     <modules>
         <module>resources</module>
-        <module>code/framework/launcher</module>
         <module>modules/caas/api</module>
         <module>modules/caas/common</module>
         <module>modules/caas/backend</module>
@@ -19,6 +18,7 @@
         <module>modules/main</module>
         <module>modules/model</module>
         <module>modules/parent</module>
+        <module>modules/war</module>
     </modules>
     <build>
         <defaultGoal>package</defaultGoal>

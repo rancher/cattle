@@ -31,9 +31,8 @@ public class ProjectHttpServletRequest extends HttpServletRequestWrapper {
         }
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
-    public Enumeration getHeaders(String name) {
+    public Enumeration<String> getHeaders(String name) {
         if (PROJECT_HEADER.equalsIgnoreCase(name)) {
             return Collections.enumeration(Arrays.asList(projectId));
         } else {

@@ -77,7 +77,6 @@ public class Model {
     }
 
     private void setupProcessDefinitions() {
-        defaultProcesses("accountLink");
         defaultProcesses("credential");
         defaultProcesses("network");
         defaultProcesses("projectMember");
@@ -114,12 +113,9 @@ public class Model {
         process("instance.start").resourceType("instance").start("stopped,creating").transitioning("starting").done("active").build();
         process("instance.update").resourceType("instance").start("stopped,active").transitioning("stopped=updating-stopped,active=updating-active").done("updating-stopped=stopped,updating-active=active").build();
         process("instance.restart").resourceType("instance").start("running").transitioning("restarting").done("running").build();
-        process("instance.updatehealthy").resourceType("instance").stateField("healthState").start("healthy,unhealthy,initializing,reinitializing").transitioning("updating-healthy").done("healthy").build();
-        process("instance.updateunhealthy").resourceType("instance").stateField("healthState").start("healthy,unhealthy").transitioning("updating-unhealthy").done("unhealthy").build();
-        process("instance.updatereinitializing").resourceType("instance").stateField("healthState").start("healthy").transitioning("updating-reinitializing").done("reinitializing").build();
         process("instance.error").resourceType("instance").start("creating,stopped").transitioning("erroring").done("error").build();
         process("instance.remove").resourceType("instance").start("requested,creating,updating-running,updating-stopped,stopped,erroring,error").transitioning("removing").done("removed").build();
-        process("instance.stop").resourceType("instance").start("creating,running,starting,restarting,updating-running,updating-stopped").transitioning("stopping").done("stopped");
+        process("instance.stop").resourceType("instance").start("creating,running,starting,restarting,updating-running,updating-stopped").transitioning("stopping").done("stopped").build();
 
         // Volume
         defaultProcesses("volume");
@@ -186,10 +182,6 @@ public class Model {
         process("serviceevent.create").resourceType("serviceEvent").start("requested").transitioning("creating").done("created").build();
         process("serviceevent.remove").resourceType("serviceEvent").start("created,creating").transitioning("removing").done("removed").build();
 
-        // User Preference
-        defaultProcesses("userPreference");
-        process("userpreference.remove").resourceType("userPreference").start("inactive,active").transitioning("removing").done("removed").build();
-
         // Certificate
         process("certificate.create").resourceType("certificate").start("requested").transitioning("activating").done("active").build();
         process("certificate.remove").resourceType("certificate").start("requested,active,activating").transitioning("removing").done("removed").build();
@@ -253,8 +245,7 @@ public class Model {
     }
 
     private ResourceProcessBuilder process(String name) {
-        ResourceProcessBuilder builder = new ResourceProcessBuilder(f.processDefinitions, f.objectManager,
-                f.jsonMapper, f.processRecordDao, f.processRegistry);
+        ResourceProcessBuilder builder = new ResourceProcessBuilder(f.objectManager, f.jsonMapper, f.processRecordDao, f.processRegistry);
         return builder.name(name);
     }
 

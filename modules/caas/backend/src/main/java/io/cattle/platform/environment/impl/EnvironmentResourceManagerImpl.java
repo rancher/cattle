@@ -159,7 +159,7 @@ public class EnvironmentResourceManagerImpl implements EnvironmentResourceManage
 
                     next = metadata.getHosts().stream()
                             .filter((host) -> host.getId() == options.getRequestedHostId().longValue())
-                            .findFirst().get();
+                            .findFirst().orElse(null);
                     return;
                 }
 

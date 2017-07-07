@@ -17,7 +17,6 @@ import org.apache.commons.beanutils.ConvertUtils;
 public class DataUtils {
 
     public static final String DATA = "data";
-    public static final String OPTIONS = "options";
     public static final String FIELDS = "fields";
 
     public static String getState(Object obj) {

@@ -8,4 +8,6 @@ public interface ProcessHandlerRegistry {
 
     List<ProcessHandler> getHandlers(String processName);
 
+    void addProcess(ProcessDefinition processDefinition);
+
 }

@@ -75,7 +75,6 @@ public class TableCleanup extends AbstractJooqDao implements Task {
     public static final DynamicLongProperty SERVICE_LOG_AGE_LIMIT_SECONDS = ArchaiusUtil.getLong("service_log.purge.after.seconds");
 
     private List<CleanableTable> processInstanceTables;
-    private List<CleanableTable> eventTables;
     private List<CleanableTable> auditLogTables;
     private List<CleanableTable> serviceLogTables;
     private List<CleanableTable> otherTables;
@@ -97,7 +96,6 @@ public class TableCleanup extends AbstractJooqDao implements Task {
 
         Date eventTableCutoff = new Date(current - EVENT_AGE_LIMIT_SECONDS.get() * SECOND_MILLIS);
         cleanupServiceEventTable(eventTableCutoff);
-        cleanup("event", eventTables, eventTableCutoff);
 
         Date auditLogCutoff = new Date(current - AUDIT_LOG_AGE_LIMIT_SECONDS.get() * SECOND_MILLIS);
         cleanup("audit_log", auditLogTables, auditLogCutoff);

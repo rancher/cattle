@@ -14,7 +14,7 @@ import java.util.Set;
 
 public class InstanceInfo implements MetadataObject {
     long id;
-    long networkFromContainerId;
+    Long networkFromContainerId;
 
     String name;
     String hostname;

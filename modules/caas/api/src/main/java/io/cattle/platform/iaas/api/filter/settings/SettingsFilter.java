@@ -22,7 +22,7 @@ public class SettingsFilter implements Predicate {
 
     public SettingsFilter(List<String> publicSettings, ApiRequest apiRequest) {
         String value = null;
-        Map<String, Object> params = apiRequest == null ? null : apiRequest.getRequestParams();
+        Map<String, String[]> params = apiRequest == null ? null : apiRequest.getRequestParams();
 
         if (params != null) {
             value = RequestUtils.getSingularStringValue("all", params);

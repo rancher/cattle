@@ -20,6 +20,7 @@ import io.cattle.platform.json.JacksonJsonMapper;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.liquibase.Loader;
 import io.cattle.platform.logback.Startup;
+import io.cattle.platform.object.util.DataAccessor;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,6 +28,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.TimeZone;
 
 import javax.sql.DataSource;
 
@@ -85,13 +87,18 @@ public class Bootstrap {
     ClusterService cluster;
 
     public Bootstrap() throws IOException {
+        setTz();
         setHomeAndEnv();
         setupArchaius();
         setupLogging();
         setupDatabase();
         setupJson();
+//        migrateSchema();
         setupCluster();
-        migrateSchema();
+    }
+
+    private void setTz() {
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
     }
 
     private void setupJson() {
@@ -99,6 +106,7 @@ public class Bootstrap {
         mapper.setModules(Arrays.asList(new SimpleModule(), new JaxbAnnotationModule()));
         mapper.init();
         this.jsonMapper = mapper;
+        DataAccessor.setJsonMapper(mapper);
     }
 
     private void setupCluster() {
@@ -159,6 +167,8 @@ public class Bootstrap {
     }
 
     private void setupDatabase() {
+        System.setProperty("org.jooq.no-logo", "true");
+
         dataSource = dataSourceFactory.createDataSource("cattle");
 
         DataSourceConnectionProvider dscp = new DataSourceConnectionProvider(dataSource);

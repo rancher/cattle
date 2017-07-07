@@ -37,7 +37,7 @@ public class ApiRequest {
     ApiServletContext apiServletContext;
     Object responseObject;
     Object requestObject;
-    Map<String, Object> requestParams;
+    Map<String, String[]> requestParams;
     String requestUrl;
     String version;
     String schemaVersion;
@@ -212,11 +212,11 @@ public class ApiRequest {
         this.action = action;
     }
 
-    public Map<String, Object> getRequestParams() {
+    public Map<String, String[]> getRequestParams() {
         return requestParams;
     }
 
-    public void setRequestParams(Map<String, Object> requestParams) {
+    public void setRequestParams(Map<String, String[]> requestParams) {
         this.requestParams = requestParams;
     }
 

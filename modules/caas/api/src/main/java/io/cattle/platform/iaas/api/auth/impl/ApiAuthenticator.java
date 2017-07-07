@@ -38,18 +38,19 @@ public class ApiAuthenticator implements ApiRequestHandler {
     private static final String ACCOUNT_ID_HEADER = "X-API-ACCOUNT-ID";
     private static final String USER_ID_HEADER = "X-API-USER-ID";
 
-    AuthDao authDao;
     List<AccountLookup> accountLookups = new ArrayList<>();
     List<IdentityProvider> identityProviders = new ArrayList<>();
     List<AuthorizationProvider> authorizationProviders = new ArrayList<>();
 
+    AuthDao authDao;
     ObjectManager objectManager;
     TransformationService transformationService;
     ExternalServiceAuthProvider externalAuthProvider;
     AccountDao accountDao;
 
-    public ApiAuthenticator(ObjectManager objectManager, TransformationService transformationService, AccountDao accountDao) {
+    public ApiAuthenticator(AuthDao authDao, ObjectManager objectManager, TransformationService transformationService, AccountDao accountDao) {
         super();
+        this.authDao = authDao;
         this.objectManager = objectManager;
         this.transformationService = transformationService;
         this.accountDao = accountDao;

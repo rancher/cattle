@@ -29,6 +29,7 @@ import io.cattle.platform.object.monitor.impl.ResourceMonitorImpl;
 import io.cattle.platform.object.postinit.ObjectDataPostInstantiationHandler;
 import io.cattle.platform.object.postinit.ObjectDefaultsPostInstantiationHandler;
 import io.cattle.platform.object.postinit.ObjectPostInstantiationHandler;
+import io.cattle.platform.object.postinit.SetPropertiesPostInstantiationHandler;
 import io.cattle.platform.object.postinit.SpecialFieldsPostInstantiationHandler;
 import io.cattle.platform.object.postinit.UUIDPostInstantiationHandler;
 import io.cattle.platform.object.process.impl.DefaultObjectProcessManager;
@@ -90,7 +91,7 @@ public class Framework {
     DefaultObjectProcessManager processManager;
     DefaultProcessManager defaultProcessManager;
     ProcessHandlerRegistryImpl processRegistry = new ProcessHandlerRegistryImpl(processDefinitions);
-    ProcessInstanceExecutor processInstanceExecutor = new ProcessInstanceDispatcherImpl(defaultProcessManager);
+    ProcessInstanceExecutor processInstanceExecutor;
     ProcessServer processServer;
     IdFormatter idFormatter;
     io.github.ibuildthecloud.gdapi.json.JsonMapper schemaJsonMapper = new JacksonMapper();
@@ -116,9 +117,9 @@ public class Framework {
         return t;
     });
 
-    LockManager lockManager = new LockManagerImpl(new InMemoryLockProvider());
-    LockDelegatorImpl lockDelegator = new LockDelegatorImpl(lockManager, executorService);
-    EventService eventService = new InMemoryEventService(retryTimeoutService, executorService, jsonMapper);
+    LockManager lockManager;
+    LockDelegatorImpl lockDelegator;
+    EventService eventService;
 
     public Framework(Bootstrap bootstrap) throws IOException {
         this.dataSource = bootstrap.dataSource;
@@ -129,15 +130,23 @@ public class Framework {
     }
 
     public void wireUpTypes() {
+        metaDataManager.start();
         jsonDefaultsProvider.start();
         objectDefaultsPostInstantiationHandler.start();
-        metaDataManager.start();
     }
 
     private void init() {
+        setupLockAndEventing();
         setupDb();
         setupObjectFramework();
         setupServices();
+    }
+
+    private void setupLockAndEventing() {
+        retryTimeoutService = new RetryTimeoutServiceImpl(executorService);
+        lockManager = new LockManagerImpl(new InMemoryLockProvider());
+        lockDelegator = new LockDelegatorImpl(lockManager, executorService);
+        eventService = new InMemoryEventService(retryTimeoutService, executorService, jsonMapper);
     }
 
     private void setupServices() {
@@ -149,8 +158,8 @@ public class Framework {
                 new EventNotificationChangeMonitor(objectManager),
                 processDefinitions,
                 triggers);
+        processInstanceExecutor = new ProcessInstanceDispatcherImpl(defaultProcessManager);
         processManager = new DefaultObjectProcessManager(defaultProcessManager, coreSchemaFactory, objectManager);
-        retryTimeoutService = new RetryTimeoutServiceImpl(executorService);
         idFormatter = new TypeIdFormatter(coreSchemaFactory);
         resourceMonitor = new ResourceMonitorImpl(objectManager, metaDataManager, idFormatter);
         resourcePoolManager = new ResourcePoolManagerImpl(objectManager,
@@ -173,9 +182,11 @@ public class Framework {
         postProcessors.add(new AuthSchemaAdditionsPostProcessor());
 
         objectManager = new JooqObjectManager(coreSchemaFactory, metaDataManager, jooqConfig, lockingJooqConfig, transaction);
+
         List<ObjectPostInstantiationHandler> postInitHandlers = objectManager.getPostInitHandlers();
         postInitHandlers.add(objectDefaultsPostInstantiationHandler);
         postInitHandlers.add(new SpecialFieldsPostInstantiationHandler(coreSchemaFactory));
+        postInitHandlers.add(new SetPropertiesPostInstantiationHandler());
         postInitHandlers.add(new AccountFieldPostInitHandler());
         postInitHandlers.add(new ObjectDataPostInstantiationHandler(jsonMapper));
         postInitHandlers.add(new UUIDPostInstantiationHandler());

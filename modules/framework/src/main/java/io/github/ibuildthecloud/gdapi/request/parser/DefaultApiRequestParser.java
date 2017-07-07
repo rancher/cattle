@@ -96,10 +96,9 @@ public class DefaultApiRequestParser implements ApiRequestParser {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
-    protected Map<String, Object> parseParams(ApiRequest apiRequest, HttpServletRequest request) throws IOException {
+    protected Map<String, String[]> parseParams(ApiRequest apiRequest, HttpServletRequest request) throws IOException {
         try {
-            Map<String, Object> multiPart = parseMultipart(request);
+            Map<String, String[]> multiPart = parseMultipart(request);
 
             return multiPart == null ? request.getParameterMap() : multiPart;
         } catch (IOException e) {
@@ -109,7 +108,7 @@ public class DefaultApiRequestParser implements ApiRequestParser {
         }
     }
 
-    protected Map<String, Object> parseMultipart(HttpServletRequest request) throws IOException {
+    protected Map<String, String[]> parseMultipart(HttpServletRequest request) throws IOException {
         if (!ServletFileUpload.isMultipartContent(request))
             return null;
 
@@ -129,7 +128,7 @@ public class DefaultApiRequestParser implements ApiRequestParser {
                 }
             }
 
-            Map<String, Object> result = new HashMap<>();
+            Map<String, String[]> result = new HashMap<>();
 
             for (Map.Entry<String, List<String>> entry : params.entrySet()) {
                 List<String> values = entry.getValue();

@@ -41,10 +41,10 @@ public class PostChildLinkHandler implements ApiRequestHandler {
             return;
         }
 
-        Map<String, Object> requestParams = request.getRequestParams();
+        Map<String, String[]> requestParams = request.getRequestParams();
         if (!requestParams.containsKey(rel.getPropertyName())) {
             requestParams = new LinkedHashMap<>(requestParams);
-            requestParams.put(rel.getPropertyName(), request.getId());
+            requestParams.put(rel.getPropertyName(), new String[] { request.getId() });
             request.setRequestParams(requestParams);
         }
 

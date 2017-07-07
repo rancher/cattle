@@ -64,10 +64,14 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
     @Override
     public void processPingReply(Ping ping) {
         List<Map<String, Object>> resources = getResources(ping);
+        if (resources == null) {
+            return;
+        }
+
         String hostUuid = resources.stream()
                 .filter(this::isHost)
                 .map(this::getHostUuid)
-                .findFirst().get();
+                .findFirst().orElse(null);
         if (hostUuid == null) {
             return;
         }
@@ -82,7 +86,7 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
         Metadata metadata = envResourceManager.getMetadata(accountId);
         HostInfo host = metadata.getHosts().stream()
                 .filter((x) -> hostUuid.equals(x.getUuid()))
-                .findFirst().get();
+                .findFirst().orElse(null);
         if (host == null) {
             return;
         }

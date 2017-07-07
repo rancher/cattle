@@ -152,6 +152,7 @@ import io.cattle.platform.storage.api.filter.ExternalTemplateInstanceFilter;
 import io.cattle.platform.systemstack.api.AccountCreateFilter;
 import io.cattle.platform.vm.api.InstanceConsoleActionHandler;
 import io.github.ibuildthecloud.gdapi.doc.TypeDocumentation;
+import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.json.JacksonMapper;
 import io.github.ibuildthecloud.gdapi.request.handler.BodyParserRequestHandler;
 import io.github.ibuildthecloud.gdapi.request.handler.CSRFCookieHandler;
@@ -176,7 +177,9 @@ import java.awt.event.ContainerEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Stack;
 
@@ -365,7 +368,7 @@ public class Api {
                 new ConfigurableRequestOptionsParser(),
                 new RequestReRouterHandler(),
                 noAuthenticationProxy(),
-                new ApiAuthenticator(f.objectManager, c.transformationService, d.accountDao),
+                new ApiAuthenticator(d.authDao, f.objectManager, c.transformationService, d.accountDao),
                 new SecretsApiRequestHandler(c.tokenService, d.secretsDao, f.jsonMapper, c.secretsService),
                 new GenericWhitelistedProxy(f.objectManager),
                 new AddClientIpHeader(),
@@ -485,8 +488,11 @@ public class Api {
     }
 
     private void setupServlet() {
-        apiRequestFilterDelegate = new ApiRequestFilterDelegate(versions, new ApiRequestParser(), c.router,
-                c.schemaFactories, f.idFormatter);
+        Map<String, SchemaFactory> factories = new HashMap<>();
+        factories.put("v1", c.schemaFactories.get("v1-base"));
+        factories.put("v2", f.coreSchemaFactory);
+        factories.put("v2-beta", f.coreSchemaFactory);
+        apiRequestFilterDelegate = new ApiRequestFilterDelegate(versions, new ApiRequestParser(), c.router, factories, f.idFormatter);
     }
 
     public ApiRequestFilterDelegate getApiRequestFilterDelegate() {

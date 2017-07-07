@@ -1,14 +1,18 @@
 package io.cattle.platform.app.components;
 
 import io.cattle.platform.activity.ActivityService;
+import io.cattle.platform.allocator.service.AllocationHelperImpl;
 import io.cattle.platform.engine.manager.LoopFactory;
 import io.cattle.platform.engine.manager.LoopManager;
 import io.cattle.platform.engine.manager.impl.LoopManagerImpl;
+import io.cattle.platform.environment.EnvironmentResourceManager;
+import io.cattle.platform.environment.impl.EnvironmentResourceManagerImpl;
 import io.cattle.platform.inator.Deployinator;
 import io.cattle.platform.inator.factory.InatorFactoryinator;
 import io.cattle.platform.inator.factory.InatorServices;
 import io.cattle.platform.inator.impl.DeployinatorImpl;
 import io.cattle.platform.loop.factory.LoopFactoryImpl;
+import io.cattle.platform.metadata.service.MetadataObjectFactory;
 
 public class Reconcile {
 
@@ -17,6 +21,10 @@ public class Reconcile {
     Common c;
     Backend b;
     LoopManager loopManager;
+    EnvironmentResourceManager envResourceManager;
+    InatorServices inatorServices = new InatorServices();
+    AllocationHelperImpl allocationHelper;
+
 
     public Reconcile(Framework f, DataAccess d, Common c, Backend b) {
         super();
@@ -28,8 +36,6 @@ public class Reconcile {
     }
 
     protected void init() {
-        InatorServices inatorServices = new InatorServices();
-
         inatorServices.objectManager = f.objectManager;
         inatorServices.serviceDao = d.serviceDao;
         inatorServices.resourceDao = d.resourceDao;
@@ -51,7 +57,9 @@ public class Reconcile {
         Deployinator deployinator = new DeployinatorImpl(inatorFactoryinator, f.objectManager, f.lockManager, activityService, b.serviceLifecycleManager);
         LoopFactory loopFactory = new LoopFactoryImpl(activityService, b.catalogService, deployinator, b.envResourceManager, f.eventService, d.hostDao, b.loopManager, f.objectManager, f.processManager, f.scheduledExecutorService, b.serviceLifecycleManager);
         loopManager = new LoopManagerImpl(loopFactory, f.executorService, f.objectManager, f.scheduledExecutorService);
+        envResourceManager = new EnvironmentResourceManagerImpl(new MetadataObjectFactory(), loopManager, f.lockManager, f.objectManager, f.eventService);
 
+        inatorServices.allocationHelper = allocationHelper = new AllocationHelperImpl(d.instanceDao, f.objectManager, envResourceManager);
         inatorServices.loopManager = loopManager;
     }
 
