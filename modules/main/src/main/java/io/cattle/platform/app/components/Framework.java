@@ -54,7 +54,12 @@ import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.id.TypeIdFormatter;
 import io.github.ibuildthecloud.gdapi.json.JacksonMapper;
 import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
+import org.jooq.Configuration;
+import org.jooq.conf.SettingsTools;
+import org.jooq.impl.DefaultConfiguration;
+import org.jooq.impl.DefaultTransactionProvider;
 
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,13 +71,6 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.sql.DataSource;
-
-import org.jooq.Configuration;
-import org.jooq.conf.SettingsTools;
-import org.jooq.impl.DefaultConfiguration;
-import org.jooq.impl.DefaultTransactionProvider;
 
 public class Framework {
 
@@ -106,7 +104,7 @@ public class Framework {
     RetryTimeoutService retryTimeoutService;
     TransactionDelegate transaction;
 
-    ThreadPoolExecutor executorService = new ThreadPoolExecutor(0, 200, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), (r) -> {
+    ThreadPoolExecutor executorService = new ThreadPoolExecutor(0, 200, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), (r) -> {
         Thread t = new Thread(r);
         t.setName("core-" + COUNTER.incrementAndGet());
         return t;

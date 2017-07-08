@@ -1,5 +1,6 @@
 package io.cattle.platform.engine.manager.impl;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.engine.manager.LoopFactory;
 import io.cattle.platform.engine.manager.LoopManager;
@@ -10,8 +11,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
-
-import com.google.common.util.concurrent.ListenableFuture;
 
 public class LoopManagerImpl implements LoopManager {
 
@@ -48,6 +47,9 @@ public class LoopManagerImpl implements LoopManager {
 
     protected LoopWrapper buildLoop(String name, String resourceKey, String type, Long id) {
         Loop inner = factory.buildLoop(name, type, id);
+        if (inner == null) {
+            return null;
+        }
         LoopWrapper loop = new LoopWrapper(name, inner, executor, executorService);
         Map<String, LoopWrapper> loops = this.loops.get(name);
         if (loops == null) {

@@ -1,8 +1,15 @@
 package io.cattle.platform.engine.manager.impl;
 
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
+import com.netflix.config.DynamicLongProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.engine.model.Loop;
 import io.cattle.platform.engine.model.Loop.Result;
+import org.apache.cloudstack.managed.context.ManagedContextRunnable;
+import org.apache.cloudstack.managed.context.NoExceptionRunnable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,13 +21,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.apache.cloudstack.managed.context.ManagedContextRunnable;
-import org.apache.cloudstack.managed.context.NoExceptionRunnable;
-
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.SettableFuture;
-import com.netflix.config.DynamicLongProperty;
-
 public class LoopWrapper {
 
     enum State { SLEEPING, BACKOFF, PROCESS_WAIT, ERROR, RUNNING };
@@ -28,6 +28,7 @@ public class LoopWrapper {
     private static final DynamicLongProperty DEFAULT_TOKEN_INTERVAL = ArchaiusUtil.getLong("loop.default.execution.token.every.millis");
     private static final DynamicLongProperty DEFAULT_TOKENS_MAX = ArchaiusUtil.getLong("loop.default.execution.tokens.max");
     private static final DynamicLongProperty LOOP_PROCESS_WAIT = ArchaiusUtil.getLong("loop.process.wait.delay.millis");
+    private static final Logger log = LoggerFactory.getLogger(LoopWrapper.class);
 
     ExecutorService executor;
     ScheduledExecutorService scheduledExecutor;
@@ -40,7 +41,6 @@ public class LoopWrapper {
     Loop inner;
     int requested = 1, applied;
     State state = State.SLEEPING;
-    boolean processWait;
     DynamicLongProperty tokenInterval = ArchaiusUtil.getLong("execution.token.every.millis");
     DynamicLongProperty tokensMax = ArchaiusUtil.getLong("execution.tokens.max");
     List<Waiter> waiters = new ArrayList<>();
@@ -98,10 +98,13 @@ public class LoopWrapper {
             @Override
             protected void doRun() throws Exception {
                 int startValue = requested;
+                long start = System.currentTimeMillis();
                 Loop.Result result = null;
                 try {
                     result = inner.run(null);
                 } finally {
+                    log.info("Loop [{}] [{}] {}/{}/{} {}ms", name, result, requested, startValue, applied,
+                            (System.currentTimeMillis()-start));
                     synchronized (LoopWrapper.this) {
                         if (result == null) {
                             setState(State.ERROR);

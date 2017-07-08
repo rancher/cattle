@@ -62,7 +62,11 @@ public class ProcessHandlerRegistryImpl implements ProcessHandlerRegistry, Proce
     }
 
     private ProcessRouter handleWildcard(String process, ProcessHandler... handlers) {
-        Pattern p = Pattern.compile(process.replace("*", ".*"));
+        String[] parts = process.split("[*]");
+        for (int i = 0 ; i < parts.length ; i++) {
+            parts[i] = Pattern.quote(parts[i]);
+        }
+        Pattern p = Pattern.compile(String.join(".*", parts));
         processDefinitions.keySet().stream().forEach((name) -> {
             if (p.matcher(name).matches()) {
                 handle(name, handlers);

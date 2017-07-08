@@ -1,8 +1,5 @@
 package io.cattle.platform.process.network;
 
-import static io.cattle.platform.core.model.tables.NetworkTable.*;
-import static io.cattle.platform.core.model.tables.SubnetTable.*;
-
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
@@ -30,6 +27,7 @@ import io.cattle.platform.resource.pool.util.ResourcePoolConstants;
 import io.cattle.platform.util.exception.ExecutionException;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.util.ProxyUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,7 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.apache.commons.lang3.StringUtils;
+import static io.cattle.platform.core.model.tables.NetworkTable.*;
+import static io.cattle.platform.core.model.tables.SubnetTable.*;
 
 public class NetworkProcessManager {
 
@@ -51,9 +50,8 @@ public class NetworkProcessManager {
     JsonMapper jsonMapper;
     ResourcePoolManager resourcePoolManager;
 
-    public NetworkProcessManager(ObjectManager objectManager, ObjectProcessManager processManager, NetworkDao networkDao, LockManager lockManager,
-            JsonMapper jsonMapper, ResourcePoolManager resourcePoolManager) {
-        super();
+    public NetworkProcessManager(GenericResourceDao resourceDao, ObjectManager objectManager, ObjectProcessManager processManager, NetworkDao networkDao, LockManager lockManager, JsonMapper jsonMapper, ResourcePoolManager resourcePoolManager) {
+        this.resourceDao = resourceDao;
         this.objectManager = objectManager;
         this.processManager = processManager;
         this.networkDao = networkDao;

@@ -130,12 +130,11 @@ import io.cattle.platform.systemstack.task.UpgradeScheduleTask;
 import io.cattle.platform.task.eventing.TaskManagerEventListener;
 import io.cattle.platform.task.eventing.impl.TaskManagerEventListenerImpl;
 import io.cattle.platform.util.type.InitializationTask;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class Backend {
 
@@ -260,7 +259,8 @@ public class Backend {
         HostProcessManager hostProcessManager = new HostProcessManager(d.instanceDao, f.resourceMonitor, f.eventService, d.hostDao, f.metaDataManager, f.objectManager, f.processManager);
         InatorReconcileHandler inatorReconcileHandler = new InatorReconcileHandler(f.objectManager, loopManager);
         InstanceProcessManager instanceProcessManager = new InstanceProcessManager(instanceLifecycleManager, f.processManager);
-        NetworkProcessManager networkProcessManager = new NetworkProcessManager(f.objectManager, f.processManager, d.networkDao, f.lockManager, f.jsonMapper, f.resourcePoolManager);
+        NetworkProcessManager networkProcessManager = new NetworkProcessManager(d.resourceDao, f.objectManager, f.processManager, d.networkDao, f.lockManager, f.jsonMapper, f.resourcePoolManager);
+
         MountProcessManager mountProcessManager = new MountProcessManager(f.objectManager, f.processManager);
         RegisterProcessManager registerProcessManager = new RegisterProcessManager(d.registerDao, f.resourceMonitor, f.objectManager, f.processManager, d.resourceDao);
         ScheduledUpgradeProcessManager scheduledUpgradeProcessManager = new ScheduledUpgradeProcessManager(catalogService, upgradeManager, f.objectManager, f.processManager);
@@ -457,8 +457,8 @@ public class Backend {
         initTasks.add(f.lockDelegator);
         initTasks.add(machineDriverLoader);
         initTasks.add(projectTemplateService);
-        initTasks.add(c.serviceAccountCreateStartup);
         initTasks.add(c.taskManager);
+        initTasks.add(c.serviceAccountCreateStartup);
     }
 
 }

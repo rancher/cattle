@@ -49,10 +49,10 @@ public class ObjectLaunchConfigurationUtils {
             accountId = ObjectUtils.getPropertyIgnoreErrors(resource, "resourceAgentId");
         }
         if (accountId == null) {
-            ObjectUtils.getAccountId(resource);
+            accountId = ObjectUtils.getAccountId(resource);
         }
         return new LaunchConfiguration(processName, schema.getId(), id.toString(), accountId, priority,
-                data == null ? new HashMap<String, Object>() : data);
+                data == null ? new HashMap<>() : data);
     }
 
 }

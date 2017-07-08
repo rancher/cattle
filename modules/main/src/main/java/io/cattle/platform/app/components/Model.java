@@ -86,7 +86,7 @@ public class Model {
 
         // GenericObject
         process("genericobject.create").resourceType("genericObject").start("requested").transitioning("activating").done("active").build();
-        process("genericobject.create").resourceType("genericObject").start("requested,active,activating").transitioning("removing").done("removed").build();
+        process("genericobject.remove").resourceType("genericObject").start("requested,active,activating").transitioning("removing").done("removed").build();
 
         // Account
         defaultProcesses("account");

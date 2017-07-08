@@ -22,7 +22,7 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="${mediumtext}"/>
             <column name="external_id" type="VARCHAR(255)"/>
             <column name="external_id_type" type="VARCHAR(128)"/>
             <column name="health_state" type="VARCHAR(128)"/>
@@ -52,7 +52,7 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="${mediumtext}"/>
             <column name="uri" type="VARCHAR(255)"/>
             <column defaultValueNumeric="1" name="managed_config" type="BIT">
                 <constraints nullable="false"/>
@@ -78,7 +78,7 @@
             <column name="resource_id" type="BIGINT"/>
             <column name="description" type="VARCHAR(1024)"/>
             <column name="created" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="${mediumtext}"/>
             <column name="authenticated_as_identity_id" type="VARCHAR(255)"/>
             <column name="runtime" type="BIGINT"/>
             <column name="client_ip" type="VARCHAR(255)"/>
@@ -99,7 +99,7 @@
             <column name="key" type="VARCHAR(40)">
                 <constraints nullable="false"/>
             </column>
-            <column name="value" type="MEDIUMTEXT">
+            <column name="value" type="${mediumtext}">
                 <constraints nullable="false"/>
             </column>
             <column name="version" type="VARCHAR(255)">
@@ -166,13 +166,13 @@
             <column name="default_version" type="VARCHAR(1024)"/>
             <column name="path" type="VARCHAR(1024)"/>
             <column name="maintainer" type="VARCHAR(1024)"/>
-            <column name="license" type="MEDIUMTEXT"/>
+            <column name="license" type="${mediumtext}"/>
             <column name="project_url" type="VARCHAR(1024)"/>
             <column name="upgrade_from" type="VARCHAR(1024)"/>
             <column name="folder_name" type="VARCHAR(1024)"/>
             <column name="catalog" type="VARCHAR(1024)"/>
             <column name="base" type="VARCHAR(1024)"/>
-            <column name="icon" type="MEDIUMTEXT"/>
+            <column name="icon" type="${mediumtext}"/>
             <column name="icon_filename" type="VARCHAR(255)"/>
             <column name="readme" type="MEDIUMBLOB"/>
         </createTable>
@@ -228,7 +228,7 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="${mediumtext}"/>
             <column name="cert_chain" type="TEXT"/>
             <column name="cert" type="TEXT"/>
             <column name="key" type="TEXT"/>
@@ -242,7 +242,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="heartbeat" type="BIGINT"/>
-            <column name="config" type="MEDIUMTEXT"/>
+            <column name="config" type="${mediumtext}"/>
             <column defaultValueNumeric="0" name="clustered" type="BIT">
                 <constraints nullable="false"/>
             </column>
@@ -266,7 +266,7 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="${mediumtext}"/>
             <column name="public_value" type="VARCHAR(4096)"/>
             <column name="secret_value" type="VARCHAR(4096)"/>
             <column name="registry_id" type="BIGINT"/>
@@ -334,7 +334,7 @@
             <column name="created" type="datetime"/>
             <column name="data" type="TEXT"/>
             <column name="parent" type="VARCHAR(255)"/>
-            <column name="definition" type="MEDIUMTEXT"/>
+            <column name="definition" type="${mediumtext}"/>
             <column name="service_id" type="BIGINT"/>
             <column name="removed" type="datetime"/>
         </createTable>
@@ -366,7 +366,7 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="${mediumtext}"/>
             <column name="external_id" type="VARCHAR(128)"/>
             <column name="health_state" type="VARCHAR(128)"/>
             <column name="folder" type="VARCHAR(255)"/>
@@ -413,7 +413,7 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="${mediumtext}"/>
             <column name="key" type="VARCHAR(255)"/>
         </createTable>
         <createTable tableName="host">
@@ -435,7 +435,7 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="${mediumtext}"/>
             <column name="uri" type="VARCHAR(255)"/>
             <column name="agent_id" type="BIGINT"/>
             <column defaultValueNumeric="0" name="is_public" type="BIT">
@@ -469,7 +469,7 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="${mediumtext}"/>
             <column name="driver" type="VARCHAR(255)"/>
             <column name="flavor_prefix" type="VARCHAR(255)"/>
         </createTable>
@@ -492,7 +492,7 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="${mediumtext}"/>
             <column name="memory_mb" type="BIGINT"/>
             <column name="hostname" type="VARCHAR(255)"/>
             <column name="instance_triggered_stop" type="VARCHAR(128)"/>
@@ -569,7 +569,7 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="${mediumtext}"/>
             <column name="volume_id" type="BIGINT"/>
             <column name="instance_id" type="BIGINT"/>
             <column name="permissions" type="VARCHAR(128)"/>
@@ -594,7 +594,7 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="${mediumtext}"/>
             <column defaultValueNumeric="0" name="is_public" type="BIT">
                 <constraints nullable="false"/>
             </column>
@@ -620,7 +620,7 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="${mediumtext}"/>
             <column name="service_id" type="BIGINT"/>
         </createTable>
         <createTable tableName="process_execution">
@@ -633,7 +633,7 @@
             <column name="uuid" type="VARCHAR(128)">
                 <constraints nullable="false"/>
             </column>
-            <column name="log" type="MEDIUMTEXT"/>
+            <column name="log" type="${mediumtext}"/>
             <column name="created" type="datetime"/>
         </createTable>
         <createTable tableName="process_instance">
@@ -642,7 +642,7 @@
             </column>
             <column name="start_time" type="datetime"/>
             <column name="end_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="${mediumtext}"/>
             <column defaultValueNumeric="0" name="priority" type="INT"/>
             <column name="process_name" type="VARCHAR(128)"/>
             <column name="resource_type" type="VARCHAR(128)"/>
@@ -677,7 +677,7 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="${mediumtext}"/>
             <column name="external_id" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
@@ -710,7 +710,7 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="${mediumtext}"/>
             <column defaultValueNumeric="0" name="is_public" type="BIT">
                 <constraints nullable="false"/>
             </column>
@@ -735,7 +735,7 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="${mediumtext}"/>
             <column name="pool_type" type="VARCHAR(255)"/>
             <column name="pool_id" type="BIGINT"/>
             <column name="item" type="VARCHAR(255)"/>
@@ -765,7 +765,7 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="${mediumtext}"/>
             <column name="service_id" type="BIGINT"/>
         </createTable>
         <createTable tableName="scheduled_upgrade">
@@ -786,7 +786,7 @@
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
             <column name="run_after" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="${mediumtext}"/>
             <column name="environment_id" type="BIGINT"/>
             <column name="started" type="datetime"/>
             <column name="finished" type="datetime"/>
@@ -813,8 +813,8 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
-            <column name="value" type="MEDIUMTEXT"/>
+            <column name="data" type="${mediumtext}"/>
+            <column name="value" type="${mediumtext}"/>
             <column name="environment_id" type="BIGINT"/>
         </createTable>
         <createTable tableName="service">
@@ -836,7 +836,7 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="${mediumtext}"/>
             <column name="environment_id" type="BIGINT"/>
             <column name="vip" type="VARCHAR(255)"/>
             <column name="create_index" type="BIGINT"/>
@@ -868,7 +868,7 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="${mediumtext}"/>
             <column name="host_id" type="BIGINT"/>
             <column name="healthcheck_uuid" type="VARCHAR(255)"/>
             <column name="instance_id" type="BIGINT"/>
@@ -904,7 +904,7 @@
             <column name="name" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="value" type="MEDIUMTEXT">
+            <column name="value" type="${mediumtext}">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -927,7 +927,7 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="${mediumtext}"/>
             <column name="service_id" type="BIGINT"/>
         </createTable>
         <createTable tableName="storage_pool">
@@ -949,7 +949,7 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="${mediumtext}"/>
             <column name="physical_total_size_mb" type="BIGINT"/>
             <column name="virtual_total_size_mb" type="BIGINT"/>
             <column defaultValueNumeric="0" name="external" type="BIT">
@@ -980,7 +980,7 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="${mediumtext}"/>
             <column name="storage_pool_id" type="BIGINT"/>
             <column name="host_id" type="BIGINT"/>
         </createTable>
@@ -1003,7 +1003,7 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="${mediumtext}"/>
             <column name="network_address" type="VARCHAR(255)"/>
             <column name="cidr_size" type="INT"/>
             <column name="start_address" type="VARCHAR(255)"/>
@@ -1026,7 +1026,7 @@
             <column name="token" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="${mediumtext}"/>
             <column name="request" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
@@ -1053,8 +1053,8 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
-            <column name="value" type="MEDIUMTEXT">
+            <column name="data" type="${mediumtext}"/>
+            <column name="value" type="${mediumtext}">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -1077,7 +1077,7 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="${mediumtext}"/>
             <column name="physical_size_mb" type="BIGINT"/>
             <column name="virtual_size_mb" type="BIGINT"/>
             <column name="uri" type="VARCHAR(255)"/>
@@ -1109,7 +1109,7 @@
             <column name="created" type="datetime"/>
             <column name="removed" type="datetime"/>
             <column name="remove_time" type="datetime"/>
-            <column name="data" type="MEDIUMTEXT"/>
+            <column name="data" type="${mediumtext}"/>
             <column name="volume_id" type="BIGINT"/>
             <column name="storage_pool_id" type="BIGINT"/>
         </createTable>

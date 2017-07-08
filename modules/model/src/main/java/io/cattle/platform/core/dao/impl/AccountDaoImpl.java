@@ -1,9 +1,5 @@
 package io.cattle.platform.core.dao.impl;
 
-import static io.cattle.platform.core.model.tables.AccountTable.*;
-import static io.cattle.platform.core.model.tables.CredentialTable.*;
-import static io.cattle.platform.core.model.tables.ProjectMemberTable.*;
-
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.CredentialConstants;
@@ -15,15 +11,18 @@ import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.util.type.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.jooq.Condition;
+import org.jooq.Configuration;
+import org.jooq.impl.DSL;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
-import org.jooq.Condition;
-import org.jooq.Configuration;
-import org.jooq.impl.DSL;
+import static io.cattle.platform.core.model.tables.AccountTable.*;
+import static io.cattle.platform.core.model.tables.CredentialTable.*;
+import static io.cattle.platform.core.model.tables.ProjectMemberTable.*;
 
 public class AccountDaoImpl extends AbstractJooqDao implements AccountDao {
 
@@ -44,8 +43,15 @@ public class AccountDaoImpl extends AbstractJooqDao implements AccountDao {
     public Account getSystemAccount() {
         Account system = objectManager.findOne(Account.class,
                 ACCOUNT.UUID, AccountConstants.SYSTEM_UUID);
-        if ( system == null ) {
-            throw new IllegalStateException("Failed to find system account");
+        if (system == null) {
+            for (String name : new String[] {"admin", "system", "superadmin"}) {
+                objectManager.create(Account.class,
+                        ACCOUNT.UUID, name,
+                        ACCOUNT.KIND, name,
+                        ACCOUNT.NAME, name,
+                        ACCOUNT.STATE, name.equals("admin") ? "active" : "inactive");
+            }
+            return getSystemAccount();
         }
 
         return system;

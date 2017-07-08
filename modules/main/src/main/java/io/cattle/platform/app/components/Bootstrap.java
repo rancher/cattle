@@ -1,5 +1,10 @@
 package io.cattle.platform.app.components;
 
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
+import com.netflix.config.ConcurrentCompositeConfiguration;
+import com.netflix.config.DynamicPropertyFactory;
+import com.netflix.config.sources.JDBCConfigurationSource;
 import io.cattle.platform.archaius.polling.RefreshableFixedDelayPollingScheduler;
 import io.cattle.platform.archaius.sources.DefaultTransformedEnvironmentProperties;
 import io.cattle.platform.archaius.sources.LazyJDBCSource;
@@ -21,17 +26,6 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.liquibase.Loader;
 import io.cattle.platform.logback.Startup;
 import io.cattle.platform.object.util.DataAccessor;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-import java.util.TimeZone;
-
-import javax.sql.DataSource;
-
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.jooq.Configuration;
 import org.jooq.ExecuteListener;
@@ -46,11 +40,14 @@ import org.jooq.tools.StopWatchListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
-import com.netflix.config.ConcurrentCompositeConfiguration;
-import com.netflix.config.DynamicPropertyFactory;
-import com.netflix.config.sources.JDBCConfigurationSource;
+import javax.sql.DataSource;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+import java.util.TimeZone;
 
 public class Bootstrap {
 
@@ -93,7 +90,7 @@ public class Bootstrap {
         setupLogging();
         setupDatabase();
         setupJson();
-//        migrateSchema();
+        migrateSchema();
         setupCluster();
     }
 

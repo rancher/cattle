@@ -1,5 +1,6 @@
 package io.cattle.platform.app.components;
 
+import com.github.dockerjava.api.model.Volume;
 import io.cattle.platform.api.handler.ActionRequestHandler;
 import io.cattle.platform.api.handler.AddClientIpHeader;
 import io.cattle.platform.api.handler.CommonExceptionsHandler;
@@ -62,7 +63,6 @@ import io.cattle.platform.host.api.HostApiProxyTokenImpl;
 import io.cattle.platform.host.api.HostApiProxyTokenManager;
 import io.cattle.platform.host.api.HostApiPublicCAScriptHandler;
 import io.cattle.platform.host.api.HostApiPublicKeyScriptHandler;
-import io.cattle.platform.host.service.HostApiService;
 import io.cattle.platform.host.stats.api.ContainerStatsLinkHandler;
 import io.cattle.platform.host.stats.api.HostStatsLinkHandler;
 import io.cattle.platform.host.stats.api.ServiceContainerStatsLinkHandler;
@@ -166,7 +166,6 @@ import io.github.ibuildthecloud.gdapi.request.handler.VersionsHandler;
 import io.github.ibuildthecloud.gdapi.request.handler.write.ReadWriteApiHandler;
 import io.github.ibuildthecloud.gdapi.response.HtmlResponseWriter;
 import io.github.ibuildthecloud.gdapi.response.JsonResponseWriter;
-import io.github.ibuildthecloud.gdapi.response.ResponseConverter;
 import io.github.ibuildthecloud.gdapi.servlet.ApiRequestFilterDelegate;
 import io.github.ibuildthecloud.gdapi.validation.ReferenceValidator;
 import io.github.ibuildthecloud.gdapi.validation.ResourceManagerReferenceValidator;
@@ -183,8 +182,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Stack;
 
-import com.github.dockerjava.api.model.Volume;
-
 public class Api {
 
     Common c;
@@ -194,7 +191,6 @@ public class Api {
     ApiRequestFilterDelegate apiRequestFilterDelegate;
     ContainerProxyActionHandler containerProxyActionHandler;
     ReferenceValidator referenceValidator;
-    ResponseConverter responseConverter;
     Versions versions;
 
     public Api(Framework framework, Common common, DataAccess dataAccess) throws IOException {
@@ -386,6 +382,7 @@ public class Api {
                 new CommonExceptionsHandler(),
                 new NotFoundHandler(),
                 new EventNotificationHandler(f.eventService),
+                c.responseObjectConverter,
                 new ResponseObjectConverter(f.metaDataManager, f.objectManager, c.locator),
                 exceptionHandler(),
                 new JsonResponseWriter(f.schemaJsonMapper),
@@ -420,7 +417,7 @@ public class Api {
     }
 
     private void setupPubSub() {
-        ResourceChangeEventProcessor resourceChangeEventProcessor = new ResourceChangeEventProcessor(c.locator, responseConverter, f.schemaJsonMapper);
+        ResourceChangeEventProcessor resourceChangeEventProcessor = new ResourceChangeEventProcessor(c.locator, c.responseObjectConverter, f.schemaJsonMapper);
         JettyWebSocketSubcriptionHandler jettyWebSocketSubcriptionHandler = new JettyWebSocketSubcriptionHandler(f.jsonMapper,
                 f.eventService,
                 f.retryTimeoutService,
@@ -432,8 +429,7 @@ public class Api {
     }
 
     private void setupApiCommon() {
-        responseConverter = new ResponseObjectConverter(f.metaDataManager, f.objectManager, c.locator);
-        referenceValidator = new ResourceManagerReferenceValidator(c.locator, responseConverter);
+        referenceValidator = new ResourceManagerReferenceValidator(c.locator, c.responseObjectConverter);
 
         Versions v = new Versions();
         v.setVersions(new HashSet<>(Arrays.asList(
@@ -467,7 +463,7 @@ public class Api {
         return exceptionHandler;
     }
 
-    private HtmlResponseWriter htmlResponseWriter() {
+    private HtmlResponseWriter htmlResponseWriter() throws IOException {
         JacksonMapper jacksonMapper = new JacksonMapper();
         jacksonMapper.setEscapeForwardSlashes(true);
         jacksonMapper.init();

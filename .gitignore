@@ -22,7 +22,9 @@ runtime
 scripts/mysql/cattle_dump*.sql
 scripts/mysql/cattle_dump*.sql.gz
 scripts/mysql/dump-*.xml
+build
 target
+out
 tests/integration*/.idea/
 tests/integration*/.tox/
 tests/integration*/MANIFEST

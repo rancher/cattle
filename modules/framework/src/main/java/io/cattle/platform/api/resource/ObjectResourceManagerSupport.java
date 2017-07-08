@@ -30,9 +30,10 @@ public class ObjectResourceManagerSupport {
     protected ObjectProcessManager objectProcessManager;
     ResponseObjectConverter objectConverter;
 
-    public ObjectResourceManagerSupport(ObjectManager objectManager, ObjectProcessManager objectProcessManager) {
+    public ObjectResourceManagerSupport(ObjectManager objectManager, ObjectProcessManager objectProcessManager, ResponseObjectConverter objectConverter) {
         this.objectManager = objectManager;
         this.objectProcessManager = objectProcessManager;
+        this.objectConverter = objectConverter;
     }
 
     public Object create(String type, ApiRequest request) {

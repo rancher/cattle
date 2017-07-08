@@ -1,17 +1,15 @@
 package io.cattle.platform.engine.model;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import io.cattle.platform.engine.manager.ProcessNotFoundException;
 import io.cattle.platform.engine.process.impl.ProcessWaitException;
 import io.cattle.platform.engine.server.ProcessServer;
 import io.cattle.platform.util.type.Priority;
-
-import java.util.Date;
-
 import org.apache.cloudstack.managed.context.NoExceptionRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.util.concurrent.ListenableFuture;
+import java.util.Date;
 
 public class ProcessInstanceWrapper extends NoExceptionRunnable implements Runnable, Comparable<ProcessInstanceWrapper>, Priority {
 
@@ -69,6 +67,7 @@ public class ProcessInstanceWrapper extends NoExceptionRunnable implements Runna
             instance = null;
         }
 
+        long start = System.currentTimeMillis();
         try {
             if (!processServer.isInPartition(getRef())) {
                 done = true;
@@ -90,6 +89,9 @@ public class ProcessInstanceWrapper extends NoExceptionRunnable implements Runna
         } catch (Throwable t) {
             log.error("Failed to run process [{}]", ref.getId(), t);
         } finally {
+            log.info("Executed [{}] [{}:{}] [{}] done [{}] {}ms", ref.getName(),
+                    ref.getResourceType(), ref.getResourceId(),
+                    ref.getAccountId(), done, (System.currentTimeMillis()-start));
             processServer.done(this);
         }
     }

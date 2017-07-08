@@ -1,19 +1,16 @@
 package io.cattle.platform.object.meta.impl;
 
-import static io.cattle.platform.object.meta.Relationship.RelationshipType.*;
-
+import com.google.common.collect.Lists;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.engine.process.ProcessDefinition;
 import io.cattle.platform.engine.process.StateTransition;
 import io.cattle.platform.object.jooq.utils.JooqUtils;
 import io.cattle.platform.object.meta.ActionDefinition;
-import io.cattle.platform.object.meta.MapRelationship;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.meta.Relationship;
 import io.cattle.platform.object.meta.TypeSet;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
-import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.factory.impl.SchemaFactoryImpl;
@@ -25,7 +22,12 @@ import io.github.ibuildthecloud.gdapi.model.Filter;
 import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.gdapi.model.impl.FieldImpl;
 import io.github.ibuildthecloud.gdapi.model.impl.SchemaImpl;
+import org.apache.commons.beanutils.PropertyUtils;
+import org.jooq.ForeignKey;
+import org.jooq.Table;
+import org.jooq.TableField;
 
+import javax.persistence.Column;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -44,16 +46,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
 
-import javax.persistence.Column;
-
-import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-import org.jooq.ForeignKey;
-import org.jooq.Table;
-import org.jooq.TableField;
-
-import com.google.common.collect.Lists;
+import static io.cattle.platform.object.meta.Relationship.RelationshipType.*;
 
 public class DefaultObjectMetaDataManager implements ObjectMetaDataManager {
 
@@ -74,9 +67,6 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager {
     public DefaultObjectMetaDataManager(SchemaFactory schemaFactory) {
         this.schemaFactory = schemaFactory;
         init();
-    }
-
-    protected DefaultObjectMetaDataManager() {
     }
 
     private void init() {
@@ -208,89 +198,6 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager {
                 }
             }
         }
-
-        findMappings();
-    }
-
-    protected void findMappings() {
-        Map<Class<?>, List<Pair<Class<?>, Relationship>>> foundRelationship = new HashMap<>();
-
-        for (Map.Entry<Class<?>, Map<String, List<Relationship>>> entry : relationships.entrySet()) {
-            for (Map.Entry<String, List<Relationship>> relEntry : entry.getValue().entrySet()) {
-                List<Relationship> relList = relEntry.getValue();
-                for (Relationship rel : relList) {
-                    if (rel.getRelationshipType() == Relationship.RelationshipType.CHILD) {
-                        Schema schema = schemaFactory.getSchema(rel.getObjectType());
-                        if (schema != null && schema.getId().endsWith(ObjectMetaDataManager.MAP_SUFFIX)) {
-                            CollectionUtils.addToMap(foundRelationship, rel.getObjectType(),
-                                    (Pair<Class<?>, Relationship>) new ImmutablePair<Class<?>, Relationship>(entry.getKey(), rel), ArrayList.class);
-                        }
-                    }
-                }
-            }
-        }
-
-        for (Map.Entry<Class<?>, List<Pair<Class<?>, Relationship>>> entry : foundRelationship.entrySet()) {
-            List<Pair<Class<?>, Relationship>> rels = entry.getValue();
-            if (rels.size() > 2) {
-                Iterator<Pair<Class<?>, Relationship>> it = rels.iterator();
-                while (it.hasNext()) {
-                    Pair<Class<?>, Relationship> rel = it.next();
-                    boolean ignoreRelationship = excludeRelationShip(entry.getKey().getSimpleName(), rel.getRight()
-                            .getPropertyName());
-                    if (ignoreRelationship) {
-                        it.remove();
-                    }
-                }
-            }
-
-            if (rels.size() != 2) {
-                continue;
-            }
-
-            Pair<Class<?>, Relationship> left = rels.get(0);
-            Pair<Class<?>, Relationship> right = rels.get(1);
-
-            String mapRightToLeftName = right.getRight().getPropertyName();
-            String mapLeftToRightName = left.getRight().getPropertyName();
-
-            if (left.getLeft().equals(right.getLeft())) {
-                // This basically looks like a junction map to itself.
-                // Inspect the column names for extra info and use the link
-                // override to obtain a more meaningful link name
-                register(getLinkNameOverride(entry.getKey().getSimpleName(), mapRightToLeftName, mapRightToLeftName), entry.getKey(), left, right);
-                register(getLinkNameOverride(entry.getKey().getSimpleName(), mapLeftToRightName, mapLeftToRightName), entry.getKey(), right, left);
-            } else {
-                register(getLinkNameOverride(
-                            entry.getKey().getSimpleName(),
-                            mapRightToLeftName,
-                            schemaFactory.getSchema(right.getLeft()).getPluralName()
-                        ),
-                        entry.getKey(),
-                        left, right);
-                register(getLinkNameOverride(
-                            entry.getKey().getSimpleName(),
-                            mapLeftToRightName,
-                            schemaFactory.getSchema(left.getLeft()).getPluralName()
-                        ),
-                        entry.getKey(),
-                        right, left);
-            }
-        }
-    }
-
-    private String getLinkNameOverride(String objectName, String property, String defaultName) {
-        String mapNameOverride = ArchaiusUtil.getString(String.format("object.link.name.%s.%s.override", objectName, property).toLowerCase()).get();
-        return mapNameOverride == null ? defaultName : mapNameOverride;
-    }
-
-    private boolean excludeRelationShip(String objectName, String fieldToIgnore) {
-        return ArchaiusUtil.getBoolean(
-                String.format("object.link.ignore.%s.%s", objectName, fieldToIgnore).toLowerCase()).get();
-    }
-
-    protected void register(String mappingName, Class<?> mappingType, Pair<Class<?>, Relationship> left, Pair<Class<?>, Relationship> right) {
-        register(left.getLeft(), new MapRelationshipImpl(mappingName, mappingType, right.getLeft(), left.getRight(), right.getRight()));
     }
 
     protected void registerTableFields(Table<?> table) {
@@ -445,11 +352,6 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager {
         return key == null ? null : key.toString();
     }
 
-    @Override
-    public String lookupPropertyNameFromFieldName(Class<?> recordClass, String fieldName) {
-        return getNameFromField(recordClass, fieldName);
-    }
-
     protected String getNameFromField(Class<?> clz, String field) {
         FieldCacheKey key = new FieldCacheKey(clz, field);
         String cached = propertyCache.get(key);
@@ -520,7 +422,6 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager {
 
         addField(schema, TRANSITIONING_FIELD, FieldType.ENUM, TRANSITIONING_YES, TRANSITIONING_NO, TRANSITIONING_ERROR);
         addField(schema, TRANSITIONING_MESSAGE_FIELD, FieldType.STRING);
-        addField(schema, TRANSITIONING_PROGRESS_FIELD, FieldType.INT);
     }
 
     protected void addField(SchemaImpl schema, String name, FieldType type, String... options) {
@@ -714,46 +615,6 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager {
         if (relationshipList == null || relationshipList.size() == 0) {
             return null;
         }
-        if (relationshipList.size() > 1) {
-            for (Relationship rel : relationshipList) {
-                if (rel instanceof MapRelationship && rel.getName() != null && rel.getName().equals(linkName)) {
-                    return rel;
-                }
-            }
-            return null;
-        }
-        return relationshipList.get(0);
-    }
-
-    @Override
-    public Relationship getRelationship(String type, String linkName, String fieldName) {
-        Class<?> clz = schemaFactory.getSchemaClass(type, true);
-        Map<String, List<Relationship>> relationship = relationshipsBothCase.get(clz);
-        List<Relationship> relationshipList = relationship.get(linkName);
-        return getRelationShipField(relationshipList, linkName, fieldName);
-    }
-
-    @Override
-    public Relationship getRelationship(Class<?> clz, String linkName, String fieldName) {
-        Map<String, List<Relationship>> relationship = relationshipsBothCase.get(clz);
-        List<Relationship> relationshipList = relationship.get(linkName);
-        return getRelationShipField(relationshipList, linkName, fieldName);
-    }
-
-    private Relationship getRelationShipField(List<Relationship> relationshipList, String linkName, String fieldName) {
-        if (relationshipList == null || relationshipList.size() == 0) {
-            return null;
-        }
-        if (relationshipList.size() > 1) {
-            for (Relationship rel : relationshipList) {
-                if (rel instanceof ForeignKeyRelationship && rel.getName() != null
-                        && rel.getName().equalsIgnoreCase(linkName)
-                        && rel.getPropertyName().equalsIgnoreCase(fieldName)) {
-                    return rel;
-                }
-            }
-            return null;
-        }
         return relationshipList.get(0);
     }
 
@@ -772,10 +633,8 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put(TRANSITIONING_FIELD, TRANSITIONING_NO);
         result.put(TRANSITIONING_MESSAGE_FIELD, null);
-        result.put(TRANSITIONING_PROGRESS_FIELD, null);
 
         String message = DataAccessor.fieldString(obj, TRANSITIONING_MESSAGE_FIELD);
-        Integer progress = DataAccessor.fieldInteger(obj, TRANSITIONING_PROGRESS_FIELD);
 
         String state = DataUtils.getState(obj);
         if (TRANSITIONING_ERROR_OVERRIDE.equals(DataAccessor.fieldString(obj, TRANSITIONING_FIELD))) {
@@ -785,7 +644,6 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager {
         } else if (state != null && states.contains(state)) {
             result.put(TRANSITIONING_FIELD, TRANSITIONING_YES);
             result.put(TRANSITIONING_MESSAGE_FIELD, message == null ? TRANSITIONING_MESSAGE_DEFAULT_FIELD : message);
-            result.put(TRANSITIONING_PROGRESS_FIELD, progress);
         } else if (TRANSITIONING_ERROR.equals(DataAccessor.fieldString(obj, TRANSITIONING_FIELD))) {
             return Collections.emptyMap();
         }

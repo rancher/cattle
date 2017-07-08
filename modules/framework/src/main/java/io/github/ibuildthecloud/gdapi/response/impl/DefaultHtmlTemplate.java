@@ -6,6 +6,7 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.response.HtmlTemplate;
 import io.github.ibuildthecloud.gdapi.util.Settings;
 import io.github.ibuildthecloud.gdapi.util.SettingsUtil;
+import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,16 +14,16 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-import javax.annotation.PostConstruct;
-
-import org.apache.commons.io.IOUtils;
-
 public class DefaultHtmlTemplate implements HtmlTemplate {
 
     String header;
     byte[] footer;
     String jsUrl, cssUrl;
     Settings settings;
+
+    public DefaultHtmlTemplate() throws IOException {
+        init();
+    }
 
     @Override
     public byte[] getHeader(ApiRequest request, Object response) {
@@ -65,8 +66,7 @@ public class DefaultHtmlTemplate implements HtmlTemplate {
         return footer;
     }
 
-    @PostConstruct
-    public void init() throws IOException {
+    private void init() throws IOException {
         InputStream is = null;
 
         try {

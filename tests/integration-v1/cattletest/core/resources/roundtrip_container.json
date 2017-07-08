@@ -96,7 +96,6 @@
       ],
       "user": null,
       "cpuSet": "0,3",
-      "transitioningProgress": 90,
       "transitioningMessage": " : 4e8ca92b-6c7f-4151-b099-c61eb7168c29 : 404 Client Error: Not Found (\"Cannot start container 30ad6d9ca7238f6d0e6e311e6487368596855725bd87629353ac1bcf5487d8c3: error gathering device information while adding custom device \"/dev/sdc\": lstat /dev/sdc: no such file or directory\")",
       "transitioning": "error",
       "dockerHostIp": "192.168.59.103",
@@ -174,7 +173,6 @@
   "token": "9uKx0H8520ikSHnvY9qoDRQ1VMMNW5HxcYeQpAuCG4159MHth8CXJgiRTKMj9loi1qGFFW36YHqtZjovQ63fA",
   "transitioning": "error",
   "transitioningMessage": " : 4e8ca92b-6c7f-4151-b099-c61eb7168c29 : 404 Client Error: Not Found (\"Cannot start container 30ad6d9ca7238f6d0e6e311e6487368596855725bd87629353ac1bcf5487d8c3: error gathering device information while adding custom device \"/dev/sdc\": lstat /dev/sdc: no such file or directory\")",
-  "transitioningProgress": 90,
   "tty": true,
   "user": null,
   "uuid": "a02153a6-3301-4694-93d8-aa6157fff1e2"

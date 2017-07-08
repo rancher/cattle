@@ -95,6 +95,8 @@ public class DataAccess {
     List<AbstractSampleData> sampleDatas = new ArrayList<>();
 
     public DataAccess(Framework f) {
+        this.resourceDao = new GenericResourceDaoImpl(f.objectManager, f.processManager, f.transaction);
+
         this.accountDao = new AccountDaoImpl(f.jooqConfig, f.objectManager);
         this.agentDao = new AgentDaoImpl(f.jooqConfig);
         this.allocatorDao = new AllocatorDaoImpl(f.jooqConfig, f.objectManager, f.transaction);
@@ -114,7 +116,6 @@ public class DataAccess {
         this.processSummaryDao = new ProcessSummaryDaoImpl(f.jooqConfig);
         this.registerDao = new RegisterDaoImpl(f.jooqConfig, f.objectManager, f.transaction);
         this.registrationTokenAuthDao = new RegistrationTokenAuthDaoImpl(f.jooqConfig);
-        this.resourceDao = new GenericResourceDaoImpl(f.objectManager, f.processManager, f.transaction);
         this.secretsDao = new SecretDaoImpl(f.jooqConfig);
         this.serviceDao = new ServiceDaoImpl(f.jooqConfig, f.objectManager, f.lockManager, resourceDao, f.transaction);
         this.stackDao = new StackDaoImpl(f.jooqConfig);

@@ -3,6 +3,7 @@ package io.cattle.platform.app.components;
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.impl.AgentLocatorImpl;
 import io.cattle.platform.agent.instance.serialization.AgentInstanceAuthObjectPostProcessor;
+import io.cattle.platform.api.handler.ResponseObjectConverter;
 import io.cattle.platform.api.resource.DefaultResourceManagerSupport;
 import io.cattle.platform.api.resource.ObjectResourceManagerSupport;
 import io.cattle.platform.api.resource.jooq.JooqAccountAuthorization;
@@ -17,7 +18,6 @@ import io.cattle.platform.docker.transform.DockerTransformer;
 import io.cattle.platform.docker.transform.DockerTransformerImpl;
 import io.cattle.platform.engine.process.ProcessRouter;
 import io.cattle.platform.framework.encryption.handler.impl.TransformationServiceImpl;
-import io.cattle.platform.framework.encryption.impl.Aes256Encrypter;
 import io.cattle.platform.framework.encryption.impl.PasswordHasher;
 import io.cattle.platform.framework.encryption.impl.Sha256Hasher;
 import io.cattle.platform.framework.secret.SecretsService;
@@ -69,6 +69,7 @@ public class Common {
     ProcessRouter processes;
     RegistrationAuthTokenManager registrationAuthTokenManager;
     ResourceManagerLocator locator;
+    ResponseObjectConverter responseObjectConverter;
     RevisionManager revisionManager;
     SecretsService secretsService;
     ServiceAccountCreateStartup serviceAccountCreateStartup;
@@ -107,20 +108,21 @@ public class Common {
                 new AgentInstanceAuthObjectPostProcessor(f.objectManager),
                 new SystemRoleObjectPostProcessor(f.objectManager, serviceAccountCreateStartup));
 
-        ObjectResourceManagerSupport objSupport = new ObjectResourceManagerSupport(f.objectManager, f.processManager);
-        JooqAccountAuthorization jooqAuth = new JooqAccountAuthorization(f.metaDataManager);
-        JooqResourceListSupport jooqList = new JooqResourceListSupport(f.jooqConfig, f.objectManager, f.metaDataManager);
-        this.support = new DefaultResourceManagerSupport(objSupport, jooqList, jooqAuth);
-
         ApiRouterImpl routerImpl = new ApiRouterImpl(f.coreSchemaFactory);
         router = routerImpl;
         locator = routerImpl;
 
-        Aes256Encrypter aes256Encrypter = new Aes256Encrypter();
-        aes256Encrypter.init();
+        responseObjectConverter = new ResponseObjectConverter(f.metaDataManager, f.objectManager, locator);
+        ObjectResourceManagerSupport objSupport = new ObjectResourceManagerSupport(f.objectManager, f.processManager, responseObjectConverter);
+        JooqAccountAuthorization jooqAuth = new JooqAccountAuthorization(f.metaDataManager);
+        JooqResourceListSupport jooqList = new JooqResourceListSupport(f.jooqConfig, f.objectManager, f.metaDataManager);
+        this.support = new DefaultResourceManagerSupport(objSupport, jooqList, jooqAuth);
+
+
         PasswordHasher passwordHasher = new PasswordHasher();
+        passwordHasher.init();
         Sha256Hasher sha256Hasher = new Sha256Hasher();
-        transformationService.addTransformers(aes256Encrypter);
+        sha256Hasher.init();
         transformationService.addTransformers(passwordHasher);
         transformationService.addTransformers(sha256Hasher);
     }

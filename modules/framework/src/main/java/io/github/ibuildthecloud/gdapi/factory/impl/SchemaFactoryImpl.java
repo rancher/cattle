@@ -14,6 +14,8 @@ import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.gdapi.model.impl.FieldImpl;
 import io.github.ibuildthecloud.gdapi.model.impl.SchemaImpl;
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
@@ -24,9 +26,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
-import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.lang3.StringUtils;
 
 @io.github.ibuildthecloud.gdapi.annotation.Type
 public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFactory {
@@ -53,6 +52,7 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
                             .getAnnotation(io.github.ibuildthecloud.gdapi.annotation.Field.class);
 
             defaultType = this.getClass().getAnnotation(io.github.ibuildthecloud.gdapi.annotation.Type.class);
+            init();
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }

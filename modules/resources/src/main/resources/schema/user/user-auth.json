@@ -12,7 +12,6 @@
         ".*\\.resourceActions\\..*" : "c",
         ".*\\.state" : "r",
         ".*\\.transitioningMessage": "r",
-        ".*\\.transitioningProgress": "r",
         ".*\\.transitioning": "r",
         ".*\\.uuid" : "r",
 

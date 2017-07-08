@@ -16,12 +16,11 @@ import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.util.exception.ExecutionException;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.Priority;
+import org.apache.commons.lang.StringUtils;
+import org.jooq.exception.DataChangedException;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.commons.lang.StringUtils;
-import org.jooq.exception.DataChangedException;
 
 public class EventBasedProcessHandler implements ProcessHandler {
 
@@ -80,10 +79,6 @@ public class EventBasedProcessHandler implements ProcessHandler {
 
                 if (transitioning != null) {
                     data.put(ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD, transitioning);
-                }
-
-                if (progress != null) {
-                    data.put(ObjectMetaDataManager.TRANSITIONING_PROGRESS_FIELD, progress);
                 }
 
                 if (data.size() > 0) {

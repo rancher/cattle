@@ -32,10 +32,6 @@
         "transitioningMessage": {
             "create": true,
             "nullable": true
-        },
-        "transitioningProgress": {
-            "create": true,
-            "nullable": true
         }
     }
 }

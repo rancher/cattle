@@ -245,7 +245,6 @@
         "publish.transitioning": "cr",
         "publish.transitioningInternalMessage": "cr",
         "publish.transitioningMessage": "cr",
-        "publish.transitioningProgress": "cr",
 
         "resourceDefinition" : "r",
         "resourceDefinition.name" : "r",

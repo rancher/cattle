@@ -7,7 +7,6 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import javax.annotation.PostConstruct;
 
 public class Sha256Hasher extends Hasher {
 
@@ -15,7 +14,7 @@ public class Sha256Hasher extends Hasher {
 
     private SecureRandom rn;
 
-    @PostConstruct
+    @Override
     public void init() {
         rn = new SecureRandom();
     }

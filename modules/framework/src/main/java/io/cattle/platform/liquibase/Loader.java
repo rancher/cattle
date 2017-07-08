@@ -1,28 +1,28 @@
 package io.cattle.platform.liquibase;
 
+import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.datasource.DataSourceFactory;
 import liquibase.Liquibase;
+import liquibase.changelog.ChangeLogParameters;
+import liquibase.changelog.DatabaseChangeLog;
 import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
+import liquibase.parser.core.xml.XMLChangeLogSAXParser;
 import liquibase.resource.ClassLoaderResourceAccessor;
-
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.EnumSet;
-import java.util.Set;
-
-import javax.sql.DataSource;
-
 import org.jooq.Configuration;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.netflix.config.DynamicStringProperty;
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.EnumSet;
+import java.util.Set;
 
 public class Loader {
 
@@ -67,15 +67,11 @@ public class Loader {
 
             log.info("Starting DB migration");
             Connection c = null;
-            Liquibase liquibase = null;
+            Liquibase liquibase;
             try {
-            log.info("1 Starting DB migration");
                 c = dataSource.getConnection();
-            log.info("2 Starting DB migration");
                 liquibase = createLiquibase(c);
-            log.info("3 Starting DB migration");
                 liquibase.update((String)null);
-            log.info("4 Starting DB migration");
             } catch (SQLException|LiquibaseException e) {
                 throw new IllegalStateException("Failed to migrate DB", e);
             } finally {
@@ -95,15 +91,23 @@ public class Loader {
                 }
             }
 
-            log.info("DB migration done");
+            log.info("Finished DB migration");
         } finally {
         }
     }
 
     protected Liquibase createLiquibase(Connection c) throws LiquibaseException {
 		Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(c));
-        Liquibase liquibase = new Liquibase(changeLog, new ClassLoaderResourceAccessor(), database);
+		DatabaseChangeLog parsedLog = new Parser().parse(changeLog, new ChangeLogParameters(database), new ClassLoaderResourceAccessor());
+        Liquibase liquibase = new Liquibase(parsedLog, new ClassLoaderResourceAccessor(), database);
         return liquibase;
+    }
+
+    private static class Parser extends XMLChangeLogSAXParser {
+        public Parser() {
+            getSaxParserFactory().setNamespaceAware(false);
+            getSaxParserFactory().setValidating(false);
+        }
     }
 
 }

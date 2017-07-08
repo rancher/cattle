@@ -277,16 +277,11 @@ def register_simulated_host(client_or_context, return_agent=False):
     if isinstance(client_or_context, Context):
         client = client_or_context.client
 
-    def do_ping():
-        ping = one(super_client(None).list_task, name='agent.ping')
-        ping.execute()
-
     def check():
         hosts = super_client(None).list_host(agentId=agents[0].id)
         if len(hosts) > 0:
             assert len(hosts) == 1
             return hosts[0]
-        do_ping()
 
     token = client.wait_success(client.create_registration_token())
     c = api_client('registrationToken', token.token)
@@ -343,7 +338,8 @@ def _wait_for_pool(host):
 def _is_valid_super_client(client):
     try:
         # stupid test
-        return len(client.schema.types) > 180
+        identities = client.list_identity()
+        return len(identities) == 1 and identities[0].name == 'superadmin'
     except:
         return False
 

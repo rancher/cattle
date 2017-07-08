@@ -3,7 +3,7 @@ package io.cattle.platform.object.meta;
 public interface Relationship {
 
     enum RelationshipType {
-        CHILD, REFERENCE, MAP
+        CHILD, REFERENCE
     }
 
     boolean isListResult();

@@ -4,7 +4,6 @@ import io.cattle.platform.engine.idempotent.Idempotent;
 import io.cattle.platform.engine.idempotent.IdempotentExecution;
 import io.cattle.platform.engine.idempotent.IdempotentExecutionNoReturn;
 import io.cattle.platform.object.jooq.utils.JooqUtils;
-import io.cattle.platform.object.meta.MapRelationship;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.meta.Relationship;
 import io.cattle.platform.object.util.DataAccessor;
@@ -14,6 +13,17 @@ import io.cattle.platform.util.type.UnmodifiableMap;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.beanutils.PropertyUtils;
+import org.jooq.Configuration;
+import org.jooq.DSLContext;
+import org.jooq.ForeignKey;
+import org.jooq.ResultQuery;
+import org.jooq.Table;
+import org.jooq.TableField;
+import org.jooq.UpdatableRecord;
+import org.jooq.impl.DSL;
+import org.jooq.impl.DefaultDSLContext;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -22,19 +32,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.beanutils.PropertyUtils;
-import org.jooq.Configuration;
-import org.jooq.DSLContext;
-import org.jooq.ForeignKey;
-import org.jooq.ResultQuery;
-import org.jooq.SelectQuery;
-import org.jooq.Table;
-import org.jooq.TableField;
-import org.jooq.UpdatableRecord;
-import org.jooq.impl.DSL;
-import org.jooq.impl.DefaultDSLContext;
 
 public class JooqObjectManager extends AbstractObjectManager {
 
@@ -301,31 +298,6 @@ public class JooqObjectManager extends AbstractObjectManager {
             }
         }
         throw new IllegalStateException("Failed to find a path from [" + obj.getClass() + "] to [" + type + "]");
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    protected <T> List<T> getListByRelationshipMap(Object obj, MapRelationship rel) {
-        Class<UpdatableRecord<?>> typeClass = JooqUtils.getRecordClass(schemaFactory, rel.getObjectType());
-
-        String mappingType = schemaFactory.getSchemaName(rel.getMappingType());
-        String fromType = schemaFactory.getSchemaName(rel.getObjectType());
-
-        TableField<?, Object> fieldFrom = JooqUtils.getTableField(getMetaDataManager(), fromType, ObjectMetaDataManager.ID_FIELD);
-        TableField<?, Object> mappingTo = JooqUtils.getTableField(getMetaDataManager(), mappingType, rel.getOtherRelationship().getPropertyName());
-        TableField<?, Object> mappingOther = JooqUtils.getTableField(getMetaDataManager(), mappingType, rel.getPropertyName());
-        TableField<?, Object> mappingRemoved = JooqUtils.getTableField(getMetaDataManager(), mappingType, ObjectMetaDataManager.REMOVED_FIELD);
-
-        Table<?> table = JooqUtils.getTable(schemaFactory, typeClass);
-        Table<?> mapTable = JooqUtils.getTable(schemaFactory, rel.getMappingType());
-
-        SelectQuery<?> query = create().selectQuery();
-        query.addFrom(table);
-        query.addSelect(table.fields());
-        query.addJoin(mapTable, fieldFrom.eq(mappingTo).and(mappingRemoved == null ? DSL.trueCondition() : mappingRemoved.isNull()).and(
-                mappingOther.eq(ObjectUtils.getId(obj))));
-
-        return (List<T>) query.fetchInto(typeClass);
     }
 
     @Override

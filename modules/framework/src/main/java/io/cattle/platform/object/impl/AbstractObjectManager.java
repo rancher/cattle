@@ -1,7 +1,6 @@
 package io.cattle.platform.object.impl;
 
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.meta.MapRelationship;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.meta.Relationship;
 import io.cattle.platform.object.meta.Relationship.RelationshipType;
@@ -32,7 +31,7 @@ public abstract class AbstractObjectManager implements ObjectManager {
 
     @Override
     public <T> T create(T instance) {
-        return create(instance, new HashMap<String, Object>());
+        return create(instance, new HashMap<>());
     }
 
     @Override
@@ -171,14 +170,10 @@ public abstract class AbstractObjectManager implements ObjectManager {
 
         if (rel.getRelationshipType() == RelationshipType.CHILD) {
             return (List<T>) children(obj, rel.getObjectType(), rel.getPropertyName());
-        } else if (rel.getRelationshipType() == RelationshipType.MAP) {
-            return getListByRelationshipMap(obj, (MapRelationship) rel);
         }
 
         return Collections.emptyList();
     }
-
-    protected abstract <T> List<T> getListByRelationshipMap(Object obj, MapRelationship rel);
 
     @SuppressWarnings("unchecked")
     @Override
