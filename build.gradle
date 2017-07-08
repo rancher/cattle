@@ -5,7 +5,7 @@ allprojects {
 
 subprojects {
     apply plugin: 'java'
-    apply plugin: 'checkstyle'
+//    apply plugin: 'checkstyle'
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
     tasks.withType(JavaCompile) {
@@ -21,4 +21,9 @@ subprojects {
         jcenter()
     }
 
+//    checkstyle {
+//        configDir = "$rootDir/config/checkstyle" as File
+//    }
 }
+
+
