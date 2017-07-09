@@ -1,9 +1,24 @@
 package io.cattle.platform.hazelcast.membership;
 
+import com.hazelcast.nio.Address;
+import com.hazelcast.spi.discovery.DiscoveryNode;
+import com.hazelcast.spi.discovery.DiscoveryStrategy;
+import com.hazelcast.spi.discovery.SimpleDiscoveryNode;
+import com.hazelcast.spi.partitiongroup.PartitionGroupStrategy;
+import com.netflix.config.DynamicBooleanProperty;
+import com.netflix.config.DynamicIntProperty;
+import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.ClusterMembership;
 import io.cattle.platform.hazelcast.membership.dao.ClusterMembershipDAO;
 import io.cattle.platform.json.JsonMapper;
+import org.apache.cloudstack.managed.context.NoExceptionRunnable;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,23 +36,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.cloudstack.managed.context.NoExceptionRunnable;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.hazelcast.nio.Address;
-import com.hazelcast.spi.discovery.DiscoveryNode;
-import com.hazelcast.spi.discovery.DiscoveryStrategy;
-import com.hazelcast.spi.discovery.SimpleDiscoveryNode;
-import com.hazelcast.spi.partitiongroup.PartitionGroupStrategy;
-import com.netflix.config.DynamicBooleanProperty;
-import com.netflix.config.DynamicIntProperty;
-import com.netflix.config.DynamicStringProperty;
 
 public class DBDiscovery extends NoExceptionRunnable implements DiscoveryStrategy, ClusterService {
 
@@ -107,6 +105,9 @@ public class DBDiscovery extends NoExceptionRunnable implements DiscoveryStrateg
                 uuid = IOUtils.toString(fis, StandardCharsets.UTF_8).trim();
             }
         } else {
+            if (!f.getParentFile().mkdirs()) {
+                throw new IOException("Failed to mkdirs [" + f.getParentFile() + "]");
+            }
             try (FileOutputStream fos = new FileOutputStream(f)) {
                 IOUtils.write(uuid, fos, "UTF-8");
             }

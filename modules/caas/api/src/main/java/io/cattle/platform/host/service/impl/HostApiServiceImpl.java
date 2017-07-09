@@ -1,10 +1,8 @@
 package io.cattle.platform.host.service.impl;
 
-import static io.cattle.platform.server.context.ServerContext.*;
-
+import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Host;
-import io.cattle.platform.host.api.HostApiUtils;
 import io.cattle.platform.host.model.HostApiAccess;
 import io.cattle.platform.host.service.HostApiRSAKeyProvider;
 import io.cattle.platform.host.service.HostApiService;
@@ -18,10 +16,6 @@ import java.security.PublicKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
-
-import com.netflix.config.DynamicStringProperty;
 
 public class HostApiServiceImpl implements HostApiService {
 
@@ -66,22 +60,8 @@ public class HostApiServiceImpl implements HostApiService {
 
     protected String getHostAccessUrl(ApiRequest request, Host host, String... segments) {
         StringBuilder buffer = new StringBuilder();
-        switch (getHostApiProxyMode()) {
-        case HOST_API_PROXY_MODE_HA:
-            String proxyHost = HostApiUtils.HOST_API_PROXY_HOST.get();
-            if (StringUtils.isNotBlank(proxyHost)) {
-                String scheme = StringUtils.startsWithIgnoreCase(request.getResponseUrlBase(), "https") ? "wss://" : "ws://";
-                buffer.append(scheme).append(proxyHost);
-                break;
-            }
-            // Purposefully fall through
-        case HOST_API_PROXY_MODE_EMBEDDED:
-            String url = request.getResponseUrlBase().replaceFirst("http", "ws");
-            buffer.append(url);
-            break;
-        case HOST_API_PROXY_MODE_OFF:
-            throw new ClientVisibleException(501, "HostApiProxyDisabled");
-        }
+        String url = request.getResponseUrlBase().replaceFirst("http", "ws");
+        buffer.append(url);
 
         if (buffer.length() <= 0) {
             throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "CantConstructUrl");

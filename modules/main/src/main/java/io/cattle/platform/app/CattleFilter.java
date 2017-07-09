@@ -1,11 +1,13 @@
 package io.cattle.platform.app;
 
+import com.netflix.config.DynamicStringListProperty;
+import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.api.servlet.IndexFile;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.util.exception.ExceptionUtils;
 import io.github.ibuildthecloud.gdapi.util.RequestUtils;
-
-import java.io.IOException;
+import org.apache.cloudstack.managed.context.ManagedContextRunnable;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -16,12 +18,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.cloudstack.managed.context.ManagedContextRunnable;
-import org.apache.commons.lang3.StringUtils;
-
-import com.netflix.config.DynamicStringListProperty;
-import com.netflix.config.DynamicStringProperty;
+import java.io.IOException;
 
 public class CattleFilter implements Filter {
 
@@ -40,6 +37,7 @@ public class CattleFilter implements Filter {
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
+        cattle.start();
         indexFile.init();
     }
 

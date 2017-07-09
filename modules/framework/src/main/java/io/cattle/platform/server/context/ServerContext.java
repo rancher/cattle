@@ -1,17 +1,15 @@
 package io.cattle.platform.server.context;
 
+import com.netflix.config.DynamicIntProperty;
+import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import org.apache.commons.lang.StringUtils;
 
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Collections;
-
-import org.apache.commons.lang.StringUtils;
-
-import com.netflix.config.DynamicIntProperty;
-import com.netflix.config.DynamicStringProperty;
 
 public class ServerContext {
 
@@ -102,14 +100,6 @@ public class ServerContext {
         }
 
         return String.format(SERVER_ID_FORMAT, ip);
-    }
-
-    public static String getHostApiProxyMode() {
-        String embedded = System.getenv("CATTLE_HOST_API_PROXY_MODE");
-        if (StringUtils.isEmpty(embedded)) {
-            embedded = System.getProperty("host.api.proxy.mode", "off");
-        }
-        return embedded;
     }
 
     protected static String getServerIp() {

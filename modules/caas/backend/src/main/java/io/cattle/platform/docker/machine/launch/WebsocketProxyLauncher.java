@@ -1,7 +1,7 @@
 package io.cattle.platform.docker.machine.launch;
 
-import static io.cattle.platform.server.context.ServerContext.*;
-
+import com.netflix.config.DynamicBooleanProperty;
+import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
@@ -14,6 +14,11 @@ import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.service.launcher.GenericServiceLauncher;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.fluent.Request;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -24,14 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.fluent.Request;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.netflix.config.DynamicStringProperty;
-
 public class WebsocketProxyLauncher extends GenericServiceLauncher {
 
     private static final Logger log = LoggerFactory.getLogger(WebsocketProxyLauncher.class);
@@ -40,6 +37,7 @@ public class WebsocketProxyLauncher extends GenericServiceLauncher {
     private static final DynamicStringProperty ACCESS_LOG = ArchaiusUtil.getString("access.log");
     private static final DynamicStringProperty API_INTERCEPTOR_CONFIG = ArchaiusUtil.getString("api.interceptor.config");
     private static final DynamicStringProperty API_INTERCEPTOR_CONFIG_FILE = ArchaiusUtil.getString("api.interceptor.config.file");
+    private static final DynamicBooleanProperty LAUNCH_WEBSOCKET_PROXY = ArchaiusUtil.getBoolean("websocket.proxy.execute");
 
     ClusterService clusterService;
 
@@ -72,7 +70,7 @@ public class WebsocketProxyLauncher extends GenericServiceLauncher {
 
     @Override
     protected boolean shouldRun() {
-        return StringUtils.equals(HOST_API_PROXY_MODE_EMBEDDED, getHostApiProxyMode());
+        return LAUNCH_WEBSOCKET_PROXY.get();
     }
 
     @Override

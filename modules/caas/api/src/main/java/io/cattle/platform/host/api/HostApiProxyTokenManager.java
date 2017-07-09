@@ -1,7 +1,5 @@
 package io.cattle.platform.host.api;
 
-import static io.cattle.platform.server.context.ServerContext.*;
-
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.resource.AbstractNoOpResourceManager;
 import io.cattle.platform.api.utils.ApiUtils;
@@ -20,8 +18,6 @@ import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class HostApiProxyTokenManager extends AbstractNoOpResourceManager {
 
@@ -48,25 +44,10 @@ public class HostApiProxyTokenManager extends AbstractNoOpResourceManager {
         token.setReportedUuid(p.getReportedUuid());
 
         StringBuilder buffer = new StringBuilder();
-        switch (getHostApiProxyMode()) {
-        case HOST_API_PROXY_MODE_HA:
-            if (StringUtils.isNotBlank(HostApiUtils.HOST_API_PROXY_HOST.get())) {
-                String scheme = StringUtils.startsWithIgnoreCase(request.getResponseUrlBase(), "https") ? "wss://" : "ws://";
-                buffer.append(scheme).append(HostApiUtils.HOST_API_PROXY_HOST.get());
-                break;
-            }
-            // Purposefully fall through
-        case HOST_API_PROXY_MODE_EMBEDDED:
-            if (ServerContext.isCustomApiHost()) {
-                buffer.append(ServerContext.getHostApiBaseUrl(ServerContext.BaseProtocol.WEBSOCKET));
-            } else {
-                buffer.append(request.getResponseUrlBase().replaceFirst("http", "ws"));
-            }
-            break;
-
-
-        case HOST_API_PROXY_MODE_OFF:
-            throw new ClientVisibleException(501, "HostApiProxyDisabled");
+        if (ServerContext.isCustomApiHost()) {
+            buffer.append(ServerContext.getHostApiBaseUrl(ServerContext.BaseProtocol.WEBSOCKET));
+        } else {
+            buffer.append(request.getResponseUrlBase().replaceFirst("http", "ws"));
         }
 
         if (buffer.length() <= 0) {

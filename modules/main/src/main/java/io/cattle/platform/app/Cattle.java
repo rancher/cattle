@@ -38,6 +38,10 @@ public class Cattle {
         }
     }
 
+    public void start() {
+        backend.start();
+    }
+
     private void init() throws IOException {
         time("BOOTSTRAP ", () -> bootstrap = new Bootstrap());
         time("FRAMEWORK ", () -> framework = new Framework(bootstrap));

@@ -1,8 +1,6 @@
 package io.cattle.platform.service.launcher;
 
-import static io.cattle.platform.core.model.tables.AccountTable.*;
-import static io.cattle.platform.core.model.tables.CredentialTable.*;
-
+import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.CredentialConstants;
@@ -20,6 +18,9 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.process.common.util.ProcessUtils;
+import org.apache.cloudstack.managed.context.NoExceptionRunnable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
@@ -31,15 +32,15 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.cloudstack.managed.context.NoExceptionRunnable;
-
-import com.netflix.config.DynamicStringProperty;
+import static io.cattle.platform.core.model.tables.AccountTable.*;
+import static io.cattle.platform.core.model.tables.CredentialTable.*;
 
 public abstract class GenericServiceLauncher extends NoExceptionRunnable implements Runnable {
 
     private static final String SERVICE_USER_UUID = "machineServiceAccount";
     private static final String SERVICE_USER_NAME = "System Service";
     private static final int WAIT = 2000;
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     LockManager lockManager;
     LockDelegator lockDelegator;
@@ -141,7 +142,7 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
 
         /* This is to fix a bug in which we ended up with a lot of api keys created */
         for (int i = 1; i < creds.size(); i++) {
-            processManager.scheduleStandardProcessAsync(StandardProcess.DEACTIVATE, creds.get(i), ProcessUtils.chainInData(new HashMap<String, Object>(),
+            processManager.scheduleStandardProcessAsync(StandardProcess.DEACTIVATE, creds.get(i), ProcessUtils.chainInData(new HashMap<>(),
                     CredentialConstants.PROCESSS_DEACTIVATE, CredentialConstants.PROCESSS_REMOVE));
         }
 
@@ -207,7 +208,7 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
         try {
             process = pb.start();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            log.error(e.getMessage());
         }
     }
 

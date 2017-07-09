@@ -443,7 +443,6 @@ public class Backend {
         launchers.add(composeExecutorLauncher);
         launchers.add(machineLauncher);
         launchers.add(secretsApiLauncher);
-        launchers.add(c.serviceAccountCreateStartup);
         launchers.add(telemetryLauncher);
         launchers.add(webhookServiceLauncher);
         launchers.add(websocketProxyLauncher);
@@ -459,6 +458,12 @@ public class Backend {
         initTasks.add(projectTemplateService);
         initTasks.add(c.taskManager);
         initTasks.add(c.serviceAccountCreateStartup);
+    }
+
+    public void start() {
+        for (GenericServiceLauncher launcher : launchers) {
+            launcher.start();
+        }
     }
 
 }
