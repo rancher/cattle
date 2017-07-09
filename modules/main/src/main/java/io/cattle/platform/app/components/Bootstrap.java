@@ -135,7 +135,7 @@ public class Bootstrap {
             System.setProperty("logback.bootstrap.level", "WARN");
         }
 
-        CONSOLE_LOG.info("[BOOTSTRAP] CATTLE_HOME=", homeFile.getAbsolutePath());
+        CONSOLE_LOG.info("[BOOTSTRAP] CATTLE_HOME={}", homeFile.getAbsolutePath());
     }
 
 
@@ -219,14 +219,17 @@ public class Bootstrap {
     }
 
     private List<AbstractConfiguration> getSources() throws IOException {
+        String home = System.getProperty("cattle.home");
+        File etcCattleProps = new File(home + "/etc/cattle.properties");
+
         return Arrays.asList(
                 new TransformedEnvironmentProperties(),
                 new NamedSystemConfiguration(),
                 OptionalPropertiesConfigurationFactory.getConfiguration("cattle-local.properties"),
                 new NamedDynamicConfiguration(dbConfigSource, scheduler, "Database"),
+                OptionalPropertiesConfigurationFactory.getConfiguration(etcCattleProps),
                 OptionalPropertiesConfigurationFactory.getConfiguration("cattle.properties"),
                 new DefaultTransformedEnvironmentProperties(),
-                OptionalPropertiesConfigurationFactory.getConfiguration("cattle-override.properties"),
                 OptionalPropertiesConfigurationFactory.getConfiguration("cattle-global.properties"),
                 new NamedMapConfiguration(globalProps(), "Code Packaged Defaults"));
     }

@@ -10,9 +10,7 @@ if [ "${BOOTSTRAP_ON_RUN}" = "true" ]; then
 fi
 
 
-RUNTIME_DIR=${RUNTIME_DIR:-../../../runtime/cli/}
-
-cd code/packaging/app
+RUNTIME_DIR=${RUNTIME_DIR:-./runtime/cli/}
 
 if [ "${RUNTIME_DIR_CLEAN}" = "true" ]; then
     rm -rf $RUNTIME_DIR
@@ -20,31 +18,20 @@ fi
 
 mkdir -p $RUNTIME_DIR
 
-CMD="java
+export JAVA_OPTS="
     -Xmx1024m
     -XX:+UseG1GC -XX:+UseStringDeduplication
     -Didempotent.checks=true
-    -Dmodule.profile.hazelcast.eventing=true
-    -Dspring.profiles.active=hazelcast.eventing,hazelcast.lock,hazelcast.config.basic
-    -Dconfig.item.dynamic=false
-    -Dsecrets.api.execute=true
-    -Dagent.ping.reconnect.after.failed.count=60
-    -Dagent.ping.resources.every=1
-    -Dprocess.retry_max_wait.millis=1
-    -Dprocess.running_delay.millis=1
-    -Dexecution.tokens.max=1000
-    -Dobject.remove.time.delay.seconds=1200
-    -Dcattle.http.port=${CATTLE_TEST_HTTP_PORT:-8081}
-    -Dcattle.http.proxied.port=${CATTLE_TEST_HTTP_PROXIED_PORT:-8082}
+    -Ddb.cattle.database=h2
     -Dlogback.log.dir=$RUNTIME_DIR/logs/
     -Ddb.cattle.home=${RUNTIME_DIR}/db/
-    -Dhost.api.proxy.mode=${CATTLE_HOST_API_PROXY_MODE:-embedded}
-    -Dallowed.user.agent.uri.prefix=sim://
-    -jar target/*.war"
+    -Dallowed.user.agent.uri.prefix=sim://"
+
+CMD="./modules/main/build/install/cattle/bin/cattle"
 
 if [ "$1" = "--background" ]; then
     rm -rf ${RUNTIME_DIR}/{run-success,run-error}
-    $CMD --notify ../../../tools/development/run-success.sh --notify-error ../../../tools/development/run-error.sh &
+    $CMD --notify ./tools/development/run-success.sh --notify-error ./tools/development/run-error.sh &
     while sleep .5; do
         if [ -f ${RUNTIME_DIR}/run-success ]; then
             break

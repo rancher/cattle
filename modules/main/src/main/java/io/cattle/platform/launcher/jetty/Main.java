@@ -1,10 +1,5 @@
 package io.cattle.platform.launcher.jetty;
 
-import java.io.File;
-import java.lang.management.ManagementFactory;
-import java.net.URL;
-import java.util.TimeZone;
-
 import org.eclipse.jetty.jmx.MBeanContainer;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -17,6 +12,11 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.net.URL;
+import java.util.TimeZone;
+
 public class Main {
 
     public static final String WEB_XML = "web.xml";
@@ -26,7 +26,7 @@ public class Main {
 
     protected static String getHttpPort() {
         String port = System.getenv("CATTLE_HTTP_PORT");
-        return port == null ? System.getProperty("cattle.http.port", "8080") : port;
+        return port == null ? System.getProperty("cattle.http.port", "8081") : port;
     }
 
     public static void main(String... args) {

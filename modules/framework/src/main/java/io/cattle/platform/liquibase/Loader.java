@@ -105,7 +105,6 @@ public class Loader {
 
     private static class Parser extends XMLChangeLogSAXParser {
         public Parser() {
-            getSaxParserFactory().setNamespaceAware(false);
             getSaxParserFactory().setValidating(false);
         }
     }

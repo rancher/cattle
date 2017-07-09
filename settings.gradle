@@ -7,7 +7,6 @@ include ':cattle-framework'
 include ':cattle-hazelcast'
 include ':cattle-main'
 include ':cattle-model'
-include ':cattle-war'
 
 project(':cattle-resources').projectDir = "$rootDir/modules/resources" as File
 project(':cattle-caas-api').projectDir = "$rootDir/modules/caas/api" as File
@@ -17,4 +16,3 @@ project(':cattle-framework').projectDir = "$rootDir/modules/framework" as File
 project(':cattle-hazelcast').projectDir = "$rootDir/modules/hazelcast" as File
 project(':cattle-main').projectDir = "$rootDir/modules/main" as File
 project(':cattle-model').projectDir = "$rootDir/modules/model" as File
-project(':cattle-war').projectDir = "$rootDir/modules/war" as File

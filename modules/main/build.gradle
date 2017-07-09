@@ -11,3 +11,4 @@ dependencies {
 
 apply plugin: 'application'
 mainClassName = 'io.cattle.platform.launcher.jetty.Main'
+applicationName = 'cattle'
