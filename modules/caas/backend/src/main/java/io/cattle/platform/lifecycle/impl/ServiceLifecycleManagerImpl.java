@@ -8,7 +8,6 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
-import io.cattle.platform.iaas.api.service.RevisionManager;
 import io.cattle.platform.lifecycle.ServiceLifecycleManager;
 import io.cattle.platform.loadbalancer.LoadBalancerService;
 import io.cattle.platform.network.NetworkService;
@@ -17,6 +16,7 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.resource.pool.PooledResourceOptions;
 import io.cattle.platform.resource.pool.ResourcePoolManager;
 import io.cattle.platform.resource.pool.util.ResourcePoolConstants;
+import io.cattle.platform.revision.RevisionManager;
 
 import java.util.ArrayList;
 import java.util.List;

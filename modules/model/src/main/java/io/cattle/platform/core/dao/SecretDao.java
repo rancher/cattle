@@ -10,7 +10,7 @@ import java.util.Map;
 
 public interface SecretDao {
 
-    public class InstanceAndHost {
+    class InstanceAndHost {
         public Instance instance;
         public Host host;
 

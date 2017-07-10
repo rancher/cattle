@@ -4,8 +4,8 @@ import java.util.List;
 
 public interface ResourcePoolManager {
 
-    static final String DEFAULT_QUALIFIER = "default";
-    static final String GLOBAL = "global";
+    String DEFAULT_QUALIFIER = "default";
+    String GLOBAL = "global";
 
     PooledResource allocateOneResource(Object pool, Object owner, PooledResourceOptions options);
 

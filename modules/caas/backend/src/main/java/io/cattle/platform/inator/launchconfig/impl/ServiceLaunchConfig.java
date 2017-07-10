@@ -26,6 +26,7 @@ import io.cattle.platform.inator.wrapper.StackWrapper;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.util.type.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,8 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class ServiceLaunchConfig implements LaunchConfig {
 
@@ -194,7 +193,7 @@ public class ServiceLaunchConfig implements LaunchConfig {
             if (unit instanceof InstanceBindable) {
                 ((InstanceBindable) unit).bind(context, instanceData);
             }
-        };
+        }
     }
 
     @Override

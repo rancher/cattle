@@ -10,11 +10,11 @@ import java.util.Map;
 @Type(list = false)
 public interface Collection extends ApiStandardType {
 
-    public static final String SORT = "sort";
-    public static final String ORDER = "order";
-    public static final String MARKER = "marker";
-    public static final String LIMIT = "limit";
-    public static final String INCLUDE = "include";
+    String SORT = "sort";
+    String ORDER = "order";
+    String MARKER = "marker";
+    String LIMIT = "limit";
+    String INCLUDE = "include";
 
     String getType();
 

@@ -22,6 +22,6 @@ public class StoragePoolConstants {
 
     public static final String FIELD_REPORTED_UUID = "reportedUuid";
 
-    public static final Set<String> UNMANGED_STORAGE_POOLS = new HashSet<>(Arrays.asList(new String[]{"docker", "sim"}));
+    public static final Set<String> UNMANGED_STORAGE_POOLS = new HashSet<>(Arrays.asList("docker", "sim"));
 
 }

@@ -9,7 +9,7 @@ import io.cattle.platform.inator.wrapper.BasicStateWrapper;
 
 public interface BasicStateUnit extends Unit {
 
-    public enum RemoveReason { ERROR, UNHEALTHY, OTHER };
+    enum RemoveReason { ERROR, UNHEALTHY, OTHER }
 
     @Override
     default Result scheduleActions(InatorContext context) {

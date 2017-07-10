@@ -55,10 +55,8 @@ public class NetUtils {
         String endIp = NetUtils.getDefaultEndAddress(cidrPair.getLeft(), cidrPair.getRight());
         long end = NetUtils.ip2Long(endIp);
         long ip = NetUtils.ip2Long(ipAddress);
-        if (start <= ip && ip <= end)
-            return true;
+        return start <= ip && ip <= end;
 
-        return false;
     }
 
     public static Pair<String, Integer> getCidrAndSize(String cidrInput) {

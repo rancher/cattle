@@ -45,10 +45,10 @@ import io.cattle.platform.iaas.api.auth.integration.local.LocalAuthConfig;
 import io.cattle.platform.iaas.api.auth.integration.local.LocalAuthConfigManager;
 import io.cattle.platform.iaas.api.auth.integration.local.LocalAuthTokenCreator;
 import io.cattle.platform.iaas.api.auth.integration.local.LocalAuthTokenUtils;
+import io.cattle.platform.iaas.api.auth.integration.register.RegistrationTokenAccountLookup;
 import io.cattle.platform.iaas.api.auth.projects.ProjectMemberResourceManager;
 import io.cattle.platform.iaas.api.auth.projects.ProjectResourceManager;
 import io.cattle.platform.iaas.api.auth.projects.SetProjectMembersActionHandler;
-import io.cattle.platform.register.api.RegistrationTokenAccountLookup;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.request.ApiRouter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
@@ -267,78 +267,79 @@ public class Auth {
                 .parent(f.coreSchemaFactory)
                 .jsonSchemaFromPath(f.jsonMapper, f.schemaJsonMapper, f.resourceLoader, "schema/project")
                 .jsonAuthOverlay(f.jsonMapper,
-                        "schema/user/user-auth.json",
-                        "schema/project/project-auth.json")
+                        "schema/auth/user-auth.json",
+                        "schema/auth/project-auth.json")
                 .build(c.schemaFactories);
         SchemaFactoryBuilder.id("superadmin")
                 .parent(f.coreSchemaFactory)
-                .jsonAuthOverlay(f.jsonMapper, "schema/super-admin/super-admin-auth.json")
+                .jsonAuthOverlay(f.jsonMapper, "schema/auth/super-admin-auth.json")
                 .build(c.schemaFactories);
         SchemaFactory adminSchemaFactory = SchemaFactoryBuilder.id("admin")
                 .parent(f.coreSchemaFactory)
                 .jsonSchemaFromPath(f.jsonMapper, f.schemaJsonMapper, f.resourceLoader, "schema/admin")
                 .jsonAuthOverlay(f.jsonMapper,
-                        "schema/user/user-auth.json",
-                        "schema/admin/admin-auth.json")
+                        "schema/auth/user-auth.json",
+                        "schema/auth/admin-auth.json")
                 .build(c.schemaFactories);
         SchemaFactoryBuilder.id("service")
                 .parent(f.coreSchemaFactory)
                 .jsonSchemaFromPath(f.jsonMapper, f.schemaJsonMapper, f.resourceLoader, "schema/service")
                 .jsonAuthOverlay(f.jsonMapper,
-                        "schema/user/user-auth.json",
-                        "schema/admin/admin-auth.json",
-                        "schema/project/project-auth.json",
-                        "schema/service/service-auth.json")
+                        "schema/auth/user-auth.json",
+                        "schema/auth/admin-auth.json",
+                        "schema/auth/project-auth.json",
+                        "schema/auth/service-auth.json")
                 .build(c.schemaFactories);
         SchemaFactoryBuilder.id("token")
                 .parent(f.coreSchemaFactory)
                 .jsonSchemaFromPath(f.jsonMapper, f.schemaJsonMapper, f.resourceLoader, "schema/token")
                 .jsonAuthOverlay(f.jsonMapper,
-                        "schema/token/token-auth.json")
+                        "schema/auth/token-auth.json")
                 .build(c.schemaFactories);
         SchemaFactoryBuilder.id("readonly")
                 .parent(projectSchemaFactory)
                 .notWriteable()
                 .jsonAuthOverlay(f.jsonMapper,
-                        "schema/read-user/read-user.json")
+                        "schema/auth/read-user-auth.json")
                 .build(c.schemaFactories);
         SchemaFactoryBuilder.id("owner")
                 .parent(projectSchemaFactory)
                 .jsonAuthOverlay(f.jsonMapper,
-                        "schema/owner/owner-auth.json")
+                        "schema/auth/owner-auth.json")
                 .build(c.schemaFactories);
         SchemaFactoryBuilder.id("member")
                 .parent(projectSchemaFactory)
                 .build(c.schemaFactories);
         SchemaFactoryBuilder.id("restricted")
                 .parent(projectSchemaFactory)
-                .jsonAuthOverlay(f.jsonMapper, "schema/restricted-user/restricted-user.json")
+                .jsonAuthOverlay(f.jsonMapper, "schema/auth/restricted-user-auth.json")
                 .build(c.schemaFactories);
         SchemaFactoryBuilder.id("readAdmin")
                 .parent(adminSchemaFactory)
                 .notWriteable()
                 .jsonSchemaFromPath(f.jsonMapper, f.schemaJsonMapper, f.resourceLoader, "schema/read-admin")
+                .jsonAuthOverlay(f.jsonMapper, "schema/auth/read-admin-auth.json")
                 .build(c.schemaFactories);
         SchemaFactoryBuilder.id("user")
                 .parent(f.coreSchemaFactory)
                 .jsonSchemaFromPath(f.jsonMapper, f.schemaJsonMapper, f.resourceLoader, "schema/user")
-                .jsonAuthOverlay(f.jsonMapper, "schema/user/user-auth.json")
+                .jsonAuthOverlay(f.jsonMapper, "schema/auth/user-auth.json")
                 .build(c.schemaFactories);
         SchemaFactoryBuilder.id("environment")
                 .parent(f.coreSchemaFactory)
                 .jsonSchemaFromPath(f.jsonMapper, f.schemaJsonMapper, f.resourceLoader, "schema/environment")
                 .jsonAuthOverlay(f.jsonMapper,
-                        "schema/user/user-auth.json",
-                        "schema/project/project-auth.json",
-                        "schema/environment/environment-auth.json")
+                        "schema/auth/user-auth.json",
+                        "schema/auth/project-auth.json",
+                        "schema/auth/environment-auth.json")
                 .build(c.schemaFactories);
         SchemaFactoryBuilder.id("projectadmin")
                 .parent(f.coreSchemaFactory)
                 .jsonSchemaFromPath(f.jsonMapper, f.schemaJsonMapper, f.resourceLoader, "schema/projectadmin")
                 .jsonAuthOverlay(f.jsonMapper,
-                        "schema/user/user-auth.json",
-                        "schema/project/project-auth.json",
-                        "schema/projectadmin/projectadmin-auth.json")
+                        "schema/auth/user-auth.json",
+                        "schema/auth/project-auth.json",
+                        "schema/auth/projectadmin-auth.json")
                 .build(c.schemaFactories);
         SchemaFactoryBuilder.id("agentRegister")
                 .parent(f.coreSchemaFactory)
@@ -354,7 +355,7 @@ public class Auth {
                 .parent(adminSchemaFactory)
                 .jsonSchemaFromPath(f.jsonMapper, f.schemaJsonMapper, f.resourceLoader, "schema/register")
                 .jsonAuthOverlay(f.jsonMapper,
-                        "schema/register/register-auth.json")
+                        "schema/auth/register-auth.json")
                 .build(c.schemaFactories);
     }
 

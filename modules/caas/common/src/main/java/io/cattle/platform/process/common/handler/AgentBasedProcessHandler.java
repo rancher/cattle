@@ -1,5 +1,7 @@
 package io.cattle.platform.process.common.handler;
 
+import com.google.common.util.concurrent.ListenableFuture;
+import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
@@ -29,16 +31,12 @@ import io.cattle.platform.process.progress.ProcessProgressInstance;
 import io.cattle.platform.util.exception.ExecutionException;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.Named;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
-
-import com.google.common.util.concurrent.ListenableFuture;
-import com.netflix.config.DynamicStringProperty;
 
 public class AgentBasedProcessHandler implements CompletableLogic, Named {
 
@@ -89,7 +87,7 @@ public class AgentBasedProcessHandler implements CompletableLogic, Named {
 
         RemoteAgent agent = agentLocator.lookupAgent(agentResource);
         if (agent == null) {
-            return new HandlerResult(true, CollectionUtils.asMap((Object) "_noAgent", true));
+            return new HandlerResult(true, CollectionUtils.asMap("_noAgent", true));
         }
 
         ListenableFuture<?> future = handleEvent(state, process, eventResource, dataResource, agentResource, agent);

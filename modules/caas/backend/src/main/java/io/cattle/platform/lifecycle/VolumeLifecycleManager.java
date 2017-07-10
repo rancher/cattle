@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface VolumeLifecycleManager {
 
-    public static final List<Object> MOUNT_STATES = Arrays.asList(
+    List<Object> MOUNT_STATES = Arrays.asList(
             CommonStatesConstants.INACTIVE,
             CommonStatesConstants.DEACTIVATING,
             CommonStatesConstants.REMOVED,

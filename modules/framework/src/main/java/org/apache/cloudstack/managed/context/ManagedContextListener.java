@@ -25,7 +25,7 @@ public interface ManagedContextListener<T> {
      *            True if listener is being invoked in a nested context
      * @return
      */
-    public T onEnterContext(boolean reentry);
+    T onEnterContext(boolean reentry);
 
     /**
      * @param data
@@ -33,6 +33,6 @@ public interface ManagedContextListener<T> {
      * @param reentry
      *            True if listener is being invoked in a nested context
      */
-    public void onLeaveContext(T data, boolean reentry, Throwable t);
+    void onLeaveContext(T data, boolean reentry, Throwable t);
 
 }

@@ -342,7 +342,7 @@ public class DBDiscovery extends NoExceptionRunnable implements DiscoveryStrateg
         if (master.isClustered()) {
             String[] parts = master.getConfig().getAdvertiseAddress().split(":");
             try (
-                Socket socket = new Socket();
+                Socket socket = new Socket()
             ) {
                 socket.connect(new InetSocketAddress(parts[0], Integer.parseInt(parts[1])), 5000);
                 log.info("Connection test to master");

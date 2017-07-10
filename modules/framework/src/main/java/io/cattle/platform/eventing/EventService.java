@@ -1,13 +1,12 @@
 package io.cattle.platform.eventing;
 
-import io.cattle.platform.eventing.model.Event;
-
 import com.google.common.util.concurrent.ListenableFuture;
+import io.cattle.platform.eventing.model.Event;
 
 public interface EventService {
 
-    public static final String EVENT_SEP = ";";
-    public static final String REPLY_PREFIX = "reply.";
+    String EVENT_SEP = ";";
+    String REPLY_PREFIX = "reply.";
 
     boolean publish(Event event);
 

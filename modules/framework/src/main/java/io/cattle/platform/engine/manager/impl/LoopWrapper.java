@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 public class LoopWrapper {
 
-    enum State { SLEEPING, BACKOFF, PROCESS_WAIT, ERROR, RUNNING };
+    enum State { SLEEPING, BACKOFF, PROCESS_WAIT, ERROR, RUNNING }
 
     private static final DynamicLongProperty DEFAULT_TOKEN_INTERVAL = ArchaiusUtil.getLong("loop.default.execution.token.every.millis");
     private static final DynamicLongProperty DEFAULT_TOKENS_MAX = ArchaiusUtil.getLong("loop.default.execution.tokens.max");

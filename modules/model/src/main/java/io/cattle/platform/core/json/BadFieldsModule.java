@@ -1,11 +1,10 @@
 package io.cattle.platform.core.json;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import io.cattle.platform.core.model.tables.records.CredentialRecord;
 
 import javax.annotation.PostConstruct;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 
 public class BadFieldsModule extends SimpleModule {
 
@@ -16,7 +15,7 @@ public class BadFieldsModule extends SimpleModule {
         setMixInAnnotation(CredentialRecord.class, BadFields.class);
     }
 
-    public static interface BadFields {
+    public interface BadFields {
         @JsonIgnore
         java.lang.String getSecretValue();
     }

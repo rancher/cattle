@@ -1,13 +1,7 @@
 package com.github.dockerjava.api.model;
 
-import java.io.IOException;
-
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -16,6 +10,10 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
+import java.io.IOException;
 
 @JsonSerialize(using = VolumesFrom.Serializer.class)
 @JsonDeserialize(using = VolumesFrom.Deserializer.class)
@@ -101,7 +99,7 @@ public class VolumesFrom {
     public static class Serializer extends JsonSerializer<VolumesFrom> {
 
         @Override
-        public void serialize(VolumesFrom volumeFrom, JsonGenerator jsonGen, SerializerProvider serProvider) throws IOException, JsonProcessingException {
+        public void serialize(VolumesFrom volumeFrom, JsonGenerator jsonGen, SerializerProvider serProvider) throws IOException {
 
             jsonGen.writeString(volumeFrom.toString());
 
@@ -111,7 +109,7 @@ public class VolumesFrom {
 
     public static class Deserializer extends JsonDeserializer<VolumesFrom> {
         @Override
-        public VolumesFrom deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+        public VolumesFrom deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
 
             ObjectCodec oc = jsonParser.getCodec();
             JsonNode node = oc.readTree(jsonParser);

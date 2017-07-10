@@ -1,19 +1,7 @@
 package com.github.dockerjava.api.model;
 
-import static org.apache.commons.lang.StringUtils.*;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.builder.EqualsBuilder;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -23,6 +11,16 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.node.NullNode;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.builder.EqualsBuilder;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import static org.apache.commons.lang.StringUtils.*;
 
 /**
  * A container for port bindings, made available as a {@link Map} via its
@@ -250,7 +248,7 @@ public class Ports {
 
     public static class Deserializer extends JsonDeserializer<Ports> {
         @Override
-        public Ports deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+        public Ports deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
 
             Ports out = new Ports();
             ObjectCodec oc = jsonParser.getCodec();
@@ -275,7 +273,7 @@ public class Ports {
     public static class Serializer extends JsonSerializer<Ports> {
 
         @Override
-        public void serialize(Ports portBindings, JsonGenerator jsonGen, SerializerProvider serProvider) throws IOException, JsonProcessingException {
+        public void serialize(Ports portBindings, JsonGenerator jsonGen, SerializerProvider serProvider) throws IOException {
 
             jsonGen.writeStartObject();
             for (Entry<ExposedPort, Binding[]> entry : portBindings.getBindings().entrySet()) {

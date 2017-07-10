@@ -54,7 +54,7 @@ public abstract class AbstractLockManagerImpl implements LockManager {
 
     protected abstract <T, E extends Throwable> T doLock(LockDefinition lockDef, LockCallbackWithException<T, E> callback, WithLock with) throws E;
 
-    protected static interface WithLock {
+    protected interface WithLock {
         boolean withLock(Lock lock);
     }
 

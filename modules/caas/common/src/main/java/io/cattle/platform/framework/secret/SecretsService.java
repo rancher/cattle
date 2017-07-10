@@ -1,5 +1,6 @@
 package io.cattle.platform.framework.secret;
 
+import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.addon.SecretReference;
 import io.cattle.platform.core.model.Host;
@@ -7,15 +8,13 @@ import io.cattle.platform.core.model.Host;
 import java.io.IOException;
 import java.util.List;
 
-import com.netflix.config.DynamicStringProperty;
-
 public interface SecretsService {
 
-    final DynamicStringProperty SECRETS_KEY_NAME = ArchaiusUtil.getString("secrets.api.local.key.name");
+    DynamicStringProperty SECRETS_KEY_NAME = ArchaiusUtil.getString("secrets.api.local.key.name");
 
     String encrypt(long accountId, String value) throws IOException;
 
-    String decrypt(long accountId, String value) throws IOException, Exception;
+    String decrypt(long accountId, String value) throws Exception;
 
     void delete(long accountId, String value) throws IOException;
 

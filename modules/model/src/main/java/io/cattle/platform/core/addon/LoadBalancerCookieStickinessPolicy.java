@@ -20,7 +20,7 @@ public class LoadBalancerCookieStickinessPolicy {
     public enum Mode {
         rewrite,
         insert,
-        prefix;
+        prefix
     }
 
     @Field(required = false, nullable = true)

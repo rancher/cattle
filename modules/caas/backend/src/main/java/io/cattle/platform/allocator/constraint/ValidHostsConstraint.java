@@ -33,7 +33,7 @@ public class ValidHostsConstraint extends HardConstraint implements Constraint {
 
     @Override
     public boolean matches(AllocationCandidate candidate) {
-        return candidate.getHost() == null ? true : hosts.contains(candidate.getHost());
+        return candidate.getHost() == null || hosts.contains(candidate.getHost());
     }
 
 }

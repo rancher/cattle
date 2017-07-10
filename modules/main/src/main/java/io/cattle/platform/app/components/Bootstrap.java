@@ -17,6 +17,7 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.datasource.DataSourceFactory;
 import io.cattle.platform.datasource.JMXDataSourceFactoryImpl;
 import io.cattle.platform.db.jooq.logging.LoggerListener;
+import io.cattle.platform.deferred.context.DeferredContextListener;
 import io.cattle.platform.hazelcast.membership.ClusterService;
 import io.cattle.platform.hazelcast.membership.DBDiscovery;
 import io.cattle.platform.hazelcast.membership.dao.ClusterMembershipDAO;
@@ -26,6 +27,9 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.liquibase.Loader;
 import io.cattle.platform.logback.Startup;
 import io.cattle.platform.object.util.DataAccessor;
+import org.apache.cloudstack.managed.context.ManagedContextRunnable;
+import org.apache.cloudstack.managed.context.impl.DefaultManagedContext;
+import org.apache.cloudstack.managed.context.impl.MdcClearListener;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.jooq.Configuration;
 import org.jooq.ExecuteListener;
@@ -53,25 +57,9 @@ public class Bootstrap {
 
     private static final Logger CONSOLE_LOG = LoggerFactory.getLogger("ConsoleStatus");
 
-    private static final String[] DEFAULTS = new String[] {
-            "META-INF/cattle/agent-server/defaults.properties",
-            "META-INF/cattle/system-services/defaults.properties",
-            "META-INF/cattle/defaults/defaults.properties",
-            "META-INF/cattle/system/defaults.properties",
-            "META-INF/cattle/redis/defaults.properties",
-            "META-INF/cattle/core-model/defaults.properties",
-            "META-INF/cattle/process/defaults.properties",
-            "META-INF/cattle/encryption/defaults.properties",
-            "META-INF/cattle/allocator-server/defaults.properties",
-            "META-INF/cattle/core-object-defaults/defaults.properties",
-            "META-INF/cattle/bootstrap/defaults.properties",
-            "META-INF/cattle/iaas-api/defaults.properties",
-            "META-INF/cattle/config-defaults/defaults.properties",
-            "META-INF/cattle/api-server/defaults.properties",
-            "META-INF/cattle/defaults/dev-defaults.properties",
-            "META-INF/cattle/system-services/healthcheck-defaults.properties",
-            "META-INF/cattle/service-upgrade/defaults.properties",
-        };
+    private static final String[] DEFAULTS = new String[]{
+            "defaults.properties",
+    };
 
     DataSourceFactory dataSourceFactory = new JMXDataSourceFactoryImpl();
     DataSource dataSource;
@@ -86,12 +74,20 @@ public class Bootstrap {
     public Bootstrap() throws IOException {
         setTz();
         setHomeAndEnv();
+        setupManagedContext();
         setupArchaius();
         setupLogging();
         setupDatabase();
         setupJson();
         migrateSchema();
         setupCluster();
+    }
+
+    private void setupManagedContext() {
+        ManagedContextRunnable.initializeGlobalContext(new DefaultManagedContext(
+                new DeferredContextListener(),
+                new MdcClearListener()
+        ));
     }
 
     private void setTz() {

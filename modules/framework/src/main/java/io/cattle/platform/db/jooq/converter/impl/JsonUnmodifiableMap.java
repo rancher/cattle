@@ -2,6 +2,8 @@ package io.cattle.platform.db.jooq.converter.impl;
 
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.util.type.UnmodifiableMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -9,9 +11,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class JsonUnmodifiableMap<K, V> implements UnmodifiableMap<K, V> {
 
@@ -123,11 +122,11 @@ public class JsonUnmodifiableMap<K, V> implements UnmodifiableMap<K, V> {
             try {
                 this.map = (Map<K, V>) jsonMapper.readValue(text);
                 if (!writeable) {
-                    this.map = (Map<K, V>) Collections.unmodifiableMap(this.map);
+                    this.map = Collections.unmodifiableMap(this.map);
                 }
             } catch (IOException e) {
                 log.error("Failed to unmarshall {}", text, e);
-                this.map = (Map<K, V>)Collections.unmodifiableMap(new HashMap<>());
+                this.map = Collections.unmodifiableMap(new HashMap<>());
             }
         }
         return this.map;
@@ -135,6 +134,6 @@ public class JsonUnmodifiableMap<K, V> implements UnmodifiableMap<K, V> {
 
     @Override
     public Map<K, V> getModifiableCopy() {
-        return new JsonUnmodifiableMap<K, V>(this);
+        return new JsonUnmodifiableMap<>(this);
     }
 }

@@ -5,15 +5,15 @@ import java.util.Set;
 
 public interface Policy {
 
-    public static final String AGENT_ID = "agentId";
-    public static final String LIST_ALL_ACCOUNTS = "list.all.accounts";
-    public static final String AUTHORIZED_FOR_ALL_ACCOUNTS = "all.accounts";
-    public static final String RESOURCE_ACCOUNT_ID = "resource.account.id";
-    public static final String LIST_ALL_SETTINGS = "list.all.settings";
-    public static final String PLAIN_ID = "plain.id";
-    public static final String PLAIN_ID_OPTION = "plain.id.option";
-    public static final String ASSIGNED_ROLE = "assigned.role";
-    public static final long NO_ACCOUNT = -1L;
+    String AGENT_ID = "agentId";
+    String LIST_ALL_ACCOUNTS = "list.all.accounts";
+    String AUTHORIZED_FOR_ALL_ACCOUNTS = "all.accounts";
+    String RESOURCE_ACCOUNT_ID = "resource.account.id";
+    String LIST_ALL_SETTINGS = "list.all.settings";
+    String PLAIN_ID = "plain.id";
+    String PLAIN_ID_OPTION = "plain.id.option";
+    String ASSIGNED_ROLE = "assigned.role";
+    long NO_ACCOUNT = -1L;
 
     boolean isOption(String optionName);
 

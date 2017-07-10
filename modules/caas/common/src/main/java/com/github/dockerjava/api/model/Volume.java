@@ -1,14 +1,7 @@
 package com.github.dockerjava.api.model;
 
-import java.io.IOException;
-import java.util.Map.Entry;
-
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -18,6 +11,11 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.node.NullNode;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
+import java.io.IOException;
+import java.util.Map.Entry;
 
 /**
  * Represents a bind mounted volume in a Docker container.
@@ -82,11 +80,11 @@ public class Volume {
     public static class Serializer extends JsonSerializer<Volume> {
 
         @Override
-        public void serialize(Volume volume, JsonGenerator jsonGen, SerializerProvider serProvider) throws IOException, JsonProcessingException {
+        public void serialize(Volume volume, JsonGenerator jsonGen, SerializerProvider serProvider) throws IOException {
 
             jsonGen.writeStartObject();
             jsonGen.writeFieldName(volume.getPath());
-            jsonGen.writeString(Boolean.toString(volume.getAccessMode().equals(AccessMode.rw) ? true : false));
+            jsonGen.writeString(Boolean.toString(volume.getAccessMode().equals(AccessMode.rw)));
             jsonGen.writeEndObject();
         }
 
@@ -94,7 +92,7 @@ public class Volume {
 
     public static class Deserializer extends JsonDeserializer<Volume> {
         @Override
-        public Volume deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+        public Volume deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
             ObjectCodec oc = jsonParser.getCodec();
             JsonNode node = oc.readTree(jsonParser);
             if (!node.equals(NullNode.getInstance())) {

@@ -10,7 +10,7 @@ public class AffinityConstraintDefinition {
         String envSymbol;
         String labelSymbol;
 
-        private AffinityOps(String envSymbol, String labelSymbol) {
+        AffinityOps(String envSymbol, String labelSymbol) {
             this.envSymbol = envSymbol;
             this.labelSymbol = labelSymbol;
         }

@@ -10,13 +10,12 @@ import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.lock.exception.FailedToAcquireLockException;
 import io.cattle.platform.util.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class MethodInvokingListener implements EventListener, PoolSpecificListener {
 
@@ -105,7 +104,6 @@ public class MethodInvokingListener implements EventListener, PoolSpecificListen
     @Override
     public String getPoolKey() {
         if (target instanceof PoolSpecificListener) {
-            ;
             return ((PoolSpecificListener) target).getPoolKey();
         }
 

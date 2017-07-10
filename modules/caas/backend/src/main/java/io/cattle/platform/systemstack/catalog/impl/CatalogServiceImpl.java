@@ -1,7 +1,7 @@
 package io.cattle.platform.systemstack.catalog.impl;
 
-import static io.cattle.platform.core.model.tables.StackTable.*;
-
+import com.netflix.config.DynamicBooleanProperty;
+import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.addon.CatalogTemplate;
 import io.cattle.platform.core.constants.ServiceConstants;
@@ -16,23 +16,20 @@ import io.cattle.platform.systemstack.catalog.CatalogService;
 import io.cattle.platform.systemstack.model.Template;
 import io.cattle.platform.systemstack.model.TemplateCollection;
 import io.cattle.platform.util.type.CollectionUtils;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.fluent.Request;
+import org.apache.http.client.fluent.Response;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.fluent.Request;
-import org.apache.http.client.fluent.Response;
-import org.yaml.snakeyaml.Yaml;
-
-import com.netflix.config.DynamicBooleanProperty;
-import com.netflix.config.DynamicStringProperty;
+import static io.cattle.platform.core.model.tables.StackTable.*;
 
 public class CatalogServiceImpl implements CatalogService {
 
@@ -152,7 +149,7 @@ public class CatalogServiceImpl implements CatalogService {
 
         return Request.Get(url).execute().handleResponse(new ResponseHandler<Template>() {
             @Override
-            public Template handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
+            public Template handleResponse(HttpResponse response) throws IOException {
                 if (response.getStatusLine().getStatusCode() != 200) {
                     return null;
                 }
@@ -218,7 +215,7 @@ public class CatalogServiceImpl implements CatalogService {
         }
 
         Map<Object, Object> data = CollectionUtils.asMap(
-                (Object)STACK.EXTERNAL_ID, externalId,
+                STACK.EXTERNAL_ID, externalId,
                 STACK.ACCOUNT_ID, accountId,
                 STACK.NAME, catalogTemplate.getName(),
                 STACK.DESCRIPTION, catalogTemplate.getDescription(),
@@ -233,7 +230,7 @@ public class CatalogServiceImpl implements CatalogService {
     protected TemplateCollection getTemplates(String url) throws IOException {
         return Request.Get(url).execute().handleResponse(new ResponseHandler<TemplateCollection>() {
             @Override
-            public TemplateCollection handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
+            public TemplateCollection handleResponse(HttpResponse response) throws IOException {
                 if (response.getStatusLine().getStatusCode() != 200) {
                     return null;
                 }

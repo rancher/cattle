@@ -8,14 +8,12 @@ import io.github.ibuildthecloud.gdapi.model.FieldType;
 import io.github.ibuildthecloud.gdapi.model.impl.FieldImpl;
 import io.github.ibuildthecloud.gdapi.model.impl.SchemaImpl;
 import io.github.ibuildthecloud.gdapi.util.TypeUtils;
-
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Method;
+import org.apache.commons.beanutils.PropertyUtils;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-
-import org.apache.commons.beanutils.PropertyUtils;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
 
 public class JpaWritablePostProcessor extends AbstractSchemaPostProcessor implements SchemaPostProcessor {
 
@@ -59,7 +57,7 @@ public class JpaWritablePostProcessor extends AbstractSchemaPostProcessor implem
             return;
         }
 
-        field.setNullable(field.getTypeEnum() == FieldType.STRING ? true : column.nullable());
+        field.setNullable(field.getTypeEnum() == FieldType.STRING || column.nullable());
         if (column.length() > 0) {
             field.setMaxLength((long) column.length());
         }

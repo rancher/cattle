@@ -1,11 +1,10 @@
 package io.github.ibuildthecloud.gdapi.util;
 
-import static io.github.ibuildthecloud.gdapi.model.Schema.Method.*;
-
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.servlet.http.HttpServletRequest;
+import static io.github.ibuildthecloud.gdapi.model.Schema.Method.*;
 
 public class RequestUtils {
 
@@ -110,11 +109,7 @@ public class RequestUtils {
     }
 
     public static boolean hasBeenHandled(ApiRequest request) {
-        if (request.isCommitted() || request.getResponseObject() != null) {
-            return true;
-        }
-
-        return false;
+        return request.isCommitted() || request.getResponseObject() != null;
 
     }
 

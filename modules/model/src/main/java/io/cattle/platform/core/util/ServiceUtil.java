@@ -14,6 +14,7 @@ import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,8 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class ServiceUtil {
 
@@ -102,19 +101,6 @@ public class ServiceUtil {
     }
 
     @SuppressWarnings("unchecked")
-    public static Map<String, String> getLaunchConfigLabels(Service service, String launchConfigName) {
-        if (launchConfigName == null) {
-            launchConfigName = ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME;
-        }
-        Map<String, Object> data = getLaunchConfigDataAsMap(service, launchConfigName);
-        Object labels = data.get(InstanceConstants.FIELD_LABELS);
-        if (labels == null) {
-            return new HashMap<>();
-        }
-        return (Map<String, String>) labels;
-    }
-
-    @SuppressWarnings("unchecked")
     public static Map<String, Object> getLaunchConfigDataAsMap(Service service, String launchConfigName) {
         if (launchConfigName == null) {
             launchConfigName = ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME;
@@ -154,11 +140,6 @@ public class ServiceUtil {
         return launchConfigData;
     }
 
-    public static Object getLaunchConfigObject(Service service, String launchConfigName, String objectName) {
-        Map<String, Object> serviceData = ServiceUtil.getLaunchConfigDataAsMap(service, launchConfigName);
-        return serviceData.get(objectName);
-    }
-
     public static String generateServiceInstanceName(String stackName, String serviceName, String launchConfigName,
             int finalOrder) {
         boolean isPrimary = launchConfigName == null
@@ -172,25 +153,6 @@ public class ServiceUtil {
         }
         String configName = isPrimary ? "" : launchConfigName + "-";
         return String.format("%s-%s-%s%s", stackName, serviceName, configName, finalOrder);
-    }
-
-    public static boolean isNoopService(Service service) {
-        Object imageUUID = ServiceUtil.getLaunchConfigDataAsMap(service,
-                ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME).get(
-                InstanceConstants.FIELD_IMAGE_UUID);
-
-        return (service.getSelector() != null
-                && (imageUUID == null || imageUUID.toString().toLowerCase()
-                .contains(ServiceConstants.IMAGE_NONE))) || isNoopLBService(service);
-    }
-
-    public static boolean isNoopLBService(Service service) {
-        Object imageUUID = ServiceUtil.getLaunchConfigDataAsMap(service,
-                ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME).get(
-                InstanceConstants.FIELD_IMAGE_UUID);
-        return service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)
-                && imageUUID != null && imageUUID.toString().toLowerCase()
-                        .contains(ServiceConstants.IMAGE_NONE);
     }
 
     @SuppressWarnings("unchecked")
@@ -338,42 +300,6 @@ public class ServiceUtil {
             } else if (name.endsWith("-")){
                 ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_CHARACTERS,
                         "name");
-            }
-        }
-    }
-
-    public static void validateLinkName(String linkName){
-        if(linkName != null && !linkName.isEmpty()){
-            if(linkName.startsWith(".") || linkName.endsWith(".") || linkName.contains("..")) {
-                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_CHARACTERS,
-                        "name");
-            }
-
-            //split around a "."
-            String[] parts = linkName.split("\\.");
-            if(parts.length > 1) {
-                //check total length <= 253
-                if (linkName.length() > 253) {
-                    ValidationErrorCodes.throwValidationError(ValidationErrorCodes.MAX_LENGTH_EXCEEDED,
-                            "name");
-                }
-            }
-
-            for (String linkPart : parts) {
-                if(linkPart.startsWith("-") || linkPart.endsWith("-") || linkPart.contains("--")) {
-                    ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_CHARACTERS,
-                            "name");
-                }
-                //check length
-                if (linkPart.length() < 1) {
-                    ValidationErrorCodes.throwValidationError(ValidationErrorCodes.MIN_LENGTH_EXCEEDED,
-                            "name");
-                }
-                if (linkPart.length() > 63) {
-                    ValidationErrorCodes.throwValidationError(ValidationErrorCodes.MAX_LENGTH_EXCEEDED,
-                            "name");
-                }
-
             }
         }
     }

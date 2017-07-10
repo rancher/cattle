@@ -1,11 +1,5 @@
 package io.cattle.platform.core.dao.impl;
 
-import static io.cattle.platform.core.model.tables.HostTable.*;
-import static io.cattle.platform.core.model.tables.StorageDriverTable.*;
-import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
-import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
-import static io.cattle.platform.core.model.tables.VolumeTable.*;
-
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
@@ -19,6 +13,10 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
+import org.jooq.Configuration;
+import org.jooq.Record;
+import org.jooq.Record2;
+import org.jooq.RecordHandler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,14 +26,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jooq.Configuration;
-import org.jooq.Record;
-import org.jooq.Record2;
-import org.jooq.RecordHandler;
+import static io.cattle.platform.core.model.tables.HostTable.*;
+import static io.cattle.platform.core.model.tables.StorageDriverTable.*;
+import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
+import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
+import static io.cattle.platform.core.model.tables.VolumeTable.*;
 
 public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDao {
 
-    public static final Set<String> UNMANGED_STORAGE_POOLS = new HashSet<>(Arrays.asList(new String[]{"docker", "sim"}));
+    public static final Set<String> UNMANGED_STORAGE_POOLS = new HashSet<>(Arrays.asList("docker", "sim"));
 
     GenericResourceDao resourceDao;
     ObjectManager objectManager;

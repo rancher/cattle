@@ -1,14 +1,7 @@
 package com.github.dockerjava.api.model;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -18,6 +11,12 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.node.NullNode;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 @JsonSerialize(using = ExposedPorts.Serializer.class)
 @JsonDeserialize(using = ExposedPorts.Deserializer.class)
@@ -40,7 +39,7 @@ public class ExposedPorts {
     public static class Serializer extends JsonSerializer<ExposedPorts> {
 
         @Override
-        public void serialize(ExposedPorts exposedPorts, JsonGenerator jsonGen, SerializerProvider serProvider) throws IOException, JsonProcessingException {
+        public void serialize(ExposedPorts exposedPorts, JsonGenerator jsonGen, SerializerProvider serProvider) throws IOException {
 
             jsonGen.writeStartObject();
             for (ExposedPort exposedPort : exposedPorts.getExposedPorts()) {
@@ -55,9 +54,9 @@ public class ExposedPorts {
 
     public static class Deserializer extends JsonDeserializer<ExposedPorts> {
         @Override
-        public ExposedPorts deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+        public ExposedPorts deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
 
-            List<ExposedPort> exposedPorts = new ArrayList<ExposedPort>();
+            List<ExposedPort> exposedPorts = new ArrayList<>();
             ObjectCodec oc = jsonParser.getCodec();
             JsonNode node = oc.readTree(jsonParser);
             for (Iterator<Map.Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {

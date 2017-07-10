@@ -1,14 +1,5 @@
 package io.cattle.platform.core.dao.impl;
 
-import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
-import static io.cattle.platform.core.model.tables.MountTable.*;
-import static io.cattle.platform.core.model.tables.StorageDriverTable.*;
-import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
-import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
-import static io.cattle.platform.core.model.tables.VolumeTable.*;
-import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
-
 import io.cattle.platform.core.addon.MountEntry;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -27,6 +18,11 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
+import org.apache.commons.lang3.StringUtils;
+import org.jooq.Configuration;
+import org.jooq.Record;
+import org.jooq.Record6;
+import org.jooq.RecordHandler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,15 +34,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-import org.apache.commons.lang3.StringUtils;
-import org.jooq.Configuration;
-import org.jooq.Record;
-import org.jooq.Record6;
-import org.jooq.RecordHandler;
+import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.MountTable.*;
+import static io.cattle.platform.core.model.tables.StorageDriverTable.*;
+import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
+import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
+import static io.cattle.platform.core.model.tables.VolumeTable.*;
+import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
 
 public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
 
-    private static final Set<String> LOCAL_POOL_KINDS = new HashSet<>(Arrays.asList(new String[]{"docker", "sim"}));
+    private static final Set<String> LOCAL_POOL_KINDS = new HashSet<>(Arrays.asList("docker", "sim"));
 
     GenericResourceDao resourceDao;
     ObjectManager objectManager;

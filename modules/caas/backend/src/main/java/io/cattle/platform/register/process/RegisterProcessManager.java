@@ -1,13 +1,12 @@
 package io.cattle.platform.register.process;
 
-import static io.cattle.platform.core.model.tables.CredentialTable.*;
-import static io.cattle.platform.core.model.tables.GenericObjectTable.*;
-
+import com.netflix.config.DynamicStringListProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.constants.RegisterConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
+import io.cattle.platform.core.dao.RegisterDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Credential;
@@ -22,9 +21,9 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.register.dao.RegisterDao;
 
-import com.netflix.config.DynamicStringListProperty;
+import static io.cattle.platform.core.model.tables.CredentialTable.*;
+import static io.cattle.platform.core.model.tables.GenericObjectTable.*;
 
 public class RegisterProcessManager {
 

@@ -14,11 +14,11 @@ public enum ConditionType {
     private String externalForm;
     private boolean internal = false;
 
-    private ConditionType() {
+    ConditionType() {
         this.externalForm = toString().toLowerCase();
     }
 
-    private ConditionType(boolean internal) {
+    ConditionType(boolean internal) {
         this();
         this.internal = internal;
     }

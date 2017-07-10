@@ -22,23 +22,23 @@ public enum ExitReason {
     boolean error;
     ProcessResult result;
 
-    private ExitReason() {
+    ExitReason() {
         this(false, false, true, null);
     }
 
-    private ExitReason(boolean rethrow) {
+    ExitReason(boolean rethrow) {
         this(rethrow, false, true, null);
     }
 
-    private ExitReason(ProcessResult result) {
+    ExitReason(ProcessResult result) {
         this(false, true, false, result);
     }
 
-    private ExitReason(ProcessResult result, boolean rethrow) {
+    ExitReason(ProcessResult result, boolean rethrow) {
         this(rethrow, true, false, result);
     }
 
-    private ExitReason(boolean rethrow, boolean terminating, boolean error, ProcessResult result) {
+    ExitReason(boolean rethrow, boolean terminating, boolean error, ProcessResult result) {
         this.rethrow = rethrow;
         this.terminating = terminating;
         this.result = result;

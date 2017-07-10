@@ -1,12 +1,9 @@
 package io.cattle.platform.core.util;
 
+import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
-import io.cattle.platform.object.util.DataAccessor;
-
-import com.netflix.config.DynamicStringProperty;
 
 public class HostnameGenerator {
 
@@ -28,11 +25,6 @@ public class HostnameGenerator {
 
     public static String getDefaultServicesDomain() {
         return DEFAULT_SERVICES_DOMAIN.get();
-    }
-
-    public static String getServicesDomain(Network network) {
-        String servicesDomain = DataAccessor.fieldString(network, NetworkConstants.FIELD_SERVICES_DOMAIN);
-        return servicesDomain == null ? getDefaultServicesDomain() : servicesDomain;
     }
 
     public static String lookup(boolean local, Instance instance, String address, Network network) {

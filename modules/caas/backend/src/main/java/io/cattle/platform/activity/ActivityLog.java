@@ -2,8 +2,8 @@ package io.cattle.platform.activity;
 
 public interface ActivityLog {
 
-    public static final String INFO = "info";
-    public static final String ERROR = "error";
+    String INFO = "info";
+    String ERROR = "error";
 
     Entry start(Long serviceId, Long deploymentUnitId, String type, String message);
 

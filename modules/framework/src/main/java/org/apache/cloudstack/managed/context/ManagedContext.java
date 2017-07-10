@@ -22,12 +22,10 @@ import java.util.concurrent.Callable;
 
 public interface ManagedContext {
 
-    public void registerListener(ManagedContextListener<?> listener);
+    void registerListener(ManagedContextListener<?> listener);
 
-    public void unregisterListener(ManagedContextListener<?> listener);
+    void runWithContext(Runnable run);
 
-    public void runWithContext(Runnable run);
-
-    public <T> T callWithContext(Callable<T> callable) throws Exception;
+    <T> T callWithContext(Callable<T> callable) throws Exception;
 
 }

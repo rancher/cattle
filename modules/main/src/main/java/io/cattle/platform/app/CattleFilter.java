@@ -37,8 +37,8 @@ public class CattleFilter implements Filter {
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        cattle.start();
         indexFile.init();
+        cattle.start();
     }
 
     @Override

@@ -1,12 +1,5 @@
 package io.cattle.platform.allocator.dao.impl;
 
-import static io.cattle.platform.core.model.tables.HostTable.*;
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
-import static io.cattle.platform.core.model.tables.MountTable.*;
-import static io.cattle.platform.core.model.tables.StorageDriverTable.*;
-import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
-import static io.cattle.platform.core.model.tables.VolumeTable.*;
-
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
@@ -28,6 +21,12 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.util.ProxyUtils;
 import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
+import org.jooq.Configuration;
+import org.jooq.Record1;
+import org.jooq.RecordHandler;
+import org.jooq.Result;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,12 +39,12 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.jooq.Configuration;
-import org.jooq.Record1;
-import org.jooq.RecordHandler;
-import org.jooq.Result;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static io.cattle.platform.core.model.tables.HostTable.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.MountTable.*;
+import static io.cattle.platform.core.model.tables.StorageDriverTable.*;
+import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
+import static io.cattle.platform.core.model.tables.VolumeTable.*;
 
 public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
@@ -281,7 +280,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
         return result.size() == 1 ? result.get(0).getValue(STORAGE_POOL_HOST_MAP.HOST_ID) : null;
     }
 
-    private static interface PortAssignment {
+    private interface PortAssignment {
         String getAllocatedIP();
         String getProtocol();
         Integer getPrivatePort();

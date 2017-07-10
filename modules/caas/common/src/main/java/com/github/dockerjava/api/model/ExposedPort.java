@@ -1,16 +1,7 @@
 package com.github.dockerjava.api.model;
 
-import static com.github.dockerjava.api.model.InternetProtocol.*;
-
-import java.io.IOException;
-import java.util.Map.Entry;
-
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -20,6 +11,13 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.node.NullNode;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
+import java.io.IOException;
+import java.util.Map.Entry;
+
+import static com.github.dockerjava.api.model.InternetProtocol.*;
 
 /**
  * Represents a container port that Docker exposes to external clients. The port
@@ -169,7 +167,7 @@ public class ExposedPort {
 
     public static class Deserializer extends JsonDeserializer<ExposedPort> {
         @Override
-        public ExposedPort deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+        public ExposedPort deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
             ObjectCodec oc = jsonParser.getCodec();
             JsonNode node = oc.readTree(jsonParser);
             if (!node.equals(NullNode.getInstance())) {
@@ -184,7 +182,7 @@ public class ExposedPort {
     public static class Serializer extends JsonSerializer<ExposedPort> {
 
         @Override
-        public void serialize(ExposedPort exposedPort, JsonGenerator jsonGen, SerializerProvider serProvider) throws IOException, JsonProcessingException {
+        public void serialize(ExposedPort exposedPort, JsonGenerator jsonGen, SerializerProvider serProvider) throws IOException {
 
             jsonGen.writeStartObject();
             jsonGen.writeFieldName(exposedPort.toString());

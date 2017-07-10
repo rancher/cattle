@@ -9,6 +9,8 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.TransitioningUtils;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.util.DateUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.format.DateTimeParseException;
 import java.util.Date;
@@ -16,9 +18,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class InstanceWrapper implements BasicStateWrapper {
 
@@ -157,13 +156,9 @@ public class InstanceWrapper implements BasicStateWrapper {
         if (instance.getFirstRunning() == null) {
             if (isServiceManaged()) {
                 return false;
-            } else if (InstanceConstants.STATE_STOPPED.equals(instance.getState()) &&
-                    !DataAccessor.fieldBool(instance, InstanceConstants.FIELD_START_ON_CREATE)) {
-                // For not service managed, never started, stopped and startOnCreate=False is considered active
-                return true;
-            } else {
-                return false;
-            }
+            } else // For not service managed, never started, stopped and startOnCreate=False is considered active
+                return InstanceConstants.STATE_STOPPED.equals(instance.getState()) &&
+                        !DataAccessor.fieldBool(instance, InstanceConstants.FIELD_START_ON_CREATE);
         }
 
         return !shouldRestart();

@@ -6,7 +6,14 @@ import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.RequestUtils;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadBase;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.lang3.StringUtils;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -17,15 +24,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadBase;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.lang3.StringUtils;
 
 public class DefaultApiRequestParser implements ApiRequestParser {
 
@@ -231,7 +229,7 @@ public class DefaultApiRequestParser implements ApiRequestParser {
 
         if (port != null && host.contains(":")) {
             // Have to strip the port that is in the host. Handle IPv6, which has this format: [::1]:8080
-            if ((host.startsWith("[") && host.contains("]:")) || !host.startsWith("[")) {
+            if (!host.startsWith("[") || host.contains("]:")) {
                 host = host.substring(0, host.lastIndexOf(":"));
             }
         }

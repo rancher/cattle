@@ -1,8 +1,5 @@
 package io.cattle.platform.storage.service.impl;
 
-import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
-import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
-
 import io.cattle.platform.core.constants.StorageDriverConstants;
 import io.cattle.platform.core.constants.StoragePoolConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
@@ -19,6 +16,9 @@ import io.cattle.platform.storage.service.StorageService;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.Map;
+
+import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
+import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 
 public class StorageServiceImpl implements StorageService {
 
@@ -57,8 +57,7 @@ public class StorageServiceImpl implements StorageService {
     }
 
     protected Map<String, Object> getStoragePoolProperties(StorageDriver storageDriver) {
-        return objectManager.convertToPropertiesFor(StoragePool.class, CollectionUtils.asMap((Object)
-                STORAGE_POOL.ACCOUNT_ID, storageDriver.getAccountId(),
+        return objectManager.convertToPropertiesFor(StoragePool.class, CollectionUtils.asMap(STORAGE_POOL.ACCOUNT_ID, storageDriver.getAccountId(),
                 STORAGE_POOL.NAME, storageDriver.getName(),
                 STORAGE_POOL.DRIVER_NAME, storageDriver.getName(),
                 STORAGE_POOL.STORAGE_DRIVER_ID, storageDriver.getId(),

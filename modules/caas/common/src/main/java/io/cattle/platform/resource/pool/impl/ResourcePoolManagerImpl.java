@@ -1,7 +1,5 @@
 package io.cattle.platform.resource.pool.impl;
 
-import static io.cattle.platform.core.model.tables.ResourcePoolTable.*;
-
 import io.cattle.platform.core.model.ResourcePool;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.ObjectUtils;
@@ -11,6 +9,10 @@ import io.cattle.platform.resource.pool.PooledResourceItemGeneratorFactory;
 import io.cattle.platform.resource.pool.PooledResourceOptions;
 import io.cattle.platform.resource.pool.ResourcePoolManager;
 import io.cattle.platform.util.type.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.jooq.exception.DataAccessException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,10 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-import org.jooq.exception.DataAccessException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static io.cattle.platform.core.model.tables.ResourcePoolTable.*;
 
 public class ResourcePoolManagerImpl implements ResourcePoolManager {
 
@@ -46,8 +45,8 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
         String ownerType = getResourceType(owner);
         long ownerId = getResourceId(owner);
 
-        Map<Object, Object> keys = CollectionUtils.asMap((Object) RESOURCE_POOL.POOL_TYPE, poolType,
-                (Object) RESOURCE_POOL.POOL_ID, poolId,
+        Map<Object, Object> keys = CollectionUtils.asMap(RESOURCE_POOL.POOL_TYPE, poolType,
+                RESOURCE_POOL.POOL_ID, poolId,
                 RESOURCE_POOL.QUALIFIER, qualifier,
                 RESOURCE_POOL.OWNER_TYPE, ownerType,
                 RESOURCE_POOL.OWNER_ID, ownerId,
@@ -95,7 +94,7 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
         String ownerType = getResourceType(owner);
         long ownerId = getResourceId(owner);
 
-        Map<Object, Object> keys = CollectionUtils.asMap((Object) RESOURCE_POOL.POOL_TYPE, poolType, (Object) RESOURCE_POOL.POOL_ID, poolId,
+        Map<Object, Object> keys = CollectionUtils.asMap(RESOURCE_POOL.POOL_TYPE, poolType, RESOURCE_POOL.POOL_ID, poolId,
                 RESOURCE_POOL.QUALIFIER, options.getQualifier(), RESOURCE_POOL.OWNER_TYPE, ownerType, RESOURCE_POOL.OWNER_ID, ownerId);
 
         for (ResourcePool resource : objectManager.find(ResourcePool.class, keys)) {

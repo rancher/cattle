@@ -3,6 +3,7 @@ package io.cattle.platform.object.util;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.UnmodifiableMap;
+import org.apache.commons.beanutils.ConvertUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,8 +13,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import org.apache.commons.beanutils.ConvertUtils;
 
 public class DataAccessor {
 
@@ -268,7 +267,7 @@ public class DataAccessor {
         Map<String, Object> map = (Map<String, Object>) ObjectUtils.getPropertyIgnoreErrors(obj, DataUtils.DATA);
 
         if (read) {
-            return map == null ? Collections.<String, Object> emptyMap() : Collections.unmodifiableMap(map);
+            return map == null ? Collections.emptyMap() : Collections.unmodifiableMap(map);
         } else if (map instanceof UnmodifiableMap<?, ?>) {
             map = ((UnmodifiableMap<String, Object>) map).getModifiableCopy();
         } else if (map == null) {

@@ -1,13 +1,12 @@
 package io.github.ibuildthecloud.gdapi.model;
 
+import javax.xml.bind.annotation.XmlTransient;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.bind.annotation.XmlTransient;
-
 public interface Schema extends Resource {
 
-    public enum Method {
+    enum Method {
         GET, PUT, DELETE, POST;
 
         public boolean isMethod(String value) {

@@ -2,8 +2,8 @@ package io.cattle.platform.compose.export.impl;
 
 
 public interface RancherConfigToComposeFormatter {
-    public enum Option {
+    enum Option {
         REMOVE
     }
-    public Object format(ComposeExportConfigItem item, Object valueToTransform);
+    Object format(ComposeExportConfigItem item, Object valueToTransform);
 }

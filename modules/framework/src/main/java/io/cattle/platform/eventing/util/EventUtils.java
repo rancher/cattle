@@ -8,10 +8,9 @@ import io.cattle.platform.eventing.annotation.EventHandler;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.util.type.NamedUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.lang.reflect.Method;
-
-import org.apache.commons.lang.StringUtils;
 
 public class EventUtils {
 
@@ -46,11 +45,7 @@ public class EventUtils {
     }
 
     public static boolean isTransitioningEvent(Event event) {
-        if (event == null || event.getTransitioning() == null || Event.TRANSITIONING_NO.equals(event.getTransitioning())) {
-            return false;
-        }
-
-        return true;
+        return !(event == null || event.getTransitioning() == null || Event.TRANSITIONING_NO.equals(event.getTransitioning()));
     }
 
     public static void copyTransitioning(Event from, EventVO<?> to) {

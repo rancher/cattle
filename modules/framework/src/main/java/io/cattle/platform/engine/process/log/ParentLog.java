@@ -4,6 +4,6 @@ import io.cattle.platform.util.type.Named;
 
 public interface ParentLog extends Named {
 
-    public ProcessLog newChildLog();
+    ProcessLog newChildLog();
 
 }

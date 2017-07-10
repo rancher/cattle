@@ -1,12 +1,11 @@
 package io.cattle.platform.engine.handler;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.google.common.util.concurrent.ListenableFuture;
 
 public class HandlerResult {
 
@@ -15,7 +14,7 @@ public class HandlerResult {
     ListenableFuture<?> future;
 
     public HandlerResult() {
-        this((Map<Object, Object>) null);
+        this(null);
     }
 
     public HandlerResult(Object key, Object... values) {

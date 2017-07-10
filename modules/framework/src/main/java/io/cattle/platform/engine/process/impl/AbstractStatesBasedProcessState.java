@@ -55,11 +55,7 @@ public abstract class AbstractStatesBasedProcessState implements ProcessState {
     public boolean isDone(boolean schedule) {
         String state = getState();
         if (statesDefinition.isDone(state)) {
-            if (schedule && statesDefinition.isStartAndDone(state)) {
-                return false;
-            } else {
-                return true;
-            }
+            return !(schedule && statesDefinition.isStartAndDone(state));
         } else {
             return false;
         }

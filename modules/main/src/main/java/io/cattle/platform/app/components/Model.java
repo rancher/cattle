@@ -1,9 +1,12 @@
 package io.cattle.platform.app.components;
 
 import io.cattle.platform.api.auth.Identity;
+import io.cattle.platform.api.hostapi.HostApiProxyTokenImpl;
 import io.cattle.platform.api.pubsub.model.Publish;
 import io.cattle.platform.api.pubsub.model.Subscribe;
+import io.cattle.platform.api.stats.StatsAccess;
 import io.cattle.platform.core.addon.ActiveSetting;
+import io.cattle.platform.core.addon.BaseMachineConfig;
 import io.cattle.platform.core.addon.BlkioDeviceOption;
 import io.cattle.platform.core.addon.CatalogTemplate;
 import io.cattle.platform.core.addon.ComposeConfig;
@@ -44,10 +47,7 @@ import io.cattle.platform.docker.api.model.ContainerProxy;
 import io.cattle.platform.docker.api.model.DockerBuild;
 import io.cattle.platform.docker.api.model.HostAccess;
 import io.cattle.platform.docker.api.model.ServiceProxy;
-import io.cattle.platform.docker.machine.api.addon.BaseMachineConfig;
 import io.cattle.platform.engine.process.StateTransition;
-import io.cattle.platform.host.api.HostApiProxyTokenImpl;
-import io.cattle.platform.host.stats.api.StatsAccess;
 import io.cattle.platform.iaas.api.auth.identity.Token;
 import io.cattle.platform.iaas.api.auth.integration.azure.AzureConfig;
 import io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP.OpenLDAPConfig;
@@ -229,7 +229,7 @@ public class Model {
         f.metaDataManager.setTypeSets(Arrays.asList(
                 databaseObjects(),
                 addons(),
-                named()));;
+                named()));
     }
 
     private void defaultProcesses(String type) {

@@ -6,7 +6,7 @@ import io.github.ibuildthecloud.gdapi.annotation.Type;
 @Type(name = "serviceProxy", pluralName="serviceProxies")
 public interface ServiceProxy {
 
-    public enum Scheme {
+    enum Scheme {
        http,
        https,
     }

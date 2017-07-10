@@ -1,17 +1,15 @@
 package io.cattle.platform.servicediscovery.api.util.selector;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import io.cattle.platform.servicediscovery.api.util.selector.SelectorConstraint.Op;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.lang3.StringUtils;
-
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 
 public class SelectorUtils {
     private static Cache<String, List<SelectorConstraint<?>>> cache = CacheBuilder.newBuilder()
@@ -32,10 +30,7 @@ public class SelectorUtils {
                 found++;
             }
         }
-        if (found != constraints.size()) {
-            return false;
-        }
-        return true;
+        return found == constraints.size();
     }
 
     public static List<SelectorConstraint<?>> getSelectorConstraints(String selector) {

@@ -1,13 +1,13 @@
 package io.cattle.platform.logback;
 
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class Startup {
 
@@ -67,10 +67,6 @@ public class Startup {
         }
 
         /* Hook to disable logback configuration for whatever reason */
-        if (Boolean.getBoolean(LOGBACK_DISABLE)) {
-            return false;
-        }
-
-        return true;
+        return !Boolean.getBoolean(LOGBACK_DISABLE);
     }
 }

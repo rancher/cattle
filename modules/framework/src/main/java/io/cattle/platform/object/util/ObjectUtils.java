@@ -7,6 +7,9 @@ import io.cattle.platform.framework.event.FrameworkEvents;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.util.type.CollectionUtils;
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
@@ -15,10 +18,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.lang3.StringUtils;
 
 public class ObjectUtils {
 
@@ -71,7 +70,7 @@ public class ObjectUtils {
 
         try {
             PropertyDescriptor desc = PropertyUtils.getPropertyDescriptor(obj, name);
-            return desc == null ? false : desc.getWriteMethod() != null;
+            return desc != null && desc.getWriteMethod() != null;
         } catch (IllegalAccessException e) {
             return false;
         } catch (InvocationTargetException e) {
@@ -262,11 +261,7 @@ public class ObjectUtils {
         if (!compareMap(a, b)) {
             return false;
         }
-        if (!compareMap(b, a)) {
-            return false;
-        }
-
-        return true;
+        return compareMap(b, a);
     }
 
     private static boolean compareMap(Map<Object, Object> aMap, Map<Object, Object> bMap) {

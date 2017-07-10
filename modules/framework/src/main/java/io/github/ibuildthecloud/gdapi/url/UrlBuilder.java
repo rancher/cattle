@@ -7,9 +7,9 @@ import java.net.URL;
 
 public interface UrlBuilder {
 
-    public static final String SELF = "self";
-    public static final String COLLECTION = "collection";
-    public static final String LATEST = "latest";
+    String SELF = "self";
+    String COLLECTION = "collection";
+    String LATEST = "latest";
 
     URL resourceReferenceLink(Resource resource);
 

@@ -1,8 +1,8 @@
 package io.cattle.platform.object.postinit;
 
-import static io.cattle.platform.object.util.DataUtils.*;
-
 import io.cattle.platform.json.JsonMapper;
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.beanutils.PropertyUtils;
 
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
@@ -11,8 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.beanutils.PropertyUtils;
+import static io.cattle.platform.object.util.DataUtils.*;
 
 public class ObjectDataPostInstantiationHandler implements ObjectPostInstantiationHandler {
 
@@ -49,11 +48,7 @@ public class ObjectDataPostInstantiationHandler implements ObjectPostInstantiati
             return false;
         }
 
-        if (desc == null || desc.getReadMethod() == null || desc.getPropertyType() != Map.class) {
-            return false;
-        }
-
-        return true;
+        return !(desc == null || desc.getReadMethod() == null || desc.getPropertyType() != Map.class);
     }
 
     protected void setData(Object instance, Map<String, Object> data) throws IOException {

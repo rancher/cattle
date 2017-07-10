@@ -1,4 +1,5 @@
 dependencies {
+    compile project(':cattle-caas-auth')
     compile project(':cattle-caas-api')
     compile project(':cattle-caas-backend')
     compile project(':cattle-resources')
@@ -10,5 +11,5 @@ dependencies {
 }
 
 apply plugin: 'application'
-mainClassName = 'io.cattle.platform.launcher.jetty.Main'
+mainClassName = 'io.cattle.platform.jetty.Main'
 applicationName = 'cattle'

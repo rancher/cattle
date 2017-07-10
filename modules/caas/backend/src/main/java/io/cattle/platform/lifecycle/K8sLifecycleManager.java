@@ -4,6 +4,6 @@ import io.cattle.platform.core.model.Instance;
 
 public interface K8sLifecycleManager {
 
-    public void instanceCreate(Instance instance);
+    void instanceCreate(Instance instance);
 
 }

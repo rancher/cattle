@@ -1,5 +1,13 @@
 package io.github.ibuildthecloud.gdapi.json;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import io.github.ibuildthecloud.gdapi.model.Field;
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.model.Schema;
@@ -14,15 +22,6 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
-
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 
 public class JacksonMapper implements JsonMapper {
 
@@ -78,24 +77,24 @@ public class JacksonMapper implements JsonMapper {
         return mapper.convertValue(fromValue, toValueType);
     }
 
-    public static interface ResourceMix {
+    public interface ResourceMix {
         @JsonAnyGetter
         Map<String, Object> getFields();
         @JsonInclude(Include.NON_NULL)
         String getBaseType();
     }
 
-    public static interface SchemaCollectionMixin {
+    public interface SchemaCollectionMixin {
         @JsonDeserialize(as = List.class, contentAs = SchemaImpl.class)
         List<Schema> getData();
     }
 
-    public static interface SchemaImplMixin {
+    public interface SchemaImplMixin {
         @JsonDeserialize(as = Map.class, contentAs = FieldImpl.class)
         Map<String, Field> getResourceFields();
     }
 
-    public static interface ResourceMixin {
+    public interface ResourceMixin {
         @JsonAnyGetter
         Map<String, Object> getFields();
     }

@@ -1,5 +1,7 @@
 package io.cattle.platform.framework.secret;
 
+import com.netflix.config.DynamicStringProperty;
+import com.nimbusds.jose.util.StandardCharset;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.addon.SecretReference;
 import io.cattle.platform.core.constants.HostConstants;
@@ -12,7 +14,17 @@ import io.cattle.platform.ssh.common.SshKeyGen;
 import io.cattle.platform.token.impl.RSAKeyProvider;
 import io.cattle.platform.token.impl.RSAPrivateKeyHolder;
 import io.cattle.platform.util.type.CollectionUtils;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.fluent.Request;
+import org.apache.http.entity.ContentType;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -21,22 +33,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.crypto.Cipher;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.fluent.Request;
-import org.apache.http.entity.ContentType;
-
-import com.netflix.config.DynamicStringProperty;
-import com.nimbusds.jose.util.StandardCharset;
 
 public class SecretsServiceImpl implements SecretsService {
 
@@ -69,7 +65,7 @@ public class SecretsServiceImpl implements SecretsService {
             .bodyString(jsonMapper.writeValueAsString(input), ContentType.APPLICATION_JSON)
             .execute().handleResponse(new ResponseHandler<String>() {
                 @Override
-                public String handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
+                public String handleResponse(HttpResponse response) throws IOException {
                     int statusCode = response.getStatusLine().getStatusCode();
                     if (statusCode >= 300) {
                         throw new IOException("Failed to encrypt secret :" + response.getStatusLine().getReasonPhrase());
@@ -106,7 +102,7 @@ public class SecretsServiceImpl implements SecretsService {
                 bodyString(jsonMapper.writeValueAsString(input), ContentType.APPLICATION_JSON)
                 .execute().handleResponse(new ResponseHandler<Map<String, Object>>() {
                     @Override
-                    public Map<String, Object> handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
+                    public Map<String, Object> handleResponse(HttpResponse response) throws IOException {
                         int statusCode = response.getStatusLine().getStatusCode();
                         if (statusCode >= 300) {
                             throw new IOException("Failed to rewrap secret :" + response.getStatusLine().getReasonPhrase());
@@ -164,7 +160,7 @@ public class SecretsServiceImpl implements SecretsService {
             .bodyString(jsonMapper.writeValueAsString(input), ContentType.APPLICATION_JSON)
             .execute().handleResponse(new ResponseHandler<String>() {
                 @Override
-                public String handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
+                public String handleResponse(HttpResponse response) throws IOException {
                     int statusCode = response.getStatusLine().getStatusCode();
                     if (statusCode >= 300) {
                         throw new IOException("Failed to rewrap secret :" + response.getStatusLine().getReasonPhrase());

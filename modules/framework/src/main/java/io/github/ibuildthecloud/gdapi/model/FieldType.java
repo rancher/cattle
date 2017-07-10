@@ -1,7 +1,7 @@
 package io.github.ibuildthecloud.gdapi.model;
 
-import static io.github.ibuildthecloud.gdapi.condition.ConditionType.*;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.commons.lang3.StringUtils;
+import static io.github.ibuildthecloud.gdapi.condition.ConditionType.*;
 
 public enum FieldType {
     /*
@@ -24,16 +24,16 @@ public enum FieldType {
             Object.class), JSON(Object.class), NONE;
 
     Class<?>[] clzs;
-    Set<ConditionType> modifiers = new TreeSet<ConditionType>();
+    Set<ConditionType> modifiers = new TreeSet<>();
 
-    private FieldType(ConditionType[] modifiers, Class<?>... clzs) {
+    FieldType(ConditionType[] modifiers, Class<?>... clzs) {
         this.clzs = clzs;
         for (ConditionType mod : modifiers) {
             this.modifiers.add(mod);
         }
     }
 
-    private FieldType(Class<?>... clzs) {
+    FieldType(Class<?>... clzs) {
         this.clzs = clzs;
     }
 
@@ -72,7 +72,7 @@ public enum FieldType {
     }
 
     public static List<TypeAndName> parse(String typeName) {
-        List<TypeAndName> result = new ArrayList<TypeAndName>();
+        List<TypeAndName> result = new ArrayList<>();
         String[] parts = typeName.split("\\[");
 
         for (int i = 0; i < parts.length; i++) {

@@ -23,7 +23,9 @@ import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerLocator;
 import io.github.ibuildthecloud.gdapi.response.ResourceOutputFilter;
 import io.github.ibuildthecloud.gdapi.response.ResponseConverter;
 import io.github.ibuildthecloud.gdapi.url.UrlBuilder;
+import org.apache.commons.lang3.StringUtils;
 
+import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -35,10 +37,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.WeakHashMap;
-
-import javax.servlet.ServletException;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class ResponseObjectConverter implements ApiRequestHandler, ResponseConverter {
 
@@ -313,11 +311,7 @@ public class ResponseObjectConverter implements ApiRequestHandler, ResponseConve
             return false;
         }
         List<String> states = ((List<String>) attributes.get(ObjectMetaDataManager.STATES_FIELD));
-        if (states != null && !states.contains(currentState)){
-            return false;
-        }
-
-        return true;
+        return !(states != null && !states.contains(currentState));
     }
 
     protected void addFilters(CollectionImpl collection, ApiRequest request) {

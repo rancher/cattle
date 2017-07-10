@@ -1,5 +1,6 @@
 package io.cattle.platform.api.resource;
 
+import com.netflix.config.DynamicIntProperty;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
@@ -22,12 +23,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.netflix.config.DynamicIntProperty;
-
 public interface ResourceManagerBaseSupport extends ResourceManager {
 
-    static final String DEFAULT_CRITERIA = " _defaultCriteria";
-    static final DynamicIntProperty REMOVE_DELAY = ArchaiusUtil.getInt("api.show.removed.for.seconds");
+    String DEFAULT_CRITERIA = " _defaultCriteria";
+    DynamicIntProperty REMOVE_DELAY = ArchaiusUtil.getInt("api.show.removed.for.seconds");
 
     Object updateObject(String type, String id, Object obj, ApiRequest request);
 
@@ -45,7 +44,7 @@ public interface ResourceManagerBaseSupport extends ResourceManager {
 
     @Override
     default Object list(String type, ApiRequest request) {
-        return list(type, new LinkedHashMap<Object, Object>(request.getConditions()), new ListOptions(request));
+        return list(type, new LinkedHashMap<>(request.getConditions()), new ListOptions(request));
     }
 
     @Override

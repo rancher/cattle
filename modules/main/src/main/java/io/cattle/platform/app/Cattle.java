@@ -52,7 +52,7 @@ public class Cattle {
         time("BACKEND   ", () -> backend = new Backend(framework, common, dataAccess));
     }
 
-    public void time(String name, Callable<?> callable) throws IOException {
+    public static void time(String name, Callable<?> callable) throws IOException {
         long start = System.currentTimeMillis();
         try {
             callable.call();
@@ -71,18 +71,6 @@ public class Cattle {
 
     public Versions getVersions() {
         return api.getVersions();
-    }
-
-    public static void main(String... args) {
-        try {
-            new Cattle();
-        } catch (Throwable t) {
-            t.printStackTrace();
-        } finally {
-            System.out.flush();
-            System.err.flush();
-            System.exit(1);
-        }
     }
 
 }

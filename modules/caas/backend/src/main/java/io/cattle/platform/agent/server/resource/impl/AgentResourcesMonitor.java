@@ -1,5 +1,8 @@
 package io.cattle.platform.agent.server.resource.impl;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.netflix.config.DynamicLongProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.HostConstants;
@@ -23,6 +26,11 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.jooq.exception.DataChangedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -32,16 +40,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.jooq.exception.DataChangedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.netflix.config.DynamicLongProperty;
 
 public class AgentResourcesMonitor implements AnnotatedEventListener {
 
@@ -268,14 +266,14 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
 
                     /* Copy createLabels to labels */
                     Map<String, Object> labels = CollectionUtils.toMap(data.get(HostConstants.FIELD_LABELS));
-                    labels.putAll(CollectionUtils.<String, Object>toMap(data.get(HostConstants.FIELD_CREATE_LABELS)));
+                    labels.putAll(CollectionUtils.toMap(data.get(HostConstants.FIELD_CREATE_LABELS)));
                     data.put(HostConstants.FIELD_LABELS, labels);
 
                     hosts.put(uuid, resourceDao.createAndSchedule(Host.class, data));
                 } else {
                     /* Take ownership */
                     Map<String, Object> labels = CollectionUtils.toMap(data.get(HostConstants.FIELD_LABELS));
-                    labels.putAll(CollectionUtils.<String, Object>toMap(data.get(HostConstants.FIELD_CREATE_LABELS)));
+                    labels.putAll(CollectionUtils.toMap(data.get(HostConstants.FIELD_CREATE_LABELS)));
 
                     updates.putAll(createData(agent, uuid, data));
                     updates.put(HostConstants.FIELD_LABELS, labels);

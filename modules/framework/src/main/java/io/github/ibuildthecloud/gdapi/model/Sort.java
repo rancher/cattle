@@ -1,8 +1,7 @@
 package io.github.ibuildthecloud.gdapi.model;
 
-import java.net.URL;
-
 import javax.xml.bind.annotation.XmlTransient;
+import java.net.URL;
 
 public class Sort {
     public enum SortOrder {
@@ -10,7 +9,7 @@ public class Sort {
 
         private String externalForm;
 
-        private SortOrder() {
+        SortOrder() {
             this.externalForm = toString().toLowerCase();
         }
 

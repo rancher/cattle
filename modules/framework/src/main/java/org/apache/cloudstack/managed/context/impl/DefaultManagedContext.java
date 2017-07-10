@@ -18,11 +18,6 @@
  */
 package org.apache.cloudstack.managed.context.impl;
 
-import java.util.List;
-import java.util.Stack;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import org.apache.cloudstack.managed.context.ManagedContext;
 import org.apache.cloudstack.managed.context.ManagedContextListener;
 import org.apache.cloudstack.managed.context.ManagedContextUtils;
@@ -30,20 +25,25 @@ import org.apache.cloudstack.managed.threadlocal.ManagedThreadLocal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Stack;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 public class DefaultManagedContext implements ManagedContext {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultManagedContext.class);
 
-    List<ManagedContextListener<?>> listeners = new CopyOnWriteArrayList<ManagedContextListener<?>>();
+    List<ManagedContextListener<?>> listeners = new CopyOnWriteArrayList<>();
+
+    public DefaultManagedContext(ManagedContextListener... listeners) {
+        this.listeners = Arrays.asList(listeners);
+    }
 
     @Override
     public void registerListener(ManagedContextListener<?> listener) {
         listeners.add(listener);
-    }
-
-    @Override
-    public void unregisterListener(ManagedContextListener<?> listener) {
-        listeners.remove(listener);
     }
 
     @Override
@@ -70,7 +70,7 @@ public class DefaultManagedContext implements ManagedContext {
     public <T> T callWithContext(Callable<T> callable) throws Exception {
         Object owner = new Object();
 
-        Stack<ListenerInvocation> invocations = new Stack<ListenerInvocation>();
+        Stack<ListenerInvocation> invocations = new Stack<>();
         boolean reentry = !ManagedContextUtils.setAndCheckOwner(owner);
         Throwable preError = null;
         Throwable logicError = null;
@@ -141,7 +141,7 @@ public class DefaultManagedContext implements ManagedContext {
             if (ManagedContextUtils.clearOwner(owner))
                 ManagedThreadLocal.reset();
         }
-    };
+    }
 
     protected void throwException(Throwable t) throws Exception {
         ManagedContextUtils.rethrowException(t);
@@ -152,10 +152,6 @@ public class DefaultManagedContext implements ManagedContext {
 
     public List<ManagedContextListener<?>> getListeners() {
         return listeners;
-    }
-
-    public void setListeners(List<ManagedContextListener<?>> listeners) {
-        this.listeners = new CopyOnWriteArrayList<ManagedContextListener<?>>(listeners);
     }
 
     private static class ListenerInvocation {

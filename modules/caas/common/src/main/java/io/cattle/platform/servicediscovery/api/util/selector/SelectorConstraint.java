@@ -12,7 +12,7 @@ public abstract class SelectorConstraint<T> {
 
         String selectorSymbol;
 
-        private Op(String selectorSymbol) {
+        Op(String selectorSymbol) {
             this.selectorSymbol = selectorSymbol;
         }
 

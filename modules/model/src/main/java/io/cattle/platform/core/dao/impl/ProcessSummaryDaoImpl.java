@@ -1,10 +1,13 @@
 package io.cattle.platform.core.dao.impl;
 
-import static io.cattle.platform.core.model.tables.ProcessInstanceTable.*;
-
 import io.cattle.platform.core.addon.ProcessSummary;
 import io.cattle.platform.core.dao.ProcessSummaryDao;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import org.jooq.Configuration;
+import org.jooq.Field;
+import org.jooq.Record4;
+import org.jooq.RecordHandler;
+import org.jooq.impl.DSL;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -12,11 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.jooq.Configuration;
-import org.jooq.Field;
-import org.jooq.Record4;
-import org.jooq.RecordHandler;
-import org.jooq.impl.DSL;
+import static io.cattle.platform.core.model.tables.ProcessInstanceTable.*;
 
 public class ProcessSummaryDaoImpl extends AbstractJooqDao implements ProcessSummaryDao {
 

@@ -45,7 +45,7 @@ public interface ServiceDao {
 
     List<? extends VolumeTemplate> getVolumeTemplates(Long stackId);
 
-    public class VolumeData {
+    class VolumeData {
         public Volume volume;
         public VolumeTemplate template;
     }

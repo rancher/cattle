@@ -1,7 +1,6 @@
 package io.cattle.platform.agent.instance.factory.impl;
 
-import static io.cattle.platform.core.model.tables.AgentTable.*;
-
+import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.agent.instance.factory.AgentInstanceFactory;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AgentConstants;
@@ -20,6 +19,8 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,10 +31,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.tuple.Pair;
-
-import com.netflix.config.DynamicStringProperty;
+import static io.cattle.platform.core.model.tables.AgentTable.*;
 
 public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
     private static final DynamicStringProperty LB_IMAGE_UUID = ArchaiusUtil.getString("lb.instance.image.uuid");
@@ -115,10 +113,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
         }
 
         Service service = objectManager.loadResource(Service.class, instance.getServiceId());
-        if (service != null && isLBSystemService(service)) {
-            return true;
-        }
-        return false;
+        return service != null && isLBSystemService(service);
     }
 
     @Override

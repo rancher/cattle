@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 @Target({ ElementType.METHOD })
 public @interface EventHandler {
 
-    public static final String DEFAULT_POOL_KEY = "default";
+    String DEFAULT_POOL_KEY = "default";
 
     String name() default "";
 
