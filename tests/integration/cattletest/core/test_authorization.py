@@ -282,6 +282,8 @@ def test_agent_types(agent_client):
         'serviceEvent',
         'storagePool',
         'volume',
+        'setting',
+        'activeSetting',
     }
 
 
