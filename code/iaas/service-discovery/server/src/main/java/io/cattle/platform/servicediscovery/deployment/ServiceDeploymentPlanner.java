@@ -2,6 +2,7 @@ package io.cattle.platform.servicediscovery.deployment;
 
 import static io.cattle.platform.core.model.tables.ServiceIndexTable.*;
 import io.cattle.platform.activity.ActivityLog;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.addon.InstanceHealthCheck.Strategy;
 import io.cattle.platform.core.addon.RecreateOnQuorumStrategyConfig;
@@ -27,6 +28,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.netflix.config.DynamicLongProperty;
+
 /**
  * This class creates new deploymentUnits based on the service requirements (scale/global)
  * Only healthy units are taken into consideration
@@ -44,6 +47,7 @@ public abstract class ServiceDeploymentPlanner {
     protected List<DeploymentUnit> incompleteUnits = new ArrayList<>();
     protected DeploymentServiceContext context;
     protected HealthCheckActionHandler healthActionHandler = new RecreateHealthCheckActionHandler();
+    public static final DynamicLongProperty CLEAN_BAD_INSTANCES_INTERVAL = ArchaiusUtil.getLong("clean.bad.instances.interval.millis");
 
     public ServiceDeploymentPlanner(Service service, List<DeploymentUnit> units,
             DeploymentServiceContext context, Stack stack) {
@@ -189,6 +193,10 @@ public abstract class ServiceDeploymentPlanner {
     public void cleanupBadUnits() {
         List<DeploymentUnit> watchList = new ArrayList<>();
         Iterator<DeploymentUnit> it = this.badUnits.iterator();
+        Long interval = CLEAN_BAD_INSTANCES_INTERVAL.get();
+        try {
+            Thread.sleep(interval);
+        } catch (InterruptedException e) {}
         while (it.hasNext()) {
             DeploymentUnit next = it.next();
             watchList.add(next);
