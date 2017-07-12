@@ -1,7 +1,7 @@
 package io.cattle.platform.api.certificate;
 
 import io.cattle.platform.core.model.Certificate;
-import io.cattle.platform.object.util.DataUtils;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.ssh.common.SslCertificateUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -12,12 +12,14 @@ import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+
 public class CertificateCreateValidationFilter extends AbstractValidationFilter {
     private static final Logger log = LoggerFactory.getLogger(CertificateCreateValidationFilter.class);
 
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
-        String cert = DataUtils.getFieldFromRequest(request, "cert", String.class);
+        String cert = DataAccessor.getFieldFromRequest(request, "cert", String.class);
 
         Certificate certificate = request.proxyRequestObject(Certificate.class);
         setCertificateFields(cert, certificate);
@@ -27,7 +29,7 @@ public class CertificateCreateValidationFilter extends AbstractValidationFilter 
 
     @Override
     public Object update(String type, String id, ApiRequest request, ResourceManager next) {
-        String cert = DataUtils.getFieldFromRequest(request, "cert", String.class);
+        String cert = DataAccessor.getFieldFromRequest(request, "cert", String.class);
 
         Certificate certificate = request.proxyRequestObject(Certificate.class);
         setCertificateFields(cert, certificate);
@@ -37,26 +39,17 @@ public class CertificateCreateValidationFilter extends AbstractValidationFilter 
 
     protected void setCertificateFields(String cert, Certificate certificate) {
         try {
-            DataUtils.getWritableFields(certificate).put("certFingerprint",
-                    SslCertificateUtils.getCertificateFingerprint(cert));
-            DataUtils.getWritableFields(certificate).put("expiresAt",
-                    SslCertificateUtils.getExpirationDate(cert));
-            DataUtils.getWritableFields(certificate).put("CN",
-                    SslCertificateUtils.getCN(cert));
-            DataUtils.getWritableFields(certificate).put("issuer",
-                    SslCertificateUtils.getIssuer(cert));
-            DataUtils.getWritableFields(certificate).put("issuedAt",
-                    SslCertificateUtils.getIssuedDate(cert));
-            DataUtils.getWritableFields(certificate).put("version",
-                    SslCertificateUtils.getVersion(cert));
-            DataUtils.getWritableFields(certificate).put("algorithm",
-                    SslCertificateUtils.getAlgorithm(cert));
-            DataUtils.getWritableFields(certificate).put("serialNumber",
-                    SslCertificateUtils.getSerialNumber(cert));
-            DataUtils.getWritableFields(certificate).put("keySize",
-                    SslCertificateUtils.getKeySize(cert));
-            DataUtils.getWritableFields(certificate).put("subjectAlternativeNames",
-                    SslCertificateUtils.getSubjectAlternativeNames(cert));
+            Map<String, Object> fields = DataAccessor.getWritableFields(certificate);
+            fields.put("certFingerprint", SslCertificateUtils.getCertificateFingerprint(cert));
+            fields.put("expiresAt", SslCertificateUtils.getExpirationDate(cert));
+            fields.put("CN", SslCertificateUtils.getCN(cert));
+            fields.put("issuer", SslCertificateUtils.getIssuer(cert));
+            fields.put("issuedAt", SslCertificateUtils.getIssuedDate(cert));
+            fields.put("version", SslCertificateUtils.getVersion(cert));
+            fields.put("algorithm", SslCertificateUtils.getAlgorithm(cert));
+            fields.put("serialNumber", SslCertificateUtils.getSerialNumber(cert));
+            fields.put("keySize", SslCertificateUtils.getKeySize(cert));
+            fields.put("subjectAlternativeNames", SslCertificateUtils.getSubjectAlternativeNames(cert));
         } catch (Exception e) {
             String className = e.getCause() != null ? e.getCause().getClass().getSimpleName() : e.getClass()
                     .getSimpleName();

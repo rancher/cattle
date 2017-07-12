@@ -10,7 +10,7 @@ import io.cattle.platform.agent.connection.simulator.impl.SimulatorPingProcessor
 import io.cattle.platform.agent.connection.simulator.impl.SimulatorStartStopProcessor;
 import io.cattle.platform.agent.instance.factory.AgentInstanceFactory;
 import io.cattle.platform.agent.instance.factory.impl.AgentInstanceFactoryImpl;
-import io.cattle.platform.agent.server.ping.impl.PingMonitorImpl;
+import io.cattle.platform.agent.server.ping.PingMonitor;
 import io.cattle.platform.agent.server.resource.impl.AgentResourcesMonitor;
 import io.cattle.platform.allocator.constraint.provider.AccountConstraintsProvider;
 import io.cattle.platform.allocator.constraint.provider.AffinityConstraintsProvider;
@@ -30,6 +30,7 @@ import io.cattle.platform.containersync.impl.PingInstancesMonitorImpl;
 import io.cattle.platform.core.cleanup.TableCleanup;
 import io.cattle.platform.engine.eventing.ProcessEventListener;
 import io.cattle.platform.engine.eventing.impl.ProcessEventListenerImpl;
+import io.cattle.platform.engine.manager.LoopFactory;
 import io.cattle.platform.engine.manager.LoopManager;
 import io.cattle.platform.engine.process.ProcessRouter;
 import io.cattle.platform.engine.task.ProcessReplayTask;
@@ -68,14 +69,12 @@ import io.cattle.platform.lifecycle.impl.VirtualMachineLifecycleManagerImpl;
 import io.cattle.platform.lifecycle.impl.VolumeLifecycleManagerImpl;
 import io.cattle.platform.loadbalancer.LoadBalancerService;
 import io.cattle.platform.loadbalancer.impl.LoadBalancerServiceImpl;
-import io.cattle.platform.loop.trigger.DeploymentUnitReconcileTrigger;
-import io.cattle.platform.loop.trigger.ServiceReconcileTrigger;
-import io.cattle.platform.metadata.service.MetadataTrigger;
 import io.cattle.platform.network.NetworkService;
 import io.cattle.platform.network.impl.NetworkServiceImpl;
 import io.cattle.platform.object.purge.impl.PurgeMonitorImpl;
 import io.cattle.platform.object.purge.impl.RemoveMonitorImpl;
 import io.cattle.platform.process.account.AccountProcessManager;
+import io.cattle.platform.process.agent.AgentActivateReconnect;
 import io.cattle.platform.process.agent.AgentHostStateUpdate;
 import io.cattle.platform.process.agent.AgentProcessManager;
 import io.cattle.platform.process.agent.AgentResourceRemove;
@@ -91,6 +90,7 @@ import io.cattle.platform.process.host.HostProcessManager;
 import io.cattle.platform.process.host.HostRemoveMonitorImpl;
 import io.cattle.platform.process.hosttemplate.HosttemplateRemove;
 import io.cattle.platform.process.image.PullTaskCreate;
+import io.cattle.platform.process.instance.DeploymentSyncFactory;
 import io.cattle.platform.process.instance.InstanceProcessManager;
 import io.cattle.platform.process.instance.InstanceRemove;
 import io.cattle.platform.process.instance.InstanceStart;
@@ -119,7 +119,6 @@ import io.cattle.platform.storage.ImageCredentialLookup;
 import io.cattle.platform.storage.impl.DockerImageCredentialLookup;
 import io.cattle.platform.systemstack.catalog.CatalogService;
 import io.cattle.platform.systemstack.catalog.impl.CatalogServiceImpl;
-import io.cattle.platform.systemstack.loop.SystemStackTrigger;
 import io.cattle.platform.systemstack.process.ProjecttemplateCreate;
 import io.cattle.platform.systemstack.process.ScheduledUpgradeProcessManager;
 import io.cattle.platform.systemstack.process.SystemStackProcessManager;
@@ -129,6 +128,11 @@ import io.cattle.platform.systemstack.task.RunScheduledTask;
 import io.cattle.platform.systemstack.task.UpgradeScheduleTask;
 import io.cattle.platform.task.eventing.TaskManagerEventListener;
 import io.cattle.platform.task.eventing.impl.TaskManagerEventListenerImpl;
+import io.cattle.platform.trigger.DeploymentUnitReconcileTrigger;
+import io.cattle.platform.trigger.MetadataChangedTrigger;
+import io.cattle.platform.trigger.MetadataTrigger;
+import io.cattle.platform.trigger.ServiceReconcileTrigger;
+import io.cattle.platform.trigger.SystemStackTrigger;
 import io.cattle.platform.util.type.InitializationTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,6 +143,15 @@ import java.util.List;
 public class Backend {
 
     private static final Logger CONSOLE_LOG = LoggerFactory.getLogger("ConsoleStatus");
+
+    private static final String[] METADATA_LOOPS = new String[] {
+        LoopFactory.HEALTHCHECK_SCHEDULE,
+        LoopFactory.HEALTHSTATE_CALCULATE,
+        LoopFactory.HEALTHCHECK_CLEANUP,
+        LoopFactory.SYSTEM_STACK,
+        LoopFactory.ENDPOINT_UPDATE,
+        LoopFactory.SERVICE_MEMBERSHIP
+    };
 
     Framework f;
     Common c;
@@ -153,6 +166,7 @@ public class Backend {
     BackPopulater backPopulater;
     CatalogService catalogService;
     ContainerSyncImpl containerSync;
+    DeploymentSyncFactory deploymentSyncFactory;
     EnvironmentResourceManager envResourceManager;
     ImageCredentialLookup imageCredentialLookup;
     InstanceLifecycleManager instanceLifecycleManager;
@@ -162,6 +176,7 @@ public class Backend {
     NetworkLifecycleManager networkLifecycleManager;
     NetworkService networkService;
     PingInstancesMonitor pingInstancesMonitor;
+    PingMonitor pingMonitor;
     ProcessProgress progress;
     ProjectTemplateService projectTemplateService;
     ResourceChangeEventListenerImpl resourceChangeEventListener;
@@ -228,7 +243,7 @@ public class Backend {
         envResourceManager = reconcile.envResourceManager;
         allocationHelper = reconcile.allocationHelper;
 
-        allocatorService = new AllocatorServiceImpl(d.agentDao, c.agentLocator, d.genericMapDao, d.allocatorDao, f.lockManager, f.objectManager,f. processManager, allocationHelper, d.volumeDao, envResourceManager,
+        allocatorService = new AllocatorServiceImpl(d.agentDao, c.agentLocator, d.allocatorDao, f.lockManager, f.objectManager,f. processManager, allocationHelper, d.volumeDao, envResourceManager,
                 new AccountConstraintsProvider(),
                 new BaseConstraintsProvider(d.allocatorDao),
                 new AffinityConstraintsProvider(allocationHelper),
@@ -238,9 +253,12 @@ public class Backend {
         pingInstancesMonitor = new PingInstancesMonitorImpl(f.objectManager, envResourceManager, f.eventService, c.agentLocator);
         agentResourcesMonitor = new AgentResourcesMonitor(d.agentDao, d.storagePoolDao, d.resourceDao, f.objectManager, f.lockManager, f.eventService, envResourceManager);
         instanceLifecycleManager = new InstanceLifecycleManagerImpl(k8sLifecycleManager, virtualMachineLifecycleManager, volumeLifecycleManager, f.objectManager, imageCredentialLookup, d.serviceDao, f.transaction, networkLifecycleManager, agentLifecycleManager, backPopulater, restartLifecycleManager, secretsLifecycleManager, allocationLifecycleManager, serviceLifecycleManager);
+        pingMonitor = new PingMonitor(agentResourcesMonitor, pingInstancesMonitor, f.processManager, f.objectManager, d.pingDao, c.agentLocator, f.cluster);
+        deploymentSyncFactory = new DeploymentSyncFactory(d.instanceDao, d.volumeDao, f.objectManager, c.serviceAccountCreateStartup);
     }
 
     private void addTriggers() {
+        f.triggers.add(new MetadataChangedTrigger(loopManager, METADATA_LOOPS));
         f.triggers.add(new DeploymentUnitReconcileTrigger(loopManager, d.serviceDao, d.volumeDao, f.objectManager));
         f.triggers.add(new ServiceReconcileTrigger(loopManager, f.objectManager));
         f.triggers.add(new MetadataTrigger(envResourceManager));
@@ -252,6 +270,7 @@ public class Backend {
 
         AccountProcessManager account = new AccountProcessManager(d.networkDao, d.resourceDao, f.processManager, f.objectManager, d.instanceDao, d.accountDao);
         AgentProcessManager agentProcessManager = new AgentProcessManager(d.accountDao, f.objectManager, f.processManager, c.agentLocator, f.eventService, f.coreSchemaFactory);
+        AgentActivateReconnect agentActivateReconnect = new AgentActivateReconnect(f.objectManager, c.agentLocator, pingMonitor, f.jsonMapper);
         CredentialProcessManager credentialProcessManager = new CredentialProcessManager(f.objectManager, c.transformationService);
         DriverProcessManager driverProcessManager = new DriverProcessManager(f.jsonMapper, f.lockManager, f.objectManager, f.processManager, d.resourceDao, d.storagePoolDao, c.storageService);
         DynamicSchemaProcessManager dynamicSchemaProcessManager = new DynamicSchemaProcessManager(d.dynamicSchemaDao);
@@ -267,23 +286,23 @@ public class Backend {
         ServiceProcessManager serviceProcessManager = new ServiceProcessManager(serviceLifecycleManager, f.objectManager, f.processManager, d.serviceDao);
         StackProcessManager stackProcessManager = new StackProcessManager(f.processManager, f.objectManager);
         SystemStackProcessManager systemStackProcessManager = new SystemStackProcessManager(f.objectManager, f.processManager, loopManager, f.resourceMonitor, d.networkDao);
-        VolumeProcessManager volumeProcessManager = new VolumeProcessManager(f.objectManager, f.processManager, d.storagePoolDao, d.genericMapDao);
+        VolumeProcessManager volumeProcessManager = new VolumeProcessManager(f.objectManager, f.processManager, d.storagePoolDao, d.volumeDao);
 
         ActivateByDefault activateByDefault = new ActivateByDefault(f.objectManager, f.processManager);
         AgentResourceRemove agentResourceRemove = new AgentResourceRemove(f.objectManager, f.processManager);
         DeploymentUnitRemove deploymentUnitRemove = new DeploymentUnitRemove(f.resourcePoolManager);
         HosttemplateRemove hosttemplateRemove = new HosttemplateRemove(c.secretsService);
-        InstanceRemove instanceRemove = new InstanceRemove(c.agentLocator, c.objectSerializerFactory, f.objectManager, f.processManager);
-        InstanceStart instanceStart = new InstanceStart(c.agentLocator, c.objectSerializerFactory, f.objectManager, f.processManager);
-        InstanceStop instanceStop = new InstanceStop(c.agentLocator, c.objectSerializerFactory, f.objectManager, f.processManager);
-        K8sProviderLabels k8sProviderLabels = new K8sProviderLabels(c.agentLocator, c.objectSerializerFactory, f.objectManager, f.processManager, envResourceManager);
-        K8sStackCreate k8sStackCreate = new K8sStackCreate(c.agentLocator, c.objectSerializerFactory, f.objectManager, f.processManager);
-        K8sStackFinishupgrade k8sStackFinishupgrade = new K8sStackFinishupgrade(c.agentLocator, c.objectSerializerFactory, f.objectManager, f.processManager);
-        K8sStackRemove k8sStackRemove = new K8sStackRemove(c.agentLocator, c.objectSerializerFactory, f.objectManager, f.processManager);
-        K8sStackRollback k8sStackRollback = new K8sStackRollback(c.agentLocator, c.objectSerializerFactory, f.objectManager, f.processManager);
-        K8sStackUpgrade k8sStackUpgrade = new K8sStackUpgrade(c.agentLocator, c.objectSerializerFactory, f.objectManager, f.processManager);
-        PullTaskCreate pullTaskCreate = new PullTaskCreate(allocationHelper, c.agentLocator, progress, imageCredentialLookup, c.objectSerializerFactory);
-        MountRemove mountRemove = new MountRemove(c.agentLocator, c.objectSerializerFactory, f.objectManager, f.processManager);
+        InstanceRemove instanceRemove = new InstanceRemove(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager, deploymentSyncFactory);
+        InstanceStart instanceStart = new InstanceStart(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager, deploymentSyncFactory);
+        InstanceStop instanceStop = new InstanceStop(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager, deploymentSyncFactory);
+        K8sProviderLabels k8sProviderLabels = new K8sProviderLabels(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager, envResourceManager);
+        K8sStackCreate k8sStackCreate = new K8sStackCreate(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager);
+        K8sStackFinishupgrade k8sStackFinishupgrade = new K8sStackFinishupgrade(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager);
+        K8sStackRemove k8sStackRemove = new K8sStackRemove(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager);
+        K8sStackRollback k8sStackRollback = new K8sStackRollback(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager);
+        K8sStackUpgrade k8sStackUpgrade = new K8sStackUpgrade(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager);
+        PullTaskCreate pullTaskCreate = new PullTaskCreate(allocationHelper, c.agentLocator, progress, imageCredentialLookup, c.objectSerializer, f.objectManager);
+        MountRemove mountRemove = new MountRemove(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager);
         ProjecttemplateCreate projecttemplateCreate = new ProjecttemplateCreate(loopManager, f.objectManager);
         SecretRemove secretRemove = new SecretRemove(c.secretsService);
         SetRemovedFields setRemovedFields = new SetRemovedFields(f.objectManager);
@@ -298,8 +317,8 @@ public class Backend {
         r.handle("account.purge", account::purge);
 
         r.handle("agent.*", agentHostStateUpdate::postHandle);
-        r.handle("agent.activate", agentProcessManager::activate);
-        r.handle("agent.reconnect", agentProcessManager::activate);
+        r.handle("agent.activate", agentActivateReconnect);
+        r.handle("agent.reconnect", agentActivateReconnect);
         r.handle("agent.create", agentProcessManager::create);
         r.handle("agent.remove", agentProcessManager::remove, registerProcessManager::agentRemove);
         r.preHandle("agent.*", agentHostStateUpdate::preHandle);
@@ -334,10 +353,10 @@ public class Backend {
         r.handle("mount.deactivate", mountProcessManager::deactivate);
         r.handle("mount.remove", mountRemove);
 
-        r.handle("network.*", networkProcessManager::updateDefaultNetwork);
         r.handle("network.create", networkProcessManager::create);
         r.handle("network.activate", networkProcessManager::activate);
         r.handle("network.remove", networkProcessManager::remove);
+        r.handle("network.*", networkProcessManager::updateDefaultNetwork);
 
         r.handle("networkdriver.activate", networkProcessManager::networkDriverActivate);
         r.handle("networkdriver.remove", networkProcessManager::networkDriverRemove);
@@ -391,8 +410,6 @@ public class Backend {
         resourceChangeEventListener = new ResourceChangeEventListenerImpl(f.lockDelegator, f.eventService, f.objectManager, f.jsonMapper);
         TaskManagerEventListener taskManagerEventListener = new TaskManagerEventListenerImpl(c.taskManager, f.lockManager);
 
-
-        eventListeners.add(agentResourcesMonitor);
         eventListeners.add(agentSimulator);
         eventListeners.add(d.dbCacheManager);
         eventListeners.add(f.resourceMonitor);
@@ -405,7 +422,6 @@ public class Backend {
 
     private void addTasks() {
         HostRemoveMonitorImpl hostRemoveMonitorImpl = new HostRemoveMonitorImpl(d.hostDao, d.agentDao, f.processManager);
-        PingMonitorImpl pingMonitor = new PingMonitorImpl(agentResourcesMonitor, pingInstancesMonitor, f.processManager, f.objectManager, d.pingDao, c.agentLocator, f.cluster);
         ProcessReplayTask processReplayTask = new ProcessReplayTask(f.processServer);
         PurgeMonitorImpl purgeMonitorImpl = new PurgeMonitorImpl(f.coreSchemaFactory, f.processManager, f.objectManager, f.metaDataManager, f.defaultProcessManager);
         RemoveMonitorImpl removeMonitorImpl = new RemoveMonitorImpl(f.coreSchemaFactory, f.metaDataManager, f.processManager, f.defaultProcessManager, f.objectManager);

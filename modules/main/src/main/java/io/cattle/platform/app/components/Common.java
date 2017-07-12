@@ -2,7 +2,6 @@ package io.cattle.platform.app.components;
 
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.impl.AgentLocatorImpl;
-import io.cattle.platform.agent.instance.serialization.AgentInstanceAuthObjectPostProcessor;
 import io.cattle.platform.api.handler.ResponseObjectConverter;
 import io.cattle.platform.api.resource.DefaultResourceManagerSupport;
 import io.cattle.platform.api.resource.ObjectResourceManagerSupport;
@@ -17,7 +16,6 @@ import io.cattle.platform.compose.export.impl.ComposeExportServiceImpl;
 import io.cattle.platform.compose.export.impl.RancherCertificatesToComposeFormatter;
 import io.cattle.platform.compose.export.impl.RancherGenericMapToComposeFormatter;
 import io.cattle.platform.compose.export.impl.RancherImageToComposeFormatter;
-import io.cattle.platform.docker.process.serializer.DockerContainerSerializer;
 import io.cattle.platform.docker.transform.DockerTransformer;
 import io.cattle.platform.docker.transform.DockerTransformerImpl;
 import io.cattle.platform.engine.process.ProcessRouter;
@@ -29,13 +27,12 @@ import io.cattle.platform.framework.secret.SecretsServiceImpl;
 import io.cattle.platform.hostapi.HostApiRSAKeyProvider;
 import io.cattle.platform.hostapi.HostApiService;
 import io.cattle.platform.hostapi.impl.HostApiServiceImpl;
-import io.cattle.platform.object.serialization.ObjectSerializerFactory;
-import io.cattle.platform.object.serialization.impl.DefaultObjectSerializerFactoryImpl;
+import io.cattle.platform.object.serialization.ObjectSerializer;
+import io.cattle.platform.object.serialization.impl.ObjectSerializerImpl;
 import io.cattle.platform.register.auth.RegistrationAuthTokenManager;
 import io.cattle.platform.register.auth.impl.RegistrationAuthTokenManagerImpl;
 import io.cattle.platform.revision.RevisionManager;
 import io.cattle.platform.revision.impl.RevisionManagerImpl;
-import io.cattle.platform.service.account.SystemRoleObjectPostProcessor;
 import io.cattle.platform.service.launcher.ServiceAccountCreateStartup;
 import io.cattle.platform.storage.service.StorageService;
 import io.cattle.platform.storage.service.impl.StorageServiceImpl;
@@ -65,7 +62,7 @@ public class Common {
     DockerTransformer dockerTransformer;
     HostApiService hostApiService;
     HostApiRSAKeyProvider keyProvider;
-    ObjectSerializerFactory objectSerializerFactory;
+    ObjectSerializer objectSerializer;
     ProcessRouter processes;
     RegistrationAuthTokenManager registrationAuthTokenManager;
     ResourceManagerLocator locator;
@@ -103,10 +100,7 @@ public class Common {
         this.certService = new CertificateServiceImpl(f.objectManager, keyProvider, d.dataDao);
         this.taskManager = new TaskManagerImpl(f.scheduledExecutorService, f.eventService, tasks);
         this.serviceAccountCreateStartup = new ServiceAccountCreateStartup(f.lockManager, f.lockDelegator, f.scheduledExecutorService, d.accountDao, d.resourceDao, f.resourceMonitor, f.processManager);
-        this.objectSerializerFactory = new DefaultObjectSerializerFactoryImpl(f.jsonMapper, f.objectManager, f.metaDataManager,
-                new DockerContainerSerializer(f.objectManager),
-                new AgentInstanceAuthObjectPostProcessor(f.objectManager),
-                new SystemRoleObjectPostProcessor(f.objectManager, serviceAccountCreateStartup));
+        this.objectSerializer = new ObjectSerializerImpl(f.idFormatter, f.coreSchemaFactory);
 
         ApiRouterImpl routerImpl = new ApiRouterImpl(f.coreSchemaFactory);
         router = routerImpl;

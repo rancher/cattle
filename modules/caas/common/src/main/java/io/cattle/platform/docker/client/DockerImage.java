@@ -15,6 +15,9 @@ public class DockerImage {
     }
 
     public static DockerImage parse(String uuid) {
+        if (StringUtils.isBlank(uuid)) {
+            return null;
+        }
         String[] hostNameAndRepoName = splitHostName(uuid);
         return new DockerImage(hostNameAndRepoName[1], hostNameAndRepoName[0]);
     }

@@ -12,9 +12,12 @@ import io.cattle.platform.core.addon.CatalogTemplate;
 import io.cattle.platform.core.addon.ComposeConfig;
 import io.cattle.platform.core.addon.ContainerEvent;
 import io.cattle.platform.core.addon.ContainerUpgrade;
+import io.cattle.platform.core.addon.DependsOn;
+import io.cattle.platform.core.addon.DeploymentSyncRequest;
 import io.cattle.platform.core.addon.HaproxyConfig;
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
+import io.cattle.platform.core.addon.InstanceStatus;
 import io.cattle.platform.core.addon.LoadBalancerCookieStickinessPolicy;
 import io.cattle.platform.core.addon.LogConfig;
 import io.cattle.platform.core.addon.MountEntry;
@@ -102,11 +105,10 @@ public class Model {
 
         // Agent
         defaultProcesses("agent");
-        process("agent.remove").resourceType("agent").start("active,disconnecting,disconnected,requested,inactive,registering,updating-active,updating-inactive,reconnected,finishing-reconnect").transitioning("removing").done("removed").build();
-        process("agent.deactivate").resourceType("agent").start("disconnecting,disconnected,active,activating,reconnecting,updating-active,updating-inactive,reconnected,finishing-reconnect").transitioning("deactivating").done("inactive").build();
+        process("agent.remove").resourceType("agent").start("active,disconnecting,disconnected,requested,inactive,registering,updating-active,updating-inactive,reconnected").transitioning("removing").done("removed").build();
+        process("agent.deactivate").resourceType("agent").start("disconnecting,disconnected,active,activating,reconnecting,updating-active,updating-inactive,reconnected").transitioning("deactivating").done("inactive").build();
         process("agent.reconnect").resourceType("agent").start("disconnecting,disconnected,active,activating").transitioning("reconnecting").done("reconnected").build();
-        process("agent.finishreconnect").resourceType("agent").start("reconnected,reconnecting").transitioning("finishing-reconnect").done("active").build();
-        process("agent.disconnect").resourceType("agent").start("reconnecting,active,reconnected,finishing-reconnect").transitioning("disconnecting").done("disconnected").build();
+        process("agent.disconnect").resourceType("agent").start("reconnecting,active,reconnected").transitioning("disconnecting").done("disconnected").build();
 
         // Instance
         process("instance.create").resourceType("instance").start("requested").transitioning("creating").done("stopped").build();
@@ -187,10 +189,6 @@ public class Model {
         process("certificate.remove").resourceType("certificate").start("requested,active,activating").transitioning("removing").done("removed").build();
         process("certificate.update").resourceType("certificate").start("active").transitioning("updating-active").done("active").build();
 
-        // Storage Pool Host Map
-        process("storagepoolhostmap.create").resourceType("storagePoolHostMap").start("requested").transitioning("activating").done("active").build();
-        process("storagepoolhostmap.remove").resourceType("storagePoolHostMap").start("requested,active,activating").transitioning("removing").done("removed").build();
-
         // Machine driver
         process("machinedriver.create").resourceType("machineDriver").start("requested").transitioning("registering").done("inactive").build();
         process("machinedriver.activate").resourceType("machineDriver").start("inactive,registering").transitioning("activating").done("active").build();
@@ -270,6 +268,8 @@ public class Model {
                 ContainerLogs.class,
                 ContainerProxy.class,
                 ContainerUpgrade.class,
+                DependsOn.class,
+                DeploymentSyncRequest.class,
                 DockerBuild.class,
                 FieldDocumentation.class,
                 HaproxyConfig.class,
@@ -278,6 +278,7 @@ public class Model {
                 Identity.class,
                 InServiceUpgradeStrategy.class,
                 InstanceHealthCheck.class,
+                InstanceStatus.class,
                 LoadBalancerCookieStickinessPolicy.class,
                 LocalAuthConfig.class,
                 LogConfig.class,
@@ -317,52 +318,50 @@ public class Model {
     private TypeSet named() {
         return TypeSet.ofNames(
                 "addOutputsInput",
-                "changeSecretInput",
                 "apiKey,parent=credential",
-                "composeConfigInput",
-                "container,parent=instance",
-                "instanceConsole",
-                "instanceConsoleInput",
-                "instanceStop",
-                "instanceRemove",
-                "project,parent=account",
-                "password,parent=credential",
-                "registry,parent=storagePool",
-                "registryCredential,parent=credential",
-                "setProjectMembersInput",
-                "virtualMachine,parent=container",
-                "storageDriverService,parent=service",
-                "networkDriverService,parent=service",
-                "loadBalancerService,parent=service",
-                "externalService,parent=service",
-                "dnsService,parent=service",
-                "kubernetesService,parent=service",
-                "containerConfig,parent=container",
-                "launchConfig,parent=container",
-                "secondaryLaunchConfig,parent=launchConfig",
-                "pullTask,parent=genericObject",
-                "externalVolumeEvent,parent=externalEvent",
-                "externalStoragePoolEvent,parent=externalEvent",
-                "externalServiceEvent,parent=externalEvent",
-                "stackUpgrade",
-                "kubernetesStackUpgrade",
-                "externalDnsEvent,parent=externalEvent",
-                "externalHostEvent,parent=externalEvent",
-                "loadBalancerConfig",
-                "kubernetesStack,parent=stack",
-                "nfsConfig",
-                "binding",
-                "serviceBinding",
-                "lbConfig",
-                "lbTargetConfig",
                 "balancerServiceConfig",
                 "balancerTargetConfig",
+                "changeSecretInput",
+                "composeConfigInput",
+                "containerConfig,parent=container",
+                "container,parent=instance",
                 "defaultNetwork,parent=network",
+                "dnsService,parent=service",
+                "externalDnsEvent,parent=externalEvent",
+                "externalHostEvent,parent=externalEvent",
+                "externalServiceEvent,parent=externalEvent",
+                "externalService,parent=service",
+                "externalStoragePoolEvent,parent=externalEvent",
+                "externalVolumeEvent,parent=externalEvent",
+                "hostOnlyNetwork,parent=network",
+                "instanceConsole",
+                "instanceConsoleInput",
+                "instanceRemove",
+                "instanceStop",
+                "kubernetesService,parent=service",
+                "kubernetesStack,parent=stack",
+                "kubernetesStackUpgrade",
+                "launchConfig,parent=container",
+                "lbConfig",
+                "lbTargetConfig",
+                "loadBalancerConfig",
+                "loadBalancerService,parent=service",
+                "networkDriverService,parent=service",
+                "password,parent=credential",
+                "project,parent=account",
+                "pullTask,parent=genericObject",
                 "register,parent=genericObject",
                 "registrationToken,parent=credential",
-                "hostOnlyNetwork,parent=network",
+                "registryCredential,parent=credential",
+                "registry,parent=storagePool",
+                "scalingGroup,parent=service",
+                "secondaryLaunchConfig,parent=launchConfig",
                 "selectorService,parent=service",
-                "scalingGroup,parent=service");
+                "serviceBinding",
+                "setProjectMembersInput",
+                "stackUpgrade",
+                "storageDriverService,parent=service",
+                "virtualMachine,parent=container");
     }
 
 }

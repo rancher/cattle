@@ -3,7 +3,7 @@ package io.cattle.platform.api.host;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.framework.secret.SecretsService;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.util.DataUtils;
+import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.LinkHandler;
@@ -14,7 +14,7 @@ import org.apache.commons.lang.StringUtils;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-import static io.cattle.platform.api.host.MachineLinkFilter.*;
+import static io.cattle.platform.api.host.HostsOutputFilter.*;
 import static io.cattle.platform.core.constants.HostConstants.*;
 
 public class MachineConfigLinkHandler implements LinkHandler {
@@ -41,7 +41,7 @@ public class MachineConfigLinkHandler implements LinkHandler {
         }
         if (obj instanceof Host) {
             Host host = (Host) obj;
-            String extractedConfig = (String) DataUtils.getFields(host).get(EXTRACTED_CONFIG_FIELD);
+            String extractedConfig = (String) DataAccessor.getFields(host).get(EXTRACTED_CONFIG_FIELD);
             if (extractedConfig.startsWith("{")) {
                 try {
                     extractedConfig = secretsService.decrypt(host.getAccountId(), extractedConfig);

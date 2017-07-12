@@ -1,7 +1,5 @@
 package io.cattle.platform.lifecycle.impl;
 
-import static io.cattle.platform.object.util.DataAccessor.*;
-
 import io.cattle.platform.backpopulate.BackPopulater;
 import io.cattle.platform.core.addon.LogConfig;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -26,10 +24,11 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.storage.ImageCredentialLookup;
 import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 
-import org.apache.commons.lang3.StringUtils;
+import static io.cattle.platform.object.util.DataAccessor.*;
 
 public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
 
@@ -167,7 +166,7 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
 
     private void lookupRegistryCredential(Instance instance) {
         if (instance.getRegistryCredentialId() == null) {
-            String uuid = fieldString(instance, InstanceConstants.FIELD_IMAGE_UUID);
+            String uuid = fieldString(instance, InstanceConstants.FIELD_IMAGE);
             Credential cred = credLookup.getDefaultCredential(uuid, instance.getAccountId());
             if (cred != null && cred.getId() != null){
                 instance.setRegistryCredentialId(cred.getId());
@@ -203,7 +202,7 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
     protected void setLogConfig(Instance instance) {
         LogConfig logConfig = DataAccessor.field(instance, InstanceConstants.FIELD_LOG_CONFIG, LogConfig.class);
         if (logConfig != null && !StringUtils.isEmpty(logConfig.getDriver()) && logConfig.getConfig() == null) {
-            logConfig.setConfig(new HashMap<String, String>());
+            logConfig.setConfig(new HashMap<>());
             DataAccessor.setField(instance, InstanceConstants.FIELD_LOG_CONFIG, logConfig);
         }
     }
@@ -222,7 +221,7 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
             return;
         }
 
-        String imageUuid = fieldString(instance, InstanceConstants.FIELD_IMAGE_UUID);
+        String imageUuid = fieldString(instance, InstanceConstants.FIELD_IMAGE);
         if (imageUuid != null) {
             build.setTag(imageUuid);
         }

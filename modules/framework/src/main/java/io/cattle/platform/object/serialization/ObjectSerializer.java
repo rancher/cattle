@@ -4,8 +4,6 @@ import java.util.Map;
 
 public interface ObjectSerializer {
 
-    Map<String, Object> serialize(Object obj);
-
-    String getExpression();
+    Map<String, Object> serialize(Object input);
 
 }

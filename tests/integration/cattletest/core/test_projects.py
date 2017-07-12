@@ -462,7 +462,7 @@ def test_restricted_members(admin_user_client):
 
 def _create_resources(client):
     for x in range(0, 4):
-        uuid = "sim:{}".format(random_num())
+        uuid = "{}".format(random_num())
         client.wait_success(client.create_container(imageUuid=uuid))
     registry = client.create_registry(serverAddress='quay.io',
                                       name='Quay')

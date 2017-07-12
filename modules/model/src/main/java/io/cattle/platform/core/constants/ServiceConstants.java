@@ -3,6 +3,7 @@ package io.cattle.platform.core.constants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.object.util.DataAccessor;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -10,8 +11,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class ServiceConstants {
 
@@ -72,7 +71,6 @@ public class ServiceConstants {
     public static final String STACK_FIELD_START_ON_CREATE = "startOnCreate";
     public static final String STACK_FIELD_SERVICE_IDS = "serviceIds";
     public static final String STACK_FIELD_ENVIRONMENT = "environment";
-    public static final String STACK_FIELD_BINDING = "binding";
     public static final String STACK_FIELD_EXTERNAL_ID = "externalId";
     public static final String FIELD_SET_VIP = "assignServiceIpAddress";
     public static final String FIELD_CURRENT_SCALE = "currentScale";

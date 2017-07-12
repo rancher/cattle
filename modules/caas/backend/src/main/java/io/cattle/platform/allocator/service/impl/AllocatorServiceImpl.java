@@ -1,5 +1,6 @@
 package io.cattle.platform.allocator.service.impl;
 
+import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.allocator.constraint.Constraint;
@@ -24,7 +25,6 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.StorageDriverConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.AgentDao;
-import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -47,6 +47,9 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.util.type.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,12 +62,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.netflix.config.DynamicStringProperty;
 
 public class AllocatorServiceImpl implements AllocatorService {
 
@@ -90,7 +87,6 @@ public class AllocatorServiceImpl implements AllocatorService {
 
     AgentDao agentDao;
     AgentLocator agentLocator;
-    GenericMapDao mapDao;
     AllocatorDao allocatorDao;
     LockManager lockManager;
     ObjectManager objectManager;
@@ -101,13 +97,12 @@ public class AllocatorServiceImpl implements AllocatorService {
     List<AllocationConstraintsProvider> allocationConstraintProviders;
 
 
-    public AllocatorServiceImpl(AgentDao agentDao, AgentLocator agentLocator, GenericMapDao mapDao, AllocatorDao allocatorDao, LockManager lockManager,
+    public AllocatorServiceImpl(AgentDao agentDao, AgentLocator agentLocator, AllocatorDao allocatorDao, LockManager lockManager,
             ObjectManager objectManager, ObjectProcessManager processManager, AllocationHelper allocationHelper, VolumeDao volumeDao,
             EnvironmentResourceManager envResourceManager, AllocationConstraintsProvider... allocationConstraintProviders) {
         super();
         this.agentDao = agentDao;
         this.agentLocator = agentLocator;
-        this.mapDao = mapDao;
         this.allocatorDao = allocatorDao;
         this.lockManager = lockManager;
         this.objectManager = objectManager;
@@ -155,7 +150,7 @@ public class AllocatorServiceImpl implements AllocatorService {
         for (Long agentId: agentIds) {
             if (agentId != null && hostUuid != null) {
                 EventVO<Map<String, Object>> schedulerEvent = buildEvent(SCHEDULER_RESERVE_EVENT, InstanceConstants.PROCESS_START,
-                        instances, new HashSet<Volume>(), agentId);
+                        instances, new HashSet<>(), agentId);
                 if (schedulerEvent != null) {
                     Map<String, Object> reqData = CollectionUtils.toMap(schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME));
                     reqData.put(HOST_ID, hostUuid);
@@ -846,7 +841,7 @@ public class AllocatorServiceImpl implements AllocatorService {
 
     protected String getSchedulerVersion(Long agentId) {
         Instance instance = agentDao.getInstanceByAgent(agentId);
-        String imageUuid = (String) DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_IMAGE_UUID).get();
+        String imageUuid = (String) DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_IMAGE).get();
         DockerImage img = DockerImage.parse(imageUuid);
         String[] imageParts = img.getFullName().split(":");
         if (imageParts.length <= 1) {

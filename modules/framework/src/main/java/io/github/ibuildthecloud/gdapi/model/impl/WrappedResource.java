@@ -9,7 +9,9 @@ import io.github.ibuildthecloud.gdapi.model.FieldType;
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.gdapi.util.TypeUtils;
+import org.apache.commons.lang3.StringUtils;
 
+import javax.xml.bind.annotation.XmlTransient;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -17,16 +19,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.xml.bind.annotation.XmlTransient;
-
-import org.apache.commons.lang3.StringUtils;
-
 public class WrappedResource extends ResourceImpl implements Resource {
 
     Schema schema;
     SchemaFactory schemaFactory;
     Object obj;
-    Map<String, Object> priorityFields = new LinkedHashMap<String, Object>();
+    Map<String, Object> priorityFields = new LinkedHashMap<>();
     Map<String, Object> additionalFields;
     Map<String, Field> resourceFields;
     boolean createTsFields = true;
@@ -49,8 +47,8 @@ public class WrappedResource extends ResourceImpl implements Resource {
         init();
     }
 
-    public WrappedResource(IdFormatter idFormatter, SchemaFactory schemaFactory, Schema schema, Object obj, String method) {
-        this(idFormatter, schemaFactory, schema, obj, new HashMap<String, Object>(), null, method);
+    public WrappedResource(IdFormatter idFormatter, SchemaFactory schemaFactory, Schema schema, Object obj) {
+        this(idFormatter, schemaFactory, schema, obj, new HashMap<>(), null, Schema.Method.GET.toString());
     }
 
     protected void addField(String key, Object value) {
@@ -118,7 +116,7 @@ public class WrappedResource extends ResourceImpl implements Resource {
         }
 
         if (priorityFields.size() > 0) {
-            Map<String, Object> sorted = new LinkedHashMap<String, Object>(priorityFields);
+            Map<String, Object> sorted = new LinkedHashMap<>(priorityFields);
             sorted.putAll(fields);
             fields = sorted;
         }

@@ -10,7 +10,6 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.meta.Relationship;
 import io.cattle.platform.object.meta.TypeSet;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.object.util.DataUtils;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.factory.impl.SchemaFactoryImpl;
@@ -636,7 +635,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager {
 
         String message = DataAccessor.fieldString(obj, TRANSITIONING_MESSAGE_FIELD);
 
-        String state = DataUtils.getState(obj);
+        String state = DataAccessor.getState(obj);
         if (TRANSITIONING_ERROR_OVERRIDE.equals(DataAccessor.fieldString(obj, TRANSITIONING_FIELD))) {
             Map<String, Object> errorResult = new LinkedHashMap<>();
             errorResult.put(TRANSITIONING_FIELD, TRANSITIONING_ERROR);

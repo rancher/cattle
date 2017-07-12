@@ -185,4 +185,7 @@ public class InstanceWrapper implements BasicStateWrapper {
         return instance.getServiceId() != null;
     }
 
+    public String getName() {
+        return instance.getName();
+    }
 }

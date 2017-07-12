@@ -19,12 +19,9 @@ import org.jooq.Record2;
 import org.jooq.RecordHandler;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.StorageDriverTable.*;
@@ -33,8 +30,6 @@ import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 
 public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDao {
-
-    public static final Set<String> UNMANGED_STORAGE_POOLS = new HashSet<>(Arrays.asList("docker", "sim"));
 
     GenericResourceDao resourceDao;
     ObjectManager objectManager;
@@ -57,12 +52,17 @@ public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDa
     public StoragePool mapNewPool(Long hostId, Map<String, Object> properties) {
         return transaction.doInTransactionResult(() -> {
             StoragePool pool = resourceDao.createAndSchedule(StoragePool.class, properties);
-            resourceDao.createAndSchedule(StoragePoolHostMap.class,
-                    STORAGE_POOL_HOST_MAP.HOST_ID, hostId,
-                    STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID, pool.getId());
-
+            mapPoolToHost(pool.getId(), hostId);
             return pool;
         });
+    }
+
+    @Override
+    public void mapPoolToHost(Long storagePoolId, Long hostId) {
+        objectManager.create(StoragePoolHostMap.class,
+                STORAGE_POOL_HOST_MAP.STATE, CommonStatesConstants.ACTIVE,
+                STORAGE_POOL_HOST_MAP.HOST_ID, hostId,
+                STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID, storagePoolId);
     }
 
     @Override
@@ -72,38 +72,6 @@ public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDa
             .and((STORAGE_POOL.REMOVED.isNull().or(STORAGE_POOL.STATE.eq(CommonStatesConstants.REMOVING))))
             .and(STORAGE_POOL.DRIVER_NAME.eq(driverName))
             .fetchInto(StoragePoolRecord.class);
-    }
-
-    @Override
-    public List<? extends StoragePoolHostMap> findMapsToRemove(Long storagePoolId) {
-        return create()
-            .selectFrom(STORAGE_POOL_HOST_MAP)
-            .where(STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID.eq(storagePoolId)
-            .and((STORAGE_POOL_HOST_MAP.REMOVED.isNull()
-                    .or(STORAGE_POOL_HOST_MAP.STATE.eq(CommonStatesConstants.REMOVING)))))
-            .fetchInto(StoragePoolHostMap.class);
-    }
-
-    @Override
-    public StoragePoolHostMap findNonremovedMap(Long storagePoolId, Long hostId) {
-        List<StoragePoolHostMap> maps = objectManager.find(StoragePoolHostMap.class,
-                STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID,
-                storagePoolId, STORAGE_POOL_HOST_MAP.HOST_ID, hostId);
-        for (StoragePoolHostMap map : maps) {
-            if (map != null && (map.getRemoved() == null
-                    || map.getState().equals(CommonStatesConstants.REMOVING))) {
-                return map;
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public void createStoragePoolHostMap(StoragePoolHostMap map) {
-        StoragePoolHostMap found = findNonremovedMap(map.getStoragePoolId(), map.getHostId());
-        if (found == null) {
-            resourceDao.createAndSchedule(map);
-        }
     }
 
     @Override
@@ -236,6 +204,18 @@ public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDa
                 .where(STORAGE_POOL_HOST_MAP.HOST_ID.eq(hostId)
                         .and(STORAGE_POOL.REMOVED.isNull())
                         .and(STORAGE_POOL_HOST_MAP.REMOVED.isNull()))
+                .fetchInto(StoragePoolRecord.class);
+    }
+
+    @Override
+    public List<? extends StoragePool> findPoolsForHost(long hostId) {
+        return create().select(STORAGE_POOL.fields())
+                .from(STORAGE_POOL)
+                .join(STORAGE_POOL_HOST_MAP)
+                    .on(STORAGE_POOL.ID.eq(STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID))
+                .where(STORAGE_POOL.REMOVED.isNull()
+                    .and(STORAGE_POOL_HOST_MAP.REMOVED.isNull())
+                    .and(STORAGE_POOL_HOST_MAP.HOST_ID.eq(hostId)))
                 .fetchInto(StoragePoolRecord.class);
     }
 

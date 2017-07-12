@@ -243,7 +243,7 @@ public class RevisionDiffomatic {
     }
 
     protected boolean shouldRemove(Map<String, Object> lc) {
-        Object imageUuid = lc.get(InstanceConstants.FIELD_IMAGE_UUID);
+        Object imageUuid = lc.get(InstanceConstants.FIELD_IMAGE);
         if (imageUuid == null || !StringUtils.equalsIgnoreCase(ServiceConstants.IMAGE_NONE, imageUuid.toString())) {
             return false;
         }

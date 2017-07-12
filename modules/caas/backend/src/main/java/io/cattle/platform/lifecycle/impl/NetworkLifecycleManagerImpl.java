@@ -1,7 +1,5 @@
 package io.cattle.platform.lifecycle.impl;
 
-import static io.cattle.platform.object.util.DataAccessor.*;
-
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.model.Instance;
@@ -15,16 +13,16 @@ import io.cattle.platform.network.IPAssignment;
 import io.cattle.platform.network.NetworkService;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.resource.pool.PooledResource;
 import io.cattle.platform.resource.pool.PooledResourceOptions;
 import io.cattle.platform.resource.pool.ResourcePoolManager;
 import io.cattle.platform.resource.pool.util.ResourcePoolConstants;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
+import static io.cattle.platform.object.util.DataAccessor.*;
 
 public class NetworkLifecycleManagerImpl implements NetworkLifecycleManager {
 
@@ -76,7 +74,7 @@ public class NetworkLifecycleManagerImpl implements NetworkLifecycleManager {
     }
 
     private Network resolveNetworkMode(Instance instance) throws LifecycleException {
-        String mode = networkService.getNetworkMode(DataUtils.getFields(instance));
+        String mode = networkService.getNetworkMode(DataAccessor.getFields(instance));
 
         Network network = networkService.resolveNetwork(instance.getAccountId(), mode);
         if (network == null && StringUtils.isNotBlank(mode) && !instance.getNativeContainer()) {

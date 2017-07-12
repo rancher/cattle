@@ -1,6 +1,7 @@
 package io.cattle.platform.inator.launchconfig.impl;
 
 
+import io.cattle.platform.core.addon.DependsOn;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.addon.InstanceHealthCheck.Strategy;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -17,6 +18,7 @@ import io.cattle.platform.inator.factory.InatorServices;
 import io.cattle.platform.inator.launchconfig.LaunchConfig;
 import io.cattle.platform.inator.unit.InstanceUnit;
 import io.cattle.platform.inator.unit.MissingUnit;
+import io.cattle.platform.inator.unit.ServiceDependency;
 import io.cattle.platform.inator.util.InatorUtils;
 import io.cattle.platform.inator.util.InstanceFactory;
 import io.cattle.platform.inator.wrapper.DeploymentUnitWrapper;
@@ -29,6 +31,7 @@ import io.cattle.platform.util.type.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,7 +91,22 @@ public class ServiceLaunchConfig implements LaunchConfig {
             deps.putAll(this.ports.getPorts());
         }
 
+
+        for (DependsOn dependsOn : getDependsOn()) {
+            ServiceDependency dep = new ServiceDependency(dependsOn, svc);
+            deps.put(dep.getRef(), dep);
+        }
+
         return dependencies = deps;
+    }
+
+    protected List<DependsOn> getDependsOn() {
+        Object obj = DataAccessor.fromMap(lc).withKey(InstanceConstants.FIELD_DEPENDS_ON).get();
+        if (obj == null) {
+            return Collections.emptyList();
+        }
+
+        return svc.jsonMapper.convertCollectionValue(obj, List.class, DependsOn.class);
     }
 
     protected Map<String, UnitRefList> getDependencyRefsByField() {
@@ -150,8 +168,8 @@ public class ServiceLaunchConfig implements LaunchConfig {
 
         Map<String, Object> dataVolumesMounts = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_DATA_VOLUME_MOUNTS);
         for (Object idObj : dataVolumesMounts.values()) {
-            if (idObj instanceof Long) {
-                Volume volume = svc.objectManager.loadResource(Volume.class, (Long) idObj);
+            if (idObj instanceof Number) {
+                Volume volume = svc.objectManager.loadResource(Volume.class, ((Number) idObj).longValue());
                 if (volume != null && volume.getRemoved() != null) {
                     return false;
                 }
@@ -201,6 +219,11 @@ public class ServiceLaunchConfig implements LaunchConfig {
         if (this.ports != null) {
             processDynamicPorts(instance, context);
         }
+    }
+
+    @Override
+    public String getServiceName() {
+        return name.equals(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME) ? currentService.getName() : name;
     }
 
     protected void processDynamicPorts(InstanceWrapper instance, InatorContext context) {
@@ -290,7 +313,7 @@ public class ServiceLaunchConfig implements LaunchConfig {
 
     @Override
     public String getImageUuid() {
-        return ObjectUtils.toString(lc.get(InstanceConstants.FIELD_IMAGE_UUID));
+        return ObjectUtils.toString(lc.get(InstanceConstants.FIELD_IMAGE));
     }
 
     @Override

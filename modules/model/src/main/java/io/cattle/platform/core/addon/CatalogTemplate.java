@@ -1,6 +1,5 @@
 package io.cattle.platform.core.addon;
 
-import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
 
 import java.util.Map;
@@ -70,15 +69,6 @@ public class CatalogTemplate {
 
     public void setAnswers(Map<String, Object> answers) {
         this.answers = answers;
-    }
-
-    public void setBinding(Object binding) {
-        this.binding = binding;
-    }
-
-    @Field(typeString = "binding")
-    public Object getBinding() {
-        return binding;
     }
 
 }

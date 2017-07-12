@@ -6,7 +6,7 @@ import io.cattle.platform.core.model.AuditLog;
 import io.cattle.platform.core.model.tables.AuditLogTable;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.util.DataUtils;
+import io.cattle.platform.object.util.DataAccessor;
 import org.jooq.Configuration;
 
 import java.util.HashMap;
@@ -30,7 +30,7 @@ public class AuditLogDaoImpl extends AbstractJooqDao implements AuditLogDao {
         logs.setAuthenticatedAsAccountId(authenticatedAsAccountId);
         logs.setEventType(eventType);
         Map<String, Object> dataMap = new HashMap<>();
-        dataMap.put(DataUtils.FIELDS, data);
+        dataMap.put(DataAccessor.FIELDS, data);
         logs.setData(dataMap);
         logs.setAuthenticatedAsIdentityId(identity != null ? identity.getId() : null);
         logs.setRuntime(runTime);

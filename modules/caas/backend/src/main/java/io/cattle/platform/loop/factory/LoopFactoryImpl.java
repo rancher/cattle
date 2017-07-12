@@ -10,6 +10,7 @@ import io.cattle.platform.engine.manager.LoopManager;
 import io.cattle.platform.engine.model.Loop;
 import io.cattle.platform.environment.EnvironmentResourceManager;
 import io.cattle.platform.eventing.EventService;
+import io.cattle.platform.healthcheck.loop.HealthStateCalculateLoop;
 import io.cattle.platform.inator.Deployinator;
 import io.cattle.platform.lifecycle.ServiceLifecycleManager;
 import io.cattle.platform.loop.EndpointUpdateLoop;
@@ -21,10 +22,9 @@ import io.cattle.platform.loop.SystemStackLoop;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.systemstack.catalog.CatalogService;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.concurrent.ScheduledExecutorService;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class LoopFactoryImpl implements LoopFactory {
 
@@ -41,13 +41,12 @@ public class LoopFactoryImpl implements LoopFactory {
     ServiceLifecycleManager sdService;
 
     public LoopFactoryImpl(ActivityService activityService, CatalogService catalogService, Deployinator deployinator,
-            EnvironmentResourceManager envResourceManager, EventService eventService, HostDao hostDao, LoopManager loopManager, ObjectManager objectManager,
+            EventService eventService, HostDao hostDao, LoopManager loopManager, ObjectManager objectManager,
             ObjectProcessManager processManager, ScheduledExecutorService scheduledExecutorService, ServiceLifecycleManager sdService) {
         super();
         this.activityService = activityService;
         this.catalogService = catalogService;
         this.deployinator = deployinator;
-        this.envResourceManager = envResourceManager;
         this.eventService = eventService;
         this.hostDao = hostDao;
         this.loopManager = loopManager;
@@ -55,6 +54,10 @@ public class LoopFactoryImpl implements LoopFactory {
         this.processManager = processManager;
         this.scheduledExecutorService = scheduledExecutorService;
         this.sdService = sdService;
+    }
+
+    public void setEnvResourceManager(EnvironmentResourceManager envResourceManager) {
+        this.envResourceManager = envResourceManager;
     }
 
     @Override
@@ -81,13 +84,15 @@ public class LoopFactoryImpl implements LoopFactory {
         case HEALTHCHECK_SCHEDULE:
             return new HealthcheckScheduleLoop(id, envResourceManager, objectManager);
         case SYSTEM_STACK:
-            return new SystemStackLoop(id, eventService, objectManager, hostDao, processManager, catalogService);
+            return new SystemStackLoop(id, eventService, objectManager, hostDao, processManager, catalogService, envResourceManager);
         case HEALTHCHECK_CLEANUP:
             return new HealthcheckCleanupMonitorImpl(id, objectManager, loopManager, scheduledExecutorService, envResourceManager);
         case ENDPOINT_UPDATE:
             return new EndpointUpdateLoop(id, envResourceManager, objectManager);
         case SERVICE_MEMBERSHIP:
             return new ServiceMembershipLoop(envResourceManager, id, objectManager);
+        case HEALTHSTATE_CALCULATE:
+            return new HealthStateCalculateLoop(id, envResourceManager, objectManager);
         }
 
         throw new IllegalArgumentException("Unknown loop " + name);

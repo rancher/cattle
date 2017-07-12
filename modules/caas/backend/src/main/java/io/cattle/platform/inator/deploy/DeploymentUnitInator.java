@@ -69,6 +69,10 @@ public class DeploymentUnitInator implements Inator {
         return result;
     }
 
+    public StackWrapper getStack() {
+        return this.stack;
+    }
+
     @Override
     public Map<UnitRef, Unit> fillIn(InatorContext context) {
         if (!unit.isDeployable()) {

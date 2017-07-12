@@ -383,7 +383,7 @@ def create_event(host, external_id, agent_cli, client, user_account_id, status,
                  image=None):
     timestamp = int(time.time())
     if (image is None):
-        image = 'sim:busybox:latest'
+        image = 'busybox:latest'
     event = agent_cli.create_container_event(
         reportedHostUuid=host.data.fields['reportedUuid'],
         externalId=external_id,
@@ -415,7 +415,7 @@ def create_event(host, external_id, agent_cli, client, user_account_id, status,
 
 
 def new_inspect(rand):
-    return {'Name': 'name-%s' % rand, 'Config': {'Image': 'sim:fake/image'}}
+    return {'Name': 'name-%s' % rand, 'Config': {'Image': 'fake/image'}}
 
 
 def _client_for_agent(credentials):

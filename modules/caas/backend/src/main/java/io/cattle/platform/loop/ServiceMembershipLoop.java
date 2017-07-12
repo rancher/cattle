@@ -1,7 +1,5 @@
 package io.cattle.platform.loop;
 
-import static java.util.stream.Collectors.*;
-
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Instance;
@@ -13,14 +11,16 @@ import io.cattle.platform.metadata.model.ServiceInfo;
 import io.cattle.platform.metadata.service.Metadata;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.servicediscovery.api.util.selector.SelectorUtils;
+import org.apache.commons.lang3.StringUtils;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
+import static java.util.stream.Collectors.*;
 
 public class ServiceMembershipLoop implements Loop {
 
@@ -69,16 +69,14 @@ public class ServiceMembershipLoop implements Loop {
 
         for (ServiceInfo serviceInfo : metadata.getServices()) {
             Set<Long> instanceIds = serviceToInstances.get(serviceInfo.getId());
-            boolean changed = false;
-            if (instanceIds == null && serviceInfo.getInstances().size() != 0) {
-                changed = true;
-            } else if (!instanceIds.equals(serviceInfo.getInstances())) {
-                changed = true;
+            if (instanceIds == null) {
+                instanceIds = Collections.emptySet();
             }
 
-            if (changed) {
+            Set<Long> toSetInstanceIds = instanceIds;
+            if (instanceIds.equals(serviceInfo.getInstances())) {
                 metadata.modify(Service.class, serviceInfo.getId(), (service) -> {
-                    return objectManager.setFields(service, ServiceConstants.FIELD_INSTANCE_IDS, instanceIds);
+                    return objectManager.setFields(service, ServiceConstants.FIELD_INSTANCE_IDS, toSetInstanceIds);
                 });
             }
         }

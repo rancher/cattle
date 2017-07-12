@@ -1,6 +1,5 @@
 package io.cattle.platform.api.service;
 
-import io.cattle.platform.api.instance.ExternalTemplateInstanceFilter;
 import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -13,7 +12,6 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.revision.RevisionDiffomatic;
 import io.cattle.platform.revision.RevisionManager;
 import io.cattle.platform.servicediscovery.api.util.selector.SelectorUtils;
@@ -132,7 +130,7 @@ public class ServiceCreateValidationFilter extends AbstractValidationFilter {
         } else if (data.get(ServiceConstants.FIELD_SELECTOR_CONTAINER) != null) {
             return ServiceConstants.KIND_SELECTOR_SERVICE;
         } else if (data.get(ServiceConstants.FIELD_LAUNCH_CONFIG) != null) {
-            Map<String, Object> lbConfig = DataUtils.getFieldFromRequest(request, ServiceConstants.FIELD_LB_CONFIG,
+            Map<String, Object> lbConfig = DataAccessor.getFieldFromRequest(request, ServiceConstants.FIELD_LB_CONFIG,
                     Map.class);
             if (lbConfig != null && lbConfig.containsKey(ServiceConstants.FIELD_PORT_RULES)) {
                 List<PortRule> portRules = jsonMapper.convertCollectionValue(
@@ -143,11 +141,11 @@ public class ServiceCreateValidationFilter extends AbstractValidationFilter {
                     }
                 }
             }
-            Map<String, Object> launchConfig = DataUtils.getFieldFromRequest(request,
+            Map<String, Object> launchConfig = DataAccessor.getFieldFromRequest(request,
                     ServiceConstants.FIELD_LAUNCH_CONFIG,
                     Map.class);
             if (ServiceConstants.IMAGE_DNS.equals(launchConfig
-                    .get(InstanceConstants.FIELD_IMAGE_UUID))) {
+                    .get(InstanceConstants.FIELD_IMAGE))) {
                 return ServiceConstants.KIND_DNS_SERVICE;
             }
             if (data.get(ServiceConstants.FIELD_SCALE) != null) {
@@ -163,7 +161,7 @@ public class ServiceCreateValidationFilter extends AbstractValidationFilter {
         if (!type.equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
             return;
         }
-        Map<String, Object> lbConfig = DataUtils.getFieldFromRequest(request, ServiceConstants.FIELD_LB_CONFIG,
+        Map<String, Object> lbConfig = DataAccessor.getFieldFromRequest(request, ServiceConstants.FIELD_LB_CONFIG,
                 Map.class);
         if (lbConfig != null && lbConfig.containsKey(ServiceConstants.FIELD_PORT_RULES)) {
             List<PortRule> portRules = jsonMapper.convertCollectionValue(
@@ -250,7 +248,7 @@ public class ServiceCreateValidationFilter extends AbstractValidationFilter {
         if (!type.equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
             return;
         }
-        Map<String, Object> lbConfig = DataUtils.getFieldFromRequest(request, ServiceConstants.FIELD_LB_CONFIG,
+        Map<String, Object> lbConfig = DataAccessor.getFieldFromRequest(request, ServiceConstants.FIELD_LB_CONFIG,
                 Map.class);
         if (lbConfig == null) {
             return;
@@ -269,7 +267,7 @@ public class ServiceCreateValidationFilter extends AbstractValidationFilter {
     }
 
     protected void validateSelector(ApiRequest request) {
-        String selectorContainer = DataUtils.getFieldFromRequest(request,
+        String selectorContainer = DataAccessor.getFieldFromRequest(request,
                 ServiceConstants.FIELD_SELECTOR_CONTAINER,
                 String.class);
         if (selectorContainer != null) {
@@ -279,7 +277,7 @@ public class ServiceCreateValidationFilter extends AbstractValidationFilter {
 
     protected void validateMetadata(ApiRequest request) {
 
-        Object metadata = DataUtils.getFieldFromRequest(request, ServiceConstants.FIELD_METADATA,
+        Object metadata = DataAccessor.getFieldFromRequest(request, ServiceConstants.FIELD_METADATA,
                 Object.class);
         if (metadata != null) {
             try {
@@ -309,16 +307,7 @@ public class ServiceCreateValidationFilter extends AbstractValidationFilter {
         Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
         if (data.get(ServiceConstants.FIELD_LAUNCH_CONFIG) != null) {
             Map<String, Object> launchConfig = (Map<String, Object>)data.get(ServiceConstants.FIELD_LAUNCH_CONFIG);
-            if (launchConfig.get(InstanceConstants.FIELD_IMAGE_UUID) != null) {
-                Object imageUuid = launchConfig.get(InstanceConstants.FIELD_IMAGE_UUID);
-                List<String> ignoreImages = Arrays.asList(ServiceConstants.IMAGE_NONE,
-                        ServiceConstants.IMAGE_DNS);
-                if (imageUuid != null && !ignoreImages.contains(imageUuid.toString())) {
-                    String fullImageName = ExternalTemplateInstanceFilter.getImageUuid(imageUuid.toString(), storageService);
-                    launchConfig.put(InstanceConstants.FIELD_IMAGE_UUID, fullImageName);
-                    data.put(ServiceConstants.FIELD_LAUNCH_CONFIG, launchConfig);
-                }
-            }
+            storageService.validateImageAndSetImage(launchConfig, true);
         }
 
         List<Object> modifiedSlcs = new ArrayList<>();
@@ -326,13 +315,7 @@ public class ServiceCreateValidationFilter extends AbstractValidationFilter {
            List<Object> slcs = (List<Object>)data.get(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS);
            for (Object slcObj : slcs) {
                 Map<String, Object> slc = (Map<String, Object>) slcObj;
-                if (slc.get(InstanceConstants.FIELD_IMAGE_UUID) != null) {
-                    Object imageUuid = slc.get(InstanceConstants.FIELD_IMAGE_UUID);
-                    if (imageUuid != null && !imageUuid.toString().equalsIgnoreCase(ServiceConstants.IMAGE_NONE)) {
-                        String fullImageName = ExternalTemplateInstanceFilter.getImageUuid(imageUuid.toString(), storageService);
-                        slc.put(InstanceConstants.FIELD_IMAGE_UUID, fullImageName);
-                    }
-                }
+                storageService.validateImageAndSetImage(slcObj, true);
                 modifiedSlcs.add(slc);
             }
 
@@ -345,10 +328,10 @@ public class ServiceCreateValidationFilter extends AbstractValidationFilter {
 
     protected void validateIpsHostName(ApiRequest request) {
 
-        List<?> externalIps = DataUtils.getFieldFromRequest(request, ServiceConstants.FIELD_EXTERNALIPS,
+        List<?> externalIps = DataAccessor.getFieldFromRequest(request, ServiceConstants.FIELD_EXTERNALIPS,
                 List.class);
 
-        String hostName = DataUtils.getFieldFromRequest(request, ServiceConstants.FIELD_HOSTNAME,
+        String hostName = DataAccessor.getFieldFromRequest(request, ServiceConstants.FIELD_HOSTNAME,
                 String.class);
 
         boolean isExternalIps = externalIps != null && !externalIps.isEmpty();

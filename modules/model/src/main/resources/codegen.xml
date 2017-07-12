@@ -69,7 +69,7 @@
             <packageName>io.cattle.platform.core.model</packageName>
 
             <!-- The destination directory of your generated classes -->
-            <directory>src/main/java</directory>
+            <directory>modules/model/src/main/java</directory>
         </target>
         <generate>
             <interfaces>true</interfaces>

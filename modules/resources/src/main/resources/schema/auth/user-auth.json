@@ -89,6 +89,7 @@
         "container.healthState" : "r",
         "container.hostname" : "cr",
         "container.imageUuid" : "cr",
+        "container.image" : "cr",
         "container.instanceTriggeredStop" : "cr",
         "container.instanceLinks" : "cr",
         "container.lxcConf" : "cr",
@@ -174,12 +175,15 @@
         "container.metadata" : "cru",
         "container.exitCode": "r",
         "container.prePullOnUpgrade": "cru",
-        
+
+        "dependsOn" : "r",
+        "dependsOn.service" : "cr",
+        "dependsOn.condition" : "cr",
+
         "ulimit" : "r",
         "ulimit.name" : "cr",
         "ulimit.hard" : "cr",
         "ulimit.soft" : "cr",
-        
 
         "containerExec" : "r",
         "containerExec.attachStdin" : "cr",
@@ -319,6 +323,7 @@
         "instance.healthcheckStates": "r",
         "instance.revisionId": "r",
         "instance.desired": "r",
+        "instance.dependsOn": "cr",
 
         "healthcheckState" : "r",
         "healthcheckState.hostId" : "r",
@@ -419,12 +424,6 @@
         "storageDriver.scope" : "cr",
         "storageDriver.volumeCapabilities" : "cr",
         "storageDriver.blockDevicePath" : "cr",
-
-        "nfsConfig" : "r",
-        "nfsConfig.name" : "cr",
-        "nfsConfig.server" : "cr",
-        "nfsConfig.share" : "cr",
-        "nfsConfig.mountOptions" : "cr",
 
         "password" : "crud",
         "password.secretValue" : "cro",
@@ -824,9 +823,6 @@
         "kubernetesStackUpgrade.environment" : "cr",
         "kubernetesStackUpgrade.externalId" : "cr",
         
-        "binding" : "r",
-        "binding.services" : "cr",
-
         "serviceBinding" : "r",
         "serviceBinding.labels" : "cr",
         "serviceBinding.ports" : "cr",

@@ -138,8 +138,12 @@ public class ResponseObjectConverter implements ApiRequestHandler, ResponseConve
         } else {
             Relationship relationship = metaDataManager.getRelationship(request.getSchemaFactory()
                     .getSchemaClass(request.getType(), true), link);
-            return request.getSchemaFactory().getSchemaName(relationship.getObjectType());
+            if (relationship != null) {
+                return request.getSchemaFactory().getSchemaName(relationship.getObjectType());
+            }
         }
+
+        return null;
     }
 
     protected void addSort(CollectionImpl collection, ApiRequest request) {
@@ -224,7 +228,7 @@ public class ResponseObjectConverter implements ApiRequestHandler, ResponseConve
 
     protected Resource constructResource(IdFormatter idFormatter, SchemaFactory schemaFactory, Schema schema, Object obj, ApiRequest apiRequest) {
         Map<String, Object> transitioningFields = metaDataManager.getTransitionFields(schema, obj);
-        return ApiUtils.createResourceWithAttachments(this, apiRequest, idFormatter, schemaFactory, schema, obj, transitioningFields);
+        return ApiUtils.createResource(apiRequest, idFormatter, schemaFactory, schema, obj, transitioningFields);
     }
 
     protected void addLinks(Object obj, SchemaFactory schemaFactory, Schema schema, Resource resource) {
@@ -316,6 +320,10 @@ public class ResponseObjectConverter implements ApiRequestHandler, ResponseConve
 
     protected void addFilters(CollectionImpl collection, ApiRequest request) {
         Schema schema = request.getSchemaFactory().getSchema(collection.getResourceType());
+        if (schema == null) {
+            return;
+        }
+
         Map<String, List<Condition>> conditions = new TreeMap<>(request.getConditions());
         for (String key : schema.getCollectionFilters().keySet()) {
             if (!conditions.containsKey(key)) {

@@ -6,7 +6,7 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.dao.AgentDao;
 import io.cattle.platform.core.model.Agent;
-import io.cattle.platform.object.util.DataUtils;
+import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
@@ -50,7 +50,7 @@ public class AgentFilter extends AbstractValidationFilter {
          */
         agent.setAccountId(agent.getAccountId());
         String uri = agent.getUri();
-        String user = DataUtils.getFieldFromRequest(request, AgentConstants.USER, String.class);
+        String user = DataAccessor.getFieldFromRequest(request, AgentConstants.USER, String.class);
 
         if (uri == null) {
             uri = getUri(user, ip);

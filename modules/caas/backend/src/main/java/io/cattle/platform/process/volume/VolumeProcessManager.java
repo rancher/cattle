@@ -1,12 +1,9 @@
 package io.cattle.platform.process.volume;
 
-import static io.cattle.platform.core.model.tables.StorageDriverTable.*;
-import static io.cattle.platform.core.model.tables.VolumeTable.*;
-
 import io.cattle.platform.core.constants.StoragePoolConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
-import io.cattle.platform.core.dao.GenericMapDao;
 import io.cattle.platform.core.dao.StoragePoolDao;
+import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Mount;
 import io.cattle.platform.core.model.StorageDriver;
 import io.cattle.platform.core.model.StoragePool;
@@ -19,26 +16,28 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
+import static io.cattle.platform.core.model.tables.StorageDriverTable.*;
+import static io.cattle.platform.core.model.tables.VolumeTable.*;
 
 public class VolumeProcessManager {
 
     ObjectManager objectManager;
     ObjectProcessManager processManager;
     StoragePoolDao storagePoolDao;
-    GenericMapDao mapDao;
+    VolumeDao volumeDao;
 
-    public VolumeProcessManager(ObjectManager objectManager, ObjectProcessManager processManager, StoragePoolDao storagePoolDao, GenericMapDao mapDao) {
+    public VolumeProcessManager(ObjectManager objectManager, ObjectProcessManager processManager, StoragePoolDao storagePoolDao, VolumeDao volumeDao) {
         super();
         this.objectManager = objectManager;
         this.processManager = processManager;
         this.storagePoolDao = storagePoolDao;
-        this.mapDao = mapDao;
+        this.volumeDao = volumeDao;
     }
 
     private void preCreate(Volume v, Map<Object, Object> data) {
@@ -103,7 +102,7 @@ public class VolumeProcessManager {
     public HandlerResult remove(ProcessState state, ProcessInstance process) {
         Volume volume = (Volume)state.getResource();
 
-        for (Mount mount : mapDao.findToRemove(Mount.class, Volume.class, volume.getId())) {
+        for (Mount mount : volumeDao.findMountsToRemove(volume.getId())) {
             processManager.executeDeactivateThenRemove(mount, null);
         }
 

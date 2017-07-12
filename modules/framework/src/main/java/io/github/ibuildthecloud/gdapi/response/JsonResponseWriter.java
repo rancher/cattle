@@ -1,14 +1,11 @@
 package io.github.ibuildthecloud.gdapi.response;
 
-import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.json.ActionLinksMapper;
 import io.github.ibuildthecloud.gdapi.json.JsonMapper;
 import io.github.ibuildthecloud.gdapi.model.Collection;
 import io.github.ibuildthecloud.gdapi.model.Resource;
-import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.gdapi.model.impl.CollectionImpl;
-import io.github.ibuildthecloud.gdapi.model.impl.WrappedResource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.handler.ApiRequestHandler;
 
@@ -108,9 +105,10 @@ public class JsonResponseWriter implements ApiRequestHandler {
         if (obj instanceof Resource)
             return (Resource)obj;
 
-        Schema schema = schemaFactory.getSchema(obj.getClass());
-        ApiContext apiContext = ApiContext.getContext();
-        return schema == null ? null : new WrappedResource(apiContext.getIdFormatter(), schemaFactory, schema, obj, apiContext.getApiRequest().getMethod());
+        throw new IllegalStateException("Expected object to be a resource");
+//        Schema schema = schemaFactory.getSchema(obj.getClass());
+//        ApiContext apiContext = ApiContext.getContext();
+//        return schema == null ? null : new WrappedResource(apiContext.getIdFormatter(), schemaFactory, schema, obj, apiContext.getApiRequest().getMethod());
     }
 
     protected void writeJson(JsonMapper jsonMapper, OutputStream os, Object responseObject, ApiRequest request) throws IOException {

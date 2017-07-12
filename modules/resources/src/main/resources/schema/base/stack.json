@@ -54,10 +54,6 @@
         "upgrade":{
             "type": "kubernetesStackUpgrade"
         },
-        "binding":{
-        	"type": "binding",
-        	"nullable": true
-        },
         "serviceIds":{
             "type": "array[reference[service]]",
             "nullable": true

@@ -1,12 +1,9 @@
 package io.cattle.platform.process.monitor;
 
-import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Mount;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
-import io.cattle.platform.core.model.StoragePool;
-import io.cattle.platform.core.model.StoragePoolHostMap;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.engine.manager.impl.ProcessRecord;
 import io.cattle.platform.engine.process.ProcessServiceContext;
@@ -42,9 +39,6 @@ public class EventNotificationChangeMonitor extends io.cattle.platform.engine.pr
         Object obj = state.getResource();
         if (obj instanceof Service) {
             sendChange(Stack.class, accountId, ((Service) obj).getStackId(), schedule, context);
-        } else if (obj instanceof StoragePoolHostMap) {
-            sendChange(StoragePool.class, accountId, ((StoragePoolHostMap) obj).getStoragePoolId(), schedule, context);
-            sendChange(Host.class, accountId, ((StoragePoolHostMap) obj).getHostId(), schedule, context);
         } else if (obj instanceof Mount) {
             sendChange(Instance.class, accountId, ((Mount) obj).getInstanceId(), schedule, context);
             sendChange(Volume.class, accountId, ((Mount) obj).getVolumeId(), schedule, context);

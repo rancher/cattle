@@ -21,7 +21,7 @@ public class ComposeExportConfigItem {
     // COMPOSE PARAMETERS
     private static List<ComposeExportConfigItem> supportedServiceConfigItems = new ArrayList<>();
     public static final ComposeExportConfigItem IMAGE = new ComposeExportConfigItem(
-            InstanceConstants.FIELD_IMAGE_UUID, "image", false);
+            InstanceConstants.FIELD_IMAGE, "image", false);
     public static final ComposeExportConfigItem COMMAND = new ComposeExportConfigItem("command", "command",
             false);
     public static final ComposeExportConfigItem PORTS = new ComposeExportConfigItem("ports", "ports", false);

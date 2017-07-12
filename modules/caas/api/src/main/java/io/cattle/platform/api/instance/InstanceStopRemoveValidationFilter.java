@@ -3,7 +3,7 @@ package io.cattle.platform.api.instance;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.util.DataUtils;
+import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ActionHandler;
@@ -29,7 +29,7 @@ public class InstanceStopRemoveValidationFilter extends AbstractValidationFilter
     }
 
     protected void setStopSource(Instance instance, ApiRequest request) {
-        String stopSource = DataUtils.getFieldFromRequest(request, InstanceConstants.FIELD_STOP_SOURCE,
+        String stopSource = DataAccessor.getFieldFromRequest(request, InstanceConstants.FIELD_STOP_SOURCE,
                 String.class);
         if (StringUtils.isBlank(stopSource)) {
             if ("v1".equals(request.getVersion())) {

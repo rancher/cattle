@@ -1,10 +1,14 @@
 package io.cattle.platform.object.util;
 
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.UnmodifiableMap;
+import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.ConvertUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -15,6 +19,9 @@ import java.util.Map;
 import java.util.Objects;
 
 public class DataAccessor {
+
+    public static final String DATA = "data";
+    public static final String FIELDS = "fields";
 
     private static JsonMapper jsonMapper;
 
@@ -39,7 +46,7 @@ public class DataAccessor {
 
     public static DataAccessor fields(Object obj) {
         DataAccessor accessor = fromDataFieldOf(obj);
-        accessor.scopeKey = DataUtils.FIELDS;
+        accessor.scopeKey = FIELDS;
 
         return accessor;
     }
@@ -234,7 +241,7 @@ public class DataAccessor {
         }
     }
 
-    protected Map<String, Object> getTargetMap(boolean addContainer, boolean read) {
+    private Map<String, Object> getTargetMap(boolean addContainer, boolean read) {
         Map<String, Object> sourceMap = this.sourceMap;
 
         if (sourceMap == null && source != null) {
@@ -262,9 +269,9 @@ public class DataAccessor {
         return map;
     }
 
-    protected static Map<String, Object> getData(Object obj, boolean read) {
+    private static Map<String, Object> getData(Object obj, boolean read) {
         @SuppressWarnings("unchecked")
-        Map<String, Object> map = (Map<String, Object>) ObjectUtils.getPropertyIgnoreErrors(obj, DataUtils.DATA);
+        Map<String, Object> map = (Map<String, Object>) ObjectUtils.getPropertyIgnoreErrors(obj, DATA);
 
         if (read) {
             return map == null ? Collections.emptyMap() : Collections.unmodifiableMap(map);
@@ -274,7 +281,7 @@ public class DataAccessor {
             map = new HashMap<>();
         }
 
-        ObjectUtils.setProperty(obj, DataUtils.DATA, map);
+        ObjectUtils.setProperty(obj, DATA, map);
         return map;
     }
 
@@ -282,11 +289,70 @@ public class DataAccessor {
         DataAccessor.jsonMapper = jsonMapper;
     }
 
-    protected boolean isScopeSet() {
+    private boolean isScopeSet() {
         return scope != null || scopeKey != null;
     }
 
-    protected String getScope() {
+    private String getScope() {
         return scope == null ? scopeKey : scope.getName();
+    }
+
+    public static String getState(Object obj) {
+        try {
+            return BeanUtils.getProperty(obj, ObjectMetaDataManager.STATE_FIELD);
+        } catch (IllegalAccessException e) {
+        } catch (InvocationTargetException e) {
+        } catch (NoSuchMethodException e) {
+        }
+
+        return null;
+    }
+
+    public static Map<String, Object> getFields(Object obj) {
+        Map<String, Object> data = DataAccessor.getData(obj, true);
+        Map<String, Object> fields = CollectionUtils.toMap(data.get(FIELDS));
+        return Collections.unmodifiableMap(fields);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static Map<String, Object> getWritableFields(Object obj) {
+        Map<String, Object> data = DataAccessor.getData(obj, false);
+        Map<String, Object> fields = (Map<String, Object>) data.get(FIELDS);
+
+        if (fields == null) {
+            fields = new HashMap<>();
+            data.put(FIELDS, fields);
+        }
+
+        return fields;
+    }
+
+    protected static void setData(Object obj, Map<String, Object> data) {
+        ObjectUtils.setPropertyIgnoreErrors(obj, DATA, data);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T getFieldFromRequest(ApiRequest request, String name, Class<T> type) {
+        if (request == null) {
+            return null;
+        }
+
+        Map<String, Object> fields = CollectionUtils.castMap(request.getRequestObject());
+        Object value = fields.get(name);
+
+        if (value == null) {
+            return null;
+        }
+
+        return (T) ConvertUtils.convert(value, type);
+    }
+
+    public static void setFieldInRequest(ApiRequest request, String name, Object value) {
+        if (request == null) {
+            return;
+        }
+
+        Map<String, Object> fields = CollectionUtils.castMap(request.getRequestObject());
+        fields.put(name, value);
     }
 }

@@ -1,10 +1,5 @@
 package io.cattle.platform.containersync.impl;
 
-import static io.cattle.platform.core.constants.CommonStatesConstants.*;
-import static io.cattle.platform.core.constants.ContainerEventConstants.*;
-import static io.cattle.platform.core.constants.InstanceConstants.*;
-import static io.cattle.platform.core.model.tables.HostTable.*;
-
 import io.cattle.platform.containersync.ContainerSync;
 import io.cattle.platform.containersync.model.ContainerEventEvent;
 import io.cattle.platform.core.addon.ContainerEvent;
@@ -25,16 +20,20 @@ import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.containerevent.ContainerEventInstanceLock;
 import io.cattle.platform.util.type.CollectionUtils;
+import org.apache.cloudstack.managed.context.NoExceptionRunnable;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.cloudstack.managed.context.NoExceptionRunnable;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static io.cattle.platform.core.constants.CommonStatesConstants.*;
+import static io.cattle.platform.core.constants.ContainerEventConstants.*;
+import static io.cattle.platform.core.constants.InstanceConstants.*;
+import static io.cattle.platform.core.model.tables.HostTable.*;
 
 public class ContainerSyncImpl implements ContainerSync {
 
@@ -284,7 +283,7 @@ public class ContainerSyncImpl implements ContainerSync {
 
     private void setImage(ContainerEvent event, Instance instance) {
         Object imageUuid = CollectionUtils.getNestedValue(event.getDockerInspect(), INSPECT_CONFIG, "Image");
-        DataAccessor.fields(instance).withKey(FIELD_IMAGE_UUID).set(imageUuid);
+        DataAccessor.fields(instance).withKey(FIELD_IMAGE).set(imageUuid);
     }
 
     private Map<String, Object> getLabels(ContainerEvent event) {

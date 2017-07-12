@@ -1,9 +1,9 @@
 package io.cattle.platform.process.image;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.allocator.service.AllocationHelper;
-import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.constants.GenericObjectConstants;
@@ -21,35 +21,17 @@ import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.serialization.ObjectSerializer;
-import io.cattle.platform.object.serialization.ObjectSerializerFactory;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.process.progress.ProcessProgress;
 import io.cattle.platform.storage.ImageCredentialLookup;
 import io.cattle.platform.util.type.CollectionUtils;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.util.concurrent.ListenableFuture;
-import com.netflix.config.DynamicStringProperty;
-
 public class PullTaskCreate implements ProcessHandler {
-
-    public PullTaskCreate(AllocationHelper allocationHelper, AgentLocator agentLocator, ProcessProgress progress, ImageCredentialLookup imageCredentialLookup,
-            ObjectSerializerFactory serializerFactory) {
-        super();
-        this.allocationHelper = allocationHelper;
-        this.agentLocator = agentLocator;
-        this.progress = progress;
-        this.imageCredentialLookup = imageCredentialLookup;
-        this.serializerFactory = serializerFactory;
-        this.serializer = serializerFactory.compile(CredentialConstants.TYPE, EXPR.get());
-    }
-
-    public static final DynamicStringProperty EXPR = ArchaiusUtil.getString("event.data.credential");
 
     public static final String LABELS = "labels";
     public static final String IMAGE = "image";
@@ -63,20 +45,18 @@ public class PullTaskCreate implements ProcessHandler {
     AgentLocator agentLocator;
     ProcessProgress progress;
     ImageCredentialLookup imageCredentialLookup;
-    ObjectSerializerFactory serializerFactory;
     ObjectManager objectManager;
     ObjectSerializer serializer;
 
     public PullTaskCreate(AllocationHelper allocationHelper, AgentLocator agentLocator, ProcessProgress progress, ImageCredentialLookup imageCredentialLookup,
-            ObjectSerializerFactory serializerFactory, ObjectManager objectManager) {
+                          ObjectSerializer serializer, ObjectManager objectManager) {
         super();
         this.allocationHelper = allocationHelper;
         this.agentLocator = agentLocator;
         this.progress = progress;
         this.imageCredentialLookup = imageCredentialLookup;
-        this.serializerFactory = serializerFactory;
         this.objectManager = objectManager;
-        this.serializer = serializerFactory.compile(CredentialConstants.TYPE, EXPR.get());
+        this.serializer = serializer;
     }
 
     @Override
@@ -111,7 +91,6 @@ public class PullTaskCreate implements ProcessHandler {
         List<Long> hostIds = allocationHelper.getHostsSatisfyingHostAffinity(pullTask.getAccountId(), labels);
         Map<Host, ListenableFuture<? extends Event>> pullFutures = new HashMap<>();
         Map<Host, ListenableFuture<? extends Event>> cleanupFutures = new HashMap<>();
-        List<Integer> weights = new ArrayList<>();
 
         for (final long hostId : hostIds) {
             Host host = objectManager.loadResource(Host.class, hostId);
@@ -122,8 +101,6 @@ public class PullTaskCreate implements ProcessHandler {
             ListenableFuture<? extends Event> future = pullImage(cred, host, mode, image, tag, false);
             if (future != null) {
                 pullFutures.put(host, future);
-                weights.add(1);
-                weights.add(1);
             }
 
             if (host.getName() != null) {

@@ -49,7 +49,7 @@ public class StoragePoolRemove implements ProcessHandler {
         }
 
         for (StoragePoolHostMap map : objectManager.children(registry, StoragePoolHostMap.class)) {
-            processManager.executeDeactivateThenRemove(map, null);
+            objectManager.delete(map);
         }
 
         return null;

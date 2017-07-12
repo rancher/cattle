@@ -14,7 +14,7 @@ import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.lifecycle.impl.K8sLifecycleManagerImpl;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
-import io.cattle.platform.object.serialization.ObjectSerializerFactory;
+import io.cattle.platform.object.serialization.ObjectSerializer;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AgentBasedProcessHandler;
 import io.cattle.platform.util.exception.ExecutionErrorException;
@@ -28,13 +28,12 @@ public class K8sProviderLabels extends AgentBasedProcessHandler {
 
     EnvironmentResourceManager envResourceManager;
 
-    public K8sProviderLabels(AgentLocator agentLocator, ObjectSerializerFactory factory, ObjectManager objectManager, ObjectProcessManager processManager,
-            EnvironmentResourceManager envResourceManager) {
-        super(agentLocator, factory, objectManager, processManager);
+    public K8sProviderLabels(AgentLocator agentLocator, ObjectSerializer serializer, ObjectManager objectManager, ObjectProcessManager processManager,
+                             EnvironmentResourceManager envResourceManager) {
+        super(agentLocator, serializer, objectManager, processManager);
         this.envResourceManager = envResourceManager;
 
         commandName = "compute.instance.providelables";
-        dataTypeClass = Instance.class;
         timeoutIsError = true;
         eventRetry = 1;
     }

@@ -1,7 +1,15 @@
 package io.cattle.platform.docker.transform;
 
-import static io.cattle.platform.core.constants.InstanceConstants.*;
-
+import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.model.Capability;
+import com.github.dockerjava.api.model.ContainerConfig;
+import com.github.dockerjava.api.model.Device;
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.HostConfig;
+import com.github.dockerjava.api.model.LxcConf;
+import com.github.dockerjava.api.model.Ports;
+import com.github.dockerjava.api.model.Ports.Binding;
+import com.github.dockerjava.api.model.RestartPolicy;
 import io.cattle.platform.core.addon.BlkioDeviceOption;
 import io.cattle.platform.core.addon.LogConfig;
 import io.cattle.platform.core.addon.PortInstance;
@@ -18,6 +26,7 @@ import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
+import org.apache.commons.lang3.StringUtils;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -26,18 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-
-import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.github.dockerjava.api.model.Capability;
-import com.github.dockerjava.api.model.ContainerConfig;
-import com.github.dockerjava.api.model.Device;
-import com.github.dockerjava.api.model.ExposedPort;
-import com.github.dockerjava.api.model.HostConfig;
-import com.github.dockerjava.api.model.LxcConf;
-import com.github.dockerjava.api.model.Ports;
-import com.github.dockerjava.api.model.Ports.Binding;
-import com.github.dockerjava.api.model.RestartPolicy;
+import static io.cattle.platform.core.constants.InstanceConstants.*;
 
 public class DockerTransformerImpl implements DockerTransformer {
 
@@ -395,7 +393,7 @@ public class DockerTransformerImpl implements DockerTransformer {
     }
 
     private void setImage(Instance instance, String image) {
-        setField(instance, FIELD_IMAGE_UUID, image);
+        setField(instance, FIELD_IMAGE, image);
     }
 
     private void setName(Instance instance, InspectContainerResponse inspect, Map<String, Object> fromInspect) {

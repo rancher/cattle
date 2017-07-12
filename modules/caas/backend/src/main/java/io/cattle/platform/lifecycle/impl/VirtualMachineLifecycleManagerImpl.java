@@ -1,8 +1,5 @@
 package io.cattle.platform.lifecycle.impl;
 
-import static io.cattle.platform.core.model.tables.VolumeTable.*;
-import static io.cattle.platform.object.util.DataAccessor.*;
-
 import io.cattle.platform.core.addon.VirtualMachineDisk;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.StoragePoolConstants;
@@ -20,6 +17,7 @@ import io.cattle.platform.lifecycle.VirtualMachineLifecycleManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
+import org.apache.commons.lang3.StringUtils;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -29,7 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
+import static io.cattle.platform.core.model.tables.VolumeTable.*;
+import static io.cattle.platform.object.util.DataAccessor.*;
 
 public class VirtualMachineLifecycleManagerImpl implements VirtualMachineLifecycleManager {
 
@@ -206,7 +205,7 @@ public class VirtualMachineLifecycleManagerImpl implements VirtualMachineLifecyc
                     if (StringUtils.isNotEmpty(blockDevPath)) {
                         opts.put("dont-format", "true");
                         if (disk.isRoot()) {
-                            String image = DataAccessor.fieldString(instance, InstanceConstants.FIELD_IMAGE_UUID);
+                            String image = DataAccessor.fieldString(instance, InstanceConstants.FIELD_IMAGE);
                             if (StringUtils.isNotBlank(image)) {
                                 opts.put(VolumeConstants.DRIVER_OPT_BASE_IMAGE, image);
                             }

@@ -1,7 +1,7 @@
 package io.cattle.platform.metadata.service.impl;
 
-import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.engine.manager.LoopManager;
+import io.cattle.platform.engine.model.Trigger;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.metadata.model.HostInfo;
@@ -19,6 +19,7 @@ import io.cattle.platform.process.common.lock.ResourceChangeLock;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -28,7 +29,7 @@ public class MetadataImpl implements Metadata {
     EventService eventService;
     MetadataObjectFactory factory;
     LoopManager loopManager;
-    String[] loopNames;
+    List<Trigger> triggers;
     LockManager lockManager;
     ObjectManager objectManager;
 
@@ -42,15 +43,14 @@ public class MetadataImpl implements Metadata {
 
 
     public MetadataImpl(long accountId, EventService eventService, MetadataObjectFactory factory, LoopManager loopManager, LockManager lockManager,
-            ObjectManager objectManager, String... loopNames) {
-        super();
+            ObjectManager objectManager, List<Trigger> triggers) {
         this.accountId = accountId;
         this.eventService = eventService;
         this.factory = factory;
         this.loopManager = loopManager;
         this.lockManager = lockManager;
         this.objectManager = objectManager;
-        this.loopNames = loopNames;
+        this.triggers = triggers;
 
         maps.put(ServiceInfo.class, services);
         maps.put(HostInfo.class, hosts);
@@ -95,7 +95,7 @@ public class MetadataImpl implements Metadata {
             map.remove(uuid);
         }
 
-        trigger();
+        trigger(obj);
     }
 
     @SuppressWarnings("unchecked")
@@ -111,13 +111,13 @@ public class MetadataImpl implements Metadata {
             return;
         }
 
-        Map<String, ?> map = maps.get(obj.getClass());
+        Map<String, ?> map = maps.get(metadataObject.getClass());
         if (map == null) {
             return;
         }
 
+        boolean trigger = false;
         synchronized (this) {
-            boolean trigger = false;
             Object existing = map.get(metadataObject.getUuid());
             if (existing == null) {
                 trigger = true;
@@ -127,14 +127,16 @@ public class MetadataImpl implements Metadata {
 
             if (trigger) {
                 ((Map<String, Object>) map).put(metadataObject.getUuid(), metadataObject);
-                trigger();
             }
+        }
+        if (trigger) {
+            trigger(metadataObject);
         }
     }
 
-    protected void trigger() {
-        for (String loopName : loopNames) {
-            loopManager.kick(loopName, AccountConstants.TYPE, accountId, null);
+    protected void trigger(Object resource) {
+        for (Trigger trigger : triggers) {
+            trigger.trigger(accountId, resource, Trigger.METADATA_SOURCE);
         }
     }
 

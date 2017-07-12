@@ -39,7 +39,7 @@ def test_container_build(super_client, context, client):
 
 
 def test_container_create_only(super_client, client, context):
-    uuid = "sim:{}".format(random_num())
+    uuid = "{}".format(random_num())
     container = super_client.create_container(accountId=context.project.id,
                                               imageUuid=uuid,
                                               name="test" + random_str(),
@@ -90,7 +90,7 @@ def _assert_running(container):
 
 
 def test_container_special_labels(client, context):
-    uuid = "sim:{}".format(random_num())
+    uuid = "{}".format(random_num())
     labels = {
         'io.rancher.container.display_name': 'from-label',
         'io.rancher.container.network': 'true',

@@ -33,6 +33,7 @@ public class HostConstants {
 
     public static final String CONFIG_FIELD_SUFFIX = "Config";
     public static final String CONFIG_LINK = "config";
+    public static final String STORAGE_POOLS_LINK = "storagePools";
     public static final String EXTRACTED_CONFIG_FIELD = "extractedConfig";
 
 }

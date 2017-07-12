@@ -18,9 +18,6 @@
         },
         "templates":{
             "type": "map[string]"
-        },
-        "binding":{
-        	"type": "binding"
         }
     }
 }

@@ -11,6 +11,11 @@
             "nullable" : true,
             "create" : true
         },
+        "image" : {
+            "type" : "string",
+            "nullable" : true,
+            "create" : true
+        },
         "networkIds" : {
             "type" : "array[reference[network]]",
             "nullable" : true,
@@ -100,6 +105,9 @@
         },
         "lbRulesOnRemove": {
             "type": "map[json]"
+        },
+        "dependsOn": {
+            "type": "array[dependsOn]"
         }
     },
     "resourceActions" : {

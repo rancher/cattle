@@ -11,8 +11,8 @@ import fcntl
 import logging
 
 NOT_NONE = object()
-DEFAULT_TIMEOUT = 150
-cattle.DEFAULT_TIMEOUT = 150
+DEFAULT_TIMEOUT = 15
+cattle.DEFAULT_TIMEOUT = 15
 _SUPER_CLIENT = None
 
 
@@ -103,18 +103,10 @@ class Context(object):
         self.agent_client = agent_client
         self.client = client
         self.host = host
-        self.image_uuid = 'sim:{}'.format(random_str())
-        self.lb_v1_image_uuid = 'sim:rancher/load-balancer-service'
-        self.host_ip = self._get_host_ip()
+        self.image_uuid = '{}'.format(random_str())
+        self.lb_v1_image_uuid = 'rancher/load-balancer-service'
+        self.host_ip = self.host.agentIpAddress
         self.owner_client = owner_client
-
-    def _get_host_ip(self):
-        if self.host is None:
-            return None
-
-        ips = self.host.ipAddresses()
-        assert len(ips) == 1
-        return ips[0]
 
     def create_container(self, *args, **kw):
         c = self.create_container_no_success(*args, **kw)

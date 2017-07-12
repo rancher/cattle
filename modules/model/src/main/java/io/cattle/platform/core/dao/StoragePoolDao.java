@@ -2,7 +2,6 @@ package io.cattle.platform.core.dao;
 
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.StoragePool;
-import io.cattle.platform.core.model.StoragePoolHostMap;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.List;
@@ -14,6 +13,8 @@ public interface StoragePoolDao {
 
     StoragePool mapNewPool(Long hostId, Map<String, Object> properties);
 
+    void mapPoolToHost(Long storagePoolId, Long hostId);
+
     List<? extends StoragePool> findStoragePoolByDriverName(Long accountId, String driverName);
 
     Map<Long, Long> findStoragePoolHostsByDriver(Long accountId, Long storageDriverId);
@@ -22,11 +23,7 @@ public interface StoragePoolDao {
 
     List<? extends StoragePool> findNonRemovedStoragePoolByHost(long hostId);
 
-    List<? extends StoragePoolHostMap> findMapsToRemove(Long id);
-
-    StoragePoolHostMap findNonremovedMap(Long storagePoolId, Long hostId);
-
-    void createStoragePoolHostMap(StoragePoolHostMap m);
+    List<? extends StoragePool> findPoolsForHost(long hostId);
 
     List<Long> findVolumesInUseByServiceDriver(Long serviceId);
 

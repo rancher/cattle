@@ -2,7 +2,6 @@ package io.cattle.platform.app.components;
 
 import io.cattle.platform.activity.ActivityService;
 import io.cattle.platform.allocator.service.AllocationHelperImpl;
-import io.cattle.platform.engine.manager.LoopFactory;
 import io.cattle.platform.engine.manager.LoopManager;
 import io.cattle.platform.engine.manager.impl.LoopManagerImpl;
 import io.cattle.platform.environment.EnvironmentResourceManager;
@@ -55,9 +54,10 @@ public class Reconcile {
         InatorFactoryinator inatorFactoryinator = new InatorFactoryinator(inatorServices);
         ActivityService activityService = new ActivityService(f.objectManager, f.eventService);
         Deployinator deployinator = new DeployinatorImpl(inatorFactoryinator, f.objectManager, f.lockManager, activityService, b.serviceLifecycleManager);
-        LoopFactory loopFactory = new LoopFactoryImpl(activityService, b.catalogService, deployinator, b.envResourceManager, f.eventService, d.hostDao, b.loopManager, f.objectManager, f.processManager, f.scheduledExecutorService, b.serviceLifecycleManager);
+        LoopFactoryImpl loopFactory = new LoopFactoryImpl(activityService, b.catalogService, deployinator, f.eventService, d.hostDao, b.loopManager, f.objectManager, f.processManager, f.scheduledExecutorService, b.serviceLifecycleManager);
         loopManager = new LoopManagerImpl(loopFactory, f.executorService, f.objectManager, f.scheduledExecutorService);
-        envResourceManager = new EnvironmentResourceManagerImpl(new MetadataObjectFactory(), loopManager, f.lockManager, f.objectManager, f.eventService);
+        envResourceManager = new EnvironmentResourceManagerImpl(new MetadataObjectFactory(), loopManager, f.lockManager, f.objectManager, f.eventService, f.triggers);
+        loopFactory.setEnvResourceManager(envResourceManager);
 
         inatorServices.allocationHelper = allocationHelper = new AllocationHelperImpl(d.instanceDao, f.objectManager, envResourceManager);
         inatorServices.loopManager = loopManager;

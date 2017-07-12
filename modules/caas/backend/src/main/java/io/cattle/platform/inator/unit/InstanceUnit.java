@@ -111,6 +111,10 @@ public class InstanceUnit implements Unit, BasicStateUnit {
         return deps;
     }
 
+    public String getServiceName() {
+        return lc.getServiceName();
+    }
+
     @Override
     public Result remove(InatorContext context) {
         return remove(context, false);

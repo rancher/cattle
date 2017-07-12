@@ -1,8 +1,7 @@
 package io.cattle.platform.engine.process.impl;
 
-import static io.cattle.platform.engine.process.ExitReason.*;
-import static io.cattle.platform.util.time.TimeUtils.*;
-
+import com.google.common.util.concurrent.ListenableFuture;
+import com.netflix.config.DynamicLongProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.deferred.util.DeferredUtils;
@@ -41,16 +40,15 @@ import io.cattle.platform.util.exception.ExceptionUtils;
 import io.cattle.platform.util.exception.ExecutionException;
 import io.cattle.platform.util.exception.LoggableException;
 import io.cattle.platform.util.type.Named;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.util.concurrent.ListenableFuture;
-import com.netflix.config.DynamicLongProperty;
+import static io.cattle.platform.engine.process.ExitReason.*;
+import static io.cattle.platform.util.time.TimeUtils.*;
 
 public class DefaultProcessInstanceImpl implements ProcessInstance {
     private static final DynamicLongProperty RETRY_MAX_WAIT = ArchaiusUtil.getLong("process.retry_max_wait.millis");
@@ -168,7 +166,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
     protected void trigger() {
         for (Trigger trigger : context.getTriggers()) {
             try {
-                trigger.trigger(this);
+                trigger.trigger(record.getAccountIdLong(), instanceContext.getState().getResource(), instanceContext.getProcessDefinition().getName());
             } catch (Throwable t) {
                 log.error("Exception while running trigger [{}] on [{}:{}]", trigger, getName(), getId(), t);
             }

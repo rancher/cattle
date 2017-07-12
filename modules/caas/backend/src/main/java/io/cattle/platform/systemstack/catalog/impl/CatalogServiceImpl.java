@@ -222,8 +222,7 @@ public class CatalogServiceImpl implements CatalogService {
                 STACK.SYSTEM, true,
                 ServiceConstants.STACK_FIELD_DOCKER_COMPOSE, dockerCompose,
                 ServiceConstants.STACK_FIELD_RANCHER_COMPOSE, rancherCompose,
-                ServiceConstants.STACK_FIELD_ENVIRONMENT, catalogTemplate.getAnswers(),
-                ServiceConstants.STACK_FIELD_BINDING, catalogTemplate.getBinding());
+                ServiceConstants.STACK_FIELD_ENVIRONMENT, catalogTemplate.getAnswers());
         return resourceDao.createAndSchedule(Stack.class, objectManager.convertToPropertiesFor(Stack.class, data));
     }
 

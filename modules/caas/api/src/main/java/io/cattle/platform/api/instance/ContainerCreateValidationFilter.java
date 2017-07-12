@@ -3,7 +3,7 @@ package io.cattle.platform.api.instance;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.util.DataUtils;
+import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
@@ -35,18 +35,18 @@ public class ContainerCreateValidationFilter extends AbstractValidationFilter {
     @SuppressWarnings("unchecked")
     public void validateDeploymentUnit(ApiRequest request) {
         List<Object> deps = new ArrayList<>();
-        Long networkContainerId = DataUtils.getFieldFromRequest(request, "networkContainerId",
+        Long networkContainerId = DataAccessor.getFieldFromRequest(request, InstanceConstants.FIELD_NETWORK_CONTAINER_ID,
                 Long.class);
         if (networkContainerId != null) {
             deps.add(networkContainerId);
         }
-        List<Long> dataVolumesFrom = DataUtils.getFieldFromRequest(request, "dataVolumesFrom",
+        List<Long> dataVolumesFrom = DataAccessor.getFieldFromRequest(request,"dataVolumesFrom",
                 List.class);
         if (dataVolumesFrom != null) {
             deps.addAll(dataVolumesFrom);
         }
 
-        Long sidekickTo = DataUtils.getFieldFromRequest(request, InstanceConstants.FIELD_SIDEKICK_TO,
+        Long sidekickTo = DataAccessor.getFieldFromRequest(request, InstanceConstants.FIELD_SIDEKICK_TO,
                 Long.class);
         if (sidekickTo != null) {
             deps.add(sidekickTo);

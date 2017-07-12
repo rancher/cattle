@@ -1,5 +1,7 @@
 package io.cattle.platform.process.instance;
 
+import com.google.common.util.concurrent.ListenableFuture;
+import com.netflix.config.DynamicIntProperty;
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Instance;
@@ -8,28 +10,21 @@ import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
-import io.cattle.platform.object.serialization.ObjectSerializerFactory;
+import io.cattle.platform.object.serialization.ObjectSerializer;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.process.common.handler.AgentBasedProcessHandler;
 import io.cattle.platform.util.exception.ExecutionException;
-
-import java.util.Arrays;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.util.concurrent.ListenableFuture;
-import com.netflix.config.DynamicIntProperty;
+import java.util.Arrays;
 
-public class InstanceStart extends AgentBasedProcessHandler {
+public class InstanceStart extends DeploymentSyncRequestHandler {
 
     private static final DynamicIntProperty COMPUTE_TRIES = ArchaiusUtil.getInt("instance.compute.tries");
     private static final Logger log = LoggerFactory.getLogger(InstanceStart.class);
 
-    public InstanceStart(AgentLocator agentLocator, ObjectSerializerFactory factory, ObjectManager objectManager, ObjectProcessManager processManager) {
-        super(agentLocator, factory, objectManager, processManager);
-        commandName = "compute.instance.activate";
-        dataTypeClass = Instance.class;
+    public InstanceStart(AgentLocator agentLocator, ObjectSerializer serializer, ObjectManager objectManager, ObjectProcessManager processManager, DeploymentSyncFactory syncFactory) {
+        super(agentLocator, serializer, objectManager, processManager, syncFactory);
         sendNoOp = true;
         processDataKeys = Arrays.asList("containerNoOpEvent");
     }

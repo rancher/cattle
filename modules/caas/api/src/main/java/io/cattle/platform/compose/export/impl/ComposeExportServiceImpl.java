@@ -1,9 +1,5 @@
 package io.cattle.platform.compose.export.impl;
 
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
-import static io.cattle.platform.core.model.tables.ServiceTable.*;
-import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
-
 import io.cattle.platform.compose.export.ComposeExportService;
 import io.cattle.platform.core.addon.LbConfig;
 import io.cattle.platform.core.addon.ServiceLink;
@@ -19,7 +15,16 @@ import io.cattle.platform.core.util.LBMetadataUtil.LBConfigMetadataStyle;
 import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.object.util.DataUtils;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.TransformerUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.DumperOptions.LineBreak;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.introspector.Property;
+import org.yaml.snakeyaml.nodes.NodeTuple;
+import org.yaml.snakeyaml.nodes.Tag;
+import org.yaml.snakeyaml.representer.Representer;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -31,16 +36,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.TransformerUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.DumperOptions.LineBreak;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.introspector.Property;
-import org.yaml.snakeyaml.nodes.NodeTuple;
-import org.yaml.snakeyaml.nodes.Tag;
-import org.yaml.snakeyaml.representer.Representer;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
+import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
 
 public class ComposeExportServiceImpl implements ComposeExportService {
 
@@ -78,7 +76,7 @@ public class ComposeExportServiceImpl implements ComposeExportService {
 
     @Override
     public String buildRancherComposeConfig(List<? extends Service> services) {
-        Map<String, Object> dockerComposeData = createComposeData(services, false, new ArrayList<VolumeTemplate>());
+        Map<String, Object> dockerComposeData = createComposeData(services, false, new ArrayList<>());
         if (dockerComposeData.isEmpty()) {
             return COMPOSE_PREFIX;
         } else {
@@ -156,7 +154,7 @@ public class ComposeExportServiceImpl implements ComposeExportService {
 
         for (VolumeTemplate volume : volumes) {
             Map<String, Object> cattleVolumeData = new HashMap<>();
-            cattleVolumeData.putAll(DataUtils.getFields(volume));
+            cattleVolumeData.putAll(DataAccessor.getFields(volume));
             cattleVolumeData.put(ServiceConstants.FIELD_VOLUME_EXTERNAL, volume.getExternal());
             cattleVolumeData.put(ServiceConstants.FIELD_VOLUME_DRIVER, volume.getDriver());
             cattleVolumeData.put(ServiceConstants.FIELD_VOLUME_PER_CONTAINER, volume.getPerContainer());

@@ -1,5 +1,7 @@
 package io.cattle.platform.inator.process;
 
+import com.google.common.util.concurrent.ListenableFuture;
+import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Service;
@@ -12,8 +14,6 @@ import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.ObjectUtils;
-
-import com.google.common.util.concurrent.ListenableFuture;
 
 public class InatorReconcileHandler implements ProcessHandler, CompletableLogic {
 
@@ -49,6 +49,7 @@ public class InatorReconcileHandler implements ProcessHandler, CompletableLogic 
 
     @Override
     public HandlerResult complete(ListenableFuture<?> future, ProcessState state, ProcessInstance process) {
+        AsyncUtils.get(future);
         return null;
     }
 

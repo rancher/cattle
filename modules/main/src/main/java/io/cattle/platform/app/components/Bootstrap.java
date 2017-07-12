@@ -26,6 +26,7 @@ import io.cattle.platform.json.JacksonJsonMapper;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.liquibase.Loader;
 import io.cattle.platform.logback.Startup;
+import io.cattle.platform.object.util.CommonsConverterStartup;
 import io.cattle.platform.object.util.DataAccessor;
 import org.apache.cloudstack.managed.context.ManagedContextRunnable;
 import org.apache.cloudstack.managed.context.impl.DefaultManagedContext;
@@ -58,7 +59,7 @@ public class Bootstrap {
     private static final Logger CONSOLE_LOG = LoggerFactory.getLogger("ConsoleStatus");
 
     private static final String[] DEFAULTS = new String[]{
-            "defaults.properties",
+            "cattle-defaults.properties",
     };
 
     DataSourceFactory dataSourceFactory = new JMXDataSourceFactoryImpl();
@@ -95,6 +96,7 @@ public class Bootstrap {
     }
 
     private void setupJson() {
+        CommonsConverterStartup.init();
         JacksonJsonMapper mapper = new JacksonJsonMapper();
         mapper.setModules(Arrays.asList(new SimpleModule(), new JaxbAnnotationModule()));
         mapper.init();

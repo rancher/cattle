@@ -1,30 +1,33 @@
 package io.cattle.platform.core.dao.impl;
 
-import static io.cattle.platform.core.model.tables.GenericObjectTable.*;
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
-
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.GenericObject;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.tables.records.CredentialRecord;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.object.util.DataUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.jooq.Condition;
+import org.jooq.Configuration;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
-import org.jooq.Condition;
-import org.jooq.Configuration;
+import static io.cattle.platform.core.model.tables.CredentialTable.*;
+import static io.cattle.platform.core.model.tables.GenericObjectTable.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+
 
 public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
 
@@ -85,13 +88,35 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
 
     }
 
+    @Override
+    public List<? extends Instance> getOtherDeploymentInstances(Instance instance) {
+        if (instance.getDeploymentUnitId() == null) {
+            return Collections.emptyList();
+        }
+
+        return create().select(INSTANCE.fields())
+                .from(INSTANCE)
+                .where(INSTANCE.DEPLOYMENT_UNIT_ID.eq(instance.getDeploymentUnitId())
+                    .and(INSTANCE.REMOVED.isNull())
+                    .and(INSTANCE.ID.ne(instance.getId())))
+                .fetchInto(InstanceRecord.class);
+    }
+
+    @Override
+    public List<? extends Credential> getCredentials(Set<Long> credentialIds) {
+        return create().select(CREDENTIAL.fields())
+                .from(CREDENTIAL)
+                .where(CREDENTIAL.ID.in(credentialIds))
+                .fetchInto(CredentialRecord.class);
+    }
+
     protected Map<String, Object> lookupCacheInstanceData(long instanceId) {
         Instance instance = objectManager.loadResource(Instance.class, instanceId);
         if (instance == null) {
             return Collections.emptyMap();
         }
         Map<String, Object> newData = new HashMap<>();
-        newData.put(DataUtils.FIELDS, instance.getData().get(DataUtils.FIELDS));
+        newData.put(DataAccessor.FIELDS, instance.getData().get(DataAccessor.FIELDS));
         return newData;
     }
 

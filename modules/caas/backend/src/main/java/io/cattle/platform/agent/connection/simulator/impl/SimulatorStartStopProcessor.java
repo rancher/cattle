@@ -1,7 +1,5 @@
 package io.cattle.platform.agent.connection.simulator.impl;
 
-import static io.cattle.platform.core.constants.InstanceConstants.*;
-
 import io.cattle.platform.agent.connection.simulator.AgentConnectionSimulator;
 import io.cattle.platform.agent.connection.simulator.AgentSimulatorEventProcessor;
 import io.cattle.platform.eventing.model.Event;
@@ -9,15 +7,17 @@ import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.util.type.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
+import static io.cattle.platform.core.constants.InstanceConstants.*;
 
 public class SimulatorStartStopProcessor implements AgentSimulatorEventProcessor {
 
@@ -43,21 +43,23 @@ public class SimulatorStartStopProcessor implements AgentSimulatorEventProcessor
     public Event handle(final AgentConnectionSimulator simulator, Event event) throws Exception {
         String action = null;
 
-        if ("compute.instance.activate".equals(event.getName())) {
-            action = "add";
-        } else if ("compute.instance.deactivate".equals(event.getName())) {
-            action = "stop";
-        } else if ("compute.instance.remove".equals(event.getName())) {
-            action = "remove";
+        if (!"compute.sync".equals(event.getName())) {
+            return null;
         }
 
         if (action == null) {
             return null;
         }
 
+        List<?> instances = CollectionUtils.toList(CollectionUtils.getNestedValue(event.getData(), "deploymentSyncRequest", "instances"));
+        if (instances.size() == 0) {
+            return null;
+        }
+
         String eventString = jsonMapper.writeValueAsString(event);
 
-        Map<String, Object> instance = (Map<String, Object>)CollectionUtils.getNestedValue(event.getData(), "instanceHostMap", "instance");
+        Map<String, Object> instance = CollectionUtils.toMap(instances.get(0));
+        String state = (String)instance.get("state");
         Map<String, Object> update = null;
         String externalId = (String)instance.get("externalId");
         if (externalId == null) {
@@ -73,9 +75,9 @@ public class SimulatorStartStopProcessor implements AgentSimulatorEventProcessor
             boolean forget = FORGET.matcher(eventString).matches();
             if (forget) {
                 simulator.getInstances().remove(uuid.toString());
-            } else if ("add".equals(action)) {
+            } else if ("starting".equals(state)) {
                 simulator.getInstances().put(uuid.toString(), new Object[] { STATE_RUNNING, externalId, imageUuid, new Date().getTime() });
-            } else if ("stop".equals(action) && found) {
+            } else if ("stopping".equals(state) && found) {
                 simulator.getInstances().put(uuid.toString(), new Object[] { STATE_STOPPED, externalId, imageUuid, new Date().getTime() });
             } else {
                 simulator.getInstances().remove(uuid.toString());

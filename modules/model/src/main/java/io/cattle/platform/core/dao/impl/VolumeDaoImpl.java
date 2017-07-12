@@ -7,10 +7,12 @@ import io.cattle.platform.core.constants.StoragePoolConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.VolumeDao;
+import io.cattle.platform.core.model.Mount;
 import io.cattle.platform.core.model.StorageDriver;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.tables.VolumeTable;
+import io.cattle.platform.core.model.tables.records.MountRecord;
 import io.cattle.platform.core.model.tables.records.VolumeRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.deferred.util.DeferredUtils;
@@ -20,7 +22,6 @@ import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.Configuration;
-import org.jooq.Record;
 import org.jooq.Record6;
 import org.jooq.RecordHandler;
 
@@ -102,18 +103,13 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
         });
     }
 
-
     @Override
-    public Volume findVolumeByExternalId(Long storagePoolId, String externalId) {
-        Record record = create()
-            .select(VOLUME.fields())
-            .from(VOLUME)
-            .where(VOLUME.STORAGE_POOL_ID.eq(storagePoolId)
-                    .and(VOLUME.EXTERNAL_ID.eq(externalId).or(externalId))
-            .and((VOLUME.REMOVED.isNull().or(VOLUME.STATE.eq(CommonStatesConstants.REMOVING)))))
-            .fetchAny();
-
-        return record == null ? null : record.into(VolumeRecord.class);
+    public List<? extends Mount> findMountsToRemove(long volumeId) {
+        return create().select(MOUNT.fields())
+                .from(MOUNT)
+                .where(MOUNT.REMOVED.isNull()
+                    .and(MOUNT.VOLUME_ID.eq(volumeId)))
+                .fetchInto(MountRecord.class);
     }
 
     @Override
@@ -177,6 +173,14 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
 
         Set<? extends Volume> volumes = new HashSet<Volume>(vols);
         return volumes;
+    }
+
+    @Override
+    public List<? extends Volume> getVolumes(Set<Long> volumeIds) {
+        return create().select(VOLUME.fields())
+                .from(VOLUME)
+                .where(VOLUME.ID.in(volumeIds))
+                .fetchInto(VolumeRecord.class);
     }
 
     @Override

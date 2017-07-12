@@ -33,4 +33,5 @@ public interface LaunchConfig {
 
     void applyDynamic(InstanceWrapper instance, InatorContext context);
 
+    String getServiceName();
 }

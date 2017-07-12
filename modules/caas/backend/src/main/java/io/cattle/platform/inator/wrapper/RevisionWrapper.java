@@ -13,14 +13,13 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.util.type.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import org.apache.commons.lang.StringUtils;
 
 public class RevisionWrapper {
 
@@ -75,7 +74,7 @@ public class RevisionWrapper {
                 .withKey(InstanceConstants.FIELD_HEALTH_CHECK)
                 .as(InstanceHealthCheck.class);
 
-        Object image = lc.get(InstanceConstants.FIELD_IMAGE_UUID);
+        Object image = lc.get(InstanceConstants.FIELD_IMAGE);
         if (image == null || StringUtils.isBlank(image.toString()) ||
                 image.toString().contains(ServiceConstants.IMAGE_NONE) ||
                 image.toString().contains(ServiceConstants.IMAGE_DNS)) {

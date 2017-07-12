@@ -66,7 +66,7 @@ public class ProcessHandlerRegistryImpl implements ProcessHandlerRegistry, Proce
         for (int i = 0 ; i < parts.length ; i++) {
             parts[i] = Pattern.quote(parts[i]);
         }
-        Pattern p = Pattern.compile(String.join(".*", parts));
+        Pattern p = Pattern.compile(String.join(".*", parts) + (process.endsWith("*") ? ".*" : ""));
         processDefinitions.keySet().stream().forEach((name) -> {
             if (p.matcher(name).matches()) {
                 handle(name, handlers);

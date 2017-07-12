@@ -104,6 +104,10 @@ public class CollectionUtils {
 
     @SuppressWarnings("unchecked")
     public static <T> Map<T, Object> asMap(T key, Object... values) {
+        if ((values == null || values.length == 0) && key instanceof Map) {
+            return (Map<T, Object>) key;
+        }
+
         Map<T, Object> result = new LinkedHashMap<>();
 
         if (values == null || values.length % 2 == 0) {

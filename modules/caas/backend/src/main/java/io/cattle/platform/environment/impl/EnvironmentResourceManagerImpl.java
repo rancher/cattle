@@ -1,7 +1,9 @@
 package io.cattle.platform.environment.impl;
 
-import static java.util.stream.Collectors.*;
-
+import com.google.common.base.Objects;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import io.cattle.platform.core.cache.QueryOptions;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
@@ -11,8 +13,8 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
-import io.cattle.platform.engine.manager.LoopFactory;
 import io.cattle.platform.engine.manager.LoopManager;
+import io.cattle.platform.engine.model.Trigger;
 import io.cattle.platform.environment.EnvironmentResourceManager;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.lock.LockManager;
@@ -33,10 +35,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.base.Objects;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
+import static java.util.stream.Collectors.*;
 
 public class EnvironmentResourceManagerImpl implements EnvironmentResourceManager {
 
@@ -53,6 +52,7 @@ public class EnvironmentResourceManagerImpl implements EnvironmentResourceManage
     LockManager lockManager;
     ObjectManager objectManager;
     EventService eventService;
+    List<Trigger> triggers;
 
     LoadingCache<Long, Metadata> metadataCache = CacheBuilder.newBuilder()
             .expireAfterAccess(30, TimeUnit.MINUTES)
@@ -64,23 +64,17 @@ public class EnvironmentResourceManagerImpl implements EnvironmentResourceManage
             });
 
     public EnvironmentResourceManagerImpl(MetadataObjectFactory factory, LoopManager loopManager, LockManager lockManager, ObjectManager objectManager,
-            EventService eventService) {
+            EventService eventService, List<Trigger> triggers) {
         this.factory = factory;
         this.loopManager = loopManager;
         this.lockManager = lockManager;
         this.objectManager = objectManager;
         this.eventService = eventService;
+        this.triggers = triggers;
     }
 
     private Metadata buildMetadata(long accountId) {
-        MetadataImpl metadata = new MetadataImpl(accountId, eventService, factory, loopManager, lockManager, objectManager,
-                LoopFactory.HEALTHCHECK_SCHEDULE,
-                LoopFactory.HEALTHSTATE_CALCULATE,
-                LoopFactory.HEALTHCHECK_CLEANUP,
-                LoopFactory.SYSTEM_STACK,
-                LoopFactory.ENDPOINT_UPDATE,
-                LoopFactory.SERVICE_MEMBERSHIP);
-
+        MetadataImpl metadata = new MetadataImpl(accountId, eventService, factory, loopManager, lockManager, objectManager, triggers);
         for (Class<?> clz : LOAD_TYPES) {
             for (Object obj : objectManager.find(clz,
                     ObjectMetaDataManager.ACCOUNT_FIELD, accountId,
@@ -136,7 +130,11 @@ public class EnvironmentResourceManagerImpl implements EnvironmentResourceManage
             int restIndex;
             List<HostInfo> rest;
             Metadata metadata = getMetadata(options.getAccountId());
-            Set<String> ignore = new HashSet<>(orderedHostUUIDs);
+            Set<String> ignore = orderedHostUUIDs == null ? Collections.emptySet() : new HashSet<>(orderedHostUUIDs);
+
+            {
+                advance();
+            }
 
             @Override
             public boolean hasNext() {

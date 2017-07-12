@@ -10,7 +10,6 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
@@ -50,11 +49,11 @@ public class ServiceUtil {
     }
 
     public static List<String> getLaunchConfigNames(Service service) {
-        return getLaunchConfigNames(DataUtils.getFields(service));
+        return getLaunchConfigNames(DataAccessor.getFields(service));
     }
 
     public static List<String> getSidekickNames(Service service) {
-        List<String> list = getLaunchConfigNames(DataUtils.getFields(service));
+        List<String> list = getLaunchConfigNames(DataAccessor.getFields(service));
         return list.subList(1, list.size());
     }
 
@@ -80,7 +79,7 @@ public class ServiceUtil {
     public static Map<String, Object> getLaunchConfigWithServiceDataAsMap(Service service, String launchConfigName) {
         Map<String, Object> data = new HashMap<>();
         // 1) get service data
-        data.putAll(DataUtils.getFields(service));
+        data.putAll(DataAccessor.getFields(service));
 
         // 2) remove launchConfig/secondaryConfig data
         Object launchConfig = data
@@ -261,7 +260,7 @@ public class ServiceUtil {
 
     public static boolean isGlobalService(Service service) {
         String val = ObjectUtils.toString(CollectionUtils.getNestedValue(service.getData(),
-                DataUtils.FIELDS,
+                DataAccessor.FIELDS,
                 ServiceConstants.FIELD_LAUNCH_CONFIG,
                 InstanceConstants.FIELD_LABELS,
                 ServiceConstants.LABEL_SERVICE_GLOBAL));
@@ -270,7 +269,7 @@ public class ServiceUtil {
         }
 
         List<?> secondaries = CollectionUtils.toList(CollectionUtils.getNestedValue(service.getData(),
-                DataUtils.FIELDS,
+                DataAccessor.FIELDS,
                 ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS));
         for (Object map : secondaries) {
             val = ObjectUtils.toString(CollectionUtils.getNestedValue(map,

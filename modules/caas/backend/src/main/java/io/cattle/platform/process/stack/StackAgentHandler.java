@@ -8,7 +8,7 @@ import io.cattle.platform.environment.EnvironmentResourceManager;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
-import io.cattle.platform.object.serialization.ObjectSerializerFactory;
+import io.cattle.platform.object.serialization.ObjectSerializer;
 import io.cattle.platform.process.common.handler.AgentBasedProcessHandler;
 import io.cattle.platform.util.type.CollectionUtils;
 
@@ -21,7 +21,7 @@ public abstract class StackAgentHandler extends AgentBasedProcessHandler {
     protected String agentService;
     protected String stackKind;
 
-    public StackAgentHandler(AgentLocator agentLocator, ObjectSerializerFactory factory, ObjectManager objectManager, ObjectProcessManager processManager) {
+    public StackAgentHandler(AgentLocator agentLocator, ObjectSerializer factory, ObjectManager objectManager, ObjectProcessManager processManager) {
         super(agentLocator, factory, objectManager, processManager);
     }
 

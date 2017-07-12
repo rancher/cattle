@@ -7,12 +7,11 @@ import io.cattle.platform.inator.Inator;
 import io.cattle.platform.inator.factory.InatorServices;
 import io.cattle.platform.inator.util.StateUtil;
 import io.cattle.platform.object.util.DataAccessor;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class ServiceWrapper {
 
@@ -22,6 +21,14 @@ public class ServiceWrapper {
     public ServiceWrapper(Service service, InatorServices svc) {
         this.service = service;
         this.svc = svc;
+    }
+
+    public boolean isActive() {
+        return StateUtil.isActive(getState());
+    }
+
+    public boolean isHealthy() {
+        return StateUtil.isHealthy(service.getHealthState());
     }
 
     public Inator.DesiredState getDesiredState() {

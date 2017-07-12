@@ -18,12 +18,11 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
-import io.cattle.platform.object.util.DataUtils;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.resource.UUID;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class HostProcessManager {
 
@@ -71,7 +70,7 @@ public class HostProcessManager {
     }
 
     public static String getDriver(Object obj) {
-        Map<String, Object> fields = DataUtils.getFields(obj);
+        Map<String, Object> fields = DataAccessor.getFields(obj);
         for (Map.Entry<String, Object> field : fields.entrySet()) {
             if (StringUtils.endsWithIgnoreCase(field.getKey(), HostConstants.CONFIG_FIELD_SUFFIX) && field.getValue() != null) {
                 return StringUtils.removeEndIgnoreCase(field.getKey(), HostConstants.CONFIG_FIELD_SUFFIX);
@@ -111,7 +110,7 @@ public class HostProcessManager {
             if (DockerHostConstants.KIND_DOCKER.equals(pool.getKind())) {
                 processManager.executeDeactivateThenRemove(pool, null);
             }
-            processManager.executeDeactivateThenRemove(map, null);
+            objectManager.delete(map);
         }
     }
 

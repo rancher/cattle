@@ -84,7 +84,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
                 .withKey("launchConfig").withDefault(Collections.EMPTY_MAP)
                 .as(Map.class);
 
-        Object imageObj = data.get(InstanceConstants.FIELD_IMAGE_UUID);
+        Object imageObj = data.get(InstanceConstants.FIELD_IMAGE);
         if (imageObj == null) {
             return false;
         }

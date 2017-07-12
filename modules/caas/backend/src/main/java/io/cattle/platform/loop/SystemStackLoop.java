@@ -1,8 +1,5 @@
 package io.cattle.platform.loop;
 
-import static io.cattle.platform.core.model.tables.ServiceTable.*;
-import static io.cattle.platform.core.model.tables.StackTable.*;
-
 import io.cattle.platform.core.addon.CatalogTemplate;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -14,6 +11,7 @@ import io.cattle.platform.core.model.ProjectTemplate;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.engine.model.Loop;
+import io.cattle.platform.environment.EnvironmentResourceManager;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
@@ -30,7 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.jooq.exception.DataChangedException;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
+import static io.cattle.platform.core.model.tables.StackTable.*;
 
 public class SystemStackLoop implements Loop {
 
@@ -40,15 +39,18 @@ public class SystemStackLoop implements Loop {
     HostDao hostDao;
     ObjectProcessManager processManager;
     CatalogService catalogService;
+    EnvironmentResourceManager envResourceManager;
 
     public SystemStackLoop(long accountId, EventService eventService, ObjectManager objectManager,
-            HostDao hostDao, ObjectProcessManager processManager, CatalogService catalogService) {
+                           HostDao hostDao, ObjectProcessManager processManager, CatalogService catalogService,
+                           EnvironmentResourceManager envResourceManager) {
         this.accountId = accountId;
         this.eventService = eventService;
         this.objectManager = objectManager;
         this.hostDao = hostDao;
         this.processManager = processManager;
         this.catalogService = catalogService;
+        this.envResourceManager = envResourceManager;
     }
 
     protected void startStacks(Account account) {
@@ -82,10 +84,7 @@ public class SystemStackLoop implements Loop {
             startedStackIds.add(stackId);
         }
 
-        try {
-            objectManager.setFields(account, AccountConstants.FIELD_STARTED_STACKS, startedStackIds);
-        } catch (DataChangedException e) {
-        }
+        setFields(AccountConstants.FIELD_STARTED_STACKS, startedStackIds);
     }
 
     @Override
@@ -127,14 +126,19 @@ public class SystemStackLoop implements Loop {
         boolean oldVm = DataAccessor.fieldBool(account, AccountConstants.FIELD_VIRTUAL_MACHINE);
         String oldOrch = DataAccessor.fieldString(account, AccountConstants.FIELD_ORCHESTRATION);
         if (oldVm != virtualMachine || !Objects.equals(oldOrch, orchestration)) {
-            objectManager.setFields(account,
-                    AccountConstants.FIELD_ORCHESTRATION, orchestration,
+            setFields(AccountConstants.FIELD_ORCHESTRATION, orchestration,
                     AccountConstants.FIELD_VIRTUAL_MACHINE, virtualMachine);
             io.cattle.platform.object.util.ObjectUtils.publishChanged(eventService, account.getId(),
                     account.getId(), AccountConstants.TYPE);
         }
 
         return Result.DONE;
+    }
+
+    private Account setFields(Object key, Object... valueKeyValue) {
+        return envResourceManager.getMetadata(accountId).modify(Account.class, accountId, (account) -> {
+            return objectManager.setFields(account, key, valueKeyValue);
+        });
     }
 
     public List<Long> createStacks(Account account) throws IOException {
@@ -167,8 +171,7 @@ public class SystemStackLoop implements Loop {
             createdStackIds.add(stack.getId());
         }
 
-        objectManager.reload(account);
-        objectManager.setFields(account, AccountConstants.FIELD_CREATED_STACKS, createdStackIds);
+        setFields(AccountConstants.FIELD_CREATED_STACKS, createdStackIds);
         return createdStackIds;
     }
 

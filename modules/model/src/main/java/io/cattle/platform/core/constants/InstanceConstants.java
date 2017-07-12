@@ -37,6 +37,7 @@ public class InstanceConstants {
     public static final String FIELD_CREATE_INDEX = "createIndex";
     public static final String FIELD_DATA_VOLUME_MOUNTS = "dataVolumeMounts";
     public static final String FIELD_DATA_VOLUMES = "dataVolumes";
+    public static final String FIELD_DEPENDS_ON = "dependsOn";
     public static final String FIELD_DEPLOYMENT_UNIT_ID = "deploymentUnitId";
     public static final String FIELD_DEPLOYMENT_UNIT_UUID = "deploymentUnitUuid";
     public static final String FIELD_DEVICES = "devices";
@@ -57,7 +58,9 @@ public class InstanceConstants {
     public static final String FIELD_HEALTHCHECK_STATES = "healthcheckStates";
     public static final String FIELD_HOSTNAME = "hostname";
     public static final String FIELD_IMAGE_PRE_PULL = "prePullOnUpgrade";
+    @Deprecated
     public static final String FIELD_IMAGE_UUID = "imageUuid";
+    public static final String FIELD_IMAGE = "image";
     public static final String FIELD_INSTANCE_LINKS = "instanceLinks";
     public static final String FIELD_INSTANCE_TRIGGERED_STOP = "instanceTriggeredStop";
     public static final String FIELD_IPC_CONTAINER_ID = "ipcContainerId";

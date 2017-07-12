@@ -1,10 +1,9 @@
 package io.cattle.platform.process.common.handler;
 
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
-import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.core.constants.AgentConstants;
@@ -16,7 +15,6 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.eventing.EventCallOptions;
-import io.cattle.platform.eventing.EventProgress;
 import io.cattle.platform.eventing.exception.AgentRemovedException;
 import io.cattle.platform.eventing.exception.EventExecutionException;
 import io.cattle.platform.eventing.model.Event;
@@ -24,7 +22,6 @@ import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.serialization.ObjectSerializer;
-import io.cattle.platform.object.serialization.ObjectSerializerFactory;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.process.progress.ProcessProgress;
 import io.cattle.platform.process.progress.ProcessProgressInstance;
@@ -40,9 +37,7 @@ import java.util.Map;
 
 public class AgentBasedProcessHandler implements CompletableLogic, Named {
 
-    DynamicStringProperty expressionProp;
     protected AgentLocator agentLocator;
-    protected ObjectSerializerFactory factory;
     protected ObjectSerializer serializer;
     protected ObjectManager objectManager;
     protected ObjectProcessManager processManager;
@@ -51,9 +46,6 @@ public class AgentBasedProcessHandler implements CompletableLogic, Named {
     protected boolean sendNoOp;
     protected String name;
     protected String errorChainProcess;
-    protected String configPrefix = "event.data.";
-    protected String dataType;
-    protected Class<?> dataTypeClass;
     protected String commandName;
     protected Integer eventRetry;
 
@@ -62,13 +54,13 @@ public class AgentBasedProcessHandler implements CompletableLogic, Named {
     protected boolean timeoutIsError;
     protected List<String> processDataKeys = new ArrayList<>();
 
-    public AgentBasedProcessHandler(AgentLocator agentLocator, ObjectSerializerFactory factory, ObjectManager objectManager,
+    public AgentBasedProcessHandler(AgentLocator agentLocator, ObjectSerializer serializer, ObjectManager objectManager,
             ObjectProcessManager processManager) {
-        super();
         this.agentLocator = agentLocator;
-        this.factory = factory;
+        this.serializer = serializer;
         this.objectManager = objectManager;
         this.processManager = processManager;
+        this.name = getClass().getSimpleName();
     }
 
     @Override
@@ -100,11 +92,10 @@ public class AgentBasedProcessHandler implements CompletableLogic, Named {
 
     @Override
     public HandlerResult complete(ListenableFuture<?> future, ProcessState state, ProcessInstance process) {
-        Context context = (Context) state.getData().get(getName()+".context");
-        Event reply = null;
+        Context context;
         try {
-            reply = (Event) AsyncUtils.get(future);
-            postProcessEvent(context.request, reply, state, process,
+            context = (Context)AsyncUtils.get(future);
+            postProcessEvent(context.request, context.reply, state, process,
                 context.eventResource, context.dataResource, context.agentResource);
         } catch (AgentRemovedException e) {
             if (shortCircuitIfAgentRemoved) {
@@ -126,13 +117,12 @@ public class AgentBasedProcessHandler implements CompletableLogic, Named {
             throw e;
         }
 
-        return new HandlerResult(getResourceDataMap(objectManager.getType(context.eventResource), reply.getData()));
+        return new HandlerResult(getResourceDataMap(objectManager.getType(context.eventResource), context.reply.getData()));
     }
 
     protected ListenableFuture<?> handleEvent(ProcessState state, ProcessInstance process, Object eventResource, Object dataResource, Object agentResource,
             RemoteAgent agent) {
-        ObjectSerializer serializer = getObjectSerializer(dataResource);
-        Map<String, Object> data = serializer == null ? null : serializer.serialize(dataResource);
+        Map<String, Object> data = serializer.serialize(dataResource);
 
         boolean shortCircuit = false;
         Map<String, Object> processData = new HashMap<>();
@@ -173,22 +163,24 @@ public class AgentBasedProcessHandler implements CompletableLogic, Named {
         if (progress != null) {
             final ProcessProgressInstance progressInstance = progress.get();
             progressInstance.init(state);
-            options.withProgressIsKeepAlive(true).withProgress(new EventProgress() {
-                @Override
-                public void progress(Event event) {
-                    String message = event.getTransitioningMessage();
-                    if (message != null) {
-                        progressInstance.messsage(message);
-                    }
+            options.withProgressIsKeepAlive(true).withProgress(event1 -> {
+                String message = event1.getTransitioningMessage();
+                if (message != null) {
+                    progressInstance.messsage(message);
                 }
             });
         }
 
+        ListenableFuture<?> result;
         if (shortCircuit) {
-            return AsyncUtils.done(EventVO.reply(event));
+            result = AsyncUtils.done(EventVO.reply(event));
         } else {
-            return agent.call(event, options);
+            result = agent.call(event, options);
         }
+
+        return Futures.transform(result, (f) -> {
+            return new Context(event, (Event)f, eventResource, dataResource, agentResource);
+        });
     }
 
     protected Map<Object, Object> getResourceDataMap(String type, Object data) {
@@ -224,58 +216,6 @@ public class AgentBasedProcessHandler implements CompletableLogic, Named {
         }
     }
 
-    protected synchronized ObjectSerializer getObjectSerializer(Object obj) {
-        if (serializer != null) {
-            return serializer;
-        }
-
-        String type = objectManager.getType(obj);
-        if (type == null) {
-            throw new IllegalStateException("Failed to find type for [" + obj + "]");
-        }
-
-        return this.serializer = buildSerializer(type);
-    }
-
-    protected ObjectSerializer buildSerializer(String type) {
-        String expression = getExpression(type);
-        if (expression == null) {
-            return null;
-        }
-
-        return factory.compile(type, expression);
-    }
-
-    protected String getExpression(String type) {
-        if (expressionProp == null) {
-            expressionProp = ArchaiusUtil.getString(configPrefix + type);
-        }
-        return expressionProp.get();
-    }
-
-    protected DynamicStringProperty getExpressionProperty(String type) {
-        return ArchaiusUtil.getString(configPrefix + type);
-    }
-
-    protected void loadDefaultSerializer() {
-        if (dataType == null && dataTypeClass == null) {
-            throw new IllegalStateException("dataType or dataTypeClass");
-        }
-
-        if (dataType == null) {
-            dataType = objectManager.getType(dataTypeClass);
-        }
-
-        serializer = buildSerializer(dataType);
-    }
-
-    private static class Context {
-        EventVO<?> request;
-        Object eventResource;
-        Object dataResource;
-        Object agentResource;
-    }
-
     @Override
     public String getName() {
         return name;
@@ -283,6 +223,22 @@ public class AgentBasedProcessHandler implements CompletableLogic, Named {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    private static class Context {
+        EventVO<?> request;
+        Event reply;
+        Object eventResource;
+        Object dataResource;
+        Object agentResource;
+
+        public Context(EventVO<?> request, Event reply, Object eventResource, Object dataResource, Object agentResource) {
+            this.reply = reply;
+            this.request = request;
+            this.eventResource = eventResource;
+            this.dataResource = dataResource;
+            this.agentResource = agentResource;
+        }
     }
 
 }

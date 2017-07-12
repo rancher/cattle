@@ -21,7 +21,6 @@ public class AgentConstants {
     public static final String PROCESS_DEACTIVATE = "agent.deactivate";
     public static final String PROCESS_DECONNECT = "agent.disconnect";
     public static final String PROCESS_REMOVE = "agent.remove";
-    public static final String PROCESS_FINISH_RECONNECT = "agent.finishreconnect";
 
     public static final String REMOVE_OPTION = "remove";
 

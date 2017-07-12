@@ -1,10 +1,5 @@
 package io.cattle.platform.process.externalevent;
 
-import static io.cattle.platform.core.constants.ExternalEventConstants.*;
-import static io.cattle.platform.core.model.tables.AgentTable.*;
-import static io.cattle.platform.core.model.tables.ServiceTable.*;
-import static io.cattle.platform.core.model.tables.StackTable.*;
-
 import io.cattle.platform.allocator.constraint.HostAffinityConstraint;
 import io.cattle.platform.allocator.service.AllocationHelper;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -33,11 +28,13 @@ import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,9 +42,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static io.cattle.platform.core.constants.ExternalEventConstants.*;
+import static io.cattle.platform.core.model.tables.AgentTable.*;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
+import static io.cattle.platform.core.model.tables.StackTable.*;
 
 public class ExternalEventProcessManager {
 
@@ -153,7 +151,7 @@ public class ExternalEventProcessManager {
             }
             Map<String, Object> data = new HashMap<>();
             data.put(ExternalEventConstants.FIELD_FQDN, fqdn);
-            DataUtils.getWritableFields(service).putAll(data);
+            DataAccessor.getWritableFields(service).putAll(data);
             objectManager.persist(service);
             processManager.scheduleStandardProcessAsync(StandardProcess.UPDATE, service, data);
             return null;
@@ -214,7 +212,7 @@ public class ExternalEventProcessManager {
             }
             try {
                 processManager.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP, instance,
-                        ProcessUtils.chainInData(new HashMap<String, Object>(), InstanceConstants.PROCESS_STOP,
+                        ProcessUtils.chainInData(new HashMap<>(), InstanceConstants.PROCESS_STOP,
                                 InstanceConstants.PROCESS_REMOVE));
             } catch (ProcessCancelException e) {
             }
@@ -239,7 +237,7 @@ public class ExternalEventProcessManager {
 
     private void handleServiceEvent(ExternalEvent event) {
         lockManager.lock(new ExternalEventLock(SERVICE_LOCK_NAME, event.getAccountId(), event.getExternalId()), () -> {
-            Map<String, Object> serviceData = CollectionUtils.toMap(DataUtils.getFields(event).get(FIELD_SERVICE));
+            Map<String, Object> serviceData = CollectionUtils.toMap(DataAccessor.getFields(event).get(FIELD_SERVICE));
             if (serviceData.isEmpty()) {
                 log.warn("Empty service for externalServiceEvent: {}.", event);
                 return null;
@@ -296,7 +294,7 @@ public class ExternalEventProcessManager {
     }
 
     private Stack getStack(final ExternalEvent event) {
-        final Map<String, Object> env = CollectionUtils.castMap(DataUtils.getFields(event).get(FIELD_ENVIRIONMENT));
+        final Map<String, Object> env = CollectionUtils.castMap(DataAccessor.getFields(event).get(FIELD_ENVIRIONMENT));
         Object eId = CollectionUtils.getNestedValue(env, FIELD_EXTERNAL_ID);
         if (eId == null) {
             return null;
@@ -344,7 +342,7 @@ public class ExternalEventProcessManager {
             return;
         }
 
-        Map<String, Object> fields = DataUtils.getFields(svc);
+        Map<String, Object> fields = DataAccessor.getFields(svc);
         Map<String, Object> updates = new HashMap<>();
         for (Map.Entry<String, Object> resourceField : serviceData.entrySet()) {
             String fieldName = resourceField.getKey();

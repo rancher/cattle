@@ -16,8 +16,6 @@ import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.environment.EnvironmentResourceManager;
 import io.cattle.platform.eventing.EventService;
-import io.cattle.platform.eventing.annotation.AnnotatedEventListener;
-import io.cattle.platform.eventing.annotation.EventHandler;
 import io.cattle.platform.framework.event.Ping;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
@@ -41,7 +39,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-public class AgentResourcesMonitor implements AnnotatedEventListener {
+public class AgentResourcesMonitor {
 
     private static final Logger log = LoggerFactory.getLogger(AgentResourcesMonitor.class);
     private static final DynamicLongProperty CACHE_RESOURCE = ArchaiusUtil.getLong("agent.resource.monitor.cache.resource.seconds");
@@ -60,7 +58,7 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
     ObjectManager objectManager;
     LockManager lockManager;
     EventService eventService;
-    Cache<String, Boolean> resourceCache;
+    Cache<String, Boolean> resourceCache = CacheBuilder.newBuilder().expireAfterAccess(CACHE_RESOURCE.get(), TimeUnit.SECONDS).build();
     EnvironmentResourceManager envResourceManager;
 
     public AgentResourcesMonitor(AgentDao agentDao, StoragePoolDao storagePoolDao, GenericResourceDao resourceDao, ObjectManager objectManager,
@@ -73,23 +71,6 @@ public class AgentResourcesMonitor implements AnnotatedEventListener {
         this.lockManager = lockManager;
         this.eventService = eventService;
         this.envResourceManager = envResourceManager;
-
-        buildCache();
-        CACHE_RESOURCE.addCallback(new Runnable() {
-            @Override
-            public void run() {
-                buildCache();
-            }
-        });
-    }
-
-    protected void buildCache() {
-        resourceCache = CacheBuilder.newBuilder().expireAfterAccess(CACHE_RESOURCE.get(), TimeUnit.SECONDS).build();
-    }
-
-    @EventHandler
-    public void pingReply(Ping ping) {
-        processPingReply(ping);
     }
 
     public void processPingReply(Ping ping) {

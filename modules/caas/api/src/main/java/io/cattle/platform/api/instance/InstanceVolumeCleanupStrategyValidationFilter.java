@@ -2,7 +2,7 @@ package io.cattle.platform.api.instance;
 
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.util.SystemLabels;
-import io.cattle.platform.object.util.DataUtils;
+import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
@@ -16,7 +16,7 @@ public class InstanceVolumeCleanupStrategyValidationFilter extends AbstractValid
 
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
-        Map<?, ?> labels = DataUtils.getFieldFromRequest(request, InstanceConstants.FIELD_LABELS, Map.class);
+        Map<?, ?> labels = DataAccessor.getFieldFromRequest(request, InstanceConstants.FIELD_LABELS, Map.class);
         if (labels != null) {
             Object l = labels.get(SystemLabels.LABEL_VOLUME_CLEANUP_STRATEGY);
             if (l != null && !InstanceConstants.VOLUME_REMOVE_STRATEGIES.contains(l)) {
