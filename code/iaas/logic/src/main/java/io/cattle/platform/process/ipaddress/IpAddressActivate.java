@@ -20,6 +20,10 @@ import io.cattle.platform.resource.pool.PooledResourceOptions;
 import io.cattle.platform.resource.pool.ResourcePoolManager;
 import io.cattle.platform.util.exception.ResourceExhaustionException;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -71,7 +75,11 @@ public class IpAddressActivate extends AbstractDefaultProcessHandler {
         }
 
         if (ip == null) {
-            ip = networkService.assignIpAddress(network, ipAddress, requestedIp);
+            List<String> list = new ArrayList<>();
+            if (!StringUtils.isEmpty(requestedIp)) {
+                list = Arrays.asList(StringUtils.stripAll(StringUtils.split(requestedIp, ",")));
+            }
+            ip = networkService.assignIpAddress(network, ipAddress, list);
             if (ip == null) {
                 objectProcessManager.scheduleStandardProcess(StandardProcess.DEACTIVATE, ipAddress, null);
                 throw new ResourceExhaustionException("IP allocation error", "Failed to allocate IP from subnet", ipAddress);
@@ -86,7 +94,9 @@ public class IpAddressActivate extends AbstractDefaultProcessHandler {
         if (instance != null) {
             String ip = DataAccessor.fieldString(instance, InstanceConstants.FIELD_REQUESTED_IP_ADDRESS);
             if (ip != null) {
-                options.setRequestedItem(ip);
+                if(!StringUtils.isEmpty(ip)) {
+                    options.setRequestedItems(Arrays.asList(StringUtils.stripAll(StringUtils.split(ip, ","))));
+                }
             }
         }
 

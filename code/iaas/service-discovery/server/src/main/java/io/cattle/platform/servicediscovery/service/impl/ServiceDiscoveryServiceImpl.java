@@ -511,7 +511,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     }
 
     @Override
-    public void allocateIpToServiceIndex(Service service, ServiceIndex serviceIndex, String requestedIp) {
+    public void allocateIpToServiceIndex(Service service, ServiceIndex serviceIndex, List<String> requestedIps) {
         if (StringUtils.isEmpty(serviceIndex.getAddress())) {
             String ntwkMode = networkService.getNetworkMode(DataAccessor
                     .fieldMap(service, ServiceConstants.FIELD_LAUNCH_CONFIG));
@@ -521,7 +521,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
 
             Network ntwk = networkService.resolveNetwork(serviceIndex.getAccountId(), ntwkMode.toString());
             if (networkService.shouldAssignIpAddress(ntwk)) {
-                IPAssignment assignment = networkService.assignIpAddress(ntwk, serviceIndex, requestedIp);
+                IPAssignment assignment = networkService.assignIpAddress(ntwk, serviceIndex, requestedIps);
                 if (assignment != null) {
                     setServiceIndexIp(serviceIndex, assignment.getIpAddress());
                 }

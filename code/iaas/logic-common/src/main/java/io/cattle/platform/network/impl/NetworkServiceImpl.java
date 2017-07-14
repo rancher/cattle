@@ -71,14 +71,14 @@ public class NetworkServiceImpl implements NetworkService {
     }
 
     @Override
-    public IPAssignment assignIpAddress(Network network, Object owner, String requestedIp) {
+    public IPAssignment assignIpAddress(Network network, Object owner, List<String> requestedIps) {
         if (network == null) {
             return null;
         }
         for (Subnet subnet : networkDao.getSubnets(network)) {
             PooledResourceOptions options = new PooledResourceOptions();
-            if (requestedIp != null) {
-                options.setRequestedItem(requestedIp);
+            if (requestedIps != null) {
+                options.setRequestedItems(requestedIps);
             }
             PooledResource resource = poolManager.allocateOneResource(subnet, owner, options);
             if (resource != null) {

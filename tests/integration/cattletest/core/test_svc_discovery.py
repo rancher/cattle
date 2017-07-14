@@ -3556,3 +3556,193 @@ def test_sidekicks_container_anti_affinity(client, context):
     for instance in instances:
         result[instance.hostId] = True
     assert len(result) == 3
+
+
+def test_requested_ip_address(client, context, super_client):
+    register_simulated_host(context)
+    stack = _create_stack(client)
+    image_uuid = context.image_uuid
+    name = random_str()
+    service_name = "service" + name
+    launch_config = {"imageUuid": image_uuid,
+                     "requestedIpAddress": "10.42.100.100, 10.42.100.101"
+                     }
+    service = client.create_service(name=service_name,
+                                    stackId=stack.id,
+                                    launchConfig=launch_config,
+                                    scale=2,
+                                    retainIp=True)
+    service = client.wait_success(service)
+    stack.activateservices()
+    service = client.wait_success(service, 120)
+    instances = _get_instance_for_service(client, service.id)
+    assert instances[0].primaryIpAddress == "10.42.100.100"
+    assert instances[1].primaryIpAddress == "10.42.100.101"
+
+    new_launch_config = {"imageUuid": image_uuid,
+                         "requestedIpAddress":
+                             "10.42.100.100, 10.42.100.101, 10.42.100.102"
+                         }
+    strategy = {"launchConfig": new_launch_config,
+                "intervalMillis": 100}
+    service = service.upgrade_action(inServiceStrategy=strategy)
+    service = client.wait_success(service)
+    service = client.wait_success(service.finishupgrade())
+
+    service = client.update(service, scale=3)
+    service = client.wait_success(service, 120)
+
+    instances = _get_instance_for_service(client, service.id)
+    result = []
+    result.append(instances[0].primaryIpAddress)
+    result.append(instances[1].primaryIpAddress)
+    result.append(instances[2].primaryIpAddress)
+    result = sorted(result)
+    assert result == sorted(["10.42.100.100",
+                             "10.42.100.101",
+                             "10.42.100.102"])
+
+    service = client.delete(service)
+    service = client.wait_success(service, 120)
+
+    launch_config1 = {"imageUuid": image_uuid,
+                      "requestedIpAddress": "10.42.100.100",
+                      }
+    service_name1 = random_str()
+    service1 = client.create_service(name=service_name1,
+                                     stackId=stack.id,
+                                     launchConfig=launch_config1,
+                                     scale=1,
+                                     retainIp=True)
+    service1 = client.wait_success(service1)
+    stack.activateservices()
+    service1 = client.wait_success(service1, 120)
+    instances = _get_instance_for_service(client, service1.id)
+    assert instances[0].primaryIpAddress == "10.42.100.100"
+
+    container = client.create_container(imageUuid=context.image_uuid,
+                                        startOnCreate=False,
+                                        retainIp=True,
+                                        )
+    container = super_client.wait_success(container)
+    container.data.fields['requestedIpAddress'] = '10.42.100.101'
+    container = super_client.update(container, data=container.data)
+    container = super_client.wait_success(container.start())
+    assert container.primaryIpAddress == '10.42.100.101'
+
+    service2 = client.create_service(name=random_str(),
+                                     stackId=stack.id,
+                                     launchConfig=new_launch_config,
+                                     scale=1,
+                                     retainIp=True)
+    service2 = client.wait_success(service2)
+    stack.activateservices()
+    service2 = client.wait_success(service2, 120)
+    instances = _get_instance_for_service(client, service2.id)
+    assert instances[0].primaryIpAddress == "10.42.100.102"
+    service2 = client.update(service2, scale=2)
+    service2 = client.wait_success(service2, 120)
+    instances = _get_instance_for_service(client, service2.id)
+    assert instances[1].primaryIpAddress not in ["10.42.100.100",
+                                                 "10.42.100.101",
+                                                 "10.42.100.102"]
+    client.wait_success(client.delete(stack))
+    client.wait_success(client.delete(container))
+
+
+def test_requested_ip_address_by_labels(client, context, super_client):
+    register_simulated_host(context)
+    stack = _create_stack(client)
+    image_uuid = context.image_uuid
+    name = random_str()
+    service_name = "service" + name
+    labels = {
+        "io.rancher.container.requested_ip": "10.42.100.100, 10.42.100.101"
+    }
+    launch_config = {"imageUuid": image_uuid,
+                     "labels": labels,
+                     }
+    service = client.create_service(name=service_name,
+                                    stackId=stack.id,
+                                    launchConfig=launch_config,
+                                    scale=2,
+                                    retainIp=True)
+    service = client.wait_success(service)
+    stack.activateservices()
+    service = client.wait_success(service, 120)
+    instances = _get_instance_for_service(client, service.id)
+    assert instances[0].primaryIpAddress == "10.42.100.100"
+    assert instances[1].primaryIpAddress == "10.42.100.101"
+
+    labels = {
+        "io.rancher.container.requested_ip":
+            "10.42.100.100, 10.42.100.101, 10.42.100.102"
+    }
+    new_launch_config = {"imageUuid": image_uuid,
+                         "labels": labels,
+                         }
+    strategy = {"launchConfig": new_launch_config,
+                "intervalMillis": 100}
+    service = service.upgrade_action(inServiceStrategy=strategy)
+    service = client.wait_success(service)
+    service = client.wait_success(service.finishupgrade())
+
+    service = client.update(service, scale=3)
+    service = client.wait_success(service, 120)
+
+    instances = _get_instance_for_service(client, service.id)
+    result = []
+    result.append(instances[0].primaryIpAddress)
+    result.append(instances[1].primaryIpAddress)
+    result.append(instances[2].primaryIpAddress)
+    result = sorted(result)
+    assert result == sorted(["10.42.100.100",
+                             "10.42.100.101",
+                             "10.42.100.102"])
+
+    service = client.delete(service)
+    client.wait_success(service, 120)
+
+    labels = {
+        "io.rancher.container.requested_ip": "10.42.100.100"
+    }
+    launch_config1 = {"imageUuid": image_uuid,
+                      "labels": labels,
+                      }
+    service1 = client.create_service(name=random_str(),
+                                     stackId=stack.id,
+                                     launchConfig=launch_config1,
+                                     scale=1,
+                                     retainIp=True)
+    service1 = client.wait_success(service1)
+    stack.activateservices()
+    service1 = client.wait_success(service1, 120)
+    instances = _get_instance_for_service(client, service1.id)
+    assert instances[0].primaryIpAddress == "10.42.100.100"
+
+    container = client.create_container(imageUuid=context.image_uuid,
+                                        startOnCreate=False,
+                                        retainIp=True,
+                                        )
+    container = super_client.wait_success(container)
+    container.data.fields['requestedIpAddress'] = '10.42.100.101'
+    container = super_client.update(container, data=container.data)
+    container = super_client.wait_success(container.start())
+    assert container.primaryIpAddress == '10.42.100.101'
+
+    service2 = client.create_service(name=random_str(),
+                                     stackId=stack.id,
+                                     launchConfig=new_launch_config,
+                                     scale=1,
+                                     retainIp=True)
+    service2 = client.wait_success(service2)
+    stack.activateservices()
+    service2 = client.wait_success(service2, 120)
+    instances = _get_instance_for_service(client, service2.id)
+    assert instances[0].primaryIpAddress == "10.42.100.102"
+    service2 = client.update(service2, scale=2)
+    service2 = client.wait_success(service2, 120)
+    instances = _get_instance_for_service(client, service2.id)
+    assert instances[1].primaryIpAddress not in ["10.42.100.100",
+                                                 "10.42.100.101",
+                                                 "10.42.100.102"]

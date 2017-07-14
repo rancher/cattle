@@ -19,6 +19,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jooq.exception.DataAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +55,7 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
         }
 
         while (result.size() < count) {
-            String item = getItem(keys, pool, qualifier, options.getRequestedItem());
+            String item = getItem(keys, pool, qualifier, options);
 
             if (item == null) {
                 break;
@@ -132,9 +133,14 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
         return (resources == null || resources.size() == 0) ? null : resources.get(0);
     }
 
-    protected String getItem(Map<Object, Object> keys, Object pool, String qualifier, String tryItem) {
+    protected String getItem(Map<Object, Object> keys, Object pool, String qualifier, PooledResourceOptions options) {
         PooledResourceItemGenerator generator = null;
-
+        List<String> tryItems = new ArrayList<>();
+        if (options.getRequestedItems() != null) {
+            tryItems.addAll(options.getRequestedItems());
+        } else {
+            tryItems.add(options.getRequestedItem());
+        }
         for (PooledResourceItemGeneratorFactory factory : factories) {
             generator = factory.getGenerator(pool, qualifier);
 
@@ -148,14 +154,22 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
             return null;
         }
 
+        // trying to allocate resource from tryItems
+        for (String item: tryItems) {
+            if (!StringUtils.isEmpty(item) && generator.isInPool(item)) {
+                Map<Object, Object> newKeys = new HashMap<Object, Object>(keys);
+                newKeys.put(RESOURCE_POOL.ITEM, item);
+                Map<String, Object> props = objectManager.convertToPropertiesFor(ResourcePool.class, newKeys);
+                try {
+                    return objectManager.create(ResourcePool.class, props).getItem();
+                } catch (DataAccessException e) {
+                    log.debug("Failed to create item [{}]", item);
+                }
+             }
+        }
+        // then allocate from generator
         while (generator.hasNext()) {
-            String item = null;
-            if (tryItem == null) {
-                item = generator.next();
-            } else {
-                item = generator.isInPool(tryItem) ? tryItem : generator.next();
-                tryItem = null;
-            }
+            String item = generator.next();
             Map<Object, Object> newKeys = new HashMap<Object, Object>(keys);
             newKeys.put(RESOURCE_POOL.ITEM, item);
 

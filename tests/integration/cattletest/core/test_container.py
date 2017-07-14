@@ -573,6 +573,42 @@ def test_container_request_ip(super_client, client, context):
         assert len(nics) == 0
 
 
+def test_container_request_ip_by_label(super_client, client, context):
+    labels = {
+        "io.rancher.container.requested_ip": "10.42.99.100, 10.42.99.101"
+    }
+    for i in range(2):
+        container1 = client.create_container(imageUuid=context.image_uuid,
+                                             labels=labels)
+        container1 = client.wait_success(container1)
+        assert container1.primaryIpAddress == '10.42.99.100'
+
+        container2 = client.create_container(imageUuid=context.image_uuid,
+                                             labels=labels)
+        container2 = client.wait_success(container2)
+        assert container2.primaryIpAddress == '10.42.99.101'
+
+        container3 = client.create_container(imageUuid=context.image_uuid,
+                                             labels=labels)
+        container3 = client.wait_success(container3)
+        assert container3.primaryIpAddress not in ['10.42.99.100',
+                                                   '10.42.99.101']
+
+        container1 = super_client.wait_success(super_client.delete(container1))
+        container1 = super_client.wait_success(container1.purge())
+        container2 = super_client.wait_success(super_client.delete(container2))
+        container2 = super_client.wait_success(container2.purge())
+        container3 = super_client.wait_success(super_client.delete(container3))
+        container3 = super_client.wait_success(container3.purge())
+
+        nics1 = container1.nics()
+        nics2 = container2.nics()
+        nics3 = container3.nics()
+        assert len(nics1) == 0
+        assert len(nics2) == 0
+        assert len(nics3) == 0
+
+
 def test_container_long_labels(context, client):
     key = 'k' * 1025
     value = 'k' * 4097
