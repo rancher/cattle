@@ -1,5 +1,7 @@
 ---
 matrix:
+  DOCKER_VERSION:
+  - 17.03.1-ce
   API_VERSION:
   - v1
   - v2
@@ -10,8 +12,10 @@ matrix:
 pipeline:
   build:
     privileged: true
-    image: rancher/dapper:1.10.3
+    image: rancher/dapper:1.11.2
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      DOCKER_VERSION: ${DOCKER_VERSION}
     commands:
     - dapper ci
