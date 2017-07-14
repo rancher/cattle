@@ -326,20 +326,26 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
 
         // allocate ip address if not set
         if (DataAccessor.fieldBool(service, ServiceConstants.FIELD_SERVICE_RETAIN_IP)) {
-            Object requestedIpObj = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
-                    InstanceConstants.FIELD_REQUESTED_IP_ADDRESS);
-            String requestedIp = null;
-            if (requestedIpObj != null) {
-                requestedIp = requestedIpObj.toString();
+            List<String> requestedIps = new ArrayList<>();
+            Object requestedIpObj = ServiceDiscoveryUtil
+                    .getLaunchConfigObject(service, launchConfigName,
+                            InstanceConstants.FIELD_REQUESTED_IP_ADDRESS);
+            if (requestedIpObj != null && !StringUtils.isEmpty(requestedIpObj.toString())) {
+                requestedIps.addAll(Arrays.asList(StringUtils.stripAll(StringUtils.split(requestedIpObj.toString(), ","))));
             } else {
                 // can be passed via labels
-                Object labels = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
+                Object labels = ServiceDiscoveryUtil.getLaunchConfigObject(
+                        service, launchConfigName,
                         InstanceConstants.FIELD_LABELS);
                 if (labels != null) {
-                    requestedIp = ((Map<String, String>) labels).get(SystemLabels.LABEL_REQUESTED_IP);
+                    String requestedIp = ((Map<String, String>) labels)
+                            .get(SystemLabels.LABEL_REQUESTED_IP);
+                    if (!StringUtils.isEmpty(requestedIp)) {
+                        requestedIps.addAll(Arrays.asList(StringUtils.stripAll(StringUtils.split(requestedIp, ","))));
+                    }
                 }
             }
-            context.sdService.allocateIpToServiceIndex(service, serviceIndexObj, requestedIp);
+            context.sdService.allocateIpToServiceIndex(service, serviceIndexObj, requestedIps);
         }
 
         return serviceIndexObj;
