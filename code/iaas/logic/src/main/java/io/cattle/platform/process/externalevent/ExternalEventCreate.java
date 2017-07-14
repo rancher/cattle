@@ -4,7 +4,7 @@ import static io.cattle.platform.core.constants.ExternalEventConstants.*;
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
-
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ExternalEventConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
@@ -14,6 +14,7 @@ import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.dao.StoragePoolDao;
 import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Agent;
+import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.ExternalEvent;
 import io.cattle.platform.core.model.Host;
@@ -208,8 +209,10 @@ public class ExternalEventCreate extends AbstractDefaultProcessHandler {
                         String fqdn = DataAccessor.fieldString(event, ExternalEventConstants.FIELD_FQDN);
                         String serviceName = DataAccessor
                                 .fieldString(event, ExternalEventConstants.FIELD_SERVICE_NAME);
+                        String containerName = DataAccessor
+                                .fieldString(event, ExternalEventConstants.FIELD_CONTAINER_NAME);
                         String stackName = DataAccessor.fieldString(event, ExternalEventConstants.FIELD_STACK_NAME);
-                        if (fqdn == null || serviceName == null || stackName == null) {
+                        if ((fqdn == null || stackName == null) || (serviceName == null && containerName == null)) {
                             log.info("External DNS [event: " + event.getId() + "] misses some fields");
                             return;
                         }
@@ -220,18 +223,34 @@ public class ExternalEventCreate extends AbstractDefaultProcessHandler {
                             log.info("Stack not found for external DNS [event: " + event.getId() + "]");
                             return;
                         }
-                        Service service = objectManager.findAny(Service.class, SERVICE.ACCOUNT_ID,
-                                event.getAccountId(), SERVICE.REMOVED, null, SERVICE.STACK_ID, stack.getId(),
-                                SERVICE.NAME, serviceName);
-                        if (service == null) {
-                            log.info("Service not found for external DNS [event: " + event.getId() + "]");
-                            return;
+
+                        Object serviceOrInstance = null;
+                        if (serviceName != null) {
+                            Service service = objectManager.findAny(Service.class, SERVICE.ACCOUNT_ID,
+                                    event.getAccountId(), SERVICE.REMOVED, null, SERVICE.STACK_ID, stack.getId(),
+                                    SERVICE.NAME, serviceName);
+                            if (service == null) {
+                                log.info("Service not found for external DNS [event: " + event.getId() + "]");
+                                return;
+                            }
+                            serviceOrInstance = service;
+                        } else if (containerName != null) {
+                            Instance container = objectManager.findAny(Instance.class, INSTANCE.ACCOUNT_ID,
+                                    event.getAccountId(), INSTANCE.REMOVED, null, INSTANCE.STACK_ID, stack.getId(),
+                                    INSTANCE.NAME, containerName, INSTANCE.SERVICE_ID, null);
+                            if (container == null) {
+                                log.info("Standalone Container not found for external DNS [event: " + event.getId() + "]");
+                                return;
+                            }
+                            serviceOrInstance = container;
                         }
-                        Map<String, Object> data = new HashMap<>();
-                        data.put(ExternalEventConstants.FIELD_FQDN, fqdn);
-                        DataUtils.getWritableFields(service).putAll(data);
-                        objectManager.persist(service);
-                        objectProcessManager.scheduleStandardProcessAsync(StandardProcess.UPDATE, service, data);
+                        if(serviceOrInstance != null) {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put(ExternalEventConstants.FIELD_FQDN, fqdn);
+                            DataUtils.getWritableFields(serviceOrInstance).putAll(data);
+                            objectManager.persist(serviceOrInstance);
+                            objectProcessManager.scheduleStandardProcessAsync(StandardProcess.UPDATE, serviceOrInstance, data);
+                        }
                     }
                 });
     }

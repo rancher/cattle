@@ -42,6 +42,7 @@ public class ExternalEventConstants {
     public static final String PROC_VOL_DEACTIVATE = "volume.deactivate";
     public static final String PROC_VOL_REMOVE = "volume.remove";
     public static final String FIELD_SERVICE_NAME = "serviceName";
+    public static final String FIELD_CONTAINER_NAME = "containerName";
     public static final String FIELD_STACK_NAME = "stackName";
     public static final String FIELD_FQDN = "fqdn";
     public static final String FIELD_HOST_LABEL = "hostLabel";

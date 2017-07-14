@@ -81,6 +81,7 @@
         "container.devices" : "cr",
         "container.dns" : "cr",
         "container.dnsSearch" : "cr",
+        "container.fqdn" : "r",
         "container.domainName" : "cr",
         "container.entryPoint" : "cr",
         "container.environment" : "cr",
@@ -248,6 +249,7 @@
         "externalDnsEvent.fqdn" : "r",
         "externalDnsEvent.serviceName" : "r",
         "externalDnsEvent.stackName" : "r",
+        "externalDnsEvent.containerName" : "r",
 
         "externalServiceEvent" : "r",
         "externalServiceEvent.service" : "r",

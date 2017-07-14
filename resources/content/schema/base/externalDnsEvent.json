@@ -4,6 +4,10 @@
             "type":"string",
             "create": true
         },
+        "containerName":{
+            "type":"string",
+            "create": true
+        },
         "stackName":{
             "type":"string",
             "create": true

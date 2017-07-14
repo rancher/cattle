@@ -135,6 +135,11 @@
             "type": "array[string]",
             "nullable": true
         },
+        "fqdn":{
+            "type": "string",
+            "required": false,
+            "nullable": true
+        },
         "instanceLinks": {
             "type": "map[reference[instance]]",
             "create": true,
