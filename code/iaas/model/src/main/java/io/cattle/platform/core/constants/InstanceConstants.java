@@ -69,6 +69,7 @@ public class InstanceConstants {
     public static final String FIELD_MEMORY = "memory";
     public static final String FIELD_MEMORY_RESERVATION = "memoryReservation";
     public static final String FIELD_MOUNTS = "mounts";
+    public static final String FIELD_RETAIN_IP = "retainIp";
     public static final String FIELD_HEALTHCHECK_STATES = "healthcheckStates";
 
     public static final String PROCESS_DATA_NO_OP = "containerNoOpEvent";

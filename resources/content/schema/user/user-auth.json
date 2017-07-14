@@ -872,6 +872,7 @@
         "launchConfig.requestedIpAddress": "cr",
         "launchConfig.resourceActions.logs" : "",
         "launchConfig.ports" : "cru",
+        "launchConfig.retainIp" : "r",
 
         "secondaryLaunchConfig" : "cr",
         "secondaryLaunchConfig.name" : "cr",
