@@ -1,7 +1,5 @@
 package io.github.ibuildthecloud.gdapi.validation;
 
-import static io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes.*;
-
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
@@ -19,6 +17,10 @@ import io.github.ibuildthecloud.gdapi.util.DateUtils;
 import io.github.ibuildthecloud.gdapi.util.RequestUtils;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.util.TypeUtils;
+import org.apache.commons.beanutils.ConvertUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,10 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.beanutils.ConvertUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes.*;
 
 public class ValidationHandler extends AbstractResponseGenerator {
 
@@ -261,6 +260,7 @@ public class ValidationHandler extends AbstractResponseGenerator {
                 validationContext.ignoreDefaults = context.ignoreDefaults;
                 return validateRawOperationField(schema, lastSubTypeName, mapValue, true, validationContext, null);
             }
+            throw new IllegalStateException("Do not know how to convert type [" + type + "]");
         default:
             throw new IllegalStateException("Do not know how to convert type [" + type + "]");
         }

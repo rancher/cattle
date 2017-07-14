@@ -41,22 +41,21 @@ public class LoopFactoryImpl implements LoopFactory {
     ServiceLifecycleManager sdService;
 
     public LoopFactoryImpl(ActivityService activityService, CatalogService catalogService, Deployinator deployinator,
-            EventService eventService, HostDao hostDao, LoopManager loopManager, ObjectManager objectManager,
-            ObjectProcessManager processManager, ScheduledExecutorService scheduledExecutorService, ServiceLifecycleManager sdService) {
+                           EventService eventService, HostDao hostDao, ObjectManager objectManager,
+                           ObjectProcessManager processManager, ScheduledExecutorService scheduledExecutorService,
+                           ServiceLifecycleManager sdService, LoopManager loopManager,
+                           EnvironmentResourceManager envResourceManager) {
         super();
         this.activityService = activityService;
         this.catalogService = catalogService;
         this.deployinator = deployinator;
         this.eventService = eventService;
         this.hostDao = hostDao;
-        this.loopManager = loopManager;
         this.objectManager = objectManager;
         this.processManager = processManager;
         this.scheduledExecutorService = scheduledExecutorService;
         this.sdService = sdService;
-    }
-
-    public void setEnvResourceManager(EnvironmentResourceManager envResourceManager) {
+        this.loopManager = loopManager;
         this.envResourceManager = envResourceManager;
     }
 
@@ -98,4 +97,11 @@ public class LoopFactoryImpl implements LoopFactory {
         throw new IllegalArgumentException("Unknown loop " + name);
     }
 
+    public void setEnvResourceManager(EnvironmentResourceManager envResourceManager) {
+        this.envResourceManager = envResourceManager;
+    }
+
+    public void setLoopManager(LoopManager loopManager) {
+        this.loopManager = loopManager;
+    }
 }

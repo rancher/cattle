@@ -1,7 +1,5 @@
 package io.cattle.platform.inator.util;
 
-import static io.cattle.platform.util.type.CollectionUtils.*;
-
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -12,6 +10,8 @@ import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.Date;
 import java.util.Set;
+
+import static io.cattle.platform.util.type.CollectionUtils.*;
 
 public class StateUtil {
 
@@ -68,7 +68,7 @@ public class StateUtil {
     }
 
     public static boolean isHealthy(String healthState) {
-        return HealthcheckConstants.HEALTH_STATE_HEALTHY.equals(healthState);
+        return healthState == null || HealthcheckConstants.HEALTH_STATE_HEALTHY.equals(healthState);
     }
 
     public static boolean isUnhealthy(String healthState) {

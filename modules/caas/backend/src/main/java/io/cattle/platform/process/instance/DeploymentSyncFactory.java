@@ -2,6 +2,7 @@ package io.cattle.platform.process.instance;
 
 import io.cattle.platform.agent.util.AgentUtils;
 import io.cattle.platform.core.addon.DeploymentSyncRequest;
+import io.cattle.platform.core.addon.DeploymentSyncResponse;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -15,6 +16,8 @@ import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.util.SystemLabels;
+import io.cattle.platform.eventing.model.Event;
+import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.server.context.ServerContext;
@@ -40,12 +43,19 @@ public class DeploymentSyncFactory {
     VolumeDao volumeDao;
     ObjectManager objectManager;
     ServiceAccountCreateStartup serviceAccount;
+    JsonMapper jsonMapper;
 
-    public DeploymentSyncFactory(InstanceDao instanceDao, VolumeDao volumeDao, ObjectManager objectManager, ServiceAccountCreateStartup serviceAccount) {
+    public DeploymentSyncFactory(InstanceDao instanceDao, VolumeDao volumeDao, ObjectManager objectManager, ServiceAccountCreateStartup serviceAccount,
+                                 JsonMapper jsonMapper) {
         this.instanceDao = instanceDao;
         this.volumeDao = volumeDao;
         this.objectManager = objectManager;
         this.serviceAccount = serviceAccount;
+        this.jsonMapper = jsonMapper;
+    }
+
+    public DeploymentSyncResponse getResponse(Event event) {
+        return jsonMapper.convertValue(event.getData(), DeploymentSyncResponse.class);
     }
 
     public DeploymentSyncRequest construct(Instance resource) {

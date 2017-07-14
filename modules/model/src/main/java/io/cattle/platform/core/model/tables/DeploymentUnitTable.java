@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class DeploymentUnitTable extends TableImpl<DeploymentUnitRecord> {
 
-    private static final long serialVersionUID = -2105243344;
+    private static final long serialVersionUID = -2121706611;
 
     /**
      * The reference instance of <code>cattle.deployment_unit</code>
@@ -124,11 +124,6 @@ public class DeploymentUnitTable extends TableImpl<DeploymentUnitRecord> {
      * The column <code>cattle.deployment_unit.environment_id</code>.
      */
     public final TableField<DeploymentUnitRecord, Long> STACK_ID = createField("environment_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
-
-    /**
-     * The column <code>cattle.deployment_unit.health_state</code>.
-     */
-    public final TableField<DeploymentUnitRecord, String> HEALTH_STATE = createField("health_state", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
     /**
      * The column <code>cattle.deployment_unit.host_id</code>.

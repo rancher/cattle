@@ -2,7 +2,6 @@ package io.cattle.platform.process.instance;
 
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.core.constants.AccountConstants;
-import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.util.SystemLabels;
@@ -42,7 +41,7 @@ public class K8sProviderLabels extends AgentBasedProcessHandler {
     protected Object getAgentResource(ProcessState state, ProcessInstance process, Object dataResource) {
         Instance instance = getInstance(state);
         if (!isPod(instance)) {
-            return false;
+            return null;
         }
         Long accountId = instance.getAccountId();
         List<Long> agentIds = envResourceManager.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_LABELS_PROVIDER, accountId);
@@ -69,10 +68,10 @@ public class K8sProviderLabels extends AgentBasedProcessHandler {
     }
 
     protected boolean isPod(Instance instance) {
-        Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
-        Object namespace = labels.get(K8sLifecycleManagerImpl.POD_NAMESPACE);
-        Object name = labels.get(K8sLifecycleManagerImpl.POD_NAME);
-        Object containerName = labels.get(K8sLifecycleManagerImpl.CONTAINER_NAME);
+        Map<String, String> labels = DataAccessor.getLabels(instance);
+        String namespace = labels.get(K8sLifecycleManagerImpl.POD_NAMESPACE);
+        String name = labels.get(K8sLifecycleManagerImpl.POD_NAME);
+        String containerName = labels.get(K8sLifecycleManagerImpl.CONTAINER_NAME);
         if (namespace == null || name == null) {
             return false;
         }

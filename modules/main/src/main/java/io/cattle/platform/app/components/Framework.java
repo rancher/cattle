@@ -62,7 +62,9 @@ import org.jooq.impl.DefaultTransactionProvider;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -104,7 +106,7 @@ public class Framework {
     RetryTimeoutService retryTimeoutService;
     TransactionDelegate transaction;
 
-    ThreadPoolExecutor executorService = new ThreadPoolExecutor(0, 200, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), (r) -> {
+    ThreadPoolExecutor executorService = new ThreadPoolExecutor(0, 2000, 5L, TimeUnit.SECONDS, new SynchronousQueue<>(), (r) -> {
         Thread t = new Thread(r);
         t.setName("core-" + COUNTER.incrementAndGet());
         return t;
@@ -141,7 +143,7 @@ public class Framework {
     }
 
     private void setupLockAndEventing() {
-        retryTimeoutService = new RetryTimeoutServiceImpl(executorService);
+        retryTimeoutService = new RetryTimeoutServiceImpl(executorService, scheduledExecutorService);
         lockManager = new LockManagerImpl(new InMemoryLockProvider());
         lockDelegator = new LockDelegatorImpl(lockManager, executorService);
         eventService = new InMemoryEventService(retryTimeoutService, executorService, jsonMapper);
@@ -158,7 +160,7 @@ public class Framework {
                 triggers);
         processInstanceExecutor = new ProcessInstanceDispatcherImpl(defaultProcessManager);
         processManager = new DefaultObjectProcessManager(defaultProcessManager, coreSchemaFactory, objectManager);
-        idFormatter = new TypeIdFormatter(coreSchemaFactory);
+        idFormatter = buildIdFormatter();
         resourceMonitor = new ResourceMonitorImpl(objectManager, metaDataManager, idFormatter);
         resourcePoolManager = new ResourcePoolManagerImpl(objectManager,
                 new MacAddressGeneratorFactory(),
@@ -217,6 +219,19 @@ public class Framework {
                 .set(jooqConfig.connectionProvider())
                 .set(new DefaultTransactionProvider(jooqConfig.connectionProvider(), false))
                 .set(jooqConfig.executeListenerProviders());
+    }
+
+    private IdFormatter buildIdFormatter() {
+        TypeIdFormatter idFormatter = new TypeIdFormatter(coreSchemaFactory);
+        Map<String, String> mapping = new HashMap<>();
+        mapping.put("stack", "st");
+        mapping.put("secret", "se");
+
+        idFormatter.setSchemaFactory(coreSchemaFactory);
+        idFormatter.setPlainTypes(new HashSet<>(Arrays.asList("typeDocumentation", "scripts")));
+        idFormatter.setTypeMappings(mapping);
+
+        return idFormatter;
     }
 
 }

@@ -26,6 +26,7 @@ public class InstanceStart extends DeploymentSyncRequestHandler {
     public InstanceStart(AgentLocator agentLocator, ObjectSerializer serializer, ObjectManager objectManager, ObjectProcessManager processManager, DeploymentSyncFactory syncFactory) {
         super(agentLocator, serializer, objectManager, processManager, syncFactory);
         sendNoOp = true;
+        commandName = "compute.instance.activate";
         processDataKeys = Arrays.asList("containerNoOpEvent");
     }
 

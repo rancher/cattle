@@ -189,17 +189,6 @@ public interface DeploymentUnit extends Serializable {
     public Long getStackId();
 
     /**
-     * Setter for <code>cattle.deployment_unit.health_state</code>.
-     */
-    public void setHealthState(String value);
-
-    /**
-     * Getter for <code>cattle.deployment_unit.health_state</code>.
-     */
-    @Column(name = "health_state", length = 255)
-    public String getHealthState();
-
-    /**
      * Setter for <code>cattle.deployment_unit.host_id</code>.
      */
     public void setHostId(Long value);

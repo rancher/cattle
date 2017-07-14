@@ -1,6 +1,7 @@
 package io.cattle.platform.inator.wrapper;
 
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
@@ -16,11 +17,10 @@ import io.cattle.platform.inator.util.StateUtil;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.TransitioningUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Date;
 import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class DeploymentUnitWrapper implements BasicStateWrapper {
 
@@ -89,7 +89,7 @@ public class DeploymentUnitWrapper implements BasicStateWrapper {
 
     @Override
     public String getHealthState() {
-        return unit.getHealthState();
+        return HealthcheckConstants.HEALTH_STATE_HEALTHY;
     }
 
     @Override
@@ -226,7 +226,7 @@ public class DeploymentUnitWrapper implements BasicStateWrapper {
     }
 
     public String getTransitioningMessage() {
-        return TransitioningUtils.getTransitioningError(unit);
+        return TransitioningUtils.getTransitioningErrorMessage(unit);
     }
 
 }

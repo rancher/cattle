@@ -13,6 +13,14 @@ public class InstanceStatus {
     String state;
     Map<String, Object> dockerInspect;
 
+    public InstanceStatus() {
+    }
+
+    public InstanceStatus(String instanceUuid, String externalId) {
+        this.instanceUuid = instanceUuid;
+        this.externalId = externalId;
+    }
+
     public String getInstanceUuid() {
         return instanceUuid;
     }

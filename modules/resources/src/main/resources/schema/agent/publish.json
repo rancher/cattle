@@ -25,10 +25,6 @@
         "transitioning": {
             "create": true
         },
-        "transitioningInternalMessage": {
-            "create": true,
-            "nullable": true
-        },
         "transitioningMessage": {
             "create": true,
             "nullable": true

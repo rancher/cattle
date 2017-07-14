@@ -48,7 +48,6 @@ public class ServiceConstants {
     public static final String FIELD_BLKIOOPTIONS = "blkioDeviceOptions";
     public static final String FIELD_LOAD_BALANCER_CONFIG = "loadBalancerConfig";
     public static final String FIELD_EXTERNALIPS = "externalIpAddresses";
-    public static final String FIELD_LINKED_SERVICES = "linkedServices";
     public static final String FIELD_SERVICE_LINKS = "serviceLinks";
     public static final String FIELD_NETWORK_LAUNCH_CONFIG = "networkLaunchConfig";
     public static final String FIELD_IPC_LAUNCH_CONFIG = "networkLaunchConfig";

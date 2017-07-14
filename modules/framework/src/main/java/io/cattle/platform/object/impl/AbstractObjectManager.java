@@ -175,33 +175,6 @@ public abstract class AbstractObjectManager implements ObjectManager {
         return Collections.emptyList();
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T> T getObjectByRelationship(Object obj, Relationship rel) {
-        if (rel == null || obj == null) {
-            return null;
-        }
-
-        if (rel.isListResult()) {
-            throw new IllegalArgumentException("Relationation arguement is not a singular result");
-        }
-
-        Object id = ObjectUtils.getProperty(obj, rel.getPropertyName());
-
-        return id == null ? null : (T) loadResource(rel.getObjectType(), id.toString());
-    }
-
-    @Override
-    public boolean isKind(Object obj, String kind) {
-        if (obj == null) {
-            return false;
-        }
-
-        Object kindField = ObjectUtils.getPropertyIgnoreErrors(obj, ObjectMetaDataManager.KIND_FIELD);
-        /* At some point should check hierarchies... */
-        return kindField != null && kindField.equals(kind);
-    }
-
     @Override
     public SchemaFactory getSchemaFactory() {
         return schemaFactory;

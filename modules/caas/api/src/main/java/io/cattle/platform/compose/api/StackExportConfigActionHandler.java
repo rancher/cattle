@@ -35,7 +35,7 @@ public class StackExportConfigActionHandler implements ActionHandler {
         List<? extends Long> serviceIds = DataAccessor.fromMap(request.getRequestObject())
                 .withKey(ServiceConstants.FIELD_SERVICE_IDS).asList(Long.class);
 
-        List<? extends Service> services = objectManager.mappedChildren(stack, Service.class);
+        List<? extends Service> services = objectManager.children(stack, Service.class);
         List<Service> toExport = new ArrayList<>();
         for (Service service : services) {
             // export only non-removed requested services

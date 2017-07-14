@@ -69,12 +69,13 @@ public class NetworkLifecycleManagerImpl implements NetworkLifecycleManager {
     private void setupRequestedIp(Instance instance) {
         String ip = getLabel(instance, SystemLabels.LABEL_REQUESTED_IP);
         if (StringUtils.isNotBlank(ip)) {
-            setLabel(instance, InstanceConstants.FIELD_REQUESTED_IP_ADDRESS, ip);
+            setField(instance, InstanceConstants.FIELD_REQUESTED_IP_ADDRESS, ip);
         }
     }
 
     private Network resolveNetworkMode(Instance instance) throws LifecycleException {
         String mode = networkService.getNetworkMode(DataAccessor.getFields(instance));
+        setField(instance, InstanceConstants.FIELD_NETWORK_MODE, mode);
 
         Network network = networkService.resolveNetwork(instance.getAccountId(), mode);
         if (network == null && StringUtils.isNotBlank(mode) && !instance.getNativeContainer()) {

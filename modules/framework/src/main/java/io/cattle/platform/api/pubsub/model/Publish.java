@@ -39,7 +39,4 @@ public interface Publish {
     @Field(create = true)
     String getTransitioningMessage();
 
-    @Field(create = true)
-    String getTransitioningInternalMessage();
-
 }

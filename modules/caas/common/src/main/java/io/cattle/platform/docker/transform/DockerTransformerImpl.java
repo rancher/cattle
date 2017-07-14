@@ -633,6 +633,7 @@ public class DockerTransformerImpl implements DockerTransformer {
     @Override
     public int getExitCode(Instance instance) {
         Object obj = CollectionUtils.getNestedValue(instance.getData(),
+                DataAccessor.FIELDS,
                 FIELD_DOCKER_INSPECT,
                 "State",
                 "ExitCode");

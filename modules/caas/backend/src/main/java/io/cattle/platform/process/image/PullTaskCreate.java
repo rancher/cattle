@@ -120,7 +120,7 @@ public class PullTaskCreate implements ProcessHandler {
                 AsyncUtils.get(future);
                 cleanupFutures.put(host, pullImage(cred, host, mode, image, tag, true));
             } catch (EventExecutionException e) {
-                pullTask = setStatus(pullTask, status, errors, host, e.getTransitioningInternalMessage(), true);
+                pullTask = setStatus(pullTask, status, errors, host, e.getMessage(), true);
             }
         }
 

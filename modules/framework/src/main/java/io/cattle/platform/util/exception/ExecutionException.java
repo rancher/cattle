@@ -4,52 +4,34 @@ public class ExecutionException extends RuntimeException {
 
     private static final long serialVersionUID = -6264703257346922100L;
 
-    String transitioningMessage;
     Object[] resources = new Object[0];
 
     public ExecutionException() {
-        super();
-    }
-
-    public ExecutionException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public ExecutionException(Throwable cause, Object resource) {
-        super(cause.getMessage(), cause);
-        this.transitioningMessage = cause.getMessage();
-        this.resources = new Object[] { resource };
-    }
-
-    public ExecutionException(String message, Throwable cause, String transitioningMessage, Object... resources) {
-        super(message, cause);
-        this.transitioningMessage = transitioningMessage;
-        this.resources = resources;
     }
 
     public ExecutionException(String message) {
         super(message);
     }
 
-    public ExecutionException(String message, String transitioningMessage, Object... resources) {
-        super(message);
-        this.transitioningMessage = transitioningMessage;
+    public ExecutionException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public ExecutionException(String message, Throwable cause, Object... resources) {
+        super(message, cause);
         this.resources = resources;
     }
 
-    public ExecutionException(String message, Object resource) {
-        this(message, null, resource);
+    public ExecutionException(String message, Object... resources) {
+        super(message);
+        this.resources = resources;
     }
 
-    public ExecutionException(Throwable cause) {
-        super(cause);
+    public ExecutionException(Throwable cause, Object... resources) {
+        this(cause.getMessage(), cause, resources);
     }
 
     public String getTransitioningMessage() {
-        return transitioningMessage;
-    }
-
-    public String getTransitioningInternalMessage() {
         return getMessage();
     }
 

@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class InstanceTable extends TableImpl<InstanceRecord> {
 
-    private static final long serialVersionUID = -903759312;
+    private static final long serialVersionUID = 2146167555;
 
     /**
      * The reference instance of <code>cattle.instance</code>
@@ -251,6 +251,11 @@ public class InstanceTable extends TableImpl<InstanceRecord> {
     public final TableField<InstanceRecord, Date> UPGRADE_TIME = createField("upgrade_time", org.jooq.impl.SQLDataType.TIMESTAMP, this, "", new DateConverter());
 
     /**
+     * The column <code>cattle.instance.revision</code>.
+     */
+    public final TableField<InstanceRecord, Long> REVISION = createField("revision", org.jooq.impl.SQLDataType.BIGINT.nullable(false).defaultValue(org.jooq.impl.DSL.inline("0", org.jooq.impl.SQLDataType.BIGINT)), this, "");
+
+    /**
      * Create a <code>cattle.instance</code> table reference
      */
     public InstanceTable() {
@@ -310,6 +315,14 @@ public class InstanceTable extends TableImpl<InstanceRecord> {
     @Override
     public List<ForeignKey<InstanceRecord, ?>> getReferences() {
         return Arrays.<ForeignKey<InstanceRecord, ?>>asList(Keys.FK_INSTANCE__ACCOUNT_ID, Keys.FK_INSTANCE__AGENT_ID, Keys.FK_INSTANCE__REGISTRY_CREDENTIAL_ID, Keys.FK_INSTANCE__INSTANCE_ID, Keys.FK_INSTANCE__SERVICE_ID, Keys.FK_INSTANCE__ENVIRONMENT_ID, Keys.FK_INSTANCE__DEPLOYMENT_UNIT_ID, Keys.FK_INSTANCE__REVISION_ID, Keys.FK_INSTANCE__HOST_ID, Keys.FK_INSTANCE__NETWORK_ID);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public TableField<InstanceRecord, Long> getRecordVersion() {
+        return REVISION;
     }
 
     /**

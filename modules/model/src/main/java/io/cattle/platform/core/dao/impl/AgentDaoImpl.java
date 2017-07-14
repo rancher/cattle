@@ -1,15 +1,8 @@
 package io.cattle.platform.core.dao.impl;
 
-import static io.cattle.platform.core.model.tables.AgentTable.*;
-import static io.cattle.platform.core.model.tables.CredentialTable.*;
-import static io.cattle.platform.core.model.tables.HostTable.*;
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
-import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
-
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.constants.StoragePoolConstants;
 import io.cattle.platform.core.dao.AgentDao;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.model.Agent;
@@ -22,6 +15,8 @@ import io.cattle.platform.core.model.tables.records.HostRecord;
 import io.cattle.platform.core.model.tables.records.StoragePoolRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.util.DataAccessor;
+import org.jooq.Configuration;
+import org.jooq.Record1;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,8 +26,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jooq.Configuration;
-import org.jooq.Record1;
+import static io.cattle.platform.core.model.tables.AgentTable.*;
+import static io.cattle.platform.core.model.tables.CredentialTable.*;
+import static io.cattle.platform.core.model.tables.HostTable.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 
 public class AgentDaoImpl extends AbstractJooqDao implements AgentDao {
 
@@ -137,7 +135,7 @@ public class AgentDaoImpl extends AbstractJooqDao implements AgentDao {
                         .fetchInto(StoragePoolRecord.class);
 
         for ( StoragePool pool : poolList ) {
-            String uuid = DataAccessor.fieldString(pool, StoragePoolConstants.FIELD_REPORTED_UUID);
+            String uuid = pool.getExternalId();
             if ( uuid == null ) {
                 uuid = pool.getUuid();
             }

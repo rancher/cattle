@@ -117,7 +117,7 @@ public class AgentBasedProcessHandler implements CompletableLogic, Named {
             throw e;
         }
 
-        return new HandlerResult(getResourceDataMap(objectManager.getType(context.eventResource), context.reply.getData()));
+        return new HandlerResult(getResourceDataMap(context.request, context.reply, state, process, context.eventResource, context.dataResource, context.agentResource));
     }
 
     protected ListenableFuture<?> handleEvent(ProcessState state, ProcessInstance process, Object eventResource, Object dataResource, Object agentResource,
@@ -183,9 +183,9 @@ public class AgentBasedProcessHandler implements CompletableLogic, Named {
         });
     }
 
-    protected Map<Object, Object> getResourceDataMap(String type, Object data) {
-        Object result = CollectionUtils.toMap(data).get(type);
-        return result == null ? null : CollectionUtils.toMap(result);
+    protected Map<Object, Object> getResourceDataMap(EventVO<?> event, Event reply, ProcessState state, ProcessInstance process, Object eventResource,
+                                                     Object dataResource, Object agentResource) {
+        return null;
     }
 
     protected void postProcessEvent(EventVO<?> event, Event reply, ProcessState state, ProcessInstance process, Object eventResource, Object dataResource,
@@ -225,7 +225,7 @@ public class AgentBasedProcessHandler implements CompletableLogic, Named {
         this.name = name;
     }
 
-    private static class Context {
+    protected static class Context {
         EventVO<?> request;
         Event reply;
         Object eventResource;

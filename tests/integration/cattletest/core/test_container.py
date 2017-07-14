@@ -6,7 +6,7 @@ from common_fixtures import *  # NOQA
 
 
 def test_container_create_count(client, context):
-    cs = client.create_container(imageUuid=context.image_uuid,
+    cs = client.create_container(image=context.image_uuid,
                                  count=3)
 
     assert len(cs) == 3
@@ -41,15 +41,14 @@ def test_container_build(super_client, context, client):
 def test_container_create_only(super_client, client, context):
     uuid = "{}".format(random_num())
     container = super_client.create_container(accountId=context.project.id,
-                                              imageUuid=uuid,
+                                              image=uuid,
                                               name="test" + random_str(),
                                               startOnCreate=False)
 
     assert_fields(container, {
         "type": "container",
-        "allocationState": "inactive",
         "state": "creating",
-        "imageUuid": uuid,
+        "image": uuid,
         "firstRunning": None,
     })
 
@@ -57,36 +56,25 @@ def test_container_create_only(super_client, client, context):
 
     assert_fields(container, {
         "type": "container",
-        "allocationState": "inactive",
         "state": "stopped",
-        "imageUuid": uuid,
+        "image": uuid,
     })
 
     container = super_client.reload(container)
 
     assert container.instanceTriggeredStop == 'stop'
-
-    nics = container.nics()
-    assert len(nics) == 1
-
     return client.reload(container)
 
 
 def _assert_running(container):
     assert_fields(container, {
-        "allocationState": "active",
         "state": "running",
         "startCount": NOT_NONE,
         "hostId": NOT_NONE,
         "firstRunning": NOT_NONE
     })
 
-    instance_host_mappings = container.instanceHostMaps()
-    assert len(instance_host_mappings) == 1
-
-    assert_fields(instance_host_mappings[0], {
-        "state": "active"
-    })
+    assert container.hostId is not None
 
 
 def test_container_special_labels(client, context):
@@ -97,7 +85,7 @@ def test_container_special_labels(client, context):
     }
     container = client.create_container(accountId=context.project.id,
                                         networkMode='none',
-                                        imageUuid=uuid,
+                                        image=uuid,
                                         name="test" + random_str(),
                                         labels=labels,
                                         startOnCreate=False)
@@ -110,7 +98,7 @@ def test_container_special_labels(client, context):
 
 def test_container_create_then_start(super_client, client, context):
     container = client.create_container(startOnCreate=False,
-                                        imageUuid=context.image_uuid)
+                                        image=context.image_uuid)
     container = client.wait_success(container)
     container = container.start()
 
@@ -123,7 +111,7 @@ def test_container_create_then_start(super_client, client, context):
 
 
 def test_container_first_running(client, context):
-    c = client.create_container(imageUuid=context.image_uuid,
+    c = client.create_container(image=context.image_uuid,
                                 startOnCreate=False)
     c = client.wait_success(c)
 
@@ -182,15 +170,12 @@ def test_container_stop(client, super_client, context):
     container = client.wait_success(container)
 
     assert_fields(super_client.reload(container), {
-        "allocationState": "active",
         "state": "stopped"
     })
 
     container = super_client.reload(container)
 
-    instance_host_mappings = container.instanceHostMaps()
-    assert len(instance_host_mappings) == 1
-    assert instance_host_mappings[0].state == 'inactive'
+    assert container.hostId is not None
 
 
 def test_container_name_unique(context):
@@ -204,11 +189,11 @@ def test_container_name_unique(context):
 def test_container_name_unique_count(context, client):
     name = random_str()
     cs = client.create_container(name=name, count=2,
-                                 imageUuid=context.image_uuid)
+                                 image=context.image_uuid)
     assert len(cs) == 2
     with pytest.raises(ApiError) as e:
         client.create_container(name=name, count=2,
-                                imageUuid=context.image_uuid)
+                                image=context.image_uuid)
     assert e.value.error.code == 'NotUnique'
 
 
@@ -257,9 +242,7 @@ def test_container_purge(client, super_client, context):
 
     assert container.state == "removed"
     assert container.removed is not None
-
-    instance_host_mappings = super_client.reload(container).instanceHostMaps()
-    assert len(instance_host_mappings) == 0
+    assert container.hostId is None
 
 
 def test_start_stop(client, context):
@@ -282,7 +265,7 @@ def test_container_image_required(client):
     except ApiError as e:
         assert e.error.status == 422
         assert e.error.code == 'MissingRequired'
-        assert e.error.fieldName == 'imageUuid'
+        assert e.error.fieldName == 'image'
 
 
 def test_container_compute_fail(super_client, context):
@@ -412,11 +395,11 @@ def test_container_request_ip(super_client, client, context):
     for i in range(2):
         # Doing this twice essentially ensure that the IP gets freed the first
         # time
-        container = client.create_container(imageUuid=context.image_uuid,
+        container = client.create_container(image=context.image_uuid,
+                                            requestedIpAddress='10.42.33.33',
                                             startOnCreate=False)
         container = super_client.wait_success(container)
         assert container.state == 'stopped'
-        container.data.fields['requestedIpAddress'] = '10.42.33.33'
 
         container = super_client.update(container, data=container.data)
         container = super_client.wait_success(container.start())
@@ -424,7 +407,7 @@ def test_container_request_ip(super_client, client, context):
         assert container.primaryIpAddress == '10.42.33.33'
 
         # Try second time and should fail because it is used
-        container2 = client.create_container(imageUuid=context.image_uuid,
+        container2 = client.create_container(image=context.image_uuid,
                                              startOnCreate=False)
         container2 = super_client.wait_success(container2)
         assert container2.state == 'stopped'
@@ -436,10 +419,7 @@ def test_container_request_ip(super_client, client, context):
         assert container2.primaryIpAddress != '10.42.33.33'
 
         # Release 1.1.1.1
-        container = super_client.wait_success(super_client.delete(container))
-
-        nics = container.nics()
-        assert len(nics) == 0
+        super_client.wait_success(super_client.delete(container))
 
 
 def test_container_long_labels(context, client):
@@ -451,15 +431,14 @@ def test_container_long_labels(context, client):
 
 
 def test_container_network_modes(context, super_client):
+    client = context.client;
     c = context.create_container(networkMode=None)
     c = super_client.wait_success(c)
     assert c.state == 'running'
-    assert len(c.nics()) == 0
 
     target = context.create_container(networkMode='bridge')
     target = super_client.wait_success(target)
     assert c.state == 'running'
-    assert len(target.nics()) == 1
 
     for i in [('host', 'dockerHost'), ('none', 'dockerNone'),
               ('container', 'dockerContainer'), ('bridge', 'dockerBridge'),
@@ -473,8 +452,7 @@ def test_container_network_modes(context, super_client):
         c = context.create_container(**args)
         c = super_client.wait_success(c)
         assert c.state == 'running'
-        assert len(c.nics()) == 1
-        assert c.nics()[0].network().kind == i[1]
+        assert client.by_id_network(c.primaryNetworkId).kind == i[1]
 
 
 def test_container_resource_actions_json_state(context):
@@ -488,13 +466,13 @@ def test_container_resource_actions_json_state(context):
     assert 'logs' not in c
 
 
-def test_container_network_host_mode_w_dsn(context, super_client):
+def test_container_network_host_mode_w_dns(context, super_client):
     labels = {'io.rancher.container.dns': "true"}
+    client = context.client
     c = context.create_container(networkMode='host', labels=labels)
     c = super_client.wait_success(c)
     assert c.state == 'running'
-    assert len(c.nics()) == 1
-    assert c.nics()[0].network().kind == 'dockerHost'
+    assert client.by_id_network(c.primaryNetworkId).kind == 'dockerHost'
 
 
 def test_container_request_ip_from_label(new_context):

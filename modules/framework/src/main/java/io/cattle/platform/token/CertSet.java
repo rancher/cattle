@@ -1,5 +1,7 @@
 package io.cattle.platform.token;
 
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -7,8 +9,6 @@ import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 
 public class CertSet {
     X509Certificate cert;
@@ -45,7 +45,6 @@ public class CertSet {
     protected void write(ZipOutputStream zos, String name, Object obj) throws IOException {
         ZipEntry ze = new ZipEntry(name);
         zos.putNextEntry(ze);
-        @SuppressWarnings("resource")
         JcaPEMWriter writer = new JcaPEMWriter(new OutputStreamWriter(zos));
         writer.writeObject(obj);
         writer.flush();

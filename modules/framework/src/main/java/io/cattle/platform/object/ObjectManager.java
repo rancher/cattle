@@ -47,8 +47,6 @@ public interface ObjectManager {
 
     <T> List<T> children(Object obj, Class<T> type, String propertyName);
 
-    <T> List<T> mappedChildren(Object obj, Class<T> type);
-
     <T> T findOne(Class<T> clz, Map<Object, Object> values);
 
     <T> T findOne(Class<T> clz, Object key, Object... valueKeyValue);
@@ -63,11 +61,8 @@ public interface ObjectManager {
 
     <T> List<T> getListByRelationship(Object obj, Relationship relationship);
 
-    <T> T getObjectByRelationship(Object obj, Relationship relationship);
-
     String getType(Object obj);
 
     SchemaFactory getSchemaFactory();
 
-    boolean isKind(Object obj, String kind);
 }

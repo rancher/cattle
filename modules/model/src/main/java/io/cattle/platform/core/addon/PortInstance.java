@@ -3,10 +3,9 @@ package io.cattle.platform.core.addon;
 import io.cattle.platform.core.util.PortSpec;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
-
 import org.weakref.jmx.com.google.common.base.Objects;
 
-@Type(list = false, name = "PublicEndpoint")
+@Type(list = false, name = "publicEndpoint")
 public class PortInstance {
     /**
      * The IP the user requested. Typically this is null or 0.0.0.0

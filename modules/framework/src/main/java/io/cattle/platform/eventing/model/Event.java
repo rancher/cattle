@@ -1,9 +1,9 @@
 package io.cattle.platform.eventing.model;
 
-import java.util.Date;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+import java.util.Date;
 
 public interface Event {
 
@@ -39,9 +39,6 @@ public interface Event {
 
     @JsonInclude(Include.NON_EMPTY)
     String getTransitioningMessage();
-
-    @JsonInclude(Include.NON_EMPTY)
-    String getTransitioningInternalMessage();
 
     Object getData();
 

@@ -1,7 +1,5 @@
 package io.cattle.platform.allocator.service;
 
-import static io.cattle.platform.core.model.tables.ServiceTable.*;
-
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition;
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.AffinityOps;
 import io.cattle.platform.allocator.constraint.Constraint;
@@ -12,21 +10,20 @@ import io.cattle.platform.allocator.lock.AllocateConstraintLock;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.environment.EnvironmentResourceManager;
 import io.cattle.platform.lock.definition.LockDefinition;
+import io.cattle.platform.metadata.model.HostInfo;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
+import org.jooq.tools.StringUtils;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
-
-import org.jooq.tools.StringUtils;
 
 public class AllocationHelperImpl implements AllocationHelper {
 
@@ -44,30 +41,30 @@ public class AllocationHelperImpl implements AllocationHelper {
     }
 
     @Override
-    public List<Long> getAllHostsSatisfyingHostAffinity(Long accountId, Map<String, String> labelConstraints) {
+    public List<Long> getAllHostsSatisfyingHostAffinity(long accountId, Map<String, ?> labelConstraints) {
         return getHostsSatisfyingHostAffinityInternal(true, accountId, labelConstraints);
     }
 
     @Override
-    public List<Long> getHostsSatisfyingHostAffinity(Long accountId, Map<String, String> labelConstraints) {
+    public List<Long> getHostsSatisfyingHostAffinity(long accountId, Map<String, ?> labelConstraints) {
         return getHostsSatisfyingHostAffinityInternal(false, accountId, labelConstraints);
     }
 
-    protected List<Long> getHostsSatisfyingHostAffinityInternal(boolean includeRemoved, Long accountId, Map<String, String> labelConstraints) {
-        List<? extends Long> hosts = includeRemoved ? envResourceManager.getHosts(accountId) : envResourceManager.getActiveHosts(accountId);
+    protected List<Long> getHostsSatisfyingHostAffinityInternal(boolean includeRemoved, long accountId, Map<String, ?> labelConstraints) {
+        List<HostInfo> hosts = includeRemoved ? envResourceManager.getHosts(accountId) : envResourceManager.getActiveHosts(accountId);
 
         List<Constraint> hostAffinityConstraints = getHostAffinityConstraintsFromLabels(labelConstraints);
 
         List<Long> acceptableHostIds = new ArrayList<>();
-        for (Long hostId : hosts) {
-            if (hostSatisfiesHostAffinity(hostId, hostAffinityConstraints)) {
-                acceptableHostIds.add(hostId);
+        for (HostInfo host : hosts) {
+            if (hostSatisfiesHostAffinity(accountId, host, hostAffinityConstraints)) {
+                acceptableHostIds.add(host.getId());
             }
         }
         return acceptableHostIds;
     }
 
-    private List<Constraint> getHostAffinityConstraintsFromLabels(Map<String, String> labelConstraints) {
+    private List<Constraint> getHostAffinityConstraintsFromLabels(Map<String, ?> labelConstraints) {
         List<Constraint> constraints = extractConstraintsFromLabels(labelConstraints, null);
 
         List<Constraint> hostConstraints = new ArrayList<>();
@@ -79,10 +76,9 @@ public class AllocationHelperImpl implements AllocationHelper {
         return hostConstraints;
     }
 
-    private boolean hostSatisfiesHostAffinity(long hostId, List<Constraint> hostAffinityConstraints) {
+    private boolean hostSatisfiesHostAffinity(long accountId, HostInfo host, List<Constraint> hostAffinityConstraints) {
         for (Constraint constraint: hostAffinityConstraints) {
-            AllocationCandidate candidate = new AllocationCandidate();
-            candidate.setHost(hostId);
+            AllocationCandidate candidate = new AllocationCandidate(accountId, host.getId(), host.getUuid());
             if (!constraint.matches(candidate)) {
                 return false;
             }
@@ -91,56 +87,7 @@ public class AllocationHelperImpl implements AllocationHelper {
     }
 
     @Override
-    public void normalizeLabels(long stackId, Map<String, String> systemLabels, Map<String, String> serviceUserLabels) {
-        String stackName = systemLabels.get(SystemLabels.LABEL_STACK_NAME);
-        String stackServiceNameWithLaunchConfig = systemLabels.get(SystemLabels.LABEL_STACK_SERVICE_NAME);
-        String launchConfig = systemLabels.get(SystemLabels.LABEL_SERVICE_LAUNCH_CONFIG);
-
-        Set<String> serviceNamesInStack = getServiceNamesInStack(stackId);
-
-        for (Map.Entry<String, String> entry : serviceUserLabels.entrySet()) {
-            String labelValue = entry.getValue();
-            if (entry.getKey().startsWith(ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL) &&
-                    labelValue != null) {
-                String userEnteredServiceName = null;
-                if (labelValue.startsWith(SystemLabels.LABEL_STACK_SERVICE_NAME)) {
-                    userEnteredServiceName = labelValue.substring(SystemLabels.LABEL_STACK_SERVICE_NAME.length() + 1);
-                }
-                if (userEnteredServiceName != null) {
-                    String[] components = userEnteredServiceName.split("/");
-                    if (components.length == 1 &&
-                            stackServiceNameWithLaunchConfig != null) {
-                        if (serviceNamesInStack.contains(userEnteredServiceName.toLowerCase())) {
-                            // prepend stack name
-                            userEnteredServiceName = stackName + "/" + userEnteredServiceName;
-                        }
-                    }
-                    if (!SystemLabels.PRIMARY_LAUNCH_CONFIG_NAME.equals(launchConfig) &&
-                            stackServiceNameWithLaunchConfig.startsWith(userEnteredServiceName)) {
-                        // automatically append secondary launchConfig
-                        userEnteredServiceName = userEnteredServiceName + "/" + launchConfig;
-                    }
-                    entry.setValue(SystemLabels.LABEL_STACK_SERVICE_NAME + "=" + userEnteredServiceName);
-                }
-            }
-        }
-    }
-
-    // TODO: Fix repeated DB call even if DB's cache no longer hits the disk
-    private Set<String> getServiceNamesInStack(long stackId) {
-        Set<String> servicesInEnv = new HashSet<>();
-
-        List<? extends Service> services = objectManager.find(Service.class, SERVICE.STACK_ID, stackId, SERVICE.REMOVED,
-                null);
-        for (Service service : services) {
-            servicesInEnv.add(service.getName().toLowerCase());
-        }
-        return servicesInEnv;
-    }
-
-    @Override
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public List<Constraint> extractConstraintsFromEnv(Map env) {
+    public List<Constraint> extractConstraintsFromEnv(Map<String, ?> env) {
         List<Constraint> constraints = new ArrayList<>();
         if (env != null) {
             Set<String> affinityDefinitions = env.keySet();
@@ -176,18 +123,15 @@ public class AllocationHelperImpl implements AllocationHelper {
     }
 
     @Override
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public List<Constraint> extractConstraintsFromLabels(Map labels, Instance instance) {
+    public List<Constraint> extractConstraintsFromLabels(Map<String, ?> labels, Instance instance) {
         List<Constraint> constraints = new ArrayList<>();
         if (labels == null) {
             return constraints;
         }
 
-        Iterator<Map.Entry> iter = labels.entrySet().iterator();
-        while (iter.hasNext()) {
-            Map.Entry affinityDef = iter.next();
-            String key = ((String)affinityDef.getKey()).toLowerCase();
-            String valueStr = (String)affinityDef.getValue();
+        for (Map.Entry<String, ?> affinityDef : labels.entrySet()) {
+            String key = affinityDef.getKey().toLowerCase();
+            String valueStr = Objects.toString(affinityDef.getValue(), null);
             valueStr = valueStr == null ? "" : valueStr.toLowerCase();
 
             if (instance != null) {
@@ -195,7 +139,7 @@ public class AllocationHelperImpl implements AllocationHelper {
                 valueStr = evaluateMacros(valueStr, instance);
             }
 
-            String opStr = "";
+            String opStr;
             if (key.startsWith(ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL)) {
                 opStr = key.substring(ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL.length());
                 List<AffinityConstraintDefinition> defs = extractAffinityConstraintDefinitionFromLabel(opStr, valueStr, true);
@@ -222,33 +166,29 @@ public class AllocationHelperImpl implements AllocationHelper {
         return constraints;
     }
 
-    /**
+    /*
      * Supported macros
      * ${service_name}
      * ${stack_name}
-     * LEGACY:
      *
-     * @param valueStr
-     * @param instance
-     * @return
      */
-    @SuppressWarnings("unchecked")
     private String evaluateMacros(String valueStr, Instance instance) {
-        if (valueStr.indexOf(SERVICE_NAME_MACRO) != -1 ||
-                valueStr.indexOf(STACK_NAME_MACRO) != -1) {
+        if (valueStr.contains(SERVICE_NAME_MACRO) ||
+                valueStr.contains(STACK_NAME_MACRO)) {
 
-            Map<String, String> labels = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_LABELS).as(Map.class);
+            Map<String, String> labels = DataAccessor.getLabels(instance);
             String serviceLaunchConfigName = "";
             String stackName = "";
             if (labels != null && !labels.isEmpty()) {
                 for (Map.Entry<String, String> label : labels.entrySet()) {
+                    String value = label.getValue();
                     if (SystemLabels.LABEL_STACK_NAME.equals(label.getKey())) {
-                        stackName = label.getValue();
+                        stackName = value;
                     } else if (SystemLabels.LABEL_STACK_SERVICE_NAME.equals(label.getKey())) {
-                        if (label.getValue() != null) {
-                            int i = label.getValue().indexOf('/');
+                        if (value != null) {
+                            int i = value.indexOf('/');
                             if (i != -1) {
-                                serviceLaunchConfigName = label.getValue().substring(i + 1);
+                                serviceLaunchConfigName = value.substring(i + 1);
                             }
                         }
                     }
@@ -312,42 +252,40 @@ public class AllocationHelperImpl implements AllocationHelper {
     }
 
     @Override
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     public List<LockDefinition> extractAllocationLockDefinitions(Instance instance, List<Instance> instances) {
-        Map env = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_ENVIRONMENT).as(Map.class);
+        Map<String, ?> env = DataAccessor.fieldMapRO(instance, InstanceConstants.FIELD_ENVIRONMENT);
         List<LockDefinition> lockDefs = extractAllocationLockDefinitionsFromEnv(env);
 
-        Map labels = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_LABELS).as(Map.class);
+        Map<String, String> labels = DataAccessor.getLabels(instance);
         if (labels == null) {
             return lockDefs;
         }
+
+        Map<String, String> newLabels = new HashMap<>(labels);
+
         // we need to merge all the affinity labels from primary containers and sickkicks
         for (Instance inst: instances) {
-            Map lbs = DataAccessor.fields(inst).withKey(InstanceConstants.FIELD_LABELS).as(Map.class);
-            Iterator<Map.Entry> it = lbs.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry affinityDef = it.next();
-                String key = ((String)affinityDef.getKey()).toLowerCase();
-                String valueStr = (String)affinityDef.getValue();
+            Map<String, String> lbs = DataAccessor.getLabels(inst);
+            for (Map.Entry<String, String> affinityDef : lbs.entrySet()) {
+                String key = affinityDef.getKey().toLowerCase();
+                String valueStr = affinityDef.getValue();
                 if (key.startsWith(ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL) ||
                         key.startsWith(ContainerAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER)) {
-                        labels.put(key, valueStr);
+                        newLabels.put(key, valueStr);
                 }
             }
         }
 
-        Iterator<Map.Entry> iter = labels.entrySet().iterator();
-        while (iter.hasNext()) {
-            Map.Entry affinityDef = iter.next();
-            String key = ((String)affinityDef.getKey()).toLowerCase();
-            String valueStr = (String)affinityDef.getValue();
+        for (Map.Entry<String, String> affinityDef : newLabels.entrySet()) {
+            String key = affinityDef.getKey().toLowerCase();
+            String valueStr = affinityDef.getValue();
             valueStr = valueStr == null ? "" : valueStr.toLowerCase();
 
             if (instance != null) {
                 valueStr = evaluateMacros(valueStr, instance);
             }
 
-            String opStr = "";
+            String opStr;
             if (key.startsWith(ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL)) {
                 opStr = key.substring(ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL.length());
                 List<AffinityConstraintDefinition> defs = extractAffinityConstraintDefinitionFromLabel(opStr, valueStr, true);
@@ -367,8 +305,7 @@ public class AllocationHelperImpl implements AllocationHelper {
         return lockDefs;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    private List<LockDefinition> extractAllocationLockDefinitionsFromEnv(Map env) {
+    private List<LockDefinition> extractAllocationLockDefinitionsFromEnv(Map<String, ?> env) {
         List<LockDefinition> constraints = new ArrayList<>();
         if (env != null) {
             Set<String> affinityDefinitions = env.keySet();

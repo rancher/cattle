@@ -1,9 +1,5 @@
 package io.cattle.platform.backpopulate.impl;
 
-import static io.cattle.platform.core.constants.InstanceConstants.*;
-import static io.cattle.platform.core.model.tables.MountTable.*;
-import static io.cattle.platform.object.util.DataAccessor.*;
-
 import io.cattle.platform.backpopulate.BackPopulater;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -25,17 +21,21 @@ import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.lock.MountVolumeLock;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static io.cattle.platform.core.constants.InstanceConstants.*;
+import static io.cattle.platform.core.model.tables.MountTable.*;
+import static io.cattle.platform.object.util.DataAccessor.*;
 
 public class BackPopulaterImpl implements BackPopulater {
 
@@ -75,7 +75,7 @@ public class BackPopulaterImpl implements BackPopulater {
 
     @SuppressWarnings("unchecked")
     void processLabels(Instance instance) {
-        Map<String, Object> inspect = (Map<String, Object>)instance.getData().get(FIELD_DOCKER_INSPECT);
+        Map<String, Object> inspect = DataAccessor.fieldMapRO(instance, FIELD_DOCKER_INSPECT);
         if (inspect == null) {
             return;
         }
@@ -84,7 +84,7 @@ public class BackPopulaterImpl implements BackPopulater {
 
     @SuppressWarnings({ "unchecked" })
     protected void processRemainingFields(Instance instance) {
-        Map<String, Object> inspect = (Map<String, Object>)instance.getData().get(FIELD_DOCKER_INSPECT);
+        Map<String, Object> inspect = DataAccessor.fieldMapRO(instance, FIELD_DOCKER_INSPECT);
         if (inspect == null || instance.getNativeContainer() == null || !instance.getNativeContainer().booleanValue()) {
             return;
         }
@@ -107,7 +107,7 @@ public class BackPopulaterImpl implements BackPopulater {
 
     @SuppressWarnings({ "unchecked" })
     protected void processVolumes(Instance instance, Host host) {
-        Map<String, Object> inspect = (Map<String, Object>) instance.getData().get(FIELD_DOCKER_INSPECT);
+        Map<String, Object> inspect = DataAccessor.fieldMapRO(instance, FIELD_DOCKER_INSPECT);
         if (inspect == null) {
             return;
         }

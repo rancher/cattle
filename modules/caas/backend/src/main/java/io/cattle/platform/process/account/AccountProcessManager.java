@@ -1,10 +1,8 @@
 package io.cattle.platform.process.account;
 
-import static io.cattle.platform.core.model.tables.AccountTable.*;
-import static io.cattle.platform.core.model.tables.CredentialTable.*;
-import static io.cattle.platform.core.model.tables.NetworkTable.*;
-import static io.cattle.platform.core.model.tables.ProjectTemplateTable.*;
-
+import com.netflix.config.DynamicBooleanProperty;
+import com.netflix.config.DynamicStringListProperty;
+import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.addon.ServicesPortRange;
 import io.cattle.platform.core.constants.AccountConstants;
@@ -34,17 +32,18 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-
-import com.netflix.config.DynamicBooleanProperty;
-import com.netflix.config.DynamicStringListProperty;
-import com.netflix.config.DynamicStringProperty;
+import static io.cattle.platform.core.model.Tables.*;
+import static io.cattle.platform.core.model.tables.AccountTable.ACCOUNT;
+import static io.cattle.platform.core.model.tables.CredentialTable.CREDENTIAL;
+import static io.cattle.platform.core.model.tables.NetworkTable.NETWORK;
+import static io.cattle.platform.core.model.tables.ProjectTemplateTable.PROJECT_TEMPLATE;
 
 public class AccountProcessManager {
 
@@ -164,6 +163,16 @@ public class AccountProcessManager {
         }
 
         accountDao.deleteProjectMemberEntries(account);
+
+        List<Agent> resourceAgents = objectManager.find(Agent.class,
+                AGENT.REMOVED, null,
+                AGENT.RESOURCE_ACCOUNT_ID, account.getId());
+
+        for (Agent agent : resourceAgents) {
+            Account agentAccount = objectManager.loadResource(Account.class, agent.getAccountId());
+            processManager.executeDeactivateThenRemove(agentAccount, null);
+        }
+
         return null;
     }
 

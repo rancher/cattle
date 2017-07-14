@@ -37,7 +37,7 @@ public class DefaultManagedContext implements ManagedContext {
 
     List<ManagedContextListener<?>> listeners = new CopyOnWriteArrayList<>();
 
-    public DefaultManagedContext(ManagedContextListener... listeners) {
+    public DefaultManagedContext(ManagedContextListener<?>... listeners) {
         this.listeners = Arrays.asList(listeners);
     }
 

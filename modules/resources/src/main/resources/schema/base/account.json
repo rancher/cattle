@@ -20,7 +20,8 @@
             }
         },
         "metadata": {
-            "type": "map[json]"
+            "type": "map[json]",
+            "nullable": true
         },
         "createdStackIds": {
             "type": "array[reference[stack]]"

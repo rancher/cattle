@@ -63,7 +63,7 @@ public class ContainerStatsLinkHandler implements LinkHandler {
 
         List<Instance> instances;
         if (instance == null) {
-            instances = objectManager.mappedChildren(host, Instance.class);
+            instances = objectManager.children(host, Instance.class);
         } else {
             instances = new ArrayList<>();
             instances.add(instance);

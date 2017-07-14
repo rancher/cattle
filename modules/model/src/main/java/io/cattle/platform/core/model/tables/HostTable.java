@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class HostTable extends TableImpl<HostRecord> {
 
-    private static final long serialVersionUID = 538347138;
+    private static final long serialVersionUID = 1005750968;
 
     /**
      * The reference instance of <code>cattle.host</code>
@@ -166,6 +166,11 @@ public class HostTable extends TableImpl<HostRecord> {
     public final TableField<HostRecord, String> EXTERNAL_ID = createField("external_id", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
 
     /**
+     * The column <code>cattle.host.revision</code>.
+     */
+    public final TableField<HostRecord, Long> REVISION = createField("revision", org.jooq.impl.SQLDataType.BIGINT.nullable(false).defaultValue(org.jooq.impl.DSL.inline("0", org.jooq.impl.SQLDataType.BIGINT)), this, "");
+
+    /**
      * Create a <code>cattle.host</code> table reference
      */
     public HostTable() {
@@ -225,6 +230,14 @@ public class HostTable extends TableImpl<HostRecord> {
     @Override
     public List<ForeignKey<HostRecord, ?>> getReferences() {
         return Arrays.<ForeignKey<HostRecord, ?>>asList(Keys.FK_HOST__ACCOUNT_ID, Keys.FK_HOST__AGENT_ID, Keys.FK_HOST__ENVIRONMENT_ID, Keys.FK_HOST__HOST_TEMPLATE_ID);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public TableField<HostRecord, Long> getRecordVersion() {
+        return REVISION;
     }
 
     /**

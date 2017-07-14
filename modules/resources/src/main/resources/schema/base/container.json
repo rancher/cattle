@@ -472,6 +472,9 @@
         "dataVolumesFrom": {
             "type" : "array[reference[container]]",
             "nullable" : true
+        },
+        "dockerInspect": {
+            "type": "map[json]"
         }
     },
     "resourceActions": {

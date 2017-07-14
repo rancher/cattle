@@ -19,10 +19,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record22;
-import org.jooq.Row22;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -39,9 +36,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "host", schema = "cattle")
-public class HostRecord extends UpdatableRecordImpl<HostRecord> implements TableRecordJaxb, Record22<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Boolean, String, Long, Long, Long, Long, Date, Long, String>, Host {
+public class HostRecord extends UpdatableRecordImpl<HostRecord> implements TableRecordJaxb, Host {
 
-    private static final long serialVersionUID = 262607516;
+    private static final long serialVersionUID = -1778995441;
 
     /**
      * Setter for <code>cattle.host.id</code>.
@@ -419,6 +416,23 @@ public class HostRecord extends UpdatableRecordImpl<HostRecord> implements Table
         return (String) get(21);
     }
 
+    /**
+     * Setter for <code>cattle.host.revision</code>.
+     */
+    @Override
+    public void setRevision(Long value) {
+        set(22, value);
+    }
+
+    /**
+     * Getter for <code>cattle.host.revision</code>.
+     */
+    @Column(name = "revision", nullable = false, precision = 19)
+    @Override
+    public Long getRevision() {
+        return (Long) get(22);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -429,606 +443,6 @@ public class HostRecord extends UpdatableRecordImpl<HostRecord> implements Table
     @Override
     public Record1<Long> key() {
         return (Record1) super.key();
-    }
-
-    // -------------------------------------------------------------------------
-    // Record22 type implementation
-    // -------------------------------------------------------------------------
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Row22<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Boolean, String, Long, Long, Long, Long, Date, Long, String> fieldsRow() {
-        return (Row22) super.fieldsRow();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Row22<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Boolean, String, Long, Long, Long, Long, Date, Long, String> valuesRow() {
-        return (Row22) super.valuesRow();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Long> field1() {
-        return HostTable.HOST.ID;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<String> field2() {
-        return HostTable.HOST.NAME;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Long> field3() {
-        return HostTable.HOST.ACCOUNT_ID;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<String> field4() {
-        return HostTable.HOST.KIND;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<String> field5() {
-        return HostTable.HOST.UUID;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<String> field6() {
-        return HostTable.HOST.DESCRIPTION;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<String> field7() {
-        return HostTable.HOST.STATE;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Date> field8() {
-        return HostTable.HOST.CREATED;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Date> field9() {
-        return HostTable.HOST.REMOVED;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Date> field10() {
-        return HostTable.HOST.REMOVE_TIME;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Map<String,Object>> field11() {
-        return HostTable.HOST.DATA;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<String> field12() {
-        return HostTable.HOST.URI;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Long> field13() {
-        return HostTable.HOST.AGENT_ID;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Boolean> field14() {
-        return HostTable.HOST.IS_PUBLIC;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<String> field15() {
-        return HostTable.HOST.AGENT_STATE;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Long> field16() {
-        return HostTable.HOST.LOCAL_STORAGE_MB;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Long> field17() {
-        return HostTable.HOST.MEMORY;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Long> field18() {
-        return HostTable.HOST.MILLI_CPU;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Long> field19() {
-        return HostTable.HOST.STACK_ID;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Date> field20() {
-        return HostTable.HOST.REMOVE_AFTER;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Long> field21() {
-        return HostTable.HOST.HOST_TEMPLATE_ID;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<String> field22() {
-        return HostTable.HOST.EXTERNAL_ID;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Long value1() {
-        return getId();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String value2() {
-        return getName();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Long value3() {
-        return getAccountId();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String value4() {
-        return getKind();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String value5() {
-        return getUuid();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String value6() {
-        return getDescription();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String value7() {
-        return getState();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Date value8() {
-        return getCreated();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Date value9() {
-        return getRemoved();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Date value10() {
-        return getRemoveTime();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Map<String,Object> value11() {
-        return getData();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String value12() {
-        return getUri();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Long value13() {
-        return getAgentId();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Boolean value14() {
-        return getIsPublic();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String value15() {
-        return getAgentState();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Long value16() {
-        return getLocalStorageMb();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Long value17() {
-        return getMemory();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Long value18() {
-        return getMilliCpu();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Long value19() {
-        return getStackId();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Date value20() {
-        return getRemoveAfter();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Long value21() {
-        return getHostTemplateId();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String value22() {
-        return getExternalId();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public HostRecord value1(Long value) {
-        setId(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public HostRecord value2(String value) {
-        setName(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public HostRecord value3(Long value) {
-        setAccountId(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public HostRecord value4(String value) {
-        setKind(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public HostRecord value5(String value) {
-        setUuid(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public HostRecord value6(String value) {
-        setDescription(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public HostRecord value7(String value) {
-        setState(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public HostRecord value8(Date value) {
-        setCreated(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public HostRecord value9(Date value) {
-        setRemoved(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public HostRecord value10(Date value) {
-        setRemoveTime(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public HostRecord value11(Map<String,Object> value) {
-        setData(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public HostRecord value12(String value) {
-        setUri(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public HostRecord value13(Long value) {
-        setAgentId(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public HostRecord value14(Boolean value) {
-        setIsPublic(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public HostRecord value15(String value) {
-        setAgentState(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public HostRecord value16(Long value) {
-        setLocalStorageMb(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public HostRecord value17(Long value) {
-        setMemory(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public HostRecord value18(Long value) {
-        setMilliCpu(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public HostRecord value19(Long value) {
-        setStackId(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public HostRecord value20(Date value) {
-        setRemoveAfter(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public HostRecord value21(Long value) {
-        setHostTemplateId(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public HostRecord value22(String value) {
-        setExternalId(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public HostRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, String value12, Long value13, Boolean value14, String value15, Long value16, Long value17, Long value18, Long value19, Date value20, Long value21, String value22) {
-        value1(value1);
-        value2(value2);
-        value3(value3);
-        value4(value4);
-        value5(value5);
-        value6(value6);
-        value7(value7);
-        value8(value8);
-        value9(value9);
-        value10(value10);
-        value11(value11);
-        value12(value12);
-        value13(value13);
-        value14(value14);
-        value15(value15);
-        value16(value16);
-        value17(value17);
-        value18(value18);
-        value19(value19);
-        value20(value20);
-        value21(value21);
-        value22(value22);
-        return this;
     }
 
     // -------------------------------------------------------------------------
@@ -1062,6 +476,7 @@ public class HostRecord extends UpdatableRecordImpl<HostRecord> implements Table
         setRemoveAfter(from.getRemoveAfter());
         setHostTemplateId(from.getHostTemplateId());
         setExternalId(from.getExternalId());
+        setRevision(from.getRevision());
     }
 
     /**
@@ -1087,7 +502,7 @@ public class HostRecord extends UpdatableRecordImpl<HostRecord> implements Table
     /**
      * Create a detached, initialised HostRecord
      */
-    public HostRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String uri, Long agentId, Boolean isPublic, String agentState, Long localStorageMb, Long memory, Long milliCpu, Long environmentId, Date removeAfter, Long hostTemplateId, String externalId) {
+    public HostRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String uri, Long agentId, Boolean isPublic, String agentState, Long localStorageMb, Long memory, Long milliCpu, Long environmentId, Date removeAfter, Long hostTemplateId, String externalId, Long revision) {
         super(HostTable.HOST);
 
         set(0, id);
@@ -1112,5 +527,6 @@ public class HostRecord extends UpdatableRecordImpl<HostRecord> implements Table
         set(19, removeAfter);
         set(20, hostTemplateId);
         set(21, externalId);
+        set(22, revision);
     }
 }

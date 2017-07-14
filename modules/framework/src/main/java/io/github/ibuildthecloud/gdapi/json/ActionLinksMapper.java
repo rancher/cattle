@@ -2,7 +2,6 @@ package io.github.ibuildthecloud.gdapi.json;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import io.github.ibuildthecloud.gdapi.model.Collection;
 import io.github.ibuildthecloud.gdapi.model.Resource;
@@ -13,9 +12,6 @@ import java.net.URL;
 import java.util.Map;
 
 public class ActionLinksMapper extends JacksonMapper {
-
-    ObjectMapper mapper;
-    boolean escapeForwardSlashes;
 
     public ActionLinksMapper() {
         init();

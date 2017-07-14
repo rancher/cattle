@@ -1,7 +1,6 @@
 package io.cattle.platform.allocator.constraint;
 
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.AffinityOps;
-import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.environment.EnvironmentResourceManager;
 
@@ -10,8 +9,6 @@ import java.util.Map;
 public class HostAffinityConstraint implements Constraint {
     public static final String ENV_HEADER_AFFINITY_HOST_LABEL = "constraint:";
     public static final String LABEL_HEADER_AFFINITY_HOST_LABEL = "io.rancher.scheduler.affinity:host_label";
-
-    AllocatorDao allocatorDao;
 
     AffinityOps op;
     String labelKey;

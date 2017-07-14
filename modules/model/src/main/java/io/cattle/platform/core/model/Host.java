@@ -276,6 +276,17 @@ public interface Host extends Serializable {
     @Column(name = "external_id", length = 128)
     public String getExternalId();
 
+    /**
+     * Setter for <code>cattle.host.revision</code>.
+     */
+    public void setRevision(Long value);
+
+    /**
+     * Getter for <code>cattle.host.revision</code>.
+     */
+    @Column(name = "revision", nullable = false, precision = 19)
+    public Long getRevision();
+
     // -------------------------------------------------------------------------
     // FROM and INTO
     // -------------------------------------------------------------------------

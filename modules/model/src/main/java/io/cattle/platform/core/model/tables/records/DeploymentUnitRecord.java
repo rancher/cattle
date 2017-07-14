@@ -21,8 +21,8 @@ import javax.persistence.Table;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record18;
-import org.jooq.Row18;
+import org.jooq.Record17;
+import org.jooq.Row17;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -39,9 +39,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "deployment_unit", schema = "cattle")
-public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitRecord> implements TableRecordJaxb, Record18<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long, String, Long, Long, Long>, DeploymentUnit {
+public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitRecord> implements TableRecordJaxb, Record17<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long, Long, Long, Long>, DeploymentUnit {
 
-    private static final long serialVersionUID = -1599385433;
+    private static final long serialVersionUID = 3419211;
 
     /**
      * Setter for <code>cattle.deployment_unit.id</code>.
@@ -284,28 +284,11 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
     }
 
     /**
-     * Setter for <code>cattle.deployment_unit.health_state</code>.
-     */
-    @Override
-    public void setHealthState(String value) {
-        set(14, value);
-    }
-
-    /**
-     * Getter for <code>cattle.deployment_unit.health_state</code>.
-     */
-    @Column(name = "health_state", length = 255)
-    @Override
-    public String getHealthState() {
-        return (String) get(14);
-    }
-
-    /**
      * Setter for <code>cattle.deployment_unit.host_id</code>.
      */
     @Override
     public void setHostId(Long value) {
-        set(15, value);
+        set(14, value);
     }
 
     /**
@@ -314,7 +297,7 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
     @Column(name = "host_id", precision = 19)
     @Override
     public Long getHostId() {
-        return (Long) get(15);
+        return (Long) get(14);
     }
 
     /**
@@ -322,7 +305,7 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
      */
     @Override
     public void setRequestedRevisionId(Long value) {
-        set(16, value);
+        set(15, value);
     }
 
     /**
@@ -331,7 +314,7 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
     @Column(name = "requested_revision_id", precision = 19)
     @Override
     public Long getRequestedRevisionId() {
-        return (Long) get(16);
+        return (Long) get(15);
     }
 
     /**
@@ -339,7 +322,7 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
      */
     @Override
     public void setRevisionId(Long value) {
-        set(17, value);
+        set(16, value);
     }
 
     /**
@@ -348,7 +331,7 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
     @Column(name = "revision_id", precision = 19)
     @Override
     public Long getRevisionId() {
-        return (Long) get(17);
+        return (Long) get(16);
     }
 
     // -------------------------------------------------------------------------
@@ -364,23 +347,23 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
     }
 
     // -------------------------------------------------------------------------
-    // Record18 type implementation
+    // Record17 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row18<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long, String, Long, Long, Long> fieldsRow() {
-        return (Row18) super.fieldsRow();
+    public Row17<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long, Long, Long, Long> fieldsRow() {
+        return (Row17) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row18<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long, String, Long, Long, Long> valuesRow() {
-        return (Row18) super.valuesRow();
+    public Row17<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long, Long, Long, Long> valuesRow() {
+        return (Row17) super.valuesRow();
     }
 
     /**
@@ -499,15 +482,7 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field15() {
-        return DeploymentUnitTable.DEPLOYMENT_UNIT.HEALTH_STATE;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Long> field16() {
+    public Field<Long> field15() {
         return DeploymentUnitTable.DEPLOYMENT_UNIT.HOST_ID;
     }
 
@@ -515,7 +490,7 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
      * {@inheritDoc}
      */
     @Override
-    public Field<Long> field17() {
+    public Field<Long> field16() {
         return DeploymentUnitTable.DEPLOYMENT_UNIT.REQUESTED_REVISION_ID;
     }
 
@@ -523,7 +498,7 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
      * {@inheritDoc}
      */
     @Override
-    public Field<Long> field18() {
+    public Field<Long> field17() {
         return DeploymentUnitTable.DEPLOYMENT_UNIT.REVISION_ID;
     }
 
@@ -643,15 +618,7 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
      * {@inheritDoc}
      */
     @Override
-    public String value15() {
-        return getHealthState();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Long value16() {
+    public Long value15() {
         return getHostId();
     }
 
@@ -659,7 +626,7 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
      * {@inheritDoc}
      */
     @Override
-    public Long value17() {
+    public Long value16() {
         return getRequestedRevisionId();
     }
 
@@ -667,7 +634,7 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
      * {@inheritDoc}
      */
     @Override
-    public Long value18() {
+    public Long value17() {
         return getRevisionId();
     }
 
@@ -801,16 +768,7 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
      * {@inheritDoc}
      */
     @Override
-    public DeploymentUnitRecord value15(String value) {
-        setHealthState(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public DeploymentUnitRecord value16(Long value) {
+    public DeploymentUnitRecord value15(Long value) {
         setHostId(value);
         return this;
     }
@@ -819,7 +777,7 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
      * {@inheritDoc}
      */
     @Override
-    public DeploymentUnitRecord value17(Long value) {
+    public DeploymentUnitRecord value16(Long value) {
         setRequestedRevisionId(value);
         return this;
     }
@@ -828,7 +786,7 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
      * {@inheritDoc}
      */
     @Override
-    public DeploymentUnitRecord value18(Long value) {
+    public DeploymentUnitRecord value17(Long value) {
         setRevisionId(value);
         return this;
     }
@@ -837,7 +795,7 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
      * {@inheritDoc}
      */
     @Override
-    public DeploymentUnitRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, String value12, Long value13, Long value14, String value15, Long value16, Long value17, Long value18) {
+    public DeploymentUnitRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, String value12, Long value13, Long value14, Long value15, Long value16, Long value17) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -855,7 +813,6 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
         value15(value15);
         value16(value16);
         value17(value17);
-        value18(value18);
         return this;
     }
 
@@ -882,7 +839,6 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
         setServiceIndex(from.getServiceIndex());
         setServiceId(from.getServiceId());
         setStackId(from.getStackId());
-        setHealthState(from.getHealthState());
         setHostId(from.getHostId());
         setRequestedRevisionId(from.getRequestedRevisionId());
         setRevisionId(from.getRevisionId());
@@ -911,7 +867,7 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
     /**
      * Create a detached, initialised DeploymentUnitRecord
      */
-    public DeploymentUnitRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String serviceIndex, Long serviceId, Long environmentId, String healthState, Long hostId, Long requestedRevisionId, Long revisionId) {
+    public DeploymentUnitRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String serviceIndex, Long serviceId, Long environmentId, Long hostId, Long requestedRevisionId, Long revisionId) {
         super(DeploymentUnitTable.DEPLOYMENT_UNIT);
 
         set(0, id);
@@ -928,9 +884,8 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
         set(11, serviceIndex);
         set(12, serviceId);
         set(13, environmentId);
-        set(14, healthState);
-        set(15, hostId);
-        set(16, requestedRevisionId);
-        set(17, revisionId);
+        set(14, hostId);
+        set(15, requestedRevisionId);
+        set(16, revisionId);
     }
 }

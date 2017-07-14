@@ -1,18 +1,17 @@
 package io.cattle.platform.engine.context;
 
-import static io.cattle.platform.engine.process.util.ProcessMDC.*;
-
 import io.cattle.platform.engine.process.log.ParentLog;
 import io.cattle.platform.engine.process.log.ProcessExecutionLog;
 import io.cattle.platform.engine.process.log.ProcessLogicExecutionLog;
 import io.cattle.platform.server.context.ServerContext;
+import org.apache.cloudstack.managed.threadlocal.ManagedThreadLocal;
+import org.slf4j.MDC;
 
 import java.util.EmptyStackException;
 import java.util.Objects;
 import java.util.Stack;
 
-import org.apache.cloudstack.managed.threadlocal.ManagedThreadLocal;
-import org.slf4j.MDC;
+import static io.cattle.platform.engine.process.util.ProcessMDC.*;
 
 public class EngineContext {
 
@@ -123,7 +122,7 @@ public class EngineContext {
 
     public static boolean isNestedExecution() {
         EngineContext context = EngineContext.getEngineContext();
-        return context != null && context.currentLog.size() > 1;
+        return context != null && context.currentLog.size() > 2;
     }
 
     public static EngineContext getEngineContext() {

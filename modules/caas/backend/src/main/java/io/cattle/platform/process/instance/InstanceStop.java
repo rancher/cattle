@@ -12,6 +12,7 @@ public class InstanceStop extends DeploymentSyncRequestHandler {
     public InstanceStop(AgentLocator agentLocator, ObjectSerializer serializer, ObjectManager objectManager, ObjectProcessManager processManager, DeploymentSyncFactory syncFactory) {
         super(agentLocator, serializer, objectManager, processManager, syncFactory);
         shortCircuitIfAgentRemoved = true;
+        commandName = "compute.instance.deactivate";
         processDataKeys = Arrays.asList("timeout", "containerNoOpEvent");
     }
 

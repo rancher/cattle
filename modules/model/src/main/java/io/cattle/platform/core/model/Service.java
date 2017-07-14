@@ -254,6 +254,17 @@ public interface Service extends Serializable {
     @Column(name = "revision_id", precision = 19)
     public Long getRevisionId();
 
+    /**
+     * Setter for <code>cattle.service.revision</code>.
+     */
+    public void setRevision(Long value);
+
+    /**
+     * Getter for <code>cattle.service.revision</code>.
+     */
+    @Column(name = "revision", nullable = false, precision = 19)
+    public Long getRevision();
+
     // -------------------------------------------------------------------------
     // FROM and INTO
     // -------------------------------------------------------------------------

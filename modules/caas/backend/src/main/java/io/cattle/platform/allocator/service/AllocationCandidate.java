@@ -14,7 +14,10 @@ public class AllocationCandidate {
     String hostUuid;
     Set<PortInstance> usedPorts;
 
-    public AllocationCandidate() {
+    public AllocationCandidate(long accountId, long hostId, String hostUuid) {
+        this.accountId = accountId;
+        this.host = hostId;
+        this.hostUuid = hostUuid;
     }
 
     public AllocationCandidate(AllocationCandidate candidate) {

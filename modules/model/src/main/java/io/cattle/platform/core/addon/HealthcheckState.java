@@ -10,6 +10,9 @@ public class HealthcheckState {
     String healthState;
     Long externalTimestamp;
 
+    public HealthcheckState() {
+    }
+
     public HealthcheckState(Long hostId, String healthState) {
         super();
         this.hostId = hostId;

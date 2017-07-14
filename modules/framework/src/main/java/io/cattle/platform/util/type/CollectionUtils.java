@@ -4,7 +4,6 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -214,8 +213,12 @@ public class CollectionUtils {
     }
 
     @SafeVarargs
-    public static <T> Set<T> set(@SuppressWarnings("unchecked") T... object) {
-        return new HashSet<>(Arrays.asList(object));
+    public static <T> Set<T> set(T... object) {
+        Set<T> result = new HashSet<>();
+        for (T x : object) {
+            result.add(x);
+        }
+        return result;
     }
 
 }

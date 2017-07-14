@@ -89,6 +89,10 @@ public class ResourcePoolManagerImpl implements ResourcePoolManager {
 
     @Override
     public void releaseResource(Object pool, Object owner, PooledResourceOptions options) {
+        if (pool == null || owner == null) {
+            return;
+        }
+
         String poolType = getResourceType(pool);
         long poolId = getResourceId(pool);
         String ownerType = getResourceType(owner);

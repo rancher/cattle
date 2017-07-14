@@ -31,7 +31,7 @@ public class AgentResourceRemove implements ProcessHandler {
             return null;
         }
 
-        processManager.deactivateThenRemove(resource, null);
+        processManager.deactivateThenRemove(agent, null);
 
         return null;
     }

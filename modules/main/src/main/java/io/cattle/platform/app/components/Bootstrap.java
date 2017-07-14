@@ -28,6 +28,10 @@ import io.cattle.platform.liquibase.Loader;
 import io.cattle.platform.logback.Startup;
 import io.cattle.platform.object.util.CommonsConverterStartup;
 import io.cattle.platform.object.util.DataAccessor;
+import io.github.ibuildthecloud.gdapi.json.JacksonMapper;
+import io.github.ibuildthecloud.gdapi.model.Resource;
+import io.github.ibuildthecloud.gdapi.model.SchemaCollection;
+import io.github.ibuildthecloud.gdapi.model.impl.SchemaImpl;
 import org.apache.cloudstack.managed.context.ManagedContextRunnable;
 import org.apache.cloudstack.managed.context.impl.DefaultManagedContext;
 import org.apache.cloudstack.managed.context.impl.MdcClearListener;
@@ -97,8 +101,13 @@ public class Bootstrap {
 
     private void setupJson() {
         CommonsConverterStartup.init();
+
         JacksonJsonMapper mapper = new JacksonJsonMapper();
-        mapper.setModules(Arrays.asList(new SimpleModule(), new JaxbAnnotationModule()));
+        SimpleModule simpleModule = new SimpleModule();
+        simpleModule.setMixInAnnotation(Resource.class, JacksonMapper.ResourceMix.class);
+        simpleModule.setMixInAnnotation(SchemaCollection.class, JacksonMapper.SchemaCollectionMixin.class);
+        simpleModule.setMixInAnnotation(SchemaImpl.class, JacksonMapper.SchemaImplMixin.class);
+        mapper.setModules(Arrays.asList(simpleModule, new JaxbAnnotationModule()));
         mapper.init();
         this.jsonMapper = mapper;
         DataAccessor.setJsonMapper(mapper);

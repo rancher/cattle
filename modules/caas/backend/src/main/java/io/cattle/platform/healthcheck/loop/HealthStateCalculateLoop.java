@@ -1,7 +1,5 @@
 package io.cattle.platform.healthcheck.loop;
 
-import static io.cattle.platform.core.constants.HealthcheckConstants.*;
-
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
@@ -16,6 +14,8 @@ import io.cattle.platform.object.ObjectManager;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static io.cattle.platform.core.constants.HealthcheckConstants.*;
 
 public class HealthStateCalculateLoop implements Loop {
 
@@ -101,7 +101,7 @@ public class HealthStateCalculateLoop implements Loop {
                 instanceState = HEALTH_STATE_HEALTHY;
             }
 
-            if (!instanceState.equals(instanceInfo.getHealthState())) {
+            if (instanceInfo.getHealthCheck() != null && !instanceState.equals(instanceInfo.getHealthState())) {
                 writeInstanceHealthState(metadata, instanceInfo.getId(), instanceState);
             }
 

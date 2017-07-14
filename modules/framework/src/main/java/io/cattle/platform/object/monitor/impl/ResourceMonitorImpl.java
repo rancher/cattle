@@ -1,5 +1,6 @@
 package io.cattle.platform.object.monitor.impl;
 
+import com.netflix.config.DynamicLongProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.utils.ResourceTimeoutException;
 import io.cattle.platform.eventing.annotation.AnnotatedEventListener;
@@ -20,8 +21,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import com.netflix.config.DynamicLongProperty;
 
 public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListener, Task, TaskOptions {
 
@@ -145,31 +144,6 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
             @Override
             public String getMessage() {
                 return "state to equal " + desiredState;
-            }
-        });
-    }
-
-    @Override
-    public <T> T waitForNotTransitioning(T obj) {
-        return waitForNotTransitioning(obj, DEFAULT_WAIT.get());
-    }
-    @Override
-    public <T> T waitForNotTransitioning(T obj, long wait) {
-        final String type = ObjectUtils.getKind(obj);
-        final String state = ObjectUtils.getState(obj);
-        return waitFor(obj, wait, new ResourcePredicate<T>() {
-            @Override
-            public boolean evaluate(T obj) {
-                return !objectMetaDataManger.isTransitioningState(obj.getClass(), (ObjectUtils.getState(obj)));
-            }
-
-            @Override
-            public String getMessage() {
-                if (type == null || state == null) {
-                    return "a resting state";
-                } else {
-                    return type + " " + state;
-                }
             }
         });
     }

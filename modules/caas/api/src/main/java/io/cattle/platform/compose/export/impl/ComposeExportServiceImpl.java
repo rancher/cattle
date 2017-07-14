@@ -2,7 +2,6 @@ package io.cattle.platform.compose.export.impl;
 
 import io.cattle.platform.compose.export.ComposeExportService;
 import io.cattle.platform.core.addon.LbConfig;
-import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
@@ -342,13 +341,17 @@ public class ComposeExportServiceImpl implements ComposeExportService {
         }
         List<String> serviceLinksWithNames = new ArrayList<>();
         List<String> externalLinksServices = new ArrayList<>();
-        List<ServiceLink> links = DataAccessor.fieldObjectList(service, ServiceConstants.FIELD_SERVICE_LINKS, ServiceLink.class);
-        for (ServiceLink link : links) {
-            Service consumedService = objectManager.findOne(Service.class, SERVICE.ID, link.getServiceId());
-            String linkName = consumedService.getName()
-                    + ":"
-                    + (!StringUtils.isBlank(link.getName()) ? link.getName() : consumedService.getName());
-            if (servicesToExportIds.contains(link.getServiceId())) {
+        Map<String, ?> links = DataAccessor.fieldMapRO(service, ServiceConstants.FIELD_SERVICE_LINKS);
+        for (String link : links.keySet()) {
+            Service consumedService = objectManager.findOne(Service.class, SERVICE.ID, links.get(link));
+            if (consumedService == null) {
+                continue;
+            }
+            String linkName = consumedService.getName();
+            if (!linkName.equals(link)) {
+                linkName += ":" + link;
+            }
+            if (servicesToExportIds.contains(consumedService.getId())) {
                 serviceLinksWithNames.add(linkName);
             } else if (!consumedService.getStackId().equals(service.getStackId())) {
                 Stack externalStack = objectManager.loadResource(Stack.class,

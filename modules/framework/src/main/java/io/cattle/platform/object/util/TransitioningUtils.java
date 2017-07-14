@@ -1,35 +1,41 @@
 package io.cattle.platform.object.util;
 
-import static io.cattle.platform.object.meta.ObjectMetaDataManager.*;
-
-import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.util.exception.ExecutionException;
 import io.cattle.platform.util.type.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import org.apache.commons.lang3.StringUtils;
-
-import com.netflix.config.DynamicBooleanProperty;
+import static io.cattle.platform.object.meta.ObjectMetaDataManager.*;
+import static io.cattle.platform.object.util.ObjectUtils.*;
 
 public class TransitioningUtils {
 
-    public static final DynamicBooleanProperty SHOW_INTERNAL_MESSAGES = ArchaiusUtil.getBoolean("api.show.transitioning.internal.message");
-
-    public static Map<String, Object> getTransitioningData(ExecutionException e) {
+    public static Map<String, Object> getTransitioningErrorData(ExecutionException e) {
         if (e == null) {
             return Collections.emptyMap();
         }
 
-        return getTransitioningData(e.getTransitioningMessage(), e.getTransitioningInternalMessage());
+        String message = e.getMessage();
+        Map<String, Object> data = new HashMap<>();
+
+        String finalMessage = message;
+        if (StringUtils.isBlank(finalMessage)) {
+            finalMessage = null;
+        }
+
+        data.put(ObjectMetaDataManager.TRANSITIONING_FIELD, finalMessage == null ? null : ObjectMetaDataManager.TRANSITIONING_ERROR);
+        data.put(ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD, finalMessage);
+
+        return data;
     }
 
     public static Map<String, Object> getTransitioningErrorData(Object obj) {
-        String state = io.cattle.platform.object.util.ObjectUtils.getState(obj);
+        String state = getState(obj);
         String error = DataAccessor.fieldString(obj, TRANSITIONING_FIELD);
         String message = DataAccessor.fieldString(obj, TRANSITIONING_MESSAGE_FIELD);
 
@@ -40,35 +46,8 @@ public class TransitioningUtils {
         return Collections.emptyMap();
     }
 
-    public static String getTransitioningError(Object obj) {
+    public static String getTransitioningErrorMessage(Object obj) {
         return Objects.toString(getTransitioningErrorData(obj).get(TRANSITIONING_MESSAGE_FIELD), null);
-    }
-
-    public static String getTransitioningMessage(Object obj) {
-        return DataAccessor.fieldString(obj, TRANSITIONING_MESSAGE_FIELD);
-    }
-
-    public static Map<String, Object> getTransitioningData(String message, String internalMessage) {
-        Map<String, Object> data = new HashMap<>();
-
-        String finalMessage = message == null ? "" : message;
-
-        if (SHOW_INTERNAL_MESSAGES.get() && !StringUtils.isBlank(internalMessage)) {
-            if (StringUtils.isBlank(finalMessage)) {
-                finalMessage = internalMessage;
-            } else {
-                finalMessage = finalMessage + " : " + internalMessage;
-            }
-        }
-
-        if (StringUtils.isBlank(finalMessage)) {
-            finalMessage = null;
-        }
-
-        data.put(ObjectMetaDataManager.TRANSITIONING_FIELD, finalMessage == null ? null : ObjectMetaDataManager.TRANSITIONING_ERROR);
-        data.put(ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD, finalMessage);
-
-        return data;
     }
 
 }

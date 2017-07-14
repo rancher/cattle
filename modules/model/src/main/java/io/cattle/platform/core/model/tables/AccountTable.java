@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AccountTable extends TableImpl<AccountRecord> {
 
-    private static final long serialVersionUID = 317423880;
+    private static final long serialVersionUID = 157285644;
 
     /**
      * The reference instance of <code>cattle.account</code>
@@ -200,6 +200,14 @@ public class AccountTable extends TableImpl<AccountRecord> {
     @Override
     public List<ForeignKey<AccountRecord, ?>> getReferences() {
         return Arrays.<ForeignKey<AccountRecord, ?>>asList(Keys.FK_ACCOUNT__PROJECT_TEMPLATE_ID);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public TableField<AccountRecord, Long> getRecordVersion() {
+        return REVISION;
     }
 
     /**

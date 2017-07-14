@@ -14,7 +14,7 @@ public class ObjectExecutionExceptionHandler implements ExecutionExceptionHandle
     public void handleException(ExecutionException e, ProcessState state, ProcessServiceContext context) {
         for (Object resource : e.getResources()) {
             if (state.getResource() == resource) {
-                Map<String, Object> data = TransitioningUtils.getTransitioningData(e);
+                Map<String, Object> data = TransitioningUtils.getTransitioningErrorData(e);
                 state.reload();
                 state.applyData(data);
             }

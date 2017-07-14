@@ -25,23 +25,17 @@ public class AffinityConstraintsProvider implements AllocationConstraintsProvide
         this.allocationHelper = allocationHelper;
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
     public void appendConstraints(AllocationAttempt attempt, AllocationLog log, List<Constraint> constraints) {
         for (Instance instance : attempt.getInstances()) {
-            Map env = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_ENVIRONMENT).as(Map.class);
-            // TODO: hack for now. assuming all affinity:constraint specs are just found in the key
+            Map<String, ?> env = DataAccessor.fieldMapRO(instance, InstanceConstants.FIELD_ENVIRONMENT);
             List<Constraint> affinityConstraintsFromEnv = allocationHelper.extractConstraintsFromEnv(env);
-            for (Constraint constraint : affinityConstraintsFromEnv) {
-                constraints.add(constraint);
-            }
+            constraints.addAll(affinityConstraintsFromEnv);
 
             // Currently, intentionally duplicating code to be explicit
-            Map labels = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_LABELS).as(Map.class);
+            Map<String, ?> labels = DataAccessor.fieldMapRO(instance, InstanceConstants.FIELD_LABELS);
             List<Constraint> affinityConstraintsFromLabels = allocationHelper.extractConstraintsFromLabels(labels, instance);
-            for (Constraint constraint : affinityConstraintsFromLabels) {
-                constraints.add(constraint);
-            }
+            constraints.addAll(affinityConstraintsFromLabels);
         }
     }
 

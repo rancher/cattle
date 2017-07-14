@@ -6,7 +6,7 @@ import java.util.Date;
 
 public class EventVO<T> implements Event {
 
-    private String id, name, replyTo, resourceId, resourceType, transitioning, transitioningMessage, transitioningInternalMessage;
+    private String id, name, replyTo, resourceId, resourceType, transitioning, transitioningMessage;
     private String[] previousIds, previousNames;
     private T data;
     private Date time;
@@ -38,7 +38,6 @@ public class EventVO<T> implements Event {
         this.resourceType = event.getResourceType();
         this.transitioning = event.getTransitioning();
         this.transitioningMessage = event.getTransitioningMessage();
-        this.transitioningInternalMessage = event.getTransitioningInternalMessage();
         this.transitioningProgress = event.getTransitioningProgress();
         this.timeoutMillis = event.getTimeoutMillis();
     }
@@ -260,20 +259,6 @@ public class EventVO<T> implements Event {
     }
 
     @Override
-    public String getTransitioningInternalMessage() {
-        return transitioningInternalMessage;
-    }
-
-    public void setTransitioningInternalMessage(String transitioningInternalMessage) {
-        this.transitioningInternalMessage = transitioningInternalMessage;
-    }
-
-    public EventVO<T> withTransitioningInternalMessage(String transitioningInternalMessage) {
-        this.transitioningInternalMessage = transitioningInternalMessage;
-        return this;
-    }
-
-    @Override
     public Long getTimeoutMillis() {
         return timeoutMillis;
     }
@@ -297,7 +282,6 @@ public class EventVO<T> implements Event {
                 ", resourceType='" + resourceType + '\'' +
                 ", transitioning='" + transitioning + '\'' +
                 ", transitioningMessage='" + transitioningMessage + '\'' +
-                ", transitioningInternalMessage='" + transitioningInternalMessage + '\'' +
                 ", previousIds=" + Arrays.toString(previousIds) +
                 ", previousNames=" + Arrays.toString(previousNames) +
                 ", data=" + data +

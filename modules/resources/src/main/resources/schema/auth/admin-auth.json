@@ -200,16 +200,6 @@
 
         "password.accountId" : "cr",
 
-        "processDefinition" : "r",
-        "processDefinition.extensionBased" : "r",
-        "processDefinition.postProcessListeners" : "r",
-        "processDefinition.preProcessListeners" : "r",
-        "processDefinition.processHandlers" : "r",
-        "processDefinition.resourceType" : "r",
-        "processDefinition.stateTransitions" : "r",
-
-        "stateTransition" : "r",
-
         "processExecution" : "r",
         "processExecution.log" : "r",
         "processExecution.processInstanceId" : "r",
@@ -243,7 +233,6 @@
         "publish.resourceType": "cr",
         "publish.time": "cr",
         "publish.transitioning": "cr",
-        "publish.transitioningInternalMessage": "cr",
         "publish.transitioningMessage": "cr",
 
         "resourceDefinition" : "r",

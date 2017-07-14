@@ -33,7 +33,6 @@ import io.cattle.platform.core.addon.ProcessSummary;
 import io.cattle.platform.core.addon.RestartPolicy;
 import io.cattle.platform.core.addon.ScalePolicy;
 import io.cattle.platform.core.addon.SecretReference;
-import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.addon.ServiceRollback;
 import io.cattle.platform.core.addon.ServiceUpgrade;
 import io.cattle.platform.core.addon.ServiceUpgradeStrategy;
@@ -50,7 +49,6 @@ import io.cattle.platform.docker.api.model.ContainerProxy;
 import io.cattle.platform.docker.api.model.DockerBuild;
 import io.cattle.platform.docker.api.model.HostAccess;
 import io.cattle.platform.docker.api.model.ServiceProxy;
-import io.cattle.platform.engine.process.StateTransition;
 import io.cattle.platform.iaas.api.auth.identity.Token;
 import io.cattle.platform.iaas.api.auth.integration.azure.AzureConfig;
 import io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP.OpenLDAPConfig;
@@ -112,8 +110,8 @@ public class Model {
 
         // Instance
         process("instance.create").resourceType("instance").start("requested").transitioning("creating").done("stopped").build();
-        process("instance.start").resourceType("instance").start("stopped,creating").transitioning("starting").done("active").build();
-        process("instance.update").resourceType("instance").start("stopped,active").transitioning("stopped=updating-stopped,active=updating-active").done("updating-stopped=stopped,updating-active=active").build();
+        process("instance.start").resourceType("instance").start("stopped,creating").transitioning("starting").done("running").build();
+        process("instance.update").resourceType("instance").start("stopped,running").transitioning("stopped=updating-stopped,running=updating-running").done("updating-stopped=stopped,updating-running=running").build();
         process("instance.restart").resourceType("instance").start("running").transitioning("restarting").done("running").build();
         process("instance.error").resourceType("instance").start("creating,stopped").transitioning("erroring").done("error").build();
         process("instance.remove").resourceType("instance").start("requested,creating,updating-running,updating-stopped,stopped,erroring,error").transitioning("removing").done("removed").build();
@@ -290,21 +288,19 @@ public class Model {
                 NetworkPolicyRuleMember.class,
                 NetworkPolicyRuleWithin.class,
                 OpenLDAPConfig.class,
+                PortInstance.class,
                 PortRule.class,
                 ProcessPool.class,
                 ProcessSummary.class,
-                PortInstance.class,
                 Publish.class,
                 RestartPolicy.class,
                 ScalePolicy.class,
                 SecretReference.class,
-                ServiceLink.class,
                 ServiceProxy.class,
                 ServiceRollback.class,
                 ServicesPortRange.class,
                 ServiceUpgrade.class,
                 ServiceUpgradeStrategy.class,
-                StateTransition.class,
                 StatsAccess.class,
                 Subscribe.class,
                 TargetPortRule.class,
@@ -331,8 +327,6 @@ public class Model {
                 "externalHostEvent,parent=externalEvent",
                 "externalServiceEvent,parent=externalEvent",
                 "externalService,parent=service",
-                "externalStoragePoolEvent,parent=externalEvent",
-                "externalVolumeEvent,parent=externalEvent",
                 "hostOnlyNetwork,parent=network",
                 "instanceConsole",
                 "instanceConsoleInput",
@@ -357,7 +351,6 @@ public class Model {
                 "scalingGroup,parent=service",
                 "secondaryLaunchConfig,parent=launchConfig",
                 "selectorService,parent=service",
-                "serviceBinding",
                 "setProjectMembersInput",
                 "stackUpgrade",
                 "storageDriverService,parent=service",

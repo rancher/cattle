@@ -254,7 +254,7 @@ public class Backend {
         agentResourcesMonitor = new AgentResourcesMonitor(d.agentDao, d.storagePoolDao, d.resourceDao, f.objectManager, f.lockManager, f.eventService, envResourceManager);
         instanceLifecycleManager = new InstanceLifecycleManagerImpl(k8sLifecycleManager, virtualMachineLifecycleManager, volumeLifecycleManager, f.objectManager, imageCredentialLookup, d.serviceDao, f.transaction, networkLifecycleManager, agentLifecycleManager, backPopulater, restartLifecycleManager, secretsLifecycleManager, allocationLifecycleManager, serviceLifecycleManager);
         pingMonitor = new PingMonitor(agentResourcesMonitor, pingInstancesMonitor, f.processManager, f.objectManager, d.pingDao, c.agentLocator, f.cluster);
-        deploymentSyncFactory = new DeploymentSyncFactory(d.instanceDao, d.volumeDao, f.objectManager, c.serviceAccountCreateStartup);
+        deploymentSyncFactory = new DeploymentSyncFactory(d.instanceDao, d.volumeDao, f.objectManager, c.serviceAccountCreateStartup, f.jsonMapper);
     }
 
     private void addTriggers() {
@@ -347,7 +347,7 @@ public class Backend {
         r.handle("instance.start", instanceProcessManager::preStart, instanceStart, instanceProcessManager::postStart, k8sProviderLabels);
         r.handle("instance.stop", instanceStop, instanceProcessManager::postStop);
         r.handle("instance.restart", instanceProcessManager::restart);
-        r.handle("instance.remove", instanceProcessManager::preRemove, instanceRemove);
+        r.handle("instance.remove", instanceProcessManager::preRemove, instanceRemove, instanceProcessManager::postRemove);
 
         r.handle("mount.create", mountProcessManager::create);
         r.handle("mount.deactivate", mountProcessManager::deactivate);

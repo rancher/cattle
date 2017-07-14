@@ -32,7 +32,7 @@ public class HostInfo implements MetadataObject {
         this.milliCpu = host.getMilliCpu();
         this.memory = host.getMemory();
         this.state = host.getState();
-        this.agentState = host.getAgentState();
+        this.agentState = host.getAgentState() == null ? this.state : host.getAgentState();
         this.ports = new HashSet<>(
                 DataAccessor.fieldObjectList(host, HostConstants.FIELD_PUBLIC_ENDPOINTS, PortInstance.class));
     }

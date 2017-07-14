@@ -463,6 +463,17 @@ public interface Instance extends Serializable {
     @Column(name = "upgrade_time")
     public Date getUpgradeTime();
 
+    /**
+     * Setter for <code>cattle.instance.revision</code>.
+     */
+    public void setRevision(Long value);
+
+    /**
+     * Getter for <code>cattle.instance.revision</code>.
+     */
+    @Column(name = "revision", nullable = false, precision = 19)
+    public Long getRevision();
+
     // -------------------------------------------------------------------------
     // FROM and INTO
     // -------------------------------------------------------------------------

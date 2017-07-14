@@ -22,6 +22,7 @@ import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.gdapi.model.impl.FieldImpl;
 import io.github.ibuildthecloud.gdapi.model.impl.SchemaImpl;
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jooq.ForeignKey;
 import org.jooq.Table;
 import org.jooq.TableField;
@@ -642,7 +643,7 @@ public class DefaultObjectMetaDataManager implements ObjectMetaDataManager {
             return errorResult;
         } else if (state != null && states.contains(state)) {
             result.put(TRANSITIONING_FIELD, TRANSITIONING_YES);
-            result.put(TRANSITIONING_MESSAGE_FIELD, message == null ? TRANSITIONING_MESSAGE_DEFAULT_FIELD : message);
+            result.put(TRANSITIONING_MESSAGE_FIELD, message == null ? StringUtils.capitalize(state) : message);
         } else if (TRANSITIONING_ERROR.equals(DataAccessor.fieldString(obj, TRANSITIONING_FIELD))) {
             return Collections.emptyMap();
         }

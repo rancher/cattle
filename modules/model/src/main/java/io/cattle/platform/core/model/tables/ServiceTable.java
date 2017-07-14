@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ServiceTable extends TableImpl<ServiceRecord> {
 
-    private static final long serialVersionUID = -1503153732;
+    private static final long serialVersionUID = -1976553983;
 
     /**
      * The reference instance of <code>cattle.service</code>
@@ -156,6 +156,11 @@ public class ServiceTable extends TableImpl<ServiceRecord> {
     public final TableField<ServiceRecord, Long> REVISION_ID = createField("revision_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
+     * The column <code>cattle.service.revision</code>.
+     */
+    public final TableField<ServiceRecord, Long> REVISION = createField("revision", org.jooq.impl.SQLDataType.BIGINT.nullable(false).defaultValue(org.jooq.impl.DSL.inline("0", org.jooq.impl.SQLDataType.BIGINT)), this, "");
+
+    /**
      * Create a <code>cattle.service</code> table reference
      */
     public ServiceTable() {
@@ -215,6 +220,14 @@ public class ServiceTable extends TableImpl<ServiceRecord> {
     @Override
     public List<ForeignKey<ServiceRecord, ?>> getReferences() {
         return Arrays.<ForeignKey<ServiceRecord, ?>>asList(Keys.FK_SERVICE__ACCOUNT_ID, Keys.FK_SERVICE__ENVIRONMENT_ID, Keys.FK_SERVICE__PREVIOUS_REVISION_ID, Keys.FK_SERVICE__REVISION_ID);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public TableField<ServiceRecord, Long> getRecordVersion() {
+        return REVISION;
     }
 
     /**

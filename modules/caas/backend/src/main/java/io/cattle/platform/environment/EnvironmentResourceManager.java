@@ -12,9 +12,9 @@ public interface EnvironmentResourceManager {
 
     boolean hostHasContainerLabel(long accountId, String hostUuid, String labelKey, String labelValue);
 
-    List<? extends Long> getActiveHosts(long accountId);
+    List<HostInfo> getActiveHosts(long accountId);
 
-    List<? extends Long> getHosts(long accountId);
+    List<HostInfo> getHosts(long accountId);
 
     Map<String, String> getLabelsForHost(long accountId, String hostUuid);
 

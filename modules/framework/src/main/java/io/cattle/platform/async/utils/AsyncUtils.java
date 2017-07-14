@@ -1,5 +1,8 @@
 package io.cattle.platform.async.utils;
 
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
 import io.cattle.platform.util.exception.ExceptionUtils;
 import io.cattle.platform.util.exception.UnreachableException;
 
@@ -8,10 +11,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.SettableFuture;
 
 public class AsyncUtils {
 
@@ -31,7 +30,7 @@ public class AsyncUtils {
 
     public static <T> T get(Future<T> future) {
         try {
-            return future.get();
+            return future.get(1, TimeUnit.MINUTES);
         } catch (InterruptedException e) {
             throw new IllegalStateException(e);
         } catch (ExecutionException e) {
@@ -41,6 +40,8 @@ public class AsyncUtils {
             }
             ExceptionUtils.rethrowExpectedRuntime(t);
             throw new UnreachableException();
+        } catch (TimeoutException e) {
+            throw new io.cattle.platform.async.utils.TimeoutException(e);
         }
     }
 

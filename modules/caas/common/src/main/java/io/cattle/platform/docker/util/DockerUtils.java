@@ -5,16 +5,12 @@ import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.docker.constants.DockerHostConstants;
 import io.cattle.platform.object.ObjectManager;
-
 import org.apache.commons.lang3.StringUtils;
 
 public class DockerUtils {
 
     public static Host getHostFromContainer(ObjectManager objectManager, Instance instance, String hostKind) {
-        Host found = null;
-        for (Host host : objectManager.mappedChildren(instance, Host.class)) {
-            found = host;
-        }
+        Host found = objectManager.loadResource(Host.class, instance.getHostId());
 
         if (found != null) {
             found = ApiUtils.getPolicy().authorizeObject(found);

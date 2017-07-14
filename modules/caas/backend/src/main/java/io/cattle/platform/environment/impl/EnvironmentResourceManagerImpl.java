@@ -102,22 +102,22 @@ public class EnvironmentResourceManagerImpl implements EnvironmentResourceManage
     }
 
     @Override
-    public List<? extends Long> getActiveHosts(long accountId) {
+    public List<HostInfo> getActiveHosts(long accountId) {
         return getMetadata(accountId).getHosts().stream()
                 .filter((host) -> CommonStatesConstants.ACTIVE.equals(host.getState()) && CommonStatesConstants.ACTIVE.equals(host.getAgentState()))
-                .map((host) -> host.getId())
                 .collect(toList());
     }
 
     @Override
-    public List<? extends Long> getHosts(long accountId) {
-        return getMetadata(accountId).getHosts().stream()
-                .map((host) -> host.getId())
-                .collect(toList());
+    public List<HostInfo> getHosts(long accountId) {
+        return new ArrayList<>(getMetadata(accountId).getHosts());
     }
 
     @Override
     public Map<String, String> getLabelsForHost(long accountId, String hostUuid) {
+        if (hostUuid == null) {
+            return Collections.emptyMap();
+        }
         HostInfo hostInfo = getMetadata(accountId).getHost(hostUuid);
         return hostInfo == null ? Collections.emptyMap() : hostInfo.getLabels();
     }
@@ -130,7 +130,7 @@ public class EnvironmentResourceManagerImpl implements EnvironmentResourceManage
             int restIndex;
             List<HostInfo> rest;
             Metadata metadata = getMetadata(options.getAccountId());
-            Set<String> ignore = orderedHostUUIDs == null ? Collections.emptySet() : new HashSet<>(orderedHostUUIDs);
+            Set<String> ignore = new HashSet<>();
 
             {
                 advance();
@@ -145,6 +145,9 @@ public class EnvironmentResourceManagerImpl implements EnvironmentResourceManage
             public HostInfo next() {
                 HostInfo result = next;
                 advance();
+                if (result != null) {
+                    ignore.add(result.getUuid());
+                }
                 return result;
             }
 
@@ -156,16 +159,18 @@ public class EnvironmentResourceManagerImpl implements EnvironmentResourceManage
                     }
 
                     next = metadata.getHosts().stream()
-                            .filter((host) -> host.getId() == options.getRequestedHostId().longValue())
+                            .filter((host) -> host.getId() == options.getRequestedHostId())
                             .findFirst().orElse(null);
                     return;
                 }
 
-                for (; orderedIndex < orderedHostUUIDs.size() ; orderedIndex++) {
-                    next = metadata.getHost(orderedHostUUIDs.get(orderedIndex));
-                    if (!ignore.contains(next.getUuid()) && validHost(next)) {
-                        orderedIndex++;
-                        return;
+                if (orderedHostUUIDs != null) {
+                    for (; orderedIndex < orderedHostUUIDs.size(); orderedIndex++) {
+                        next = metadata.getHost(orderedHostUUIDs.get(orderedIndex));
+                        if (next != null && !ignore.contains(next.getUuid()) && validHost(next)) {
+                            orderedIndex++;
+                            return;
+                        }
                     }
                 }
 
@@ -176,7 +181,7 @@ public class EnvironmentResourceManagerImpl implements EnvironmentResourceManage
 
                 for (; restIndex < rest.size() ; restIndex++) {
                     next = rest.get(restIndex);
-                    if (validHost(next)) {
+                    if (!ignore.contains(next.getUuid()) && validHost(next)) {
                         restIndex++;
                         return;
                     }
@@ -193,7 +198,7 @@ public class EnvironmentResourceManagerImpl implements EnvironmentResourceManage
             .filter((instance) -> instance.getAgentId() != null)
             .filter(this::healthyAndActive)
             .filter((instance) -> instance.getLabels().containsKey(providedServiceLabel))
-            .map((instance) -> instance.getId())
+            .map(InstanceInfo::getId)
             .collect(toList());
     }
 

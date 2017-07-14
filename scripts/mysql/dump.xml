@@ -1,0 +1,868 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.2.xsd">
+    <property name="mediumtext" value="TEXT" dbms="postgresql" />
+    <property name="mediumtext" value="MEDIUMTEXT" />
+    <property name="mediumtext" value="varchar" dbms="H2" />
+    <changeSet author="rancher (generated)" id="dump1">
+        <addColumn tableName="host">
+            <column name="external_id" type="VARCHAR(128)"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump2">
+        <addColumn tableName="instance">
+            <column name="host_id" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump3">
+        <addColumn tableName="instance">
+            <column name="network_id" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump4">
+        <addColumn tableName="service">
+            <column name="selector" type="VARCHAR(4096)"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump5">
+        <addColumn tableName="instance">
+            <column name="service_index" type="INT"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump6">
+        <addColumn tableName="volume">
+            <column name="storage_pool_id" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump7">
+        <addColumn tableName="instance">
+            <column name="upgrade_time" type="DATETIME(19)"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump8">
+        <addForeignKeyConstraint baseColumnNames="host_id" baseTableName="instance" constraintName="fk_instance__host_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="host"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump9">
+        <addForeignKeyConstraint baseColumnNames="network_id" baseTableName="instance" constraintName="fk_instance__network_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="network"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump10">
+        <addForeignKeyConstraint baseColumnNames="storage_pool_id" baseTableName="volume" constraintName="fk_volume__storage_pool_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="storage_pool"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump11">
+        <createIndex indexName="idx_host__external_id" tableName="host" unique="false">
+            <column name="external_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump12">
+        <dropForeignKeyConstraint baseTableName="account_link" constraintName="fk_account_link__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump13">
+        <dropForeignKeyConstraint baseTableName="account_link" constraintName="fk_account_link__linked_account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump14">
+        <dropForeignKeyConstraint baseTableName="agent" constraintName="fk_agent__agent_group_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump15">
+        <dropForeignKeyConstraint baseTableName="agent" constraintName="fk_agent__zone_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump16">
+        <dropForeignKeyConstraint baseTableName="agent_group" constraintName="fk_agent_group__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump17">
+        <dropForeignKeyConstraint baseTableName="backup" constraintName="fk_backup__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump18">
+        <dropForeignKeyConstraint baseTableName="backup" constraintName="fk_backup__backup_target_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump19">
+        <dropForeignKeyConstraint baseTableName="backup" constraintName="fk_backup__snapshot_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump20">
+        <dropForeignKeyConstraint baseTableName="backup" constraintName="fk_backup__volume_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump21">
+        <dropForeignKeyConstraint baseTableName="backup_target" constraintName="fk_backup_target__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump22">
+        <dropForeignKeyConstraint baseTableName="cluster_host_map" constraintName="fk_cluster_host_map__host_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump23">
+        <dropForeignKeyConstraint baseTableName="config_item_status" constraintName="fk_config_item__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump24">
+        <dropForeignKeyConstraint baseTableName="config_item_status" constraintName="fk_config_item__agent_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump25">
+        <dropForeignKeyConstraint baseTableName="config_item_status" constraintName="fk_config_item__deployment_unit_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump26">
+        <dropForeignKeyConstraint baseTableName="config_item_status" constraintName="fk_config_item__environment_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump27">
+        <dropForeignKeyConstraint baseTableName="config_item_status" constraintName="fk_config_item__host_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump28">
+        <dropForeignKeyConstraint baseTableName="config_item_status" constraintName="fk_config_item__name"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump29">
+        <dropForeignKeyConstraint baseTableName="config_item_status" constraintName="fk_config_item__service_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump30">
+        <dropForeignKeyConstraint baseTableName="container_event" constraintName="fk_container_event__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump31">
+        <dropForeignKeyConstraint baseTableName="container_event" constraintName="fk_container_event__host_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump32">
+        <dropForeignKeyConstraint baseTableName="credential_instance_map" constraintName="fk_credential_instance_map__credential_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump33">
+        <dropForeignKeyConstraint baseTableName="credential_instance_map" constraintName="fk_credential_instance_map__instance_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump34">
+        <dropForeignKeyConstraint baseTableName="external_handler_external_handler_process_map" constraintName="fk_eh_eh_process_map__external_handler_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump35">
+        <dropForeignKeyConstraint baseTableName="external_handler_external_handler_process_map" constraintName="fk_eh_eh_process_map__external_handler_process_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump36">
+        <dropForeignKeyConstraint baseTableName="global_load_balancer" constraintName="fk_global_load_balancer__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump37">
+        <dropForeignKeyConstraint baseTableName="healthcheck_instance" constraintName="fk_healthcheck_instance__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump38">
+        <dropForeignKeyConstraint baseTableName="healthcheck_instance" constraintName="fk_healthcheck_instance__instance_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump39">
+        <dropForeignKeyConstraint baseTableName="healthcheck_instance_host_map" constraintName="fk_healthcheck_instance_host_map__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump40">
+        <dropForeignKeyConstraint baseTableName="healthcheck_instance_host_map" constraintName="fk_healthcheck_instance_host_map__healthcheck_instance_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump41">
+        <dropForeignKeyConstraint baseTableName="healthcheck_instance_host_map" constraintName="fk_healthcheck_instance_host_map__host_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump42">
+        <dropForeignKeyConstraint baseTableName="healthcheck_instance_host_map" constraintName="fk_healthcheck_instance_host_map_instance_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump43">
+        <dropForeignKeyConstraint baseTableName="host" constraintName="fk_host__physical_host_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump44">
+        <dropForeignKeyConstraint baseTableName="host" constraintName="fk_host__zone_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump45">
+        <dropForeignKeyConstraint baseTableName="cluster_host_map" constraintName="fk_host_host_map__host_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump46">
+        <dropForeignKeyConstraint baseTableName="host_ip_address_map" constraintName="fk_host_ip_address_map__host_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump47">
+        <dropForeignKeyConstraint baseTableName="host_ip_address_map" constraintName="fk_host_ip_address_map__ip_address_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump48">
+        <dropForeignKeyConstraint baseTableName="host_label_map" constraintName="fk_host_label_map__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump49">
+        <dropForeignKeyConstraint baseTableName="host_label_map" constraintName="fk_host_label_map__host_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump50">
+        <dropForeignKeyConstraint baseTableName="host_label_map" constraintName="fk_host_label_map__label_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump51">
+        <dropForeignKeyConstraint baseTableName="host_vnet_map" constraintName="fk_host_vnet_map__host_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump52">
+        <dropForeignKeyConstraint baseTableName="host_vnet_map" constraintName="fk_host_vnet_map__vnet_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump53">
+        <dropForeignKeyConstraint baseTableName="image" constraintName="fk_image__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump54">
+        <dropForeignKeyConstraint baseTableName="image" constraintName="fk_image_registry_credential_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump55">
+        <dropForeignKeyConstraint baseTableName="image_storage_pool_map" constraintName="fk_image_storage_pool_map__image_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump56">
+        <dropForeignKeyConstraint baseTableName="image_storage_pool_map" constraintName="fk_image_storage_pool_map__storage_pool_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump57">
+        <dropForeignKeyConstraint baseTableName="instance" constraintName="fk_instance__image_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump58">
+        <dropForeignKeyConstraint baseTableName="instance" constraintName="fk_instance__offering_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump59">
+        <dropForeignKeyConstraint baseTableName="instance" constraintName="fk_instance__service_index_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump60">
+        <dropForeignKeyConstraint baseTableName="instance" constraintName="fk_instance__zone_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump61">
+        <dropForeignKeyConstraint baseTableName="instance_host_map" constraintName="fk_instance_host_map__host_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump62">
+        <dropForeignKeyConstraint baseTableName="instance_host_map" constraintName="fk_instance_host_map__instance_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump63">
+        <dropForeignKeyConstraint baseTableName="instance_label_map" constraintName="fk_instance_label_map__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump64">
+        <dropForeignKeyConstraint baseTableName="instance_label_map" constraintName="fk_instance_label_map__instance_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump65">
+        <dropForeignKeyConstraint baseTableName="instance_label_map" constraintName="fk_instance_label_map__label_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump66">
+        <dropForeignKeyConstraint baseTableName="ip_address" constraintName="fk_ip_address__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump67">
+        <dropForeignKeyConstraint baseTableName="ip_address" constraintName="fk_ip_address__ip_pool_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump68">
+        <dropForeignKeyConstraint baseTableName="ip_address" constraintName="fk_ip_address__network_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump69">
+        <dropForeignKeyConstraint baseTableName="port" constraintName="fk_ip_address__private_ip_address_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump70">
+        <dropForeignKeyConstraint baseTableName="port" constraintName="fk_ip_address__public_ip_address_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump71">
+        <dropForeignKeyConstraint baseTableName="ip_address" constraintName="fk_ip_address__subnet_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump72">
+        <dropForeignKeyConstraint baseTableName="ip_address_nic_map" constraintName="fk_ip_address_nic_map__ip_address_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump73">
+        <dropForeignKeyConstraint baseTableName="ip_address_nic_map" constraintName="fk_ip_address_nic_map__nic_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump74">
+        <dropForeignKeyConstraint baseTableName="ip_association" constraintName="fk_ip_association__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump75">
+        <dropForeignKeyConstraint baseTableName="ip_association" constraintName="fk_ip_association__child_ip_address_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump76">
+        <dropForeignKeyConstraint baseTableName="ip_association" constraintName="fk_ip_association__ip_address_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump77">
+        <dropForeignKeyConstraint baseTableName="ip_pool" constraintName="fk_ip_pool__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump78">
+        <dropForeignKeyConstraint baseTableName="label" constraintName="fk_label__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump79">
+        <dropForeignKeyConstraint baseTableName="instance_link" constraintName="fk_link__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump80">
+        <dropForeignKeyConstraint baseTableName="instance_link" constraintName="fk_link__instance_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump81">
+        <dropForeignKeyConstraint baseTableName="instance_link" constraintName="fk_link__service_consume_map_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump82">
+        <dropForeignKeyConstraint baseTableName="instance_link" constraintName="fk_link__target_instance_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump83">
+        <dropForeignKeyConstraint baseTableName="load_balancer" constraintName="fk_load_balancer__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump84">
+        <dropForeignKeyConstraint baseTableName="load_balancer" constraintName="fk_load_balancer__global_load_balancer_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump85">
+        <dropForeignKeyConstraint baseTableName="load_balancer" constraintName="fk_load_balancer__load_balancer_config_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump86">
+        <dropForeignKeyConstraint baseTableName="load_balancer" constraintName="fk_load_balancer__service_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump87">
+        <dropForeignKeyConstraint baseTableName="load_balancer_certificate_map" constraintName="fk_load_balancer_certificate_map__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump88">
+        <dropForeignKeyConstraint baseTableName="load_balancer_certificate_map" constraintName="fk_load_balancer_certificate_map__certificate_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump89">
+        <dropForeignKeyConstraint baseTableName="load_balancer_certificate_map" constraintName="fk_load_balancer_certificate_map__load_balancer_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump90">
+        <dropForeignKeyConstraint baseTableName="load_balancer_config" constraintName="fk_load_balancer_config__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump91">
+        <dropForeignKeyConstraint baseTableName="load_balancer_config" constraintName="fk_load_balancer_config__service_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump92">
+        <dropForeignKeyConstraint baseTableName="load_balancer_config_listener_map" constraintName="fk_load_balancer_config_listener_map__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump93">
+        <dropForeignKeyConstraint baseTableName="load_balancer_config_listener_map" constraintName="fk_load_balancer_config_listener_map__load_balancer_config_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump94">
+        <dropForeignKeyConstraint baseTableName="load_balancer_config_listener_map" constraintName="fk_load_balancer_config_listener_map__load_balancer_listener_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump95">
+        <dropForeignKeyConstraint baseTableName="load_balancer_host_map" constraintName="fk_load_balancer_host_map__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump96">
+        <dropForeignKeyConstraint baseTableName="load_balancer_host_map" constraintName="fk_load_balancer_host_map__host_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump97">
+        <dropForeignKeyConstraint baseTableName="load_balancer_host_map" constraintName="fk_load_balancer_host_map__load_balancer_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump98">
+        <dropForeignKeyConstraint baseTableName="load_balancer_listener" constraintName="fk_load_balancer_listener__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump99">
+        <dropForeignKeyConstraint baseTableName="load_balancer_listener" constraintName="fk_load_balancer_listener__service_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump100">
+        <dropForeignKeyConstraint baseTableName="load_balancer_target" constraintName="fk_load_balancer_target__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump101">
+        <dropForeignKeyConstraint baseTableName="load_balancer_target" constraintName="fk_load_balancer_target__instance_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump102">
+        <dropForeignKeyConstraint baseTableName="load_balancer_target" constraintName="fk_load_balancer_target__load_balancer_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump103">
+        <dropForeignKeyConstraint baseTableName="machine_driver" constraintName="fk_machine_driver__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump104">
+        <dropForeignKeyConstraint baseTableName="network_service" constraintName="fk_network_service__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump105">
+        <dropForeignKeyConstraint baseTableName="network_service" constraintName="fk_network_service__network_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump106">
+        <dropForeignKeyConstraint baseTableName="network_service" constraintName="fk_network_service__network_service_provider_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump107">
+        <dropForeignKeyConstraint baseTableName="network_service_provider" constraintName="fk_network_service_provider__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump108">
+        <dropForeignKeyConstraint baseTableName="network_service_provider" constraintName="fk_network_service_provider__network_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump109">
+        <dropForeignKeyConstraint baseTableName="network_service_provider_instance_map" constraintName="fk_network_service_provider_instance_map__instance_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump110">
+        <dropForeignKeyConstraint baseTableName="nic" constraintName="fk_nic__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump111">
+        <dropForeignKeyConstraint baseTableName="nic" constraintName="fk_nic__instance_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump112">
+        <dropForeignKeyConstraint baseTableName="nic" constraintName="fk_nic__network_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump113">
+        <dropForeignKeyConstraint baseTableName="nic" constraintName="fk_nic__subnet_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump114">
+        <dropForeignKeyConstraint baseTableName="nic" constraintName="fk_nic__vnet_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump115">
+        <dropForeignKeyConstraint baseTableName="network_service_provider_instance_map" constraintName="fk_nspim_network_service_provider_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump116">
+        <dropForeignKeyConstraint baseTableName="offering" constraintName="fk_offering__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump117">
+        <dropForeignKeyConstraint baseTableName="physical_host" constraintName="fk_physical_host__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump118">
+        <dropForeignKeyConstraint baseTableName="physical_host" constraintName="fk_physical_host__agent_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump119">
+        <dropForeignKeyConstraint baseTableName="port" constraintName="fk_port__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump120">
+        <dropForeignKeyConstraint baseTableName="port" constraintName="fk_port__instance_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump121">
+        <dropForeignKeyConstraint baseTableName="service_consume_map" constraintName="fk_service_consume_map__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump122">
+        <dropForeignKeyConstraint baseTableName="service_consume_map" constraintName="fk_service_consume_map__consumed_service_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump123">
+        <dropForeignKeyConstraint baseTableName="service_consume_map" constraintName="fk_service_consume_map__service_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump124">
+        <dropForeignKeyConstraint baseTableName="service_event" constraintName="fk_service_event__healthcheck_instance_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump125">
+        <dropForeignKeyConstraint baseTableName="service_expose_map" constraintName="fk_service_expose_map__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump126">
+        <dropForeignKeyConstraint baseTableName="service_expose_map" constraintName="fk_service_instance_map__instance_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump127">
+        <dropForeignKeyConstraint baseTableName="service_expose_map" constraintName="fk_service_instance_map__service_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump128">
+        <dropForeignKeyConstraint baseTableName="service_index" constraintName="fk_service_suffix__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump129">
+        <dropForeignKeyConstraint baseTableName="service_index" constraintName="fk_service_suffix__service_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump130">
+        <dropForeignKeyConstraint baseTableName="snapshot" constraintName="fk_snapshot__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump131">
+        <dropForeignKeyConstraint baseTableName="snapshot" constraintName="fk_snapshot__volume_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump132">
+        <dropForeignKeyConstraint baseTableName="snapshot_storage_pool_map" constraintName="fk_snapshot_storage_pool_map__snapshot_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump133">
+        <dropForeignKeyConstraint baseTableName="snapshot_storage_pool_map" constraintName="fk_snapshot_storage_pool_map__storage_pool_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump134">
+        <dropForeignKeyConstraint baseTableName="storage_pool" constraintName="fk_storage_pool__zone_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump135">
+        <dropForeignKeyConstraint baseTableName="subnet" constraintName="fk_subnet__pool_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump136">
+        <dropForeignKeyConstraint baseTableName="subnet_vnet_map" constraintName="fk_subnet_vnet_map__subnet_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump137">
+        <dropForeignKeyConstraint baseTableName="subnet_vnet_map" constraintName="fk_subnet_vnet_map__vnet_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump138">
+        <dropForeignKeyConstraint baseTableName="task_instance" constraintName="fk_task_instance__task_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump139">
+        <dropForeignKeyConstraint baseTableName="vnet" constraintName="fk_vnet__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump140">
+        <dropForeignKeyConstraint baseTableName="vnet" constraintName="fk_vnet__network_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump141">
+        <dropForeignKeyConstraint baseTableName="volume" constraintName="fk_volume__image_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump142">
+        <dropForeignKeyConstraint baseTableName="volume" constraintName="fk_volume__instance_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump143">
+        <dropForeignKeyConstraint baseTableName="volume" constraintName="fk_volume__offering_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump144">
+        <dropForeignKeyConstraint baseTableName="volume" constraintName="fk_volume__zone_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump145">
+        <dropForeignKeyConstraint baseTableName="zone" constraintName="fk_zone__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump146">
+        <dropUniqueConstraint constraintName="idx_account_link_uuid" tableName="account_link"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump147">
+        <dropUniqueConstraint constraintName="idx_agent_group_uuid" tableName="agent_group"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump148">
+        <dropUniqueConstraint constraintName="idx_backup_target_uuid" tableName="backup_target"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump149">
+        <dropUniqueConstraint constraintName="idx_backup_uuid" tableName="backup"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump150">
+        <dropUniqueConstraint constraintName="idx_cluster_host_map_uuid" tableName="cluster_host_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump151">
+        <dropUniqueConstraint constraintName="idx_config_item__name" tableName="config_item"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump152">
+        <dropUniqueConstraint constraintName="idx_config_item_status_resource" tableName="config_item_status"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump153">
+        <dropUniqueConstraint constraintName="idx_credential_instance_map_uuid" tableName="credential_instance_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump154">
+        <dropUniqueConstraint constraintName="idx_eh_eh_process_map_uuid" tableName="external_handler_external_handler_process_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump155">
+        <dropUniqueConstraint constraintName="idx_external_handler_process_uuid" tableName="external_handler_process"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump156">
+        <dropUniqueConstraint constraintName="idx_external_handler_uuid" tableName="external_handler"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump157">
+        <dropUniqueConstraint constraintName="idx_global_load_balancer_uuid" tableName="global_load_balancer"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump158">
+        <dropUniqueConstraint constraintName="idx_healthcheck_instance_host_map_uuid" tableName="healthcheck_instance_host_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump159">
+        <dropUniqueConstraint constraintName="idx_healthcheck_instance_uuid" tableName="healthcheck_instance"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump160">
+        <dropUniqueConstraint constraintName="idx_host_ip_address_map_uuid" tableName="host_ip_address_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump161">
+        <dropUniqueConstraint constraintName="idx_host_label_map_uuid" tableName="host_label_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump162">
+        <dropUniqueConstraint constraintName="idx_host_vnet_map_uuid" tableName="host_vnet_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump163">
+        <dropUniqueConstraint constraintName="idx_image_storage_pool_map_uuid" tableName="image_storage_pool_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump164">
+        <dropUniqueConstraint constraintName="idx_image_uuid" tableName="image"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump165">
+        <dropUniqueConstraint constraintName="idx_instance_host_map_uuid" tableName="instance_host_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump166">
+        <dropUniqueConstraint constraintName="idx_instance_label_map_uuid" tableName="instance_label_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump167">
+        <dropUniqueConstraint constraintName="idx_ip_address_nic_map_uuid" tableName="ip_address_nic_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump168">
+        <dropUniqueConstraint constraintName="idx_ip_address_uuid" tableName="ip_address"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump169">
+        <dropUniqueConstraint constraintName="idx_ip_association_uuid" tableName="ip_association"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump170">
+        <dropUniqueConstraint constraintName="idx_ip_pool_uuid" tableName="ip_pool"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump171">
+        <dropUniqueConstraint constraintName="idx_label_uuid" tableName="label"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump172">
+        <dropUniqueConstraint constraintName="idx_link_uuid" tableName="instance_link"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump173">
+        <dropUniqueConstraint constraintName="idx_load_balancer_certificate_map_uuid" tableName="load_balancer_certificate_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump174">
+        <dropUniqueConstraint constraintName="idx_load_balancer_config_listener_map_uuid" tableName="load_balancer_config_listener_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump175">
+        <dropUniqueConstraint constraintName="idx_load_balancer_config_uuid" tableName="load_balancer_config"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump176">
+        <dropUniqueConstraint constraintName="idx_load_balancer_host_map_uuid" tableName="load_balancer_host_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump177">
+        <dropUniqueConstraint constraintName="idx_load_balancer_listener_uuid" tableName="load_balancer_listener"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump178">
+        <dropUniqueConstraint constraintName="idx_load_balancer_target_uuid" tableName="load_balancer_target"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump179">
+        <dropUniqueConstraint constraintName="idx_load_balancer_uuid" tableName="load_balancer"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump180">
+        <dropUniqueConstraint constraintName="idx_network_service_provider_instance_map_uuid" tableName="network_service_provider_instance_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump181">
+        <dropUniqueConstraint constraintName="idx_network_service_provider_uuid" tableName="network_service_provider"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump182">
+        <dropUniqueConstraint constraintName="idx_network_service_uuid" tableName="network_service"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump183">
+        <dropUniqueConstraint constraintName="idx_nic_uuid" tableName="nic"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump184">
+        <dropUniqueConstraint constraintName="idx_offering_uuid" tableName="offering"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump185">
+        <dropUniqueConstraint constraintName="idx_physical_host_uuid" tableName="physical_host"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump186">
+        <dropUniqueConstraint constraintName="idx_port_uuid" tableName="port"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump187">
+        <dropUniqueConstraint constraintName="idx_service_consume_map_uuid" tableName="service_consume_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump188">
+        <dropUniqueConstraint constraintName="idx_service_instance_map_uuid" tableName="service_expose_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump189">
+        <dropUniqueConstraint constraintName="idx_service_suffix_uuid" tableName="service_index"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump190">
+        <dropUniqueConstraint constraintName="idx_snapshot_storage_pool_map_uuid" tableName="snapshot_storage_pool_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump191">
+        <dropUniqueConstraint constraintName="idx_snapshot_uuid" tableName="snapshot"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump192">
+        <dropUniqueConstraint constraintName="idx_subnet_vnet_map_uuid" tableName="subnet_vnet_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump193">
+        <dropUniqueConstraint constraintName="idx_task_name" tableName="task"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump194">
+        <dropUniqueConstraint constraintName="idx_vnet_uuid" tableName="vnet"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump195">
+        <dropUniqueConstraint constraintName="idx_zone_uuid" tableName="zone"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump196">
+        <dropTable tableName="account_link"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump197">
+        <dropTable tableName="agent_group"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump198">
+        <dropTable tableName="backoff"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump199">
+        <dropTable tableName="backup"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump200">
+        <dropTable tableName="backup_target"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump201">
+        <dropTable tableName="cluster_host_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump202">
+        <dropTable tableName="config_item"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump203">
+        <dropTable tableName="config_item_status"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump204">
+        <dropTable tableName="container_event"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump205">
+        <dropTable tableName="credential_instance_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump206">
+        <dropTable tableName="external_handler"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump207">
+        <dropTable tableName="external_handler_external_handler_process_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump208">
+        <dropTable tableName="external_handler_process"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump209">
+        <dropTable tableName="global_load_balancer"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump210">
+        <dropTable tableName="healthcheck_instance"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump211">
+        <dropTable tableName="healthcheck_instance_host_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump212">
+        <dropTable tableName="host_ip_address_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump213">
+        <dropTable tableName="host_label_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump214">
+        <dropTable tableName="host_vnet_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump215">
+        <dropTable tableName="image"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump216">
+        <dropTable tableName="image_storage_pool_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump217">
+        <dropTable tableName="instance_host_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump218">
+        <dropTable tableName="instance_label_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump219">
+        <dropTable tableName="instance_link"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump220">
+        <dropTable tableName="ip_address"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump221">
+        <dropTable tableName="ip_address_nic_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump222">
+        <dropTable tableName="ip_association"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump223">
+        <dropTable tableName="ip_pool"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump224">
+        <dropTable tableName="label"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump225">
+        <dropTable tableName="load_balancer"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump226">
+        <dropTable tableName="load_balancer_certificate_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump227">
+        <dropTable tableName="load_balancer_config"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump228">
+        <dropTable tableName="load_balancer_config_listener_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump229">
+        <dropTable tableName="load_balancer_host_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump230">
+        <dropTable tableName="load_balancer_listener"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump231">
+        <dropTable tableName="load_balancer_target"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump232">
+        <dropTable tableName="network_service"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump233">
+        <dropTable tableName="network_service_provider"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump234">
+        <dropTable tableName="network_service_provider_instance_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump235">
+        <dropTable tableName="nic"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump236">
+        <dropTable tableName="offering"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump237">
+        <dropTable tableName="physical_host"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump238">
+        <dropTable tableName="port"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump239">
+        <dropTable tableName="service_consume_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump240">
+        <dropTable tableName="service_expose_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump241">
+        <dropTable tableName="service_index"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump242">
+        <dropTable tableName="snapshot"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump243">
+        <dropTable tableName="snapshot_storage_pool_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump244">
+        <dropTable tableName="subnet_vnet_map"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump245">
+        <dropTable tableName="task"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump246">
+        <dropTable tableName="task_instance"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump247">
+        <dropTable tableName="vnet"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump248">
+        <dropTable tableName="zone"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump249">
+        <dropColumn columnName="account_id" tableName="machine_driver"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump250">
+        <dropColumn columnName="agent_group_id" tableName="agent"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump251">
+        <dropColumn columnName="allocation_state" tableName="instance"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump252">
+        <dropColumn columnName="allocation_state" tableName="volume"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump253">
+        <dropColumn columnName="attached_state" tableName="volume"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump254">
+        <dropColumn columnName="compute" tableName="instance"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump255">
+        <dropColumn columnName="compute_free" tableName="host"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump256">
+        <dropColumn columnName="compute_total" tableName="host"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump257">
+        <dropColumn columnName="deployment_unit_uuid" tableName="instance"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump258">
+        <dropColumn columnName="device_number" tableName="volume"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump259">
+        <dropColumn columnName="dns_internal" tableName="instance"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump260">
+        <dropColumn columnName="dns_search_internal" tableName="instance"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump261">
+        <dropColumn columnName="format" tableName="volume"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump262">
+        <dropColumn columnName="health_state" tableName="deployment_unit"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump263">
+        <dropColumn columnName="health_updated" tableName="instance"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump264">
+        <dropColumn columnName="healthcheck_instance_id" tableName="service_event"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump265">
+        <dropColumn columnName="image_id" tableName="instance"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump266">
+        <dropColumn columnName="image_id" tableName="volume"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump267">
+        <dropColumn columnName="instance_id" tableName="volume"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump268">
+        <dropColumn columnName="ip_pool_id" tableName="subnet"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump269">
+        <dropColumn columnName="offering_id" tableName="instance"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump270">
+        <dropColumn columnName="offering_id" tableName="volume"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump271">
+        <dropColumn columnName="physical_host_id" tableName="host"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump272">
+        <dropColumn columnName="selector_container" tableName="service"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump273">
+        <dropColumn columnName="selector_link" tableName="service"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump274">
+        <dropColumn columnName="service_index_id" tableName="instance"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump275">
+        <dropColumn columnName="skip" tableName="service"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump276">
+        <dropColumn columnName="system_container" tableName="instance"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump277">
+        <dropColumn columnName="zone_id" tableName="agent"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump278">
+        <dropColumn columnName="zone_id" tableName="host"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump279">
+        <dropColumn columnName="zone_id" tableName="instance"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump280">
+        <dropColumn columnName="zone_id" tableName="volume"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump281">
+        <dropIndex indexName="idx_host_compute_free" tableName="host"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump282">
+        <modifyDataType columnName="external_timestamp" newDataType="bigint(19)" tableName="service_event"/>
+    </changeSet>
+</databaseChangeLog>

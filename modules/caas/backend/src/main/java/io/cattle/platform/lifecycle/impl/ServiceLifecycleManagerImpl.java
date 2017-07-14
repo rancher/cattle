@@ -1,5 +1,7 @@
 package io.cattle.platform.lifecycle.impl;
 
+import io.cattle.platform.core.addon.InstanceHealthCheck;
+import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ServiceDao;
@@ -41,6 +43,16 @@ public class ServiceLifecycleManagerImpl implements ServiceLifecycleManager {
         this.serviceDao = serviceDao;
         this.revisionManager = revisionManager;
         this.loadbalancerService = loadbalancerService;
+    }
+
+    @Override
+    public void preStart(Instance instance) {
+        InstanceHealthCheck hc = DataAccessor.field(instance, InstanceConstants.FIELD_HEALTH_CHECK, InstanceHealthCheck.class);
+        if (hc == null) {
+            instance.setHealthState(null);
+        } else {
+            instance.setHealthState(HealthcheckConstants.HEALTH_STATE_INITIALIZING);
+        }
     }
 
     @Override

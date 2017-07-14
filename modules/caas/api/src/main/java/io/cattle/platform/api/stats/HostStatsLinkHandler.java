@@ -51,7 +51,7 @@ public class HostStatsLinkHandler implements LinkHandler {
         }
 
         if (obj instanceof Account && AccountConstants.PROJECT_KIND.equals(((Account) obj).getKind())) {
-            hosts.addAll(objectManager.mappedChildren(obj, Host.class));
+            hosts.addAll(objectManager.children(obj, Host.class));
             project = true;
         }
 

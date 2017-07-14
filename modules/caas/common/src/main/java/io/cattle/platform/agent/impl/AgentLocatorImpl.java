@@ -1,5 +1,8 @@
 package io.cattle.platform.agent.impl;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.core.dao.AgentDao;
@@ -12,10 +15,6 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.ObjectUtils;
 
 import java.util.concurrent.TimeUnit;
-
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 
 public class AgentLocatorImpl implements AgentLocator {
 
@@ -61,11 +60,11 @@ public class AgentLocatorImpl implements AgentLocator {
         }
 
         if (agentId == null) {
-            agentId = getAgentId(resource);
-        }
-
-        if (agentId == null && resource instanceof Instance) {
-            agentId = getAgentId(objectManager.loadResource(Host.class, ((Instance) resource).getHostId()));
+            if (resource instanceof Instance) {
+                agentId = getAgentId(objectManager.loadResource(Host.class, ((Instance) resource).getHostId()));
+            } else {
+                agentId = getAgentId(resource);
+            }
         }
 
         if (agentId == null) {
@@ -82,7 +81,7 @@ public class AgentLocatorImpl implements AgentLocator {
         }
 
         String uri = agent.getUri();
-        if (uri != null && !uri.startsWith(EVENTING)) {
+        if (uri == null || !uri.startsWith(EVENTING)) {
             return null;
         }
 

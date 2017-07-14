@@ -1,12 +1,5 @@
 package io.cattle.platform.json;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -15,6 +8,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.CollectionType;
+import io.github.ibuildthecloud.gdapi.util.DateUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
 
 /**
  * Default implementation of JsonMapper that uses Jackson for marshaling and
@@ -26,7 +29,11 @@ public class JacksonJsonMapper implements JsonMapper {
     List<Module> modules;
 
     public JacksonJsonMapper() {
+        SimpleDateFormat df = new SimpleDateFormat(DateUtils.DATE_FORMAT);
+        df.setTimeZone(TimeZone.getTimeZone("GMT"));
+
         mapper = new ObjectMapper();
+        mapper.setDateFormat(df);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
 
@@ -40,10 +47,6 @@ public class JacksonJsonMapper implements JsonMapper {
                 mapper.registerModule(module);
             }
         }
-    }
-
-    public JacksonJsonMapper(ObjectMapper mapper) {
-        this.mapper = mapper;
     }
 
     @Override

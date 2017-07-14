@@ -41,6 +41,8 @@
 
             <unsignedTypes>false</unsignedTypes>
 
+            <recordVersionFields>revision</recordVersionFields>
+
             <customTypes>
                 <customType>
                     <name>java.util.Date</name>

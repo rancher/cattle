@@ -1,7 +1,5 @@
 package io.cattle.platform.async.retry;
 
-import io.cattle.platform.util.concurrent.DelayedObject;
-
 import java.util.concurrent.Future;
 
 public class Retry {
@@ -51,16 +49,6 @@ public class Retry {
 
     public boolean isKeepalive() {
         return keepalive;
-    }
-
-    @Override
-    @SuppressWarnings("rawtypes")
-    public boolean equals(Object obj) {
-        if (obj instanceof DelayedObject) {
-            return ((DelayedObject) obj).getObject().equals(this);
-        }
-
-        return super.equals(obj);
     }
 
 }

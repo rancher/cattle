@@ -1,12 +1,5 @@
 package io.cattle.platform.process.stack;
 
-import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
-import static io.cattle.platform.core.model.tables.HostTable.*;
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
-import static io.cattle.platform.core.model.tables.ServiceTable.*;
-import static io.cattle.platform.core.model.tables.VolumeTable.*;
-import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
-
 import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -21,6 +14,13 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 
 import java.util.List;
+
+import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
+import static io.cattle.platform.core.model.tables.HostTable.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
+import static io.cattle.platform.core.model.tables.VolumeTable.*;
+import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
 
 public class StackProcessManager {
 

@@ -223,7 +223,10 @@ public class DataAccessor {
 
     public Object getForWrite() {
         Map<String, Object> map = getTargetMap(false, false);
-        Object result = key == null ? null : map.get(key);
+        if (map == null || key == null) {
+            return defaultValue;
+        }
+        Object result = map.get(key);
         return result == null ? defaultValue : result;
     }
 
@@ -249,9 +252,6 @@ public class DataAccessor {
         }
 
         if (sourceMap == null) {
-            if (!addContainer) {
-                throw new IllegalStateException("Can not set a value on a null target");
-            }
             return null;
         }
 

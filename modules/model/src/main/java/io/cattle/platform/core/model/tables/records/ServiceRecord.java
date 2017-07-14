@@ -21,8 +21,8 @@ import javax.persistence.Table;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record20;
-import org.jooq.Row20;
+import org.jooq.Record21;
+import org.jooq.Row21;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -39,9 +39,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "service", schema = "cattle")
-public class ServiceRecord extends UpdatableRecordImpl<ServiceRecord> implements TableRecordJaxb, Record20<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, String, Long, String, String, String, Boolean, Long, Long>, Service {
+public class ServiceRecord extends UpdatableRecordImpl<ServiceRecord> implements TableRecordJaxb, Record21<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, String, Long, String, String, String, Boolean, Long, Long, Long>, Service {
 
-    private static final long serialVersionUID = -1357315542;
+    private static final long serialVersionUID = 368176369;
 
     /**
      * Setter for <code>cattle.service.id</code>.
@@ -385,6 +385,23 @@ public class ServiceRecord extends UpdatableRecordImpl<ServiceRecord> implements
         return (Long) get(19);
     }
 
+    /**
+     * Setter for <code>cattle.service.revision</code>.
+     */
+    @Override
+    public void setRevision(Long value) {
+        set(20, value);
+    }
+
+    /**
+     * Getter for <code>cattle.service.revision</code>.
+     */
+    @Column(name = "revision", nullable = false, precision = 19)
+    @Override
+    public Long getRevision() {
+        return (Long) get(20);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -398,23 +415,23 @@ public class ServiceRecord extends UpdatableRecordImpl<ServiceRecord> implements
     }
 
     // -------------------------------------------------------------------------
-    // Record20 type implementation
+    // Record21 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row20<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, String, Long, String, String, String, Boolean, Long, Long> fieldsRow() {
-        return (Row20) super.fieldsRow();
+    public Row21<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, String, Long, String, String, String, Boolean, Long, Long, Long> fieldsRow() {
+        return (Row21) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row20<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, String, Long, String, String, String, Boolean, Long, Long> valuesRow() {
-        return (Row20) super.valuesRow();
+    public Row21<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, String, Long, String, String, String, Boolean, Long, Long, Long> valuesRow() {
+        return (Row21) super.valuesRow();
     }
 
     /**
@@ -581,6 +598,14 @@ public class ServiceRecord extends UpdatableRecordImpl<ServiceRecord> implements
      * {@inheritDoc}
      */
     @Override
+    public Field<Long> field21() {
+        return ServiceTable.SERVICE.REVISION;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Long value1() {
         return getId();
     }
@@ -735,6 +760,14 @@ public class ServiceRecord extends UpdatableRecordImpl<ServiceRecord> implements
     @Override
     public Long value20() {
         return getRevisionId();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Long value21() {
+        return getRevision();
     }
 
     /**
@@ -921,7 +954,16 @@ public class ServiceRecord extends UpdatableRecordImpl<ServiceRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public ServiceRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, Long value12, String value13, Long value14, String value15, String value16, String value17, Boolean value18, Long value19, Long value20) {
+    public ServiceRecord value21(Long value) {
+        setRevision(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ServiceRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, Long value12, String value13, Long value14, String value15, String value16, String value17, Boolean value18, Long value19, Long value20, Long value21) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -942,6 +984,7 @@ public class ServiceRecord extends UpdatableRecordImpl<ServiceRecord> implements
         value18(value18);
         value19(value19);
         value20(value20);
+        value21(value21);
         return this;
     }
 
@@ -974,6 +1017,7 @@ public class ServiceRecord extends UpdatableRecordImpl<ServiceRecord> implements
         setSystem(from.getSystem());
         setPreviousRevisionId(from.getPreviousRevisionId());
         setRevisionId(from.getRevisionId());
+        setRevision(from.getRevision());
     }
 
     /**
@@ -999,7 +1043,7 @@ public class ServiceRecord extends UpdatableRecordImpl<ServiceRecord> implements
     /**
      * Create a detached, initialised ServiceRecord
      */
-    public ServiceRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Long environmentId, String vip, Long createIndex, String selector, String externalId, String healthState, Boolean system, Long previousRevisionId, Long revisionId) {
+    public ServiceRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Long environmentId, String vip, Long createIndex, String selector, String externalId, String healthState, Boolean system, Long previousRevisionId, Long revisionId, Long revision) {
         super(ServiceTable.SERVICE);
 
         set(0, id);
@@ -1022,5 +1066,6 @@ public class ServiceRecord extends UpdatableRecordImpl<ServiceRecord> implements
         set(17, system);
         set(18, previousRevisionId);
         set(19, revisionId);
+        set(20, revision);
     }
 }

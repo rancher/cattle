@@ -1,6 +1,7 @@
 package io.cattle.platform.object.postinit;
 
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.object.util.DataAccessor;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 
@@ -11,14 +12,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-import static io.cattle.platform.object.util.DataUtils.*;
-
 public class ObjectDataPostInstantiationHandler implements ObjectPostInstantiationHandler {
 
     JsonMapper jsonMapper;
 
     public ObjectDataPostInstantiationHandler(JsonMapper jsonMapper) {
-        super();
         this.jsonMapper = jsonMapper;
     }
 
@@ -53,7 +51,7 @@ public class ObjectDataPostInstantiationHandler implements ObjectPostInstantiati
 
     protected void setData(Object instance, Map<String, Object> data) throws IOException {
         try {
-            BeanUtils.setProperty(instance, DATA, data);
+            BeanUtils.setProperty(instance, DataAccessor.DATA, data);
         } catch (IllegalAccessException e) {
             throw new IllegalStateException("Failed to set data [" + data + "] on [" + instance + "]", e);
         } catch (InvocationTargetException e) {
@@ -64,10 +62,10 @@ public class ObjectDataPostInstantiationHandler implements ObjectPostInstantiati
     @SuppressWarnings("unchecked")
     protected Map<String, Object> getData(Object instance, Map<String, Object> properties) throws IOException {
         Map<String, Object> objectData = null;
-        Map<String, Object> inputData = getMap(properties.get(DATA));
+        Map<String, Object> inputData = getMap(properties.get(DataAccessor.DATA));
 
         try {
-            objectData = (Map<String, Object>) PropertyUtils.getProperty(instance, DATA);
+            objectData = (Map<String, Object>) PropertyUtils.getProperty(instance, DataAccessor.DATA);
         } catch (IllegalAccessException e) {
         } catch (InvocationTargetException e) {
         } catch (NoSuchMethodException e) {
@@ -80,7 +78,7 @@ public class ObjectDataPostInstantiationHandler implements ObjectPostInstantiati
         }
         finalData.putAll(inputData);
 
-        overlay(finalData, FIELDS, getFieldData(instance, properties));
+        overlay(finalData, DataAccessor.FIELDS, getFieldData(instance, properties));
 
         return finalData;
     }
@@ -121,10 +119,6 @@ public class ObjectDataPostInstantiationHandler implements ObjectPostInstantiati
             return (Map<String, Object>) obj;
         }
         return new HashMap<>();
-    }
-
-    public JsonMapper getJsonMapper() {
-        return jsonMapper;
     }
 
 }

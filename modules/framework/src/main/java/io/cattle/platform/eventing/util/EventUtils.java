@@ -50,7 +50,6 @@ public class EventUtils {
 
     public static void copyTransitioning(Event from, EventVO<?> to) {
         to.setTransitioning(from.getTransitioning());
-        to.setTransitioningInternalMessage(from.getTransitioningInternalMessage());
         to.setTransitioningMessage(from.getTransitioningMessage());
         to.setTransitioningProgress(from.getTransitioningProgress());
     }

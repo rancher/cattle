@@ -123,7 +123,7 @@ public class InstanceWrapper implements BasicStateWrapper {
     }
 
     public String getErrorMessage() {
-        return TransitioningUtils.getTransitioningError(instance);
+        return TransitioningUtils.getTransitioningErrorMessage(instance);
     }
 
     public void setDesired(boolean desired) {

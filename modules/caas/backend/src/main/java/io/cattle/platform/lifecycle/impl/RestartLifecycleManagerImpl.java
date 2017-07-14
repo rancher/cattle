@@ -1,7 +1,5 @@
 package io.cattle.platform.lifecycle.impl;
 
-import static io.cattle.platform.object.util.DataAccessor.*;
-
 import io.cattle.platform.backpopulate.BackPopulater;
 import io.cattle.platform.core.addon.RestartPolicy;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -11,13 +9,14 @@ import io.cattle.platform.lifecycle.RestartLifecycleManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.util.DateUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static io.cattle.platform.object.util.DataAccessor.*;
 
 public class RestartLifecycleManagerImpl implements RestartLifecycleManager {
 
@@ -40,6 +39,13 @@ public class RestartLifecycleManagerImpl implements RestartLifecycleManager {
     @Override
     public void postStart(Instance instance) {
         updateStartCount(instance);
+        updateFirstRunning(instance);
+    }
+
+    private void updateFirstRunning(Instance instance) {
+        if (instance.getFirstRunning() == null) {
+            instance.setFirstRunning(new Date());
+        }
     }
 
     private void updateStartCount(Instance instance) {
@@ -58,7 +64,7 @@ public class RestartLifecycleManagerImpl implements RestartLifecycleManager {
             restartCount++;
         }
 
-        setField(instance,InstanceConstants.FIELD_SHOULD_RESTART, shouldRestart);
+        setField(instance, InstanceConstants.FIELD_SHOULD_RESTART, shouldRestart);
         setField(instance, InstanceConstants.FIELD_START_RETRY_COUNT, restartCount);
     }
 
@@ -67,8 +73,8 @@ public class RestartLifecycleManagerImpl implements RestartLifecycleManager {
         if (count == null) {
             count = 0;
         }
-        Date started = getDate(instance, InstanceConstants.FIELD_DOCKER_INSPECT, "State", "StartedAt");
-        Date finished = getDate(instance, InstanceConstants.FIELD_DOCKER_INSPECT, "State", "FinishedAt");
+        Date started = getDate(instance, DataAccessor.FIELDS, InstanceConstants.FIELD_DOCKER_INSPECT, "State", "StartedAt");
+        Date finished = getDate(instance, DataAccessor.FIELDS, InstanceConstants.FIELD_DOCKER_INSPECT, "State", "FinishedAt");
 
         if (started == null || finished == null) {
             return count;

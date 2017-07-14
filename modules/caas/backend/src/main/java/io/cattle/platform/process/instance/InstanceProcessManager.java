@@ -36,7 +36,7 @@ public class InstanceProcessManager {
         try {
             instanceLifecycle.create(instance);
         } catch (LifecycleException e) {
-            processManager.remove(instance, null);
+            processManager.error(instance, null);
             throw new ExecutionException(e, instance);
         }
 
@@ -79,6 +79,10 @@ public class InstanceProcessManager {
         return null;
     }
 
+    public HandlerResult postRemove(ProcessState state, ProcessInstance process) {
+        instanceLifecycle.postRemove((Instance) state.getResource());
+        return null;
+    }
     public HandlerResult preStart(ProcessState state, ProcessInstance process) {
         Instance instance = (Instance) state.getResource();
 

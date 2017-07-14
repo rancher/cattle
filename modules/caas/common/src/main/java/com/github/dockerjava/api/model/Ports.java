@@ -12,7 +12,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.node.NullNode;
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.builder.EqualsBuilder;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -237,12 +236,21 @@ public class Ports {
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof Binding) {
-                Binding other = (Binding) obj;
-                return new EqualsBuilder().append(hostIp, other.getHostIp()).append(hostPort, other.getHostPort()).isEquals();
-            } else
-                return super.equals(obj);
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Binding binding = (Binding) o;
+
+            if (hostIp != null ? !hostIp.equals(binding.hostIp) : binding.hostIp != null) return false;
+            return hostPort != null ? hostPort.equals(binding.hostPort) : binding.hostPort == null;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = hostIp != null ? hostIp.hashCode() : 0;
+            result = 31 * result + (hostPort != null ? hostPort.hashCode() : 0);
+            return result;
         }
     }
 

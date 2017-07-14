@@ -104,6 +104,8 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
     public void preStart(Instance instance) throws LifecycleException {
         volumeLifecycle.preStart(instance);
 
+        serviceLifecycle.preStart(instance);
+
         clearStartSource(instance);
 
         allocationLifecycle.preStart(instance);
@@ -138,6 +140,8 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
         volumeLifecycle.preRemove(instance);
 
         allocationLifecycle.preRemove(instance);
+
+        networkLifecycle.preRemove(instance);
 
         objectManager.persist(instance);
     }

@@ -9,21 +9,13 @@ import java.util.Map;
 
 public interface AllocationHelper {
 
-    /**
-     * This address various usability issues allowing users to provide shorthand versions of the service
-     * name
-     */
-    void normalizeLabels(long stackId, Map<String, String> systemLabels, Map<String, String> serviceUserLabels);
+    List<Long> getHostsSatisfyingHostAffinity(long accountId, Map<String, ?> labelConstraints);
 
-    List<Long> getHostsSatisfyingHostAffinity(Long accountId, Map<String, String> labelConstraints);
+    List<Constraint> extractConstraintsFromEnv(Map<String, ?> env);
 
-    @SuppressWarnings("rawtypes")
-    List<Constraint> extractConstraintsFromEnv(Map env);
+    List<Constraint> extractConstraintsFromLabels(Map<String, ?> labels, Instance instance);
 
-    @SuppressWarnings("rawtypes")
-    List<Constraint> extractConstraintsFromLabels(Map labels, Instance instance);
-
-    List<Long> getAllHostsSatisfyingHostAffinity(Long accountId, Map<String, String> labelConstraints);
+    List<Long> getAllHostsSatisfyingHostAffinity(long accountId, Map<String, ?> labelConstraints);
 
     List<LockDefinition> extractAllocationLockDefinitions(Instance instance, List<Instance> instances);
 }

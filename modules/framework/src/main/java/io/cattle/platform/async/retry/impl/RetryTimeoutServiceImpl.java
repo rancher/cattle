@@ -1,27 +1,27 @@
 package io.cattle.platform.async.retry.impl;
 
+import com.google.common.util.concurrent.SettableFuture;
 import io.cattle.platform.async.retry.CancelRetryException;
 import io.cattle.platform.async.retry.Retry;
 import io.cattle.platform.async.retry.RetryTimeoutService;
 import io.cattle.platform.async.utils.TimeoutException;
-import io.cattle.platform.util.concurrent.DelayedObject;
-
-import java.util.concurrent.DelayQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-
 import org.apache.cloudstack.managed.context.NoExceptionRunnable;
 
-import com.google.common.util.concurrent.SettableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 public class RetryTimeoutServiceImpl implements RetryTimeoutService {
 
-    DelayQueue<DelayedObject<Retry>> retryQueue = new DelayQueue<>();
     ExecutorService executorService;
+    ScheduledExecutorService scheduledExecutorService;
 
-    public RetryTimeoutServiceImpl(ExecutorService executorService) {
-        super();
+    public RetryTimeoutServiceImpl(ExecutorService executorService, ScheduledExecutorService scheduledExecutorService) {
         this.executorService = executorService;
+        this.scheduledExecutorService = scheduledExecutorService;
     }
 
     @Override
@@ -29,68 +29,55 @@ public class RetryTimeoutServiceImpl implements RetryTimeoutService {
         return queue(retry);
     }
 
-    public void retry() {
-        DelayedObject<Retry> delayed = retryQueue.poll();
-        while (delayed != null) {
-            final Retry retry = delayed.getObject();
+    public void retry(Retry retry) {
+        if (retry.isKeepalive()) {
+            retry.setKeepalive(false);
+            queue(retry);
+        } else {
+            retry.increment();
 
-            if (retry.isKeepalive()) {
-                retry.setKeepalive(false);
-                queue(retry);
-            } else {
-                retry.increment();
-
-                if (retry.getRetryCount() >= retry.getRetries()) {
-                    Future<?> future = retry.getFuture();
-                    if (future instanceof SettableFuture) {
-                        ((SettableFuture<?>) future).setException(new TimeoutException());
-                    } else {
-                        future.cancel(true);
-                    }
+            if (retry.getRetryCount() >= retry.getRetries()) {
+                Future<?> future = retry.getFuture();
+                if (future instanceof SettableFuture) {
+                    ((SettableFuture<?>) future).setException(new TimeoutException());
                 } else {
+                    future.cancel(true);
+                }
+            } else {
+                try {
                     executorService.execute(new Runnable() {
                         @Override
                         public void run() {
-                                queue(retry);
-                                final Runnable run = retry.getRunnable();
-                                if (run != null) {
-                                    new NoExceptionRunnable() {
-                                        @Override
-                                        protected void doRun() throws Exception {
-                                            try {
-                                                run.run();
-                                            } catch (CancelRetryException e) {
-                                                completed(retry);
-                                            }
+                            Object cancel = queue(retry);
+                            final Runnable run = retry.getRunnable();
+                            if (run != null) {
+                                new NoExceptionRunnable() {
+                                    @Override
+                                    protected void doRun() throws Exception {
+                                        try {
+                                            run.run();
+                                        } catch (CancelRetryException e) {
+                                            completed(cancel);
                                         }
-                                    }.run();
-                                }
+                                    }
+                                }.run();
+                            }
                         }
                     });
+                } catch (RejectedExecutionException e) {
+                    queue(retry);
                 }
             }
-
-            delayed = retryQueue.poll();
         }
     }
 
-    protected DelayedObject<Retry> queue(Retry retry) {
-        DelayedObject<Retry> delayed = new DelayedObject<>(System.currentTimeMillis() + retry.getTimeoutMillis(), retry);
-        retryQueue.add(delayed);
-        return delayed;
+    protected Object queue(Retry retry) {
+        return scheduledExecutorService.schedule(() -> retry(retry), retry.getTimeoutMillis(), TimeUnit.MILLISECONDS);
     }
 
     @Override
     public void completed(Object obj) {
-        retryQueue.remove(obj);
-    }
-
-    public ExecutorService getExecutorService() {
-        return executorService;
-    }
-
-    public void setExecutorService(ExecutorService executorService) {
-        this.executorService = executorService;
+        ((ScheduledFuture) obj).cancel(false);
     }
 
 }

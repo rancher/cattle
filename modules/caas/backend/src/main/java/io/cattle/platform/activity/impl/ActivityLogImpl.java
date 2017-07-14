@@ -19,12 +19,11 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.object.util.TransitioningUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.jooq.exception.DataChangedException;
 
 import java.util.Date;
 import java.util.Stack;
-
-import org.apache.commons.lang3.StringUtils;
-import org.jooq.exception.DataChangedException;
 
 public class ActivityLogImpl implements ActivityLog {
     EventService eventService;
@@ -191,7 +190,7 @@ public class ActivityLogImpl implements ActivityLog {
             log.setLevel("info");
             Instance instance = objectManager.loadResource(Instance.class, log.getInstanceId());
             if (instance != null) {
-                String error = TransitioningUtils.getTransitioningError(instance);
+                String error = TransitioningUtils.getTransitioningErrorMessage(instance);
                 if (StringUtils.isNotBlank(error)) {
                     log.setLevel("error");
                     log.setDescription(log.getDescription() + ": " + error);

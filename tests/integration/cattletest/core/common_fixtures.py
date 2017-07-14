@@ -105,8 +105,10 @@ class Context(object):
         self.host = host
         self.image_uuid = '{}'.format(random_str())
         self.lb_v1_image_uuid = 'rancher/load-balancer-service'
-        self.host_ip = self.host.agentIpAddress
+        self.host_ip = None
         self.owner_client = owner_client
+        if self.host is not None:
+            self.host_ip = self.host.agentIpAddress
 
     def create_container(self, *args, **kw):
         c = self.create_container_no_success(*args, **kw)

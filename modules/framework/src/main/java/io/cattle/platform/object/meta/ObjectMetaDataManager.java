@@ -16,7 +16,6 @@ public interface ObjectMetaDataManager {
 
     String TRANSITIONING_FIELD = "transitioning";
     String TRANSITIONING_MESSAGE_FIELD = "transitioningMessage";
-    String TRANSITIONING_MESSAGE_DEFAULT_FIELD = "In Progress";
 
     String STATE_FIELD = "state";
     String STATES_FIELD = "states";
