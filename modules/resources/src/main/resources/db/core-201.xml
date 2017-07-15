@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.2.xsd">
+    <property name="mediumtext" value="TEXT" dbms="postgresql" />
+    <property name="mediumtext" value="MEDIUMTEXT" />
+    <property name="mediumtext" value="varchar" dbms="H2" />
+    <changeSet author="rancher (generated)" id="dump1">
+        <addColumn tableName="host">
+            <column defaultValue="0" name="revision" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <addColumn tableName="instance">
+            <column defaultValue="0" name="revision" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <addColumn tableName="service">
+            <column defaultValue="0" name="revision" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <dropColumn columnName="health_state" tableName="deployment_unit"/>
+    </changeSet>
+</databaseChangeLog>
