@@ -198,7 +198,7 @@ public class EnvironmentResourceManagerImpl implements EnvironmentResourceManage
             .filter((instance) -> instance.getAgentId() != null)
             .filter(this::healthyAndActive)
             .filter((instance) -> instance.getLabels().containsKey(providedServiceLabel))
-            .map(InstanceInfo::getId)
+            .map(InstanceInfo::getAgentId)
             .collect(toList());
     }
 

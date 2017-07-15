@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -97,8 +98,19 @@ public class ContainerSyncImpl implements ContainerSync {
         });
     }
 
+    private String getInstanceUuid(ContainerEvent event) {
+        String uuid = event.getUuid();
+        if (StringUtils.isNotBlank(uuid)) {
+            return uuid;
+        }
+
+        return Objects.toString(CollectionUtils.getNestedValue(event.getDockerInspect(),
+                "Config", "Labels", SystemLabels.LABEL_RANCHER_UUID), null);
+    }
+
     private void containerEventWithLock(ContainerEvent event) {
-        Instance instance = instanceDao.getInstanceByUuidOrExternalId(event.getAccountId(), event.getUuid(), event.getExternalId());
+        String uuid = getInstanceUuid(event);
+        Instance instance = instanceDao.getInstanceByUuidOrExternalId(event.getAccountId(), uuid, event.getExternalId());
 
         String status = event.getExternalStatus();
         if (status.equals(EVENT_START) && instance == null && event.getDockerInspect() != null) {

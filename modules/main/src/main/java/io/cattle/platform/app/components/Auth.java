@@ -114,8 +114,9 @@ public class Auth {
                 defaultAuthorizationProvider);
 
 
-        authorizationProviders.add(dynamicProvider);
+        // Must be first
         authorizationProviders.add(agentQualifierAuthorizationProvider);
+        authorizationProviders.add(dynamicProvider);
     }
 
     private void setupAccountLookup() {

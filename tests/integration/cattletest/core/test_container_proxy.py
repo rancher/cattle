@@ -13,6 +13,8 @@ def test_service_proxy(client, context):
                                       'imageUuid': 'docker:nginx'},
                                   stackId=env.id)
     assert service.state == 'active'
+    wait_for_condition(client, service, lambda x: x.instanceIds is not None and
+                       len(x.instanceIds) > 0)
 
     access = client.create_service_proxy(service=service.name)
     assert access is not None

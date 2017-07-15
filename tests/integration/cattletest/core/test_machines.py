@@ -1,6 +1,5 @@
 from common_fixtures import *  # NOQA
 from cattle import ApiError
-from test_physical_host import disable_go_machine_service  # NOQA
 from copy import deepcopy
 from test_authorization import service_client  # NOQA
 

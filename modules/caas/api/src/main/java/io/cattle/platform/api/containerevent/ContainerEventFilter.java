@@ -29,10 +29,12 @@ public class ContainerEventFilter extends AbstractValidationFilter {
     JsonMapper jsonMapper;
     EventService eventService;
 
-    public ContainerEventFilter(AgentDao agentDao, ObjectManager objectManager) {
+    public ContainerEventFilter(AgentDao agentDao, ObjectManager objectManager, JsonMapper jsonMapper, EventService eventService) {
         super();
         this.agentDao = agentDao;
         this.objectManager = objectManager;
+        this.jsonMapper = jsonMapper;
+        this.eventService = eventService;
     }
 
     @Override
@@ -54,6 +56,6 @@ public class ContainerEventFilter extends AbstractValidationFilter {
         event.setAccountId(host.getAccountId());
 
         eventService.publish(new ContainerEventEvent(event));
-        return null;
+        return event;
     }
 }

@@ -1,10 +1,6 @@
 package io.cattle.platform.core.dao.impl;
 
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
-import static io.cattle.platform.core.model.tables.NetworkDriverTable.*;
-import static io.cattle.platform.core.model.tables.NetworkTable.*;
-import static io.cattle.platform.core.model.tables.SubnetTable.*;
-
+import com.netflix.config.DynamicStringListProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
@@ -16,12 +12,14 @@ import io.cattle.platform.core.model.tables.records.NetworkRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
+import org.jooq.Configuration;
 
 import java.util.List;
 
-import org.jooq.Configuration;
-
-import com.netflix.config.DynamicStringListProperty;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.NetworkDriverTable.*;
+import static io.cattle.platform.core.model.tables.NetworkTable.*;
+import static io.cattle.platform.core.model.tables.SubnetTable.*;
 
 public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
     DynamicStringListProperty DOCKER_VIP_SUBNET_CIDR = ArchaiusUtil.getList("docker.vip.subnet.cidr");
@@ -66,6 +64,7 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
     public List<Long> findInstancesInUseByServiceDriver(Long serviceId) {
         Long[] ignore = create()
             .select(INSTANCE.ID)
+            .from(INSTANCE)
             .where(INSTANCE.SERVICE_ID.eq(serviceId)
                     .and(INSTANCE.REMOVED.isNull()))
             .fetch().intoArray(INSTANCE.ID);

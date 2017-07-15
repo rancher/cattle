@@ -119,6 +119,7 @@ import io.cattle.platform.api.volume.VolumeOutputFilter;
 import io.cattle.platform.compose.api.StackComposeLinkHandler;
 import io.cattle.platform.compose.api.StackExportConfigActionHandler;
 import io.cattle.platform.core.addon.ActiveSetting;
+import io.cattle.platform.core.addon.ContainerEvent;
 import io.cattle.platform.core.addon.ProcessPool;
 import io.cattle.platform.core.addon.ProcessSummary;
 import io.cattle.platform.core.constants.CredentialConstants;
@@ -172,7 +173,6 @@ import io.github.ibuildthecloud.gdapi.validation.ResourceManagerReferenceValidat
 import io.github.ibuildthecloud.gdapi.validation.ValidationHandler;
 import io.github.ibuildthecloud.gdapi.version.Versions;
 
-import java.awt.event.ContainerEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -307,7 +307,7 @@ public class Api {
         c.router.filter(AuditLog.class, resourceIdInputFilter);
         c.router.filter(Certificate.class, certificateCreateValidationFilter);
         c.router.filter(Certificate.class, new LoadBalancerServiceCertificateRemoveFilter(f.objectManager, d.serviceDao));
-        c.router.filter(ContainerEvent.class, new ContainerEventFilter(d.agentDao, f.objectManager));
+        c.router.filter(ContainerEvent.class, new ContainerEventFilter(d.agentDao, f.objectManager, f.jsonMapper, f.eventService));
         c.router.filter(Credential.class, new CredentialUniqueFilter(f.coreSchemaFactory, d.passwordDao, f.jsonMapper));
         c.router.filter(CredentialConstants.KIND_API_KEY, new ApiKeyFilter());
         c.router.filter(DynamicSchemaFilter.class, new DynamicSchemaFilter(f.schemaJsonMapper, f.lockManager));

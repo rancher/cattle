@@ -2,6 +2,10 @@
     "collectionMethods": ["GET", "POST"],
     "resourceMethods" : ["GET"],
     "resourceFields": {
+        "hostId": {
+            "type": "reference[host]",
+            "create": false
+        },
         "reportedHostUuid": {
             "create": true
         },

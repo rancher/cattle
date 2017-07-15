@@ -1,19 +1,17 @@
 package io.cattle.platform.api.pubsub.subscribe.jetty;
 
+import com.netflix.config.DynamicIntProperty;
 import io.cattle.platform.api.pubsub.subscribe.MessageWriter;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-
-import java.io.EOFException;
-import java.io.IOException;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketAdapter;
 import org.eclipse.jetty.websocket.api.WebSocketException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.netflix.config.DynamicIntProperty;
+import java.io.EOFException;
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class WebSocketMessageWriter extends WebSocketAdapter implements MessageWriter {
 
@@ -72,7 +70,4 @@ public class WebSocketMessageWriter extends WebSocketAdapter implements MessageW
         return queuedMessageCount;
     }
 
-    public void setQueuedMessageCount(AtomicInteger queuedMessageCount) {
-        this.queuedMessageCount = queuedMessageCount;
-    }
 }

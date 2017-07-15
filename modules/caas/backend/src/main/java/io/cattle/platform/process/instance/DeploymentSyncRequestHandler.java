@@ -40,19 +40,19 @@ public class DeploymentSyncRequestHandler extends AgentBasedProcessHandler {
 
         Instance instance = (Instance)state.getResource();
         DeploymentSyncResponse response = syncFactory.getResponse(reply);
-        boolean changed = false;
+        if (response != null) {
+            for (InstanceStatus status : response.getInstanceStatus()) {
+                if (!instance.getUuid().equals(status.getInstanceUuid())) {
+                    continue;
+                }
 
-        for (InstanceStatus status : response.getInstanceStatus()) {
-            if (!instance.getUuid().equals(status.getInstanceUuid())) {
-                continue;
-            }
+                if (StringUtils.isNotBlank(status.getExternalId())) {
+                    data.put(INSTANCE.EXTERNAL_ID, status.getExternalId());
+                }
 
-            if (StringUtils.isNotBlank(status.getExternalId())) {
-                data.put(INSTANCE.EXTERNAL_ID, status.getExternalId());
-            }
-
-            if (status.getDockerInspect() != null) {
-                data.put(InstanceConstants.FIELD_DOCKER_INSPECT, status.getDockerInspect());
+                if (status.getDockerInspect() != null) {
+                    data.put(InstanceConstants.FIELD_DOCKER_INSPECT, status.getDockerInspect());
+                }
             }
         }
 

@@ -73,7 +73,7 @@ public class InstanceInfo implements MetadataObject {
         this.healthCheckHosts = DataAccessor.fieldObjectList(instance,
                 InstanceConstants.FIELD_HEALTHCHECK_STATES, HealthcheckState.class);
         this.links = DataAccessor.fieldMapRO(instance, InstanceConstants.FIELD_INSTANCE_LINKS);
-        this.agentId = instance.getAccountId();
+        this.agentId = instance.getAgentId();
         this.serviceIds = new HashSet<>(DataAccessor.fieldLongList(instance, InstanceConstants.FIELD_SERVICE_IDS));
 
         InstanceHealthCheck hc = DataAccessor.field(instance, InstanceConstants.FIELD_HEALTH_CHECK, InstanceHealthCheck.class);

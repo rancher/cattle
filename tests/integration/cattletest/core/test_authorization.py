@@ -1950,6 +1950,7 @@ def test_container_events(admin_user_client, user_client, agent_client,
     })
 
     auth_check(agent_client.schema, 'containerEvent', 'cr', {
+        'hostId': 'r',
         'reportedHostUuid': 'cr',
         'externalId': 'cr',
         'externalStatus': 'cr',

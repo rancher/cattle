@@ -1,0 +1,4 @@
+{
+    "collectionMethods": ["GET"],
+    "resourceMethods" : ["GET"]
+}

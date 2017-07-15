@@ -1,5 +1,7 @@
 package io.cattle.platform.network.impl;
 
+import com.netflix.config.DynamicStringProperty;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.dao.NetworkDao;
@@ -18,6 +20,7 @@ import io.cattle.platform.resource.pool.PooledResource;
 import io.cattle.platform.resource.pool.PooledResourceOptions;
 import io.cattle.platform.resource.pool.ResourcePoolManager;
 import io.cattle.platform.util.type.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +28,7 @@ import java.util.Map;
 
 public class NetworkServiceImpl implements NetworkService {
 
+    private static final DynamicStringProperty DEFAULT_MANAGED = ArchaiusUtil.getString("default.managed.network");
     public static final Map<String, String> MODE_TO_KIND = new HashMap<>();
 
     static {
@@ -61,7 +65,11 @@ public class NetworkServiceImpl implements NetworkService {
         }
 
         if (NetworkConstants.NETWORK_MODE_MANAGED.equals(networkName)) {
-            return networkDao.getDefaultNetwork(accountId);
+            Network network =  networkDao.getDefaultNetwork(accountId);
+            if (network == null && StringUtils.isNotBlank(DEFAULT_MANAGED.get())) {
+                return resolveNetwork(accountId, DEFAULT_MANAGED.get());
+            }
+            return network;
         }
 
         return networkDao.getNetworkByName(accountId, networkName);

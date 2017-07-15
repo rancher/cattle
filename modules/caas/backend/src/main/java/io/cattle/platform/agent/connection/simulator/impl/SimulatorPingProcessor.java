@@ -14,12 +14,11 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
 
@@ -82,19 +81,6 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
 
         String externalId = DataAccessor.fromDataFieldOf(agent).withScope(AgentConnectionSimulator.class).withKey("externalId").as(
                 String.class);
-        String physicalHostUuid = externalId;
-
-        if (StringUtils.isEmpty(physicalHostUuid)) {
-            physicalHostUuid = agent.getUuid() + "-physical-host";
-        }
-
-        Map<String, Object> physicalHost = new HashMap<>();
-        physicalHost.put(ObjectMetaDataManager.UUID_FIELD, physicalHostUuid);
-        physicalHost.put(ObjectMetaDataManager.KIND_FIELD, "sim");
-        physicalHost.put(ObjectMetaDataManager.TYPE_FIELD, "physicalHost");
-
-        Boolean addPhysicalHost = DataAccessor.fromDataFieldOf(agent).withScope(AgentConnectionSimulator.class).withKey("addPhysicalHost").withDefault(true)
-                .as(Boolean.class);
 
         long hosts = DataAccessor.fromDataFieldOf(agent).withScope(AgentConnectionSimulator.class).withKey("hosts").withDefault(1L).as(Long.class);
 
@@ -131,10 +117,6 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
                 host.put(HostConstants.FIELD_LOCAL_STORAGE_MB, storage);
             }
 
-            if (addPhysicalHost) {
-                host.put("physicalHostUuid", physicalHostUuid);
-            }
-
             for (long j = 0; j < poolsPerHost; j++) {
                 String poolUuid = hostUuid + "-" + j;
 
@@ -167,15 +149,6 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
             ip.put("hostUuid", hostUuid);
 
             resources.add(ip);
-        }
-
-
-        if (addPhysicalHost) {
-            /*
-             * Purposely put physical host after host so that
-             * AgentResourceManager will have to reorder then on insert
-             */
-            resources.add(physicalHost);
         }
     }
 

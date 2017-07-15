@@ -5,9 +5,6 @@ import io.cattle.platform.eventing.model.Event;
 
 public interface EventService {
 
-    String EVENT_SEP = ";";
-    String REPLY_PREFIX = "reply.";
-
     boolean publish(Event event);
 
     ListenableFuture<?> subscribe(String eventName, EventListener listener);
