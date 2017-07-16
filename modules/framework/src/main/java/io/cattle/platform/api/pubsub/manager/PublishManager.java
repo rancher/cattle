@@ -15,7 +15,6 @@ import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
-import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -73,7 +72,7 @@ public class PublishManager extends AbstractNoOpResourceManager {
         event.setTransitioningProgress(publish.getTransitioningProgress());
 
         if (publish.getTime() != null) {
-            event.setTime(new Date(publish.getTime()));
+            event.setTime(publish.getTime());
         }
 
         List<String> previous = publish.getPreviousIds();

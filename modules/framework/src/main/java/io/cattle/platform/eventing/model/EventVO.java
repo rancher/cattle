@@ -2,14 +2,13 @@ package io.cattle.platform.eventing.model;
 
 import javax.xml.bind.annotation.XmlTransient;
 import java.util.Arrays;
-import java.util.Date;
 
 public class EventVO<T> implements Event {
 
     private String id, name, replyTo, resourceId, resourceType, transitioning, transitioningMessage;
     private String[] previousIds, previousNames;
     private T data;
-    private Date time;
+    private Long time;
     private Long timeoutMillis;
     private String listenerKey;
     private Integer transitioningProgress;
@@ -17,7 +16,7 @@ public class EventVO<T> implements Event {
     @SuppressWarnings("unchecked")
     public EventVO() {
         id = io.cattle.platform.util.resource.UUID.randomUUID().toString();
-        time = new Date();
+        time = System.currentTimeMillis();
     }
 
     public EventVO(Event event) {
@@ -133,15 +132,15 @@ public class EventVO<T> implements Event {
     }
 
     @Override
-    public Date getTime() {
+    public Long getTime() {
         return time;
     }
 
-    public void setTime(Date time) {
+    public void setTime(Long time) {
         this.time = time;
     }
 
-    public EventVO<T> withTime(Date time) {
+    public EventVO<T> withTime(Long time) {
         this.time = time;
         return this;
     }

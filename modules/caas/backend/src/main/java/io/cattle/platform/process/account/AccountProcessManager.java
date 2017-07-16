@@ -20,6 +20,7 @@ import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.ProjectTemplate;
+import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.UserPreference;
@@ -54,6 +55,7 @@ public class AccountProcessManager {
     public static final DynamicStringListProperty KINDS = ArchaiusUtil.getList("docker.network.create.account.types");
 
     private static final Class<?>[] REMOVE_TYPES = new Class<?>[]{
+        Service.class,
         Stack.class,
         Agent.class,
         Host.class,
@@ -63,7 +65,8 @@ public class AccountProcessManager {
         Volume.class,
         Network.class,
         GenericObject.class,
-        UserPreference.class
+        UserPreference.class,
+        Instance.class,
     };
 
     NetworkDao networkDao;
@@ -153,13 +156,14 @@ public class AccountProcessManager {
 
         for (Class<?> clz : REMOVE_TYPES) {
             for (Object obj : list(account, clz)) {
-                processManager.executeDeactivateThenRemove(obj, null);
+                if (obj instanceof Instance) {
+                    Instance instance = (Instance)obj;
+                    deleteAgentAccount(instance.getAgentId(), state.getData());
+                    processManager.stopThenRemove(instance, null);
+                } else {
+                    processManager.executeDeactivateThenRemove(obj, null);
+                }
             }
-        }
-
-        for (Instance instance : instanceDao.listNonRemovedNonStackInstances(account)) {
-            deleteAgentAccount(instance.getAgentId(), state.getData());
-            processManager.stopThenRemove(instance, null);
         }
 
         accountDao.deleteProjectMemberEntries(account);

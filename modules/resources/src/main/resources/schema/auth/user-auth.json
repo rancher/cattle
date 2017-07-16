@@ -272,7 +272,6 @@
         "host.localStorageMb" : "cru",
         "host.memory" : "cru",
         "host.milliCpu" : "cru",
-        "host.physicalHostId" : "r",
         "host.publicEndpoints" : "r",
         "host.stackId" : "cr",
         "host.zoneId" : "ru",
@@ -424,10 +423,6 @@
         "password" : "crud",
         "password.secretValue" : "cro",
         "password.publicValue" : "cr",
-
-        "physicalHost": "r",
-        "physicalHost.externalId": "r",
-        "physicalHost.driver": "r",
 
         "port" : "r",
         "port.instanceId" : "r",

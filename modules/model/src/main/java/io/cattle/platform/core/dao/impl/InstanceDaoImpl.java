@@ -3,7 +3,6 @@ package io.cattle.platform.core.dao.impl;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
-import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.GenericObject;
 import io.cattle.platform.core.model.Instance;
@@ -75,17 +74,6 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
         }
 
         return instance;
-    }
-
-    @Override
-    public List<? extends Instance> listNonRemovedNonStackInstances(Account account) {
-        return create().select(INSTANCE.fields())
-                .from(INSTANCE)
-                .where(INSTANCE.ACCOUNT_ID.eq(account.getId()))
-                .and(INSTANCE.REMOVED.isNull())
-                .and(INSTANCE.STACK_ID.isNull())
-                .fetchInto(InstanceRecord.class);
-
     }
 
     @Override

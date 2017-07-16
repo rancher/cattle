@@ -1,5 +1,8 @@
 package io.cattle.platform.api.pubsub.subscribe;
 
+import com.google.common.util.concurrent.SettableFuture;
+import com.netflix.config.DynamicIntProperty;
+import com.netflix.config.DynamicLongProperty;
 import io.cattle.platform.api.pubsub.manager.SubscribeManager;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.retry.CancelRetryException;
@@ -15,25 +18,23 @@ import io.cattle.platform.json.JsonMapper;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.util.concurrent.SettableFuture;
-import com.netflix.config.DynamicIntProperty;
-import com.netflix.config.DynamicLongProperty;
 
 public abstract class NonBlockingSubscriptionHandler implements SubscriptionHandler {
 
@@ -70,6 +71,7 @@ public abstract class NonBlockingSubscriptionHandler implements SubscriptionHand
         final Object writeLock = new Object();
         final MessageWriter writer = getMessageWriter(apiRequest);
         final AtomicBoolean disconnect = new AtomicBoolean(false);
+        final Set<String> exclude = getIgnoreResourceTypes(apiRequest);
 
         final IdFormatter idFormatter = apiContext.getIdFormatter();
         final Object policy = apiContext.getPolicy();
@@ -82,6 +84,10 @@ public abstract class NonBlockingSubscriptionHandler implements SubscriptionHand
             @Override
             public void onEvent(Event event) {
                 try {
+                    if (event.getResourceType() != null && exclude.contains(event.getResourceType())) {
+                        return;
+                    }
+
                     EventVO<Object> modified = new EventVO<>(event);
 
                     ApiRequest request = new ApiRequest(apiRequest);
@@ -99,6 +105,16 @@ public abstract class NonBlockingSubscriptionHandler implements SubscriptionHand
         };
 
         return subscribe(eventNames, listener, writer, disconnect, writeLock, strip) != null;
+    }
+
+    private Set<String> getIgnoreResourceTypes(ApiRequest request) {
+        String[] exclude = request.getRequestParams().get("resourceType_ne");
+        if (exclude == null || exclude.length == 0) {
+            return Collections.emptySet();
+        }
+        Set<String> result = new HashSet<>();
+        Collections.addAll(result, exclude);
+        return result;
     }
 
     protected boolean postProcess(EventVO<Object> event, IdFormatter idFormatter, ApiRequest request, Object policy) {

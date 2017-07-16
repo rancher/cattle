@@ -126,6 +126,7 @@ public class MetadataImpl implements Metadata {
             }
 
             if (trigger) {
+                all.put(metadataObject.getUuid(), metadataObject);
                 ((Map<String, Object>) map).put(metadataObject.getUuid(), metadataObject);
             }
         }

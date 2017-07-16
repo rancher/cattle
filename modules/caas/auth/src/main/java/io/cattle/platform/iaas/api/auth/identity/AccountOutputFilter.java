@@ -9,6 +9,9 @@ import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.response.ResourceOutputFilter;
+import io.github.ibuildthecloud.gdapi.url.UrlBuilder;
+
+import java.net.URL;
 
 public class AccountOutputFilter implements ResourceOutputFilter {
 
@@ -20,6 +23,9 @@ public class AccountOutputFilter implements ResourceOutputFilter {
         if (original instanceof Account) {
             Account account = (Account) original;
             if (AccountConstants.PROJECT_KIND.equalsIgnoreCase(account.getKind())) {
+                UrlBuilder urlBuilder = request.getUrlBuilder();
+                URL url = urlBuilder.resourceLink(converted, "schemas");
+                converted.getLinks().put("schemas", url);
                 return converted;
             }
             if (account.getExternalId() != null && account.getExternalIdType() != null) {
@@ -37,6 +43,7 @@ public class AccountOutputFilter implements ResourceOutputFilter {
                 converted.getFields().put("identity", identity.getId());
             }
         }
+
         return converted;
     }
 

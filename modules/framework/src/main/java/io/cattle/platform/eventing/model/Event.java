@@ -3,8 +3,6 @@ package io.cattle.platform.eventing.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-import java.util.Date;
-
 public interface Event {
 
     String TRANSITIONING_YES = "yes";
@@ -43,7 +41,7 @@ public interface Event {
     Object getData();
 
     @JsonInclude(Include.NON_EMPTY)
-    Date getTime();
+    Long getTime();
 
     @JsonInclude(Include.NON_EMPTY)
     Long getTimeoutMillis();
