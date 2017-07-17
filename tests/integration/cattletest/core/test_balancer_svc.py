@@ -669,6 +669,54 @@ def test_lb_noop(client, image_uuid):
     assert len(lb_svc.publicEndpoints) == 1
 
 
+def test_selector_service_mix(client, image_uuid):
+    env = _create_stack(client)
+
+    labels = {'foo': "bar"}
+    launch_config = {"imageUuid": image_uuid, "labels": labels}
+
+    svc = client. \
+        create_service(name=random_str(),
+                       stackId=env.id,
+                       launchConfig=launch_config)
+
+    svc = client.wait_success(svc)
+
+    lb_launch_config = {"ports": [8289],
+                        "imageUuid": image_uuid}
+    hostname = "foo"
+    path = "bar"
+    port = 32
+    port_rule1 = {"hostname": hostname,
+                  "path": path, "sourcePort": port,
+                  "selector": "foo=bar"}
+    port_rule2 = {"hostname": hostname,
+                  "path": path, "sourcePort": port,
+                  "sourcePort": 100,
+                  "targetPort": 90,
+                  "serviceId": svc.id}
+    port_rules = [port_rule1, port_rule2]
+
+    lb_config = {"portRules": port_rules}
+
+    # create service
+    lb = client. \
+        create_loadBalancerService(name=random_str(),
+                                   stackId=env.id,
+                                   launchConfig=lb_launch_config,
+                                   lbConfig=lb_config)
+    assert len(lb.lbConfig.portRules) == 2
+
+    # remove target service, validate that
+    # only service link is gone
+    client.wait_success(svc.remove())
+
+    wait_for(lambda: len(client.reload(lb).lbConfig.portRules) == 1)
+    rule = client.reload(lb).lbConfig.portRules[0]
+    assert rule.serviceId is None
+    assert rule.selector == "foo=bar"
+
+
 def _wait_until_active_map_count(service, count, client):
     def wait_for_map_count(service):
         m = client. \
