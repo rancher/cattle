@@ -469,7 +469,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
                     .toString());
         }
 
-        if (oldPortToIp.contains(newPortToIp) && newPortToIp.contains(oldPortToIp)) {
+        if (oldPortToIp.containsAll(newPortToIp) && newPortToIp.containsAll(oldPortToIp)) {
             return;
         }
 
@@ -875,10 +875,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
             List<PortRule> newSet = new ArrayList<>();
             boolean update = false;
             for (PortRule rule : lbConfig.getPortRules()) {
-                if (rule.getServiceId() == null) {
-                    continue;
-                }
-                if (rule.getServiceId().equalsIgnoreCase(service.getId().toString())) {
+                if (rule.getServiceId() != null && rule.getServiceId().equalsIgnoreCase(service.getId().toString())) {
                     update = true;
                     continue;
                 }
