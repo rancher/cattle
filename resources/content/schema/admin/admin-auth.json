@@ -243,7 +243,7 @@
 
         "projectTemplate.isPublic" : "cru",
         
-        "genericObject" : "crd",
+        "genericObject" : "crud",
 		
         "end" : ""
     }
