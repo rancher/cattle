@@ -219,7 +219,7 @@ public class DockerTransformerImpl implements DockerTransformer {
             setField(instance, FIELD_UTS, fromInspect, HOST_CONFIG, "UTSMode");
             setField(instance, FIELD_IPC_MODE, fromInspect, HOST_CONFIG, "IpcMode");
             setField(instance, FIELD_SYSCTLS, fromInspect, HOST_CONFIG, "Sysctls");
-            setField(instance, FIELD_INIT, fromInspect, HOST_CONFIG, "Init");
+            setField(instance, FIELD_RUN_INIT, fromInspect, HOST_CONFIG, "Init");
             setField(instance, FIELD_OOM_SCORE_ADJ, fromInspect, HOST_CONFIG, "OomScoreAdj");
             setField(instance, FIELD_ISOLATION, fromInspect, HOST_CONFIG, "Isolation");
         }

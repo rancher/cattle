@@ -719,7 +719,7 @@ def test_docker_newfields(docker_client, super_client):
                                        tmpfs=tmpfs,
                                        uts=uts,
                                        ipcMode=ipcMode,
-                                       init=True,
+                                       runInit=True,
                                        stopSignal=stopSignal,
                                        networkMode='bridge',
                                        ulimits=ulimits)
