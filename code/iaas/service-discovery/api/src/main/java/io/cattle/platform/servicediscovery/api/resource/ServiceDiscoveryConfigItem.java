@@ -58,7 +58,7 @@ public class ServiceDiscoveryConfigItem {
     public static final ServiceDiscoveryConfigItem STDINOPEN = new ServiceDiscoveryConfigItem("stdinOpen", "stdin_open",
             false);
     public static final ServiceDiscoveryConfigItem SYSCTLS = new ServiceDiscoveryConfigItem("sysctls", "sysctls", false);
-    public static final ServiceDiscoveryConfigItem INIT = new ServiceDiscoveryConfigItem("init", "init", false);
+    public static final ServiceDiscoveryConfigItem RUNINIT = new ServiceDiscoveryConfigItem("runInit", "init", false);
     public static final ServiceDiscoveryConfigItem SECRETS = new ServiceDiscoveryConfigItem("secrets", "secrets",
             false);
     public static final ServiceDiscoveryConfigItem TTY = new ServiceDiscoveryConfigItem("tty", "tty", false);

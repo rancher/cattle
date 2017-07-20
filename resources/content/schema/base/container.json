@@ -340,7 +340,7 @@
          	"type" : "map[string]",
             "nullable" : true
         },
-        "init": {
+        "runInit": {
             "type": "boolean",
             "default": false
         },

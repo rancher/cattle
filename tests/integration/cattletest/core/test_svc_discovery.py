@@ -2028,7 +2028,7 @@ def test_export_config(client, context):
                      },
                      "tmpfs": {"/run": "rw"},
                      "sysctls": {"net.ipv4.ip_forward": "1"},
-                     "init": True,
+                     "runInit": True,
                      "ulimits": [{"name": "cpu", "soft": 1234, "hard": 1234},
                                  {"name": "nporc", "soft": 1234}]
                      }

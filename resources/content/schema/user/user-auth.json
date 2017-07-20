@@ -165,7 +165,7 @@
         "container.ipcMode" : "cr",
         "container.stopSignal" : "cr",
         "container.sysctls" : "cr",
-        "container.init" : "cr",
+        "container.runInit" : "cr",
         "container.oomScoreAdj" : "cr",
         "container.ulimits" : "cr",
         "container.storageOpt" : "cr",
