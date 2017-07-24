@@ -98,13 +98,6 @@
             "nullable": false,
             "default": false
         },
-        "lbConfig": {
-            "type" : "lbConfig",
-            "nullable": true,
-             "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
         "batchSize": {
             "type": "int",
             "nullable": true,
@@ -213,6 +206,21 @@
         "restartTrigger": {
             "type": "int",
             "nullable": true
+        },
+        "lbTargetConfig": {
+            "type" : "lbTargetConfig",
+            "nullable": true,
+            "attributes" : {
+                "scheduleUpdate" : true
+            }
+        },
+        "lbConfig": {
+            "type": "lbConfig",
+            "nullable": true,
+            "attributes": {
+                "scheduleUpdate": true
+            },
+            "required": true
         }
     },
     "resourceActions" : {

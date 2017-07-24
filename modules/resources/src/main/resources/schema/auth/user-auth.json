@@ -892,10 +892,14 @@
 
         "publicEndpoint" : "cr",
         "publicEndpoint.ipAddress" : "cr",
-        "publicEndpoint.port" : "cr",
+        "publicEndpoint.agentIpAddress" : "cr",
+        "publicEndpoint.bindIpAddress" : "cr",
+        "publicEndpoint.protocol" : "cr",
+        "publicEndpoint.fqdn" : "cr",
+        "publicEndpoint.publicPort" : "cr",
+        "publicEndpoint.privatePort" : "cr",
         "publicEndpoint.serviceId" : "cr",
         "publicEndpoint.instanceId" : "cr",
-        "publicEndpoint.hostId" : "cr",
 
         "virtualMachine" : "r",
         "virtualMachine.imageUuid" : "cr",

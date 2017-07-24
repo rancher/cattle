@@ -1,20 +1,7 @@
 {
-    "resourceFields": {
-        "lbConfig": {
-            "type" : "lbConfig",
-            "nullable": true,
-             "attributes" : {
-                "scheduleUpdate" : true
-            },
-            "required": true
-        },
-        "launchConfig": {
-            "type" : "launchConfig",
-            "nullable": true,
-             "attributes" : {
-                "scheduleUpdate" : true
-            },
-            "required": true
-        }
+  "resourceFields": {
+    "launchConfig": {
+      "required": true
     }
+  }
 }
