@@ -11,6 +11,7 @@ import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.NetworkDao;
+import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Certificate;
@@ -75,9 +76,10 @@ public class AccountProcessManager {
     ObjectManager objectManager;
     InstanceDao instanceDao;
     AccountDao accountDao;
+    ServiceDao serviceDao;
 
     public AccountProcessManager(NetworkDao networkDao, GenericResourceDao resourceDao, ObjectProcessManager processManager, ObjectManager objectManager,
-            InstanceDao instanceDao, AccountDao accountDao) {
+            InstanceDao instanceDao, AccountDao accountDao, ServiceDao serviceDao) {
         super();
         this.networkDao = networkDao;
         this.resourceDao = resourceDao;
@@ -85,6 +87,7 @@ public class AccountProcessManager {
         this.objectManager = objectManager;
         this.instanceDao = instanceDao;
         this.accountDao = accountDao;
+        this.serviceDao = serviceDao;
     }
 
     public HandlerResult create(ProcessState state, ProcessInstance process) {
@@ -115,6 +118,10 @@ public class AccountProcessManager {
                     processManager.executeCreateThenActivate(cred, null);
                 }
             }
+        }
+
+        if (AccountConstants.PROJECT_KIND.equals(account.getKind())) {
+            serviceDao.getOrCreateDefaultStack(account.getId());
         }
 
         return setupNetworking(account);

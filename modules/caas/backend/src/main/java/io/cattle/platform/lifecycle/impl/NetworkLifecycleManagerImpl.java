@@ -118,7 +118,7 @@ public class NetworkLifecycleManagerImpl implements NetworkLifecycleManager {
     }
 
     private void setupCNILabels(Instance instance, Network network) {
-        if (!NetworkConstants.KIND_CNI.equals(network.getKind())) {
+        if (NetworkConstants.KIND_CNI.equals(network.getKind())) {
             String wait = getLabel(instance, SystemLabels.CNI_WAIT);
             String netName = getLabel(instance, SystemLabels.LABEL_CNI_NETWORK);
             if (StringUtils.isBlank(wait) || StringUtils.isBlank(netName)) {

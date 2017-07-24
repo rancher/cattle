@@ -18,6 +18,7 @@ public class PingFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+        response.setContentType("text/plain");
         IOUtils.write("pong", response.getOutputStream(), "UTF-8");
     }
 

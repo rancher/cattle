@@ -16,6 +16,7 @@ import io.cattle.platform.core.addon.DependsOn;
 import io.cattle.platform.core.addon.DeploymentSyncRequest;
 import io.cattle.platform.core.addon.DeploymentSyncResponse;
 import io.cattle.platform.core.addon.HaproxyConfig;
+import io.cattle.platform.core.addon.HealthcheckState;
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.addon.InstanceStatus;
@@ -273,6 +274,7 @@ public class Model {
                 DockerBuild.class,
                 FieldDocumentation.class,
                 HaproxyConfig.class,
+                HealthcheckState.class,
                 HostAccess.class,
                 HostApiProxyTokenImpl.class,
                 Identity.class,

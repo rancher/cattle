@@ -1,6 +1,5 @@
 package io.cattle.platform.api.service;
 
-import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
@@ -49,13 +48,4 @@ public class StackCreateValidationFilter extends AbstractValidationFilter {
         return super.create(type, request, next);
     }
 
-    @Override
-    public Object delete(String type, String id, ApiRequest request, ResourceManager next) {
-        if (ServiceConstants.DEFAULT_STACK_NAME.equalsIgnoreCase(objMgr.loadResource(Stack.class, id).getName())) {
-            ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_ACTION,
-                    "Default stack can not be removed");
-        }
-
-        return super.delete(type, id, request, next);
-    }
 }
