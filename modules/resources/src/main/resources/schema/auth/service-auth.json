@@ -21,6 +21,8 @@
         "project.name": "cr",
         "project.uuid": "cr",
         "registrationToken.accountId" : "cr",
+        "deploymentSync.*" : "r",
+        "instanceStatus.*" : "r",
         "end" : ""
     }
 }

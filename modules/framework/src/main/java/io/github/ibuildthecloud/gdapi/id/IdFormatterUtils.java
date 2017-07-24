@@ -1,5 +1,6 @@
 package io.github.ibuildthecloud.gdapi.id;
 
+import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.Field;
 import io.github.ibuildthecloud.gdapi.model.FieldType;
@@ -44,7 +45,7 @@ public class IdFormatterUtils {
 
     private static Object formatType(IdFormatter formatter, Object value, SchemaFactory schemaFactory,
             String schemaType) {
-        if (value == null || !(value instanceof Map)) {
+        if (value == null) {
             return value;
         }
 
@@ -52,8 +53,7 @@ public class IdFormatterUtils {
             return value;
         }
 
-        Map<?, ?> inputs = (Map<?, ?>)value;
-        Map<Object, Object> result = new LinkedHashMap<Object, Object>();
+        Map<Object, Object> result = new LinkedHashMap<>();
 
         Schema fieldSchema = schemaFactory.getSchema(schemaType);
         if (!result.containsKey("type")) {
@@ -62,17 +62,27 @@ public class IdFormatterUtils {
 
         for (Map.Entry<String, Field> entry : fieldSchema.getResourceFields().entrySet()) {
             String fieldName = entry.getKey();
-            if (inputs.containsKey(fieldName)) {
-                Object subFieldValue = inputs.get(fieldName);
-
-                if (subFieldValue != null) {
-                    Field subField = entry.getValue();
-                    Object formattedValue = formatReference(subField.getTypeEnum(), subField.getType(), subField.getSubTypeEnums(),
-                            subField.getSubTypes(), formatter, subFieldValue, schemaFactory);
-                    result.put(fieldName, formattedValue);
+            Object subFieldValue;
+            if (value instanceof Map<?, ?>) {
+                if (((Map<?, ?>)value).containsKey(fieldName)) {
+                    subFieldValue = ((Map<?, ?>) value).get(fieldName);
                 } else {
-                    result.put(fieldName, subFieldValue);
+                    continue;
                 }
+            } else {
+                subFieldValue = entry.getValue().getValue(value);
+                if (subFieldValue == null) {
+                    subFieldValue = DataAccessor.fields(value).withKey(fieldName).get();
+                }
+            }
+
+            if (subFieldValue != null) {
+                Field subField = entry.getValue();
+                Object formattedValue = formatReference(subField.getTypeEnum(), subField.getType(), subField.getSubTypeEnums(),
+                        subField.getSubTypes(), formatter, subFieldValue, schemaFactory);
+                result.put(fieldName, formattedValue);
+            } else {
+                result.put(fieldName, subFieldValue);
             }
         }
 
@@ -89,7 +99,7 @@ public class IdFormatterUtils {
         }
 
         List<?> inputs = (List<?>)value;
-        List<Object> result = new ArrayList<Object>(inputs.size());
+        List<Object> result = new ArrayList<>(inputs.size());
         FieldType fieldType = subTypeEnums.get(0);
 
         String schemaType = null;
@@ -119,7 +129,7 @@ public class IdFormatterUtils {
         }
 
         Map<?, ?> inputs = (Map<?, ?>)value;
-        Map<Object, Object> result = new LinkedHashMap<Object, Object>();
+        Map<Object, Object> result = new LinkedHashMap<>();
         FieldType fieldType = subTypeEnums.get(0);
         String schemaType = null;
         if (subTypes.size() > 1) {

@@ -1,11 +1,10 @@
 package io.github.ibuildthecloud.gdapi.model;
 
-import java.util.List;
-import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 import javax.xml.bind.annotation.XmlTransient;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
+import java.util.List;
+import java.util.Map;
 
 public interface Field {
 
@@ -13,6 +12,7 @@ public interface Field {
     @io.github.ibuildthecloud.gdapi.annotation.Field(include = false)
     String getName();
 
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     String getDescription();
 
     String getType();
@@ -36,6 +36,7 @@ public interface Field {
 
     boolean isCreate();
 
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     boolean isReadOnCreateOnly();
 
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)

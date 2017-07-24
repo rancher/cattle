@@ -141,21 +141,13 @@
         <dispatcher>FORWARD</dispatcher>
     </filter-mapping>
 
-<!--     <servlet> -->
-<!--         <servlet-name>HealthCheck</servlet-name> -->
-<!--         <servlet-class>com.codahale.metrics.servlets.HealthCheckServlet</servlet-class> -->
-<!--     </servlet> -->
-<!--     <servlet> -->
-<!--         <servlet-name>Ping</servlet-name> -->
-<!--         <servlet-class>com.codahale.metrics.servlets.PingServlet</servlet-class> -->
-<!--     </servlet> -->
-<!--     <servlet-mapping> -->
-<!--         <servlet-name>Ping</servlet-name> -->
-<!--         <url-pattern>/ping</url-pattern> -->
-<!--     </servlet-mapping> -->
-<!--     <servlet-mapping> -->
-<!--         <servlet-name>HealthCheck</servlet-name> -->
-<!--         <url-pattern>/healthcheck</url-pattern> -->
-<!--     </servlet-mapping> -->
+    <filter>
+        <filter-name>PingFilter</filter-name>
+        <filter-class>io.cattle.platform.servlet.filter.PingFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>PingFilter</filter-name>
+        <url-pattern>/ping</url-pattern>
+    </filter-mapping>
 
 </web-app>

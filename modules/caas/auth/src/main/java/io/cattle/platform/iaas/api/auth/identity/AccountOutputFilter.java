@@ -22,7 +22,7 @@ public class AccountOutputFilter implements ResourceOutputFilter {
         Identity identity = null;
         if (original instanceof Account) {
             Account account = (Account) original;
-            if (AccountConstants.PROJECT_KIND.equalsIgnoreCase(account.getKind())) {
+            if (request != null && AccountConstants.PROJECT_KIND.equalsIgnoreCase(account.getKind())) {
                 UrlBuilder urlBuilder = request.getUrlBuilder();
                 URL url = urlBuilder.resourceLink(converted, "schemas");
                 converted.getLinks().put("schemas", url);

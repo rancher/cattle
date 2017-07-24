@@ -475,6 +475,9 @@
         },
         "dockerInspect": {
             "type": "map[json]"
+        },
+        "publicEndpoints": {
+            "type": "array[publicEndpoint]"
         }
     },
     "resourceActions": {

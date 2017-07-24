@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 import io.github.ibuildthecloud.gdapi.model.Field;
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.model.Schema;
@@ -41,6 +42,7 @@ public class JacksonMapper implements JsonMapper {
         mapper = new ObjectMapper();
         mapper.setDateFormat(df);
         mapper.registerModule(module);
+        mapper.registerModule(new JaxbAnnotationModule());
         mapper.getFactory().configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 

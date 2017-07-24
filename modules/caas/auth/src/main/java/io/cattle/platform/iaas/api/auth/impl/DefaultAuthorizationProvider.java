@@ -12,13 +12,12 @@ import io.cattle.platform.iaas.api.auth.AuthorizationProvider;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DefaultAuthorizationProvider implements AuthorizationProvider {
 
@@ -123,7 +122,18 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider {
     }
 
     protected String getRole(Policy policy, ApiRequest request) {
-        return policy.getOption(Policy.ASSIGNED_ROLE);
+        String assignedRole = policy.getOption(Policy.ASSIGNED_ROLE);
+        if (assignedRole != null) {
+            return assignedRole;
+        }
+        if (policy.isOption(Policy.ROLE_OPTION)) {
+            Object role = request.getOptions().get("_role");
+            if (role != null && schemaFactories.containsKey(role)) {
+                return role.toString();
+            }
+        }
+
+        return null;
     }
 
     public static SubscriptionStyle getSubscriptionStyle(Account account, AchaiusPolicyOptionsFactory optionsFactory) {

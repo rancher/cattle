@@ -4,6 +4,7 @@ import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Volume;
+import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
 
 import java.util.List;
@@ -14,17 +15,17 @@ public class DeploymentSyncRequest {
     String deploymentUnitUuid;
     String revision;
 
-    List<Instance> instances;
+    List<Instance> containers;
     List<Volume> volumes;
     List<Credential> registryCredentials;
 
     public DeploymentSyncRequest() {
     }
 
-    public DeploymentSyncRequest(DeploymentUnit unit, String revision, List<Instance> instances, List<Volume> volumes, List<Credential> registryCredentials) {
+    public DeploymentSyncRequest(DeploymentUnit unit, String revision, List<Instance> containers, List<Volume> volumes, List<Credential> registryCredentials) {
         this.deploymentUnitUuid = deploymentUnitUuid;
         this.revision = revision;
-        this.instances = instances;
+        this.containers = containers;
         this.volumes = volumes;
         this.registryCredentials = registryCredentials;
     }
@@ -45,12 +46,13 @@ public class DeploymentSyncRequest {
         this.revision = revision;
     }
 
-    public List<Instance> getInstances() {
-        return instances;
+    @Field(typeString = "array[container]")
+    public List<Instance> getContainers() {
+        return containers;
     }
 
-    public void setInstances(List<Instance> instances) {
-        this.instances = instances;
+    public void setContainers(List<Instance> containers) {
+        this.containers = containers;
     }
 
     public List<Volume> getVolumes() {

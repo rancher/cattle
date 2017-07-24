@@ -712,3 +712,25 @@ def test_config_link_readonly(admin_user_client, super_client, request,
     assert 'config' not in host.links
 
     super_client.update(host, extractedConfig='')
+
+
+def test_role_option(admin_user_client, client, random_str, context):
+    c = admin_user_client.create_api_key(name=random_str,
+                                         accountId=context.account.id)
+    c = admin_user_client.wait_success(c)
+
+    assert c.state == 'active'
+
+    creds = admin_user_client.list_credential(name=random_str)
+    assert len(creds) == 1
+
+    creds = admin_user_client.list_credential(name=random_str,
+                                              _role='user')
+    assert len(creds) == 0
+
+    creds = client.list_credential(name=random_str, _role='superadmin')
+    assert len(creds) == 0
+
+    schemas = [x for x in admin_user_client.list_schema(_role='project')
+               if x.id == 'externalHandler']
+    assert len(schemas) == 0

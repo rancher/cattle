@@ -14,6 +14,7 @@ import io.cattle.platform.core.addon.ContainerEvent;
 import io.cattle.platform.core.addon.ContainerUpgrade;
 import io.cattle.platform.core.addon.DependsOn;
 import io.cattle.platform.core.addon.DeploymentSyncRequest;
+import io.cattle.platform.core.addon.DeploymentSyncResponse;
 import io.cattle.platform.core.addon.HaproxyConfig;
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
@@ -268,6 +269,7 @@ public class Model {
                 ContainerUpgrade.class,
                 DependsOn.class,
                 DeploymentSyncRequest.class,
+                DeploymentSyncResponse.class,
                 DockerBuild.class,
                 FieldDocumentation.class,
                 HaproxyConfig.class,

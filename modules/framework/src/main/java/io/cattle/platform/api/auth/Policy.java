@@ -12,6 +12,7 @@ public interface Policy {
     String LIST_ALL_SETTINGS = "list.all.settings";
     String PLAIN_ID = "plain.id";
     String PLAIN_ID_OPTION = "plain.id.option";
+    String ROLE_OPTION = "role.option";
     String ASSIGNED_ROLE = "assigned.role";
     long NO_ACCOUNT = -1L;
 

@@ -55,7 +55,7 @@ public class SimulatorStartStopProcessor implements AgentSimulatorEventProcessor
             return null;
         }
 
-        List<?> instances = CollectionUtils.toList(CollectionUtils.getNestedValue(event.getData(), "deploymentSyncRequest", "instances"));
+        List<?> instances = CollectionUtils.toList(CollectionUtils.getNestedValue(event.getData(), "deploymentSyncRequest", "containers"));
         if (instances.size() == 0) {
             return null;
         }
