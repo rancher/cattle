@@ -92,7 +92,7 @@
             "type": "array[mount]"
         },
         "shouldRestart": {
-            "type": "bool"
+            "type": "boolean"
         },
         "lastStart": {
             "type": "date"

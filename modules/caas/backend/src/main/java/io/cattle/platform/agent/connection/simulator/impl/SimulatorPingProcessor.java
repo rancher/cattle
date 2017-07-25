@@ -14,7 +14,6 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -67,12 +66,6 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
             resources.add(instanceMap);
         }
 
-        String hostUuid = agent.getUuid() + "-" + 0;
-        Map<String, Object> hostUuidResource = new HashMap<>();
-        hostUuidResource.put(ObjectMetaDataManager.TYPE_FIELD, "hostUuid");
-        hostUuidResource.put(ObjectMetaDataManager.UUID_FIELD, hostUuid);
-        resources.add(hostUuidResource);
-
         pong.setOption(Ping.INSTANCES, true);
     }
 
@@ -82,74 +75,54 @@ public class SimulatorPingProcessor implements AgentSimulatorEventProcessor {
         String externalId = DataAccessor.fromDataFieldOf(agent).withScope(AgentConnectionSimulator.class).withKey("externalId").as(
                 String.class);
 
-        long hosts = DataAccessor.fromDataFieldOf(agent).withScope(AgentConnectionSimulator.class).withKey("hosts").withDefault(1L).as(Long.class);
+        Map<String, Object> host = new HashMap<>();
+        host.put(ObjectMetaDataManager.KIND_FIELD, "sim");
+        host.put(ObjectMetaDataManager.TYPE_FIELD, "host");
+        host.put(ObjectMetaDataManager.NAME_FIELD, "testhost-" + io.cattle.platform.util.resource.UUID.randomUUID());
 
-        long poolsPerHost = DataAccessor.fromDataFieldOf(agent).withScope(AgentConnectionSimulator.class).withKey("storagePoolsPerHost").withDefault(1L).as(
-                Long.class);
-
-        for (long i = 0; i < hosts; i++) {
-            String hostUuid = agent.getUuid() + "-" + i;
-            if (i == 0 && StringUtils.isNotBlank(externalId)) {
-                hostUuid = externalId;
-            }
-
-            Map<String, Object> host = new HashMap<>();
-            host.put(ObjectMetaDataManager.UUID_FIELD, hostUuid);
-            host.put(ObjectMetaDataManager.KIND_FIELD, "sim");
-            host.put(ObjectMetaDataManager.TYPE_FIELD, "host");
-            host.put(ObjectMetaDataManager.NAME_FIELD, "testhost-" + io.cattle.platform.util.resource.UUID.randomUUID());
-
-            Long cpu = DataAccessor.fromDataFieldOf(agent).withScope(AgentConnectionSimulator.class)
-                    .withKey(HostConstants.FIELD_MILLI_CPU).as(Long.class);
-            if (cpu != null) {
-                host.put(HostConstants.FIELD_MILLI_CPU, cpu);
-            }
-
-            Long mem = DataAccessor.fromDataFieldOf(agent).withScope(AgentConnectionSimulator.class)
-                    .withKey(HostConstants.FIELD_MEMORY).as(Long.class);
-            if (mem != null) {
-                host.put(HostConstants.FIELD_MEMORY, mem);
-            }
-
-            Long storage = DataAccessor.fromDataFieldOf(agent).withScope(AgentConnectionSimulator.class)
-                    .withKey(HostConstants.FIELD_LOCAL_STORAGE_MB).as(Long.class);
-            if (storage != null) {
-                host.put(HostConstants.FIELD_LOCAL_STORAGE_MB, storage);
-            }
-
-            for (long j = 0; j < poolsPerHost; j++) {
-                String poolUuid = hostUuid + "-" + j;
-
-                Map<String, Object> pool = new HashMap<>();
-                pool.put(ObjectMetaDataManager.UUID_FIELD, poolUuid);
-                pool.put(ObjectMetaDataManager.KIND_FIELD, "sim");
-                pool.put(ObjectMetaDataManager.TYPE_FIELD, "storagePool");
-                pool.put("hostUuid", hostUuid);
-
-                resources.add(pool);
-            }
-
-            /*
-             * Purposely put host after storagePool so that AgentResourceManager
-             * will have to reorder then on insert
-             */
-            resources.add(host);
-
-            String ipAddress = DataAccessor.fromDataFieldOf(agent)
-                    .withScope(AgentConnectionSimulator.class)
-                    .withKey("ipAddress")
-                    .withDefault("192.168.0.21").as(String.class);
-            String ipUuid = agent.getUuid() + "-" + ipAddress;
-
-            Map<String, Object> ip = new HashMap<>();
-            ip.put(ObjectMetaDataManager.UUID_FIELD, ipUuid);
-            ip.put(ObjectMetaDataManager.KIND_FIELD, "sim");
-            ip.put(ObjectMetaDataManager.TYPE_FIELD, "ipAddress");
-            ip.put("address", ipAddress);
-            ip.put("hostUuid", hostUuid);
-
-            resources.add(ip);
+        Long cpu = DataAccessor.fromDataFieldOf(agent).withScope(AgentConnectionSimulator.class)
+                .withKey(HostConstants.FIELD_MILLI_CPU).as(Long.class);
+        if (cpu != null) {
+            host.put(HostConstants.FIELD_MILLI_CPU, cpu);
         }
+
+        Long mem = DataAccessor.fromDataFieldOf(agent).withScope(AgentConnectionSimulator.class)
+                .withKey(HostConstants.FIELD_MEMORY).as(Long.class);
+        if (mem != null) {
+            host.put(HostConstants.FIELD_MEMORY, mem);
+        }
+
+        Long storage = DataAccessor.fromDataFieldOf(agent).withScope(AgentConnectionSimulator.class)
+                .withKey(HostConstants.FIELD_LOCAL_STORAGE_MB).as(Long.class);
+        if (storage != null) {
+            host.put(HostConstants.FIELD_LOCAL_STORAGE_MB, storage);
+        }
+
+        Map<String, Object> pool = new HashMap<>();
+        pool.put(ObjectMetaDataManager.KIND_FIELD, "sim");
+        pool.put(ObjectMetaDataManager.TYPE_FIELD, "storagePool");
+
+        resources.add(pool);
+
+        /*
+         * Purposely put host after storagePool so that AgentResourceManager
+         * will have to reorder then on insert
+         */
+        resources.add(host);
+
+        String ipAddress = DataAccessor.fromDataFieldOf(agent)
+                .withScope(AgentConnectionSimulator.class)
+                .withKey("ipAddress")
+                .withDefault("192.168.0.21").as(String.class);
+        String ipUuid = agent.getUuid().substring(0, 8) + "-" + ipAddress;
+
+        Map<String, Object> ip = new HashMap<>();
+        ip.put(ObjectMetaDataManager.KIND_FIELD, "sim");
+        ip.put(ObjectMetaDataManager.UUID_FIELD, ipUuid);
+        ip.put(ObjectMetaDataManager.TYPE_FIELD, "ipAddress");
+        ip.put("address", ipAddress);
+
+        resources.add(ip);
     }
 
 }

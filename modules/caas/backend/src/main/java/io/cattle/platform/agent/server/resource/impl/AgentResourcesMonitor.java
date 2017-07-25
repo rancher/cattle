@@ -122,13 +122,16 @@ public class AgentResourcesMonitor {
 
         for (Map.Entry<String, Map<String, Object>> poolData : resources.getStoragePools().entrySet()) {
             String uuid = poolData.getKey();
+            if (DEFAULT_UUID.equals(uuid)) {
+                uuid = agent.getUuid() + "-s";
+            }
             Map<String, Object> data = poolData.getValue();
 
             if (pools.containsKey(uuid)) {
                 continue;
             }
 
-            Host host = getHost(data, hosts);
+            Host host = getHost(agent, data, hosts);
             if (host == null) {
                 continue;
             }
@@ -140,10 +143,10 @@ public class AgentResourcesMonitor {
         return pools;
     }
 
-    protected Host getHost(Map<String, Object> data, Map<String, Host> hosts) {
+    protected Host getHost(Agent agent, Map<String, Object> data, Map<String, Host> hosts) {
         String hostUuid = Objects.toString(data.get(HostConstants.FIELD_HOST_UUID), null);
         if (hostUuid == null) {
-            hostUuid = DEFAULT_UUID;
+            hostUuid = agent.getUuid() + "-h";
         }
 
         return hosts.get(hostUuid);
@@ -152,7 +155,7 @@ public class AgentResourcesMonitor {
     protected void setIpAddresses(Map<String, Host> hosts, Agent agent, AgentResources resources) {
         for (Map.Entry<String, Map<String, Object>> ipData : resources.getIpAddresses().entrySet()) {
             String address = ipData.getKey();
-            Host host = getHost(ipData.getValue(), hosts);
+            Host host = getHost(agent, ipData.getValue(), hosts);
             if (host == null) {
                 continue;
             }
@@ -306,7 +309,7 @@ public class AgentResourcesMonitor {
             String type = Objects.toString(resource.get(ObjectMetaDataManager.TYPE_FIELD), null);
             String uuid = Objects.toString(resource.get(ObjectMetaDataManager.UUID_FIELD), null);
 
-            if (HostConstants.TYPE.equals(type) && uuid == null) {
+            if (uuid == null) {
                 uuid = DEFAULT_UUID;
             }
 
