@@ -1,11 +1,8 @@
 package io.cattle.platform.docker.machine.launch;
 
-import static io.cattle.platform.core.model.tables.SettingTable.*;
-
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.dao.DataDao;
-import io.cattle.platform.core.model.Setting;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.integration.external.ServiceAuthConstants;
 import io.cattle.platform.lock.definition.LockDefinition;
@@ -17,8 +14,6 @@ import io.cattle.platform.ssh.common.SshKeyGen;
 import io.cattle.platform.token.impl.RSAKeyProvider;
 import io.cattle.platform.token.impl.RSAPrivateKeyHolder;
 import io.cattle.platform.util.type.InitializationTask;
-import io.github.ibuildthecloud.gdapi.condition.Condition;
-import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -40,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.netflix.config.DynamicBooleanProperty;
-import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.config.DynamicStringProperty;
 
 
@@ -63,6 +57,7 @@ public class AuthServiceLauncher extends GenericServiceLauncher implements Initi
     public static final DynamicStringProperty EXTERNAL_AUTH_PROVIDER_SETTING = ArchaiusUtil.getString("api.auth.external.provider.configured");
     public static final DynamicStringProperty NO_IDENTITY_LOOKUP_SETTING = ArchaiusUtil.getString("api.auth.external.provider.no.identity.lookup");
     private static final DynamicStringProperty AUTH_SERVICE_LOG_LEVEL = ArchaiusUtil.getString("auth.service.log.level");
+    private static final DynamicStringProperty AUTH_SERVICE_CONFIG_UPDATE_TIMESTAMP = ArchaiusUtil.getString("auth.service.config.update.timestamp");
 
     @Override
     protected boolean shouldRun() {
@@ -164,14 +159,7 @@ public class AuthServiceLauncher extends GenericServiceLauncher implements Initi
         list.add(ServiceAuthConstants.USER_TYPE);
         list.add(ServiceAuthConstants.IDENTITY_SEPARATOR);
         list.add(AUTH_SERVICE_LOG_LEVEL);
-
-        //read Db settings name starting with "api.auth" to add additional provider specific settings
-        List<Setting> settings = objectManager.find(Setting.class,
-                SETTING.NAME, new Condition(ConditionType.LIKE, "api.auth%"));
-
-        for (Setting setting : settings) {
-            list.add(DynamicPropertyFactory.getInstance().getStringProperty(setting.getName(), null));
-        }
+        list.add(AUTH_SERVICE_CONFIG_UPDATE_TIMESTAMP);
 
         return list;
     }
