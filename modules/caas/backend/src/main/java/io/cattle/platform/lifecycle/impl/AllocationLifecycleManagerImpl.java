@@ -1,7 +1,5 @@
 package io.cattle.platform.lifecycle.impl;
 
-import static io.cattle.platform.core.model.tables.VolumeTable.*;
-
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Instance;
@@ -11,6 +9,8 @@ import io.cattle.platform.lifecycle.AllocationLifecycleManager;
 import io.cattle.platform.object.ObjectManager;
 
 import java.util.List;
+
+import static io.cattle.platform.core.model.tables.VolumeTable.*;
 
 public class AllocationLifecycleManagerImpl implements AllocationLifecycleManager {
 
@@ -54,7 +54,7 @@ public class AllocationLifecycleManagerImpl implements AllocationLifecycleManage
     }
 
     @Override
-    public void preRemove(Instance instance) {
+    public void postRemove(Instance instance) {
         allocatorService.instanceDeallocate(instance);
     }
 

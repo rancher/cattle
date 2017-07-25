@@ -18,10 +18,20 @@ public enum FieldType {
     /*
      * This order is important, refer to SchemaFactoryImpl.assignSimpleType()
      */
-    STRING(STRING_MODS, String.class), PASSWORD(String.class), FLOAT(NUMBER_MODS, Float.class, Float.TYPE, Double.class, Double.TYPE), INT(NUMBER_MODS,
-            Long.class, Long.TYPE, Integer.class, Integer.TYPE), DATE(NUMBER_MODS, Date.class), BLOB(InputStream.class), BOOLEAN(VALUE_MODS, Boolean.class,
-            Boolean.TYPE), ENUM(VALUE_MODS, String.class), REFERENCE(VALUE_MODS, IdRef.class), ARRAY(List.class, Object[].class), MAP(Map.class), TYPE(
-            Object.class), JSON(Object.class), NONE;
+    STRING(STRING_MODS, String.class),
+    PASSWORD(String.class),
+    FLOAT(NUMBER_MODS, Float.class, Float.TYPE, Double.class, Double.TYPE),
+    INT(NUMBER_MODS, Long.class, Long.TYPE, Integer.class, Integer.TYPE),
+    DATE(NUMBER_MODS, Date.class),
+    BLOB(InputStream.class),
+    BOOLEAN(VALUE_MODS, Boolean.class, Boolean.TYPE),
+    ENUM(VALUE_MODS, String.class),
+    REFERENCE(VALUE_MODS, IdRef.class),
+    ARRAY(List.class, Object[].class),
+    MAP(Map.class),
+    TYPE(Object.class),
+    JSON(Object.class),
+    NONE;
 
     Class<?>[] clzs;
     Set<ConditionType> modifiers = new TreeSet<>();

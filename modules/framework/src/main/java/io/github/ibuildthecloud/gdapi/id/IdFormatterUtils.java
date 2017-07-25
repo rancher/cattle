@@ -5,13 +5,19 @@ import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.Field;
 import io.github.ibuildthecloud.gdapi.model.FieldType;
 import io.github.ibuildthecloud.gdapi.model.Schema;
+import io.github.ibuildthecloud.gdapi.util.TypeUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 public class IdFormatterUtils {
+
+    private static final Logger log = LoggerFactory.getLogger(IdFormatter.class);
 
     public static Object formatReference(Field field, IdFormatter formatter, Object value, SchemaFactory schemaFactory) {
         return formatReference(field.getTypeEnum(), field.getType(), field.getSubTypeEnums(), field.getSubTypes(), formatter,
@@ -56,6 +62,11 @@ public class IdFormatterUtils {
         Map<Object, Object> result = new LinkedHashMap<>();
 
         Schema fieldSchema = schemaFactory.getSchema(schemaType);
+        if (fieldSchema == null) {
+            log.error("Failed to find schema for type [{}]", schemaType);
+            return result;
+        }
+
         if (!result.containsKey("type")) {
             result.put("type", fieldSchema.getId());
         }
@@ -78,8 +89,14 @@ public class IdFormatterUtils {
 
             if (subFieldValue != null) {
                 Field subField = entry.getValue();
-                Object formattedValue = formatReference(subField.getTypeEnum(), subField.getType(), subField.getSubTypeEnums(),
-                        subField.getSubTypes(), formatter, subFieldValue, schemaFactory);
+                Object formattedValue = null;
+                if (TypeUtils.ID_FIELD.equals(subField.getName())) {
+                    formattedValue = formatReference(FieldType.REFERENCE, null, null,
+                            Collections.singletonList(schemaType), formatter, subFieldValue, schemaFactory);
+                } else {
+                    formattedValue = formatReference(subField.getTypeEnum(), subField.getType(), subField.getSubTypeEnums(),
+                            subField.getSubTypes(), formatter, subFieldValue, schemaFactory);
+                }
                 result.put(fieldName, formattedValue);
             } else {
                 result.put(fieldName, subFieldValue);

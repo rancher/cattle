@@ -139,8 +139,6 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
 
         volumeLifecycle.preRemove(instance);
 
-        allocationLifecycle.preRemove(instance);
-
         networkLifecycle.preRemove(instance);
 
         objectManager.persist(instance);
@@ -148,6 +146,8 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
 
     @Override
     public void postRemove(Instance instance)  {
+        allocationLifecycle.postRemove(instance);
+
         serviceLifecycle.postRemove(instance);
 
         objectManager.persist(instance);

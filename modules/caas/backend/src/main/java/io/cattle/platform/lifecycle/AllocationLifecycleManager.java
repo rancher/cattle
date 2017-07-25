@@ -8,6 +8,6 @@ public interface AllocationLifecycleManager {
 
     void postStop(Instance instance);
 
-    void preRemove(Instance instance);
+    void postRemove(Instance instance);
 
 }

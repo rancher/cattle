@@ -32,7 +32,7 @@ public class SimulatorStartStopProcessor implements AgentSimulatorEventProcessor
     private static final Set<String> EVENTS = CollectionUtils.set(
             "compute.instance.activate",
             "compute.instance.deactivate",
-            "compute.remove"
+            "compute.instance.remove"
     );
 
     ObjectManager objectManager;
