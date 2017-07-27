@@ -1,13 +1,17 @@
 package io.cattle.platform.iaas.api.auth.integration.external;
 
+import static io.cattle.platform.core.model.tables.SettingTable.*;
+
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.AuthToken;
+import io.cattle.platform.core.model.Setting;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
 import io.cattle.platform.iaas.api.auth.identity.Token;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.token.TokenException;
 import io.cattle.platform.token.TokenService;
@@ -26,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.inject.Inject;
 
@@ -54,6 +59,11 @@ public class ExternalServiceAuthProvider {
     ExternalServiceTokenUtil tokenUtil;
     @Inject
     private AuthTokenDao authTokenDao;
+    @Inject
+    private ObjectManager objectManager;
+
+    boolean initialized;
+    private AtomicBoolean configured = new AtomicBoolean(false);
 
     public Token getToken(ApiRequest request) {
         Map<String, Object> requestBody = CollectionUtils.toMap(request.getRequestObject());
@@ -311,13 +321,45 @@ public class ExternalServiceAuthProvider {
     }
 
     public boolean isConfigured() {
-        if (SecurityConstants.AUTH_PROVIDER.get() != null
-                && !SecurityConstants.NO_PROVIDER.equalsIgnoreCase(SecurityConstants.AUTH_PROVIDER.get())
-                && !SecurityConstants.INTERNAL_AUTH_PROVIDERS.contains(SecurityConstants.AUTH_PROVIDER.get())
-                && ServiceAuthConstants.IS_EXTERNAL_AUTH_PROVIDER.get()) {
-            return true;
+        // Must do this here because constructor was too early and dependencies were loaded/initialized
+        if(!initialized) {
+            synchronized (this) {
+                if (!initialized) {
+                    setConfigured();
+                    Runnable cb = (new Runnable() {
+                        @Override
+                        public void run() {
+                            setConfigured();
+                        }
+                    });
+
+                    // Can we limit the callback to a single setting?
+                    SecurityConstants.AUTH_PROVIDER.addCallback(cb);
+                    ServiceAuthConstants.IS_EXTERNAL_AUTH_PROVIDER.addCallback(cb);
+                    initialized = true;
+                }
+            }
         }
-        return false;
+
+        boolean result = configured.get();
+        log.info("xxxxxxxxxxxxx isConfigured {}", result);
+        return result;
+    }
+
+    public void setConfigured() {
+        Setting authProvider = objectManager.findAny(Setting.class, SETTING.NAME, SecurityConstants.AUTH_PROVIDER_SETTING);
+        Setting isExternal = objectManager.findAny(Setting.class, SETTING.NAME, ServiceAuthConstants.EXTERNAL_AUTH_PROVIDER_SETTING);
+
+        // I changed this logic from how you had it such that the null check of authProvier and isExternal is just part of evaluating "confd".
+        // Seems to me that if either of those is null, configured should be set to false. But, feel free to change back if I'm wrong.
+        boolean confd = authProvider != null
+                && isExternal != null
+                && authProvider.getValue() != null
+                && !SecurityConstants.NO_PROVIDER.equalsIgnoreCase(authProvider.getValue())
+                && !SecurityConstants.INTERNAL_AUTH_PROVIDERS.contains(authProvider.getValue())
+                && "true".equalsIgnoreCase(isExternal.getValue());
+        log.info("****************** Callback called setConfigured. Result: {}", confd);
+        configured.set(confd);
     }
 
     public Identity untransform(Identity identity) {
