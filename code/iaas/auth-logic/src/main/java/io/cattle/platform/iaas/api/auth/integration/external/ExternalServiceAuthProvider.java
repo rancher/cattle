@@ -33,6 +33,8 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.fluent.Request;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.ResponseHandler;
 import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
@@ -63,7 +65,6 @@ public class ExternalServiceAuthProvider {
         StringBuilder authUrl = new StringBuilder(ServiceAuthConstants.AUTH_SERVICE_URL.get());
         authUrl.append("/token");
 
-        HttpResponse response;
         try {
             Map<String, String> data = new HashMap<String, String>();
             data.put("code", code);
@@ -72,21 +73,26 @@ public class ExternalServiceAuthProvider {
             Request temp = Request.Post(authUrl.toString())
                     .addHeader(ServiceAuthConstants.ACCEPT, ServiceAuthConstants.APPLICATION_JSON)
                     .bodyString(jsonString, ContentType.APPLICATION_JSON);
-            response = temp.execute().returnResponse();
-            int statusCode = response.getStatusLine().getStatusCode();
-            if(statusCode >= 300) {
-                String message = "Error Response from Auth service: " + Integer.toString(statusCode);
-                if(response.getEntity() != null) {
-                    Map<String, Object> respData = jsonMapper.readValue(response.getEntity().getContent());
-                    if(respData != null && respData.containsKey("message")) {
-                        message = (String) respData.get("message");
+
+            Map<String, Object> jsonData = temp.execute().handleResponse(new ResponseHandler <Map<String, Object>>() {
+                @Override
+                public Map<String, Object> handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
+                    int statusCode = response.getStatusLine().getStatusCode();
+                    if(statusCode >= 300) {
+                        String message = "Error Response from Auth service: " + Integer.toString(statusCode);
+                        if(response.getEntity() != null) {
+                            Map<String, Object> respData = jsonMapper.readValue(response.getEntity().getContent());
+                            if(respData != null && respData.containsKey("message")) {
+                                message = (String) respData.get("message");
+                            }
+                        }
+                        log.error("Got error from Auth service. statusCode: {}, message: {}", statusCode, message);
+                        throw new ClientVisibleException(statusCode, ServiceAuthConstants.AUTH_ERROR,
+                                message, message);
                     }
+                    return jsonMapper.readValue(response.getEntity().getContent());
                 }
-                log.error("Got error from Auth service. statusCode: {}, message: {}", statusCode, message);
-                throw new ClientVisibleException(statusCode, ServiceAuthConstants.AUTH_ERROR,
-                        message, message);
-            }
-            Map<String, Object> jsonData = jsonMapper.readValue(response.getEntity().getContent());
+            });
 
             String encryptedToken = (String)jsonData.get(ServiceAuthConstants.JWT_KEY);
             Map<String, Object> decryptedToken = tokenService.getJsonPayload(encryptedToken, false);
@@ -123,7 +129,6 @@ public class ExternalServiceAuthProvider {
         StringBuilder authUrl = new StringBuilder(ServiceAuthConstants.AUTH_SERVICE_URL.get());
         authUrl.append("/token");
 
-        HttpResponse response;
         try {
             Map<String, String> data = new HashMap<String, String>();
             data.put("accessToken", accessToken);
@@ -132,21 +137,25 @@ public class ExternalServiceAuthProvider {
 
             Request temp = Request.Post(authUrl.toString()).addHeader(ServiceAuthConstants.ACCEPT, ServiceAuthConstants.APPLICATION_JSON)
                     .bodyString(jsonString, ContentType.APPLICATION_JSON);
-            response = temp.execute().returnResponse();
-            int statusCode = response.getStatusLine().getStatusCode();
-            if(statusCode >= 300) {
-                String message = "Error Response from Auth service: " + Integer.toString(statusCode);
-                if(response.getEntity() != null) {
-                    Map<String, Object> respData = jsonMapper.readValue(response.getEntity().getContent());
-                    if(respData != null && respData.containsKey("message")) {
-                        message = (String) respData.get("message");
+            Map<String, Object> jsonData = temp.execute().handleResponse(new ResponseHandler <Map<String, Object>>() {
+                @Override
+                public Map<String, Object> handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
+                    int statusCode = response.getStatusLine().getStatusCode();
+                    if(statusCode >= 300) {
+                        String message = "Error Response from Auth service: " + Integer.toString(statusCode);
+                        if(response.getEntity() != null) {
+                            Map<String, Object> respData = jsonMapper.readValue(response.getEntity().getContent());
+                            if(respData != null && respData.containsKey("message")) {
+                                message = (String) respData.get("message");
+                            }
+                        }
+                        log.error("Got error from Auth service. statusCode: {}, message: {}", statusCode, message);
+                        throw new ClientVisibleException(statusCode, ServiceAuthConstants.AUTH_ERROR,
+                                message, message);
                     }
+                    return jsonMapper.readValue(response.getEntity().getContent());
                 }
-                log.error("Got error from Auth service. statusCode: {}, message: {}", statusCode, message);
-                throw new ClientVisibleException(statusCode, ServiceAuthConstants.AUTH_ERROR,
-                        message, message);
-            }
-            Map<String, Object> jsonData = jsonMapper.readValue(response.getEntity().getContent());
+            });
 
             String encryptedToken = (String)jsonData.get(ServiceAuthConstants.JWT_KEY);
             Map<String, Object> decryptedToken = tokenService.getJsonPayload(encryptedToken, false);
@@ -184,20 +193,28 @@ public class ExternalServiceAuthProvider {
         }
         List<Identity> identities = new ArrayList<>();
         StringBuilder authUrl = new StringBuilder(ServiceAuthConstants.AUTH_SERVICE_URL.get());
-        HttpResponse response;
         try {
             authUrl.append("/identities?name=").append(URLEncoder.encode(name, "UTF-8"));
             Request temp = Request.Get(authUrl.toString()).addHeader(ServiceAuthConstants.ACCEPT, ServiceAuthConstants.APPLICATION_JSON);
             String externalAccessToken = (String) ApiContext.getContext().getApiRequest().getAttribute(ServiceAuthConstants.ACCESS_TOKEN);
             String bearerToken = " Bearer "+ externalAccessToken;
             temp.addHeader(ServiceAuthConstants.AUTHORIZATION, bearerToken);
-            response = temp.execute().returnResponse();
-            int statusCode = response.getStatusLine().getStatusCode();
-            if(statusCode >= 300) {
-                log.error("searchIdentities: Got error from Auth service. statusCode: {}", statusCode);
+
+            Map<String, Object> jsonData = temp.execute().handleResponse(new ResponseHandler <Map<String, Object>>() {
+                @Override
+                public Map<String, Object> handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
+                    int statusCode = response.getStatusLine().getStatusCode();
+                    if (statusCode >= 300) {
+                        log.error("searchIdentities: Got error from Auth service. statusCode: {}", statusCode);
+                        return null;
+                    }
+                    return jsonMapper.readValue(response.getEntity().getContent());
+                }
+            });
+            if (jsonData == null) {
                 return identities;
             }
-            Map<String, Object> jsonData = jsonMapper.readValue(response.getEntity().getContent());
+
             List<?> identityList = CollectionUtils.toList(jsonData.get("data"));
             if (identityList != null && !identityList.isEmpty())
             {
@@ -242,7 +259,6 @@ public class ExternalServiceAuthProvider {
 
         StringBuilder authUrl = new StringBuilder(ServiceAuthConstants.AUTH_SERVICE_URL.get());
 
-        HttpResponse response;
         try {
             authUrl.append("/identities?externalId=").append(URLEncoder.encode(id, "UTF-8")).append("&externalIdType=")
             .append(URLEncoder.encode(scope, "UTF-8"));
@@ -250,13 +266,19 @@ public class ExternalServiceAuthProvider {
             String externalAccessToken = (String) ApiContext.getContext().getApiRequest().getAttribute(ServiceAuthConstants.ACCESS_TOKEN);
             String bearerToken = " Bearer "+ externalAccessToken;
             temp.addHeader(ServiceAuthConstants.AUTHORIZATION, bearerToken);
-            response = temp.execute().returnResponse();
-            int statusCode = response.getStatusLine().getStatusCode();
-            if(statusCode >= 300) {
-                log.error("getIdentity: Got error from Auth service. statusCode: {}", statusCode);
-                return null;
-            }
-            Map<String, Object> jsonData = jsonMapper.readValue(response.getEntity().getContent());
+
+            Map<String, Object> jsonData = temp.execute().handleResponse(new ResponseHandler <Map<String, Object>>() {
+                @Override
+                public Map<String, Object> handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
+                    int statusCode = response.getStatusLine().getStatusCode();
+                    if(statusCode >= 300) {
+                        log.error("getIdentity: Got error from Auth service. statusCode: {}", statusCode);
+                        return null;
+                    }
+                    return jsonMapper.readValue(response.getEntity().getContent());
+                }
+            });
+
             return tokenUtil.jsonToIdentity(jsonData);
 
         } catch(HttpHostConnectException ex) {
@@ -332,16 +354,20 @@ public class ExternalServiceAuthProvider {
         StringBuilder authUrl = new StringBuilder(ServiceAuthConstants.AUTH_SERVICE_URL.get());
         authUrl.append("/redirectUrl");
 
-        HttpResponse response;
         try {
             Request temp = Request.Get(authUrl.toString()).addHeader(ServiceAuthConstants.ACCEPT, ServiceAuthConstants.APPLICATION_JSON);
-            response = temp.execute().returnResponse();
-            int statusCode = response.getStatusLine().getStatusCode();
-            if(statusCode >= 300) {
-                log.error("Got error from Auth service. statusCode: {}", statusCode);
-                return "";
-            }
-            Map<String, Object> jsonData = jsonMapper.readValue(response.getEntity().getContent());
+            Map<String, Object> jsonData = temp.execute().handleResponse(new ResponseHandler <Map<String, Object>>() {
+                @Override
+                public Map<String, Object> handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
+                    int statusCode = response.getStatusLine().getStatusCode();
+                    if(statusCode >= 300) {
+                        log.error("Got error from Auth service. statusCode: {}", statusCode);
+                        return null;
+                    }
+                    return jsonMapper.readValue(response.getEntity().getContent());
+                }
+            });
+
             if( jsonData != null && !jsonData.isEmpty()) {
                 if (jsonData.containsKey("redirectUrl")) {
                     return (String)jsonData.get("redirectUrl");

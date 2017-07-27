@@ -31,6 +31,7 @@ import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.client.fluent.Request;
+import org.apache.http.client.fluent.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -172,7 +173,10 @@ public class AuthServiceLauncher extends GenericServiceLauncher implements Initi
 
         try {
             StringBuilder authUrl = new StringBuilder(ServiceAuthConstants.AUTH_SERVICE_URL.get());
-            Request.Post(authUrl+"/reload").execute();
+            Response r = Request.Post(authUrl+"/reload").execute();
+            if (r != null) {
+                r.discardContent();
+            }
         } catch (IOException e) {
             log.info("Failed to reload auth service: {}", e.getMessage());
         }
