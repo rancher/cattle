@@ -51,7 +51,6 @@ public class AuthServiceLauncher extends GenericServiceLauncher implements Initi
     public static final DynamicStringProperty SECURITY_SETTING = ArchaiusUtil.getString("api.security.enabled");
     public static final DynamicStringProperty EXTERNAL_AUTH_PROVIDER_SETTING = ArchaiusUtil.getString("api.auth.external.provider.configured");
     public static final DynamicStringProperty NO_IDENTITY_LOOKUP_SETTING = ArchaiusUtil.getString("api.auth.external.provider.no.identity.lookup");
-    private static final DynamicStringProperty AUTH_SERVICE_LOG_LEVEL = ArchaiusUtil.getString("auth.service.log.level");
 
     @Override
     protected boolean shouldRun() {
@@ -127,7 +126,6 @@ public class AuthServiceLauncher extends GenericServiceLauncher implements Initi
         list.add(NO_IDENTITY_LOOKUP_SETTING);
         list.add(ServiceAuthConstants.USER_TYPE);
         list.add(ServiceAuthConstants.IDENTITY_SEPARATOR);
-        list.add(AUTH_SERVICE_LOG_LEVEL);
 
         //read Db settings name starting with "api.auth" to add additional provider specific settings
         List<Setting> settings = objectManager.find(Setting.class,
