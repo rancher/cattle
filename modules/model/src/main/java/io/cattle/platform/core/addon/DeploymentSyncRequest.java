@@ -31,6 +31,7 @@ public class DeploymentSyncRequest {
         this.containers = containers;
         this.volumes = volumes;
         this.registryCredentials = registryCredentials;
+        this.networks = networks;
     }
 
     public String getDeploymentUnitUuid() {

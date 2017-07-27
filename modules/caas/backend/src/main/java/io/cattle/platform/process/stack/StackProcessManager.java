@@ -56,12 +56,8 @@ public class StackProcessManager {
             return null;
         }
 
-        if (DataAccessor.fieldMap(stack, ServiceConstants.STACK_FIELD_TEMPLATES).isEmpty()) {
-            Map<String, Object> data = externalIdToData(stack, externalId);
-            return new HandlerResult(data);
-        }
-
-        return null;
+        Map<String, Object> data = externalIdToData(stack, externalId);
+        return new HandlerResult(data);
     }
 
     private Map<String, Object> externalIdToData(Stack stack, String externalId) {
