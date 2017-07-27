@@ -73,11 +73,14 @@ public class ExternalServiceAuthProvider {
                     .addHeader(ServiceAuthConstants.ACCEPT, ServiceAuthConstants.APPLICATION_JSON)
                     .bodyString(jsonString, ContentType.APPLICATION_JSON);
             response = temp.execute().returnResponse();
+            Map<String, Object> respData = jsonMapper.readValue(response.getEntity().getContent());
             int statusCode = response.getStatusLine().getStatusCode();
             if(statusCode >= 300) {
                 log.error("Got error from Auth service. statusCode: {}", statusCode);
                 throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, ServiceAuthConstants.AUTH_ERROR,
                         "Error Response from Auth service", "Status code from Auth Service: " + Integer.toString(statusCode));
+                // in place of ResponseCodes.SERVICE_UNAVAILABLE and above messages, we can provider the message from auth-service response
+                // throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, (String) respData.get("message"));
             }
             Map<String, Object> jsonData = jsonMapper.readValue(response.getEntity().getContent());
 
@@ -126,11 +129,14 @@ public class ExternalServiceAuthProvider {
             Request temp = Request.Post(authUrl.toString()).addHeader(ServiceAuthConstants.ACCEPT, ServiceAuthConstants.APPLICATION_JSON)
                     .bodyString(jsonString, ContentType.APPLICATION_JSON);
             response = temp.execute().returnResponse();
+            Map<String, Object> respData = jsonMapper.readValue(response.getEntity().getContent());
             int statusCode = response.getStatusLine().getStatusCode();
             if(statusCode >= 300) {
                 log.error("Got error from Auth service. statusCode: {}", statusCode);
                 throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, ServiceAuthConstants.AUTH_ERROR,
                         "Error Response from Auth service", "Status code from Auth Service: " + Integer.toString(statusCode));
+                // same for refreshToken
+                // throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, (String) respData.get("message"));
             }
             Map<String, Object> jsonData = jsonMapper.readValue(response.getEntity().getContent());
 
