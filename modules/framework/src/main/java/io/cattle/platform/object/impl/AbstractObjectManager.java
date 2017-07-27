@@ -98,8 +98,11 @@ public abstract class AbstractObjectManager implements ObjectManager {
         return schema.getParent() == null ? schema.getId() : schemaFactory.getBaseType(schema.getId());
     }
 
-    protected String getPossibleSubType(Object obj) {
-        Object kind = ObjectUtils.getPropertyIgnoreErrors(obj, ObjectMetaDataManager.KIND_FIELD);
+    protected String getPossibleSubType(Object obj, Map<Object, Object> toWrite) {
+        Object kind = toWrite.get(ObjectMetaDataManager.KIND_FIELD);
+        if (kind == null) {
+            kind = ObjectUtils.getPropertyIgnoreErrors(obj, ObjectMetaDataManager.KIND_FIELD);
+        }
 
         if (kind != null) {
             String kindString = kind.toString();

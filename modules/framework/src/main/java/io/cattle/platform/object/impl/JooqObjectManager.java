@@ -149,7 +149,7 @@ public class JooqObjectManager extends AbstractObjectManager {
 
     @SuppressWarnings("unchecked")
     protected void setFields(Schema schema, Object obj, Map<Object, Object> toWrite, List<UpdatableRecord<?>> result) {
-        String type = getPossibleSubType(obj);
+        String type = getPossibleSubType(obj, toWrite);
         if (schema == null) {
             schema = schemaFactory.getSchema(type);
         }

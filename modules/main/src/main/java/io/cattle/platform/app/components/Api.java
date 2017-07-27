@@ -93,7 +93,6 @@ import io.cattle.platform.api.service.ServiceRollbackValidationFilter;
 import io.cattle.platform.api.service.ServiceStackNetworkDriverFilter;
 import io.cattle.platform.api.service.ServiceStackStorageDriverFilter;
 import io.cattle.platform.api.service.ServiceUpgradeValidationFilter;
-import io.cattle.platform.api.service.StackCreateValidationFilter;
 import io.cattle.platform.api.service.VolumeTemplateCreateValidationFilter;
 import io.cattle.platform.api.serviceevent.ServiceEventFilter;
 import io.cattle.platform.api.serviceproxy.ServiceProxyManager;
@@ -102,6 +101,7 @@ import io.cattle.platform.api.setting.SettingsOutputFilter;
 import io.cattle.platform.api.stack.AddOutputsActionHandler;
 import io.cattle.platform.api.stack.ServiceDiscoveryStackOutputFilter;
 import io.cattle.platform.api.stack.StackActivateServicesActionHandler;
+import io.cattle.platform.api.stack.StackCreateValidationFilter;
 import io.cattle.platform.api.stack.StackDeactivateServicesActionHandler;
 import io.cattle.platform.api.stack.StackOutputFilter;
 import io.cattle.platform.api.stats.ContainerStatsLinkHandler;
@@ -288,7 +288,7 @@ public class Api {
         ServiceStackNetworkDriverFilter serviceStackNetworkDriverFilter = new ServiceStackNetworkDriverFilter(d.networkDao, f.objectManager);
         ServiceStackStorageDriverFilter serviceStackStorageDriverFilter = new ServiceStackStorageDriverFilter(d.storagePoolDao, f.objectManager);
         ServiceUpgradeValidationFilter serviceUpgradeValidationFilter = new ServiceUpgradeValidationFilter(f.objectManager, f.jsonMapper, c.revisionManager);
-        StackCreateValidationFilter stackCreateValidationFilter = new StackCreateValidationFilter(c.locator, f.objectManager);
+        StackCreateValidationFilter stackCreateValidationFilter = new StackCreateValidationFilter(c.locator, f.objectManager, c.catalogService);
         UserPreferenceFilter userPreferenceFilter = new UserPreferenceFilter(d.userPreferenceDao);
 
         c.router.filter(Account.class, new AccountCreateFilter(f.objectManager, f.jsonMapper));

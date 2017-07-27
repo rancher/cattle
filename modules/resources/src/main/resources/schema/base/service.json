@@ -220,7 +220,7 @@
       "attributes": {
         "scheduleUpdate": true
       },
-      "required": true
+      "required": false
     }
   },
   "resourceActions": {

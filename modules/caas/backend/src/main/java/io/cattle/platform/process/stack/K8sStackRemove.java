@@ -11,6 +11,7 @@ public class K8sStackRemove extends StackAgentHandler {
         super(agentLocator, factory, objectManager, processManager);
         commandName = "kubernetesStack.remove";
         stackKind = "kubernetesStack";
+        agentRequired = false;
         agentService = "io.rancher.container.agent_service.kubernetes_stack";
     }
 

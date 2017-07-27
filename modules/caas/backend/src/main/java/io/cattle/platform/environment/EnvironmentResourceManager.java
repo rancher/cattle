@@ -22,6 +22,8 @@ public interface EnvironmentResourceManager {
 
     List<Long> getAgentProvider(String providedServiceLabel, long accountId);
 
+    List<Long> getAgentProviderIgnoreHealth(String providedServiceLabel, long accountId);
+
     Metadata getMetadata(long accountId);
 
 }

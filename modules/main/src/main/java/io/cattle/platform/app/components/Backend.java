@@ -119,8 +119,6 @@ import io.cattle.platform.sample.data.AbstractSampleData;
 import io.cattle.platform.service.launcher.GenericServiceLauncher;
 import io.cattle.platform.storage.ImageCredentialLookup;
 import io.cattle.platform.storage.impl.DockerImageCredentialLookup;
-import io.cattle.platform.systemstack.catalog.CatalogService;
-import io.cattle.platform.systemstack.catalog.impl.CatalogServiceImpl;
 import io.cattle.platform.systemstack.process.ProjecttemplateCreate;
 import io.cattle.platform.systemstack.process.ScheduledUpgradeProcessManager;
 import io.cattle.platform.systemstack.process.SystemStackProcessManager;
@@ -166,7 +164,6 @@ public class Backend {
     AllocationLifecycleManager allocationLifecycleManager;
     AllocatorService allocatorService;
     BackPopulater backPopulater;
-    CatalogService catalogService;
     ContainerSyncImpl containerSync;
     DeploymentSyncFactory deploymentSyncFactory;
     EnvironmentResourceManager envResourceManager;
@@ -235,9 +232,8 @@ public class Backend {
         secretsLifecycleManager = new SecretsLifecycleManagerImpl(c.tokenService, d.storageDriverDao);
         loadBalancerService = new LoadBalancerServiceImpl(f.jsonMapper, f.lockManager, f.objectManager);
         serviceLifecycleManager = new ServiceLifecycleManagerImpl(f.objectManager, f.resourcePoolManager, networkService, d.serviceDao, c.revisionManager, loadBalancerService);
-        catalogService = new CatalogServiceImpl(f.jsonMapper, d.resourceDao, f.objectManager, f.processManager);
-        projectTemplateService = new ProjectTemplateService(catalogService, f.executorService, f.objectManager, d.resourceDao, f.lockManager);
-        upgradeManager = new UpgradeManager(catalogService, d.stackDao, d.resourceDao, f.lockManager, f.processManager);
+        projectTemplateService = new ProjectTemplateService(c.catalogService, f.executorService, f.objectManager, d.resourceDao, f.lockManager);
+        upgradeManager = new UpgradeManager(c.catalogService, d.stackDao, d.resourceDao, f.lockManager, f.processManager);
         containerSync = new ContainerSyncImpl(f.objectManager, f.processManager, d.instanceDao, f.lockManager, d.resourceDao, f.scheduledExecutorService, f.cluster);
 
         Reconcile reconcile = new Reconcile(f, d, c, this);
@@ -286,9 +282,9 @@ public class Backend {
 
         MountProcessManager mountProcessManager = new MountProcessManager(f.objectManager, f.processManager);
         RegisterProcessManager registerProcessManager = new RegisterProcessManager(d.registerDao, f.resourceMonitor, f.objectManager, f.processManager, d.resourceDao);
-        ScheduledUpgradeProcessManager scheduledUpgradeProcessManager = new ScheduledUpgradeProcessManager(catalogService, upgradeManager, f.objectManager, f.processManager);
+        ScheduledUpgradeProcessManager scheduledUpgradeProcessManager = new ScheduledUpgradeProcessManager(c.catalogService, upgradeManager, f.objectManager, f.processManager);
         ServiceProcessManager serviceProcessManager = new ServiceProcessManager(serviceLifecycleManager, f.objectManager, f.processManager, d.serviceDao);
-        StackProcessManager stackProcessManager = new StackProcessManager(f.processManager, f.objectManager);
+        StackProcessManager stackProcessManager = new StackProcessManager(f.processManager, f.objectManager, c.catalogService);
         SystemStackProcessManager systemStackProcessManager = new SystemStackProcessManager(f.objectManager, f.processManager, loopManager, f.resourceMonitor, d.networkDao);
         VolumeProcessManager volumeProcessManager = new VolumeProcessManager(f.objectManager, f.processManager, d.storagePoolDao, d.volumeDao);
 
@@ -381,8 +377,8 @@ public class Backend {
 
         r.handle("serviceevent.create", serviceEventCreate);
 
-        r.handle("stack.create", composeExecutor, k8sStackCreate);
-        r.handle("stack.upgrade", composeExecutor, k8sStackUpgrade);
+        r.handle("stack.create", stackProcessManager::preCreate, composeExecutor, k8sStackCreate);
+        r.handle("stack.upgrade", stackProcessManager::preUpgrade, composeExecutor, k8sStackUpgrade);
         r.handle("stack.rollback", composeExecutor, k8sStackRollback);
         r.handle("stack.remove", k8sStackRemove, stackProcessManager::remove, systemStackProcessManager::stackRemove);
         r.handle("stack.finishupgrade", composeExecutor, k8sStackFinishupgrade);

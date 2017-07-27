@@ -2,6 +2,9 @@
   "resourceFields": {
     "launchConfig": {
       "required": true
+    },
+    "lbConfig": {
+      "required": true
     }
   }
 }

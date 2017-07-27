@@ -20,6 +20,7 @@ public abstract class StackAgentHandler extends AgentBasedProcessHandler {
     EnvironmentResourceManager envResourceManager;
     protected String agentService;
     protected String stackKind;
+    boolean agentRequired = true;
 
     public StackAgentHandler(AgentLocator agentLocator, ObjectSerializer factory, ObjectManager objectManager, ObjectProcessManager processManager) {
         super(agentLocator, factory, objectManager, processManager);
@@ -33,7 +34,10 @@ public abstract class StackAgentHandler extends AgentBasedProcessHandler {
         }
 
         Long accountId = env.getAccountId();
-        List<Long> agentIds = envResourceManager.getAgentProvider(agentService, accountId);
+        List<Long> agentIds = envResourceManager.getAgentProviderIgnoreHealth(agentService, accountId);
+        if (agentIds.size() == 0 && agentRequired) {
+            throw new IllegalStateException("Failed to find [" + agentService + "] in the environment");
+        }
         return agentIds.size() == 0 ? null : agentIds.get(0);
     }
 

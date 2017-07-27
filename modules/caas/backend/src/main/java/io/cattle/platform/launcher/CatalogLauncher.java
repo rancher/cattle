@@ -38,6 +38,7 @@ public class CatalogLauncher extends GenericServiceLauncher {
     public static class CatalogEntry {
         String url;
         String branch;
+        String kind;
 
         public String getUrl() {
             return url;
@@ -57,6 +58,14 @@ public class CatalogLauncher extends GenericServiceLauncher {
 
         public CatalogEntry() {
             this.branch = "master";
+        }
+
+        public String getKind() {
+            return kind;
+        }
+
+        public void setKind(String kind) {
+            this.kind = kind;
         }
     }
 

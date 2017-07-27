@@ -36,6 +36,8 @@ import io.cattle.platform.revision.impl.RevisionManagerImpl;
 import io.cattle.platform.service.launcher.ServiceAccountCreateStartup;
 import io.cattle.platform.storage.service.StorageService;
 import io.cattle.platform.storage.service.impl.StorageServiceImpl;
+import io.cattle.platform.systemstack.catalog.CatalogService;
+import io.cattle.platform.systemstack.catalog.impl.CatalogServiceImpl;
 import io.cattle.platform.task.Task;
 import io.cattle.platform.task.impl.TaskManagerImpl;
 import io.cattle.platform.token.TokenService;
@@ -56,6 +58,7 @@ public class Common {
     AgentLocator agentLocator;
     ApiRouter router;
     AuditService auditService;
+    CatalogService catalogService;
     CertificateService certService;
     ComposeExportService composeExportService;
     DefaultResourceManagerSupport support;
@@ -101,6 +104,7 @@ public class Common {
         this.taskManager = new TaskManagerImpl(f.scheduledExecutorService, f.eventService, tasks);
         this.serviceAccountCreateStartup = new ServiceAccountCreateStartup(f.lockManager, f.lockDelegator, f.scheduledExecutorService, d.accountDao, d.resourceDao, f.resourceMonitor, f.processManager);
         this.objectSerializer = new ObjectSerializerImpl(f.idFormatter, f.coreSchemaFactory);
+        this.catalogService = new CatalogServiceImpl(f.jsonMapper, d.resourceDao, f.objectManager, f.processManager);
 
         ApiRouterImpl routerImpl = new ApiRouterImpl(f.coreSchemaFactory);
         router = routerImpl;

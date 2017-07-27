@@ -202,6 +202,15 @@ public class EnvironmentResourceManagerImpl implements EnvironmentResourceManage
             .collect(toList());
     }
 
+    @Override
+    public List<Long> getAgentProviderIgnoreHealth(String providedServiceLabel, long accountId) {
+        return getMetadata(accountId).getInstances().stream()
+                .filter((instance) -> instance.getAgentId() != null)
+                .filter((instance) -> instance.getLabels().containsKey(providedServiceLabel))
+                .map(InstanceInfo::getAgentId)
+                .collect(toList());
+    }
+
     private boolean healthyAndActive(InstanceInfo instance) {
         return HealthcheckConstants.HEALTH_STATE_HEALTHY.equals(instance.getHealthState()) &&
                 InstanceConstants.STATE_RUNNING.equals(instance.getState());
