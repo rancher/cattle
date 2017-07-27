@@ -111,7 +111,7 @@ public class ExternalServiceAuthProvider {
         }
     }
 
-    public Token refreshToken(String accessToken, String externalId) {
+    public Token refreshToken(String accessToken) {
         //get the token from the auth service
         StringBuilder authUrl = new StringBuilder(ServiceAuthConstants.AUTH_SERVICE_URL.get());
         authUrl.append("/token");
@@ -120,7 +120,6 @@ public class ExternalServiceAuthProvider {
         try {
             Map<String, String> data = new HashMap<String, String>();
             data.put("accessToken", accessToken);
-            data.put("externalId", externalId);
             String jsonString = jsonMapper.writeValueAsString(data);
 
             Request temp = Request.Post(authUrl.toString()).addHeader(ServiceAuthConstants.ACCEPT, ServiceAuthConstants.APPLICATION_JSON)
@@ -265,13 +264,12 @@ public class ExternalServiceAuthProvider {
             return tokenUtil.getIdentities();
         }
         String jwt = null;
-        if (SecurityConstants.SECURITY.get()) {
-            if (!StringUtils.isBlank(accessToken) || account.getExternalId()!= null) {
+        if (SecurityConstants.SECURITY.get() && !StringUtils.isBlank(accessToken)) {
                 AuthToken authToken = authTokenDao.getTokenByAccountId(account.getId());
                 if (authToken == null) {
                     try {
                         //refresh token API.
-                        Token token = refreshToken(accessToken, account.getExternalId());
+                        Token token = refreshToken(accessToken);
                         if (token != null) {
                             jwt = ProjectConstants.AUTH_TYPE + token.getJwt();
                             authToken = authTokenDao.createToken(token.getJwt(), token.getAuthProvider(), account.getId(), account.getId());
@@ -286,7 +284,6 @@ public class ExternalServiceAuthProvider {
                     jwt = authToken.getKey();
                 }
             }
-        }
         if (StringUtils.isBlank(jwt)){
             return Collections.emptySet();
         }
