@@ -128,6 +128,10 @@ public abstract class AbstractTokenUtil implements TokenUtil {
             throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, ACCESS_TOKEN_INVALID,
                     "Json Web Token invalid.", null);
         }
+        String tokenTypeActual = (String) jsonData.get(TOKEN);
+        if (!StringUtils.equals(tokenType, tokenTypeActual)) {
+            return null;
+        }
         if (!isAllowed(jsonData)) {
             throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
         }
