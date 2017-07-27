@@ -252,7 +252,7 @@ public class Backend {
         agentResourcesMonitor = new AgentResourcesMonitor(d.agentDao, d.storagePoolDao, d.resourceDao, f.objectManager, f.lockManager, f.eventService, envResourceManager);
         instanceLifecycleManager = new InstanceLifecycleManagerImpl(k8sLifecycleManager, virtualMachineLifecycleManager, volumeLifecycleManager, f.objectManager, imageCredentialLookup, d.serviceDao, f.transaction, networkLifecycleManager, agentLifecycleManager, backPopulater, restartLifecycleManager, secretsLifecycleManager, allocationLifecycleManager, serviceLifecycleManager);
         pingMonitor = new PingMonitor(agentResourcesMonitor, pingInstancesMonitor, f.processManager, f.objectManager, d.pingDao, c.agentLocator, f.cluster);
-        deploymentSyncFactory = new DeploymentSyncFactory(d.instanceDao, d.volumeDao, f.objectManager, c.serviceAccountCreateStartup, f.jsonMapper);
+        deploymentSyncFactory = new DeploymentSyncFactory(d.instanceDao, d.volumeDao, d.networkDao, f.objectManager, c.serviceAccountCreateStartup, f.jsonMapper);
     }
 
     private void addTriggers() {

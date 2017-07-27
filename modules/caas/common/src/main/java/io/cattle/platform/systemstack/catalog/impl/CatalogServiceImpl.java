@@ -16,7 +16,6 @@ import io.cattle.platform.systemstack.catalog.CatalogService;
 import io.cattle.platform.systemstack.model.Template;
 import io.cattle.platform.systemstack.model.TemplateCollection;
 import io.cattle.platform.util.type.CollectionUtils;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ResponseHandler;
@@ -68,11 +67,7 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     private String resolveExternalId(CatalogTemplate template) throws IOException {
-        if (StringUtils.isNotBlank(template.getTemplateId()) || StringUtils.isNotBlank(template.getTemplateVersionId())) {
-            return resolveUsingCatalog(template);
-        }
-
-        return DigestUtils.md5Hex(template.getDockerCompose() + template.getRancherCompose());
+        return resolveUsingCatalog(template);
     }
 
     protected void appendVersionCheck(StringBuilder catalogTemplateUrl) {
@@ -205,8 +200,7 @@ public class CatalogServiceImpl implements CatalogService {
 
         processManager.scheduleProcessInstance(ServiceConstants.PROCESS_STACK_UPGRADE, stack,
                 CollectionUtils.asMap(
-                   ServiceConstants.STACK_FIELD_DOCKER_COMPOSE, template.getDockerCompose(),
-                   ServiceConstants.STACK_FIELD_RANCHER_COMPOSE, template.getRancherCompose(),
+                   ServiceConstants.STACK_FIELD_TEMPLATES, template.getFiles(),
                    ServiceConstants.STACK_FIELD_ENVIRONMENT, DataAccessor.fieldMap(stack, ServiceConstants.STACK_FIELD_ENVIRONMENT),
                    ServiceConstants.STACK_FIELD_EXTERNAL_ID, "catalog://" + template.getId()));
 
@@ -220,25 +214,12 @@ public class CatalogServiceImpl implements CatalogService {
             return null;
         }
 
-        String dockerCompose = catalogTemplate.getDockerCompose();
-        String rancherCompose = catalogTemplate.getRancherCompose();
-        Template template = null;
-        if (externalId.startsWith("catalog://")) {
-            template = getTemplateAtURL(CATALOG_RESOURCE_URL.get() + StringUtils.removeStart(externalId, "catalog://"));
-            if (template != null) {
-                dockerCompose = template.getDockerCompose();
-                rancherCompose = template.getRancherCompose();
-            }
-        }
-
         Map<Object, Object> data = CollectionUtils.asMap(
                 STACK.EXTERNAL_ID, externalId,
                 STACK.ACCOUNT_ID, accountId,
                 STACK.NAME, catalogTemplate.getName(),
                 STACK.DESCRIPTION, catalogTemplate.getDescription(),
                 STACK.SYSTEM, true,
-                ServiceConstants.STACK_FIELD_DOCKER_COMPOSE, dockerCompose,
-                ServiceConstants.STACK_FIELD_RANCHER_COMPOSE, rancherCompose,
                 ServiceConstants.STACK_FIELD_ENVIRONMENT, catalogTemplate.getAnswers());
         return resourceDao.createAndSchedule(Stack.class, objectManager.convertToPropertiesFor(Stack.class, data));
     }

@@ -10,10 +10,7 @@ public class CatalogTemplate {
     String description;
     String templateId;
     String templateVersionId;
-    String dockerCompose;
-    String rancherCompose;
     Map<String, Object> answers;
-    Object binding;
 
     public String getName() {
         return name;
@@ -45,22 +42,6 @@ public class CatalogTemplate {
 
     public void setTemplateVersionId(String templateVersionId) {
         this.templateVersionId = templateVersionId;
-    }
-
-    public String getDockerCompose() {
-        return dockerCompose;
-    }
-
-    public void setDockerCompose(String dockerCompose) {
-        this.dockerCompose = dockerCompose;
-    }
-
-    public String getRancherCompose() {
-        return rancherCompose;
-    }
-
-    public void setRancherCompose(String rancherCompose) {
-        this.rancherCompose = rancherCompose;
     }
 
     public Map<String, Object> getAnswers() {

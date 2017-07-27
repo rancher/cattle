@@ -3,7 +3,9 @@ package io.cattle.platform.core.dao;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Subnet;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public interface NetworkDao {
 
@@ -19,4 +21,5 @@ public interface NetworkDao {
 
     List<Long> findInstancesInUseByServiceDriver(Long id);
 
+    Collection<? extends Network> getNetworks(Set<Long> networkIds);
 }

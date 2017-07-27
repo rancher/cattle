@@ -3,6 +3,7 @@ package io.cattle.platform.core.addon;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Volume;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
@@ -18,11 +19,13 @@ public class DeploymentSyncRequest {
     List<Instance> containers;
     List<Volume> volumes;
     List<Credential> registryCredentials;
+    List<Network> networks;
 
     public DeploymentSyncRequest() {
     }
 
-    public DeploymentSyncRequest(DeploymentUnit unit, String revision, List<Instance> containers, List<Volume> volumes, List<Credential> registryCredentials) {
+    public DeploymentSyncRequest(DeploymentUnit unit, String revision, List<Instance> containers, List<Volume> volumes,
+                                 List<Credential> registryCredentials, List<Network> networks) {
         this.deploymentUnitUuid = deploymentUnitUuid;
         this.revision = revision;
         this.containers = containers;
@@ -70,5 +73,14 @@ public class DeploymentSyncRequest {
     public void setRegistryCredentials(List<Credential> registryCredentials) {
         this.registryCredentials = registryCredentials;
     }
+
+    public List<Network> getNetworks() {
+        return networks;
+    }
+
+    public void setNetworks(List<Network> networks) {
+        this.networks = networks;
+    }
+
 
 }

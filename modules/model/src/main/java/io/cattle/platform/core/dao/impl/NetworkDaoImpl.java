@@ -1,7 +1,5 @@
 package io.cattle.platform.core.dao.impl;
 
-import com.netflix.config.DynamicStringListProperty;
-import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.NetworkDao;
@@ -14,7 +12,9 @@ import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import org.jooq.Configuration;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.NetworkDriverTable.*;
@@ -22,8 +22,6 @@ import static io.cattle.platform.core.model.tables.NetworkTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
 
 public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
-    DynamicStringListProperty DOCKER_VIP_SUBNET_CIDR = ArchaiusUtil.getList("docker.vip.subnet.cidr");
-
     ObjectManager objectManager;
     GenericResourceDao resourceDao;
     LockManager lockManager;
@@ -79,6 +77,14 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
                     .and(INSTANCE.REMOVED.isNull())
                     .and(INSTANCE.ID.notIn(ignore)))
             .fetchInto(Long.class);
+    }
+
+    @Override
+    public Collection<? extends Network> getNetworks(Set<Long> networkIds) {
+        return create().select(NETWORK.fields())
+                .from(NETWORK)
+                .where(NETWORK.ID.in(networkIds))
+                .fetchInto(NetworkRecord.class);
     }
 
     @Override

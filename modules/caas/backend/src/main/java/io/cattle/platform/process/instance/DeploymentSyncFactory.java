@@ -8,12 +8,14 @@ import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
+import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.eventing.model.Event;
@@ -41,17 +43,19 @@ public class DeploymentSyncFactory {
 
     InstanceDao instanceDao;
     VolumeDao volumeDao;
+    NetworkDao networkDao;
     ObjectManager objectManager;
     ServiceAccountCreateStartup serviceAccount;
     JsonMapper jsonMapper;
 
-    public DeploymentSyncFactory(InstanceDao instanceDao, VolumeDao volumeDao, ObjectManager objectManager, ServiceAccountCreateStartup serviceAccount,
+    public DeploymentSyncFactory(InstanceDao instanceDao, VolumeDao volumeDao, NetworkDao networkDao, ObjectManager objectManager, ServiceAccountCreateStartup serviceAccount,
                                  JsonMapper jsonMapper) {
         this.instanceDao = instanceDao;
         this.volumeDao = volumeDao;
         this.objectManager = objectManager;
         this.serviceAccount = serviceAccount;
         this.jsonMapper = jsonMapper;
+        this.networkDao = networkDao;
     }
 
     public DeploymentSyncResponse getResponse(Event event) {
@@ -63,6 +67,7 @@ public class DeploymentSyncFactory {
         Map<Long, Instance> instanceById = new TreeMap<>();
         Set<Long> credentialIds = new HashSet<>();
         Set<Long> volumeIds = new HashSet<>();
+        Set<Long> networkIds = new HashSet<>();
 
         instances.add(resource);
         instances.addAll(instanceDao.getOtherDeploymentInstances(resource));
@@ -84,6 +89,8 @@ public class DeploymentSyncFactory {
                 }
             }
 
+            networkIds.addAll(DataAccessor.fieldLongList(instance, InstanceConstants.FIELD_NETWORK_IDS));
+
             addSystemCredentials(instance);
             addRoleAccounts(instance);
         }
@@ -98,19 +105,23 @@ public class DeploymentSyncFactory {
             credentials.addAll(instanceDao.getCredentials(credentialIds));
         }
 
+        List<Network> networks = new ArrayList<>();
+        if (networkIds.size() > 0) {
+            networks.addAll(networkDao.getNetworks(networkIds));
+        }
+
         DeploymentUnit unit = objectManager.loadResource(DeploymentUnit.class, resource.getDeploymentUnitId());
 
-        DeploymentSyncRequest request = new DeploymentSyncRequest(unit,
+        return new DeploymentSyncRequest(unit,
                 getRevision(unit, instanceById),
                 instances,
                 volumes,
-                credentials);
-
-        return request;
+                credentials,
+                networks);
     }
 
     private String getRevision(DeploymentUnit unit, Map<Long, Instance> instances) {
-        MessageDigest digest = null;
+        MessageDigest digest;
 
         try {
             // Not used for any security or verification, just need a short string
@@ -137,16 +148,16 @@ public class DeploymentSyncFactory {
     }
 
     private void addSystemCredentials(Instance instance) {
-        boolean setCreds = false;
+        boolean setCredentials = false;
         Object value = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS).get(SystemLabels.LABEL_AGENT_ROLE);
         if (AgentConstants.SYSTEM_ROLE.equals(value)) {
             Account account = objectManager.loadResource(Account.class, instance.getAccountId());
             if (DataAccessor.fieldBool(account, AccountConstants.FIELD_ALLOW_SYSTEM_ROLE)) {
-                setCreds = true;
+                setCredentials = true;
             }
         }
 
-        if (!setCreds) {
+        if (!setCredentials) {
             return;
         }
 

@@ -41,6 +41,7 @@ public class StackProcessManager {
                                CatalogService catalogService) {
         this.processManager = processManager;
         this.objectManager = objectManager;
+        this.catalogService = catalogService;
     }
 
     public HandlerResult preCreate(ProcessState state, ProcessInstance process) {
@@ -55,9 +56,7 @@ public class StackProcessManager {
             return null;
         }
 
-        if (StringUtils.isBlank(DataAccessor.fieldString(stack, ServiceConstants.STACK_FIELD_DOCKER_COMPOSE)) &&
-                StringUtils.isBlank(DataAccessor.fieldString(stack, ServiceConstants.STACK_FIELD_RANCHER_COMPOSE)) &&
-                DataAccessor.fieldMap(stack, ServiceConstants.STACK_FIELD_TEMPLATES).isEmpty()) {
+        if (DataAccessor.fieldMap(stack, ServiceConstants.STACK_FIELD_TEMPLATES).isEmpty()) {
             Map<String, Object> data = externalIdToData(stack, externalId);
             return new HandlerResult(data);
         }
@@ -88,8 +87,6 @@ public class StackProcessManager {
         return CollectionUtils.asMap(
                 ObjectMetaDataManager.NAME_FIELD, name,
                 "namespace", namespace,
-                ServiceConstants.STACK_FIELD_DOCKER_COMPOSE, template.getDockerCompose(),
-                ServiceConstants.STACK_FIELD_RANCHER_COMPOSE, template.getRancherCompose(),
                 ServiceConstants.STACK_FIELD_TEMPLATES, template.getFiles(),
                 ServiceConstants.STACK_FIELD_EXTERNAL_ID, template.getExternalId());
     }
@@ -106,14 +103,6 @@ public class StackProcessManager {
                 .fromMap(state.getData())
                 .withKey(ServiceConstants.STACK_FIELD_EXTERNAL_ID)
                 .as(String.class);
-        String compose = DataAccessor
-                .fromMap(state.getData())
-                .withKey(ServiceConstants.STACK_FIELD_DOCKER_COMPOSE)
-                .as(String.class);
-        String rancherCompose = DataAccessor
-                .fromMap(state.getData())
-                .withKey(ServiceConstants.STACK_FIELD_RANCHER_COMPOSE)
-                .as(String.class);
         Map<String, Object> templates = CollectionUtils.toMap(DataAccessor
                 .fromMap(state.getData())
                 .withKey(ServiceConstants.STACK_FIELD_TEMPLATES)
@@ -124,9 +113,7 @@ public class StackProcessManager {
             return null;
         }
 
-        if (StringUtils.isBlank(compose) &&
-                StringUtils.isBlank(rancherCompose) &&
-                templates.isEmpty()) {
+        if (templates.isEmpty()) {
             Map<String, Object> data = externalIdToData(stack, externalId);
             return new HandlerResult(data);
         }
