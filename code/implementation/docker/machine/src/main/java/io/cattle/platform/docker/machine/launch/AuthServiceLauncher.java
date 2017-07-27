@@ -4,7 +4,6 @@ import static io.cattle.platform.core.model.tables.SettingTable.*;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Credential;
-import io.cattle.platform.core.dao.DataDao;
 import io.cattle.platform.core.model.Setting;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.integration.external.ServiceAuthConstants;
@@ -20,21 +19,14 @@ import io.cattle.platform.util.type.InitializationTask;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.PublicKey;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
 
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.io.IOUtils;
 import org.apache.http.client.fluent.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,9 +42,6 @@ public class AuthServiceLauncher extends GenericServiceLauncher implements Initi
 
     @Inject
     ObjectManager objectManager;
-
-    @Inject
-    DataDao dataDao;
 
     private static final Logger log = LoggerFactory.getLogger(AuthServiceLauncher.class);
 
@@ -90,31 +79,6 @@ public class AuthServiceLauncher extends GenericServiceLauncher implements Initi
             throw new RuntimeException("Couldn't get private key for auth-service.");
         }
         env.put("RSA_PRIVATE_KEY_CONTENTS", privateKey);
-    }
-
-    @Override
-    protected void prepareProcess(ProcessBuilder pb) throws IOException {
-        String key = dataDao.getOrCreate("auth.config.key", false, new Callable<String>() {
-            @Override
-            public String call() throws Exception {
-                SecureRandom random = new SecureRandom();
-                byte[] bytes = new byte[32];
-                random.nextBytes(bytes);
-                return Hex.encodeHexString(bytes);
-            }
-        });
-        File keyFile = new File("authConfigFile.txt");
-        try(FileOutputStream fos = new FileOutputStream(keyFile)) {
-            try {
-                IOUtils.write(Hex.decodeHex(key.toCharArray()), fos);
-            } catch (DecoderException e) {
-                throw new IOException(e);
-            }
-        }
-
-        List<String> args = pb.command();
-        args.add("--auth-config-file");
-        args.add("authConfigFile.txt");
     }
 
     @Override

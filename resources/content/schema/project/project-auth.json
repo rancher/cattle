@@ -86,7 +86,7 @@
         "balancerServiceTargetConfig" : "cr",
         "networkDriverService" : "crud",
         "storageDriverService" : "crud",
-        "genericObject" : "crud",
+        "genericObject" : "crd",
         "end" : ""
     }
 }
