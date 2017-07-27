@@ -3,7 +3,7 @@ set -e
 
 cd $(dirname $0)/..
 
-if [ -z "$API_VERSION" ] || [ "$API_VERSION" = "v2" ]; then
+if [ -z "$API_VERSION" ] || [ "$API_VERSION" = "v3" ]; then
     cd tests/integration
 else
     cd tests/integration-${API_VERSION}
