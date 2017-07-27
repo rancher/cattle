@@ -75,16 +75,9 @@ public class ExternalServiceAuthProvider {
             response = temp.execute().returnResponse();
             int statusCode = response.getStatusLine().getStatusCode();
             if(statusCode >= 300) {
-                String message = "Error Response from Auth service: " + Integer.toString(statusCode);
-                if(response.getEntity() != null) {
-                    Map<String, Object> respData = jsonMapper.readValue(response.getEntity().getContent());
-                    if(respData != null && respData.containsKey("message")) {
-                        message = (String) respData.get("message");
-                    }
-                }
-                log.error("Got error from Auth service. statusCode: {}, message: {}", statusCode, message);
-                throw new ClientVisibleException(statusCode, ServiceAuthConstants.AUTH_ERROR,
-                        message, message);
+                log.error("Got error from Auth service. statusCode: {}", statusCode);
+                throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, ServiceAuthConstants.AUTH_ERROR,
+                        "Error Response from Auth service", "Status code from Auth Service: " + Integer.toString(statusCode));
             }
             Map<String, Object> jsonData = jsonMapper.readValue(response.getEntity().getContent());
 
@@ -134,16 +127,9 @@ public class ExternalServiceAuthProvider {
             response = temp.execute().returnResponse();
             int statusCode = response.getStatusLine().getStatusCode();
             if(statusCode >= 300) {
-                String message = "Error Response from Auth service: " + Integer.toString(statusCode);
-                if(response.getEntity() != null) {
-                    Map<String, Object> respData = jsonMapper.readValue(response.getEntity().getContent());
-                    if(respData != null && respData.containsKey("message")) {
-                        message = (String) respData.get("message");
-                    }
-                }
-                log.error("Got error from Auth service. statusCode: {}, message: {}", statusCode, message);
-                throw new ClientVisibleException(statusCode, ServiceAuthConstants.AUTH_ERROR,
-                        message, message);
+                log.error("Got error from Auth service. statusCode: {}", statusCode);
+                throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, ServiceAuthConstants.AUTH_ERROR,
+                        "Error Response from Auth service", "Status code from Auth Service: " + Integer.toString(statusCode));
             }
             Map<String, Object> jsonData = jsonMapper.readValue(response.getEntity().getContent());
 
@@ -278,26 +264,27 @@ public class ExternalServiceAuthProvider {
             return tokenUtil.getIdentities();
         }
         String jwt = null;
-        if (SecurityConstants.SECURITY.get() && !StringUtils.isBlank(accessToken)) {
-                AuthToken authToken = authTokenDao.getTokenByAccountId(account.getId());
-                if (authToken == null) {
-                    try {
-                        //refresh token API.
-                        Token token = refreshToken(accessToken);
-                        if (token != null) {
-                            jwt = ProjectConstants.AUTH_TYPE + token.getJwt();
-                            authToken = authTokenDao.createToken(token.getJwt(), token.getAuthProvider(), account.getId(), account.getId());
-                            jwt = authToken.getKey();
-                            accessToken = (String) DataAccessor.fields(account).withKey(ServiceAuthConstants.ACCESS_TOKEN).get();
-                        }
-                    } catch (ClientVisibleException e) {
-                            log.error("Got error from Auth service.error", e);
-                            return Collections.emptySet();
+        if (!StringUtils.isBlank(accessToken) && SecurityConstants.SECURITY.get()) {
+            AuthToken authToken = authTokenDao.getTokenByAccountId(account.getId());
+            if (authToken == null) {
+                try {
+                    //refresh token API.
+                    Token token = refreshToken(accessToken);
+                    if (token != null) {
+                        jwt = ProjectConstants.AUTH_TYPE + token.getJwt();
+                        authToken = authTokenDao.createToken(token.getJwt(), token.getAuthProvider(), account.getId(), account.getId());
+                        jwt = authToken.getKey();
+                        accessToken = (String) DataAccessor.fields(account).withKey(ServiceAuthConstants.ACCESS_TOKEN).get();
                     }
-                } else {
-                    jwt = authToken.getKey();
+                } catch (ClientVisibleException e) {
+                        log.error("Got error from Auth service.error", e);
+                        return Collections.emptySet();
                 }
+            } else {
+                jwt = authToken.getKey();
             }
+
+        }
         if (StringUtils.isBlank(jwt)){
             return Collections.emptySet();
         }

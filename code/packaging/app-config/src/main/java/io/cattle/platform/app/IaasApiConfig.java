@@ -51,6 +51,11 @@ import io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP.OpenLDAPConsta
 import io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP.OpenLDAPIdentityProvider;
 import io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP.OpenLDAPTokenCreator;
 import io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP.OpenLDAPUtils;
+import io.cattle.platform.iaas.api.auth.integration.ldap.ad.ADConfigManager;
+import io.cattle.platform.iaas.api.auth.integration.ldap.ad.ADConstantsConfig;
+import io.cattle.platform.iaas.api.auth.integration.ldap.ad.ADIdentityProvider;
+import io.cattle.platform.iaas.api.auth.integration.ldap.ad.ADTokenCreator;
+import io.cattle.platform.iaas.api.auth.integration.ldap.ad.ADTokenUtils;
 import io.cattle.platform.iaas.api.auth.integration.local.LocalAuthConfigManager;
 import io.cattle.platform.iaas.api.auth.integration.local.LocalAuthTokenCreator;
 import io.cattle.platform.iaas.api.auth.integration.local.LocalAuthTokenUtils;
@@ -781,10 +786,37 @@ public class IaasApiConfig {
     }
 
     @Bean
+    ADIdentityProvider ADIdentityProvider(@Qualifier("CoreExecutorService") ExecutorService es) {
+        ADIdentityProvider provider = new ADIdentityProvider();
+        provider.setExecutorService(es);
+        return provider;
+    }
+
+    @Bean
     OpenLDAPIdentityProvider OpenLDAPIdentityProvider(@Qualifier("CoreExecutorService") ExecutorService es) {
         OpenLDAPIdentityProvider provider = new OpenLDAPIdentityProvider();
         provider.setExecutorService(es);
         return provider;
+    }
+
+    @Bean
+    ADTokenCreator ADTokenCreator() {
+        return new ADTokenCreator();
+    }
+
+    @Bean
+    ADTokenUtils ADTokenUtils() {
+        return new ADTokenUtils();
+    }
+
+    @Bean
+    ADConfigManager ADConfigManager() {
+        return new ADConfigManager();
+    }
+
+    @Bean
+    ADConstantsConfig ADConstantsConfig() {
+        return new ADConstantsConfig();
     }
 
     @Bean

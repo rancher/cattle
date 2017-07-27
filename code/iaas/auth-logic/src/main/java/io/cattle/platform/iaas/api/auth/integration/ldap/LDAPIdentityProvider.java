@@ -6,7 +6,7 @@ import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.core.constants.IdentityConstants;
 import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityProvider;
-import io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP.LdapServiceContextPoolFactory;
+import io.cattle.platform.iaas.api.auth.integration.ldap.ad.LdapServiceContextPoolFactory;
 import io.cattle.platform.iaas.api.auth.integration.ldap.interfaces.LDAPConstants;
 import io.cattle.platform.pool.PoolConfig;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;

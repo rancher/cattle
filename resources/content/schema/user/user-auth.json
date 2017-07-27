@@ -841,7 +841,7 @@
         "genericObject.name" : "cr",
         "genericObject.key" : "cr",
         "genericObject.kind" : "cr",
-        "genericObject.resourceData" : "cru",
+        "genericObject.resourceData" : "cr",
 
         "serviceEvent" : "r",
         "serviceEvent.instanceId" : "r",
