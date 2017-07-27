@@ -75,9 +75,16 @@ public class ExternalServiceAuthProvider {
             response = temp.execute().returnResponse();
             int statusCode = response.getStatusLine().getStatusCode();
             if(statusCode >= 300) {
-                log.error("Got error from Auth service. statusCode: {}", statusCode);
-                throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, ServiceAuthConstants.AUTH_ERROR,
-                        "Error Response from Auth service", "Status code from Auth Service: " + Integer.toString(statusCode));
+                String message = "Error Response from Auth service: " + Integer.toString(statusCode);
+                if(response.getEntity() != null) {
+                    Map<String, Object> respData = jsonMapper.readValue(response.getEntity().getContent());
+                    if(respData != null && respData.containsKey("message")) {
+                        message = (String) respData.get("message");
+                    }
+                }
+                log.error("Got error from Auth service. statusCode: {}, message: {}", statusCode, message);
+                throw new ClientVisibleException(statusCode, ServiceAuthConstants.AUTH_ERROR,
+                        message, message);
             }
             Map<String, Object> jsonData = jsonMapper.readValue(response.getEntity().getContent());
 
@@ -128,9 +135,16 @@ public class ExternalServiceAuthProvider {
             response = temp.execute().returnResponse();
             int statusCode = response.getStatusLine().getStatusCode();
             if(statusCode >= 300) {
-                log.error("Got error from Auth service. statusCode: {}", statusCode);
-                throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE, ServiceAuthConstants.AUTH_ERROR,
-                        "Error Response from Auth service", "Status code from Auth Service: " + Integer.toString(statusCode));
+                String message = "Error Response from Auth service: " + Integer.toString(statusCode);
+                if(response.getEntity() != null) {
+                    Map<String, Object> respData = jsonMapper.readValue(response.getEntity().getContent());
+                    if(respData != null && respData.containsKey("message")) {
+                        message = (String) respData.get("message");
+                    }
+                }
+                log.error("Got error from Auth service. statusCode: {}, message: {}", statusCode, message);
+                throw new ClientVisibleException(statusCode, ServiceAuthConstants.AUTH_ERROR,
+                        message, message);
             }
             Map<String, Object> jsonData = jsonMapper.readValue(response.getEntity().getContent());
 
