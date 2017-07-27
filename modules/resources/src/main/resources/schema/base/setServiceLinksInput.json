@@ -1,9 +1,9 @@
 {
-    "collectionMethods" : [],
-    "resourceFields": {
-        "serviceLinks": {
-            "type": "array[serviceLink]",
-            "nullable": true
-        }
+  "collectionMethods": [],
+  "resourceFields": {
+    "serviceLinks": {
+      "type": "array[serviceLink]",
+      "nullable": true
     }
+  }
 }

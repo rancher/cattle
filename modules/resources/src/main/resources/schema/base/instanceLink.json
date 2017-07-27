@@ -1,15 +1,15 @@
 {
-    "resourceFields" : {
-        "ports" : {
-            "type" : "array[json]"
-        },
-        "instanceNames" : {
-            "type" : "array[string]"
-        },
-        "targetInstanceId" : {
-            "attributes" : {
-                "scheduleUpdate" : true
-            }
-        }
+  "resourceFields": {
+    "ports": {
+      "type": "array[json]"
+    },
+    "instanceNames": {
+      "type": "array[string]"
+    },
+    "targetInstanceId": {
+      "attributes": {
+        "scheduleUpdate": true
+      }
     }
+  }
 }

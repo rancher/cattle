@@ -1,14 +1,16 @@
 {
-  "collectionMethods" : [ "GET" ],
+  "collectionMethods": [
+    "GET"
+  ],
   "pluralName": "projectMembers",
-  "resourceFields" : {
+  "resourceFields": {
     "projectId": {
-      "type" : "reference[project]"
+      "type": "reference[project]"
     },
-    "role" : {
-      "type" : "enum",
-      "default" : "member",
-      "options" : [
+    "role": {
+      "type": "enum",
+      "default": "member",
+      "options": [
         "member",
         "owner",
         "readonly",
@@ -16,9 +18,9 @@
       ]
     },
     "externalIdType": {
-      "type" : "enum",
-      "default" : "rancher_id",
-      "options" : [
+      "type": "enum",
+      "default": "rancher_id",
+      "options": [
         "rancher_id",
         "ldap_user",
         "ldap_group",

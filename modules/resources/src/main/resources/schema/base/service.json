@@ -1,247 +1,250 @@
 {
-    "resourceFields": {
-        "environmentId":{
-            "type": "reference[environment]",
-            "required": true,
-            "nullable": false
-        },
-        "scale": {
-            "type": "int",
-            "required": false,
-            "nullable": false,
-            "default": 1,
-            "min": 0,
-             "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "currentScale": {
-            "type": "int",
-            "required": false,
-            "nullable": false
-        },
-        "name":{
-            "required": true,
-            "validChars": "a-zA-Z0-9-",
-            "minLength": 1,
-            "maxLength": 63
-        },
-        "launchConfig": {
-            "type": "launchConfig",
-            "create": true,
-            "required": false,
-            "nullable": true,
-             "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "upgrade": {
-            "type": "serviceUpgrade",
-            "create": false,
-            "required": false,
-            "nullable": true
-        },
-        "secondaryLaunchConfigs": {
-            "type": "array[secondaryLaunchConfig]",
-            "create": true,
-            "required": false,
-            "nullable": true,
-             "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "metadata": {
-            "type": "map[json]",
-            "create": true,
-            "required": false,
-            "nullable": true,
-             "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "fqdn":{
-            "type": "string",
-            "required": false,
-            "nullable": true
-        },
-        "publicEndpoints":{
-            "type": "array[publicEndpoint]",
-            "required": false,
-            "nullable": true
-        },
-        "assignServiceIpAddress": {
-          "type": "boolean",
-          "nullable": false,
-          "default": false
-        },
-        "selector":{
-             "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "startOnCreate": {
-            "type": "boolean",
-            "nullable": true,
-            "default": false
-        },
-        "linkedServices": {
-            "type": "array[serviceLink]",
-            "nullable": true
-        },
-        "instanceIds": {
-            "type": "array[reference[instance]]",
-            "nullable": true
-        },
-        "system": {
-            "type": "boolean",
-            "required": false,
-            "nullable": false,
-            "default": false
-        },
-        "batchSize": {
-            "type": "int",
-            "nullable": true,
-            "default": 1,
-            "min": 1,
-            "create": true,
-             "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "intervalMillis": {
-            "type": "int",
-            "nullable": true,
-            "default": 2000,
-            "min": 100,
-            "create": true,
-             "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "startFirst": {
-            "type": "boolean",
-            "nullable": true,
-            "default": false,
-            "create": true,
-             "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "scaleMin": {
-            "type": "int",
-            "required": false,
-            "nullable": true,
-            "default": 0,
-            "min": 0,
-            "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "scaleMax": {
-            "type": "int",
-            "required": false,
-            "nullable": true,
-            "min": 0,
-            "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "scaleIncrement": {
-            "type": "int",
-            "required": false,
-            "nullable": true,
-            "default": 1,
-            "min": 1,
-            "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "finishUpgrade": {
-            "type": "boolean",
-            "required": false,
-            "nullable": true
-        },
-        "externalIpAddresses": {
-            "type": "array[string]",
-            "required": false,
-            "nullable": true,
-            "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "hostname": {
-            "type": "string",
-            "required": false,
-            "nullable": true,
-            "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "healthCheck": {
-            "type": "instanceHealthCheck",
-            "nullable": true
-        },
-        "storageDriver":{
-            "type": "storageDriver",
-            "nullable": true,
-            "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "upgradeLastRun": {
-            "type": "int"
-        },
-        "networkDriver":{
-            "type": "networkDriver",
-            "nullable": true,
-            "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "completeUpdate": {
-            "type": "boolean",
-            "default": false,
-            "nullable": true
-        },
-        "restartTrigger": {
-            "type": "int",
-            "nullable": true
-        },
-        "lbTargetConfig": {
-            "type" : "lbTargetConfig",
-            "nullable": true,
-            "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "lbConfig": {
-            "type": "lbConfig",
-            "nullable": true,
-            "attributes": {
-                "scheduleUpdate": true
-            },
-            "required": true
-        }
+  "resourceFields": {
+    "environmentId": {
+      "type": "reference[environment]",
+      "required": true,
+      "nullable": false
     },
-    "resourceActions" : {
-        "certificate" : {
-        },
-        "upgrade" : {
-            "input" : "serviceUpgrade",
-            "output" : "service"
-        },
-        "cancelupgrade": {
-            "output": "service",
-            "attributes": {
-                "states": ["upgrading", "finishing-upgrade"]
-            }
-        },
-        "rollback" : {
-            "input" : "serviceRollback",
-            "output" : "service"
-        },
-        "garbagecollect" : {
-            "output" : "service"
-        }
+    "scale": {
+      "type": "int",
+      "required": false,
+      "nullable": false,
+      "default": 1,
+      "min": 0,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "currentScale": {
+      "type": "int",
+      "required": false,
+      "nullable": false
+    },
+    "name": {
+      "required": true,
+      "validChars": "a-zA-Z0-9-",
+      "minLength": 1,
+      "maxLength": 63
+    },
+    "launchConfig": {
+      "type": "launchConfig",
+      "create": true,
+      "required": false,
+      "nullable": true,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "upgrade": {
+      "type": "serviceUpgrade",
+      "create": false,
+      "required": false,
+      "nullable": true
+    },
+    "secondaryLaunchConfigs": {
+      "type": "array[secondaryLaunchConfig]",
+      "create": true,
+      "required": false,
+      "nullable": true,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "metadata": {
+      "type": "map[json]",
+      "create": true,
+      "required": false,
+      "nullable": true,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "fqdn": {
+      "type": "string",
+      "required": false,
+      "nullable": true
+    },
+    "publicEndpoints": {
+      "type": "array[publicEndpoint]",
+      "required": false,
+      "nullable": true
+    },
+    "assignServiceIpAddress": {
+      "type": "boolean",
+      "nullable": false,
+      "default": false
+    },
+    "selector": {
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "startOnCreate": {
+      "type": "boolean",
+      "nullable": true,
+      "default": false
+    },
+    "links": {
+      "type": "array[link]",
+      "nullable": true
+    },
+    "instanceIds": {
+      "type": "array[reference[instance]]",
+      "nullable": true
+    },
+    "system": {
+      "type": "boolean",
+      "required": false,
+      "nullable": false,
+      "default": false
+    },
+    "batchSize": {
+      "type": "int",
+      "nullable": true,
+      "default": 1,
+      "min": 1,
+      "create": true,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "intervalMillis": {
+      "type": "int",
+      "nullable": true,
+      "default": 2000,
+      "min": 100,
+      "create": true,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "startFirst": {
+      "type": "boolean",
+      "nullable": true,
+      "default": false,
+      "create": true,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "scaleMin": {
+      "type": "int",
+      "required": false,
+      "nullable": true,
+      "default": 0,
+      "min": 0,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "scaleMax": {
+      "type": "int",
+      "required": false,
+      "nullable": true,
+      "min": 0,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "scaleIncrement": {
+      "type": "int",
+      "required": false,
+      "nullable": true,
+      "default": 1,
+      "min": 1,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "finishUpgrade": {
+      "type": "boolean",
+      "required": false,
+      "nullable": true
+    },
+    "externalIpAddresses": {
+      "type": "array[string]",
+      "required": false,
+      "nullable": true,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "hostname": {
+      "type": "string",
+      "required": false,
+      "nullable": true,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "healthCheck": {
+      "type": "instanceHealthCheck",
+      "nullable": true
+    },
+    "storageDriver": {
+      "type": "storageDriver",
+      "nullable": true,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "upgradeLastRun": {
+      "type": "int"
+    },
+    "networkDriver": {
+      "type": "networkDriver",
+      "nullable": true,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "completeUpdate": {
+      "type": "boolean",
+      "default": false,
+      "nullable": true
+    },
+    "restartTrigger": {
+      "type": "int",
+      "nullable": true
+    },
+    "lbTargetConfig": {
+      "type": "lbTargetConfig",
+      "nullable": true,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "lbConfig": {
+      "type": "lbConfig",
+      "nullable": true,
+      "attributes": {
+        "scheduleUpdate": true
+      },
+      "required": true
     }
+  },
+  "resourceActions": {
+    "certificate": {
+    },
+    "upgrade": {
+      "input": "serviceUpgrade",
+      "output": "service"
+    },
+    "cancelupgrade": {
+      "output": "service",
+      "attributes": {
+        "states": [
+          "upgrading",
+          "finishing-upgrade"
+        ]
+      }
+    },
+    "rollback": {
+      "input": "serviceRollback",
+      "output": "service"
+    },
+    "garbagecollect": {
+      "output": "service"
+    }
+  }
 }

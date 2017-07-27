@@ -20,6 +20,7 @@ import io.cattle.platform.core.addon.HealthcheckState;
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.addon.InstanceStatus;
+import io.cattle.platform.core.addon.Link;
 import io.cattle.platform.core.addon.LoadBalancerCookieStickinessPolicy;
 import io.cattle.platform.core.addon.LogConfig;
 import io.cattle.platform.core.addon.MountEntry;
@@ -48,7 +49,6 @@ import io.cattle.platform.db.jooq.utils.SchemaRecordTypeListGenerator;
 import io.cattle.platform.docker.api.model.ContainerExec;
 import io.cattle.platform.docker.api.model.ContainerLogs;
 import io.cattle.platform.docker.api.model.ContainerProxy;
-import io.cattle.platform.docker.api.model.DockerBuild;
 import io.cattle.platform.docker.api.model.HostAccess;
 import io.cattle.platform.docker.api.model.ServiceProxy;
 import io.cattle.platform.iaas.api.auth.identity.Token;
@@ -271,7 +271,6 @@ public class Model {
                 DependsOn.class,
                 DeploymentSyncRequest.class,
                 DeploymentSyncResponse.class,
-                DockerBuild.class,
                 FieldDocumentation.class,
                 HaproxyConfig.class,
                 HealthcheckState.class,
@@ -281,6 +280,7 @@ public class Model {
                 InServiceUpgradeStrategy.class,
                 InstanceHealthCheck.class,
                 InstanceStatus.class,
+                Link.class,
                 LoadBalancerCookieStickinessPolicy.class,
                 LocalAuthConfig.class,
                 LogConfig.class,
@@ -319,8 +319,6 @@ public class Model {
         return TypeSet.ofNames(
                 "addOutputsInput",
                 "apiKey,parent=credential",
-                "balancerServiceConfig",
-                "balancerTargetConfig",
                 "changeSecretInput",
                 "composeConfigInput",
                 "containerConfig,parent=container",
@@ -331,7 +329,6 @@ public class Model {
                 "externalHostEvent,parent=externalEvent",
                 "externalServiceEvent,parent=externalEvent",
                 "externalService,parent=service",
-                "hostOnlyNetwork,parent=network",
                 "instanceConsole",
                 "instanceConsoleInput",
                 "instanceRemove",
@@ -342,7 +339,6 @@ public class Model {
                 "launchConfig,parent=container",
                 "lbConfig",
                 "lbTargetConfig",
-                "loadBalancerConfig",
                 "loadBalancerService,parent=service",
                 "networkDriverService,parent=service",
                 "password,parent=credential",
@@ -353,7 +349,6 @@ public class Model {
                 "registryCredential,parent=credential",
                 "registry,parent=storagePool",
                 "scalingGroup,parent=service",
-                "secondaryLaunchConfig,parent=launchConfig",
                 "selectorService,parent=service",
                 "setProjectMembersInput",
                 "stackUpgrade",

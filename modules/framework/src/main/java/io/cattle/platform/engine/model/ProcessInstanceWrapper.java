@@ -89,9 +89,15 @@ public class ProcessInstanceWrapper extends NoExceptionRunnable implements Runna
         } catch (Throwable t) {
             log.error("Failed to run process [{}]", ref.getId(), t);
         } finally {
-            log.info("Executed [{}] [{}:{}] [{}] done [{}] {}ms", ref.getName(),
+            String verb = "Finished";
+            if (waiting) {
+                verb = "Waiting";
+            } else if (!done) {
+                verb = "Delaying";
+            }
+            log.info("{} [{}] [{}:{}] account [{}] {}ms", verb, ref.getName(),
                     ref.getResourceType(), ref.getResourceId(),
-                    ref.getAccountId(), done, (System.currentTimeMillis()-start));
+                    ref.getAccountId(), (System.currentTimeMillis() - start));
             processServer.done(this);
         }
     }

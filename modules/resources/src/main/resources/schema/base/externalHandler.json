@@ -1,28 +1,28 @@
 {
-    "resourceFields" : {
-        "priorityName" : {
-            "type" : "enum",
-            "default" : "specific",
-            "options" : [
-                "pre",
-                "specific",
-                "default_override"
-            ]
-        },
-        "processConfigs" : {
-            "type" : "array[externalHandlerProcessConfig]",
-            "required" : true,
-            "includeInList" : false
-        },
-        "retries" : {
-            "type" : "int",
-            "min" : 1,
-            "nullable" : true
-        },
-        "timeoutMillis" : {
-            "type" : "int",
-            "min" : 1000,
-            "nullable" : true
-        }
+  "resourceFields": {
+    "priorityName": {
+      "type": "enum",
+      "default": "specific",
+      "options": [
+        "pre",
+        "specific",
+        "default_override"
+      ]
+    },
+    "processConfigs": {
+      "type": "array[externalHandlerProcessConfig]",
+      "required": true,
+      "includeInList": false
+    },
+    "retries": {
+      "type": "int",
+      "min": 1,
+      "nullable": true
+    },
+    "timeoutMillis": {
+      "type": "int",
+      "min": 1000,
+      "nullable": true
     }
+  }
 }

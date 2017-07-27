@@ -26,11 +26,7 @@ public class StackOutputFilter extends CachedOutputFilter<Map<Long, List<Object>
 
     @Override
     public Resource filter(ApiRequest request, Object original, Resource converted) {
-        if (request == null || "v1".equals(request.getVersion())) {
-            return converted;
-        }
-
-        if (original instanceof Stack) {
+        if (request != null && original instanceof Stack) {
             converted.getFields().put(ServiceConstants.STACK_FIELD_SERVICE_IDS,
                     getCached(request).get(((Stack) original).getId()));
         }

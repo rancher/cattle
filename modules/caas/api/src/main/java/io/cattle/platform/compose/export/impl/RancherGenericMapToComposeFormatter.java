@@ -10,8 +10,7 @@ public class RancherGenericMapToComposeFormatter implements RancherConfigToCompo
 
     @Override
     public Object format(ComposeExportConfigItem item, Object valueToTransform) {
-        if (!(item.getDockerName().equalsIgnoreCase(ComposeExportConfigItem.LB_CONGFIG.getDockerName()) || item
-                .getDockerName().equals(ComposeExportConfigItem.HEALTHCHECK.getDockerName()))) {
+        if (!item.getDockerName().equals(ComposeExportConfigItem.HEALTHCHECK.getDockerName())) {
             return null;
         }
         valueToTransform = lowerCaseParameters(valueToTransform);

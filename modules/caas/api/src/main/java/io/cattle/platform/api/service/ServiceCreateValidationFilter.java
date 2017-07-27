@@ -117,7 +117,7 @@ public class ServiceCreateValidationFilter extends AbstractValidationFilter {
     @SuppressWarnings("unchecked")
     public String setKind(String type, Service service, ApiRequest request) {
         // type is set via API request
-        if (!ServiceConstants.KIND_SERVICE.equalsIgnoreCase(type) || request.getVersion().equals("v1")) {
+        if (!ServiceConstants.KIND_SERVICE.equalsIgnoreCase(type)) {
             return type;
         }
         Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
@@ -455,12 +455,12 @@ public class ServiceCreateValidationFilter extends AbstractValidationFilter {
             }
             Set<String> refs = new HashSet<>();
             Object networkFromLaunchConfig = launchConfig
-                    .get(ServiceConstants.FIELD_NETWORK_LAUNCH_CONFIG);
+                    .get(InstanceConstants.FIELD_NETWORK_CONTAINER_ID);
             if (networkFromLaunchConfig != null) {
                 refs.add((String) networkFromLaunchConfig);
             }
             Object volumesFromLaunchConfigs = launchConfig
-                    .get(ServiceConstants.FIELD_DATA_VOLUMES_LAUNCH_CONFIG);
+                    .get(InstanceConstants.FIELD_VOLUMES_FROM);
             if (volumesFromLaunchConfigs != null) {
                 refs.addAll((List<String>) volumesFromLaunchConfigs);
             }

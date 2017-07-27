@@ -1,8 +1,8 @@
 {
-    "resourceFields": {
-        "volume":{
-            "type":"volume",
-            "required": true
-        }
+  "resourceFields": {
+    "volume": {
+      "type": "volume",
+      "required": true
     }
+  }
 }

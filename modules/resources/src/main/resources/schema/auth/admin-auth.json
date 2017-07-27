@@ -245,6 +245,7 @@
         "setting.source": "r",
         "setting.value" : "cru",
 
+        "subscribe" : "cr",
         "subscribe.agentId" : "cr",
 
         "taskInstance" : "r",

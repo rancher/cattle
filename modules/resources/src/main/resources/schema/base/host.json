@@ -1,75 +1,83 @@
 {
-    "resourceFields": {
-        "info": {
-            "type" : "json"
-        },
-        "agentState": {
-            "type" : "string"
-        },
-        "hostname": {
-            "type" : "string",
-            "required": true
-        },
-        "driver": {
-            "type" : "string"
-        },
-        "apiProxy": {
-            "type" : "string",
-            "nullable" : true
-        },
-        "agentIpAddress": {
-            "type" : "string",
-            "nullable" : true
-        },
-        "instanceIds": {
-            "type" : "array[reference[instance]]"
-        },
-        "reportedUuid": {
-            "type" : "string"
-        },
-        "labels": {
-            "type": "map[string]",
-            "create": true,
-            "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "publicEndpoints":{
-            "type": "array[publicEndpoint]",
-            "required": false,
-            "nullable": true
-        },
-        "localStorageMb": {
-            "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "memory": {
-            "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "milliCpu": {
-            "attributes" : {
-                "scheduleUpdate" : true
-            }
-        }
+  "resourceFields": {
+    "info": {
+      "type": "json"
+    },
+    "agentState": {
+      "type": "string"
+    },
+    "hostname": {
+      "type": "string",
+      "required": true
+    },
+    "driver": {
+      "type": "string"
+    },
+    "apiProxy": {
+      "type": "string",
+      "nullable": true
+    },
+    "agentIpAddress": {
+      "type": "string",
+      "nullable": true
+    },
+    "instanceIds": {
+      "type": "array[reference[instance]]"
+    },
+    "reportedUuid": {
+      "type": "string"
+    },
+    "labels": {
+      "type": "map[string]",
+      "create": true,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "publicEndpoints": {
+      "type": "array[publicEndpoint]",
+      "required": false,
+      "nullable": true
+    },
+    "localStorageMb": {
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "memory": {
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "milliCpu": {
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    }
+  },
+  "resourceActions": {
+    "evacuate": {
+      "output": "host",
+      "attributes": {
+        "states": [
+          "active",
+          "inactive"
+        ]
+      }
     },
     "resourceActions": {
-        "evacuate": {
-            "output": "host",
-            "attributes": {
-                "states": ["active", "inactive"]
-            }
-        },
-        "resourceActions": {
-            "dockersocket": {
-                "input": null,
-                "output": "hostAccess",
-                "attributes" : {
-                    "states" : ["active", "inactive", "activating", "deactivating"]
-                }
-            }
+      "dockersocket": {
+        "input": null,
+        "output": "hostAccess",
+        "attributes": {
+          "states": [
+            "active",
+            "inactive",
+            "activating",
+            "deactivating"
+          ]
         }
+      }
     }
+  }
 }

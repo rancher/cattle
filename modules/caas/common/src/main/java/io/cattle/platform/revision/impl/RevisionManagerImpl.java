@@ -237,10 +237,7 @@ public class RevisionManagerImpl implements RevisionManager {
     protected Long checkNsFields(Map<String, Object> revisionData) {
         Long deploymentUnitId = null;
 
-        for (Map.Entry<String, String> entry : ServiceConstants.NS_DEP_FIELD_MAPPING.entrySet()) {
-            String lcName = entry.getKey();
-            String field = entry.getValue();
-
+        for (String field : ServiceConstants.NS_DEPS) {
             Object obj = revisionData.get(field);
             if (obj == null) {
                 continue;
@@ -264,10 +261,9 @@ public class RevisionManagerImpl implements RevisionManager {
                 target = names;
             }
 
-            if (target != null && lcName != null) {
-                revisionData.put(lcName, target);
+            if (target != null) {
+                revisionData.put(field, target);
             }
-            revisionData.remove(field);
         }
 
         return deploymentUnitId;

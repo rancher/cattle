@@ -9,7 +9,7 @@ else
     cd tests/integration-${API_VERSION}
 fi
 
-export CATTLE_URL=http://localhost:8080/v1/schemas
+export CATTLE_URL=http://localhost:8080/v3/schemas
 
 if [ -e .tox ] && [ ! -e .tox/py27/include/python2.7 ]; then
     rm -rf .tox

@@ -1,10 +1,10 @@
 {
-    "resourceFields": {
-        "ports": {
-            "type": "array[string]",
-            "create": true,
-            "nullable": true,
-            "required": true
-        }
+  "resourceFields": {
+    "ports": {
+      "type": "array[string]",
+      "create": true,
+      "nullable": true,
+      "required": true
     }
+  }
 }

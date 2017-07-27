@@ -31,11 +31,7 @@ public class InstanceStopRemoveValidationFilter extends AbstractValidationFilter
     protected void setStopSource(Instance instance, ApiRequest request) {
         String stopSource = DataAccessor.getFieldFromRequest(request, InstanceConstants.FIELD_STOP_SOURCE,
                 String.class);
-        if (StringUtils.isBlank(stopSource)) {
-            if ("v1".equals(request.getVersion())) {
-                objectManager.setFields(instance, InstanceConstants.FIELD_STOP_SOURCE, InstanceConstants.ACTION_SOURCE_EXTERNAL);
-            }
-        } else {
+        if (!StringUtils.isBlank(stopSource)) {
             objectManager.setFields(instance, InstanceConstants.FIELD_STOP_SOURCE, stopSource);
         }
     }

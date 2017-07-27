@@ -145,10 +145,6 @@ public class ComposeExportConfigItem {
             InstanceConstants.FIELD_HEALTH_CHECK,
             NamedUtils.toUnderscoreSeparated(InstanceConstants.FIELD_HEALTH_CHECK), true, false, false);
 
-    public static final ComposeExportConfigItem LB_CONGFIG = new ComposeExportConfigItem(
-            ServiceConstants.FIELD_LOAD_BALANCER_CONFIG,
-            NamedUtils.toUnderscoreSeparated(ServiceConstants.FIELD_LOAD_BALANCER_CONFIG), false, false, false);
-
     public static final ComposeExportConfigItem EXTERNAL_IPS = new ComposeExportConfigItem(
             ServiceConstants.FIELD_EXTERNALIPS, "external_ips", false, false, false);
 

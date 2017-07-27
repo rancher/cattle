@@ -1,9 +1,12 @@
 {
-    "collectionMethods" : [ "GET", "POST" ],
-    "resourceFields": {
-        "agentId": {
-            "create": true,
-            "type": "reference[agent]"
-        }
+  "collectionMethods": [
+    "GET",
+    "POST"
+  ],
+  "resourceFields": {
+    "agentId": {
+      "create": true,
+      "type": "reference[agent]"
     }
+  }
 }

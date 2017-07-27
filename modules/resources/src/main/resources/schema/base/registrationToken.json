@@ -1,16 +1,16 @@
 {
-    "resourceFields": {
-        "command":{
-            "type":"string"
-        },
-        "image":{
-            "type":"string"
-        },
-        "token":{
-            "type":"string"
-        },
-        "registrationUrl":{
-            "type":"string"
-        }
+  "resourceFields": {
+    "command": {
+      "type": "string"
+    },
+    "image": {
+      "type": "string"
+    },
+    "token": {
+      "type": "string"
+    },
+    "registrationUrl": {
+      "type": "string"
     }
+  }
 }

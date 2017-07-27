@@ -11,7 +11,6 @@ import io.cattle.platform.api.auditlog.AuditLogsRequestHandler;
 import io.cattle.platform.api.certificate.CertificateCreateValidationFilter;
 import io.cattle.platform.api.certificate.LoadBalancerServiceCertificateRemoveFilter;
 import io.cattle.platform.api.change.impl.ResourceChangeEventProcessor;
-import io.cattle.platform.api.compat.CompatibilityOutputFilter;
 import io.cattle.platform.api.containerevent.ContainerEventFilter;
 import io.cattle.platform.api.credential.ApiKeyCertificateDownloadLinkHandler;
 import io.cattle.platform.api.credential.ApiKeyOutputFilter;
@@ -76,7 +75,6 @@ import io.cattle.platform.api.requesthandler.ConfigurableRequestOptionsParser;
 import io.cattle.platform.api.requesthandler.GenericWhitelistedProxy;
 import io.cattle.platform.api.requesthandler.IdFormatterRequestHandler;
 import io.cattle.platform.api.requesthandler.PostChildLinkHandler;
-import io.cattle.platform.api.requesthandler.RequestReRouterHandler;
 import io.cattle.platform.api.requesthandler.Scripts;
 import io.cattle.platform.api.requesthandler.SecretsApiRequestHandler;
 import io.cattle.platform.api.resource.DefaultActionHandler;
@@ -176,6 +174,7 @@ import io.github.ibuildthecloud.gdapi.version.Versions;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -251,7 +250,6 @@ public class Api {
     }
 
     private void addResourceOutputFilters() {
-        CompatibilityOutputFilter compabilityOutputFilter = new CompatibilityOutputFilter();
         ResourceIdOutputFilter resourceIdOutputFilter = new ResourceIdOutputFilter();
         StatsOutputFilter statsOutputFilter = new StatsOutputFilter();
 
@@ -269,17 +267,9 @@ public class Api {
         c.router.outputFilter(ProcessInstance.class, resourceIdOutputFilter);
         c.router.outputFilter(ProjectConstants.TYPE, statsOutputFilter);
         c.router.outputFilter(RegisterConstants.KIND_REGISTER, new RegisterOutputFilter());
-        c.router.outputFilter(ServiceConstants.KIND_DNS_SERVICE, compabilityOutputFilter);
-        c.router.outputFilter(ServiceConstants.KIND_EXTERNAL_SERVICE, compabilityOutputFilter);
-        c.router.outputFilter(ServiceConstants.KIND_KUBERNETES_SERVICE, compabilityOutputFilter);
-        c.router.outputFilter(ServiceConstants.KIND_LOAD_BALANCER_SERVICE, compabilityOutputFilter);
         c.router.outputFilter(ServiceConstants.KIND_LOAD_BALANCER_SERVICE, statsOutputFilter);
-        c.router.outputFilter(ServiceConstants.KIND_SCALING_GROUP_SERVICE, compabilityOutputFilter);
         c.router.outputFilter(ServiceConstants.KIND_SCALING_GROUP_SERVICE, statsOutputFilter);
-        c.router.outputFilter(ServiceConstants.KIND_SELECTOR_SERVICE, compabilityOutputFilter);
-        c.router.outputFilter(ServiceConstants.KIND_SERVICE, compabilityOutputFilter);
         c.router.outputFilter(ServiceConstants.KIND_SERVICE, statsOutputFilter);
-        c.router.outputFilter(ServiceConstants.TYPE_STACK, compabilityOutputFilter);
         c.router.outputFilter(ServiceConstants.TYPE_STACK, statsOutputFilter);
         c.router.outputFilter(Setting.class, new SettingsOutputFilter());
         c.router.outputFilter(Stack.class, new ServiceDiscoveryStackOutputFilter());
@@ -357,7 +347,6 @@ public class Api {
                     new TransformInspect(c.dockerTransformer, f.jsonMapper))),
                 new BodyParserRequestHandler(f.schemaJsonMapper),
                 new ConfigurableRequestOptionsParser(),
-                new RequestReRouterHandler(),
                 noAuthenticationProxy(),
                 new ApiAuthenticator(d.authDao, f.objectManager, c.transformationService, d.accountDao),
                 new SecretsApiRequestHandler(c.tokenService, d.secretsDao, f.jsonMapper, c.secretsService),
@@ -419,7 +408,7 @@ public class Api {
                 f.eventService,
                 f.retryTimeoutService,
                 f.executorService,
-                Arrays.asList(resourceChangeEventProcessor));
+                Collections.singletonList(resourceChangeEventProcessor));
 
         c.router.resourceManager(Subscribe.class, new SubscribeManager(jettyWebSocketSubcriptionHandler));
         c.router.resourceManager(Publish.class, new PublishManager(f.eventService));
@@ -430,12 +419,12 @@ public class Api {
 
         Versions v = new Versions();
         v.setVersions(new HashSet<>(Arrays.asList(
-                "v1",
                 "v2-beta",
-                "v2"
+                "v2",
+                "v3"
                 )));
-        v.setLatest("v2");
-        v.setRootVersion("v1");
+        v.setLatest("v3");
+        v.setRootVersion("v2");
         versions = v;
 
         containerProxyActionHandler = new ContainerProxyActionHandler(c.hostApiService, f.objectManager);
@@ -465,8 +454,7 @@ public class Api {
         jacksonMapper.setEscapeForwardSlashes(true);
         jacksonMapper.init();
 
-        HtmlResponseWriter htmlWriter = new HtmlResponseWriter(jacksonMapper, new ConfigBasedHtmlTemplate());
-        return htmlWriter;
+        return new HtmlResponseWriter(jacksonMapper, new ConfigBasedHtmlTemplate());
     }
 
     private GenericWhitelistedProxy noAuthenticationProxy() {
@@ -480,9 +468,9 @@ public class Api {
 
     private void setupServlet() {
         Map<String, SchemaFactory> factories = new HashMap<>();
-        factories.put("v1", c.schemaFactories.get("v1-base"));
         factories.put("v2", f.coreSchemaFactory);
         factories.put("v2-beta", f.coreSchemaFactory);
+        factories.put("v3", f.coreSchemaFactory);
         apiRequestFilterDelegate = new ApiRequestFilterDelegate(versions, new ApiRequestParser(), c.router, factories, f.idFormatter);
     }
 

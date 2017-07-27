@@ -1,17 +1,17 @@
 {
-    "resourceFields": {
-        "namespace":{
-            "type": "string",
-            "required": true
-        },
-        "upgrade":{
-            "type": "kubernetesStackUpgrade"
-        }
+  "resourceFields": {
+    "namespace": {
+      "type": "string",
+      "required": true
     },
-    "resourceActions" : {
-        "upgrade" : {
-            "input" : "kubernetesStackUpgrade",
-            "output" : "kubernetesStack"
-        }
+    "upgrade": {
+      "type": "kubernetesStackUpgrade"
     }
+  },
+  "resourceActions": {
+    "upgrade": {
+      "input": "kubernetesStackUpgrade",
+      "output": "kubernetesStack"
+    }
+  }
 }

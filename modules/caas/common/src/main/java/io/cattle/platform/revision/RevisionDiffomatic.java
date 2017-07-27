@@ -28,6 +28,7 @@ public class RevisionDiffomatic {
             ServiceConstants.FIELD_SCALE_MAX,
             ServiceConstants.FIELD_SCALE_INCREMENT);
     private static Set<String> DYNAMIC_FIELDS = CollectionUtils.set(
+            ServiceConstants.FIELD_SERVICE_LINKS,
             InstanceConstants.FIELD_PORTS);
     private static Set<String> UPDATE_SKIP_FIELDS = CollectionUtils.set(
             ServiceConstants.FIELD_LAUNCH_CONFIG,

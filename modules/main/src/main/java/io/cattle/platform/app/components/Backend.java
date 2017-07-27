@@ -79,6 +79,8 @@ import io.cattle.platform.process.agent.AgentHostStateUpdate;
 import io.cattle.platform.process.agent.AgentProcessManager;
 import io.cattle.platform.process.agent.AgentResourceRemove;
 import io.cattle.platform.process.cache.ClearCacheHandler;
+import io.cattle.platform.process.common.handler.ExternalHandlerFactory;
+import io.cattle.platform.process.common.handler.ExternalProcessHandler;
 import io.cattle.platform.process.credential.CredentialProcessManager;
 import io.cattle.platform.process.deploymentunit.DeploymentUnitRemove;
 import io.cattle.platform.process.driver.DriverProcessManager;
@@ -267,7 +269,9 @@ public class Backend {
 
     private void addProcessHandlers() {
         ProcessRouter r = c.processes;
+        ExternalHandlerFactory externalFactory = new ExternalHandlerFactory(r, f.eventService, f.processManager, f.objectManager, f.metaDataManager);
 
+        ExternalProcessHandler composeExecutor = externalFactory.handler("rancher-compose-executor");
         AccountProcessManager account = new AccountProcessManager(d.networkDao, d.resourceDao, f.processManager, f.objectManager, d.instanceDao, d.accountDao, d.serviceDao);
         AgentProcessManager agentProcessManager = new AgentProcessManager(d.accountDao, f.objectManager, f.processManager, c.agentLocator, f.eventService, f.coreSchemaFactory);
         AgentActivateReconnect agentActivateReconnect = new AgentActivateReconnect(f.objectManager, c.agentLocator, pingMonitor, f.jsonMapper);
@@ -377,11 +381,11 @@ public class Backend {
 
         r.handle("serviceevent.create", serviceEventCreate);
 
-        r.handle("stack.create", k8sStackCreate);
-        r.handle("stack.upgrade", k8sStackUpgrade);
-        r.handle("stack.rollback", k8sStackRollback);
+        r.handle("stack.create", composeExecutor, k8sStackCreate);
+        r.handle("stack.upgrade", composeExecutor, k8sStackUpgrade);
+        r.handle("stack.rollback", composeExecutor, k8sStackRollback);
         r.handle("stack.remove", k8sStackRemove, stackProcessManager::remove, systemStackProcessManager::stackRemove);
-        r.handle("stack.finishupgrade", k8sStackFinishupgrade);
+        r.handle("stack.finishupgrade", composeExecutor, k8sStackFinishupgrade);
 
         r.handle("storagedriver.activate", driverProcessManager::storageDriverActivate, driverProcessManager::setupPools);
         r.handle("storagedriver.deactivate", driverProcessManager::setupPools);

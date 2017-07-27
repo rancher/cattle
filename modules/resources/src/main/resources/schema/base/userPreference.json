@@ -1,14 +1,14 @@
 {
-    "resourceFields" : {
-        "all" : {
-            "type": "boolean"
-        }
-    },
-    "collectionFilters" : {
-        "all" : {
-            "modifiers" : [
-                "eq"
-            ]
-        }
+  "resourceFields": {
+    "all": {
+      "type": "boolean"
     }
+  },
+  "collectionFilters": {
+    "all": {
+      "modifiers": [
+        "eq"
+      ]
+    }
+  }
 }

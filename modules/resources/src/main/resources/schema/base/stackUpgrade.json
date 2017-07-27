@@ -1,23 +1,23 @@
 {
-    "collectionMethods": [],
-    "resourceFields": {
-        "dockerCompose":{
-            "type": "string"
-        },
-        "rancherCompose":{
-            "type": "string"
-        },
-        "externalId":{
-            "type": "string"
-        },
-        "environment":{
-            "type": "map[string]"
-        },
-        "answers":{
-            "type": "map[json]"
-        },
-        "templates":{
-            "type": "map[string]"
-        }
+  "collectionMethods": [],
+  "resourceFields": {
+    "dockerCompose": {
+      "type": "string"
+    },
+    "rancherCompose": {
+      "type": "string"
+    },
+    "externalId": {
+      "type": "string"
+    },
+    "environment": {
+      "type": "map[string]"
+    },
+    "answers": {
+      "type": "map[json]"
+    },
+    "templates": {
+      "type": "map[string]"
     }
+  }
 }

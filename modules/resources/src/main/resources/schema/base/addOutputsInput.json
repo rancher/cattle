@@ -1,9 +1,9 @@
 {
-    "collectionMethods": [],
-    "resourceFields": {
-        "outputs":{
-            "type": "map[string]",
-            "required": true
-        }
+  "collectionMethods": [],
+  "resourceFields": {
+    "outputs": {
+      "type": "map[string]",
+      "required": true
     }
+  }
 }

@@ -1,10 +1,10 @@
 {
-    "resourceFields": {
-        "config": {
-            "type": "service",
-            "create": true,
-            "required": false,
-            "nullable": true
-        }
+  "resourceFields": {
+    "config": {
+      "type": "service",
+      "create": true,
+      "required": false,
+      "nullable": true
     }
+  }
 }

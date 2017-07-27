@@ -1,33 +1,33 @@
 {
-    "resourceFields" : {
-        "capabilities" : {
-            "type" : "array[string]",
-            "nullable" : true
-        },
-        "vcpu" : {
-            "type" : "int",
-            "nullable" : true,
-            "create" : true,
-            "default": 1
-        },
-        "userdata" : {
-            "type" : "string",
-            "nullable" : true,
-            "create" : true
-        },
-        "memoryMb" : {
-            "type" : "int",
-            "create" : true,
-            "default": 512
-        },
-        "disks" : {
-            "type" : "array[virtualMachineDisk]",
-            "create" : true,
-            "nullable": true
-        },
-        "publicIpAddressPoolId" : {
-            "type" : "reference[ipPool]",
-            "nullable" : true
-        }
+  "resourceFields": {
+    "capabilities": {
+      "type": "array[string]",
+      "nullable": true
+    },
+    "vcpu": {
+      "type": "int",
+      "nullable": true,
+      "create": true,
+      "default": 1
+    },
+    "userdata": {
+      "type": "string",
+      "nullable": true,
+      "create": true
+    },
+    "memoryMb": {
+      "type": "int",
+      "create": true,
+      "default": 512
+    },
+    "disks": {
+      "type": "array[virtualMachineDisk]",
+      "create": true,
+      "nullable": true
+    },
+    "publicIpAddressPoolId": {
+      "type": "reference[ipPool]",
+      "nullable": true
     }
+  }
 }

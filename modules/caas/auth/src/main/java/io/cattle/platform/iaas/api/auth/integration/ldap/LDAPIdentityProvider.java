@@ -1,7 +1,5 @@
 package io.cattle.platform.iaas.api.auth.integration.ldap;
 
-import static javax.naming.directory.SearchControls.*;
-
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.core.constants.IdentityConstants;
 import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
@@ -11,11 +9,12 @@ import io.cattle.platform.iaas.api.auth.integration.ldap.interfaces.LDAPConstant
 import io.cattle.platform.pool.PoolConfig;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
-
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.pool2.impl.AbandonedConfig;
+import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
@@ -26,13 +25,12 @@ import javax.naming.directory.SearchResult;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
 import javax.naming.ldap.LdapName;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.pool2.impl.AbandonedConfig;
-import org.apache.commons.pool2.impl.GenericObjectPool;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static javax.naming.directory.SearchControls.*;
 
 public abstract class LDAPIdentityProvider implements IdentityProvider{
 
@@ -263,7 +261,7 @@ public abstract class LDAPIdentityProvider implements IdentityProvider{
                 results = context.search(getConstantsConfig().getDomain(), query, controls);
             }
         } catch (NamingException e) {
-            getLogger().error("When searching ldap from /v1/identity Failed to search: " + query + " scope:" + getConstantsConfig().getDomain(), e);
+            getLogger().error("When searching ldap from /identity Failed to search: " + query + " scope:" + getConstantsConfig().getDomain(), e);
             if(!LDAPUtils.isRecoverable(e)) {
                 invalidateServiceContext(context);
                 context = null;

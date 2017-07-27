@@ -1,8 +1,8 @@
 {
-    "collectionMethods": [],
-    "resourceFields": {
-        "labels": {
-            "type": "json"
-        }
+  "collectionMethods": [],
+  "resourceFields": {
+    "labels": {
+      "type": "json"
     }
+  }
 }

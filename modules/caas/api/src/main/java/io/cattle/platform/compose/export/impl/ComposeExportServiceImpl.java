@@ -335,8 +335,7 @@ public class ComposeExportServiceImpl implements ComposeExportService {
     private void populateLinksForService(Service service, Collection<Long> servicesToExportIds,
             Map<String, Object> composeServiceData) {
         // no export for lb service links for lb v2
-        if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)
-                && !ServiceUtil.isV1LB(service)) {
+        if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
             return;
         }
         List<String> serviceLinksWithNames = new ArrayList<>();
@@ -372,9 +371,6 @@ public class ComposeExportServiceImpl implements ComposeExportService {
             String launchConfigName, Map<String, Object> composeServiceData) {
         if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_DNS_SERVICE)) {
             composeServiceData.put(ComposeExportConfigItem.IMAGE.getDockerName(), ServiceConstants.IMAGE_DNS);
-        } else if (ServiceUtil.isV1LB(service)) {
-            composeServiceData.put(ComposeExportConfigItem.IMAGE.getDockerName(),
-                    "rancher/load-balancer-service");
         } else if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_EXTERNAL_SERVICE)) {
             composeServiceData.put(ComposeExportConfigItem.IMAGE.getDockerName(), "rancher/external-service");
         }
@@ -398,7 +394,7 @@ public class ComposeExportServiceImpl implements ComposeExportService {
                             NetworkConstants.NETWORK_MODE_CONTAINER + ":" + instanceName);
                 } else {
                     Object networkLaunchConfig = serviceData
-                            .get(ServiceConstants.FIELD_NETWORK_LAUNCH_CONFIG);
+                            .get(InstanceConstants.FIELD_NETWORK_CONTAINER_ID);
                     if (networkLaunchConfig != null) {
                         composeServiceData.put(ComposeExportConfigItem.NETWORKMODE.getDockerName(),
                                 NetworkConstants.NETWORK_MODE_CONTAINER + ":" + networkLaunchConfig);
@@ -459,7 +455,7 @@ public class ComposeExportServiceImpl implements ComposeExportService {
         List<String> launchConfigNames = new ArrayList<>();
         Map<String, Object> launchConfigData = ServiceUtil.getLaunchConfigDataAsMap(service, launchConfigName);
         Object dataVolumesLaunchConfigs = launchConfigData.get(
-                ServiceConstants.FIELD_DATA_VOLUMES_LAUNCH_CONFIG);
+                InstanceConstants.FIELD_VOLUMES_FROM);
 
         if (dataVolumesLaunchConfigs != null) {
             launchConfigNames.addAll((List<String>) dataVolumesLaunchConfigs);

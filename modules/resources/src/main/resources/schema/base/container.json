@@ -1,516 +1,542 @@
 {
-    "resourceFields": {
-        "retainIp": {
-          "type": "boolean",
-          "nullable": true
-        },
-        "environment": {
-            "type": "map[string]",
-            "create": true,
-            "nullable": true
-        },
-        "command": {
-            "type": "array[string]",
-            "nullable": true,
-            "create": true
-        },
-        "workingDir": {
-            "type": "string",
-            "create": true,
-            "nullable": true,
-            "minLength": 1
-        },
-        "hostname": {
-            "type": "string",
-            "create": true,
-            "nullable": true,
-            "minLength": 1
-        },
-        "user": {
-            "type": "string",
-            "create": true,
-            "nullable": true,
-            "minLength": 1
-        },
-        "publishAllPorts": {
-            "type": "boolean",
-            "default": false
-        },
-        "primaryNetworkId": {
-            "type": "reference[network]"
-        },
-        "privileged": {
-            "type": "boolean",
-            "default": "false"
-        },
-        "capAdd": {
-            "type": "array[enum]",
-            "nullable": true,
-            "options" : [
-                "ALL",
-                "AUDIT_CONTROL",
-                "AUDIT_WRITE",
-                "BLOCK_SUSPEND",
-                "CHOWN",
-                "DAC_OVERRIDE",
-                "DAC_READ_SEARCH",
-                "FOWNER",
-                "FSETID",
-                "IPC_LOCK",
-                "IPC_OWNER",
-                "KILL",
-                "LEASE",
-                "LINUX_IMMUTABLE",
-                "MAC_ADMIN",
-                "MAC_OVERRIDE",
-                "MKNOD",
-                "NET_ADMIN",
-                "NET_BIND_SERVICE",
-                "NET_BROADCAST",
-                "NET_RAW",
-                "SETFCAP",
-                "SETGID",
-                "SETPCAP",
-                "SETUID",
-                "SYSLOG",
-                "SYS_ADMIN",
-                "SYS_BOOT",
-                "SYS_CHROOT",
-                "SYS_MODULE",
-                "SYS_NICE",
-                "SYS_PACCT",
-                "SYS_PTRACE",
-                "SYS_RAWIO",
-                "SYS_RESOURCE",
-                "SYS_TIME",
-                "SYS_TTY_CONFIG",
-                "WAKE_ALARM"
-            ]
-        },
-        "capDrop": {
-            "type": "array[enum]",
-            "nullable": true,
-            "options" : [
-                "ALL",
-                "AUDIT_CONTROL",
-                "AUDIT_WRITE",
-                "BLOCK_SUSPEND",
-                "CHOWN",
-                "DAC_OVERRIDE",
-                "DAC_READ_SEARCH",
-                "FOWNER",
-                "FSETID",
-                "IPC_LOCK",
-                "IPC_OWNER",
-                "KILL",
-                "LEASE",
-                "LINUX_IMMUTABLE",
-                "MAC_ADMIN",
-                "MAC_OVERRIDE",
-                "MKNOD",
-                "NET_ADMIN",
-                "NET_BIND_SERVICE",
-                "NET_BROADCAST",
-                "NET_RAW",
-                "SETFCAP",
-                "SETGID",
-                "SETPCAP",
-                "SETUID",
-                "SYSLOG",
-                "SYS_ADMIN",
-                "SYS_BOOT",
-                "SYS_CHROOT",
-                "SYS_MODULE",
-                "SYS_NICE",
-                "SYS_PACCT",
-                "SYS_PTRACE",
-                "SYS_RAWIO",
-                "SYS_RESOURCE",
-                "SYS_TIME",
-                "SYS_TTY_CONFIG",
-                "WAKE_ALARM"
-            ]
-        },
-        "dns": {
-            "type": "array[string]",
-            "nullable": true
-        },
-        "dnsSearch": {
-            "type": "array[string]",
-            "nullable": true
-        },
-        "instanceLinks": {
-            "type": "map[reference[instance]]",
-            "create": true,
-            "nullable": true,
-            "includeInList": false
-        },
-        "domainName": {
-            "type": "string",
-            "nullable": true
-        },
-        "memorySwap": {
-            "type": "int",
-            "nullable": true
-        },
-        "memory": {
-            "type": "int",
-            "nullable": true
-        },
-        "cpuSet": {
-            "type": "string",
-            "nullable": true
-        },
-        "cpuShares": {
-            "type": "int",
-            "nullable": true
-        },
-        "stdinOpen": {
-            "type": "boolean",
-            "default": false
-        },
-        "tty": {
-            "type": "boolean",
-            "default": false
-        },
-        "entryPoint": {
-            "type": "array[string]",
-            "nullable": true
-        },
-        "lxcConf": {
-            "type": "map[string]",
-            "nullable": true       
-        },
-        "restartPolicy":{
-            "type": "restartPolicy",
-            "nullable": true
-        },
-        "devices":{
-            "type":"array[string]",
-            "nullable": true
-        },
-        "blkioDeviceOptions":{
-            "type":"map[blkioDeviceOption]",
-            "nullable": true
-        },
-        "registryCredentialId":{
-            "type":"reference[registryCredential]",
-            "nullable": true
-        },
-        "labels": {
-            "type": "map[string]",
-            "create": true,
-            "nullable": true
-        },
-        "healthCheck": {
-            "type": "instanceHealthCheck",
-            "nullable": true
-        },
-        "healthState": {
-            "type": "enum",
-            "options" : [ "healthy", "unhealthy", "updating-healthy", "updating-unhealthy", "initializing" ]
-        },
-        "securityOpt": {
-            "type": "array[string]",
-            "nullable": true
-        },
-        "logConfig": {
-            "type": "logConfig",
-            "nullable": true
-        },
-        "pidMode": {
-            "type": "enum",
-            "options": [
-                "host"
-            ],
-            "nullable": true
-        },
-        "extraHosts": {
-            "type": "array[string]",
-            "nullable": true
-        },
-        "readOnly": {
-            "type": "boolean",
-            "default": false
-        },
-        "build": {
-            "type": "dockerBuild",
-            "nullable": true
-        },
-        "dataVolumeMounts": {
-            "type": "map[reference[volume]]",
-            "nullable": true
-        },
-        "version" : {
-            "type" : "string",
-            "nullable": false,
-            "default" : "0"
-        },
-         "startCount" : {
-            "type" : "int",
-            "nullable" : true
-        },
-         "blkioWeight" : {
-            "type" : "int",
-            "nullable" : true
-        },
-         "cgroupParent" : {
-            "type" : "string",
-            "nullable" : true
-        },
-         "usernsMode" : {
-         	"type" : "string",
-            "nullable" : true
-        },
-         "pidsLimit" : {
-         	"type" : "int",
-            "nullable" : true
-        },
-         "diskQuota" : {
-         	"type" : "int",
-            "nullable" : true
-        },
-         "cpuCount" : {
-         	"type" : "int",
-            "nullable" : true
-        },
-         "cpuPercent" : {
-         	"type" : "int",
-            "nullable" : true
-        },
-         "ioMaximumIOps" : {
-         	"type" : "int",
-            "nullable" : true
-        },
-         "ioMaximumBandwidth" : {
-         	"type" : "int",
-            "nullable" : true
-        },
-         "cpuPeriod" : {
-            "type" : "int",
-            "nullable" : true
-        },
-         "cpuQuota" : {
-         	"type" : "int",
-            "nullable" : true
-        },
-         "cpuSetMems" : {
-            "type" : "string",
-            "nullable" : true
-        },
-         "dnsOpt" : {
-            "type" : "array[string]",
-            "nullable" : true
-        },
-         "groupAdd" : {
-            "type" : "array[string]",
-            "nullable" : true
-        },
-         "isolation" : {
-            "type" : "string",
-            "nullable" : true
-        },
-         "kernelMemory" : {
-         	"type" : "int",
-            "nullable" : true
-        },
-         "memorySwappiness" : {
-         	"type" : "int",
-            "nullable" : true
-        },
-         "oomKillDisable" : {
-         	"type" : "boolean",
-            "nullable" : true
-        },
-         "shmSize" : {
-         	"type" : "int",
-            "nullable" : true
-        },
-         "tmpfs" : {
-         	"type" : "map[string]",
-            "nullable" : true
-        },
-         "uts" : {
-         	"type" : "string",
-            "nullable" : true
-        },
-         "ipcMode" : {
-         	"type" : "string",
-            "nullable" : true
-        },
-         "stopSignal" : {
-         	"type" : "string",
-            "nullable" : true
-        },
-         "sysctls" : {
-         	"type" : "map[string]",
-            "nullable" : true
-        },
-         "storageOpt" : {
-         	"type" : "map[string]",
-         	"nullable" : true
-        },
-         "oomScoreAdj" : {
-         	"type" : "int",
-            "nullable" : true
-        },
-         "ulimits" : {
-         	"type" : "array[ulimit]",
-            "nullable" : true
-        },
-         "ip" : {
-            "type" : "string",
-            "nullable" : true
-        },
-         "ip6" : {
-            "type" : "string",
-            "nullable" : true
-        },
-         "netAlias" : {
-         	"type" : "array[string]",
-            "nullable" : true
-        },
-         "healthCmd" : {
-         	"type" : "array[string]",
-            "nullable" : true
-        },
-         "healthInterval" : {
-          	"type" : "int",
-            "nullable" : true
-        }, 
-         "healthTimeout" : {
-         	"type" : "int",
-            "nullable" : true
-        },
-         "healthRetries" : {
-         	"type" : "int",
-            "nullable" : true
-        },
-        "mounts" : {
-            "type" : "array[mountEntry]"
-        },
-        "secrets": {
-            "type" : "array[secretReference]",
-            "nullable": true
-        },
-         "userPorts" : {
-            "type" : "array[string]",
-            "nullable" : true
-        },
-        "name": {
-            "type": "string",
-            "unique": true
-        },
-        "sidekickTo" : {
-            "type" : "reference[container]",
-            "create" : true,
-            "nullable" : true
-        },
-        "metadata": {
-            "type": "map[json]",
-            "create": true,
-            "required": false,
-            "nullable": true,
-             "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "stopSource" : {
-            "type": "enum",
-            "options" : [ "api", "external" ],
-            "create" : true,
-            "nullable" : true
-        },
-        "exitCode": {
-            "type": "int",
-            "nullable": true
-        },
-        "startRetryCount": {
-            "type": "int",
-            "nullable": true
-        },
-        "deploymentUnitUuid": {
-            "type": "string",
-            "nullable": true
-        },
-        "launchConfigName": {
-            "type": "string",
-            "nullable": true
-        },
-        "prePullOnUpgrade": {
-            "type": "enum",
-            "default": "all",
-            "options": [
-                "all",
-                "existing",
-                "none"
-            ]
-        },
-        "networkMode": {
-            "type": "string",
-            "default": "managed",
-            "nullable": true
-        },
-        "networkContainerId": {
-            "type": "reference[container]",
-            "nullable": true
-        },
-        "dockerPorts": {
-            "type": "map[string]"
-        },
-        "dockerHostIp": {
-            "type": "string"
-        },
-        "dockerIp": {
-            "type": "string"
-        },
-        "dataVolumes": {
-            "type": "array[string]",
-            "nullable": true,
-            "create": true
-        },
-        "dataVolumesFrom": {
-            "type" : "array[reference[container]]",
-            "nullable" : true
-        },
-        "dockerInspect": {
-            "type": "map[json]"
-        },
-        "publicEndpoints": {
-            "type": "array[publicEndpoint]"
-        }
+  "resourceFields": {
+    "retainIp": {
+      "type": "boolean",
+      "nullable": true
     },
-    "resourceActions": {
-        "logs": {
-            "input":"containerLogs",
-            "output":"hostAccess",
-            "attributes": {
-                "states": [ "running", "stopped", "stopping" ]
-            }
-        },
-        "converttoservice" : {
-            "output" : "service"
-        },
-        "upgrade" : {
-            "input":"containerUpgrade",
-            "output" : "revision",
-            "attributes": {
-                "defaults": "false"
-            }
-        },
-        "execute": {
-            "input": "containerExec",
-            "output": "hostAccess",
-            "attributes" : {
-                "state" : "running"
-            }
-        },
-        "proxy": {
-            "input": "containerProxy",
-            "output": "hostAccess",
-            "attributes" : {
-                "state" : "running"
-            }
-        }
+    "environment": {
+      "type": "map[string]",
+      "create": true,
+      "nullable": true
+    },
+    "command": {
+      "type": "array[string]",
+      "nullable": true,
+      "create": true
+    },
+    "workingDir": {
+      "type": "string",
+      "create": true,
+      "nullable": true,
+      "minLength": 1
+    },
+    "hostname": {
+      "type": "string",
+      "create": true,
+      "nullable": true,
+      "minLength": 1
+    },
+    "user": {
+      "type": "string",
+      "create": true,
+      "nullable": true,
+      "minLength": 1
+    },
+    "publishAllPorts": {
+      "type": "boolean",
+      "default": false
+    },
+    "primaryNetworkId": {
+      "type": "reference[network]"
+    },
+    "privileged": {
+      "type": "boolean",
+      "default": "false"
+    },
+    "capAdd": {
+      "type": "array[enum]",
+      "nullable": true,
+      "options": [
+        "ALL",
+        "AUDIT_CONTROL",
+        "AUDIT_WRITE",
+        "BLOCK_SUSPEND",
+        "CHOWN",
+        "DAC_OVERRIDE",
+        "DAC_READ_SEARCH",
+        "FOWNER",
+        "FSETID",
+        "IPC_LOCK",
+        "IPC_OWNER",
+        "KILL",
+        "LEASE",
+        "LINUX_IMMUTABLE",
+        "MAC_ADMIN",
+        "MAC_OVERRIDE",
+        "MKNOD",
+        "NET_ADMIN",
+        "NET_BIND_SERVICE",
+        "NET_BROADCAST",
+        "NET_RAW",
+        "SETFCAP",
+        "SETGID",
+        "SETPCAP",
+        "SETUID",
+        "SYSLOG",
+        "SYS_ADMIN",
+        "SYS_BOOT",
+        "SYS_CHROOT",
+        "SYS_MODULE",
+        "SYS_NICE",
+        "SYS_PACCT",
+        "SYS_PTRACE",
+        "SYS_RAWIO",
+        "SYS_RESOURCE",
+        "SYS_TIME",
+        "SYS_TTY_CONFIG",
+        "WAKE_ALARM"
+      ]
+    },
+    "capDrop": {
+      "type": "array[enum]",
+      "nullable": true,
+      "options": [
+        "ALL",
+        "AUDIT_CONTROL",
+        "AUDIT_WRITE",
+        "BLOCK_SUSPEND",
+        "CHOWN",
+        "DAC_OVERRIDE",
+        "DAC_READ_SEARCH",
+        "FOWNER",
+        "FSETID",
+        "IPC_LOCK",
+        "IPC_OWNER",
+        "KILL",
+        "LEASE",
+        "LINUX_IMMUTABLE",
+        "MAC_ADMIN",
+        "MAC_OVERRIDE",
+        "MKNOD",
+        "NET_ADMIN",
+        "NET_BIND_SERVICE",
+        "NET_BROADCAST",
+        "NET_RAW",
+        "SETFCAP",
+        "SETGID",
+        "SETPCAP",
+        "SETUID",
+        "SYSLOG",
+        "SYS_ADMIN",
+        "SYS_BOOT",
+        "SYS_CHROOT",
+        "SYS_MODULE",
+        "SYS_NICE",
+        "SYS_PACCT",
+        "SYS_PTRACE",
+        "SYS_RAWIO",
+        "SYS_RESOURCE",
+        "SYS_TIME",
+        "SYS_TTY_CONFIG",
+        "WAKE_ALARM"
+      ]
+    },
+    "dns": {
+      "type": "array[string]",
+      "nullable": true
+    },
+    "dnsSearch": {
+      "type": "array[string]",
+      "nullable": true
+    },
+    "links": {
+      "type": "array[link]",
+      "create": true,
+      "nullable": true
+    },
+    "domainName": {
+      "type": "string",
+      "nullable": true
+    },
+    "memorySwap": {
+      "type": "int",
+      "nullable": true
+    },
+    "memory": {
+      "type": "int",
+      "nullable": true
+    },
+    "cpuSet": {
+      "type": "string",
+      "nullable": true
+    },
+    "cpuShares": {
+      "type": "int",
+      "nullable": true
+    },
+    "stdinOpen": {
+      "type": "boolean",
+      "default": false
+    },
+    "tty": {
+      "type": "boolean",
+      "default": false
+    },
+    "entryPoint": {
+      "type": "array[string]",
+      "nullable": true
+    },
+    "lxcConf": {
+      "type": "map[string]",
+      "nullable": true
+    },
+    "restartPolicy": {
+      "type": "restartPolicy",
+      "nullable": true
+    },
+    "devices": {
+      "type": "array[string]",
+      "nullable": true
+    },
+    "blkioDeviceOptions": {
+      "type": "map[blkioDeviceOption]",
+      "nullable": true
+    },
+    "registryCredentialId": {
+      "type": "reference[registryCredential]",
+      "nullable": true
+    },
+    "labels": {
+      "type": "map[string]",
+      "create": true,
+      "nullable": true
+    },
+    "healthCheck": {
+      "type": "instanceHealthCheck",
+      "nullable": true
+    },
+    "healthState": {
+      "type": "enum",
+      "options": [
+        "healthy",
+        "unhealthy",
+        "updating-healthy",
+        "updating-unhealthy",
+        "initializing"
+      ]
+    },
+    "securityOpt": {
+      "type": "array[string]",
+      "nullable": true
+    },
+    "logConfig": {
+      "type": "logConfig",
+      "nullable": true
+    },
+    "pidMode": {
+      "type": "enum",
+      "options": [
+        "host"
+      ],
+      "nullable": true
+    },
+    "pidContainerId": {
+      "type": "reference[container]",
+      "nullable": true
+    },
+    "extraHosts": {
+      "type": "array[string]",
+      "nullable": true
+    },
+    "readOnly": {
+      "type": "boolean",
+      "default": false
+    },
+    "dataVolumeMounts": {
+      "type": "map[reference[volume]]",
+      "nullable": true
+    },
+    "version": {
+      "type": "string",
+      "nullable": false,
+      "default": "0"
+    },
+    "startCount": {
+      "type": "int",
+      "nullable": true
+    },
+    "blkioWeight": {
+      "type": "int",
+      "nullable": true
+    },
+    "cgroupParent": {
+      "type": "string",
+      "nullable": true
+    },
+    "usernsMode": {
+      "type": "string",
+      "nullable": true
+    },
+    "pidsLimit": {
+      "type": "int",
+      "nullable": true
+    },
+    "diskQuota": {
+      "type": "int",
+      "nullable": true
+    },
+    "cpuCount": {
+      "type": "int",
+      "nullable": true
+    },
+    "cpuPercent": {
+      "type": "int",
+      "nullable": true
+    },
+    "ioMaximumIOps": {
+      "type": "int",
+      "nullable": true
+    },
+    "ioMaximumBandwidth": {
+      "type": "int",
+      "nullable": true
+    },
+    "cpuPeriod": {
+      "type": "int",
+      "nullable": true
+    },
+    "cpuQuota": {
+      "type": "int",
+      "nullable": true
+    },
+    "cpuSetMems": {
+      "type": "string",
+      "nullable": true
+    },
+    "dnsOpt": {
+      "type": "array[string]",
+      "nullable": true
+    },
+    "groupAdd": {
+      "type": "array[string]",
+      "nullable": true
+    },
+    "isolation": {
+      "type": "string",
+      "nullable": true
+    },
+    "kernelMemory": {
+      "type": "int",
+      "nullable": true
+    },
+    "memorySwappiness": {
+      "type": "int",
+      "nullable": true
+    },
+    "oomKillDisable": {
+      "type": "boolean",
+      "nullable": true
+    },
+    "shmSize": {
+      "type": "int",
+      "nullable": true
+    },
+    "tmpfs": {
+      "type": "map[string]",
+      "nullable": true
+    },
+    "uts": {
+      "type": "string",
+      "nullable": true
+    },
+    "ipcMode": {
+      "type": "string",
+      "nullable": true
+    },
+    "ipcContainerId": {
+      "type": "reference[container]",
+      "nullable": true
+    },
+    "stopSignal": {
+      "type": "string",
+      "nullable": true
+    },
+    "sysctls": {
+      "type": "map[string]",
+      "nullable": true
+    },
+    "storageOpt": {
+      "type": "map[string]",
+      "nullable": true
+    },
+    "oomScoreAdj": {
+      "type": "int",
+      "nullable": true
+    },
+    "ulimits": {
+      "type": "array[ulimit]",
+      "nullable": true
+    },
+    "ip": {
+      "type": "string",
+      "nullable": true
+    },
+    "ip6": {
+      "type": "string",
+      "nullable": true
+    },
+    "netAlias": {
+      "type": "array[string]",
+      "nullable": true
+    },
+    "healthCmd": {
+      "type": "array[string]",
+      "nullable": true
+    },
+    "healthInterval": {
+      "type": "int",
+      "nullable": true
+    },
+    "healthTimeout": {
+      "type": "int",
+      "nullable": true
+    },
+    "healthRetries": {
+      "type": "int",
+      "nullable": true
+    },
+    "mounts": {
+      "type": "array[mountEntry]"
+    },
+    "secrets": {
+      "type": "array[secretReference]",
+      "nullable": true
+    },
+    "userPorts": {
+      "type": "array[string]",
+      "nullable": true
+    },
+    "name": {
+      "type": "string",
+      "unique": true
+    },
+    "sidekickTo": {
+      "type": "reference[container]",
+      "create": true,
+      "nullable": true
+    },
+    "metadata": {
+      "type": "map[json]",
+      "create": true,
+      "required": false,
+      "nullable": true,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "stopSource": {
+      "type": "enum",
+      "options": [
+        "api",
+        "external"
+      ],
+      "create": true,
+      "nullable": true
+    },
+    "exitCode": {
+      "type": "int",
+      "nullable": true
+    },
+    "startRetryCount": {
+      "type": "int",
+      "nullable": true
+    },
+    "deploymentUnitUuid": {
+      "type": "string",
+      "nullable": true
+    },
+    "launchConfigName": {
+      "type": "string",
+      "nullable": true
+    },
+    "prePullOnUpgrade": {
+      "type": "enum",
+      "default": "all",
+      "options": [
+        "all",
+        "existing",
+        "none"
+      ]
+    },
+    "networkMode": {
+      "type": "string",
+      "default": "managed",
+      "nullable": true
+    },
+    "networkContainerId": {
+      "type": "reference[container]",
+      "nullable": true
+    },
+    "dockerPorts": {
+      "type": "map[string]"
+    },
+    "dockerHostIp": {
+      "type": "string"
+    },
+    "dockerIp": {
+      "type": "string"
+    },
+    "dataVolumes": {
+      "type": "array[string]",
+      "nullable": true,
+      "create": true
+    },
+    "dataVolumesFrom": {
+      "type": "array[reference[container]]",
+      "nullable": true
+    },
+    "dockerInspect": {
+      "type": "map[json]"
+    },
+    "publicEndpoints": {
+      "type": "array[publicEndpoint]"
+    },
+    "forceUpgrade": {
+      "type": "boolean",
+      "default": false,
+      "nullable": true
+    },
+    "completeUpdate": {
+      "type": "boolean",
+      "default": false,
+      "nullable": true
     }
+  },
+  "resourceActions": {
+    "logs": {
+      "input": "containerLogs",
+      "output": "hostAccess",
+      "attributes": {
+        "states": [
+          "running",
+          "stopped",
+          "stopping"
+        ]
+      }
+    },
+    "converttoservice": {
+      "output": "service"
+    },
+    "upgrade": {
+      "input": "containerUpgrade",
+      "output": "revision",
+      "attributes": {
+        "defaults": "false"
+      }
+    },
+    "execute": {
+      "input": "containerExec",
+      "output": "hostAccess",
+      "attributes": {
+        "state": "running"
+      }
+    },
+    "proxy": {
+      "input": "containerProxy",
+      "output": "hostAccess",
+      "attributes": {
+        "state": "running"
+      }
+    }
+  }
 }

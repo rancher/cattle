@@ -1,20 +1,20 @@
 {
-    "resourceFields": {
-        "hostLabel": {
-            "type":"string",
-            "create": true,
-            "nullable": true
-        },
-        "hostId": {
-            "type":"reference[host]",
-            "create": true,
-            "nullable": true
-        },
-        "deleteHost": {
-            "type":"boolean",
-            "create": true,
-            "nullable": false,
-            "default": false
-        }
+  "resourceFields": {
+    "hostLabel": {
+      "type": "string",
+      "create": true,
+      "nullable": true
+    },
+    "hostId": {
+      "type": "reference[host]",
+      "create": true,
+      "nullable": true
+    },
+    "deleteHost": {
+      "type": "boolean",
+      "create": true,
+      "nullable": false,
+      "default": false
     }
+  }
 }

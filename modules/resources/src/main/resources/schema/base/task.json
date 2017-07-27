@@ -1,8 +1,8 @@
 {
-    "resourceActions": {
-        "execute": {
-            "input": null,
-            "output": "task"
-        }
+  "resourceActions": {
+    "execute": {
+      "input": null,
+      "output": "task"
     }
+  }
 }

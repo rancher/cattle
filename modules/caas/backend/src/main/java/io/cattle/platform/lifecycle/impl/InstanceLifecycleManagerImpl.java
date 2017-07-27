@@ -8,7 +8,6 @@ import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.SystemLabels;
-import io.cattle.platform.docker.api.model.DockerBuild;
 import io.cattle.platform.lifecycle.AgentLifecycleManager;
 import io.cattle.platform.lifecycle.AllocationLifecycleManager;
 import io.cattle.platform.lifecycle.InstanceLifecycleManager;
@@ -84,8 +83,6 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
         setLogConfig(instance);
 
         setSystemLabel(instance);
-
-        setupDockerBuild(instance);
 
         Object secretsOpaque = secretsLifecycle.create(instance);
 
@@ -216,21 +213,6 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
                 StringUtils.isBlank(getLabel(instance, SystemLabels.LABEL_CONTAINER_SYSTEM))) {
             setLabel(instance, SystemLabels.LABEL_CONTAINER_SYSTEM, "true");
         }
-    }
-
-    private void setupDockerBuild(Instance instance) {
-        DockerBuild build = field(instance, InstanceConstants.FIELD_BUILD, DockerBuild.class);
-
-        if (build == null) {
-            return;
-        }
-
-        String imageUuid = fieldString(instance, InstanceConstants.FIELD_IMAGE);
-        if (imageUuid != null) {
-            build.setTag(imageUuid);
-        }
-
-        setField(instance, InstanceConstants.FIELD_BUILD, build);
     }
 
 }

@@ -20,16 +20,15 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.handler.ApiRequestHandler;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.util.TransformationService;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ApiAuthenticator implements ApiRequestHandler {
 
@@ -112,6 +111,9 @@ public class ApiAuthenticator implements ApiRequestHandler {
         request.getServletContext().getResponse().addHeader(ACCOUNT_ID_HEADER, accountId);
         String userId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), policy.getAuthenticatedAsAccountId());
         request.getServletContext().getResponse().addHeader(USER_ID_HEADER, userId);
+        for (String role : policy.getRoles()) {
+            request.getServletContext().getResponse().addHeader(ProjectConstants.ROLES_HEADER, role);
+        }
         ApiContext.getContext().setPolicy(policy);
     }
 

@@ -1,14 +1,14 @@
 {
-    "collectionMethods" : [],
-    "resourceFields" : {
-        "url" : {
-            "type" : "string"
-        },
-        "kind" : {
-            "type" : "string"
-        },
-        "password" : {
-            "type" : "string"
-        }
+  "collectionMethods": [],
+  "resourceFields": {
+    "url": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string"
+    },
+    "password": {
+      "type": "string"
     }
+  }
 }

@@ -1,12 +1,12 @@
 {
-    "resourceFields": {
-        "networkDriver":{
-            "type": "networkDriver",
-            "required": true,
-            "nullable": false,
-            "attributes" : {
-                "scheduleUpdate" : true
-            }
-        }
+  "resourceFields": {
+    "networkDriver": {
+      "type": "networkDriver",
+      "required": true,
+      "nullable": false,
+      "attributes": {
+        "scheduleUpdate": true
+      }
     }
+  }
 }

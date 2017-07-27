@@ -1,7 +1,7 @@
 {
-  "collectionMethods" : [],
-  "resourceFields" : {
-    "members" : {
+  "collectionMethods": [],
+  "resourceFields": {
+    "members": {
       "type": "array[projectMember]",
       "nullable": false,
       "required": true,

@@ -1,10 +1,10 @@
 {
-    "collectionMethods" : [],
-    "resourceFields": {
-        "errorMessage": {
-            "type": "string",
-            "required": false,
-            "nullable": true
-        }
+  "collectionMethods": [],
+  "resourceFields": {
+    "errorMessage": {
+      "type": "string",
+      "required": false,
+      "nullable": true
     }
+  }
 }

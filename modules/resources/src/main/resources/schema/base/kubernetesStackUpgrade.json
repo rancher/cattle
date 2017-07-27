@@ -1,17 +1,17 @@
 {
-    "collectionMethods" : [],
-    "resourceFields": {
-        "templates":{
-            "type": "map[string]"
-        },
-        "externalId":{
-            "type": "string"
-        },
-        "environment":{
-            "type": "map[string]"
-        },
-        "answers":{
-            "type": "map[json]"
-        }
+  "collectionMethods": [],
+  "resourceFields": {
+    "templates": {
+      "type": "map[string]"
+    },
+    "externalId": {
+      "type": "string"
+    },
+    "environment": {
+      "type": "map[string]"
+    },
+    "answers": {
+      "type": "map[json]"
     }
+  }
 }

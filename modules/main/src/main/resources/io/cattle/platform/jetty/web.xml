@@ -9,8 +9,9 @@
     </filter>
     <filter-mapping>
         <filter-name>PreProxy</filter-name>
-        <url-pattern>/v1/proxy/*</url-pattern>
         <url-pattern>/v2-beta/proxy/*</url-pattern>
+        <url-pattern>/v2/proxy/*</url-pattern>
+        <url-pattern>/v3/proxy/*</url-pattern>
         <dispatcher>REQUEST</dispatcher>
         <dispatcher>FORWARD</dispatcher>
     </filter-mapping>
@@ -80,7 +81,7 @@
         </init-param>
         <init-param>
             <param-name>roles</param-name>
-            <param-value>admin,v1-admin</param-value>
+            <param-value>admin</param-value>
         </init-param>
         <init-param>
             <param-name>rolesMethods</param-name>

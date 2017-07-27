@@ -1,42 +1,42 @@
 {
-    "collectionMethods" : [],
-    "resourceFields": {
-        "config": {
-            "type" : "string",
-            "nullable": true,
-             "attributes" : {
-                "scheduleUpdate" : true
-            }
-        }, 
-        "portRules": {
-            "type" : "array[portRule]",
-            "nullable": false,
-             "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "certificateIds":{
-            "type": "array[reference[certificate]]",
-            "required": false,
-            "nullable": true,
-             "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "defaultCertificateId":{
-            "type": "reference[certificate]",
-            "required": false,
-            "nullable": true,
-             "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-         "stickinessPolicy":{
-            "type": "loadBalancerCookieStickinessPolicy",
-            "nullable": true,
-            "attributes" : {
-                "scheduleUpdate" : true
-            }
-        }
+  "collectionMethods": [],
+  "resourceFields": {
+    "config": {
+      "type": "string",
+      "nullable": true,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "portRules": {
+      "type": "array[portRule]",
+      "nullable": false,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "certificateIds": {
+      "type": "array[reference[certificate]]",
+      "required": false,
+      "nullable": true,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "defaultCertificateId": {
+      "type": "reference[certificate]",
+      "required": false,
+      "nullable": true,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "stickinessPolicy": {
+      "type": "loadBalancerCookieStickinessPolicy",
+      "nullable": true,
+      "attributes": {
+        "scheduleUpdate": true
+      }
     }
+  }
 }

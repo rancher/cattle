@@ -1,7 +1,7 @@
 {
-  "resourceFields" : {
+  "resourceFields": {
     "projectId": {
-      "type" : "reference[project]"
+      "type": "reference[project]"
     }
   },
   "collectionFilters": {

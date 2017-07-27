@@ -1,53 +1,53 @@
 {
-    "resourceFields": {
-        "url": {
-            "type": "string",
-            "required": true,
-            "nullable": false,
-            "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "externalId": {
-            "type": "string",
-            "nullable": true
-        },
-        "builtin": {
-            "type": "boolean",
-            "nullable": false
-        },
-        "defaultActive": {
-            "type": "boolean",
-            "nullable": false
-        },
-        "activateOnCreate": {
-            "type": "boolean",
-            "nullable": false
-        },
-        "checksum": {
-            "type": "string",
-            "required": false,
-            "nullable": true,
-            "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "uiUrl": {
-            "type": "string",
-            "required": false,
-            "nullable": true,
-            "attributes" : {
-                "scheduleUpdate" : true
-            }
-        },
-        "name": {
-            "type": "string",
-            "nullable": true
-        },
-        "schemaVersion": {
-            "type": "string",
-            "nullable": false,
-            "default": ""
-        }
+  "resourceFields": {
+    "url": {
+      "type": "string",
+      "required": true,
+      "nullable": false,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "externalId": {
+      "type": "string",
+      "nullable": true
+    },
+    "builtin": {
+      "type": "boolean",
+      "nullable": false
+    },
+    "defaultActive": {
+      "type": "boolean",
+      "nullable": false
+    },
+    "activateOnCreate": {
+      "type": "boolean",
+      "nullable": false
+    },
+    "checksum": {
+      "type": "string",
+      "required": false,
+      "nullable": true,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "uiUrl": {
+      "type": "string",
+      "required": false,
+      "nullable": true,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "name": {
+      "type": "string",
+      "nullable": true
+    },
+    "schemaVersion": {
+      "type": "string",
+      "nullable": false,
+      "default": ""
     }
+  }
 }

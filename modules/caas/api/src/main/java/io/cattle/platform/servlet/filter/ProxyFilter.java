@@ -47,7 +47,7 @@ public class ProxyFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        RequestDispatcher rd = request.getRequestDispatcher("/v1/proxy/" + proxy + ((HttpServletRequest)request).getRequestURI());
+        RequestDispatcher rd = request.getRequestDispatcher("/v3/proxy/" + proxy + ((HttpServletRequest)request).getRequestURI());
         request.setAttribute(GenericWhitelistedProxy.ALLOWED_HOST, true);
         request.setAttribute(GenericWhitelistedProxy.SET_HOST_CURRENT_HOST, true);
         request.setAttribute(GenericWhitelistedProxy.REDIRECTS, redirects);

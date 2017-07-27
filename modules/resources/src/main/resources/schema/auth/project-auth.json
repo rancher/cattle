@@ -21,7 +21,6 @@
         "dependsOn" : "crud",
         "deploymentUnit" : "cr",
         "dnsService" : "crud",
-        "dockerBuild" : "cr",
         "externalHostEvent" : "cr",
         "externalService" : "crud",
         "fieldDocumentation": "r",

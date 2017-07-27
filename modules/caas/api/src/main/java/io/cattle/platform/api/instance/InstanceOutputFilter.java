@@ -31,7 +31,7 @@ public class InstanceOutputFilter extends CachedOutputFilter<Map<Long, Map<Strin
 
     @Override
     public Resource filter(ApiRequest request, Object original, Resource converted) {
-        if (request == null || !"v1".equals(request.getVersion())) {
+        if (request == null) {
             if (original instanceof Instance) {
                 Map<Long, Map<String, Object>> data = getCached(request);
                 if (data != null) {
@@ -40,8 +40,7 @@ public class InstanceOutputFilter extends CachedOutputFilter<Map<Long, Map<Strin
                         converted.getFields().putAll(fields);
                     }
                 }
-                converted.getFields().put(InstanceConstants.FIELD_EXIT_CODE,
-                        transformer.getExitCode((Instance) original));
+                converted.getFields().put(InstanceConstants.FIELD_EXIT_CODE, transformer.getExitCode((Instance) original));
             }
         }
 

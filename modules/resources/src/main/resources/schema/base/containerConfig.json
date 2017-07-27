@@ -1,7 +1,7 @@
 {
-    "resourceFields": {
-        "name": {
-            "unique": false
-        }
+  "resourceFields": {
+    "name": {
+      "unique": false
     }
+  }
 }

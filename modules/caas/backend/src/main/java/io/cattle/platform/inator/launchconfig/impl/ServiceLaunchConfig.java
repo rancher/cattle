@@ -121,8 +121,7 @@ public class ServiceLaunchConfig implements LaunchConfig {
                     .map((o) -> getUnitRefForDep(o.toString()))
                     .collect(Collectors.toList());
 
-            result.put(ServiceConstants.NS_DEP_FIELD_MAPPING.get(dep),
-                    new UnitRefList(refs, !(obj instanceof List<?>)));
+            result.put(dep, new UnitRefList(refs, !(obj instanceof List<?>)));
         }
 
         return result;
@@ -155,7 +154,7 @@ public class ServiceLaunchConfig implements LaunchConfig {
         Map<String, Object> instanceDependencies = new HashMap<>();
         bindDependencies(context, instanceDependencies);
 
-        for (String hardDep : ServiceConstants.HARD_DEPS) {
+        for (String hardDep : ServiceConstants.NS_DEPS) {
             Object value = instanceDependencies.get(hardDep);
             Object existingValue = DataAccessor.field(instance, hardDep, Object.class);
             if (existingValue == null) {

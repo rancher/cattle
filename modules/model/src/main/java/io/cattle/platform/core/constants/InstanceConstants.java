@@ -61,7 +61,6 @@ public class InstanceConstants {
     @Deprecated
     public static final String FIELD_IMAGE_UUID = "imageUuid";
     public static final String FIELD_IMAGE = "image";
-    public static final String FIELD_INSTANCE_LINKS = "instanceLinks";
     public static final String FIELD_INSTANCE_TRIGGERED_STOP = "instanceTriggeredStop";
     public static final String FIELD_IPC_CONTAINER_ID = "ipcContainerId";
     public static final String FIELD_IPC_MODE = "ipcMode";
@@ -70,6 +69,7 @@ public class InstanceConstants {
     public static final String FIELD_LABELS = "labels";
     public static final String FIELD_LAST_START = "lastStart";
     public static final String FIELD_LAUNCH_CONFIG_NAME = "launchConfigName";
+    public static final String FIELD_LINKS = "links";
     public static final String FIELD_LB_RULES_ON_REMOVE = "lbRulesOnRemove";
     public static final String FIELD_LOG_CONFIG = "logConfig";
     public static final String FIELD_LXC_CONF = "lxcConf";

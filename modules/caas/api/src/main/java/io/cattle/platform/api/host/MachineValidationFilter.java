@@ -1,7 +1,6 @@
 package io.cattle.platform.api.host;
 
 import io.cattle.platform.api.utils.ApiUtils;
-import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.framework.secret.SecretsService;
 import io.cattle.platform.object.util.DataAccessor;
@@ -34,12 +33,6 @@ public class MachineValidationFilter extends AbstractValidationFilter {
 
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
-        // Don't validate hosts for v1 API
-        if (HostConstants.TYPE.equals(type) && ("v1".equals(request.getVersion()) ||
-                AccountConstants.SUPER_ADMIN_KIND.equals(request.getSchemaFactory().getId()))) {
-            return super.create(type, request, next);
-        }
-
         Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
         boolean alreadyFound = false;
 

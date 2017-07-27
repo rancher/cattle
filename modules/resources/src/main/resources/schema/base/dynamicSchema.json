@@ -1,9 +1,9 @@
 {
   "resourceFields": {
     "roles": {
-        "type" : "array[string]",
-        "nullable" : true,
-        "required" : false
+      "type": "array[string]",
+      "nullable": true,
+      "required": false
     }
   }
 }

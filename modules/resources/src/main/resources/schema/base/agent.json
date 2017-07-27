@@ -1,28 +1,31 @@
 {
-    "collectionMethods" : [ "GET", "POST" ],
-    "resourceFields": {
-        "managedConfig": {
-            "default" : true
-        },
-        "accountId": {
-            "defaultIsNull" : true
-        },
-        "user": {
-            "type": "string",
-            "nullable": true,
-            "create": true
-        },
-        "uri": {
-            "type": "string",
-            "unique": true
-        },
-        "authorizedRoleAccountIds": {
-            "type": "array[reference[account]]",
-            "nullable": true
-        }
+  "collectionMethods": [
+    "GET",
+    "POST"
+  ],
+  "resourceFields": {
+    "managedConfig": {
+      "default": true
     },
-    "resourceActions" : {
-        "activate" : {
-        }
+    "accountId": {
+      "defaultIsNull": true
+    },
+    "user": {
+      "type": "string",
+      "nullable": true,
+      "create": true
+    },
+    "uri": {
+      "type": "string",
+      "unique": true
+    },
+    "authorizedRoleAccountIds": {
+      "type": "array[reference[account]]",
+      "nullable": true
     }
+  },
+  "resourceActions": {
+    "activate": {
+    }
+  }
 }

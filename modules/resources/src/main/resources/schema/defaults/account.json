@@ -1,5 +1,5 @@
 {
-    "kind" : "user",
-    "orchestration": "cattle",
-    "version": "2"
+  "kind": "user",
+  "orchestration": "cattle",
+  "version": "2"
 }

@@ -1,7 +1,6 @@
 package io.cattle.platform.app.components;
 
 import io.cattle.platform.api.auth.Identity;
-import io.cattle.platform.api.schema.FileSchemaFactory;
 import io.cattle.platform.api.schema.builder.SchemaFactoryBuilder;
 import io.cattle.platform.core.util.SettingsUtils;
 import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
@@ -94,7 +93,6 @@ public class Auth {
         setupAccountLookup();
         setupAuthorizationProvider();
         setupChildSchemas();
-        setupV1Schemas();
     }
 
     private void setupAuthorizationProvider() {
@@ -242,9 +240,7 @@ public class Auth {
         router.action("account.setmembers", new SetProjectMembersActionHandler(d.authDao, projectMemberResourceManager));
 
 
-        resourceManagers.forEach((type, rm) -> {
-            router.resourceManager(type, rm);
-        });
+        resourceManagers.forEach(router::resourceManager);
 
         ApiAuthenticator apiAuthenticator = router.getHandlers().stream()
                 .filter((x) -> (x instanceof ApiAuthenticator))
@@ -360,27 +356,4 @@ public class Auth {
                 .build(c.schemaFactories);
     }
 
-    private void setupV1Schemas() {
-        String[] schemas = new String[] {
-            "admin.ser",
-            "member.ser",
-            "owner.ser",
-            "project.ser",
-            "projectadmin.ser",
-            "readAdmin.ser",
-            "readonly.ser",
-            "register.ser",
-            "restricted.ser",
-            "service.ser",
-            "token.ser",
-            "user.ser",
-            "agent.ser",
-            "agentRegister.ser",
-            "base.ser"};
-
-        for (String schema : schemas) {
-            FileSchemaFactory schemaFactory = new FileSchemaFactory(f.schemaJsonMapper, f.coreSchemaFactory, "schema/v1/" + schema);
-            c.schemaFactories.put(schemaFactory.getId(), schemaFactory);
-        }
-    }
 }

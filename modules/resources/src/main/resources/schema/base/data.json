@@ -1,7 +1,7 @@
 {
-    "resourceFields": {
-        "visible": {
-            "default": true
-        }
+  "resourceFields": {
+    "visible": {
+      "default": true
     }
+  }
 }

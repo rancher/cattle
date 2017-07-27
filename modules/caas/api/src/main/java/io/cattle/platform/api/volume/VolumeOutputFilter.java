@@ -28,10 +28,6 @@ public class VolumeOutputFilter extends CachedOutputFilter<Map<Long, Map<String,
 
     @Override
     public Resource filter(ApiRequest request, Object original, Resource converted) {
-        if (request != null && "v1".equals(request.getVersion())) {
-            return converted;
-        }
-
         if (original instanceof Volume) {
             Map<Long, Map<String, Object>> data = getCached(request);
             if (data != null) {

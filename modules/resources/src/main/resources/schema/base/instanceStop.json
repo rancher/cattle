@@ -1,20 +1,23 @@
 {
-    "collectionMethods" : [],
-    "resourceFields" : {
-        "remove" : {
-            "type" : "boolean",
-            "create" : true
-        },
-        "timeout" : {
-            "type" : "int",
-            "create" : true
-        },
-        "stopSource" : {
-            "type": "enum",
-            "options" : [ "user", "external" ],
-            "create" : true,
-            "nullable" : false,
-            "default": "user"
-        }
+  "collectionMethods": [],
+  "resourceFields": {
+    "remove": {
+      "type": "boolean",
+      "create": true
+    },
+    "timeout": {
+      "type": "int",
+      "create": true
+    },
+    "stopSource": {
+      "type": "enum",
+      "options": [
+        "user",
+        "external"
+      ],
+      "create": true,
+      "nullable": false,
+      "default": "user"
     }
+  }
 }

@@ -1,3 +1,5 @@
 {
-    "collectionMethods" : [ "POST" ]
+  "collectionMethods": [
+    "POST"
+  ]
 }

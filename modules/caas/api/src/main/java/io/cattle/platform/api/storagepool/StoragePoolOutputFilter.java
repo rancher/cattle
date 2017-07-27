@@ -25,10 +25,6 @@ public class StoragePoolOutputFilter extends CachedOutputFilter<Map<Long, Map<St
 
     @Override
     public Resource filter(ApiRequest request, Object original, Resource converted) {
-        if (request != null && "v1".equals(request.getVersion())) {
-            return converted;
-        }
-
         if (original instanceof StoragePool) {
             Map<Long, Map<String, Object>> data = getCached(request);
             if (data == null) {

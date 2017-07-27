@@ -283,14 +283,6 @@ public class ServiceUtil {
         return false;
     }
 
-    public static boolean isV1LB(Service service) {
-        if (!service.getKind().equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
-            return false;
-        }
-        Object lbConfig = DataAccessor.field(service, ServiceConstants.FIELD_LB_CONFIG, Object.class);
-        return lbConfig == null;
-    }
-
     public static void validateDNSPatternForName(String name) {
         if (name != null)  {
             if(!DNS_NAME_PATTERN.matcher(name).matches()) {

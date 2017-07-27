@@ -10,7 +10,7 @@ wait_a_bit()
 
 for ((i=0;i<300;i++)); do
     if [[ "$(curl -s ${CATTLE_URL}/ping)" = "pong" ]]; then
-        host_count=$(curl -s ${CATTLE_URL}/v1/projects/1a5/hosts|python -mjson.tool|grep '"id"'|grep "1h.*"|wc -l)
+        host_count=$(curl -s ${CATTLE_URL}/v3/projects/1a5/hosts|python -mjson.tool|grep '"id"'|grep "1h.*"|wc -l)
         if [ "$host_count" -ge "1" ]; then
             echo "OK"
             break

@@ -1,7 +1,7 @@
 {
-    "resourceFields": {
-        "template": {
-            "type" : "json"
-        }
+  "resourceFields": {
+    "template": {
+      "type": "json"
     }
+  }
 }

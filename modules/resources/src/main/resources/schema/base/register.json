@@ -1,34 +1,34 @@
 {
-    "pluralName" : "register",
-    "resourceFields" : {
-        "authToken" : {
-            "type" : "string"
-        },
-        "key" : {
-            "type" : "string",
-            "required" : true
-        },
-        "agentUriFormat" : {
-            "type" : "string"
-        },
-        "accessKey" : {
-            "type" : "string"
-        },
-        "secretKey" : {
-            "type" : "string"
-        }
+  "pluralName": "register",
+  "resourceFields": {
+    "authToken": {
+      "type": "string"
     },
-    "resourceActions" : {
-        "stop" : {
-            "input" : "instanceStop",
-            "output" : "instance"
-        }
+    "key": {
+      "type": "string",
+      "required": true
     },
-    "collectionFilters" : {
-        "token" : {
-            "modifiers" : [
-                "eq"
-            ]
-        }
+    "agentUriFormat": {
+      "type": "string"
+    },
+    "accessKey": {
+      "type": "string"
+    },
+    "secretKey": {
+      "type": "string"
     }
+  },
+  "resourceActions": {
+    "stop": {
+      "input": "instanceStop",
+      "output": "instance"
+    }
+  },
+  "collectionFilters": {
+    "token": {
+      "modifiers": [
+        "eq"
+      ]
+    }
+  }
 }

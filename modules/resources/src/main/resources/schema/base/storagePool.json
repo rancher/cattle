@@ -1,20 +1,20 @@
 {
-    "resourceFields" : {
-        "hostIds" : {
-            "type": "array[reference[host]]",
-            "nullable": true
-        },
-        "blockDevicePath" : {
-            "type": "string",
-            "nullable": true
-        },
-        "volumeCapabilities" : {
-            "type" : "array[string]",
-            "nullable" : true
-        },
-        "volumeIds" : {
-            "type" : "array[reference[volume]]",
-            "nullable": true
-        }
+  "resourceFields": {
+    "hostIds": {
+      "type": "array[reference[host]]",
+      "nullable": true
+    },
+    "blockDevicePath": {
+      "type": "string",
+      "nullable": true
+    },
+    "volumeCapabilities": {
+      "type": "array[string]",
+      "nullable": true
+    },
+    "volumeIds": {
+      "type": "array[reference[volume]]",
+      "nullable": true
     }
+  }
 }

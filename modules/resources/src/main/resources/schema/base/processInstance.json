@@ -1,7 +1,7 @@
 {
-    "resourceActions" : {
-        "replay": {
-            "output": "processInstance"
-        }
+  "resourceActions": {
+    "replay": {
+      "output": "processInstance"
     }
+  }
 }

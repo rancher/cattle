@@ -29,10 +29,6 @@ public class HostsOutputFilter extends CachedOutputFilter<HostsOutputFilter.Data
 
     @Override
     public Resource filter(ApiRequest request, Object original, Resource converted) {
-        if (request != null && "v1".equals(request.getVersion())) {
-            return converted;
-        }
-
         if (original instanceof Host) {
             Host host = (Host)original;
             Data data = getCached(request);
