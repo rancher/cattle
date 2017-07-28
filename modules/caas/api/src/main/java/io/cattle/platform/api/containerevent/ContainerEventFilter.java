@@ -20,7 +20,7 @@ import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 public class ContainerEventFilter extends AbstractValidationFilter {
 
-    public static final String HOST_PARAM = "hostId";
+    public static final String HOST_PARAM = "reportedHostUuid";
     public static final String VERIFY_AGENT = "CantVerifyAgent";
     public static final String TOO_MANY = "TooManyContainerEvents";
 
@@ -47,7 +47,7 @@ public class ContainerEventFilter extends AbstractValidationFilter {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN, VERIFY_AGENT);
         }
 
-        Host host = agentDao.getHost(agent.getId(), event.getReportedHostUuid());
+        Host host = agentDao.getHost(agent, event.getReportedHostUuid());
         if (host == null) {
             throw new ValidationErrorException(ValidationErrorCodes.INVALID_REFERENCE, HOST_PARAM);
         }

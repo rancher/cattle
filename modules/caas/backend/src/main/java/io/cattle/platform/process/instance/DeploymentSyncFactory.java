@@ -59,7 +59,8 @@ public class DeploymentSyncFactory {
     }
 
     public DeploymentSyncResponse getResponse(Event event) {
-        return jsonMapper.convertValue(event.getData(), DeploymentSyncResponse.class);
+        return jsonMapper.convertValue(DataAccessor.fromMap(event.getData()).withKey("deploymentSyncResponse").get(),
+                DeploymentSyncResponse.class);
     }
 
     public DeploymentSyncRequest construct(Instance resource) {

@@ -12,7 +12,7 @@ public interface AgentDao {
 
     Map<String, Host> getHosts(long agentId);
 
-    Host getHost(long agentId, String externalId);
+    Host getHost(Agent agent, String externalId);
 
     Map<String, StoragePool> getStoragePools(long agentId);
 

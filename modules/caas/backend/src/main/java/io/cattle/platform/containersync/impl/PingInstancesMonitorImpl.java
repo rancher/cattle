@@ -1,9 +1,10 @@
 package io.cattle.platform.containersync.impl;
 
-import static io.cattle.platform.core.constants.ContainerEventConstants.*;
-import static io.cattle.platform.core.constants.HostConstants.*;
-import static io.cattle.platform.core.constants.InstanceConstants.*;
-
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.containersync.PingInstancesMonitor;
@@ -20,6 +21,7 @@ import io.cattle.platform.framework.event.FrameworkEvents;
 import io.cattle.platform.framework.event.Ping;
 import io.cattle.platform.framework.event.data.PingData;
 import io.cattle.platform.metadata.model.HostInfo;
+import io.cattle.platform.metadata.model.InstanceInfo;
 import io.cattle.platform.metadata.service.Metadata;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
@@ -28,14 +30,13 @@ import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
+import static io.cattle.platform.core.constants.ContainerEventConstants.*;
+import static io.cattle.platform.core.constants.HostConstants.*;
+import static io.cattle.platform.core.constants.InstanceConstants.*;
 
 public class PingInstancesMonitorImpl implements PingInstancesMonitor {
 
@@ -72,9 +73,6 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
                 .filter(this::isHost)
                 .map(this::getHostUuid)
                 .findFirst().orElse(null);
-        if (hostUuid == null) {
-            return;
-        }
 
         long agentId = Long.parseLong(ping.getResourceId());
         Long accountId = accountCache.getUnchecked(agentId);
@@ -85,17 +83,18 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
 
         Metadata metadata = envResourceManager.getMetadata(accountId);
         HostInfo host = metadata.getHosts().stream()
-                .filter((x) -> hostUuid.equals(x.getUuid()))
+                .filter((x) -> Objects.equals(hostUuid, x.getUuid()) || Objects.equals(agentId, x.getAgentId()))
                 .findFirst().orElse(null);
         if (host == null) {
             return;
         }
 
         Map<String, String> knownExternalIdToState = metadata.getInstances().stream()
-                .filter((i) -> i.getHostId() != null && i.getHostId().longValue() == host.getId())
+                .filter((i) -> i.getHostId() != null && i.getHostId() == host.getId())
                 .collect(Collectors.toMap(
-                        (i) -> i.getExternalId(),
-                        (i) -> i.getState()));
+                        InstanceInfo::getExternalId,
+                        InstanceInfo::getState,
+                        (k, v) -> v));
 
 
         for (Map<String, Object> resource : resources) {
@@ -108,15 +107,15 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
             if (expectedState == null) {
                 importInstance(accountId, host.getId(), agentId, ri);
             } else if (STATE_RUNNING.equals(expectedState) && STATE_STOPPED.equals(ri.getState())) {
-                sendSimpleEvent(EVENT_STOP, ri, accountId);
+                sendSimpleEvent(EVENT_STOP, host.getId(), ri, accountId);
             } else if (STATE_STOPPED.equals(expectedState) && STATE_RUNNING.equals(ri.getState())) {
-                sendSimpleEvent(EVENT_START, ri, accountId);
+                sendSimpleEvent(EVENT_START, host.getId(), ri, accountId);
             }
         }
 
         knownExternalIdToState.forEach((externalId, state) -> {
             if (STATE_RUNNING.equals(state) || STATE_STOPPED.equals(state)) {
-                sendSimpleEvent(EVENT_DESTROY, externalId, accountId);
+                sendSimpleEvent(EVENT_DESTROY, host.getId(), externalId, accountId);
             }
         });
     }
@@ -138,12 +137,12 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
         });
     }
 
-    private void sendSimpleEvent(String status, String externalId, long accountId) {
-        ContainerEvent data = new ContainerEvent(status, accountId, null, externalId);
+    private void sendSimpleEvent(String status, long hostId, String externalId, long accountId) {
+        ContainerEvent data = new ContainerEvent(status, accountId, hostId, null, externalId);
         eventService.publish(new ContainerEventEvent(data));
     }
-    private void sendSimpleEvent(String status, ReportedInstance ri, long accountId) {
-        ContainerEvent data = new ContainerEvent(status, accountId, ri.getUuid(), ri.getExternalId());
+    private void sendSimpleEvent(String status, long hostId, ReportedInstance ri, long accountId) {
+        ContainerEvent data = new ContainerEvent(status, accountId, hostId, ri.getUuid(), ri.getExternalId());
         eventService.publish(new ContainerEventEvent(data));
     }
 
@@ -184,6 +183,7 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
 
     private Event newInspectEvent(String externalId) {
         return EventVO.newEvent(FrameworkEvents.INSPECT)
+                .withResourceType("instanceInspect")
                 .withData(CollectionUtils.asMap(
                     "instanceInspect", CollectionUtils.asMap(
                         "kind", "docker",

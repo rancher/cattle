@@ -199,12 +199,15 @@ public class AgentDaoImpl extends AbstractJooqDao implements AgentDao {
     }
 
     @Override
-    public Host getHost(long agentId, String externalId) {
+    public Host getHost(Agent agent, String externalId) {
+        if ("DEFAULT".equals(externalId)) {
+            externalId = agent.getUuid() + "-h";
+        }
         return create()
             .select(HOST.fields())
             .from(HOST)
             .where(
-                    HOST.AGENT_ID.eq(agentId)
+                    HOST.AGENT_ID.eq(agent.getId())
                     .and(HOST.EXTERNAL_ID.eq(externalId))
                     .and(HOST.REMOVED.isNull()))
             .fetchAnyInto(HostRecord.class);

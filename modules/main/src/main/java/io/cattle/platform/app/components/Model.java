@@ -104,11 +104,12 @@ public class Model {
         process("host.remove").resourceType("host").start("erroring,error,requested,inactive,activating,deactivating,registering,updating-active,updating-inactive,provisioning").transitioning("removing").done("removed").build();
 
         // Agent
-        defaultProcesses("agent");
-        process("agent.remove").resourceType("agent").start("active,disconnecting,disconnected,requested,inactive,registering,updating-active,updating-inactive,reconnected").transitioning("removing").done("removed").build();
-        process("agent.deactivate").resourceType("agent").start("disconnecting,disconnected,active,activating,reconnecting,updating-active,updating-inactive,reconnected").transitioning("deactivating").done("inactive").build();
-        process("agent.reconnect").resourceType("agent").start("disconnecting,disconnected,active,activating").transitioning("reconnecting").done("reconnected").build();
-        process("agent.disconnect").resourceType("agent").start("reconnecting,active,reconnected").transitioning("disconnecting").done("disconnected").build();
+        process("agent.create").resourceType("agent").start("requested").transitioning("registering").done("inactive").build();
+        process("agent.activate").resourceType("agent").start("inactive,registering").transitioning("activating").done("active").build();
+        process("agent.remove").resourceType("agent").start("active,disconnecting,disconnected,requested,inactive,registering,reconnecting").transitioning("removing").done("removed").build();
+        process("agent.deactivate").resourceType("agent").start("disconnecting,disconnected,active,activating,reconnecting").transitioning("deactivating").done("inactive").build();
+        process("agent.reconnect").resourceType("agent").start("disconnecting,disconnected,active,activating").transitioning("reconnecting").done("active").build();
+        process("agent.disconnect").resourceType("agent").start("reconnecting,active").transitioning("disconnecting").done("disconnected").build();
 
         // Instance
         process("instance.create").resourceType("instance").start("requested").transitioning("creating").done("stopped").build();
@@ -149,14 +150,11 @@ public class Model {
         process("projecttemplate.remove").resourceType("projectTemplate").start("requested,activating,active").transitioning("removing").done("removed").build();
 
         // Stack
-        process("stack.create").resourceType("stack").start("requested").transitioning("activating").done("active").build();
-        process("stack.update").resourceType("stack").start("active").transitioning("updating-active").done("active").build();
-        process("stack.remove").resourceType("stack").start("requested, active, activating, updating-active, error, erroring, upgrading, canceling-upgrade, rolling-back, finishing-upgrade, upgraded, canceled-upgrade").transitioning("removing").done("removed").build();
-        process("stack.error").resourceType("stack").start("activating").transitioning("erroring").done("error").build();
-        process("stack.upgrade").resourceType("stack").start("active,canceled-upgrade").transitioning("upgrading").done("upgraded").build();
-        process("stack.cancelupgrade").resourceType("stack").start("upgrading,finishing-upgrade").transitioning("canceling-upgrade").done("canceled-upgrade").build();
-        process("stack.rollback").resourceType("stack").start("upgrading,upgraded,canceled-upgrade").transitioning("rolling-back").done("active").build();
-        process("stack.finishupgrade").resourceType("stack").start("upgraded").transitioning("finishing-upgrade").done("active").build();
+        process("stack.create").resourceType("stack").start("requested").transitioning("creating").done("active").build();
+        process("stack.update").resourceType("stack").start("error,active").transitioning("updating").done("active").build();
+        process("stack.remove").resourceType("stack").start("requested,creating,updating,active,upgrading,rolling-back").transitioning("removing").done("removed").build();
+        process("stack.error").resourceType("stack").start("updating,activating").transitioning("erroring").done("error").build();
+        process("stack.rollback").resourceType("stack").start("").transitioning("rolling-back").done("active").build();
 
         // Service Discovery Service
         process("service.create").resourceType("service").start("requested").transitioning("registering").done("inactive").build();

@@ -9,12 +9,6 @@
         "scheduleUpdate": true
       }
     },
-    "dockerCompose": {
-      "type": "string"
-    },
-    "rancherCompose": {
-      "type": "string"
-    },
     "allowSystemRole": {
       "type": "boolean",
       "default": false,

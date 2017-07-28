@@ -19,11 +19,12 @@ public class ContainerEvent {
     public ContainerEvent() {
     }
 
-    public ContainerEvent(String status, long accountId, String uuid, String externaId) {
+    public ContainerEvent(String status, long accountId, long hostId, String uuid, String externaId) {
         this.externalStatus = status;
         this.accountId = accountId;
         this.uuid = uuid;
         this.externalId = externaId;
+        this.hostId = hostId;
     }
 
     public ContainerEvent(long accountId, long hostId, String uuid, String externaId, Map<String, Object> inspect) {

@@ -68,8 +68,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -106,7 +106,7 @@ public class Framework {
     RetryTimeoutService retryTimeoutService;
     TransactionDelegate transaction;
 
-    ThreadPoolExecutor executorService = new ThreadPoolExecutor(0, 2000, 5L, TimeUnit.SECONDS, new SynchronousQueue<>(), (r) -> {
+    ThreadPoolExecutor executorService = new ThreadPoolExecutor(20, 20, 5L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), (r) -> {
         Thread t = new Thread(r);
         t.setName("core-" + COUNTER.incrementAndGet());
         return t;

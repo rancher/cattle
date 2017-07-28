@@ -11,6 +11,7 @@ import java.util.Set;
 
 public class HostInfo implements MetadataObject {
     long id;
+    Long agentId;
     String agentIp;
     String name;
     String state;
@@ -24,6 +25,7 @@ public class HostInfo implements MetadataObject {
 
     public HostInfo(Host host) {
         this.id = host.getId();
+        this.agentId = host.getAgentId();
         this.agentIp = DataAccessor.fieldString(host, HostConstants.FIELD_IP_ADDRESS);
         this.name = host.getName();
         this.labels = DataAccessor.getLabels(host);
@@ -82,86 +84,51 @@ public class HostInfo implements MetadataObject {
         return ports;
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((agentIp == null) ? 0 : agentIp.hashCode());
-        result = prime * result + ((agentState == null) ? 0 : agentState.hashCode());
-        result = prime * result + ((hostname == null) ? 0 : hostname.hashCode());
-        result = prime * result + (int) (id ^ (id >>> 32));
-        result = prime * result + ((labels == null) ? 0 : labels.hashCode());
-        result = prime * result + ((memory == null) ? 0 : memory.hashCode());
-        result = prime * result + ((milliCpu == null) ? 0 : milliCpu.hashCode());
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((ports == null) ? 0 : ports.hashCode());
-        result = prime * result + ((state == null) ? 0 : state.hashCode());
-        result = prime * result + ((uuid == null) ? 0 : uuid.hashCode());
-        return result;
+    public Long getAgentId() {
+
+        return agentId;
+    }
+
+    public void setAgentId(Long agentId) {
+        this.agentId = agentId;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        HostInfo other = (HostInfo) obj;
-        if (agentIp == null) {
-            if (other.agentIp != null)
-                return false;
-        } else if (!agentIp.equals(other.agentIp))
-            return false;
-        if (agentState == null) {
-            if (other.agentState != null)
-                return false;
-        } else if (!agentState.equals(other.agentState))
-            return false;
-        if (hostname == null) {
-            if (other.hostname != null)
-                return false;
-        } else if (!hostname.equals(other.hostname))
-            return false;
-        if (id != other.id)
-            return false;
-        if (labels == null) {
-            if (other.labels != null)
-                return false;
-        } else if (!labels.equals(other.labels))
-            return false;
-        if (memory == null) {
-            if (other.memory != null)
-                return false;
-        } else if (!memory.equals(other.memory))
-            return false;
-        if (milliCpu == null) {
-            if (other.milliCpu != null)
-                return false;
-        } else if (!milliCpu.equals(other.milliCpu))
-            return false;
-        if (name == null) {
-            if (other.name != null)
-                return false;
-        } else if (!name.equals(other.name))
-            return false;
-        if (ports == null) {
-            if (other.ports != null)
-                return false;
-        } else if (!ports.equals(other.ports))
-            return false;
-        if (state == null) {
-            if (other.state != null)
-                return false;
-        } else if (!state.equals(other.state))
-            return false;
-        if (uuid == null) {
-            if (other.uuid != null)
-                return false;
-        } else if (!uuid.equals(other.uuid))
-            return false;
-        return true;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        HostInfo hostInfo = (HostInfo) o;
+
+        if (id != hostInfo.id) return false;
+        if (agentId != null ? !agentId.equals(hostInfo.agentId) : hostInfo.agentId != null) return false;
+        if (agentIp != null ? !agentIp.equals(hostInfo.agentIp) : hostInfo.agentIp != null) return false;
+        if (name != null ? !name.equals(hostInfo.name) : hostInfo.name != null) return false;
+        if (state != null ? !state.equals(hostInfo.state) : hostInfo.state != null) return false;
+        if (agentState != null ? !agentState.equals(hostInfo.agentState) : hostInfo.agentState != null) return false;
+        if (labels != null ? !labels.equals(hostInfo.labels) : hostInfo.labels != null) return false;
+        if (ports != null ? !ports.equals(hostInfo.ports) : hostInfo.ports != null) return false;
+        if (uuid != null ? !uuid.equals(hostInfo.uuid) : hostInfo.uuid != null) return false;
+        if (hostname != null ? !hostname.equals(hostInfo.hostname) : hostInfo.hostname != null) return false;
+        if (milliCpu != null ? !milliCpu.equals(hostInfo.milliCpu) : hostInfo.milliCpu != null) return false;
+        return memory != null ? memory.equals(hostInfo.memory) : hostInfo.memory == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (id ^ (id >>> 32));
+        result = 31 * result + (agentId != null ? agentId.hashCode() : 0);
+        result = 31 * result + (agentIp != null ? agentIp.hashCode() : 0);
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (state != null ? state.hashCode() : 0);
+        result = 31 * result + (agentState != null ? agentState.hashCode() : 0);
+        result = 31 * result + (labels != null ? labels.hashCode() : 0);
+        result = 31 * result + (ports != null ? ports.hashCode() : 0);
+        result = 31 * result + (uuid != null ? uuid.hashCode() : 0);
+        result = 31 * result + (hostname != null ? hostname.hashCode() : 0);
+        result = 31 * result + (milliCpu != null ? milliCpu.hashCode() : 0);
+        result = 31 * result + (memory != null ? memory.hashCode() : 0);
+        return result;
     }
 
 }
