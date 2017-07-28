@@ -408,9 +408,9 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                         } else {
                             String uid = secretOpts.get(UID).toString();
                             String gid = secretOpts.get(GID).toString();
-                            String mode = secretOpts.get(MODE).toString();
+                            Integer mode = Integer.parseInt(secretOpts.get(MODE).toString());
                             String filename = secretOpts.get(NAME).toString();
-                            Map<String, String> secretMap = new HashMap<>();
+                            Map<String, Object> secretMap = new HashMap<>();
                             secretMap.put(SOURCE, secretName);
                             secretMap.put(TARGET, filename);
                             secretMap.put(UID, uid);

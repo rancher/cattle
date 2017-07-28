@@ -232,7 +232,7 @@ def test_service_secrets_fields(context, secret_context):
     assert svc['secrets'][0] == secret1.name
     assert svc['secrets'][1]['uid'] == '0'
     assert svc['secrets'][1]['gid'] == '0'
-    assert svc['secrets'][1]['mode'] == '444'
+    assert svc['secrets'][1]['mode'] == 444
     assert svc['secrets'][1]['source'] == secret2.name
     assert svc['secrets'][1]['target'] == 'my_secret2'
 
