@@ -175,7 +175,7 @@ public class AgentResourcesMonitor {
     }
 
     protected Map<String, Host> setHosts(Agent agent, AgentResources resources) {
-        Map<String, Host> hosts = agentDao.getHosts(agent.getId());
+        Map<String, Host> hosts = agentDao.getHosts(agent);
 
         for (Map.Entry<String, Map<String, Object>> hostData : resources.getHosts().entrySet()) {
             Host host = null;

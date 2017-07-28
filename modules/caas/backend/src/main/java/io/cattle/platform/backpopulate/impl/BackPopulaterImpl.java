@@ -50,11 +50,10 @@ public class BackPopulaterImpl implements BackPopulater {
     ObjectManager objectManager;
     ObjectProcessManager processManager;
 
-    public BackPopulaterImpl(JsonMapper jsonMapper, VolumeDao volumeDao, LockManager lockManager, DockerTransformer transformer, InstanceDao instanceDao,
-            ObjectManager objectManager, ObjectProcessManager processManager) {
-        super();
+    public BackPopulaterImpl(JsonMapper jsonMapper, VolumeDao volumeDao, StoragePoolDao storagePoolDao, LockManager lockManager, DockerTransformer transformer, InstanceDao instanceDao, ObjectManager objectManager, ObjectProcessManager processManager) {
         this.jsonMapper = jsonMapper;
         this.volumeDao = volumeDao;
+        this.storagePoolDao = storagePoolDao;
         this.lockManager = lockManager;
         this.transformer = transformer;
         this.instanceDao = instanceDao;

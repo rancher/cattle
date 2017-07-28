@@ -1,7 +1,5 @@
 package io.cattle.platform.process.mount;
 
-import static io.cattle.platform.core.model.tables.MountTable.*;
-
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.model.Mount;
@@ -23,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static io.cattle.platform.core.model.tables.MountTable.*;
+
 public class MountProcessManager {
 
     private static final List<String> MOUNT_STATES = Arrays.asList(
@@ -35,8 +35,8 @@ public class MountProcessManager {
     ObjectManager objectManager;
     ObjectProcessManager processManager;
 
-    public MountProcessManager(ObjectManager objectManager, ObjectProcessManager processManager) {
-        super();
+    public MountProcessManager(LockManager lockManager, ObjectManager objectManager, ObjectProcessManager processManager) {
+        this.lockManager = lockManager;
         this.objectManager = objectManager;
         this.processManager = processManager;
     }

@@ -37,11 +37,11 @@ public class HostApiProxyTokenManager extends AbstractNoOpResourceManager {
     @Override
     public Object create(String type, ApiRequest request) {
         HostApiProxyToken p = request.proxyRequestObject(HostApiProxyToken.class);
-        validate(p);
+        String hostUuid = validate(p);
 
         HostApiProxyTokenImpl token = new HostApiProxyTokenImpl();
-        token.setToken(getToken(p.getReportedUuid()));
-        token.setReportedUuid(p.getReportedUuid());
+        token.setToken(getToken(hostUuid));
+        token.setReportedUuid(hostUuid);
 
         StringBuilder buffer = new StringBuilder();
         if (ServerContext.isCustomApiHost()) {
@@ -69,7 +69,7 @@ public class HostApiProxyTokenManager extends AbstractNoOpResourceManager {
         return tokenService.generateToken(data);
     }
 
-    protected void validate(HostApiProxyToken proxyToken) {
+    protected String validate(HostApiProxyToken proxyToken) {
         String reportedUuid = proxyToken.getReportedUuid();
 
         Policy policy = ApiUtils.getPolicy();
@@ -77,10 +77,11 @@ public class HostApiProxyTokenManager extends AbstractNoOpResourceManager {
         if (agent == null) {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN, VERIFY_AGENT);
         }
-        Map<String, Host> hosts = agentDao.getHosts(agent.getId());
+        Map<String, Host> hosts = agentDao.getHosts(agent);
         Host host = hosts.get(reportedUuid);
         if (host == null) {
             throw new ValidationErrorException(ValidationErrorCodes.INVALID_REFERENCE, AgentConstants.REPORTED_UUID);
         }
+        return host.getUuid();
     }
 }

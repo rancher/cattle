@@ -220,7 +220,7 @@ public class Backend {
     private void setupBackendService() {
         imageCredentialLookup = new DockerImageCredentialLookup(f.jooqConfig);
         progress = new ProcessProgressImpl(f.objectManager, f.eventService);
-        backPopulater = new BackPopulaterImpl(f.jsonMapper, d.volumeDao, f.lockManager, c.dockerTransformer, d.instanceDao, f.objectManager, f.processManager);
+        backPopulater = new BackPopulaterImpl(f.jsonMapper, d.volumeDao, d.storagePoolDao, f.lockManager, c.dockerTransformer, d.instanceDao, f.objectManager, f.processManager);
         restartLifecycleManager = new RestartLifecycleManagerImpl(backPopulater);
         agentInstanceFactory = new AgentInstanceFactoryImpl(f.objectManager, d.agentDao, d.resourceDao, f.resourceMonitor, f.processManager);
         networkService = new NetworkServiceImpl(d.networkDao, f.jsonMapper, f.resourcePoolManager);
@@ -280,7 +280,7 @@ public class Backend {
         InstanceProcessManager instanceProcessManager = new InstanceProcessManager(instanceLifecycleManager, f.processManager);
         NetworkProcessManager networkProcessManager = new NetworkProcessManager(d.resourceDao, f.objectManager, f.processManager, d.networkDao, f.lockManager, f.jsonMapper, f.resourcePoolManager);
 
-        MountProcessManager mountProcessManager = new MountProcessManager(f.objectManager, f.processManager);
+        MountProcessManager mountProcessManager = new MountProcessManager(f.lockManager, f.objectManager, f.processManager);
         RegisterProcessManager registerProcessManager = new RegisterProcessManager(d.registerDao, f.resourceMonitor, f.objectManager, f.processManager, d.resourceDao);
         ScheduledUpgradeProcessManager scheduledUpgradeProcessManager = new ScheduledUpgradeProcessManager(c.catalogService, upgradeManager, f.objectManager, f.processManager);
         ServiceProcessManager serviceProcessManager = new ServiceProcessManager(serviceLifecycleManager, f.objectManager, f.processManager, d.serviceDao);

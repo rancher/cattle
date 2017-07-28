@@ -2,24 +2,21 @@ package io.cattle.platform.containersync;
 
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.util.Map;
-
-import org.apache.commons.lang3.builder.ToStringBuilder;
 
 public class ReportedInstance {
 
     String uuid;
     String externalId;
     String state;
-    String image;
 
     public ReportedInstance(Map<String, Object> resource) {
         super();
         uuid = DataAccessor.fromMap(resource).withKey(ObjectMetaDataManager.UUID_FIELD).as(String.class);
         externalId = DataAccessor.fromMap(resource).withKey("dockerId").as(String.class);
         state = DataAccessor.fromMap(resource).withKey(ObjectMetaDataManager.STATE_FIELD).as(String.class);
-        image = DataAccessor.fromMap(resource).withKey("image").as(String.class);
     }
 
     public String getUuid() {
@@ -32,10 +29,6 @@ public class ReportedInstance {
 
     public String getState() {
         return state;
-    }
-
-    public String getImage() {
-        return image;
     }
 
     @Override

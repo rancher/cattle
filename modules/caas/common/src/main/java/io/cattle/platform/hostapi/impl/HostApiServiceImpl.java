@@ -86,12 +86,7 @@ public class HostApiServiceImpl implements HostApiService {
 
     protected String getToken(Host host, Map<String, Object> inputData, Date expiration) {
         Map<String, Object> data = new HashMap<>(inputData);
-        String uuid = host.getExternalId();
-        if (uuid != null) {
-            data.put(HOST_UUID, uuid);
-        } else {
-            data.put(HOST_UUID, host.getUuid());
-        }
+        data.put(HOST_UUID, host.getUuid());
 
         if (expiration == null) {
             return tokenService.generateToken(data);

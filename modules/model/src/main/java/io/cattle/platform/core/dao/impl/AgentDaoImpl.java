@@ -95,19 +95,19 @@ public class AgentDaoImpl extends AbstractJooqDao implements AgentDao {
     }
 
     @Override
-    public Map<String, Host> getHosts(long agentId) {
+    public Map<String, Host> getHosts(Agent agent) {
         List<? extends Host> hostList = create()
                 .select(HOST.fields())
                 .from(HOST)
                 .where(
-                        HOST.AGENT_ID.eq(agentId)
+                        HOST.AGENT_ID.eq(agent.getId())
                         .and(HOST.REMOVED.isNull()))
                         .fetchInto(HostRecord.class);
 
-        return groupByReportedUUid(hostList);
+        return groupByReportedUUid(agent, hostList);
     }
 
-    public Map<String, Host> groupByReportedUUid(List<? extends Host> hostList) {
+    public Map<String, Host> groupByReportedUUid(Agent agent, List<? extends Host> hostList) {
         Map<String,Host> hosts = new HashMap<>();
 
         for ( Host host : hostList ) {
@@ -116,7 +116,12 @@ public class AgentDaoImpl extends AbstractJooqDao implements AgentDao {
                 uuid = host.getUuid();
             }
 
-            hosts.put(uuid, host);
+            if (uuid != null) {
+                hosts.put(uuid, host);
+                if (uuid.equals(agent.getUuid() + "-h")) {
+                    hosts.put("DEFAULT", host);
+                }
+            }
         }
 
         return hosts;

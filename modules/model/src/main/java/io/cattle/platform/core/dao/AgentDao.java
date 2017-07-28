@@ -10,7 +10,7 @@ import java.util.Map;
 
 public interface AgentDao {
 
-    Map<String, Host> getHosts(long agentId);
+    Map<String, Host> getHosts(Agent agent);
 
     Host getHost(Agent agent, String externalId);
 
