@@ -114,7 +114,7 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
         }
 
         knownExternalIdToState.forEach((externalId, state) -> {
-            if (STATE_RUNNING.equals(state) || STATE_STOPPED.equals(state)) {
+            if (STATE_RUNNING.equals(state)) {
                 sendSimpleEvent(EVENT_DESTROY, host.getId(), externalId, accountId);
             }
         });

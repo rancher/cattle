@@ -112,7 +112,7 @@ public class RevisionManagerImpl implements RevisionManager {
     }
 
     protected Schema getSchema(SchemaFactory schemaFactory) {
-        return schemaFactory.getSchema(ServiceConstants.KIND_SECONDARY_LAUNCH_CONFIG);
+        return schemaFactory.getSchema(ServiceConstants.KIND_LAUNCH_CONFIG);
     }
 
     @Override

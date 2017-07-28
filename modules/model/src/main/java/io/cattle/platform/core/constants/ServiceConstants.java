@@ -20,7 +20,7 @@ public class ServiceConstants {
     public static final String KIND_SCALING_GROUP_SERVICE = "scalingGroup";
     public static final String KIND_SELECTOR_SERVICE = "selectorService";
     public static final String KIND_KUBERNETES_SERVICE = "kubernetesService";
-    public static final String KIND_SECONDARY_LAUNCH_CONFIG = "secondaryLaunchConfig";
+    public static final String KIND_LAUNCH_CONFIG = "launchConfig";
 
     public static final String KIND_DEPLOYMENT_UNIT = "deploymentUnit";
 

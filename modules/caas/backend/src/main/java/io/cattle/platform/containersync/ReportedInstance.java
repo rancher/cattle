@@ -15,7 +15,7 @@ public class ReportedInstance {
     public ReportedInstance(Map<String, Object> resource) {
         super();
         uuid = DataAccessor.fromMap(resource).withKey(ObjectMetaDataManager.UUID_FIELD).as(String.class);
-        externalId = DataAccessor.fromMap(resource).withKey("dockerId").as(String.class);
+        externalId = DataAccessor.fromMap(resource).withKey("externalId").as(String.class);
         state = DataAccessor.fromMap(resource).withKey(ObjectMetaDataManager.STATE_FIELD).as(String.class);
     }
 

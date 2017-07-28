@@ -1,17 +1,5 @@
 package io.cattle.platform.token.impl;
 
-import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.token.TokenDecryptionException;
-import io.cattle.platform.token.TokenException;
-import io.cattle.platform.token.TokenService;
-
-import java.security.interfaces.RSAPublicKey;
-import java.text.ParseException;
-import java.util.Date;
-import java.util.Map;
-
-import org.apache.commons.lang.StringUtils;
-
 import com.netflix.config.DynamicLongProperty;
 import com.netflix.config.DynamicStringProperty;
 import com.nimbusds.jose.EncryptionMethod;
@@ -31,6 +19,16 @@ import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.EncryptedJWT;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.token.TokenDecryptionException;
+import io.cattle.platform.token.TokenException;
+import io.cattle.platform.token.TokenService;
+import org.apache.commons.lang.StringUtils;
+
+import java.security.interfaces.RSAPublicKey;
+import java.text.ParseException;
+import java.util.Date;
+import java.util.Map;
 
 public class JwtTokenServiceImpl implements TokenService {
 
@@ -54,11 +52,6 @@ public class JwtTokenServiceImpl implements TokenService {
     @Override
     public String generateToken(Map<String, Object> payload, Date expireDate) {
         return generateToken(payload, new Date(), expireDate, false);
-    }
-
-    @Override
-    public String generateEncryptedToken(Map<String, Object> payload) {
-        return generateToken(payload, new Date(), new Date(System.currentTimeMillis() + EXPIRATION.get() * 1000), true);
     }
 
     @Override
