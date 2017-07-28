@@ -16,7 +16,6 @@ import io.cattle.platform.api.credential.ApiKeyCertificateDownloadLinkHandler;
 import io.cattle.platform.api.credential.ApiKeyOutputFilter;
 import io.cattle.platform.api.data.DataManager;
 import io.cattle.platform.api.doc.DocumentationHandler;
-import io.cattle.platform.api.docker.TransformInspect;
 import io.cattle.platform.api.dynamicschema.DynamicSchemaFilter;
 import io.cattle.platform.api.externalevent.ExternalEventFilter;
 import io.cattle.platform.api.handler.ActionRequestHandler;
@@ -343,8 +342,7 @@ public class Api {
                     new BootstrapScriptsHandler(c.keyProvider),
                     new HostApiPublicCAScriptHandler(c.keyProvider),
                     new HostApiPublicKeyScriptHandler(c.hostApiService),
-                    new RegisterScriptHandler(c.registrationAuthTokenManager),
-                    new TransformInspect(c.dockerTransformer, f.jsonMapper))),
+                    new RegisterScriptHandler(c.registrationAuthTokenManager))),
                 new BodyParserRequestHandler(f.schemaJsonMapper),
                 new ConfigurableRequestOptionsParser(),
                 noAuthenticationProxy(),

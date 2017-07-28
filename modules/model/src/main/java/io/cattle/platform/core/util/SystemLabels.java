@@ -32,6 +32,7 @@ public class SystemLabels {
      */
     public static final String LABEL_AGENT_SERVICE_LABELS_PROVIDER = "io.rancher.container.agent_service.labels_provider";
     public static final String LABEL_AGENT_SERVICE_SCHEDULING_PROVIDER = "io.rancher.container.agent_service.scheduling";
+    public static final String LABEL_AGENT_SERVICE_COMPUTE = "io.rancher.container.agent_service.compute";
 
     public static final String LABEL_VM = "io.rancher.vm";
     public static final String LABEL_VM_USERDATA = "io.rancher.vm.userdata";

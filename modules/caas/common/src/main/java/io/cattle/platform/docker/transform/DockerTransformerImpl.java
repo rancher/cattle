@@ -224,7 +224,7 @@ public class DockerTransformerImpl implements DockerTransformer {
         Map<String, BlkioDeviceOption> target = new HashMap<>();
 
         for (String field : fields) {
-            List<Map> deviceOptions = null;
+            List<Map> deviceOptions;
             try {
                 deviceOptions = (List<Map>)CollectionUtils.toList(CollectionUtils.getNestedValue(fromInspect, HOST_CONFIG, field));
             } catch (Exception e) {
@@ -240,16 +240,12 @@ public class DockerTransformerImpl implements DockerTransformer {
                 Integer value = null;
                 try {
                     path = (String)deviceOption.get("Path");
-                    value = (Integer)(field == WEIGHT ? deviceOption.get("Weight") : deviceOption.get("Rate"));
+                    value = (Integer)(WEIGHT.equals(field) ? deviceOption.get("Weight") : deviceOption.get("Rate"));
                 } catch (Exception e) {
                     // just skip it
                 }
                 if (path != null && value != null) {
-                    BlkioDeviceOption targetDevOpt = target.get(path);
-                    if (targetDevOpt == null) {
-                        targetDevOpt = new BlkioDeviceOption();
-                        target.put(path, targetDevOpt);
-                    }
+                    BlkioDeviceOption targetDevOpt = target.computeIfAbsent(path, k -> new BlkioDeviceOption());
 
                     switch (field) {
                     case READ_IOPS:
@@ -507,6 +503,7 @@ public class DockerTransformerImpl implements DockerTransformer {
         }
 
         List<PortSpec> portSpecs = InstanceConstants.getPortSpecs(instance);
+        List<String> portSpecStrings = new ArrayList<>(DataAccessor.fieldObjectList(instance, InstanceConstants.FIELD_PORTS, String.class));
         for (PortInstance portInstance : containerPortInstances) {
             boolean found = false;
             for (PortSpec portSpec : portSpecs) {
@@ -518,7 +515,7 @@ public class DockerTransformerImpl implements DockerTransformer {
             }
 
             if (!found) {
-                portSpecs.add(new PortSpec(portInstance));
+                portSpecStrings.add(new PortSpec(portInstance).toSpec());
             }
         }
         setField(instance, FIELD_PORTS, portSpecs);
@@ -610,10 +607,6 @@ public class DockerTransformerImpl implements DockerTransformer {
             return null;
         } else if (fieldValue instanceof Number && ((Number)fieldValue).longValue() == 0L) {
             return null;
-        } else if (fieldValue instanceof List && fieldValue == null) {
-            return new ArrayList();
-        } else if (fieldValue instanceof Map && fieldValue == null) {
-            return new HashMap();
         }
         return fieldValue;
     }
@@ -621,9 +614,7 @@ public class DockerTransformerImpl implements DockerTransformer {
     private boolean isEmptyValue(Object fieldValue) {
         return fieldValue == null ||
                 (fieldValue instanceof String && StringUtils.isEmpty((String) fieldValue)) ||
-                (fieldValue instanceof Number && ((Number) fieldValue).longValue() == 0L) ||
-                (fieldValue instanceof List && fieldValue == null) ||
-                (fieldValue instanceof Map && fieldValue == null);
+                (fieldValue instanceof Number && ((Number) fieldValue).longValue() == 0L);
     }
 
     private InspectContainerResponse transformInspect(Map<String, Object> inspect) {
@@ -643,7 +634,7 @@ public class DockerTransformerImpl implements DockerTransformer {
         if (obj == null) {
             Integer fieldCode = DataAccessor.fieldInteger(instance, InstanceConstants.FIELD_EXIT_CODE);
             if (fieldCode != null) {
-                return fieldCode.intValue();
+                return fieldCode;
             }
         }
         return 0;

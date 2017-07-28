@@ -212,7 +212,7 @@ public class EnvironmentResourceManagerImpl implements EnvironmentResourceManage
     }
 
     private boolean healthyAndActive(InstanceInfo instance) {
-        return HealthcheckConstants.HEALTH_STATE_HEALTHY.equals(instance.getHealthState()) &&
+        return HealthcheckConstants.isHealthy(instance.getHealthState()) &&
                 InstanceConstants.STATE_RUNNING.equals(instance.getState());
 
     }

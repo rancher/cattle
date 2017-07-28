@@ -52,6 +52,7 @@ public class InstanceConstants {
     public static final String FIELD_ENVIRONMENT = "environment";
     public static final String FIELD_EXIT_CODE = "exitCode";
     public static final String FIELD_EXPOSE = "expose";
+    public static final String FIELD_EXTERNAL_COMPUTE_AGENT = "externalComputeAgent";
     public static final String FIELD_EXTRA_HOSTS = "extraHosts";
     public static final String FIELD_GROUP_ADD = "groupAdd";
     public static final String FIELD_HEALTH_CHECK = "healthCheck";

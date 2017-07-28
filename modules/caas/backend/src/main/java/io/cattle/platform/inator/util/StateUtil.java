@@ -68,7 +68,7 @@ public class StateUtil {
     }
 
     public static boolean isHealthy(String healthState) {
-        return healthState == null || HealthcheckConstants.HEALTH_STATE_HEALTHY.equals(healthState);
+        return HealthcheckConstants.isHealthy(healthState);
     }
 
     public static boolean isUnhealthy(String healthState) {
