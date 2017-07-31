@@ -517,12 +517,16 @@ def test_container_logs(context):
 
 
 def test_container_labels(client, context):
-    labels = {'affinity': "container==B", '!affinity': "container==C"}
+    key = 'io.rancher.environment.uuid'
+    labels = {'affinity': "container==B", '!affinity': "container==C",
+              key: "default"}
     container = context.create_container(name="test" + random_str(),
                                          labels=labels)
     container = client.wait_success(container)
     assert container.state == 'running'
-    assert container.labels == labels
+    assert container.labels['affinity'] == "container==B"
+    assert container.labels['!affinity'] == "container==C"
+    assert container.labels[key] == context.project.uuid
 
 
 def _get_jwt(token):

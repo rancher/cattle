@@ -10,6 +10,7 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.StorageDriver;
 import io.cattle.platform.core.model.Volume;
+import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -60,6 +61,7 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
             return null;
         }
         Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
+        Account account = objectManager.loadResource(Account.class, instance.getAccountId());
         Map<Object, Object> data = new HashMap<>();
         setAgentVolumes(instance, labels, data);
         setName(instance, labels, data);
@@ -67,6 +69,7 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
         setLogConfig(instance, data);
         setSecrets(instance, data);
         setSystemLabel(instance, labels);
+        setEnvironmentLabel(labels, account);
 
         if (!data.isEmpty()) {
             return new HandlerResult(data);
@@ -163,6 +166,10 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
         if(Boolean.TRUE.equals(instance.getSystem()) && !labels.containsKey(SystemLabels.LABEL_CONTAINER_SYSTEM)) {
             labels.put(SystemLabels.LABEL_CONTAINER_SYSTEM, "true");
         }
+    }
+    
+    protected void setEnvironmentLabel(Map<String, Object> labels, Account account) {
+        labels.put(SystemLabels.LABEL_ENVIRONMENT_UUID, account.getUuid());
     }
 
     @Override

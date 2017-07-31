@@ -18,7 +18,7 @@ public class SystemLabels {
     public static final String LABEL_CONTAINER_SYSTEM = "io.rancher.container.system";
     public static final String LABEL_PROXY_PORT = "io.rancher.websocket.proxy.port";
     public static final String LABEL_PROXY_SCHEME = "io.rancher.websocket.proxy.scheme";
-
+    public static final String LABEL_ENVIRONMENT_UUID = "io.rancher.environment.uuid";
     /**
      * Indicates an instance runs an agent that provides the labels provider service
      */
