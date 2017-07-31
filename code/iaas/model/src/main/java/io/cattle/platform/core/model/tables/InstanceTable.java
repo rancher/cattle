@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class InstanceTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.InstanceRecord> {
 
-	private static final long serialVersionUID = -1510987535;
+	private static final long serialVersionUID = -472909168;
 
 	/**
 	 * The singleton instance of <code>cattle.instance</code>
@@ -204,7 +204,7 @@ public class InstanceTable extends org.jooq.impl.TableImpl<io.cattle.platform.co
 	/**
 	 * The column <code>cattle.instance.dns_search_internal</code>.
 	 */
-	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.InstanceRecord, java.lang.String> DNS_SEARCH_INTERNAL = createField("dns_search_internal", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.InstanceRecord, java.lang.String> DNS_SEARCH_INTERNAL = createField("dns_search_internal", org.jooq.impl.SQLDataType.VARCHAR.length(1024), this, "");
 
 	/**
 	 * The column <code>cattle.instance.memory_reservation</code>.
