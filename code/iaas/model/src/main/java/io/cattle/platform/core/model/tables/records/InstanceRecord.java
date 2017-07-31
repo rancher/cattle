@@ -13,7 +13,7 @@ package io.cattle.platform.core.model.tables.records;
 @javax.persistence.Table(name = "instance", schema = "cattle")
 public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.InstanceRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, io.cattle.platform.core.model.Instance {
 
-	private static final long serialVersionUID = -988707973;
+	private static final long serialVersionUID = 488997912;
 
 	/**
 	 * Setter for <code>cattle.instance.id</code>.
@@ -622,7 +622,7 @@ public class InstanceRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.
 	/**
 	 * Getter for <code>cattle.instance.dns_search_internal</code>.
 	 */
-	@javax.persistence.Column(name = "dns_search_internal", length = 255)
+	@javax.persistence.Column(name = "dns_search_internal", length = 1024)
 	@Override
 	public java.lang.String getDnsSearchInternal() {
 		return (java.lang.String) getValue(35);
