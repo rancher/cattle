@@ -26,7 +26,7 @@ public class DeploymentSyncRequest {
 
     public DeploymentSyncRequest(DeploymentUnit unit, String revision, List<Instance> containers, List<Volume> volumes,
                                  List<Credential> registryCredentials, List<Network> networks) {
-        this.deploymentUnitUuid = deploymentUnitUuid;
+        this.deploymentUnitUuid = unit == null ? null : unit.getUuid();
         this.revision = revision;
         this.containers = containers;
         this.volumes = volumes;
