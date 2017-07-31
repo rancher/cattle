@@ -27,6 +27,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.inject.Inject;
 
@@ -81,12 +83,12 @@ public class IdentityManager extends AbstractNoOpResourceManager {
      * make N requests one for each Passed in identity.
      */
     private List<Identity> refreshIdentities(final Set<Identity> identities) {
-        final Collection<Callable<Identity>> identitiesToGet = new ArrayList<>();
+        final Collection<Future<Identity>> identitiesToGet = new ArrayList<>();
         final List<Identity> identitiesToReturn = new ArrayList<>();
         final ApiContext context = ApiContext.getContext();
         final ManagedContext managedContext = new DefaultManagedContext();
         for (final Identity identity : identities) {
-            identitiesToGet.add(new Callable<Identity>() {
+            identitiesToGet.add(executorService.submit(new Callable<Identity>() {
                 @Override
                 public Identity call() throws Exception {
                     try {
@@ -102,15 +104,18 @@ public class IdentityManager extends AbstractNoOpResourceManager {
                         return null;
                     }
                 }
-            });
+            }));
 
         }
         try {
-            for (Future<Identity> future:executorService.invokeAll(identitiesToGet)){
-                Identity newIdentity = future.get();
+            for (Future<Identity> future : identitiesToGet) {
+                Identity newIdentity = future.get(10, TimeUnit.SECONDS);
                 authorize(newIdentity);
                 identitiesToReturn.add(newIdentity);
             }
+        } catch (TimeoutException e) {
+            logger.error("Timeout when getting an identities.", e);
+            throw new RuntimeException(e);
         } catch (InterruptedException e) {
             logger.error("Interrupted when getting and Identities.", e);
             throw new RuntimeException(e);
