@@ -94,6 +94,8 @@ public class ComposeExportConfigItem {
     public static final ComposeExportConfigItem UTS = new ComposeExportConfigItem("uts", "uts", false);
     public static final ComposeExportConfigItem STOPSIGNAL = new ComposeExportConfigItem("stopSignal",
             "stop_signal", false);
+    public static final ComposeExportConfigItem STOPTIMEOUT = new ComposeExportConfigItem("stopTimeout",
+            "stop_grace_period", false);
     public static final ComposeExportConfigItem OOMSCOREADJ = new ComposeExportConfigItem("oomScoreAdj",
             "oom_score_adj", false);
     public static final ComposeExportConfigItem IPCMODE = new ComposeExportConfigItem("ipcMode", "ipc",
