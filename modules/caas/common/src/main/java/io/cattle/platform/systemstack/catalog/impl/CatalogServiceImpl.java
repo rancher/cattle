@@ -1,12 +1,10 @@
 package io.cattle.platform.systemstack.catalog.impl;
 
-import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.addon.CatalogTemplate;
 import io.cattle.platform.core.constants.ServiceConstants;
+import io.cattle.platform.core.constants.StackConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
-import io.cattle.platform.core.model.ProjectTemplate;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
@@ -17,25 +15,18 @@ import io.cattle.platform.systemstack.model.Template;
 import io.cattle.platform.systemstack.model.TemplateCollection;
 import io.cattle.platform.util.type.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.client.fluent.Response;
-import org.yaml.snakeyaml.Yaml;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
-import static io.cattle.platform.core.model.tables.StackTable.*;
 
 public class CatalogServiceImpl implements CatalogService {
 
-    private static DynamicStringProperty CATALOG_VERSION_URL = ArchaiusUtil.getString("system.stack.catalog.versions.url");
-    private static DynamicStringProperty CATALOG_RESOURCE_URL = ArchaiusUtil.getString("system.stack.catalog.url");
-    private static DynamicStringProperty CATALOG_RESOURCE_VERSION = ArchaiusUtil.getString("rancher.server.version");
-    private static final DynamicBooleanProperty LAUNCH_CATALOG = ArchaiusUtil.getBoolean("catalog.execute");
+    private static final DynamicStringProperty CATALOG_VERSION_URL = ArchaiusUtil.getString("system.stack.catalog.versions.url");
+    private static final DynamicStringProperty CATALOG_RESOURCE_URL = ArchaiusUtil.getString("system.stack.catalog.url");
+    private static final DynamicStringProperty CATALOG_RESOURCE_VERSION = ArchaiusUtil.getString("rancher.server.version");
 
     JsonMapper jsonMapper;
     GenericResourceDao resourceDao;
@@ -52,42 +43,11 @@ public class CatalogServiceImpl implements CatalogService {
         this.processManager = processManager;
     }
 
-    @Override
-    public Map<String, CatalogTemplate> resolvedExternalIds(List<CatalogTemplate> templates) throws IOException {
-        Map<String, CatalogTemplate> result = new HashMap<>();
-
-        for (CatalogTemplate template : templates) {
-            String externalId = resolveExternalId(template);
-            if (StringUtils.isNotBlank(externalId)) {
-                result.put(externalId, template);
-            }
-        }
-
-        return result;
-    }
-
-    private String resolveExternalId(CatalogTemplate template) throws IOException {
-        return resolveUsingCatalog(template);
-    }
-
     protected void appendVersionCheck(StringBuilder catalogTemplateUrl) {
         String minVersion = CATALOG_RESOURCE_VERSION.get();
         if (StringUtils.isNotBlank(minVersion)) {
             catalogTemplateUrl.append("?rancherVersion=").append(minVersion);
         }
-    }
-
-    private String resolveUsingCatalog(CatalogTemplate catalogTemplate) throws IOException {
-        if (!LAUNCH_CATALOG.get()) {
-            return null;
-        }
-        if (StringUtils.isNotBlank(catalogTemplate.getTemplateVersionId())) {
-            return String.format("catalog://%s", catalogTemplate.getTemplateVersionId());
-        }
-
-        //get the latest version from the catalog template
-        Template template = getTemplateById(catalogTemplate.getTemplateId());
-        return getDefaultOrLatestTemplateExternalId(template);
     }
 
     protected String getDefaultOrLatestTemplateExternalId(Template template) throws IOException {
@@ -118,30 +78,6 @@ public class CatalogServiceImpl implements CatalogService {
         return getTemplateAtURL(versionUrl);
     }
 
-    protected Template getTemplateById(String id) throws IOException {
-        if (StringUtils.isBlank(id)) {
-            return null;
-        }
-        id = StringUtils.removeStart(id, "catalog://");
-
-        StringBuilder catalogTemplateUrl = new StringBuilder(CATALOG_RESOURCE_URL.get());
-        catalogTemplateUrl.append(id);
-        appendVersionCheck(catalogTemplateUrl);
-        return getTemplateAtURL(catalogTemplateUrl.toString());
-    }
-
-    @Override
-    public Template lookupTemplate(String id) throws IOException {
-        Template templateVersion = getTemplateVersionById(id);
-        if (templateVersion == null || "template".equals(templateVersion.getType())) {
-            Template template = getTemplateById(id);
-            if (template != null) {
-                templateVersion = getTemplateVersionById(template.getDefaultTemplateVersionId());
-            }
-        }
-        return templateVersion;
-    }
-
     protected Template getTemplateVersionById(String id) throws IOException {
         if (StringUtils.isBlank(id)) {
             return null;
@@ -159,14 +95,11 @@ public class CatalogServiceImpl implements CatalogService {
             return null;
         }
 
-        return Request.Get(url).execute().handleResponse(new ResponseHandler<Template>() {
-            @Override
-            public Template handleResponse(HttpResponse response) throws IOException {
-                if (response.getStatusLine().getStatusCode() != 200) {
-                    return null;
-                }
-                return jsonMapper.readValue(response.getEntity().getContent(), Template.class);
+        return Request.Get(url).execute().handleResponse(response -> {
+            if (response.getStatusLine().getStatusCode() != 200) {
+                return null;
             }
+            return jsonMapper.readValue(response.getEntity().getContent(), Template.class);
         });
     }
 
@@ -200,39 +133,19 @@ public class CatalogServiceImpl implements CatalogService {
 
         processManager.scheduleProcessInstance(ServiceConstants.PROCESS_STACK_UPGRADE, stack,
                 CollectionUtils.asMap(
-                   ServiceConstants.STACK_FIELD_TEMPLATES, template.getFiles(),
-                   ServiceConstants.STACK_FIELD_ENVIRONMENT, DataAccessor.fieldMap(stack, ServiceConstants.STACK_FIELD_ENVIRONMENT),
-                   ServiceConstants.STACK_FIELD_EXTERNAL_ID, "catalog://" + template.getId()));
+                   StackConstants.FIELD_TEMPLATES, template.getFiles(),
+                   StackConstants.FIELD_ENVIRONMENT, DataAccessor.fieldMap(stack, StackConstants.FIELD_ENVIRONMENT),
+                   StackConstants.FIELD_EXTERNAL_ID, "catalog://" + template.getId()));
 
         return stack;
     }
 
-    @Override
-    public Stack deploy(Long accountId, CatalogTemplate catalogTemplate) throws IOException {
-        String externalId = resolveExternalId(catalogTemplate);
-        if (externalId == null) {
-            return null;
-        }
-
-        Map<Object, Object> data = CollectionUtils.asMap(
-                STACK.EXTERNAL_ID, externalId,
-                STACK.ACCOUNT_ID, accountId,
-                STACK.NAME, catalogTemplate.getName(),
-                STACK.DESCRIPTION, catalogTemplate.getDescription(),
-                STACK.SYSTEM, true,
-                ServiceConstants.STACK_FIELD_ENVIRONMENT, catalogTemplate.getAnswers());
-        return resourceDao.createAndSchedule(Stack.class, objectManager.convertToPropertiesFor(Stack.class, data));
-    }
-
     protected TemplateCollection getTemplates(String url) throws IOException {
-        return Request.Get(url).execute().handleResponse(new ResponseHandler<TemplateCollection>() {
-            @Override
-            public TemplateCollection handleResponse(HttpResponse response) throws IOException {
-                if (response.getStatusLine().getStatusCode() != 200) {
-                    return null;
-                }
-                return jsonMapper.readValue(response.getEntity().getContent(), TemplateCollection.class);
+        return Request.Get(url).execute().handleResponse(response -> {
+            if (response.getStatusLine().getStatusCode() != 200) {
+                return null;
             }
+            return jsonMapper.readValue(response.getEntity().getContent(), TemplateCollection.class);
         });
     }
 
@@ -249,52 +162,6 @@ public class CatalogServiceImpl implements CatalogService {
             }
             firstCall = false;
         }
-    }
-
-    @Override
-    public Map<String, Map<Object, Object>> getTemplates(List<ProjectTemplate> installed) throws IOException {
-        refresh();
-
-        Map<String, Map<Object, Object>> result = new HashMap<>();
-
-        StringBuilder catalogTemplateUrl = new StringBuilder(CATALOG_RESOURCE_URL.get());
-        appendVersionCheck(catalogTemplateUrl);
-        if (catalogTemplateUrl.toString().contains("?")) {
-            catalogTemplateUrl.append("&");
-        } else {
-            catalogTemplateUrl.append("?");
-        }
-        catalogTemplateUrl.append("templateBase_eq=project");
-
-        TemplateCollection collection = getTemplates(catalogTemplateUrl.toString());
-
-        Yaml yaml = new Yaml();
-        if (collection.getData() != null) {
-            for (Template template : collection.getData()) {
-                if (template.getVersionLinks() == null) {
-                    continue;
-                }
-                String url = template.getVersionLinks().get(template.getDefaultVersion());
-                if (url == null) {
-                    continue;
-                }
-
-                template = getTemplateAtURL(url);
-                if (template == null || template.getFiles() == null) {
-                    continue;
-                }
-                String file = template.getFiles().get("project.yml");
-                if (file == null) {
-                    continue;
-                }
-
-                @SuppressWarnings("unchecked")
-                Map<Object, Object> project = yaml.loadAs(file, Map.class);
-                result.put("catalog://" + template.getId(), project);
-            }
-        }
-
-        return result;
     }
 
     @Override
@@ -338,32 +205,6 @@ public class CatalogServiceImpl implements CatalogService {
         }
 
         return String.format("%s:%s", parts[0], parts[1]);
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return LAUNCH_CATALOG.get();
-    }
-
-    @Override
-    public String getTemplateBase(String externalId) throws IOException {
-        if (StringUtils.isBlank(externalId)) {
-            return null;
-        }
-
-        String templateId = StringUtils.removeStart(externalId, "catalog://");
-        String[] parts = StringUtils.split(templateId, ":", 3);
-        if (parts.length < 3) {
-            return null;
-        }
-
-        parts = StringUtils.split(parts[1], "[*]", 2);
-        return parts.length == 2 ? parts[0] : null;
-    }
-
-    @Override
-    public String getTemplateBase(Template template) throws IOException {
-        return template == null ? null : getTemplateBase(template.getExternalId());
     }
 
 }

@@ -167,28 +167,6 @@ public interface Account extends Serializable {
     public String getExternalIdType();
 
     /**
-     * Setter for <code>cattle.account.health_state</code>.
-     */
-    public void setHealthState(String value);
-
-    /**
-     * Getter for <code>cattle.account.health_state</code>.
-     */
-    @Column(name = "health_state", length = 128)
-    public String getHealthState();
-
-    /**
-     * Setter for <code>cattle.account.project_template_id</code>.
-     */
-    public void setProjectTemplateId(Long value);
-
-    /**
-     * Getter for <code>cattle.account.project_template_id</code>.
-     */
-    @Column(name = "project_template_id", precision = 19)
-    public Long getProjectTemplateId();
-
-    /**
      * Setter for <code>cattle.account.default_network_id</code>.
      */
     public void setDefaultNetworkId(Long value);
@@ -198,28 +176,6 @@ public interface Account extends Serializable {
      */
     @Column(name = "default_network_id", precision = 19)
     public Long getDefaultNetworkId();
-
-    /**
-     * Setter for <code>cattle.account.version</code>.
-     */
-    public void setVersion(String value);
-
-    /**
-     * Getter for <code>cattle.account.version</code>.
-     */
-    @Column(name = "version", length = 128)
-    public String getVersion();
-
-    /**
-     * Setter for <code>cattle.account.revision</code>.
-     */
-    public void setRevision(Long value);
-
-    /**
-     * Getter for <code>cattle.account.revision</code>.
-     */
-    @Column(name = "revision", nullable = false, precision = 19)
-    public Long getRevision();
 
     // -------------------------------------------------------------------------
     // FROM and INTO

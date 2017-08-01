@@ -9,7 +9,6 @@ public interface LoopFactory {
     String HEALTHCHECK_SCHEDULE = "healthcheck-schedule";
     String HEALTHSTATE_CALCULATE = "healthstate-calculate";
     String HEALTHCHECK_CLEANUP = "healthcheck-cleanup";
-    String SYSTEM_STACK = "system-stack";
     String ENDPOINT_UPDATE = "endpoint-update";
     String SERVICE_MEMBERSHIP = "service-membership";
 

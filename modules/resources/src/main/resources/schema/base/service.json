@@ -42,7 +42,7 @@
       "nullable": true
     },
     "secondaryLaunchConfigs": {
-      "type": "array[secondaryLaunchConfig]",
+      "type": "array[launchConfig]",
       "create": true,
       "required": false,
       "nullable": true,

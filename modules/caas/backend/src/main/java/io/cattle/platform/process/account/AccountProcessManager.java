@@ -20,7 +20,6 @@ import io.cattle.platform.core.model.GenericObject;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
-import io.cattle.platform.core.model.ProjectTemplate;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.StoragePool;
@@ -34,7 +33,6 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -42,17 +40,14 @@ import java.util.List;
 import java.util.Map;
 
 import static io.cattle.platform.core.model.Tables.*;
-import static io.cattle.platform.core.model.tables.AccountTable.ACCOUNT;
 import static io.cattle.platform.core.model.tables.CredentialTable.CREDENTIAL;
 import static io.cattle.platform.core.model.tables.NetworkTable.NETWORK;
-import static io.cattle.platform.core.model.tables.ProjectTemplateTable.PROJECT_TEMPLATE;
 
 public class AccountProcessManager {
 
     public static final DynamicBooleanProperty CREATE_CREDENTIAL = ArchaiusUtil.getBoolean("process.account.create.create.credential");
     public static final DynamicStringProperty CREDENTIAL_TYPE = ArchaiusUtil.getString("process.account.create.create.credential.default.kind");
     public static final DynamicStringListProperty ACCOUNT_KIND_CREDENTIALS = ArchaiusUtil.getList("process.account.create.create.credential.account.kinds");
-    public static final DynamicStringProperty DEFAULT_TEMPLATE = ArchaiusUtil.getString("project.template.default.name");
     public static final DynamicStringListProperty KINDS = ArchaiusUtil.getList("docker.network.create.account.types");
 
     private static final Class<?>[] REMOVE_TYPES = new Class<?>[]{
@@ -125,25 +120,6 @@ public class AccountProcessManager {
         }
 
         return setupNetworking(account);
-    }
-
-    public HandlerResult preCreate(ProcessState state, ProcessInstance process) {
-        Account account = (Account)state.getResource();
-        if (account.getProjectTemplateId() != null || !AccountConstants.PROJECT_KIND.equals(account.getKind())) {
-            return null;
-        }
-
-        if (StringUtils.isBlank(DEFAULT_TEMPLATE.get())) {
-            return null;
-        }
-
-        ProjectTemplate template = objectManager.findAny(ProjectTemplate.class,
-                PROJECT_TEMPLATE.NAME, DEFAULT_TEMPLATE.get(),
-                PROJECT_TEMPLATE.IS_PUBLIC, true,
-                PROJECT_TEMPLATE.REMOVED, null);
-
-        return new HandlerResult(
-                ACCOUNT.PROJECT_TEMPLATE_ID, template == null ? null : template.getId());
     }
 
     public HandlerResult remove(ProcessState state, ProcessInstance process) {

@@ -2,6 +2,7 @@
   "resourceFields": {
     "name": {
       "required": true,
+      "unique": true,
       "validChars": "a-zA-Z0-9-",
       "minLength": 1,
       "maxLength": 63,
@@ -14,9 +15,6 @@
       "default": false,
       "required": false
     },
-    "environment": {
-      "type": "map[string]"
-    },
     "answers": {
       "type": "map[json]"
     },
@@ -24,11 +22,7 @@
       "type": "map[string]",
       "nullable": true
     },
-    "previousExternalId": {
-      "type": "string",
-      "nullable": true
-    },
-    "previousEnvironment": {
+    "labels": {
       "type": "map[string]",
       "nullable": true
     },
@@ -44,9 +38,6 @@
       "type": "boolean",
       "nullable": false,
       "default": false
-    },
-    "upgrade": {
-      "type": "kubernetesStackUpgrade"
     },
     "serviceIds": {
       "type": "array[reference[service]]",

@@ -14,6 +14,15 @@
       "type": "reference[network]",
       "nullable": true
     },
+    "computeFlavor":  {
+      "type": "enum",
+      "options": [
+        "docker",
+        "embeddedKubernetes",
+        "importedKubernetes",
+        "sharedKubernetes"
+      ]
+    },
     "name": {
       "attributes": {
         "scheduleUpdate": true
@@ -28,6 +37,11 @@
     },
     "startedStackIds": {
       "type": "array[reference[stack]]"
+    },
+    "version":  {
+      "type": "string",
+      "nullable": false,
+      "default": "2"
     }
   }
 }

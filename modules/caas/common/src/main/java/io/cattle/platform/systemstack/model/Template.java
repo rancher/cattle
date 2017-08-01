@@ -1,7 +1,5 @@
 package io.cattle.platform.systemstack.model;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.Map;
 
 public class Template {
@@ -122,21 +120,6 @@ public class Template {
 
     public void setVersionLinks(Map<String, String> versionLinks) {
         this.versionLinks = versionLinks;
-    }
-
-    public String getDockerCompose() {
-        if (this.files == null) {
-            return null;
-        }
-        String value = this.getFiles().get("docker-compose.yml");
-        return StringUtils.isBlank(value) ? this.getFiles().get("docker-compose.yml.tpl") : value;
-    }
-
-    public String getRancherCompose() {
-        if (this.files == null) {
-            return null;
-        }
-        return this.getFiles().get("rancher-compose.yml");
     }
 
     public Map<String, String> getFiles() {

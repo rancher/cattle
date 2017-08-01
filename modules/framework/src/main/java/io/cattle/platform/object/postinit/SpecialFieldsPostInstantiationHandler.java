@@ -2,12 +2,11 @@ package io.cattle.platform.object.postinit;
 
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.Schema;
+import org.apache.commons.beanutils.BeanUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 import java.util.Map;
-
-import org.apache.commons.beanutils.BeanUtils;
 
 public class SpecialFieldsPostInstantiationHandler implements ObjectPostInstantiationHandler {
 
@@ -26,9 +25,12 @@ public class SpecialFieldsPostInstantiationHandler implements ObjectPostInstanti
     public <T> T postProcess(T obj, Class<T> clz, Map<String, Object> properties) {
         set(obj, CREATED, new Date());
         set(obj, STATE, "requested");
+        properties.remove(CREATED);
+        properties.remove(STATE);
 
         Schema schema = schemaFactory.getSchema(clz);
         if (schema != null) {
+            properties.remove(KIND);
             set(obj, KIND, schema.getId());
         }
 

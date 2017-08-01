@@ -21,8 +21,8 @@ import javax.persistence.Table;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record17;
-import org.jooq.Row17;
+import org.jooq.Record13;
+import org.jooq.Row13;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -39,9 +39,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "account", schema = "cattle")
-public class AccountRecord extends UpdatableRecordImpl<AccountRecord> implements TableRecordJaxb, Record17<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String, Long, Long, String, Long>, Account {
+public class AccountRecord extends UpdatableRecordImpl<AccountRecord> implements TableRecordJaxb, Record13<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, Long>, Account {
 
-    private static final long serialVersionUID = 1100688130;
+    private static final long serialVersionUID = 1648574949;
 
     /**
      * Setter for <code>cattle.account.id</code>.
@@ -250,45 +250,11 @@ public class AccountRecord extends UpdatableRecordImpl<AccountRecord> implements
     }
 
     /**
-     * Setter for <code>cattle.account.health_state</code>.
-     */
-    @Override
-    public void setHealthState(String value) {
-        set(12, value);
-    }
-
-    /**
-     * Getter for <code>cattle.account.health_state</code>.
-     */
-    @Column(name = "health_state", length = 128)
-    @Override
-    public String getHealthState() {
-        return (String) get(12);
-    }
-
-    /**
-     * Setter for <code>cattle.account.project_template_id</code>.
-     */
-    @Override
-    public void setProjectTemplateId(Long value) {
-        set(13, value);
-    }
-
-    /**
-     * Getter for <code>cattle.account.project_template_id</code>.
-     */
-    @Column(name = "project_template_id", precision = 19)
-    @Override
-    public Long getProjectTemplateId() {
-        return (Long) get(13);
-    }
-
-    /**
      * Setter for <code>cattle.account.default_network_id</code>.
      */
     @Override
     public void setDefaultNetworkId(Long value) {
-        set(14, value);
+        set(12, value);
     }
 
     /**
@@ -297,41 +263,7 @@ public class AccountRecord extends UpdatableRecordImpl<AccountRecord> implements
     @Column(name = "default_network_id", precision = 19)
     @Override
     public Long getDefaultNetworkId() {
-        return (Long) get(14);
-    }
-
-    /**
-     * Setter for <code>cattle.account.version</code>.
-     */
-    @Override
-    public void setVersion(String value) {
-        set(15, value);
-    }
-
-    /**
-     * Getter for <code>cattle.account.version</code>.
-     */
-    @Column(name = "version", length = 128)
-    @Override
-    public String getVersion() {
-        return (String) get(15);
-    }
-
-    /**
-     * Setter for <code>cattle.account.revision</code>.
-     */
-    @Override
-    public void setRevision(Long value) {
-        set(16, value);
-    }
-
-    /**
-     * Getter for <code>cattle.account.revision</code>.
-     */
-    @Column(name = "revision", nullable = false, precision = 19)
-    @Override
-    public Long getRevision() {
-        return (Long) get(16);
+        return (Long) get(12);
     }
 
     // -------------------------------------------------------------------------
@@ -347,23 +279,23 @@ public class AccountRecord extends UpdatableRecordImpl<AccountRecord> implements
     }
 
     // -------------------------------------------------------------------------
-    // Record17 type implementation
+    // Record13 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row17<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String, Long, Long, String, Long> fieldsRow() {
-        return (Row17) super.fieldsRow();
+    public Row13<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, Long> fieldsRow() {
+        return (Row13) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row17<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String, Long, Long, String, Long> valuesRow() {
-        return (Row17) super.valuesRow();
+    public Row13<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, Long> valuesRow() {
+        return (Row13) super.valuesRow();
     }
 
     /**
@@ -466,40 +398,8 @@ public class AccountRecord extends UpdatableRecordImpl<AccountRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field13() {
-        return AccountTable.ACCOUNT.HEALTH_STATE;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Long> field14() {
-        return AccountTable.ACCOUNT.PROJECT_TEMPLATE_ID;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Long> field15() {
+    public Field<Long> field13() {
         return AccountTable.ACCOUNT.DEFAULT_NETWORK_ID;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<String> field16() {
-        return AccountTable.ACCOUNT.VERSION;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Long> field17() {
-        return AccountTable.ACCOUNT.REVISION;
     }
 
     /**
@@ -602,40 +502,8 @@ public class AccountRecord extends UpdatableRecordImpl<AccountRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public String value13() {
-        return getHealthState();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Long value14() {
-        return getProjectTemplateId();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Long value15() {
+    public Long value13() {
         return getDefaultNetworkId();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String value16() {
-        return getVersion();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Long value17() {
-        return getRevision();
     }
 
     /**
@@ -750,25 +618,7 @@ public class AccountRecord extends UpdatableRecordImpl<AccountRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public AccountRecord value13(String value) {
-        setHealthState(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public AccountRecord value14(Long value) {
-        setProjectTemplateId(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public AccountRecord value15(Long value) {
+    public AccountRecord value13(Long value) {
         setDefaultNetworkId(value);
         return this;
     }
@@ -777,25 +627,7 @@ public class AccountRecord extends UpdatableRecordImpl<AccountRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public AccountRecord value16(String value) {
-        setVersion(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public AccountRecord value17(Long value) {
-        setRevision(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public AccountRecord values(Long value1, String value2, String value3, String value4, String value5, String value6, Date value7, Date value8, Date value9, Map<String,Object> value10, String value11, String value12, String value13, Long value14, Long value15, String value16, Long value17) {
+    public AccountRecord values(Long value1, String value2, String value3, String value4, String value5, String value6, Date value7, Date value8, Date value9, Map<String,Object> value10, String value11, String value12, Long value13) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -809,10 +641,6 @@ public class AccountRecord extends UpdatableRecordImpl<AccountRecord> implements
         value11(value11);
         value12(value12);
         value13(value13);
-        value14(value14);
-        value15(value15);
-        value16(value16);
-        value17(value17);
         return this;
     }
 
@@ -837,11 +665,7 @@ public class AccountRecord extends UpdatableRecordImpl<AccountRecord> implements
         setData(from.getData());
         setExternalId(from.getExternalId());
         setExternalIdType(from.getExternalIdType());
-        setHealthState(from.getHealthState());
-        setProjectTemplateId(from.getProjectTemplateId());
         setDefaultNetworkId(from.getDefaultNetworkId());
-        setVersion(from.getVersion());
-        setRevision(from.getRevision());
     }
 
     /**
@@ -867,7 +691,7 @@ public class AccountRecord extends UpdatableRecordImpl<AccountRecord> implements
     /**
      * Create a detached, initialised AccountRecord
      */
-    public AccountRecord(Long id, String name, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String externalId, String externalIdType, String healthState, Long projectTemplateId, Long defaultNetworkId, String version, Long revision) {
+    public AccountRecord(Long id, String name, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String externalId, String externalIdType, Long defaultNetworkId) {
         super(AccountTable.ACCOUNT);
 
         set(0, id);
@@ -882,10 +706,6 @@ public class AccountRecord extends UpdatableRecordImpl<AccountRecord> implements
         set(9, data);
         set(10, externalId);
         set(11, externalIdType);
-        set(12, healthState);
-        set(13, projectTemplateId);
-        set(14, defaultNetworkId);
-        set(15, version);
-        set(16, revision);
+        set(12, defaultNetworkId);
     }
 }

@@ -21,8 +21,8 @@ import javax.persistence.Table;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record15;
-import org.jooq.Row15;
+import org.jooq.Record16;
+import org.jooq.Row16;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -39,9 +39,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "environment", schema = "cattle")
-public class StackRecord extends UpdatableRecordImpl<StackRecord> implements TableRecordJaxb, Record15<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String, Boolean>, Stack {
+public class StackRecord extends UpdatableRecordImpl<StackRecord> implements TableRecordJaxb, Record16<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String, Boolean, Long>, Stack {
 
-    private static final long serialVersionUID = 972733634;
+    private static final long serialVersionUID = -1184463957;
 
     /**
      * Setter for <code>cattle.environment.id</code>.
@@ -300,6 +300,23 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
         return (Boolean) get(14);
     }
 
+    /**
+     * Setter for <code>cattle.environment.parent_environment_id</code>.
+     */
+    @Override
+    public void setParentStackId(Long value) {
+        set(15, value);
+    }
+
+    /**
+     * Getter for <code>cattle.environment.parent_environment_id</code>.
+     */
+    @Column(name = "parent_environment_id", precision = 19)
+    @Override
+    public Long getParentStackId() {
+        return (Long) get(15);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -313,23 +330,23 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     // -------------------------------------------------------------------------
-    // Record15 type implementation
+    // Record16 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row15<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String, Boolean> fieldsRow() {
-        return (Row15) super.fieldsRow();
+    public Row16<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String, Boolean, Long> fieldsRow() {
+        return (Row16) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row15<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String, Boolean> valuesRow() {
-        return (Row15) super.valuesRow();
+    public Row16<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String, Boolean, Long> valuesRow() {
+        return (Row16) super.valuesRow();
     }
 
     /**
@@ -456,6 +473,14 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
      * {@inheritDoc}
      */
     @Override
+    public Field<Long> field16() {
+        return StackTable.STACK.PARENT_ENVIRONMENT_ID;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Long value1() {
         return getId();
     }
@@ -570,6 +595,14 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     @Override
     public Boolean value15() {
         return getSystem();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Long value16() {
+        return getParentStackId();
     }
 
     /**
@@ -711,7 +744,16 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
      * {@inheritDoc}
      */
     @Override
-    public StackRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, String value12, String value13, String value14, Boolean value15) {
+    public StackRecord value16(Long value) {
+        setParentStackId(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public StackRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, String value12, String value13, String value14, Boolean value15, Long value16) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -727,6 +769,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
         value13(value13);
         value14(value14);
         value15(value15);
+        value16(value16);
         return this;
     }
 
@@ -754,6 +797,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
         setHealthState(from.getHealthState());
         setGroup(from.getGroup());
         setSystem(from.getSystem());
+        setParentStackId(from.getParentStackId());
     }
 
     /**
@@ -779,7 +823,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     /**
      * Create a detached, initialised StackRecord
      */
-    public StackRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String externalId, String healthState, String folder, Boolean system) {
+    public StackRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String externalId, String healthState, String folder, Boolean system, Long parentEnvironmentId) {
         super(StackTable.STACK);
 
         set(0, id);
@@ -797,5 +841,6 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
         set(12, healthState);
         set(13, folder);
         set(14, system);
+        set(15, parentEnvironmentId);
     }
 }

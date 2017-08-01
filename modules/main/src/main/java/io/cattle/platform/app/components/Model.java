@@ -8,7 +8,6 @@ import io.cattle.platform.api.stats.StatsAccess;
 import io.cattle.platform.core.addon.ActiveSetting;
 import io.cattle.platform.core.addon.BaseMachineConfig;
 import io.cattle.platform.core.addon.BlkioDeviceOption;
-import io.cattle.platform.core.addon.CatalogTemplate;
 import io.cattle.platform.core.addon.ComposeConfig;
 import io.cattle.platform.core.addon.ContainerEvent;
 import io.cattle.platform.core.addon.ContainerUpgrade;
@@ -145,18 +144,23 @@ public class Model {
         process("mount.deactivate").resourceType("mount").start("requested,active,activating").transitioning("deactivating").done("inactive").build();
         process("mount.remove").resourceType("mount").start("inactive,deactivating").transitioning("removing").done("removed").build();
 
-        // ProjectTemplate
-        process("projecttemplate.create").resourceType("projectTemplate").start("requested").transitioning("activating").done("active").build();
-        process("projecttemplate.remove").resourceType("projectTemplate").start("requested,activating,active").transitioning("removing").done("removed").build();
-
         // Stack
         process("stack.create").resourceType("stack").start("requested").transitioning("creating").done("active").build();
         process("stack.update").resourceType("stack").start("error,active").transitioning("updating").done("active").build();
-        process("stack.remove").resourceType("stack").start("requested,creating,updating,active,upgrading,rolling-back").transitioning("removing").done("removed").build();
-        process("stack.error").resourceType("stack").start("updating,activating").transitioning("erroring").done("error").build();
+        process("stack.remove").resourceType("stack").start("requested,erroring,error,creating,updating,active,activating,upgrading,rolling-back").transitioning("removing").done("removed").build();
+        process("stack.error").resourceType("stack").start("creating,updating,activating").transitioning("erroring").done("error").build();
         process("stack.rollback").resourceType("stack").start("").transitioning("rolling-back").done("active").build();
 
+        // "create" => "creating" => "inactive"
+        // "activate" => "activating" => "active"
+
         // Service Discovery Service
+//        processes("service")
+//                .process("create").fromOnly("requested").as("registering").to("inactive")
+//                .process("activate").after("create", "pause", "error").during("restart").as("activating").to("active")
+//                .process("update").after("error","create").during("activate", "update", "rollback").as("updating").to("active")
+//                .process("update").after("error","create").during("activate", "update", "rollback").as("updating").to("active")
+
         process("service.create").resourceType("service").start("requested").transitioning("registering").done("inactive").build();
         process("service.activate").resourceType("service").start("inactive,restarting,paused,error").transitioning("activating").done("active").build();
         process("service.update").resourceType("service").start("error,inactive,active,updating-active,finishing-upgrade,activating,upgrading,rolling-back").transitioning("error=updating-active,inactive=updating-inactive,active=updating-active,updating-active=updating-active,finishing-upgrade=finishing-upgrade,activating=activating,upgrading=upgrading,rolling-back=rolling-back").done("updating-inactive=inactive,updating-active=active,finishing-upgrade=active,activating=active,upgrading=upgraded,rolling-back=active").build();
@@ -259,7 +263,6 @@ public class Model {
                 AzureConfig.class,
                 BaseMachineConfig.class,
                 BlkioDeviceOption.class,
-                CatalogTemplate.class,
                 ComposeConfig.class,
                 ContainerExec.class,
                 ContainerEvent.class,
@@ -331,9 +334,6 @@ public class Model {
                 "instanceConsoleInput",
                 "instanceRemove",
                 "instanceStop",
-                "kubernetesService,parent=service",
-                "kubernetesStack,parent=stack",
-                "kubernetesStackUpgrade",
                 "launchConfig,parent=container",
                 "lbConfig",
                 "lbTargetConfig",

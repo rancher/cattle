@@ -63,8 +63,8 @@ public class K8sProviderLabels extends AgentBasedProcessHandler {
 
     protected boolean k8sRequired(Instance instance) {
         Account account = objectManager.loadResource(Account.class, instance.getAccountId());
-        String orch = DataAccessor.fieldString(account, AccountConstants.FIELD_ORCHESTRATION);
-        return AccountConstants.ORC_KUBERNETES_DISPLAY.equals(orch);
+        String compute = DataAccessor.fieldString(account, AccountConstants.FIELD_COMPUTE_FLAVOR);
+        return AccountConstants.isFlavorKubernetes(compute);
     }
 
     protected boolean isPod(Instance instance) {

@@ -21,6 +21,7 @@ import io.cattle.platform.core.model.tables.GenericObjectTable;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.HostTemplateTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
+import io.cattle.platform.core.model.tables.KeyValueTable;
 import io.cattle.platform.core.model.tables.MachineDriverTable;
 import io.cattle.platform.core.model.tables.MountTable;
 import io.cattle.platform.core.model.tables.NetworkDriverTable;
@@ -28,7 +29,6 @@ import io.cattle.platform.core.model.tables.NetworkTable;
 import io.cattle.platform.core.model.tables.ProcessExecutionTable;
 import io.cattle.platform.core.model.tables.ProcessInstanceTable;
 import io.cattle.platform.core.model.tables.ProjectMemberTable;
-import io.cattle.platform.core.model.tables.ProjectTemplateTable;
 import io.cattle.platform.core.model.tables.ResourcePoolTable;
 import io.cattle.platform.core.model.tables.RevisionTable;
 import io.cattle.platform.core.model.tables.ScheduledUpgradeTable;
@@ -63,6 +63,7 @@ import io.cattle.platform.core.model.tables.records.GenericObjectRecord;
 import io.cattle.platform.core.model.tables.records.HostRecord;
 import io.cattle.platform.core.model.tables.records.HostTemplateRecord;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
+import io.cattle.platform.core.model.tables.records.KeyValueRecord;
 import io.cattle.platform.core.model.tables.records.MachineDriverRecord;
 import io.cattle.platform.core.model.tables.records.MountRecord;
 import io.cattle.platform.core.model.tables.records.NetworkDriverRecord;
@@ -70,7 +71,6 @@ import io.cattle.platform.core.model.tables.records.NetworkRecord;
 import io.cattle.platform.core.model.tables.records.ProcessExecutionRecord;
 import io.cattle.platform.core.model.tables.records.ProcessInstanceRecord;
 import io.cattle.platform.core.model.tables.records.ProjectMemberRecord;
-import io.cattle.platform.core.model.tables.records.ProjectTemplateRecord;
 import io.cattle.platform.core.model.tables.records.ResourcePoolRecord;
 import io.cattle.platform.core.model.tables.records.RevisionRecord;
 import io.cattle.platform.core.model.tables.records.ScheduledUpgradeRecord;
@@ -139,7 +139,6 @@ public class Keys {
     public static final Identity<ProcessExecutionRecord, Long> IDENTITY_PROCESS_EXECUTION = Identities0.IDENTITY_PROCESS_EXECUTION;
     public static final Identity<ProcessInstanceRecord, Long> IDENTITY_PROCESS_INSTANCE = Identities0.IDENTITY_PROCESS_INSTANCE;
     public static final Identity<ProjectMemberRecord, Long> IDENTITY_PROJECT_MEMBER = Identities0.IDENTITY_PROJECT_MEMBER;
-    public static final Identity<ProjectTemplateRecord, Long> IDENTITY_PROJECT_TEMPLATE = Identities0.IDENTITY_PROJECT_TEMPLATE;
     public static final Identity<ResourcePoolRecord, Long> IDENTITY_RESOURCE_POOL = Identities0.IDENTITY_RESOURCE_POOL;
     public static final Identity<RevisionRecord, Long> IDENTITY_REVISION = Identities0.IDENTITY_REVISION;
     public static final Identity<ScheduledUpgradeRecord, Long> IDENTITY_SCHEDULED_UPGRADE = Identities0.IDENTITY_SCHEDULED_UPGRADE;
@@ -195,6 +194,7 @@ public class Keys {
     public static final UniqueKey<HostTemplateRecord> KEY_HOST_TEMPLATE_IDX_HOST_TEMPLATE_UUID = UniqueKeys0.KEY_HOST_TEMPLATE_IDX_HOST_TEMPLATE_UUID;
     public static final UniqueKey<InstanceRecord> KEY_INSTANCE_PRIMARY = UniqueKeys0.KEY_INSTANCE_PRIMARY;
     public static final UniqueKey<InstanceRecord> KEY_INSTANCE_IDX_INSTANCE_UUID = UniqueKeys0.KEY_INSTANCE_IDX_INSTANCE_UUID;
+    public static final UniqueKey<KeyValueRecord> KEY_KEY_VALUE_UIX_KEY_VALUE_NAME = UniqueKeys0.KEY_KEY_VALUE_UIX_KEY_VALUE_NAME;
     public static final UniqueKey<MachineDriverRecord> KEY_MACHINE_DRIVER_PRIMARY = UniqueKeys0.KEY_MACHINE_DRIVER_PRIMARY;
     public static final UniqueKey<MachineDriverRecord> KEY_MACHINE_DRIVER_IDX_MACHINE_DRIVER_UUID = UniqueKeys0.KEY_MACHINE_DRIVER_IDX_MACHINE_DRIVER_UUID;
     public static final UniqueKey<MountRecord> KEY_MOUNT_PRIMARY = UniqueKeys0.KEY_MOUNT_PRIMARY;
@@ -208,8 +208,6 @@ public class Keys {
     public static final UniqueKey<ProcessInstanceRecord> KEY_PROCESS_INSTANCE_PRIMARY = UniqueKeys0.KEY_PROCESS_INSTANCE_PRIMARY;
     public static final UniqueKey<ProjectMemberRecord> KEY_PROJECT_MEMBER_PRIMARY = UniqueKeys0.KEY_PROJECT_MEMBER_PRIMARY;
     public static final UniqueKey<ProjectMemberRecord> KEY_PROJECT_MEMBER_IDX_PROJECT_MEMBER_UUID = UniqueKeys0.KEY_PROJECT_MEMBER_IDX_PROJECT_MEMBER_UUID;
-    public static final UniqueKey<ProjectTemplateRecord> KEY_PROJECT_TEMPLATE_PRIMARY = UniqueKeys0.KEY_PROJECT_TEMPLATE_PRIMARY;
-    public static final UniqueKey<ProjectTemplateRecord> KEY_PROJECT_TEMPLATE_IDX_PROJECT_TEMPLATE_UUID = UniqueKeys0.KEY_PROJECT_TEMPLATE_IDX_PROJECT_TEMPLATE_UUID;
     public static final UniqueKey<ResourcePoolRecord> KEY_RESOURCE_POOL_PRIMARY = UniqueKeys0.KEY_RESOURCE_POOL_PRIMARY;
     public static final UniqueKey<ResourcePoolRecord> KEY_RESOURCE_POOL_IDX_RESOURCE_POOL_UUID = UniqueKeys0.KEY_RESOURCE_POOL_IDX_RESOURCE_POOL_UUID;
     public static final UniqueKey<ResourcePoolRecord> KEY_RESOURCE_POOL_IDX_POOL_ITEM2 = UniqueKeys0.KEY_RESOURCE_POOL_IDX_POOL_ITEM2;
@@ -246,7 +244,6 @@ public class Keys {
     // FOREIGN KEY definitions
     // -------------------------------------------------------------------------
 
-    public static final ForeignKey<AccountRecord, ProjectTemplateRecord> FK_ACCOUNT__PROJECT_TEMPLATE_ID = ForeignKeys0.FK_ACCOUNT__PROJECT_TEMPLATE_ID;
     public static final ForeignKey<AgentRecord, AccountRecord> FK_AGENT__ACCOUNT_ID = ForeignKeys0.FK_AGENT__ACCOUNT_ID;
     public static final ForeignKey<AgentRecord, AccountRecord> FK_AGENT__RESOURCE_ACCOUNT_ID = ForeignKeys0.FK_AGENT__RESOURCE_ACCOUNT_ID;
     public static final ForeignKey<AuditLogRecord, AccountRecord> FK_AUDIT_LOG__ACCOUNT_ID = ForeignKeys0.FK_AUDIT_LOG__ACCOUNT_ID;
@@ -266,6 +263,7 @@ public class Keys {
     public static final ForeignKey<DynamicSchemaRecord, ServiceRecord> FK_DYNAMIC_SCHEMA__SERVICE_ID = ForeignKeys0.FK_DYNAMIC_SCHEMA__SERVICE_ID;
     public static final ForeignKey<DynamicSchemaRoleRecord, DynamicSchemaRecord> FK_DYNAMIC_SCHEMA_ROLE_DYNAMIC_SCHEMA_ID = ForeignKeys0.FK_DYNAMIC_SCHEMA_ROLE_DYNAMIC_SCHEMA_ID;
     public static final ForeignKey<StackRecord, AccountRecord> FK_ENVIRONMENT__ACCOUNT_ID = ForeignKeys0.FK_ENVIRONMENT__ACCOUNT_ID;
+    public static final ForeignKey<StackRecord, StackRecord> FK_ENVIRONMENT_ENVIRONMENT_ID = ForeignKeys0.FK_ENVIRONMENT_ENVIRONMENT_ID;
     public static final ForeignKey<ExternalEventRecord, AccountRecord> FK_EXTERNAL_EVENT__ACCOUNT_ID = ForeignKeys0.FK_EXTERNAL_EVENT__ACCOUNT_ID;
     public static final ForeignKey<ExternalEventRecord, AccountRecord> FK_EXTERNAL_EVENT__REPORTED_ACCOUNT_ID = ForeignKeys0.FK_EXTERNAL_EVENT__REPORTED_ACCOUNT_ID;
     public static final ForeignKey<GenericObjectRecord, AccountRecord> FK_GENERIC_OBJECT__ACCOUNT_ID = ForeignKeys0.FK_GENERIC_OBJECT__ACCOUNT_ID;
@@ -295,7 +293,6 @@ public class Keys {
     public static final ForeignKey<ProcessInstanceRecord, AccountRecord> FK_PROCESS_INSTANCE__ACCOUNT_ID = ForeignKeys0.FK_PROCESS_INSTANCE__ACCOUNT_ID;
     public static final ForeignKey<ProjectMemberRecord, AccountRecord> FK_PROJECT_MEMBER__ACCOUNT_ID = ForeignKeys0.FK_PROJECT_MEMBER__ACCOUNT_ID;
     public static final ForeignKey<ProjectMemberRecord, AccountRecord> FK_PROJECT_MEMBER__PROJECT_ID = ForeignKeys0.FK_PROJECT_MEMBER__PROJECT_ID;
-    public static final ForeignKey<ProjectTemplateRecord, AccountRecord> FK_PROJECT_TEMPLATE__ACCOUNT_ID = ForeignKeys0.FK_PROJECT_TEMPLATE__ACCOUNT_ID;
     public static final ForeignKey<ResourcePoolRecord, AccountRecord> FK_RESOURCE_POOL__ACCOUNT_ID = ForeignKeys0.FK_RESOURCE_POOL__ACCOUNT_ID;
     public static final ForeignKey<RevisionRecord, AccountRecord> FK_REVISION__ACCOUNT_ID = ForeignKeys0.FK_REVISION__ACCOUNT_ID;
     public static final ForeignKey<RevisionRecord, ServiceRecord> FK_REVISION__SERVICE_ID = ForeignKeys0.FK_REVISION__SERVICE_ID;
@@ -365,7 +362,6 @@ public class Keys {
         public static Identity<ProcessExecutionRecord, Long> IDENTITY_PROCESS_EXECUTION = createIdentity(ProcessExecutionTable.PROCESS_EXECUTION, ProcessExecutionTable.PROCESS_EXECUTION.ID);
         public static Identity<ProcessInstanceRecord, Long> IDENTITY_PROCESS_INSTANCE = createIdentity(ProcessInstanceTable.PROCESS_INSTANCE, ProcessInstanceTable.PROCESS_INSTANCE.ID);
         public static Identity<ProjectMemberRecord, Long> IDENTITY_PROJECT_MEMBER = createIdentity(ProjectMemberTable.PROJECT_MEMBER, ProjectMemberTable.PROJECT_MEMBER.ID);
-        public static Identity<ProjectTemplateRecord, Long> IDENTITY_PROJECT_TEMPLATE = createIdentity(ProjectTemplateTable.PROJECT_TEMPLATE, ProjectTemplateTable.PROJECT_TEMPLATE.ID);
         public static Identity<ResourcePoolRecord, Long> IDENTITY_RESOURCE_POOL = createIdentity(ResourcePoolTable.RESOURCE_POOL, ResourcePoolTable.RESOURCE_POOL.ID);
         public static Identity<RevisionRecord, Long> IDENTITY_REVISION = createIdentity(RevisionTable.REVISION, RevisionTable.REVISION.ID);
         public static Identity<ScheduledUpgradeRecord, Long> IDENTITY_SCHEDULED_UPGRADE = createIdentity(ScheduledUpgradeTable.SCHEDULED_UPGRADE, ScheduledUpgradeTable.SCHEDULED_UPGRADE.ID);
@@ -419,6 +415,7 @@ public class Keys {
         public static final UniqueKey<HostTemplateRecord> KEY_HOST_TEMPLATE_IDX_HOST_TEMPLATE_UUID = createUniqueKey(HostTemplateTable.HOST_TEMPLATE, "KEY_host_template_idx_host_template_uuid", HostTemplateTable.HOST_TEMPLATE.UUID);
         public static final UniqueKey<InstanceRecord> KEY_INSTANCE_PRIMARY = createUniqueKey(InstanceTable.INSTANCE, "KEY_instance_PRIMARY", InstanceTable.INSTANCE.ID);
         public static final UniqueKey<InstanceRecord> KEY_INSTANCE_IDX_INSTANCE_UUID = createUniqueKey(InstanceTable.INSTANCE, "KEY_instance_idx_instance_uuid", InstanceTable.INSTANCE.UUID);
+        public static final UniqueKey<KeyValueRecord> KEY_KEY_VALUE_UIX_KEY_VALUE_NAME = createUniqueKey(KeyValueTable.KEY_VALUE, "KEY_key_value_uix_key_value_name", KeyValueTable.KEY_VALUE.NAME);
         public static final UniqueKey<MachineDriverRecord> KEY_MACHINE_DRIVER_PRIMARY = createUniqueKey(MachineDriverTable.MACHINE_DRIVER, "KEY_machine_driver_PRIMARY", MachineDriverTable.MACHINE_DRIVER.ID);
         public static final UniqueKey<MachineDriverRecord> KEY_MACHINE_DRIVER_IDX_MACHINE_DRIVER_UUID = createUniqueKey(MachineDriverTable.MACHINE_DRIVER, "KEY_machine_driver_idx_machine_driver_uuid", MachineDriverTable.MACHINE_DRIVER.UUID);
         public static final UniqueKey<MountRecord> KEY_MOUNT_PRIMARY = createUniqueKey(MountTable.MOUNT, "KEY_mount_PRIMARY", MountTable.MOUNT.ID);
@@ -432,8 +429,6 @@ public class Keys {
         public static final UniqueKey<ProcessInstanceRecord> KEY_PROCESS_INSTANCE_PRIMARY = createUniqueKey(ProcessInstanceTable.PROCESS_INSTANCE, "KEY_process_instance_PRIMARY", ProcessInstanceTable.PROCESS_INSTANCE.ID);
         public static final UniqueKey<ProjectMemberRecord> KEY_PROJECT_MEMBER_PRIMARY = createUniqueKey(ProjectMemberTable.PROJECT_MEMBER, "KEY_project_member_PRIMARY", ProjectMemberTable.PROJECT_MEMBER.ID);
         public static final UniqueKey<ProjectMemberRecord> KEY_PROJECT_MEMBER_IDX_PROJECT_MEMBER_UUID = createUniqueKey(ProjectMemberTable.PROJECT_MEMBER, "KEY_project_member_idx_project_member_uuid", ProjectMemberTable.PROJECT_MEMBER.UUID);
-        public static final UniqueKey<ProjectTemplateRecord> KEY_PROJECT_TEMPLATE_PRIMARY = createUniqueKey(ProjectTemplateTable.PROJECT_TEMPLATE, "KEY_project_template_PRIMARY", ProjectTemplateTable.PROJECT_TEMPLATE.ID);
-        public static final UniqueKey<ProjectTemplateRecord> KEY_PROJECT_TEMPLATE_IDX_PROJECT_TEMPLATE_UUID = createUniqueKey(ProjectTemplateTable.PROJECT_TEMPLATE, "KEY_project_template_idx_project_template_uuid", ProjectTemplateTable.PROJECT_TEMPLATE.UUID);
         public static final UniqueKey<ResourcePoolRecord> KEY_RESOURCE_POOL_PRIMARY = createUniqueKey(ResourcePoolTable.RESOURCE_POOL, "KEY_resource_pool_PRIMARY", ResourcePoolTable.RESOURCE_POOL.ID);
         public static final UniqueKey<ResourcePoolRecord> KEY_RESOURCE_POOL_IDX_RESOURCE_POOL_UUID = createUniqueKey(ResourcePoolTable.RESOURCE_POOL, "KEY_resource_pool_idx_resource_pool_uuid", ResourcePoolTable.RESOURCE_POOL.UUID);
         public static final UniqueKey<ResourcePoolRecord> KEY_RESOURCE_POOL_IDX_POOL_ITEM2 = createUniqueKey(ResourcePoolTable.RESOURCE_POOL, "KEY_resource_pool_idx_pool_item2", ResourcePoolTable.RESOURCE_POOL.POOL_TYPE, ResourcePoolTable.RESOURCE_POOL.POOL_ID, ResourcePoolTable.RESOURCE_POOL.QUALIFIER, ResourcePoolTable.RESOURCE_POOL.ITEM);
@@ -468,7 +463,6 @@ public class Keys {
     }
 
     private static class ForeignKeys0 extends AbstractKeys {
-        public static final ForeignKey<AccountRecord, ProjectTemplateRecord> FK_ACCOUNT__PROJECT_TEMPLATE_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_PROJECT_TEMPLATE_PRIMARY, AccountTable.ACCOUNT, "fk_account__project_template_id", AccountTable.ACCOUNT.PROJECT_TEMPLATE_ID);
         public static final ForeignKey<AgentRecord, AccountRecord> FK_AGENT__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, AgentTable.AGENT, "fk_agent__account_id", AgentTable.AGENT.ACCOUNT_ID);
         public static final ForeignKey<AgentRecord, AccountRecord> FK_AGENT__RESOURCE_ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, AgentTable.AGENT, "fk_agent__resource_account_id", AgentTable.AGENT.RESOURCE_ACCOUNT_ID);
         public static final ForeignKey<AuditLogRecord, AccountRecord> FK_AUDIT_LOG__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, AuditLogTable.AUDIT_LOG, "fk_audit_log__account_id", AuditLogTable.AUDIT_LOG.ACCOUNT_ID);
@@ -488,6 +482,7 @@ public class Keys {
         public static final ForeignKey<DynamicSchemaRecord, ServiceRecord> FK_DYNAMIC_SCHEMA__SERVICE_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_SERVICE_PRIMARY, DynamicSchemaTable.DYNAMIC_SCHEMA, "fk_dynamic_schema__service_id", DynamicSchemaTable.DYNAMIC_SCHEMA.SERVICE_ID);
         public static final ForeignKey<DynamicSchemaRoleRecord, DynamicSchemaRecord> FK_DYNAMIC_SCHEMA_ROLE_DYNAMIC_SCHEMA_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_DYNAMIC_SCHEMA_PRIMARY, DynamicSchemaRoleTable.DYNAMIC_SCHEMA_ROLE, "fk_dynamic_schema_role_dynamic_schema_id", DynamicSchemaRoleTable.DYNAMIC_SCHEMA_ROLE.DYNAMIC_SCHEMA_ID);
         public static final ForeignKey<StackRecord, AccountRecord> FK_ENVIRONMENT__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, StackTable.STACK, "fk_environment__account_id", StackTable.STACK.ACCOUNT_ID);
+        public static final ForeignKey<StackRecord, StackRecord> FK_ENVIRONMENT_ENVIRONMENT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ENVIRONMENT_PRIMARY, StackTable.STACK, "fk_environment_environment_id", StackTable.STACK.PARENT_ENVIRONMENT_ID);
         public static final ForeignKey<ExternalEventRecord, AccountRecord> FK_EXTERNAL_EVENT__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, ExternalEventTable.EXTERNAL_EVENT, "fk_external_event__account_id", ExternalEventTable.EXTERNAL_EVENT.ACCOUNT_ID);
         public static final ForeignKey<ExternalEventRecord, AccountRecord> FK_EXTERNAL_EVENT__REPORTED_ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, ExternalEventTable.EXTERNAL_EVENT, "fk_external_event__reported_account_id", ExternalEventTable.EXTERNAL_EVENT.REPORTED_ACCOUNT_ID);
         public static final ForeignKey<GenericObjectRecord, AccountRecord> FK_GENERIC_OBJECT__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, GenericObjectTable.GENERIC_OBJECT, "fk_generic_object__account_id", GenericObjectTable.GENERIC_OBJECT.ACCOUNT_ID);
@@ -517,7 +512,6 @@ public class Keys {
         public static final ForeignKey<ProcessInstanceRecord, AccountRecord> FK_PROCESS_INSTANCE__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, ProcessInstanceTable.PROCESS_INSTANCE, "fk_process_instance__account_id", ProcessInstanceTable.PROCESS_INSTANCE.ACCOUNT_ID);
         public static final ForeignKey<ProjectMemberRecord, AccountRecord> FK_PROJECT_MEMBER__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, ProjectMemberTable.PROJECT_MEMBER, "fk_project_member__account_id", ProjectMemberTable.PROJECT_MEMBER.ACCOUNT_ID);
         public static final ForeignKey<ProjectMemberRecord, AccountRecord> FK_PROJECT_MEMBER__PROJECT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, ProjectMemberTable.PROJECT_MEMBER, "fk_project_member__project_id", ProjectMemberTable.PROJECT_MEMBER.PROJECT_ID);
-        public static final ForeignKey<ProjectTemplateRecord, AccountRecord> FK_PROJECT_TEMPLATE__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, ProjectTemplateTable.PROJECT_TEMPLATE, "fk_project_template__account_id", ProjectTemplateTable.PROJECT_TEMPLATE.ACCOUNT_ID);
         public static final ForeignKey<ResourcePoolRecord, AccountRecord> FK_RESOURCE_POOL__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, ResourcePoolTable.RESOURCE_POOL, "fk_resource_pool__account_id", ResourcePoolTable.RESOURCE_POOL.ACCOUNT_ID);
         public static final ForeignKey<RevisionRecord, AccountRecord> FK_REVISION__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, RevisionTable.REVISION, "fk_revision__account_id", RevisionTable.REVISION.ACCOUNT_ID);
         public static final ForeignKey<RevisionRecord, ServiceRecord> FK_REVISION__SERVICE_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_SERVICE_PRIMARY, RevisionTable.REVISION, "fk_revision__service_id", RevisionTable.REVISION.SERVICE_ID);

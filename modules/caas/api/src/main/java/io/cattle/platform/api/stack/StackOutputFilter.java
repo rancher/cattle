@@ -1,7 +1,7 @@
 package io.cattle.platform.api.stack;
 
 import io.cattle.platform.api.common.CachedOutputFilter;
-import io.cattle.platform.core.constants.ServiceConstants;
+import io.cattle.platform.core.constants.StackConstants;
 import io.cattle.platform.core.dao.StackDao;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.object.ObjectManager;
@@ -27,7 +27,7 @@ public class StackOutputFilter extends CachedOutputFilter<Map<Long, List<Object>
     @Override
     public Resource filter(ApiRequest request, Object original, Resource converted) {
         if (request != null && original instanceof Stack) {
-            converted.getFields().put(ServiceConstants.STACK_FIELD_SERVICE_IDS,
+            converted.getFields().put(StackConstants.FIELD_SERVICE_IDS,
                     getCached(request).get(((Stack) original).getId()));
         }
         return converted;

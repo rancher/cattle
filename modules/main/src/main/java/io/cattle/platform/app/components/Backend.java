@@ -106,7 +106,6 @@ import io.cattle.platform.process.progress.ProcessProgressImpl;
 import io.cattle.platform.process.secret.SecretRemove;
 import io.cattle.platform.process.service.ServiceProcessManager;
 import io.cattle.platform.process.stack.K8sStackCreate;
-import io.cattle.platform.process.stack.K8sStackFinishupgrade;
 import io.cattle.platform.process.stack.K8sStackRemove;
 import io.cattle.platform.process.stack.K8sStackRollback;
 import io.cattle.platform.process.stack.K8sStackUpgrade;
@@ -119,10 +118,7 @@ import io.cattle.platform.sample.data.AbstractSampleData;
 import io.cattle.platform.service.launcher.GenericServiceLauncher;
 import io.cattle.platform.storage.ImageCredentialLookup;
 import io.cattle.platform.storage.impl.DockerImageCredentialLookup;
-import io.cattle.platform.systemstack.process.ProjecttemplateCreate;
 import io.cattle.platform.systemstack.process.ScheduledUpgradeProcessManager;
-import io.cattle.platform.systemstack.process.SystemStackProcessManager;
-import io.cattle.platform.systemstack.service.ProjectTemplateService;
 import io.cattle.platform.systemstack.service.UpgradeManager;
 import io.cattle.platform.systemstack.task.RunScheduledTask;
 import io.cattle.platform.systemstack.task.UpgradeScheduleTask;
@@ -132,7 +128,6 @@ import io.cattle.platform.trigger.DeploymentUnitReconcileTrigger;
 import io.cattle.platform.trigger.MetadataChangedTrigger;
 import io.cattle.platform.trigger.MetadataTrigger;
 import io.cattle.platform.trigger.ServiceReconcileTrigger;
-import io.cattle.platform.trigger.SystemStackTrigger;
 import io.cattle.platform.util.type.InitializationTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -148,7 +143,6 @@ public class Backend {
         LoopFactory.HEALTHCHECK_SCHEDULE,
         LoopFactory.HEALTHSTATE_CALCULATE,
         LoopFactory.HEALTHCHECK_CLEANUP,
-        LoopFactory.SYSTEM_STACK,
         LoopFactory.ENDPOINT_UPDATE,
         LoopFactory.SERVICE_MEMBERSHIP
     };
@@ -177,7 +171,6 @@ public class Backend {
     PingInstancesMonitor pingInstancesMonitor;
     PingMonitor pingMonitor;
     ProcessProgress progress;
-    ProjectTemplateService projectTemplateService;
     ResourceChangeEventListenerImpl resourceChangeEventListener;
     RestartLifecycleManager restartLifecycleManager;
     SecretsLifecycleManager secretsLifecycleManager;
@@ -231,8 +224,7 @@ public class Backend {
         agentLifecycleManager = new AgentLifecycleManagerImpl(agentInstanceFactory);
         secretsLifecycleManager = new SecretsLifecycleManagerImpl(c.tokenService, d.storageDriverDao);
         loadBalancerService = new LoadBalancerServiceImpl(f.jsonMapper, f.lockManager, f.objectManager);
-        serviceLifecycleManager = new ServiceLifecycleManagerImpl(f.objectManager, f.resourcePoolManager, networkService, d.serviceDao, c.revisionManager, loadBalancerService);
-        projectTemplateService = new ProjectTemplateService(c.catalogService, f.executorService, f.objectManager, d.resourceDao, f.lockManager);
+        serviceLifecycleManager = new ServiceLifecycleManagerImpl(f.objectManager, f.resourcePoolManager, networkService, d.serviceDao, c.revisionManager, loadBalancerService, f.processManager);
         upgradeManager = new UpgradeManager(c.catalogService, d.stackDao, d.resourceDao, f.lockManager, f.processManager);
         containerSync = new ContainerSyncImpl(f.objectManager, f.processManager, d.instanceDao, f.lockManager, d.resourceDao, f.scheduledExecutorService, f.cluster);
 
@@ -260,7 +252,6 @@ public class Backend {
         f.triggers.add(new DeploymentUnitReconcileTrigger(loopManager, d.serviceDao, d.volumeDao, f.objectManager));
         f.triggers.add(new ServiceReconcileTrigger(loopManager, f.objectManager));
         f.triggers.add(new MetadataTrigger(envResourceManager));
-        f.triggers.add(new SystemStackTrigger(loopManager, f.objectManager));
     }
 
     private void addProcessHandlers() {
@@ -285,7 +276,6 @@ public class Backend {
         ScheduledUpgradeProcessManager scheduledUpgradeProcessManager = new ScheduledUpgradeProcessManager(c.catalogService, upgradeManager, f.objectManager, f.processManager);
         ServiceProcessManager serviceProcessManager = new ServiceProcessManager(serviceLifecycleManager, f.objectManager, f.processManager, d.serviceDao);
         StackProcessManager stackProcessManager = new StackProcessManager(f.processManager, f.objectManager, c.catalogService);
-        SystemStackProcessManager systemStackProcessManager = new SystemStackProcessManager(f.objectManager, f.processManager, loopManager, f.resourceMonitor, d.networkDao);
         VolumeProcessManager volumeProcessManager = new VolumeProcessManager(f.objectManager, f.processManager, d.storagePoolDao, d.volumeDao);
 
         ActivateByDefault activateByDefault = new ActivateByDefault(f.objectManager, f.processManager);
@@ -297,13 +287,11 @@ public class Backend {
         InstanceStop instanceStop = new InstanceStop(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager, deploymentSyncFactory, envResourceManager);
         K8sProviderLabels k8sProviderLabels = new K8sProviderLabels(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager, envResourceManager);
         K8sStackCreate k8sStackCreate = new K8sStackCreate(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager);
-        K8sStackFinishupgrade k8sStackFinishupgrade = new K8sStackFinishupgrade(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager);
         K8sStackRemove k8sStackRemove = new K8sStackRemove(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager);
         K8sStackRollback k8sStackRollback = new K8sStackRollback(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager);
         K8sStackUpgrade k8sStackUpgrade = new K8sStackUpgrade(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager);
         PullTaskCreate pullTaskCreate = new PullTaskCreate(allocationHelper, c.agentLocator, progress, imageCredentialLookup, c.objectSerializer, f.objectManager);
         MountRemove mountRemove = new MountRemove(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager);
-        ProjecttemplateCreate projecttemplateCreate = new ProjecttemplateCreate(loopManager, f.objectManager);
         SecretRemove secretRemove = new SecretRemove(c.secretsService);
         SetRemovedFields setRemovedFields = new SetRemovedFields(f.objectManager);
         StoragePoolRemove storagePoolRemove = new StoragePoolRemove(f.objectManager, f.processManager, d.volumeDao);
@@ -312,7 +300,7 @@ public class Backend {
         ClearCacheHandler clearCacheHandler = new ClearCacheHandler(f.eventService, d.dbCacheManager);
         ServiceEventCreate serviceEventCreate = new ServiceEventCreate(f.objectManager, loopManager);
 
-        r.handle("account.create", account::preCreate, account::create, registerProcessManager::accountCreate, systemStackProcessManager::accountCreate);
+        r.handle("account.create", account::create, registerProcessManager::accountCreate);
         r.handle("account.remove", account::remove);
         r.handle("account.purge", account::purge);
 
@@ -361,8 +349,6 @@ public class Backend {
         r.handle("networkdriver.activate", networkProcessManager::networkDriverActivate);
         r.handle("networkdriver.remove", networkProcessManager::networkDriverRemove);
 
-        r.handle("projecttemplate.create", projecttemplateCreate);
-
         r.handle("scheduledupgrade.create", scheduledUpgradeProcessManager::create);
         r.handle("scheduledupgrade.start", scheduledUpgradeProcessManager::start);
 
@@ -377,11 +363,10 @@ public class Backend {
 
         r.handle("serviceevent.create", serviceEventCreate);
 
-        r.handle("stack.create", stackProcessManager::preCreate, composeExecutor, k8sStackCreate);
-        r.handle("stack.upgrade", stackProcessManager::preUpgrade, composeExecutor, k8sStackUpgrade);
+        r.handle("stack.create", composeExecutor, k8sStackCreate);
+        r.handle("stack.update", composeExecutor, k8sStackUpgrade);
         r.handle("stack.rollback", composeExecutor, k8sStackRollback);
-        r.handle("stack.remove", k8sStackRemove, stackProcessManager::remove, systemStackProcessManager::stackRemove);
-        r.handle("stack.finishupgrade", composeExecutor, k8sStackFinishupgrade);
+        r.handle("stack.remove", k8sStackRemove, stackProcessManager::remove);
 
         r.handle("storagedriver.activate", driverProcessManager::storageDriverActivate, driverProcessManager::setupPools);
         r.handle("storagedriver.deactivate", driverProcessManager::setupPools);
@@ -433,7 +418,6 @@ public class Backend {
         c.tasks.add(hostRemoveMonitorImpl);
         c.tasks.add(pingMonitor);
         c.tasks.add(processReplayTask);
-        c.tasks.add(projectTemplateService);
         c.tasks.add(purgeMonitorImpl);
         c.tasks.add(removeMonitorImpl);
         c.tasks.add(resourceChangeEventListener);
@@ -471,7 +455,6 @@ public class Backend {
         initTasks.add(annotatedListenerRegistration);
         initTasks.add(f.lockDelegator);
         initTasks.add(machineDriverLoader);
-        initTasks.add(projectTemplateService);
         initTasks.add(c.taskManager);
         initTasks.add(c.serviceAccountCreateStartup);
     }

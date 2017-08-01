@@ -95,6 +95,10 @@ public class WrappedResource extends ResourceImpl implements Resource {
                 }
             }
 
+            if (value == null && field.getTypeEnum() == FieldType.STRING && !field.isNullable()) {
+                value = field.getDefault();
+            }
+
             addField(name, IdFormatterUtils.formatReference(field, idFormatter, value, schemaFactory));
             if (createTsFields && field.getTypeEnum() == FieldType.DATE && value instanceof Date) {
                 addField(name + "TS", ((Date)value).getTime());

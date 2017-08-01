@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class StackTable extends TableImpl<StackRecord> {
 
-    private static final long serialVersionUID = 1646204271;
+    private static final long serialVersionUID = 691827237;
 
     /**
      * The reference instance of <code>cattle.environment</code>
@@ -131,6 +131,11 @@ public class StackTable extends TableImpl<StackRecord> {
     public final TableField<StackRecord, Boolean> SYSTEM = createField("system", org.jooq.impl.SQLDataType.BIT.nullable(false).defaultValue(org.jooq.impl.DSL.inline("b'0'", org.jooq.impl.SQLDataType.BIT)), this, "");
 
     /**
+     * The column <code>cattle.environment.parent_environment_id</code>.
+     */
+    public final TableField<StackRecord, Long> PARENT_ENVIRONMENT_ID = createField("parent_environment_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
      * Create a <code>cattle.environment</code> table reference
      */
     public StackTable() {
@@ -189,7 +194,7 @@ public class StackTable extends TableImpl<StackRecord> {
      */
     @Override
     public List<ForeignKey<StackRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<StackRecord, ?>>asList(Keys.FK_ENVIRONMENT__ACCOUNT_ID);
+        return Arrays.<ForeignKey<StackRecord, ?>>asList(Keys.FK_ENVIRONMENT__ACCOUNT_ID, Keys.FK_ENVIRONMENT_ENVIRONMENT_ID);
     }
 
     /**

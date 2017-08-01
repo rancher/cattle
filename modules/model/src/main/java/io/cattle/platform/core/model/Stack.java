@@ -199,6 +199,17 @@ public interface Stack extends Serializable {
     @Column(name = "system", nullable = false, precision = 1)
     public Boolean getSystem();
 
+    /**
+     * Setter for <code>cattle.environment.parent_environment_id</code>.
+     */
+    public void setParentStackId(Long value);
+
+    /**
+     * Getter for <code>cattle.environment.parent_environment_id</code>.
+     */
+    @Column(name = "parent_environment_id", precision = 19)
+    public Long getParentStackId();
+
     // -------------------------------------------------------------------------
     // FROM and INTO
     // -------------------------------------------------------------------------

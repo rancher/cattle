@@ -65,10 +65,6 @@ public class ServiceConstants {
     public static final String FIELD_VOLUME_DRIVER_OPTS = "driverOpts";
     public static final String FIELD_VOLUME_EXTERNAL = "external";
     public static final String FIELD_VOLUME_PER_CONTAINER = "perContainer";
-    public static final String STACK_FIELD_ENVIRONMENT = "environment";
-    public static final String STACK_FIELD_EXTERNAL_ID = "externalId";
-    public static final String STACK_FIELD_SERVICE_IDS = "serviceIds";
-    public static final String STACK_FIELD_TEMPLATES = "templates";
 
     public static final String ACTION_SERVICE_ACTIVATE = "activate";
     public static final String ACTION_STACK_DEACTIVATE_SERVICES = "deactivateservices";

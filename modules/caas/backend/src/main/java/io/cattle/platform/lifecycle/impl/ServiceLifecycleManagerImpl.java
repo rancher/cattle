@@ -14,6 +14,7 @@ import io.cattle.platform.lifecycle.ServiceLifecycleManager;
 import io.cattle.platform.loadbalancer.LoadBalancerService;
 import io.cattle.platform.network.NetworkService;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.resource.pool.PooledResourceOptions;
 import io.cattle.platform.resource.pool.ResourcePoolManager;
@@ -27,6 +28,7 @@ import java.util.Map;
 public class ServiceLifecycleManagerImpl implements ServiceLifecycleManager {
 
     ObjectManager objectManager;
+    ObjectProcessManager processManager;
     ResourcePoolManager poolManager;
     NetworkService networkService;
     ServiceDao serviceDao;
@@ -35,7 +37,7 @@ public class ServiceLifecycleManagerImpl implements ServiceLifecycleManager {
 
     public ServiceLifecycleManagerImpl(ObjectManager objectManager, ResourcePoolManager poolManager,
             NetworkService networkService, ServiceDao serviceDao, RevisionManager revisionManager,
-            LoadBalancerService loadbalancerService) {
+            LoadBalancerService loadbalancerService, ObjectProcessManager processManager) {
         super();
         this.objectManager = objectManager;
         this.poolManager = poolManager;
@@ -43,6 +45,7 @@ public class ServiceLifecycleManagerImpl implements ServiceLifecycleManager {
         this.serviceDao = serviceDao;
         this.revisionManager = revisionManager;
         this.loadbalancerService = loadbalancerService;
+        this.processManager = processManager;
     }
 
     @Override

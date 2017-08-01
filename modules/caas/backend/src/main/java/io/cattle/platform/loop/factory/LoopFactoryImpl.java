@@ -18,7 +18,6 @@ import io.cattle.platform.loop.HealthcheckCleanupMonitorImpl;
 import io.cattle.platform.loop.HealthcheckScheduleLoop;
 import io.cattle.platform.loop.ReconcileLoop;
 import io.cattle.platform.loop.ServiceMembershipLoop;
-import io.cattle.platform.loop.SystemStackLoop;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.systemstack.catalog.CatalogService;
@@ -82,8 +81,6 @@ public class LoopFactoryImpl implements LoopFactory {
                     unit.getServiceId(), id, unit.getAccountId(), ServiceConstants.KIND_DEPLOYMENT_UNIT);
         case HEALTHCHECK_SCHEDULE:
             return new HealthcheckScheduleLoop(id, envResourceManager, objectManager);
-        case SYSTEM_STACK:
-            return new SystemStackLoop(id, eventService, objectManager, hostDao, processManager, catalogService, envResourceManager);
         case HEALTHCHECK_CLEANUP:
             return new HealthcheckCleanupMonitorImpl(id, objectManager, loopManager, scheduledExecutorService, envResourceManager);
         case ENDPOINT_UPDATE:

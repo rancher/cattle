@@ -1,12 +1,11 @@
 package io.cattle.platform.db.jooq.generator;
 
 import io.cattle.platform.db.jooq.utils.TableRecordJaxb;
-
-import java.util.List;
-
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.util.DefaultGeneratorStrategy;
 import org.jooq.util.Definition;
+
+import java.util.List;
 
 public class ModelStrategy extends DefaultGeneratorStrategy {
 
@@ -16,6 +15,8 @@ public class ModelStrategy extends DefaultGeneratorStrategy {
         switch (result) {
         case "setEnvironmentId":
             return "setStackId";
+        case "setParentEnvironmentId":
+            return "setParentStackId";
         case "setFolder":
             return "setGroup";
         }
@@ -28,6 +29,8 @@ public class ModelStrategy extends DefaultGeneratorStrategy {
         switch (result) {
         case "getEnvironmentId":
             return "getStackId";
+        case "getParentEnvironmentId":
+            return "getParentStackId";
         case "getFolder":
             return "getGroup";
         }

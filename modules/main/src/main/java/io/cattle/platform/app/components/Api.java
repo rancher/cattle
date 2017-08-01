@@ -1,7 +1,6 @@
 package io.cattle.platform.app.components;
 
 import com.github.dockerjava.api.model.Volume;
-import io.cattle.platform.api.account.AccountCreateFilter;
 import io.cattle.platform.api.account.AccountDeactivateActionHandler;
 import io.cattle.platform.api.account.AccountFilter;
 import io.cattle.platform.api.agent.AgentFilter;
@@ -100,7 +99,6 @@ import io.cattle.platform.api.setting.SettingsOutputFilter;
 import io.cattle.platform.api.stack.AddOutputsActionHandler;
 import io.cattle.platform.api.stack.ServiceDiscoveryStackOutputFilter;
 import io.cattle.platform.api.stack.StackActivateServicesActionHandler;
-import io.cattle.platform.api.stack.StackCreateValidationFilter;
 import io.cattle.platform.api.stack.StackDeactivateServicesActionHandler;
 import io.cattle.platform.api.stack.StackOutputFilter;
 import io.cattle.platform.api.stats.ContainerStatsLinkHandler;
@@ -287,10 +285,8 @@ public class Api {
         ServiceStackNetworkDriverFilter serviceStackNetworkDriverFilter = new ServiceStackNetworkDriverFilter(d.networkDao, f.objectManager);
         ServiceStackStorageDriverFilter serviceStackStorageDriverFilter = new ServiceStackStorageDriverFilter(d.storagePoolDao, f.objectManager);
         ServiceUpgradeValidationFilter serviceUpgradeValidationFilter = new ServiceUpgradeValidationFilter(f.objectManager, f.jsonMapper, c.revisionManager);
-        StackCreateValidationFilter stackCreateValidationFilter = new StackCreateValidationFilter(c.locator, f.objectManager, c.catalogService);
         UserPreferenceFilter userPreferenceFilter = new UserPreferenceFilter(d.userPreferenceDao);
 
-        c.router.filter(Account.class, new AccountCreateFilter(f.objectManager, f.jsonMapper));
         c.router.filter(Account.class, new AccountFilter(d.accountDao));
         c.router.filter(Agent.class, new AgentFilter(c.locator, d.agentDao));
         c.router.filter(AuditLog.class, resourceIdInputFilter);
@@ -329,7 +325,6 @@ public class Api {
         c.router.filter(ServiceEvent.class, new ServiceEventFilter(f.objectManager, d.agentDao, d.serviceDao));
         c.router.filter(Stack.class, serviceStackNetworkDriverFilter);
         c.router.filter(Stack.class, serviceStackStorageDriverFilter);
-        c.router.filter(Stack.class, stackCreateValidationFilter);
         c.router.filter(StoragePoolConstants.KIND_REGISTRY, new RegistryServerAddressFilter(f.objectManager));
         c.router.filter(UserPreference.class, userPreferenceFilter);
         c.router.filter(Volume.class, new VolumeCreateValidationFilter(f.objectManager));

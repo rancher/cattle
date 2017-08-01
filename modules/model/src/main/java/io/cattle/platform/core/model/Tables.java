@@ -22,6 +22,7 @@ import io.cattle.platform.core.model.tables.GenericObjectTable;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.HostTemplateTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
+import io.cattle.platform.core.model.tables.KeyValueTable;
 import io.cattle.platform.core.model.tables.MachineDriverTable;
 import io.cattle.platform.core.model.tables.MountTable;
 import io.cattle.platform.core.model.tables.NetworkDriverTable;
@@ -29,7 +30,6 @@ import io.cattle.platform.core.model.tables.NetworkTable;
 import io.cattle.platform.core.model.tables.ProcessExecutionTable;
 import io.cattle.platform.core.model.tables.ProcessInstanceTable;
 import io.cattle.platform.core.model.tables.ProjectMemberTable;
-import io.cattle.platform.core.model.tables.ProjectTemplateTable;
 import io.cattle.platform.core.model.tables.ResourcePoolTable;
 import io.cattle.platform.core.model.tables.RevisionTable;
 import io.cattle.platform.core.model.tables.ScheduledUpgradeTable;
@@ -160,6 +160,11 @@ public class Tables {
     public static final InstanceTable INSTANCE = io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
 
     /**
+     * The table <code>cattle.key_value</code>.
+     */
+    public static final KeyValueTable KEY_VALUE = io.cattle.platform.core.model.tables.KeyValueTable.KEY_VALUE;
+
+    /**
      * The table <code>cattle.machine_driver</code>.
      */
     public static final MachineDriverTable MACHINE_DRIVER = io.cattle.platform.core.model.tables.MachineDriverTable.MACHINE_DRIVER;
@@ -193,11 +198,6 @@ public class Tables {
      * The table <code>cattle.project_member</code>.
      */
     public static final ProjectMemberTable PROJECT_MEMBER = io.cattle.platform.core.model.tables.ProjectMemberTable.PROJECT_MEMBER;
-
-    /**
-     * The table <code>cattle.project_template</code>.
-     */
-    public static final ProjectTemplateTable PROJECT_TEMPLATE = io.cattle.platform.core.model.tables.ProjectTemplateTable.PROJECT_TEMPLATE;
 
     /**
      * The table <code>cattle.resource_pool</code>.
