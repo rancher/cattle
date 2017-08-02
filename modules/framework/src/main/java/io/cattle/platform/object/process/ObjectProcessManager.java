@@ -42,6 +42,12 @@ public interface ObjectProcessManager {
         }
     }
 
+    default void pause(Object resource, Map<String, Object> data) {
+        if (!StandardStates.PAUSING.equals(ObjectUtils.getState(resource))) {
+            scheduleStandardProcessAsync(StandardProcess.PAUSE, resource, data);
+        }
+    }
+
     default void create(Object resource, Map<String, Object> data) {
         if (!StandardStates.CREATING.equals(ObjectUtils.getState(resource))) {
             scheduleStandardProcessAsync(StandardProcess.CREATE, resource, data);

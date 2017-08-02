@@ -20,7 +20,6 @@ import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.util.TypeUtils;
-import org.apache.commons.collections.Predicate;
 import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.jooq.DSLContext;
@@ -35,6 +34,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import static io.cattle.platform.core.model.tables.SettingTable.*;
+import static java.util.stream.Collectors.*;
 
 public class SettingManager extends DefaultResourceManager implements ResourceManagerAuthorizer {
 
@@ -154,28 +154,14 @@ public class SettingManager extends DefaultResourceManager implements ResourceMa
             return list;
         }
 
-        // TODO, need to make filtering on name work
-        String value = null;
-        List<ActiveSetting> result = new ArrayList<>();
-
-        for (ActiveSetting setting : getSettings((List<Setting>) CollectionUtils.toList(list), config)) {
-            if (value == null) {
-                result.add(setting);
-            } else if (value.equals(setting.getName())) {
-                result.add(setting);
-            }
-        }
-
-        return result;
+        return new ArrayList<>(getSettings((List<Setting>) CollectionUtils.toList(list), config));
     }
 
     @Override
     public Object authorize(Object object) {
-        Predicate predicate = new SettingsFilter(PUBLIC_SETTINGS.get(), ApiContext.getContext().getApiRequest());
+        SettingsFilter predicate = new SettingsFilter(PUBLIC_SETTINGS.get(), ApiContext.getContext().getApiRequest());
         if (object instanceof List<?>) {
-            List<Object> list = new ArrayList<>((List<?>) object);
-            org.apache.commons.collections.CollectionUtils.filter(list, predicate);
-            return ApiUtils.authorize(object);
+            return ApiUtils.authorize(((List) object).stream().filter(predicate::evaluate).collect(toList()));
         } else if (predicate.evaluate(object)){
             return ApiUtils.authorize(object);
         }

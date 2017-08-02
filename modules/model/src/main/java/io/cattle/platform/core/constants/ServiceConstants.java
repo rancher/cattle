@@ -19,7 +19,6 @@ public class ServiceConstants {
     public static final String KIND_NETWORK_DRIVER_SERVICE = "networkDriverService";
     public static final String KIND_SCALING_GROUP_SERVICE = "scalingGroup";
     public static final String KIND_SELECTOR_SERVICE = "selectorService";
-    public static final String KIND_KUBERNETES_SERVICE = "kubernetesService";
     public static final String KIND_LAUNCH_CONFIG = "launchConfig";
 
     public static final String KIND_DEPLOYMENT_UNIT = "deploymentUnit";
@@ -73,10 +72,7 @@ public class ServiceConstants {
     public static final String ACTION_SERVICE_RESTART = "restart";
 
     public static final String PROCESS_SERVICE_ACTIVATE = "service." + ACTION_SERVICE_ACTIVATE;
-    public static final String PROCESS_STACK_UPGRADE = "stack.upgrade";
-    public static final String PROCESS_STACK_REMOVE = "stack.remove";
     public static final String PROCESS_SERVICE_DEACTIVATE = "service.deactivate";
-    public static final String PROCESS_SERVICE_REMOVE = "service.remove";
     public static final String PROCESS_STACK_FINISH_UPGRADE = "stack.finishupgrade";
     public static final String PROCESS_DU_CREATE = "deploymentunit.create";
     public static final String PROCESS_DU_ACTIVATE = "deploymentunit.activate";

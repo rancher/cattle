@@ -39,16 +39,16 @@
       "nullable": false,
       "default": false
     },
+    "workingConfiguration": {
+      "type": "stackConfiguration",
+      "nullabled": true
+    },
     "serviceIds": {
       "type": "array[reference[service]]",
       "nullable": true
     }
   },
   "resourceActions": {
-    "upgrade": {
-      "input": "stackUpgrade",
-      "output": "stack"
-    },
     "addoutputs": {
       "input": "addOutputsInput",
       "output": "stack"

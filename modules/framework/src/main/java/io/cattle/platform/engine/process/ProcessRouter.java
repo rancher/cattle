@@ -6,6 +6,4 @@ public interface ProcessRouter {
 
     ProcessRouter handle(String process, ProcessHandler... handler);
 
-    ProcessRouter preHandle(String process, ProcessHandler... handler);
-
 }

@@ -2,7 +2,6 @@ package io.cattle.platform.systemstack.catalog.impl;
 
 import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.constants.StackConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Stack;
@@ -131,10 +130,9 @@ public class CatalogServiceImpl implements CatalogService {
             return null;
         }
 
-        processManager.scheduleProcessInstance(ServiceConstants.PROCESS_STACK_UPGRADE, stack,
-                CollectionUtils.asMap(
+        processManager.update(stack, CollectionUtils.asMap(
                    StackConstants.FIELD_TEMPLATES, template.getFiles(),
-                   StackConstants.FIELD_ENVIRONMENT, DataAccessor.fieldMap(stack, StackConstants.FIELD_ENVIRONMENT),
+                   StackConstants.FIELD_ANSWERS, DataAccessor.fieldMap(stack, StackConstants.FIELD_ANSWERS),
                    StackConstants.FIELD_EXTERNAL_ID, "catalog://" + template.getId()));
 
         return stack;

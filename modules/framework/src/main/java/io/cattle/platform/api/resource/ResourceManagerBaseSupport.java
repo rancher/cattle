@@ -5,8 +5,6 @@ import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
-import io.github.ibuildthecloud.gdapi.condition.Condition;
-import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
@@ -22,6 +20,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import static io.github.ibuildthecloud.gdapi.condition.Condition.*;
 
 public interface ResourceManagerBaseSupport extends ResourceManager {
 
@@ -112,12 +112,10 @@ public interface ResourceManagerBaseSupport extends ResourceManager {
 
         if (!showRemoved() && !byId) {
             /* removed is null or removed >= (NOW() - delay) */
-            Condition or = new Condition(new Condition(ConditionType.NULL), new Condition(ConditionType.GTE, removedTime()));
-            criteria.put(ObjectMetaDataManager.REMOVED_FIELD, or);
+            criteria.put(ObjectMetaDataManager.REMOVED_FIELD, isNull().or(gte(removedTime())));
 
             /* remove_time is null or remove_time > NOW() */
-            or = new Condition(new Condition(ConditionType.NULL), new Condition(ConditionType.GT, new Date()));
-            criteria.put(ObjectMetaDataManager.REMOVE_TIME_FIELD, or);
+            criteria.put(ObjectMetaDataManager.REMOVE_TIME_FIELD, isNull().or(gt(new Date())));
         }
 
         return criteria;

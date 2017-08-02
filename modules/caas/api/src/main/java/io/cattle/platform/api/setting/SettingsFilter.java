@@ -6,14 +6,13 @@ import io.cattle.platform.core.addon.ActiveSetting;
 import io.cattle.platform.core.model.Setting;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.RequestUtils;
-import org.apache.commons.collections.Predicate;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class SettingsFilter implements Predicate {
+public class SettingsFilter {
 
     Set<String> publicSettings;
     boolean all;
@@ -32,7 +31,6 @@ public class SettingsFilter implements Predicate {
         this.canListAll = "true".equals(ApiUtils.getPolicy().getOption(Policy.LIST_ALL_SETTINGS));
     }
 
-    @Override
     public boolean evaluate(Object object) {
         String name = null;
         if (object instanceof ActiveSetting) {

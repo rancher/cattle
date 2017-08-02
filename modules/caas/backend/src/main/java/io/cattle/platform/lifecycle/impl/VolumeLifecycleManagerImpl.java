@@ -1,10 +1,5 @@
 package io.cattle.platform.lifecycle.impl;
 
-import static io.cattle.platform.core.constants.InstanceConstants.*;
-import static io.cattle.platform.core.model.tables.MountTable.*;
-import static io.cattle.platform.core.model.tables.VolumeTable.*;
-import static  io.cattle.platform.object.util.DataAccessor.*;
-
 import io.cattle.platform.allocator.constraint.HostAffinityConstraint;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -26,8 +21,7 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.process.lock.InstanceVolumeAccessModeLock;
-import io.github.ibuildthecloud.gdapi.condition.Condition;
-import io.github.ibuildthecloud.gdapi.condition.ConditionType;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,7 +31,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import org.apache.commons.lang3.StringUtils;
+import static io.cattle.platform.core.constants.InstanceConstants.*;
+import static io.cattle.platform.core.model.tables.MountTable.*;
+import static io.cattle.platform.core.model.tables.VolumeTable.*;
+import static io.cattle.platform.object.util.DataAccessor.*;
+import static io.github.ibuildthecloud.gdapi.condition.Condition.*;
 
 public class VolumeLifecycleManagerImpl implements VolumeLifecycleManager {
 
@@ -73,8 +71,8 @@ public class VolumeLifecycleManagerImpl implements VolumeLifecycleManager {
         Map<String, Object> dataVolumeMounts = fieldMap(instance, InstanceConstants.FIELD_DATA_VOLUME_MOUNTS);
         List<String> newDataVolumes = new ArrayList<>();
         for (String v : dataVolumes) {
-            String volName = null;
-            String volPath = null;
+            String volName;
+            String volPath;
             String[] parts = v.split(":", 2);
              if (parts.length == 2 && !parts[0].startsWith("/") && parts[1].startsWith("/")) {
                 // named volume
@@ -126,7 +124,7 @@ public class VolumeLifecycleManagerImpl implements VolumeLifecycleManager {
     public void preStart(Instance instance) {
         List<Volume> volumes = InstanceHelpers.extractVolumesFromMounts(instance, objectManager);
         for (final Volume v : volumes) {
-            setVolumeAccessMode(instance, v);
+            setVolumeAccessMode(v);
             setupEc2AzLabels(instance, v);
         }
     }
@@ -186,8 +184,8 @@ public class VolumeLifecycleManagerImpl implements VolumeLifecycleManager {
 
     protected void deactivateMounts(Instance instance) {
         List<Mount> mounts = objectManager.find(Mount.class,
-                MOUNT.REMOVED, new Condition(ConditionType.NULL),
-                MOUNT.STATE, new Condition(ConditionType.NOTIN, VolumeLifecycleManager.MOUNT_STATES),
+                MOUNT.REMOVED, isNull(),
+                MOUNT.STATE, notIn(VolumeLifecycleManager.MOUNT_STATES),
                 MOUNT.INSTANCE_ID, instance.getId());
 
         for (Mount mount : mounts) {
@@ -195,7 +193,7 @@ public class VolumeLifecycleManagerImpl implements VolumeLifecycleManager {
         }
     }
 
-    protected void setVolumeAccessMode(Instance instance, Volume v) {
+    protected void setVolumeAccessMode(Volume v) {
         String driver = fieldString(v, VolumeConstants.FIELD_VOLUME_DRIVER);
         if (StringUtils.isNotEmpty(driver) && !VolumeConstants.LOCAL_DRIVER.equals(driver)) {
             List<? extends StoragePool> pools = storagePoolDao.findStoragePoolByDriverName(v.getAccountId(), driver);

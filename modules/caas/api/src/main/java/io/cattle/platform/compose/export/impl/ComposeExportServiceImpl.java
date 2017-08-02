@@ -14,8 +14,6 @@ import io.cattle.platform.core.util.LBMetadataUtil.LBConfigMetadataStyle;
 import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.TransformerUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.DumperOptions.LineBreak;
@@ -38,6 +36,7 @@ import java.util.Map;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
+import static java.util.stream.Collectors.*;
 
 public class ComposeExportServiceImpl implements ComposeExportService {
 
@@ -112,8 +111,7 @@ public class ComposeExportServiceImpl implements ComposeExportService {
     private Map<String, Object> createComposeData(List<? extends Service> servicesToExport, boolean forDockerCompose,
             List<? extends VolumeTemplate> volumes) {
         Map<String, Object> servicesData = new HashMap<>();
-        Collection<Long> servicesToExportIds = CollectionUtils.collect(servicesToExport,
-                TransformerUtils.invokerTransformer("getId"));
+        List<Long> servicesToExportIds = servicesToExport.stream().map(Service::getId).collect(toList());
         Map<String, Object> volumesData = new HashMap<>();
         for (Service service : servicesToExport) {
             List<String> launchConfigNames = ServiceUtil.getLaunchConfigNames(service);
@@ -124,9 +122,9 @@ public class ComposeExportServiceImpl implements ComposeExportService {
                         service, launchConfigName);
                 Map<String, Object> composeServiceData = new HashMap<>();
                 excludeRancherHash(cattleServiceData);
-                formatScale(service, cattleServiceData);
+                formatScale(cattleServiceData);
                 formatLBConfig(service, cattleServiceData);
-                setupServiceType(service, cattleServiceData);
+                setupServiceType(cattleServiceData);
                 for (String cattleService : cattleServiceData.keySet()) {
                     translateRancherToCompose(forDockerCompose, cattleServiceData, composeServiceData, cattleService,
                             service, false);
@@ -136,9 +134,9 @@ public class ComposeExportServiceImpl implements ComposeExportService {
                     populateLinksForService(service, servicesToExportIds, composeServiceData);
                     populateNetworkForService(service, launchConfigName, composeServiceData);
                     populateVolumesForService(service, launchConfigName, composeServiceData);
-                    addExtraComposeParameters(service, launchConfigName, composeServiceData);
+                    addExtraComposeParameters(service, composeServiceData);
                     populateSidekickLabels(service, composeServiceData, isPrimaryConfig);
-                    populateSelectorServiceLabels(service, launchConfigName, composeServiceData);
+                    populateSelectorServiceLabels(service, composeServiceData);
                     populateLogConfig(cattleServiceData, composeServiceData);
                     populateTmpfs(cattleServiceData, composeServiceData);
                     populateUlimit(cattleServiceData, composeServiceData);
@@ -287,7 +285,7 @@ public class ComposeExportServiceImpl implements ComposeExportService {
 
     @SuppressWarnings("unchecked")
     protected void populateSelectorServiceLabels(Service service,
-            String launchConfigName, Map<String, Object> composeServiceData) {
+                                                 Map<String, Object> composeServiceData) {
         String selectorContainer = service.getSelector();
         if (selectorContainer == null) {
             return;
@@ -297,9 +295,7 @@ public class ComposeExportServiceImpl implements ComposeExportService {
         if (composeServiceData.get(InstanceConstants.FIELD_LABELS) != null) {
             labels.putAll((HashMap<String, String>) composeServiceData.get(InstanceConstants.FIELD_LABELS));
         }
-        if (selectorContainer != null) {
-            labels.put(ServiceConstants.LABEL_SELECTOR_CONTAINER, selectorContainer);
-        }
+        labels.put(ServiceConstants.LABEL_SELECTOR_CONTAINER, selectorContainer);
 
         if (!labels.isEmpty()) {
             composeServiceData.put(InstanceConstants.FIELD_LABELS, labels);
@@ -368,7 +364,7 @@ public class ComposeExportServiceImpl implements ComposeExportService {
     }
 
     private void addExtraComposeParameters(Service service,
-            String launchConfigName, Map<String, Object> composeServiceData) {
+                                           Map<String, Object> composeServiceData) {
         if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_DNS_SERVICE)) {
             composeServiceData.put(ComposeExportConfigItem.IMAGE.getDockerName(), ServiceConstants.IMAGE_DNS);
         } else if (service.getKind().equalsIgnoreCase(ServiceConstants.KIND_EXTERNAL_SERVICE)) {
@@ -422,7 +418,7 @@ public class ComposeExportServiceImpl implements ComposeExportService {
                     export = true;
                 }
             } else if (value instanceof Boolean) {
-                if (((Boolean) value).booleanValue()) {
+                if ((Boolean) value) {
                     export = true;
                 }
             } else if (value != null) {
@@ -537,11 +533,9 @@ public class ComposeExportServiceImpl implements ComposeExportService {
             if (!((Map<?, ?>) value).isEmpty()) {
                 Map<String, Object> logConfig = new HashMap<>();
                 Map<String, Object> map = (Map<String, Object>) value;
-                Iterator<String> it = map.keySet().iterator();
-                while (it.hasNext()) {
-                    String key = it.next();
+                for (String key : map.keySet()) {
                     if (key.equalsIgnoreCase("config") && map.get(key) != null) {
-                        if (map.get(key) instanceof java.util.Map && !((Map<?, ?>) map.get(key)).isEmpty()) {
+                        if (map.get(key) instanceof Map && !((Map<?, ?>) map.get(key)).isEmpty()) {
                             logConfig.put("options", map.get(key));
                         }
                     } else if (key.equalsIgnoreCase("driver") && map.get(key) != null && StringUtils.isNotBlank(map.get(key).toString())) {
@@ -595,12 +589,12 @@ public class ComposeExportServiceImpl implements ComposeExportService {
     }
 
     @SuppressWarnings("unchecked")
-    protected void formatScale(Service service, Map<String, Object> composeServiceData) {
+    protected void formatScale(Map<String, Object> composeServiceData) {
         if (composeServiceData.get(InstanceConstants.FIELD_LABELS) != null) {
             Map<String, String> labels = ((HashMap<String, String>) composeServiceData
                     .get(InstanceConstants.FIELD_LABELS));
             String globalService = labels.get(ServiceConstants.LABEL_SERVICE_GLOBAL);
-            if (Boolean.valueOf(globalService) == true) {
+            if (Boolean.valueOf(globalService)) {
                 composeServiceData.remove(ServiceConstants.FIELD_SCALE);
             } else {
                 composeServiceData.remove(ServiceConstants.FIELD_SCALE_MAX);
@@ -610,7 +604,7 @@ public class ComposeExportServiceImpl implements ComposeExportService {
         }
     }
 
-    protected void setupServiceType(Service service, Map<String, Object> composeServiceData) {
+    protected void setupServiceType(Map<String, Object> composeServiceData) {
         Object type = composeServiceData.get(ComposeExportConfigItem.SERVICE_TYPE.getCattleName());
         if (type == null) {
             return;

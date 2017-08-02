@@ -18,7 +18,6 @@ import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.util.ProxyUtils;
 import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 import org.jooq.Configuration;
@@ -45,6 +44,7 @@ import static io.cattle.platform.core.model.tables.MountTable.*;
 import static io.cattle.platform.core.model.tables.StorageDriverTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
+import static io.github.ibuildthecloud.gdapi.condition.Condition.*;
 
 public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
@@ -111,8 +111,8 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
         }
 
         Map<Object, Object> criteria = new HashMap<>();
-        criteria.put(STORAGE_DRIVER.REMOVED, new io.github.ibuildthecloud.gdapi.condition.Condition(ConditionType.NULL));
-        criteria.put(STORAGE_DRIVER.ID, new io.github.ibuildthecloud.gdapi.condition.Condition(ConditionType.IN, storageDriverIds));
+        criteria.put(STORAGE_DRIVER.REMOVED, isNull());
+        criteria.put(STORAGE_DRIVER.ID, in(storageDriverIds));
         List<StorageDriver> drivers = objectManager.find(StorageDriver.class, criteria);
         Map<Long, StorageDriver> storageDrivers = new HashMap<>();
         for (StorageDriver d : drivers) {

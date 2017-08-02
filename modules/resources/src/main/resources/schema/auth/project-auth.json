@@ -33,8 +33,6 @@
         "instanceRevision": "r",
         "instanceStop" : "cr",
         "ipAddressAssociateInput" : "cr",
-        "kubernetesStack" : "crud",
-        "kubernetesStackUpgrade" : "cr",
         "launchConfig" : "cru",
         "lbConfig" : "cr",
         "loadBalancerAppCookieStickinessPolicy" : "cru",

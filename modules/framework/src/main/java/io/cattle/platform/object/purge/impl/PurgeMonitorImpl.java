@@ -12,18 +12,17 @@ import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.purge.PurgeMonitor;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.task.Task;
-import io.github.ibuildthecloud.gdapi.condition.Condition;
-import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.Schema;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static io.github.ibuildthecloud.gdapi.condition.Condition.*;
 
 public class PurgeMonitorImpl implements PurgeMonitor, Task {
 
@@ -70,8 +69,10 @@ public class PurgeMonitorImpl implements PurgeMonitor, Task {
                 continue;
             }
 
-            List<?> objects = objectManager.find(schemaClass, ObjectMetaDataManager.STATE_FIELD, removedState, ObjectMetaDataManager.REMOVED_FIELD,
-                    new Condition(ConditionType.NOTNULL), ObjectMetaDataManager.REMOVE_TIME_FIELD, new Condition(ConditionType.LT, new Date()));
+            List<?> objects = objectManager.find(schemaClass,
+                    ObjectMetaDataManager.STATE_FIELD, removedState,
+                    ObjectMetaDataManager.REMOVED_FIELD, isNotNull(),
+                    ObjectMetaDataManager.REMOVE_TIME_FIELD, lt(new Date()));
 
             for (Object obj : objects) {
                 try {

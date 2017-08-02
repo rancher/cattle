@@ -1,5 +1,6 @@
 package io.cattle.platform.object.purge.impl;
 
+import com.netflix.config.DynamicLongProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.engine.manager.ProcessManager;
 import io.cattle.platform.engine.manager.ProcessNotFoundException;
@@ -13,10 +14,10 @@ import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.purge.RemoveMonitor;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.task.Task;
-import io.github.ibuildthecloud.gdapi.condition.Condition;
-import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.Schema;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -25,10 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.netflix.config.DynamicLongProperty;
+import static io.github.ibuildthecloud.gdapi.condition.Condition.*;
 
 public class RemoveMonitorImpl implements RemoveMonitor, Task {
 
@@ -64,10 +62,10 @@ public class RemoveMonitorImpl implements RemoveMonitor, Task {
                 continue;
             }
 
-            List<?> objects = objectManager.find(schemaClass, ObjectMetaDataManager.STATE_FIELD, ERROR_STATE,
-                    ObjectMetaDataManager.CREATED_FIELD,
-                    new Condition(ConditionType.NOTNULL), ObjectMetaDataManager.CREATED_FIELD, new Condition(
-                            ConditionType.LT, new Date(System.currentTimeMillis() - REMOVE_DELAY.get() * 1000)));
+            List<?> objects = objectManager.find(schemaClass,
+                    ObjectMetaDataManager.STATE_FIELD, ERROR_STATE,
+                    ObjectMetaDataManager.CREATED_FIELD, isNotNull(),
+                    ObjectMetaDataManager.CREATED_FIELD, lt(new Date(System.currentTimeMillis() - REMOVE_DELAY.get() * 1000)));
 
             for (Object obj : objects) {
                 try {
@@ -76,6 +74,7 @@ public class RemoveMonitorImpl implements RemoveMonitor, Task {
                     objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, obj, data);
                     log.info("Scheduling remove for [{}] id [{}]", type, ObjectUtils.getId(obj));
                 } catch (ProcessNotFoundException e) {
+                    // ignore
                 } catch (ProcessInstanceException e) {
                     log.info("Failed to scheduling remove for [{}] id [{}]", type, ObjectUtils.getId(obj), e);
                 }

@@ -1,5 +1,16 @@
 package io.cattle.platform.object.process;
 
 public enum StandardProcess {
-    CREATE, ACTIVATE, DEACTIVATE, ALLOCATE, DEALLOCATE, REMOVE, PURGE, UPDATE, ERROR, STOP, START
+    ACTIVATE,
+    ALLOCATE,
+    CREATE,
+    DEACTIVATE,
+    DEALLOCATE,
+    ERROR,
+    PAUSE,
+    PURGE,
+    REMOVE,
+    START,
+    STOP,
+    UPDATE
 }

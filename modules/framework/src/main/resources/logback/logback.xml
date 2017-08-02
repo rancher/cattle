@@ -24,6 +24,10 @@
         <name>logback.output.console</name>
     </define>
 
+    <define name="logstashSyslog" class="io.cattle.platform.logback.ArchaiusProperty" >
+        <name>logback.output.syslog</name>
+    </define>
+
     <define name="logstashFile" class="io.cattle.platform.logback.ArchaiusProperty" >
         <name>logback.output.logstash.file</name>
     </define>

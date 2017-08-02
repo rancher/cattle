@@ -105,10 +105,6 @@ import io.cattle.platform.process.progress.ProcessProgress;
 import io.cattle.platform.process.progress.ProcessProgressImpl;
 import io.cattle.platform.process.secret.SecretRemove;
 import io.cattle.platform.process.service.ServiceProcessManager;
-import io.cattle.platform.process.stack.K8sStackCreate;
-import io.cattle.platform.process.stack.K8sStackRemove;
-import io.cattle.platform.process.stack.K8sStackRollback;
-import io.cattle.platform.process.stack.K8sStackUpgrade;
 import io.cattle.platform.process.stack.StackProcessManager;
 import io.cattle.platform.process.storagepool.StoragePoolRemove;
 import io.cattle.platform.process.subnet.SubnetCreate;
@@ -259,6 +255,8 @@ public class Backend {
         ExternalHandlerFactory externalFactory = new ExternalHandlerFactory(r, f.eventService, f.processManager, f.objectManager, f.metaDataManager);
 
         ExternalProcessHandler composeExecutor = externalFactory.handler("rancher-compose-executor");
+        ExternalProcessHandler goMachineService = externalFactory.handler("machine-service");
+
         AccountProcessManager account = new AccountProcessManager(d.networkDao, d.resourceDao, f.processManager, f.objectManager, d.instanceDao, d.accountDao, d.serviceDao);
         AgentProcessManager agentProcessManager = new AgentProcessManager(d.accountDao, f.objectManager, f.processManager, c.agentLocator, f.eventService, f.coreSchemaFactory);
         AgentActivateReconnect agentActivateReconnect = new AgentActivateReconnect(f.objectManager, c.agentLocator, pingMonitor, f.jsonMapper);
@@ -286,10 +284,6 @@ public class Backend {
         InstanceStart instanceStart = new InstanceStart(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager, deploymentSyncFactory, envResourceManager);
         InstanceStop instanceStop = new InstanceStop(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager, deploymentSyncFactory, envResourceManager);
         K8sProviderLabels k8sProviderLabels = new K8sProviderLabels(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager, envResourceManager);
-        K8sStackCreate k8sStackCreate = new K8sStackCreate(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager);
-        K8sStackRemove k8sStackRemove = new K8sStackRemove(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager);
-        K8sStackRollback k8sStackRollback = new K8sStackRollback(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager);
-        K8sStackUpgrade k8sStackUpgrade = new K8sStackUpgrade(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager);
         PullTaskCreate pullTaskCreate = new PullTaskCreate(allocationHelper, c.agentLocator, progress, imageCredentialLookup, c.objectSerializer, f.objectManager);
         MountRemove mountRemove = new MountRemove(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager);
         SecretRemove secretRemove = new SecretRemove(c.secretsService);
@@ -304,12 +298,12 @@ public class Backend {
         r.handle("account.remove", account::remove);
         r.handle("account.purge", account::purge);
 
-        r.handle("agent.*", agentHostStateUpdate::postHandle);
+        r.handle("agent.*", agentHostStateUpdate::preHandle);
         r.handle("agent.activate", agentActivateReconnect);
         r.handle("agent.reconnect", agentActivateReconnect);
         r.handle("agent.create", agentProcessManager::create);
         r.handle("agent.remove", agentProcessManager::remove, registerProcessManager::agentRemove);
-        r.preHandle("agent.*", agentHostStateUpdate::preHandle);
+        r.handle("agent.*", agentHostStateUpdate::postHandle);
 
         r.handle("credential.create", credentialProcessManager::create);
 
@@ -325,9 +319,9 @@ public class Backend {
         r.handle("genericobject.create", pullTaskCreate, registerProcessManager::genericObjectCreate);
 
         r.handle("host.create", hostProcessManager::create);
-        r.handle("host.provision", hostProcessManager::provision);
+        r.handle("host.provision", goMachineService, hostProcessManager::provision);
         r.handle("host.activate", driverProcessManager::setupPools);
-        r.handle("host.remove", hostProcessManager::remove, agentResourceRemove);
+        r.handle("host.remove", goMachineService, hostProcessManager::remove, agentResourceRemove);
 
         r.handle("hosttemplate.remove", hosttemplateRemove);
 
@@ -336,6 +330,13 @@ public class Backend {
         r.handle("instance.stop", instanceStop, instanceProcessManager::postStop);
         r.handle("instance.restart", instanceProcessManager::restart);
         r.handle("instance.remove", instanceProcessManager::preRemove, instanceRemove, instanceProcessManager::postRemove);
+
+        r.handle("machinedriver.reactivate", goMachineService);
+        r.handle("machinedriver.activate", goMachineService);
+        r.handle("machinedriver.update", goMachineService);
+        r.handle("machinedriver.error", goMachineService);
+        r.handle("machinedriver.deactivate", goMachineService;
+        r.handle("machinedriver.remove", goMachineService);
 
         r.handle("mount.create", mountProcessManager::create);
         r.handle("mount.deactivate", mountProcessManager::deactivate);
@@ -363,10 +364,11 @@ public class Backend {
 
         r.handle("serviceevent.create", serviceEventCreate);
 
-        r.handle("stack.create", composeExecutor, k8sStackCreate);
-        r.handle("stack.update", composeExecutor, k8sStackUpgrade);
-        r.handle("stack.rollback", composeExecutor, k8sStackRollback);
-        r.handle("stack.remove", k8sStackRemove, stackProcessManager::remove);
+        r.handle("stack.create", composeExecutor, stackProcessManager::postCreate);
+        r.handle("stack.pause", stackProcessManager::pause);
+        r.handle("stack.remove", stackProcessManager::remove);
+        r.handle("stack.rollback", stackProcessManager::preRollback, composeExecutor, stackProcessManager::postRollback);
+        r.handle("stack.update", composeExecutor, stackProcessManager::postUpdate);
 
         r.handle("storagedriver.activate", driverProcessManager::storageDriverActivate, driverProcessManager::setupPools);
         r.handle("storagedriver.deactivate", driverProcessManager::setupPools);

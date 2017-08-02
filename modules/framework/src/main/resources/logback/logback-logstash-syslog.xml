@@ -3,8 +3,8 @@
         <name>logback.output.logstash.syslog.host</name>
     </define>
 
-    <define name="logstashSyslogHost" class="io.cattle.platform.logback.ArchaiusProperty" >
-        <name>logback.output.logstash.syslog.host</name>
+    <define name="logstashSyslogPort" class="io.cattle.platform.logback.ArchaiusProperty" >
+        <name>logback.output.logstash.syslog.port</name>
     </define>
 
     <appender name="LOGSTASH_SYSLOG" class="net.logstash.logback.appender.LogstashSocketAppender">
