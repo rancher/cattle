@@ -335,7 +335,7 @@ public class Backend {
         r.handle("machinedriver.activate", goMachineService);
         r.handle("machinedriver.update", goMachineService);
         r.handle("machinedriver.error", goMachineService);
-        r.handle("machinedriver.deactivate", goMachineService;
+        r.handle("machinedriver.deactivate", goMachineService);
         r.handle("machinedriver.remove", goMachineService);
 
         r.handle("mount.create", mountProcessManager::create);
