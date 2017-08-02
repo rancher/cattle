@@ -185,6 +185,7 @@ public class DockerTransformerImpl implements DockerTransformer {
             setListField(instance, FIELD_ENTRY_POINT, containerConfig.getEntrypoint());
             setField(instance, FIELD_VOLUME_DRIVER, fromInspect, "Config", "VolumeDriver");
             setField(instance, FIELD_STOP_SIGNAL, fromInspect, CONFIG, "StopSignal");
+            setField(instance, FIELD_STOP_TIMEOUT, fromInspect, CONFIG, "StopTimeout");
             setHealthConfig(fromInspect, instance);
         }
 

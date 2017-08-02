@@ -87,6 +87,8 @@ public class ServiceDiscoveryConfigItem {
     public static final ServiceDiscoveryConfigItem UTS = new ServiceDiscoveryConfigItem("uts", "uts", false);
     public static final ServiceDiscoveryConfigItem STOPSIGNAL = new ServiceDiscoveryConfigItem("stopSignal",
             "stop_signal", false);
+    public static final ServiceDiscoveryConfigItem STOPTIMEOUT = new ServiceDiscoveryConfigItem("stopTimeout", 
+    		    "stop_grace_period", false);
     public static final ServiceDiscoveryConfigItem OOMSCOREADJ = new ServiceDiscoveryConfigItem("oomScoreAdj",
             "oom_score_adj", false);
     public static final ServiceDiscoveryConfigItem IPCMODE = new ServiceDiscoveryConfigItem("ipcMode", "ipc",
@@ -115,7 +117,7 @@ public class ServiceDiscoveryConfigItem {
             DockerInstanceConstants.FIELD_PID_MODE, "pid", false);
     public static final ServiceDiscoveryConfigItem DEVICES = new ServiceDiscoveryConfigItem(
             DockerInstanceConstants.FIELD_DEVICES, DockerInstanceConstants.FIELD_DEVICES, false);
-
+    
     // CATTLE PARAMETERS
     public static final ServiceDiscoveryConfigItem SCALE = new ServiceDiscoveryConfigItem("scale", "scale", false,
             false, false);
