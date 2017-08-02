@@ -1,10 +1,8 @@
 package io.cattle.platform.docker.machine.launch;
 
-import static io.cattle.platform.core.model.tables.SettingTable.*;
-
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.model.Credential;
-import io.cattle.platform.core.model.Setting;
+import io.cattle.platform.core.dao.DataDao;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.integration.external.ServiceAuthConstants;
 import io.cattle.platform.lock.definition.LockDefinition;
@@ -16,23 +14,27 @@ import io.cattle.platform.ssh.common.SshKeyGen;
 import io.cattle.platform.token.impl.RSAKeyProvider;
 import io.cattle.platform.token.impl.RSAPrivateKeyHolder;
 import io.cattle.platform.util.type.InitializationTask;
-import io.github.ibuildthecloud.gdapi.condition.Condition;
-import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
 
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.client.fluent.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.netflix.config.DynamicBooleanProperty;
-import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.config.DynamicStringProperty;
 
 
@@ -43,6 +45,9 @@ public class AuthServiceLauncher extends GenericServiceLauncher implements Initi
     @Inject
     ObjectManager objectManager;
 
+    @Inject
+    DataDao dataDao;
+
     private static final Logger log = LoggerFactory.getLogger(AuthServiceLauncher.class);
 
     private static final DynamicStringProperty AUTH_SERVICE_BINARY = ArchaiusUtil.getString("auth.service.executable");
@@ -51,6 +56,8 @@ public class AuthServiceLauncher extends GenericServiceLauncher implements Initi
     public static final DynamicStringProperty SECURITY_SETTING = ArchaiusUtil.getString("api.security.enabled");
     public static final DynamicStringProperty EXTERNAL_AUTH_PROVIDER_SETTING = ArchaiusUtil.getString("api.auth.external.provider.configured");
     public static final DynamicStringProperty NO_IDENTITY_LOOKUP_SETTING = ArchaiusUtil.getString("api.auth.external.provider.no.identity.lookup");
+    private static final DynamicStringProperty AUTH_SERVICE_LOG_LEVEL = ArchaiusUtil.getString("auth.service.log.level");
+    private static final DynamicStringProperty AUTH_SERVICE_CONFIG_UPDATE_TIMESTAMP = ArchaiusUtil.getString("auth.service.config.update.timestamp");
 
     @Override
     protected boolean shouldRun() {
@@ -78,6 +85,31 @@ public class AuthServiceLauncher extends GenericServiceLauncher implements Initi
             throw new RuntimeException("Couldn't get private key for auth-service.");
         }
         env.put("RSA_PRIVATE_KEY_CONTENTS", privateKey);
+    }
+
+    @Override
+    protected void prepareProcess(ProcessBuilder pb) throws IOException {
+        String key = dataDao.getOrCreate("auth.config.key", false, new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                SecureRandom random = new SecureRandom();
+                byte[] bytes = new byte[32];
+                random.nextBytes(bytes);
+                return Hex.encodeHexString(bytes);
+            }
+        });
+        File keyFile = new File("authConfigFile.txt");
+        try(FileOutputStream fos = new FileOutputStream(keyFile)) {
+            try {
+                IOUtils.write(Hex.decodeHex(key.toCharArray()), fos);
+            } catch (DecoderException e) {
+                throw new IOException(e);
+            }
+        }
+
+        List<String> args = pb.command();
+        args.add("--auth-config-file");
+        args.add("authConfigFile.txt");
     }
 
     @Override
@@ -126,14 +158,8 @@ public class AuthServiceLauncher extends GenericServiceLauncher implements Initi
         list.add(NO_IDENTITY_LOOKUP_SETTING);
         list.add(ServiceAuthConstants.USER_TYPE);
         list.add(ServiceAuthConstants.IDENTITY_SEPARATOR);
-
-        //read Db settings name starting with "api.auth" to add additional provider specific settings
-        List<Setting> settings = objectManager.find(Setting.class,
-                SETTING.NAME, new Condition(ConditionType.LIKE, "api.auth%"));
-
-        for (Setting setting : settings) {
-            list.add(DynamicPropertyFactory.getInstance().getStringProperty(setting.getName(), null));
-        }
+        list.add(AUTH_SERVICE_LOG_LEVEL);
+        list.add(AUTH_SERVICE_CONFIG_UPDATE_TIMESTAMP);
 
         return list;
     }

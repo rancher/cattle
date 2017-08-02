@@ -377,7 +377,6 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'kubernetesStack',
         'kubernetesStackUpgrade',
         'label',
-        'ldapconfig',
         'loadBalancerService',
         'localAuthConfig',
         'logConfig',
@@ -530,38 +529,6 @@ def test_azure_auth(admin_user_client, user_client, project_client):
         'adminAccountUsername': 'cr',
         'accessMode': 'cr',
         'domain': 'cr'
-    })
-
-
-def test_ldap_auth(admin_user_client, user_client, project_client):
-    assert 'ldapconfig' not in user_client.schema.types
-    assert 'ldapconfig' not in project_client.schema.types
-
-    auth_check(admin_user_client.schema, 'ldapconfig', 'cru', {
-        'accessMode': 'cr',
-        'domain': 'cr',
-        'groupSearchDomain': 'cr',
-        'enabled': 'cr',
-        'groupNameField': 'cr',
-        'groupObjectClass': 'cr',
-        'groupSearchField': 'cr',
-        'loginDomain': 'cr',
-        'name': 'r',
-        'port': 'cr',
-        'server': 'cr',
-        'serviceAccountPassword': 'cro',
-        'serviceAccountUsername': 'cr',
-        'tls': 'cr',
-        'userDisabledBitMask': 'cr',
-        'userEnabledAttribute': 'cr',
-        'userLoginField': 'cr',
-        'userNameField': 'cr',
-        'userObjectClass': 'cr',
-        'userSearchField': 'cr',
-        'groupMemberMappingAttribute': 'cr',
-        'userMemberAttribute': 'cr',
-        'connectionTimeout': 'cr',
-        'allowedIdentities': 'cr'
     })
 
 
@@ -2805,13 +2772,13 @@ def test_pull_task(admin_user_client, user_client, project_client):
 
 
 def test_generic_object(admin_user_client, user_client, project_client):
-    auth_check(admin_user_client.schema, 'genericObject', 'crd', {
+    auth_check(admin_user_client.schema, 'genericObject', 'crud', {
         'name': 'cr',
         'kind': 'cr',
         'key': 'cr',
         'accountId': 'r',
         'data': 'r',
-        'resourceData': 'cr'
+        'resourceData': 'cru'
     })
 
     auth_check(user_client.schema, 'genericObject', 'r', {
@@ -2822,12 +2789,12 @@ def test_generic_object(admin_user_client, user_client, project_client):
         'resourceData': 'r'
     })
 
-    auth_check(project_client.schema, 'genericObject', 'crd', {
+    auth_check(project_client.schema, 'genericObject', 'crud', {
         'name': 'cr',
         'kind': 'cr',
         'key': 'cr',
         'accountId': 'r',
-        'resourceData': 'cr'
+        'resourceData': 'cru'
     })
 
 

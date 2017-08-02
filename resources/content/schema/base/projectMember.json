@@ -20,8 +20,6 @@
       "default" : "rancher_id",
       "options" : [
         "rancher_id",
-        "ldap_user",
-        "ldap_group",
         "openldap_user",
         "openldap_group",
         "azuread_user",

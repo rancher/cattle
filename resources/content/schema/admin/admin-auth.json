@@ -133,32 +133,6 @@
 
         "instanceLink.ports" : "r",
 
-        "ldapconfig" : "cru",
-        "ldapconfig.accessMode" : "cr",
-        "ldapconfig.domain" : "cr",
-        "ldapconfig.groupSearchDomain" : "cr",
-        "ldapconfig.enabled" : "cr",
-        "ldapconfig.groupNameField" : "cr",
-        "ldapconfig.groupObjectClass" : "cr",
-        "ldapconfig.groupSearchField" : "cr",
-        "ldapconfig.loginDomain" : "cr",
-        "ldapconfig.name" : "r",
-        "ldapconfig.port" : "cr",
-        "ldapconfig.server" : "cr",
-        "ldapconfig.serviceAccountPassword" : "cro",
-        "ldapconfig.serviceAccountUsername" : "cr",
-        "ldapconfig.tls" : "cr",
-        "ldapconfig.userDisabledBitMask" : "cr",
-        "ldapconfig.userEnabledAttribute" : "cr",
-        "ldapconfig.userLoginField" : "cr",
-        "ldapconfig.userNameField" : "cr",
-        "ldapconfig.userObjectClass" : "cr",
-        "ldapconfig.userSearchField" : "cr",
-        "ldapconfig.userMemberAttribute" : "cr",
-        "ldapconfig.groupMemberMappingAttribute" : "cr",
-        "ldapconfig.connectionTimeout" : "cr",
-        "ldapconfig.allowedIdentities": "cr",
-
         "localAuthConfig" : "cr",
         "localAuthConfig.accessMode" : "cr",
         "localAuthConfig.name" : "cr",
@@ -269,7 +243,7 @@
 
         "projectTemplate.isPublic" : "cru",
         
-        "genericObject" : "crd",
+        "genericObject" : "crud",
 		
         "end" : ""
     }
