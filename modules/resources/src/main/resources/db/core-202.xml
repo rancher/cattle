@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.2.xsd">
+    <changeSet author="rancher (generated)" id="dump2">
+        <addColumn tableName="environment">
+            <column name="parent_environment_id" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump4">
+        <addForeignKeyConstraint baseColumnNames="parent_environment_id" baseTableName="environment" constraintName="fk_environment_environment_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="environment"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump5">
+        <dropForeignKeyConstraint baseTableName="account" constraintName="fk_account__project_template_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump6">
+        <dropForeignKeyConstraint baseTableName="project_template" constraintName="fk_project_template__account_id"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump7">
+        <dropUniqueConstraint constraintName="idx_project_template_uuid" tableName="project_template"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump8">
+        <dropTable tableName="project_template"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump9">
+        <dropColumn columnName="health_state" tableName="account"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump10">
+        <dropColumn columnName="project_template_id" tableName="account"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump11">
+        <dropColumn columnName="revision" tableName="account"/>
+    </changeSet>
+</databaseChangeLog>

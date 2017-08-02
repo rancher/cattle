@@ -37,7 +37,7 @@ import static io.cattle.platform.core.model.tables.CredentialTable.*;
 
 public abstract class GenericServiceLauncher extends NoExceptionRunnable implements Runnable {
 
-    private static final String SERVICE_USER_UUID = "machineServiceAccount";
+    private static final String SERVICE_USER_UUID = "serviceAccount";
     private static final String SERVICE_USER_NAME = "System Service";
     private static final int WAIT = 2000;
     private final Logger log = LoggerFactory.getLogger(getClass());

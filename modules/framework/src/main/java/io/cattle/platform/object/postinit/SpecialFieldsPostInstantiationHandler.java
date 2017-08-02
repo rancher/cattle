@@ -25,13 +25,16 @@ public class SpecialFieldsPostInstantiationHandler implements ObjectPostInstanti
     public <T> T postProcess(T obj, Class<T> clz, Map<String, Object> properties) {
         set(obj, CREATED, new Date());
         set(obj, STATE, "requested");
-        properties.remove(CREATED);
-        properties.remove(STATE);
 
         Schema schema = schemaFactory.getSchema(clz);
         if (schema != null) {
-            properties.remove(KIND);
             set(obj, KIND, schema.getId());
+        }
+
+        for (String key : new String[]{ CREATED, STATE, KIND}) {
+            if (properties.containsKey(key) && properties.get(key) == null) {
+                properties.remove(key);
+            }
         }
 
         return obj;
