@@ -45,6 +45,8 @@ import org.slf4j.LoggerFactory;
 public class ExternalServiceAuthProvider {
 
     private static final Logger log = LoggerFactory.getLogger(ExternalServiceAuthProvider.class);
+    private static final String GENERIC_ERROR_MESSAGE = "Error communicating with authentication provider";
+    private static final String UNAUTHORIZED_ERROR_MESSAGE = "Username or Password incorrect";
 
     @Inject
     private JsonMapper jsonMapper;
@@ -87,8 +89,18 @@ public class ExternalServiceAuthProvider {
                             }
                         }
                         log.error("Got error from Auth service. statusCode: {}, message: {}", statusCode, message);
-                        throw new ClientVisibleException(statusCode, ServiceAuthConstants.AUTH_ERROR,
-                                message, message);
+                        if(SecurityConstants.SECURITY.get() && isConfigured()) {
+                            if(statusCode == 401) {
+                                throw new ClientVisibleException(statusCode, ServiceAuthConstants.AUTH_ERROR,
+                                        UNAUTHORIZED_ERROR_MESSAGE, null);
+                            } else {
+                                throw new ClientVisibleException(statusCode, ServiceAuthConstants.AUTH_ERROR,
+                                    GENERIC_ERROR_MESSAGE, null);
+                            }
+                        } else {
+                            throw new ClientVisibleException(statusCode, ServiceAuthConstants.AUTH_ERROR,
+                                    message, null);
+                        }
                     }
                     return jsonMapper.readValue(response.getEntity().getContent());
                 }
@@ -149,8 +161,13 @@ public class ExternalServiceAuthProvider {
                             }
                         }
                         log.error("Got error from Auth service. statusCode: {}, message: {}", statusCode, message);
-                        throw new ClientVisibleException(statusCode, ServiceAuthConstants.AUTH_ERROR,
-                                message, message);
+                        if(statusCode == 401) {
+                            throw new ClientVisibleException(statusCode, ServiceAuthConstants.AUTH_ERROR,
+                                    UNAUTHORIZED_ERROR_MESSAGE, null);
+                        } else {
+                            throw new ClientVisibleException(statusCode, ServiceAuthConstants.AUTH_ERROR,
+                                GENERIC_ERROR_MESSAGE, null);
+                        }
                     }
                     return jsonMapper.readValue(response.getEntity().getContent());
                 }
