@@ -150,18 +150,10 @@ public class AuthServiceLauncher extends GenericServiceLauncher implements Initi
     @Override
     protected List<DynamicStringProperty> getReloadSettings() {
         List<DynamicStringProperty> list = new ArrayList<DynamicStringProperty>();
-        list.add(SecurityConstants.AUTH_PROVIDER);
         list.add(SecurityConstants.AUTH_ENABLER_SETTING);
         list.add(SECURITY_SETTING);
-        list.add(ServiceAuthConstants.ACCESS_MODE);
-        list.add(ServiceAuthConstants.ALLOWED_IDENTITIES);
-        list.add(EXTERNAL_AUTH_PROVIDER_SETTING);
-        list.add(NO_IDENTITY_LOOKUP_SETTING);
-        list.add(ServiceAuthConstants.USER_TYPE);
-        list.add(ServiceAuthConstants.IDENTITY_SEPARATOR);
         list.add(AUTH_SERVICE_LOG_LEVEL);
         list.add(AUTH_SERVICE_CONFIG_UPDATE_TIMESTAMP);
-
         return list;
     }
 
