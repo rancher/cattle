@@ -164,6 +164,7 @@
         "container.uts" : "cr",
         "container.ipcMode" : "cr",
         "container.stopSignal" : "cr",
+        "container.stopTimeout": "cr",
         "container.sysctls" : "cr",
         "container.runInit" : "cr",
         "container.oomScoreAdj" : "cr",
