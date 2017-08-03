@@ -14,6 +14,7 @@ import io.cattle.platform.iaas.api.auth.integration.interfaces.TokenUtil;
 import io.cattle.platform.iaas.api.auth.projects.ProjectResourceManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.token.TokenException;
 import io.cattle.platform.token.TokenService;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -22,21 +23,19 @@ import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.servlet.http.Cookie;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
-
-import javax.servlet.http.Cookie;
-
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class AbstractTokenUtil implements TokenUtil {
 
@@ -79,7 +78,7 @@ public abstract class AbstractTokenUtil implements TokenUtil {
         if (jsonData == null) {
             return null;
         }
-        String accountId = ObjectUtils.toString(jsonData.get(ACCOUNT_ID), null);
+        String accountId = Objects.toString(jsonData.get(ACCOUNT_ID), null);
         if (null == accountId) {
             return null;
         }
@@ -417,7 +416,7 @@ public abstract class AbstractTokenUtil implements TokenUtil {
         if (idObject != null) {
             Map<String, Object> idMap = CollectionUtils.toMap(idObject);
             Identity userIdentity = jsonToIdentity(idMap);
-            String userType = ObjectUtils.toString(jsonData.get(USER_TYPE), null);
+            String userType = Objects.toString(jsonData.get(USER_TYPE), null);
             token.setUserIdentity(userIdentity);
             token.setUserType(userType);
         }

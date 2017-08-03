@@ -2,8 +2,7 @@ package io.cattle.platform.engine.process;
 
 import io.cattle.platform.engine.process.impl.ProcessExecutionExitException;
 import io.cattle.platform.util.exception.LoggableException;
-
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 public class ProcessInstanceException extends RuntimeException implements LoggableException {

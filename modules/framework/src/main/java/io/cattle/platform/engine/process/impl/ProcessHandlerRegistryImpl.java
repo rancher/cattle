@@ -34,6 +34,9 @@ public class ProcessHandlerRegistryImpl implements ProcessHandlerRegistry, Proce
         }
 
         for (ProcessHandler handler : handlers) {
+            if (!processDefinitions.containsKey(process)) {
+                throw new IllegalArgumentException("Can not register handler on missing process [" + process + "]");
+            }
             this.handlers.put(process, handler);
         }
 

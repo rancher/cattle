@@ -1,6 +1,8 @@
 package io.cattle.platform.process.common.handler;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.netflix.config.DynamicBooleanProperty;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.engine.handler.CompletableLogic;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -17,7 +19,7 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.util.exception.ExecutionException;
 import io.cattle.platform.util.type.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jooq.exception.DataChangedException;
 
 import java.util.HashMap;
@@ -33,6 +35,7 @@ public class ExternalProcessHandler implements ProcessHandler, CompletableLogic 
     ObjectProcessManager processManager;
     ObjectManager objectManager;
     ObjectMetaDataManager metaDataManager;
+    DynamicBooleanProperty condition;
 
     public ExternalProcessHandler(String handler,
                                   EventService eventService,
@@ -48,6 +51,10 @@ public class ExternalProcessHandler implements ProcessHandler, CompletableLogic 
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
+        if (condition != null && !condition.get()) {
+            return null;
+        }
+
         final Object resource = state.getResource();
         String type = objectManager.getType(resource);
         if (type == null) {
@@ -114,6 +121,14 @@ public class ExternalProcessHandler implements ProcessHandler, CompletableLogic 
             processManager.scheduleProcessInstance(errorProcess, state.getResource(), state.getData());
             e.setResources(state.getResource());
             throw e;
+        }
+    }
+
+    public void setCondition(String condition) {
+        if (StringUtils.isBlank(condition)) {
+            this.condition = null;
+        } else {
+            this.condition = ArchaiusUtil.getBoolean(condition);
         }
     }
 }

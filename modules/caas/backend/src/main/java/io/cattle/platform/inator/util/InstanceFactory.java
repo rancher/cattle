@@ -10,14 +10,14 @@ import io.cattle.platform.inator.wrapper.RevisionWrapper;
 import io.cattle.platform.inator.wrapper.StackWrapper;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.util.type.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
+import java.util.Objects;
 
 public class InstanceFactory {
 
@@ -102,7 +102,7 @@ public class InstanceFactory {
         fields.put(InstanceConstants.FIELD_SERVICE_INDEX, unit.getServiceIndex());
         fields.put(ObjectMetaDataManager.ACCOUNT_FIELD, stack.getAccountId());
         fields.put(InstanceConstants.FIELD_REQUESTED_HOST_ID, unit.getHostId());
-        if (!fields.containsKey(ObjectMetaDataManager.KIND_FIELD)) {
+        if (StringUtils.isBlank(Objects.toString(fields.get(ObjectMetaDataManager.KIND_FIELD), null))) {
             fields.put(ObjectMetaDataManager.KIND_FIELD, InstanceConstants.KIND_CONTAINER);
         }
 

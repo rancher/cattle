@@ -3,7 +3,7 @@ package io.cattle.platform.eventing.exception;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.util.exception.ExecutionException;
 import io.cattle.platform.util.exception.LoggableException;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 import java.lang.reflect.InvocationTargetException;

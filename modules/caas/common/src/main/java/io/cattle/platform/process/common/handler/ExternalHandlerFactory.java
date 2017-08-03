@@ -26,4 +26,10 @@ public class ExternalHandlerFactory {
         return new ExternalProcessHandler(name, eventService, objectManager, processManager, metaDataManager);
     }
 
+    public ExternalProcessHandler handler(String name, String condition) {
+        ExternalProcessHandler handler = new ExternalProcessHandler(name, eventService, objectManager, processManager, metaDataManager);
+        handler.setCondition(condition);
+        return handler;
+    }
+
 }

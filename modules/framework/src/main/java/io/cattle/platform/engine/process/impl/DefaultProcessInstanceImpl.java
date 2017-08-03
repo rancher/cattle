@@ -522,8 +522,12 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
     protected void scheduleChain(final String chainProcess) {
         final ProcessState state = instanceContext.getState();
-        final LaunchConfiguration config = new LaunchConfiguration(chainProcess, record.getResourceType(), record.getResourceId(), record.getAccountId(),
-                record.getPriority(), state.getData());
+        final LaunchConfiguration config = new LaunchConfiguration(chainProcess,
+                record.getResourceType(),
+                record.getResourceId(),
+                record.getAccountId(),
+                record.getPriority(),
+                state.getData());
         config.setParentProcessState(state);
 
         ExecutionExceptionHandler handler = this.context.getExceptionHandler();

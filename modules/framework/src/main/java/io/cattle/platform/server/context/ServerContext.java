@@ -3,7 +3,7 @@ package io.cattle.platform.server.context;
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.net.Inet6Address;
 import java.net.InetAddress;

@@ -1,7 +1,5 @@
 package io.cattle.platform.compose.api;
 
-import static io.cattle.platform.core.model.tables.ServiceTable.*;
-
 import io.cattle.platform.compose.export.ComposeExportService;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
@@ -9,16 +7,16 @@ import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.LinkHandler;
+import org.apache.commons.lang3.StringUtils;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.lang.StringUtils;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
 
 public class StackComposeLinkHandler implements LinkHandler {
 

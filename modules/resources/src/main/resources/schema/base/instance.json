@@ -107,10 +107,12 @@
       "type": "map[json]"
     },
     "dependsOn": {
-      "type": "array[dependsOn]"
+      "type": "array[dependsOn]",
+      "nullable": true
     },
     "externalComputeAgent": {
-      "type": "boolean"
+      "type": "boolean",
+      "nullable": true
     }
   },
   "resourceActions": {

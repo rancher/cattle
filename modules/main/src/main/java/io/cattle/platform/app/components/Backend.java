@@ -255,7 +255,7 @@ public class Backend {
         ExternalHandlerFactory externalFactory = new ExternalHandlerFactory(r, f.eventService, f.processManager, f.objectManager, f.metaDataManager);
 
         ExternalProcessHandler composeExecutor = externalFactory.handler("rancher-compose-executor");
-        ExternalProcessHandler goMachineService = externalFactory.handler("machine-service");
+        ExternalProcessHandler goMachineService = externalFactory.handler("machine-service", "machine.execute");
 
         AccountProcessManager account = new AccountProcessManager(d.networkDao, d.resourceDao, f.processManager, f.objectManager, d.instanceDao, d.accountDao, d.serviceDao);
         AgentProcessManager agentProcessManager = new AgentProcessManager(d.accountDao, f.objectManager, f.processManager, c.agentLocator, f.eventService, f.coreSchemaFactory);
@@ -343,7 +343,6 @@ public class Backend {
         r.handle("mount.remove", mountRemove);
 
         r.handle("network.create", networkProcessManager::create);
-        r.handle("network.activate", networkProcessManager::activate);
         r.handle("network.remove", networkProcessManager::remove);
         r.handle("network.*", networkProcessManager::updateDefaultNetwork);
 

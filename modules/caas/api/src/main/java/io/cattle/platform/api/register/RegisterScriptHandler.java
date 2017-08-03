@@ -10,8 +10,8 @@ import io.cattle.platform.server.context.ServerContext;
 import io.cattle.platform.server.context.ServerContext.BaseProtocol;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.text.StrSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

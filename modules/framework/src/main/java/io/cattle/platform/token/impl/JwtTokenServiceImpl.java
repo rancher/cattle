@@ -23,7 +23,7 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.token.TokenDecryptionException;
 import io.cattle.platform.token.TokenException;
 import io.cattle.platform.token.TokenService;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;

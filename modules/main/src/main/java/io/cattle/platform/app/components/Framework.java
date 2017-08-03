@@ -2,7 +2,6 @@ package io.cattle.platform.app.components;
 
 import io.cattle.platform.async.retry.RetryTimeoutService;
 import io.cattle.platform.async.retry.impl.RetryTimeoutServiceImpl;
-import io.cattle.platform.db.jooq.logging.LoggerListener;
 import io.cattle.platform.engine.manager.impl.DefaultProcessManager;
 import io.cattle.platform.engine.manager.impl.ProcessRecordDao;
 import io.cattle.platform.engine.manager.impl.jooq.JooqProcessRecordDao;
@@ -34,6 +33,7 @@ import io.cattle.platform.object.postinit.SpecialFieldsPostInstantiationHandler;
 import io.cattle.platform.object.postinit.UUIDPostInstantiationHandler;
 import io.cattle.platform.object.process.impl.DefaultObjectProcessManager;
 import io.cattle.platform.object.process.impl.ObjectExecutionExceptionHandler;
+import io.cattle.platform.process.builder.ProcessBuilder;
 import io.cattle.platform.process.monitor.EventNotificationChangeMonitor;
 import io.cattle.platform.resource.pool.ResourcePoolManager;
 import io.cattle.platform.resource.pool.impl.ResourcePoolManagerImpl;
@@ -105,6 +105,7 @@ public class Framework {
     ResourcePoolManager resourcePoolManager;
     RetryTimeoutService retryTimeoutService;
     TransactionDelegate transaction;
+    ProcessBuilder processBuilder;
 
     ThreadPoolExecutor executorService = new ThreadPoolExecutor(20, 20, 5L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), (r) -> {
         Thread t = new Thread(r);
@@ -169,6 +170,7 @@ public class Framework {
                 new EnvironmentPortGeneratorFactory(),
                 new HostPortGeneratorFactory());
         processServer = new ProcessServer(scheduledExecutorService, executorService, executorService, processInstanceExecutor, defaultProcessManager, cluster, triggers);
+        processBuilder = new ProcessBuilder(objectManager, jsonMapper, processRecordDao, processRegistry);
     }
 
     private void setupObjectFramework() {
@@ -196,14 +198,11 @@ public class Framework {
     private void setupDb() {
         transaction = new TransactionDelegateImpl(jooqConfig);
 
-        LoggerListener logger = new LoggerListener();
-        logger.setMaxLength(1000);
-
-        setupLockingJooq(logger);
-        setupNewConnJooq(logger);
+        setupLockingJooq();
+        setupNewConnJooq();
     }
 
-    private void setupLockingJooq(LoggerListener logger) {
+    private void setupLockingJooq() {
         this.lockingJooqConfig = new DefaultConfiguration()
                 .set(jooqConfig.dialect())
                 .set(SettingsTools.clone(jooqConfig.settings()).withExecuteWithOptimisticLocking(true))
@@ -212,7 +211,7 @@ public class Framework {
                 .set(jooqConfig.executeListenerProviders());
     }
 
-    private void setupNewConnJooq(LoggerListener logger) {
+    private void setupNewConnJooq() {
         this.newConnJooqConfig = new DefaultConfiguration()
                 .set(jooqConfig.dialect())
                 .set(SettingsTools.clone(jooqConfig.settings()).withExecuteWithOptimisticLocking(true))

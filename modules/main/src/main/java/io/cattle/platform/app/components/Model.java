@@ -57,7 +57,6 @@ import io.cattle.platform.iaas.api.auth.integration.ldap.ad.ADConfig;
 import io.cattle.platform.iaas.api.auth.integration.local.LocalAuthConfig;
 import io.cattle.platform.iaas.api.auth.projects.Member;
 import io.cattle.platform.object.meta.TypeSet;
-import io.cattle.platform.process.builder.ResourceProcessBuilder;
 import io.github.ibuildthecloud.gdapi.doc.FieldDocumentation;
 import io.github.ibuildthecloud.gdapi.doc.TypeDocumentation;
 
@@ -74,153 +73,179 @@ public class Model {
 
     private void init() {
         setupTypes();
+        setupProcessDefinitionsTemplates();
         setupProcessDefinitions();
         f.wireUpTypes();
     }
 
+    private void setupProcessDefinitionsTemplates() {
+        // This established the default behavior of each process
+        f.processBuilder
+                .blacklist("requested", "removing", "removed", "purging", "purged")
+                .template("create")
+                    .from("requested")
+                    .transitioning("creating")
+                    .to("active")
+                    .ifProcessExistThenTo("activate", "inactive")
+                .template("activate")
+                    .from("inactive", "error", "paused")
+                    .transitioning("activating")
+                    .to("active")
+                .template("deactivate")
+                    .notAfter("create", "error")
+                    .transitioning("deactivating")
+                    .to("inactive")
+                .template("remove")
+                    .transitioning("removing")
+                    .to("removed")
+                .template("error")
+                    .transitioning("erroring")
+                    .to("error")
+                .template("cancelupgrade")
+                    .from("upgrading")
+                    .transitioning("pausing")
+                    .to("paused")
+                .template("finishupgrade")
+                    .from("upgraded")
+                    .transitioning("finishing-upgrade")
+                    .to("active")
+                .template("pause")
+                    .transitioning("pausing")
+                    .to("paused")
+                .template("restart")
+                    .from("active", "paused")
+                    .transitioning("restarting")
+                    .to("active")
+                .template("rollback")
+                    .transitioning("rolling-back")
+                    .to("active")
+                .template("update")
+                    .fromResting()
+                    .fromSelf()
+                    .during("upgrade", "rollback")
+                    .transitioning("updating")
+                    .to("active")
+                .template("upgrade")
+                    .fromResting()
+                    .fromSelf()
+                    .during("update", "rollback")
+                    .transitioning("upgrading")
+                    .to("active")
+                .template("reactivate")
+                    .from("active")
+                    .transitioning("activating")
+                    .to("active");
+    }
+
     private void setupProcessDefinitions() {
-        defaultProcesses("credential");
-        defaultProcesses("network");
-        defaultProcesses("projectMember");
-        defaultProcesses("storagePool");
-        defaultProcesses("subnet");
-        defaultProcesses("volumeTemplate");
+        f.processBuilder
+                // NOTE: all types automatically get "create" and "remove" process
 
-        // GenericObject
-        process("genericobject.create").resourceType("genericObject").start("requested").transitioning("activating").done("active").build();
-        process("genericobject.remove").resourceType("genericObject").start("requested,active,activating").transitioning("removing").done("removed").build();
+                // Simple types
+                .type("certificate").processes("update")
+                .type("credential").processes("activate", "deactivate")
+                .type("deploymentUnit").processes("activate", "deactivate", "error", "update", "pause")
+                .type("dynamicSchema")
+                .type("externalevent")
+                .type("genericObject")
+                .type("hostTemplate")
+                .type("machineDriver").processes("activate", "deactivate", "reactivate", "error", "update")
+                .type("network")
+                .type("networkDriver").processes("activate", "deactivate", "update")
+                .type("projectMember")
+                .type("secret")
+                .type("serviceevent")
+                .type("stack").processes("error", "pause", "rollback", "update")
+                .type("storageDriver").processes("activate", "deactivate", "update")
+                .type("storagePool").processes("activate", "deactivate")
+                .type("subnet")
+                .type("volume").processes("activate", "deactivate", "update")
+                .type("volumeTemplate")
 
-        // Account
-        defaultProcesses("account");
-        process("account.purge").resourceType("account").start("removed").transitioning("purging").done("purged").build();
-        process("account.upgrade").resourceType("account").start("active").transitioning("upgrading").done("active").build();
+                // Now the more complicated ones
+                .type("account")
+                    .process("activate")
+                    .process("deactivate")
+                    .process("purge")
+                        .from("removed")
+                        .transitioning("purging")
+                        .to("purged")
 
-        // Host
-        defaultProcesses("host");
-        process("host.activate").resourceType("host").start("inactive,registering,provisioned").transitioning("activating").done("active").build();
-        process("host.provision").resourceType("host").start("inactive").transitioning("provisioning").done("active").build();
-        process("host.error").resourceType("host").start("creating,provisioning,updating-active,updating-inactive").transitioning("erroring").done("error").build();
-        process("host.remove").resourceType("host").start("erroring,error,requested,inactive,activating,deactivating,registering,updating-active,updating-inactive,provisioning").transitioning("removing").done("removed").build();
+                .type("agent")
+                    .process("activate")
+                    .process("deactivate")
+                    .process("error")
+                    .process("reconnect")
+                        .from("disconnected", "active")
+                        .during("activate", "disconnect")
+                        .transitioning("reconnecting")
+                        .to("active")
+                    .process("disconnect")
+                        .from("active")
+                        .during("reconnect")
+                        .transitioning("disconnecting")
+                        .to("disconnected")
 
-        // Agent
-        process("agent.create").resourceType("agent").start("requested").transitioning("registering").done("inactive").build();
-        process("agent.activate").resourceType("agent").start("inactive,registering").transitioning("activating").done("active").build();
-        process("agent.remove").resourceType("agent").start("active,disconnecting,disconnected,requested,inactive,registering,reconnecting").transitioning("removing").done("removed").build();
-        process("agent.deactivate").resourceType("agent").start("disconnecting,disconnected,active,activating,reconnecting").transitioning("deactivating").done("inactive").build();
-        process("agent.reconnect").resourceType("agent").start("disconnecting,disconnected,active,activating").transitioning("reconnecting").done("active").build();
-        process("agent.disconnect").resourceType("agent").start("reconnecting,active").transitioning("disconnecting").done("disconnected").build();
+                .type("host")
+                    .process("activate")
+                    .process("deactivate")
+                    .process("error")
+                    .process("provision")
+                        .from("inactive")
+                        .transitioning("provisioning")
+                        .to("active")
 
-        // Instance
-        process("instance.create").resourceType("instance").start("requested").transitioning("creating").done("stopped").build();
-        process("instance.start").resourceType("instance").start("stopped,creating").transitioning("starting").done("running").build();
-        process("instance.update").resourceType("instance").start("stopped,running").transitioning("stopped=updating-stopped,running=updating-running").done("updating-stopped=stopped,updating-running=running").build();
-        process("instance.restart").resourceType("instance").start("running").transitioning("restarting").done("running").build();
-        process("instance.error").resourceType("instance").start("creating,stopped").transitioning("erroring").done("error").build();
-        process("instance.remove").resourceType("instance").start("requested,creating,updating-running,updating-stopped,stopped,erroring,error").transitioning("removing").done("removed").build();
-        process("instance.stop").resourceType("instance").start("creating,running,starting,restarting,updating-running,updating-stopped").transitioning("stopping").done("stopped").build();
+                .type("mount")
+                    .process("create")
+                        .transitioning("activating")
+                        .to("active")
+                    .process("deactivate").reset()
+                        .from("active")
+                        .transitioning("deactivating")
+                        .to("inactive")
+                    .process("remove")
 
-        // Volume
-        defaultProcesses("volume");
-        process("volume.activate").resourceType("volume").start("inactive,registering,detached").transitioning("activating").done("active").build();
-        process("volume.deactivate").resourceType("volume").start("requested,registering,creating,active,activating,updating-active,updating-inactive").transitioning("deactivating").done("deactivating=detached,activating=inactive").build();
-        process("volume.remove").resourceType("volume").start("requested,inactive,detached,deactivating,registering,updating-active,updating-inactive").transitioning("removing").done("removed").build();
+                .type("scheduledUpgrade")
+                    .process("create")
+                        .transitioning("scheduling")
+                        .to("scheduled")
+                    .process("start")
+                        .from("scheduled")
+                        .transitioning("running")
+                        .to("done")
 
-        // NetworkDriver
-        process("networkdriver.create").resourceType("networkDriver").start("requested").transitioning("creating").done("active").build();
-        process("networkdriver.activate").resourceType("networkDriver").start("requested,inactive").transitioning("activating").done("active").build();
-        process("networkdriver.deactivate").resourceType("networkDriver").start("activating,active").transitioning("deactivating").done("inactive").build();
-        process("networkdriver.remove").resourceType("networkDriver").start("requested,creating,inactive,active").transitioning("removing").done("removed").build();
-        process("networkdriver.update").resourceType("networkDriver").start("active,inactive").transitioning("updating").done("active").build();
+                .type("service")
+                    .process("activate")
+                    .process("cancelupgrade")
+                    .process("deactivate")
+                    .process("error")
+                    .process("finishupgrade")
+                    .process("pause")
+                    .process("restart")
+                    .process("rollback")
+                    .process("update")
+                    .process("upgrade")
 
-        // StorageDriver
-        process("storagedriver.create").resourceType("storageDriver").start("requested").transitioning("creating").done("active").build();
-        process("storagedriver.activate").resourceType("storageDriver").start("requested,inactive").transitioning("activating").done("active").build();
-        process("storagedriver.deactivate").resourceType("storageDriver").start("activating,active").transitioning("deactivating").done("inactive").build();
-        process("storagedriver.remove").resourceType("storageDriver").start("requested,creating,inactive,active").transitioning("removing").done("removed").build();
-        process("storagedriver.update").resourceType("storageDriver").start("active,inactive").transitioning("updating").done("active").build();
+                .type("instance")
+                    .process("create")
+                        .to("stopped")
+                    .process("start")
+                        .from("stopped")
+                        .transitioning("starting")
+                        .to("running")
+                    .process("restart")
+                        .from("running")
+                        .transitioning("restarting")
+                        .to("running")
+                    .process("stop")
+                        .from("running")
+                        .during("start")
+                        .transitioning("stopping")
+                        .to("stopped")
+                    .process("error")
 
-        // Mount
-        process("mount.create").resourceType("mount").start("requested").transitioning("activating").done("active").build();
-        process("mount.deactivate").resourceType("mount").start("requested,active,activating").transitioning("deactivating").done("inactive").build();
-        process("mount.remove").resourceType("mount").start("inactive,deactivating").transitioning("removing").done("removed").build();
-
-        // Stack
-        process("stack.create").resourceType("stack").start("requested").transitioning("creating").done("active").build();
-        process("stack.update").resourceType("stack").start("error,active").transitioning("updating").done("active").build();
-        process("stack.remove").resourceType("stack").start("requested,erroring,error,creating,updating,active,activating,upgrading,rolling-back").transitioning("removing").done("removed").build();
-        process("stack.error").resourceType("stack").start("creating,updating,activating").transitioning("erroring").done("error").build();
-        process("stack.rollback").resourceType("stack").start("").transitioning("rolling-back").done("active").build();
-
-        // "create" => "creating" => "inactive"
-        // "activate" => "activating" => "active"
-
-        // Service Discovery Service
-//        processes("service")
-//                .process("create").fromOnly("requested").as("registering").to("inactive")
-//                .process("activate").after("create", "pause", "error").during("restart").as("activating").to("active")
-//                .process("update").after("error","create").during("activate", "update", "rollback").as("updating").to("active")
-//                .process("update").after("error","create").during("activate", "update", "rollback").as("updating").to("active")
-
-        process("service.create").resourceType("service").start("requested").transitioning("registering").done("inactive").build();
-        process("service.activate").resourceType("service").start("inactive,restarting,paused,error").transitioning("activating").done("active").build();
-        process("service.update").resourceType("service").start("error,inactive,active,updating-active,finishing-upgrade,activating,upgrading,rolling-back").transitioning("error=updating-active,inactive=updating-inactive,active=updating-active,updating-active=updating-active,finishing-upgrade=finishing-upgrade,activating=activating,upgrading=upgrading,rolling-back=rolling-back").done("updating-inactive=inactive,updating-active=active,finishing-upgrade=active,activating=active,upgrading=upgraded,rolling-back=active").build();
-        process("service.deactivate").resourceType("service").start("restarting,active,activating,updating-inactive,updating-active,paused,error").transitioning("deactivating").done("inactive").build();
-        process("service.remove").resourceType("service").start("requested,inactive,registering,active,activating,updating-inactive,updating-active,upgrading,upgraded,rolling-back,deactivating,pausing,paused,finishing-upgrade,restarting,erroring,error").transitioning("removing").done("removed").build();
-        process("service.upgrade").resourceType("service").start("active,activating,inactive,updating-active").transitioning("upgrading").done("upgraded").build();
-        process("service.pause").resourceType("service").start("requested,inactive,registering,active,activating,updating-inactive,updating-active,upgrading,upgraded,rolling-back,deactivating,pausing,finishing-upgrade,restarting,erroring,error").transitioning("pausing").done("paused").build();
-        process("service.cancelupgrade").resourceType("service").start("upgrading,upgraded,finishing-upgrade,active").transitioning("pausing").done("paused").build();
-        process("service.error").resourceType("service").start("requested,inactive,registering,active,activating,updating-inactive,updating-active,upgrading,upgraded,rolling-back,deactivating,pausing,finishing-upgrade,restarting").transitioning("erroring").done("error").build();
-        process("service.rollback").resourceType("service").start("upgrading,upgraded,paused,active,error").transitioning("rolling-back").done("active").build();
-        process("service.finishupgrade").resourceType("service").start("upgraded").transitioning("finishing-upgrade").done("active").build();
-        process("service.restart").resourceType("service").start("active").transitioning("restarting").done("active").build();
-
-        // External Event
-        process("externalevent.create").resourceType("externalEvent").start("requested").transitioning("creating").done("created").build();
-        process("externalevent.remove").resourceType("externalEvent").start("created,creating").transitioning("removing").done("removed").build();
-
-        //  Secrets
-        process("secret.create").resourceType("secret").start("requested").transitioning("creating").done("active").build();
-        process("secret.remove").resourceType("secret").start("active,creating").transitioning("removing").done("removed").build();
-
-        // Service Event
-        process("serviceevent.create").resourceType("serviceEvent").start("requested").transitioning("creating").done("created").build();
-        process("serviceevent.remove").resourceType("serviceEvent").start("created,creating").transitioning("removing").done("removed").build();
-
-        // Certificate
-        process("certificate.create").resourceType("certificate").start("requested").transitioning("activating").done("active").build();
-        process("certificate.remove").resourceType("certificate").start("requested,active,activating").transitioning("removing").done("removed").build();
-        process("certificate.update").resourceType("certificate").start("active").transitioning("updating-active").done("active").build();
-
-        // Machine driver
-        process("machinedriver.create").resourceType("machineDriver").start("requested").transitioning("registering").done("inactive").build();
-        process("machinedriver.activate").resourceType("machineDriver").start("inactive,registering").transitioning("activating").done("active").build();
-        process("machinedriver.reactivate").resourceType("machineDriver").start("active,error").transitioning("activating").done("active").build();
-        process("machinedriver.error").resourceType("machineDriver").start("active,activating,updating-active,updating-inactive").transitioning("erroring").done("error").build();
-        process("machinedriver.deactivate").resourceType("machineDriver").start("active,activating,updating-active,updating-inactive").transitioning("deactivating").done("inactive").build();
-        process("machinedriver.remove").resourceType("machineDriver").start("requested,inactive,activating,deactivating,registering,updating-active,updating-inactive,active,error").transitioning("removing").done("removed").build();
-        process("machinedriver.update").resourceType("machineDriver").start("error,inactive,active").transitioning("error=updating-inactive,inactive=updating-inactive,active=updating-active").done("updating-inactive=inactive,updating-active=active").build();
-
-        // Dynamic Schema
-        process("dynamicschema.create").resourceType("dynamicSchema").start("requested").transitioning("creating").done("active").build();
-        process("dynamicschema.remove").resourceType("dynamicSchema").start("active").transitioning("removing").done("removed").build();
-
-        // Host Template
-        process("hosttemplate.create").resourceType("hostTemplate").start("requested").transitioning("activating").done("active").build();
-        process("hosttemplate.remove").resourceType("hostTemplate").start("activating,active").transitioning("removing").done("removed").build();
-
-        // Scheduled Update
-        process("scheduledupgrade.create").resourceType("scheduledUpgrade").start("requested").transitioning("scheduling").done("scheduled").build();
-        process("scheduledupgrade.start").resourceType("scheduledUpgrade").start("scheduled").transitioning("running").done("done").build();
-        process("scheduledupgrade.remove").resourceType("scheduledUpgrade").start("scheduled,running,done").transitioning("removing").done("removed").build();
-
-        // Deployment Unit
-        process("deploymentunit.create").resourceType("deploymentUnit").start("requested").transitioning("registering").done("inactive").build();
-        process("deploymentunit.activate").resourceType("deploymentUnit").start("inactive,error,erroring,pausing,paused").transitioning("activating").done("active").build();
-        process("deploymentunit.update").resourceType("deploymentUnit").start("active,activating,pausing,paused").transitioning("activating").done("active").build();
-        process("deploymentunit.deactivate").resourceType("deploymentUnit").start("active, activating,error,erroring,pausing,paused").transitioning("deactivating").done("inactive").build();
-        process("deploymentunit.remove").resourceType("deploymentUnit").start("requested,registering,activating,active,deactivating,inactive,error,erroring,pausing,paused").transitioning("removing").done("removed").build();
-        process("deploymentunit.error").resourceType("deploymentUnit").start("active,activating,pausing,paused").transitioning("erroring").done("error").build();
-        process("deploymentunit.pause").resourceType("deploymentUnit").start("requested,registering,activating,active,deactivating,inactive,error,erroring").transitioning("pausing").done("paused").build();
+                // And end!
+                .build();
 
         f.metaDataManager.getProcessDefinitions().addAll(f.processDefinitions.values());
     }
@@ -230,23 +255,6 @@ public class Model {
                 databaseObjects(),
                 addons(),
                 named()));
-    }
-
-    private void defaultProcesses(String type) {
-        defaultProcess(type, "create").resourceType(type).start("requested").transitioning("registering").done("inactive").build();
-        defaultProcess(type, "activate").resourceType(type).start("inactive,registering").transitioning("activating").done("active").build();
-        defaultProcess(type, "deactivate").resourceType(type).start("requested,registering,active,activating,updating-active,updating-inactive").transitioning("deactivating").done("inactive").build();
-        defaultProcess(type, "remove").resourceType(type).start("requested,inactive,registering,updating-active,updating-inactive").transitioning("removing").done("removed").build();
-        defaultProcess(type, "update").resourceType(type).start("inactive,active").transitioning("inactive=updating-inactive,active=updating-active").done("updating-inactive=inactive,updating-active=active").build();
-    }
-
-    private ResourceProcessBuilder defaultProcess(String type, String suffix) {
-        return process((type + "." + suffix).toLowerCase());
-    }
-
-    private ResourceProcessBuilder process(String name) {
-        ResourceProcessBuilder builder = new ResourceProcessBuilder(f.objectManager, f.jsonMapper, f.processRecordDao, f.processRegistry);
-        return builder.name(name);
     }
 
     private TypeSet databaseObjects() {

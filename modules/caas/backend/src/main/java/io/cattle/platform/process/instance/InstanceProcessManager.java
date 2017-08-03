@@ -75,6 +75,7 @@ public class InstanceProcessManager {
     }
 
     public HandlerResult preRemove(ProcessState state, ProcessInstance process) {
+        instanceLifecycle.postStop((Instance) state.getResource(), true);
         instanceLifecycle.preRemove((Instance) state.getResource());
         return null;
     }

@@ -6,6 +6,7 @@ import io.cattle.platform.engine.process.impl.ResourceStatesDefinition;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.process.common.generic.GenericResourceProcessDefinition;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -13,9 +14,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
-
-public class ResourceProcessBuilder {
+public class GenericResourceProcessDefinitionBuilder {
 
     ObjectManager objectManager;
     JsonMapper jsonMapper;
@@ -25,8 +24,8 @@ public class ResourceProcessBuilder {
     String name, start, transitioning, stateField, done, resourceType;
     Map<String, String> renames = Collections.emptyMap();
 
-    public ResourceProcessBuilder(ObjectManager objectManager, JsonMapper jsonMapper, ProcessRecordDao processRecordDao,
-            ProcessHandlerRegistry processRegistry) {
+    public GenericResourceProcessDefinitionBuilder(ObjectManager objectManager, JsonMapper jsonMapper, ProcessRecordDao processRecordDao,
+                                                   ProcessHandlerRegistry processRegistry) {
         this.objectManager = objectManager;
         this.jsonMapper = jsonMapper;
         this.processRecordDao = processRecordDao;
@@ -98,32 +97,27 @@ public class ResourceProcessBuilder {
         return result;
     }
 
-    public ResourceProcessBuilder name(String name) {
+    public GenericResourceProcessDefinitionBuilder name(String name) {
         this.name = name;
         return this;
     }
 
-    public ResourceProcessBuilder start(String start) {
+    public GenericResourceProcessDefinitionBuilder start(String start) {
         this.start = start;
         return this;
     }
 
-    public ResourceProcessBuilder transitioning(String transitioning) {
+    public GenericResourceProcessDefinitionBuilder transitioning(String transitioning) {
         this.transitioning = transitioning;
         return this;
     }
 
-    public ResourceProcessBuilder done(String done) {
+    public GenericResourceProcessDefinitionBuilder done(String done) {
         this.done = done;
         return this;
     }
 
-    public ResourceProcessBuilder stateField(String stateField) {
-        this.stateField = stateField;
-        return this;
-    }
-
-    public ResourceProcessBuilder resourceType(String resourceType) {
+    public GenericResourceProcessDefinitionBuilder resourceType(String resourceType) {
         this.resourceType = resourceType;
         return this;
     }

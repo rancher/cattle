@@ -62,75 +62,86 @@ public class NetworkProcessManager {
 
     public HandlerResult create(ProcessState state, ProcessInstance process) {
         Network network = (Network)state.getResource();
+
+        createSubnets(network);
+
+        return new HandlerResult(
+                NetworkConstants.FIELD_METADATA, getMetadata(network),
+                NetworkConstants.FIELD_MAC_PREFIX, getMacPrefix(network));
+    }
+
+    protected void createSubnets(Network network) {
         Object obj = DataAccessor.field(network, NetworkConstants.FIELD_SUBNETS, Object.class);
-        if (obj != null) {
-            Map<Long, Subnet> existingSubnets = new HashMap<>();
-            for (Subnet subnet : objectManager.children(network, Subnet.class)) {
-                Long index = DataAccessor.fromDataFieldOf(subnet).withKey(SUBNET_INDEX).as(Long.class);
-                if (index != null) {
-                    existingSubnets.put(index, subnet);
-                }
-            }
+        if (obj == null) {
+            return;
+        }
 
-            List<? extends Map<String, Object>> subnets = jsonMapper.convertCollectionValue(obj, ArrayList.class, Map.class);
-            for (int i = 0 ; i < subnets.size() ; i++) {
-                Long key = new Long(i);
-                if (existingSubnets.containsKey(key)) {
-                    continue;
-                }
-
-                Subnet subnet = ProxyUtils.proxy(subnets.get(i), Subnet.class);
-                subnet = objectManager.create(Subnet.class,
-                        SUBNET.NAME, subnet.getName(),
-                        SUBNET.DESCRIPTION, subnet.getDescription(),
-                        SUBNET.CIDR_SIZE, subnet.getCidrSize(),
-                        SUBNET.END_ADDRESS, subnet.getEndAddress(),
-                        SUBNET.GATEWAY, subnet.getGateway(),
-                        SUBNET.NETWORK_ADDRESS, subnet.getNetworkAddress(),
-                        SUBNET.NETWORK_ID, network.getId(),
-                        SUBNET.START_ADDRESS, subnet.getStartAddress(),
-                        SUBNET.DATA, CollectionUtils.asMap(SUBNET_INDEX, key),
-                        SUBNET.ACCOUNT_ID, network.getAccountId());
-
-                existingSubnets.put(key, subnet);
-            }
-
-            for (Subnet subnet : existingSubnets.values()) {
-                processManager.executeCreateThenActivate(subnet, null);
+        Map<Long, Subnet> existingSubnets = new HashMap<>();
+        for (Subnet subnet : objectManager.children(network, Subnet.class)) {
+            Long index = DataAccessor.fromDataFieldOf(subnet).withKey(SUBNET_INDEX).as(Long.class);
+            if (index != null) {
+                existingSubnets.put(index, subnet);
             }
         }
+
+        List<? extends Map<String, Object>> subnets = jsonMapper.convertCollectionValue(obj, ArrayList.class, Map.class);
+        for (int i = 0 ; i < subnets.size() ; i++) {
+            Long key = new Long(i);
+            if (existingSubnets.containsKey(key)) {
+                continue;
+            }
+
+            Subnet subnet = ProxyUtils.proxy(subnets.get(i), Subnet.class);
+            subnet = objectManager.create(Subnet.class,
+                    SUBNET.NAME, subnet.getName(),
+                    SUBNET.DESCRIPTION, subnet.getDescription(),
+                    SUBNET.CIDR_SIZE, subnet.getCidrSize(),
+                    SUBNET.END_ADDRESS, subnet.getEndAddress(),
+                    SUBNET.GATEWAY, subnet.getGateway(),
+                    SUBNET.NETWORK_ADDRESS, subnet.getNetworkAddress(),
+                    SUBNET.NETWORK_ID, network.getId(),
+                    SUBNET.START_ADDRESS, subnet.getStartAddress(),
+                    SUBNET.DATA, CollectionUtils.asMap(SUBNET_INDEX, key),
+                    SUBNET.ACCOUNT_ID, network.getAccountId());
+
+            existingSubnets.put(key, subnet);
+        }
+
+        for (Subnet subnet : existingSubnets.values()) {
+            processManager.executeCreateThenActivate(subnet, null);
+        }
+    }
+
+    protected Object getMetadata(Network network) {
+        Map<String, Object> metadata = DataAccessor.fieldMap(network, NetworkConstants.FIELD_METADATA);
 
         NetworkDriver driver = objectManager.loadResource(NetworkDriver.class, network.getNetworkDriverId());
         if (driver == null) {
-            return null;
+            return metadata;
         }
 
-        Map<String, Object> metadata = DataAccessor.fieldMap(network, NetworkConstants.FIELD_METADATA);
         Map<String, Object> driverMetadata = DataAccessor.fieldMap(driver, NetworkDriverConstants.FIELD_NETWORK_METADATA);
         Map<String, Object> cniConf = DataAccessor.fieldMap(driver, NetworkDriverConstants.FIELD_CNI_CONFIG);
+
         metadata.putAll(driverMetadata);
         metadata.put(NetworkDriverConstants.FIELD_CNI_CONFIG, cniConf);
-
-        return new HandlerResult(NetworkConstants.FIELD_METADATA, metadata);
+        return metadata;
     }
 
-    public HandlerResult activate(ProcessState state, ProcessInstance process) {
-        Network network = (Network) state.getResource();
-
-        String field = DataAccessor.field(network, NetworkConstants.FIELD_MAC_PREFIX, String.class);
-
-        if (StringUtils.isBlank(field)) {
-            PooledResource mac = resourcePoolManager.allocateOneResource(ResourcePoolManager.GLOBAL, network, new PooledResourceOptions()
-                    .withQualifier(ResourcePoolConstants.MAC_PREFIX));
-            if (mac == null) {
-                throw new ExecutionException("Mac prefix allocation error", "Failed to get mac prefix", network);
-            }
-            field = mac.getName();
+    protected String getMacPrefix(Network network) {
+        String macPrefix = DataAccessor.field(network, NetworkConstants.FIELD_MAC_PREFIX, String.class);
+        if (StringUtils.isNotBlank(macPrefix)) {
+            return macPrefix;
         }
 
-        return new HandlerResult(NetworkConstants.FIELD_MAC_PREFIX, field);
-    }
+        PooledResource mac = resourcePoolManager.allocateOneResource(ResourcePoolManager.GLOBAL, network, new PooledResourceOptions()
+                .withQualifier(ResourcePoolConstants.MAC_PREFIX));
+        if (mac == null) {
+            throw new ExecutionException("Mac prefix allocation error", "Failed to get mac prefix", network);
+        }
 
+        return mac.getName();
+    }
 
     public HandlerResult updateDefaultNetwork(ProcessState state, ProcessInstance process) {
         final Network network = (Network)state.getResource();

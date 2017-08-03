@@ -1,10 +1,10 @@
 package io.cattle.platform.archaius.sources;
 
+import org.apache.commons.configuration.MapConfiguration;
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.commons.configuration.MapConfiguration;
-import org.apache.commons.lang.StringUtils;
 
 public abstract class AbstractTransformedEnvironmentProperties extends MapConfiguration implements NamedConfigurationSource {
 
@@ -13,7 +13,7 @@ public abstract class AbstractTransformedEnvironmentProperties extends MapConfig
     }
 
     protected static Map<String, Object> getValues(String contains, String prefix) {
-        Map<String, Object> values = new HashMap<String, Object>();
+        Map<String, Object> values = new HashMap<>();
 
         for (Map.Entry<String, String> entry : System.getenv().entrySet()) {
             String key = entry.getKey();

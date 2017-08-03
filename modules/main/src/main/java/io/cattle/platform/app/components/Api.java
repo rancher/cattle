@@ -261,6 +261,7 @@ public class Api {
         c.router.outputFilter(HostConstants.TYPE, statsOutputFilter);
         c.router.outputFilter(HostTemplate.class, new HostTemplateOutputFilter());
         c.router.outputFilter(Instance.class, new InstanceOutputFilter(d.volumeDao, c.dockerTransformer));
+        c.router.outputFilter(Instance.class, statsOutputFilter);
         c.router.outputFilter(ProcessInstance.class, resourceIdOutputFilter);
         c.router.outputFilter(ProjectConstants.TYPE, statsOutputFilter);
         c.router.outputFilter(RegisterConstants.KIND_REGISTER, new RegisterOutputFilter());
