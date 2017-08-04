@@ -93,6 +93,7 @@ public class DataAccess {
 
     public DataAccess(Framework f) {
         this.resourceDao = new GenericResourceDaoImpl(f.objectManager, f.processManager, f.transaction);
+        this.transformationService = new TransformationServiceImpl();
 
         this.accountDao = new AccountDaoImpl(f.jooqConfig, f.objectManager);
         this.agentDao = new AgentDaoImpl(f.jooqConfig);
@@ -117,7 +118,6 @@ public class DataAccess {
         this.stackDao = new StackDaoImpl(f.jooqConfig);
         this.storagePoolDao = new StoragePoolDaoImpl(f.jooqConfig, resourceDao, f.objectManager, f.transaction);
         this.storageDriverDao = new StorageDriverDaoImpl(f.jooqConfig, f.objectManager, f.jsonMapper);
-        this.transformationService = new TransformationServiceImpl();
         this.userPreferenceDao = new UserPreferenceDaoImpl(f.jooqConfig);
         this.volumeDao = new VolumeDaoImpl(f.jooqConfig, resourceDao, f.objectManager, f.transaction);
 

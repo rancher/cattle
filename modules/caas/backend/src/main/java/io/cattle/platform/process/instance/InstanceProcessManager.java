@@ -11,7 +11,6 @@ import io.cattle.platform.lifecycle.util.LifecycleException;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.process.common.util.ProcessUtils;
 import io.cattle.platform.util.exception.ExecutionException;
 
 import java.util.HashMap;
@@ -109,9 +108,7 @@ public class InstanceProcessManager {
         if ((isCreateStart(state) || instance.getFirstRunning() == null) && !ContainerSync.isNativeDockerStart(state)) {
             HashMap<String, Object> data = new HashMap<>();
             data.put(InstanceConstants.PROCESS_DATA_ERROR, true);
-            objectProcessManager.scheduleProcessInstance(InstanceConstants.PROCESS_STOP, instance,
-                    ProcessUtils.chainInData(data, InstanceConstants.PROCESS_STOP,
-                            InstanceConstants.PROCESS_ERROR));
+            objectProcessManager.scheduleStandardChainedProcess(StandardProcess.STOP, StandardProcess.ERROR, instance, data);
         } else {
             objectProcessManager.stop(instance, null);
         }

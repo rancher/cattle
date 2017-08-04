@@ -1,6 +1,8 @@
 package io.cattle.platform.util.exception;
 
-public class ExecutionException extends RuntimeException {
+import org.slf4j.Logger;
+
+public class ExecutionException extends RuntimeException implements LoggableException {
 
     private static final long serialVersionUID = -6264703257346922100L;
 
@@ -41,6 +43,11 @@ public class ExecutionException extends RuntimeException {
 
     public void setResources(Object... resources) {
         this.resources = resources;
+    }
+
+    @Override
+    public void log(Logger log) {
+        log.error("Execution exception: {}", getMessage());
     }
 
 }

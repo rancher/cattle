@@ -6,6 +6,7 @@ import io.cattle.platform.object.meta.ActionDefinition;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.meta.Relationship;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.object.util.ObjectUtils;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
@@ -301,21 +302,43 @@ public class ResponseObjectConverter implements ApiRequestHandler, ResponseConve
             return true;
         }
 
-        String capability = Objects.toString(attributes.get("capability"), null);
-        String state = Objects.toString(attributes.get(ObjectMetaDataManager.STATE_FIELD), null);
-        String currentState = io.cattle.platform.object.util.ObjectUtils.getState(obj);
+        boolean valid = true;
 
-        if (!StringUtils.isBlank(capability) && !(ApiContext.getContext().getCapabilities(obj) != null ?
-                ApiContext.getContext().getCapabilities(obj).contains(capability) :
-                DataAccessor.fieldStringList(obj, ObjectMetaDataManager.CAPABILITIES_FIELD).contains(capability))) {
+        String capability = ObjectUtils.toString(attributes.get("capability"));
+        String state = ObjectUtils.toString(attributes.get(ObjectMetaDataManager.STATE_FIELD));
+
+        if (StringUtils.isNotBlank(capability)) {
+            valid &= capabilityMatches(capability, obj);
+        }
+
+        if (StringUtils.isNotBlank(state)) {
+            valid &= stateMatches(state, obj);
+        }
+
+        return valid;
+    }
+
+    private boolean stateMatches(String state, Object obj) {
+        return Objects.equals(state, ObjectUtils.getState(obj));
+    }
+
+    protected boolean capabilityMatches(String capability, Object obj) {
+        if (capability.startsWith("!")) {
+            return !capabilityMatches(capability.substring(1), obj);
+        }
+
+        List<String> caps = DataAccessor.fieldStringList(obj, ObjectMetaDataManager.CAPABILITIES_FIELD);
+        if (caps.contains(capability)) {
+            return true;
+        }
+
+        ApiContext context = ApiContext.getContext();
+        if (context == null) {
             return false;
         }
 
-        if (!StringUtils.isBlank(state) && !state.equals(currentState)) {
-            return false;
-        }
-        List<String> states = ((List<String>) attributes.get(ObjectMetaDataManager.STATES_FIELD));
-        return !(states != null && !states.contains(currentState));
+        caps = context.getCapabilities(obj);
+        return caps.contains(capability);
     }
 
     protected void addFilters(CollectionImpl collection, ApiRequest request) {

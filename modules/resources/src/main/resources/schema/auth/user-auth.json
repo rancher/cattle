@@ -411,6 +411,7 @@
         "port.bindAddress" : "r",
 
         "project" : "crud",
+        "project.computeFlavor" : "r",
         "project.defaultNetworkId" : "r",
         "project.description" : "cru",
         "project.externalId" : "",
@@ -440,6 +441,9 @@
         "servicesPortRange": "cru",
         "servicesPortRange.startPort": "cru",
         "servicesPortRange.endPort": "cru",
+
+        "setComputeFlavorInput": "cr",
+        "setComputeFlavorInput.computeFlavor": "cr",
 
         "pullTask": "r",
         "pullTask.labels": "cr",

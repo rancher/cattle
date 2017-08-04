@@ -3,6 +3,7 @@ package io.cattle.platform.app.components;
 import com.github.dockerjava.api.model.Volume;
 import io.cattle.platform.api.account.AccountDeactivateActionHandler;
 import io.cattle.platform.api.account.AccountFilter;
+import io.cattle.platform.api.account.SetComputeFlavorActionHandler;
 import io.cattle.platform.api.agent.AgentFilter;
 import io.cattle.platform.api.apikey.ApiKeyFilter;
 import io.cattle.platform.api.auditlog.AuditLogOutputFilter;
@@ -208,21 +209,22 @@ public class Api {
 
     private void addActionHandlers() {
         c.router.action("account.deactivate", new AccountDeactivateActionHandler(f.processManager, f.objectManager, d.accountDao));
-        c.router.action("stack.addoutputs", new AddOutputsActionHandler(f.objectManager));
-        c.router.action("service.cancelupgrade", new CancelUpgradeActionHandler(f.processManager, f.objectManager));
+        c.router.action("account.setcomputeflavor", new SetComputeFlavorActionHandler(f.objectManager));
         c.router.action("credential.changesecret", new ChangeSecretActionHandler(d.passwordDao, f.jsonMapper));
+        c.router.action("host.dockersocket", new DockerSocketProxyActionHandler(c.hostApiService, f.objectManager));
+        c.router.action("host.evacuate", new HostEvacuateActionHandler(d.resourceDao));
+        c.router.action("instance.console", new InstanceConsoleActionHandler(c.hostApiService, f.objectManager));
         c.router.action("instance.converttoservice", new ContainerConvertToServiceActionHandler(f.objectManager, f.jsonMapper, c.revisionManager));
+        c.router.action("instance.execute", new ExecActionHandler(c.hostApiService, f.objectManager));
         c.router.action("instance.logs", new ContainerLogsActionHandler(c.hostApiService, f.objectManager));
         c.router.action("instance.proxy", new ContainerProxyActionHandler(c.hostApiService, f.objectManager));
         c.router.action("instance.upgrade", new ContainerUpgradeActionHandler(f.objectManager, f.processManager, c.revisionManager));
-        c.router.action("host.dockersocket", new DockerSocketProxyActionHandler(c.hostApiService, f.objectManager));
-        c.router.action("instance.execute", new ExecActionHandler(c.hostApiService, f.objectManager));
-        c.router.action("host.evacuate", new HostEvacuateActionHandler(d.resourceDao));
-        c.router.action("instance.console", new InstanceConsoleActionHandler(c.hostApiService, f.objectManager));
         c.router.action("processinstance.replay", new ProcessInstanceReplayHandler(f.objectManager, f.eventService));
+        c.router.action("service.cancelupgrade", new CancelUpgradeActionHandler(f.processManager, f.objectManager));
         c.router.action("service.certificate", new ServiceCertificateActionHandler(c.certService));
         c.router.action("service.garbagecollect", new ServiceGarbageCollectActionHandler(d.serviceDao, f.processManager));
         c.router.action("stack.activateservices", new StackActivateServicesActionHandler(f.processManager, f.objectManager));
+        c.router.action("stack.addoutputs", new AddOutputsActionHandler(f.objectManager));
         c.router.action("stack.deactivateservices", new StackDeactivateServicesActionHandler(f.processManager, f.objectManager));
         c.router.action("stack.exportconfig", new StackExportConfigActionHandler(f.objectManager, c.composeExportService));
     }

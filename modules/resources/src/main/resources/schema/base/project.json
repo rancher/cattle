@@ -42,6 +42,13 @@
         "capability": "owner"
       }
     },
+    "setComputeFlavor": {
+      "input": "setComputeFlavorInput",
+      "outpu": "project",
+      "attributes": {
+        "capability": "!computeFlavorChangeable"
+      }
+    },
     "defaultNetworkId": {
       "type": "reference[network]"
     }

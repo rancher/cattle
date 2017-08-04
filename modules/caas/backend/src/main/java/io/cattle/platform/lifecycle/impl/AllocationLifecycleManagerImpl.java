@@ -1,5 +1,6 @@
 package io.cattle.platform.lifecycle.impl;
 
+import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.VolumeDao;
@@ -9,6 +10,7 @@ import io.cattle.platform.core.util.InstanceHelpers;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.environment.EnvironmentResourceManager;
 import io.cattle.platform.lifecycle.AllocationLifecycleManager;
+import io.cattle.platform.lifecycle.util.LifecycleException;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 
@@ -31,24 +33,28 @@ public class AllocationLifecycleManagerImpl implements AllocationLifecycleManage
     }
 
     @Override
-    public void preStart(Instance instance) {
-        if (instance.getHostId() == null) {
-            if (!instance.getNativeContainer()) {
+    public void preStart(Instance instance) throws LifecycleException {
+        try {
+            if (instance.getHostId() == null) {
+                if (!instance.getNativeContainer()) {
                 /* Check if we should defer to external agent for schedule/create/delete.  This should use a different
                    than checking for the agent.
                  */
-                List<Long> agents = envResourceManager.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_COMPUTE, instance.getAccountId());
-                if (agents.size() > 0) {
-                    DataAccessor.setField(instance, InstanceConstants.FIELD_EXTERNAL_COMPUTE_AGENT, true);
-                    return;
+                    List<Long> agents = envResourceManager.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_COMPUTE, instance.getAccountId());
+                    if (agents.size() > 0) {
+                        DataAccessor.setField(instance, InstanceConstants.FIELD_EXTERNAL_COMPUTE_AGENT, true);
+                        return;
+                    }
                 }
+
+                allocatorService.instanceAllocate(instance);
             }
 
-            allocatorService.instanceAllocate(instance);
+            assignUnmappedVolumes(instance);
+            allocatorService.ensureResourcesReservedForStart(instance);
+        } catch (FailedToAllocate e) {
+            throw new LifecycleException(e.getMessage());
         }
-
-        assignUnmappedVolumes(instance);
-        allocatorService.ensureResourcesReservedForStart(instance);
     }
 
     protected void assignUnmappedVolumes(Instance instance) {

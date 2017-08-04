@@ -13,15 +13,14 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.lock.ResourceChangeLock;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
-
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.exception.DataChangedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 
 public class GenericResourceProcessState extends AbstractStatesBasedProcessState {
 
@@ -90,6 +89,10 @@ public class GenericResourceProcessState extends AbstractStatesBasedProcessState
 
     @Override
     protected boolean setState(boolean transitioning, String oldState, String newState) {
+        if (oldState.equals(newState)) {
+            return true;
+        }
+
         reload();
 
         if (resource != null && transitioning && ObjectMetaDataManager.STATE_FIELD.equals(getStatesDefinition().getStateField())) {

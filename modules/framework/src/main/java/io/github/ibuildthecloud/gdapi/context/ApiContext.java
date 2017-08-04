@@ -8,17 +8,17 @@ import io.github.ibuildthecloud.gdapi.url.DefaultUrlBuilder;
 import io.github.ibuildthecloud.gdapi.url.NullUrlBuilder;
 import io.github.ibuildthecloud.gdapi.url.UrlBuilder;
 import io.github.ibuildthecloud.gdapi.util.TransformationService;
+import org.apache.cloudstack.managed.threadlocal.ManagedThreadLocal;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.cloudstack.managed.threadlocal.ManagedThreadLocal;
-
 public class ApiContext {
 
-    private static final ThreadLocal<ApiContext> TL = new ManagedThreadLocal<ApiContext>();
+    private static final ThreadLocal<ApiContext> TL = new ManagedThreadLocal<>();
 
     ApiRequest apiRequest;
     IdFormatter idFormatter = new IdentityFormatter();
@@ -106,7 +106,7 @@ public class ApiContext {
 
     public void addCapability(Object object, String capability) {
         if (dynamicCapabilities.get(object) == null){
-            dynamicCapabilities.put(object, new ArrayList<String>());
+            dynamicCapabilities.put(object, new ArrayList<>());
         }
         dynamicCapabilities.get(object).add(capability);
     }
@@ -116,6 +116,8 @@ public class ApiContext {
     }
 
     public List<String> getCapabilities(Object object){
-        return dynamicCapabilities.get(object);
+        List<String> caps = dynamicCapabilities.get(object);
+        return caps == null ? Collections.emptyList() : caps;
     }
+
 }

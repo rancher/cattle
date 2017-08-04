@@ -38,6 +38,7 @@ import io.cattle.platform.core.addon.ServiceRollback;
 import io.cattle.platform.core.addon.ServiceUpgrade;
 import io.cattle.platform.core.addon.ServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.ServicesPortRange;
+import io.cattle.platform.core.addon.SetComputeFlavorInput;
 import io.cattle.platform.core.addon.StackConfiguration;
 import io.cattle.platform.core.addon.TargetPortRule;
 import io.cattle.platform.core.addon.Ulimit;
@@ -152,7 +153,7 @@ public class Model {
                 .type("machineDriver").processes("activate", "deactivate", "reactivate", "error", "update")
                 .type("network")
                 .type("networkDriver").processes("activate", "deactivate", "update")
-                .type("projectMember")
+                .type("projectMember").processes("activate", "deactivate")
                 .type("secret")
                 .type("serviceevent")
                 .type("stack").processes("error", "pause", "rollback", "update")
@@ -313,6 +314,7 @@ public class Model {
                 ServicesPortRange.class,
                 ServiceUpgrade.class,
                 ServiceUpgradeStrategy.class,
+                SetComputeFlavorInput.class,
                 StackConfiguration.class,
                 StatsAccess.class,
                 Subscribe.class,

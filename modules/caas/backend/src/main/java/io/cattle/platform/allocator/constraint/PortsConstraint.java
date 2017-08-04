@@ -41,6 +41,9 @@ public class PortsConstraint extends HardConstraint implements Constraint {
     }
 
     private boolean publicIpTheSame(PortSpec requestedPort, PortInstance portUsed) {
+        if (portUsed.isBindAll()) {
+            return true;
+        }
         return Objects.equals(requestedPort.getIpAddress(), portUsed.getBindIpAddress());
     }
 

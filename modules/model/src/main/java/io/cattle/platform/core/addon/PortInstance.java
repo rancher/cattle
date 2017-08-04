@@ -30,6 +30,10 @@ public class PortInstance {
     public PortInstance() {
     }
 
+    public boolean isBindAll() {
+        return "0.0.0.0".equals(bindIpAddress);
+    }
+
     public PortInstance(Integer privatePort, String procotol) {
         this.privatePort = privatePort;
         this.protocol = procotol;
