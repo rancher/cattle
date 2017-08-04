@@ -1,6 +1,5 @@
 package io.cattle.platform.app.components;
 
-import com.github.dockerjava.api.model.Volume;
 import io.cattle.platform.api.account.AccountDeactivateActionHandler;
 import io.cattle.platform.api.account.AccountFilter;
 import io.cattle.platform.api.account.SetComputeFlavorActionHandler;
@@ -108,13 +107,11 @@ import io.cattle.platform.api.stats.ServiceContainerStatsLinkHandler;
 import io.cattle.platform.api.stats.StatsOutputFilter;
 import io.cattle.platform.api.storagepool.StoragePoolOutputFilter;
 import io.cattle.platform.api.userpreference.UserPreferenceFilter;
-import io.cattle.platform.api.util.AuthorizationResourceManagerWrapper;
 import io.cattle.platform.api.volume.VolumeCreateValidationFilter;
 import io.cattle.platform.api.volume.VolumeManager;
 import io.cattle.platform.api.volume.VolumeOutputFilter;
 import io.cattle.platform.compose.api.StackComposeLinkHandler;
 import io.cattle.platform.compose.api.StackExportConfigActionHandler;
-import io.cattle.platform.core.addon.ActiveSetting;
 import io.cattle.platform.core.addon.ContainerEvent;
 import io.cattle.platform.core.addon.ProcessPool;
 import io.cattle.platform.core.addon.ProcessSummary;
@@ -140,8 +137,10 @@ import io.cattle.platform.core.model.Secret;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceEvent;
 import io.cattle.platform.core.model.Setting;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.UserPreference;
+import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.VolumeTemplate;
 import io.cattle.platform.docker.api.model.ServiceProxy;
 import io.cattle.platform.framework.encryption.request.handler.TransformationHandler;
@@ -178,7 +177,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Stack;
 
 public class Api {
 
@@ -199,7 +197,7 @@ public class Api {
         setupApiCommon();
         addHandlers();
         addResourceManagers();
-        addResourceManagerFilters();
+        addValidationFilters();
         addResourceOutputFilters();
         addLinkHandlers();
         addActionHandlers();
@@ -209,25 +207,26 @@ public class Api {
     }
 
     private void addActionHandlers() {
-        c.router.action("account.deactivate", new AccountDeactivateActionHandler(f.processManager, f.objectManager, d.accountDao));
-        c.router.action("account.setcomputeflavor", new SetComputeFlavorActionHandler(f.objectManager));
-        c.router.action("credential.changesecret", new ChangeSecretActionHandler(d.passwordDao, f.jsonMapper));
-        c.router.action("host.dockersocket", new DockerSocketProxyActionHandler(c.hostApiService, f.objectManager));
-        c.router.action("host.evacuate", new HostEvacuateActionHandler(d.resourceDao));
-        c.router.action("instance.console", new InstanceConsoleActionHandler(c.hostApiService, f.objectManager));
-        c.router.action("instance.converttoservice", new ContainerConvertToServiceActionHandler(f.objectManager, f.jsonMapper, c.revisionManager));
-        c.router.action("instance.execute", new ExecActionHandler(c.hostApiService, f.objectManager));
-        c.router.action("instance.logs", new ContainerLogsActionHandler(c.hostApiService, f.objectManager));
-        c.router.action("instance.proxy", new ContainerProxyActionHandler(c.hostApiService, f.objectManager));
-        c.router.action("instance.upgrade", new ContainerUpgradeActionHandler(f.objectManager, f.processManager, c.revisionManager));
-        c.router.action("processinstance.replay", new ProcessInstanceReplayHandler(f.objectManager, f.eventService));
-        c.router.action("service.cancelupgrade", new CancelUpgradeActionHandler(f.processManager, f.objectManager));
-        c.router.action("service.certificate", new ServiceCertificateActionHandler(c.certService));
-        c.router.action("service.garbagecollect", new ServiceGarbageCollectActionHandler(d.serviceDao, f.processManager));
-        c.router.action("stack.activateservices", new StackActivateServicesActionHandler(f.processManager, f.objectManager));
-        c.router.action("stack.addoutputs", new AddOutputsActionHandler(f.objectManager));
-        c.router.action("stack.deactivateservices", new StackDeactivateServicesActionHandler(f.processManager, f.objectManager));
-        c.router.action("stack.exportconfig", new StackExportConfigActionHandler(f.objectManager, c.composeExportService));
+        c.router.action(Account.class, "deactivate", new AccountDeactivateActionHandler(f.processManager, f.objectManager, d.accountDao));
+        c.router.action(Host.class, "dockersocket", new DockerSocketProxyActionHandler(c.hostApiService, f.objectManager));
+        c.router.action(Host.class,"evacuate", new HostEvacuateActionHandler(d.resourceDao));
+        c.router.action(Instance.class,"console", new InstanceConsoleActionHandler(c.hostApiService, f.objectManager));
+        c.router.action(ProcessInstance.class, "replay", new ProcessInstanceReplayHandler(f.objectManager, f.eventService));
+        c.router.action(Service.class, "cancelupgrade", new CancelUpgradeActionHandler(f.processManager, f.objectManager));
+        c.router.action(Service.class,"certificate", new ServiceCertificateActionHandler(c.certService));
+        c.router.action(Service.class,"garbagecollect", new ServiceGarbageCollectActionHandler(d.serviceDao, f.processManager));
+        c.router.action(Stack.class,"activateservices", new StackActivateServicesActionHandler(f.processManager, f.objectManager));
+        c.router.action(Stack.class,"addoutputs", new AddOutputsActionHandler(f.objectManager));
+        c.router.action(Stack.class,"deactivateservices", new StackDeactivateServicesActionHandler(f.processManager, f.objectManager));
+        c.router.action(Stack.class,"exportconfig", new StackExportConfigActionHandler(f.objectManager, c.composeExportService));
+
+        c.router.action("container","converttoservice", new ContainerConvertToServiceActionHandler(f.objectManager, f.jsonMapper, c.revisionManager));
+        c.router.action("container","execute", new ExecActionHandler(c.hostApiService, f.objectManager));
+        c.router.action("container", "logs", new ContainerLogsActionHandler(c.hostApiService, f.objectManager));
+        c.router.action("container","proxy", new ContainerProxyActionHandler(c.hostApiService, f.objectManager));
+        c.router.action("container", "upgrade", new ContainerUpgradeActionHandler(f.objectManager, f.processManager, c.revisionManager));
+        c.router.action("password", "changesecret", new ChangeSecretActionHandler(d.passwordDao, f.jsonMapper));
+        c.router.action("project", "setcomputeflavor", new SetComputeFlavorActionHandler(f.objectManager));
     }
 
     private void addLinkHandlers() {
@@ -254,7 +253,6 @@ public class Api {
         StatsOutputFilter statsOutputFilter = new StatsOutputFilter();
 
         c.router.outputFilter(Account.class, new AccountOutputFilter());
-        c.router.outputFilter(ActiveSetting.class, new SettingsOutputFilter());
         c.router.outputFilter(AuditLog.class, new AuditLogOutputFilter());
         c.router.outputFilter(AuditLog.class, resourceIdOutputFilter);
         c.router.outputFilter(Credential.class, new ApiKeyOutputFilter());
@@ -279,7 +277,7 @@ public class Api {
         c.router.outputFilter(Volume.class, new VolumeOutputFilter(f.objectManager, d.volumeDao));
     }
 
-    private void addResourceManagerFilters() {
+    private void addValidationFilters() {
         ResourceIdInputFilter resourceIdInputFilter = new ResourceIdInputFilter(f.idFormatter);
         CertificateCreateValidationFilter certificateCreateValidationFilter = new CertificateCreateValidationFilter();
         SelectorServiceCreateValidationFilter selectorServiceCreateValidationFilter = new SelectorServiceCreateValidationFilter(f.objectManager);
@@ -291,48 +289,42 @@ public class Api {
         ServiceUpgradeValidationFilter serviceUpgradeValidationFilter = new ServiceUpgradeValidationFilter(f.objectManager, f.jsonMapper, c.revisionManager);
         UserPreferenceFilter userPreferenceFilter = new UserPreferenceFilter(d.userPreferenceDao);
 
-        c.router.filter(Account.class, new AccountFilter(d.accountDao));
-        c.router.filter(Agent.class, new AgentFilter(c.locator, d.agentDao));
-        c.router.filter(AuditLog.class, resourceIdInputFilter);
-        c.router.filter(Certificate.class, certificateCreateValidationFilter);
-        c.router.filter(Certificate.class, new LoadBalancerServiceCertificateRemoveFilter(f.objectManager, d.serviceDao));
-        c.router.filter(ContainerEvent.class, new ContainerEventFilter(d.agentDao, f.objectManager, f.jsonMapper, f.eventService));
-        c.router.filter(Credential.class, new CredentialUniqueFilter(f.coreSchemaFactory, d.passwordDao, f.jsonMapper));
-        c.router.filter(CredentialConstants.KIND_API_KEY, new ApiKeyFilter());
-        c.router.filter(DynamicSchema.class, new DynamicSchemaFilter(f.schemaJsonMapper, f.lockManager));
-        c.router.filter(ExternalEvent.class, new ExternalEventFilter(f.objectManager));
-        c.router.filter(Host.class, new MachineDriverFilter(f.objectManager));
-        c.router.filter(Host.class, new MachineValidationFilter(c.secretsService));
-        c.router.filter(HostTemplate.class, new HostTemplateValidationFilter());
-        c.router.filter(Instance.class, new ContainerCreateValidationFilter(f.objectManager));
-        c.router.filter(Instance.class, new InstanceAgentValidationFilter(f.objectManager));
-        c.router.filter(Instance.class, new InstanceImageValidationFilter(c.storageService));
-        c.router.filter(Instance.class, new InstanceStopRemoveValidationFilter(f.objectManager));
-        c.router.filter(Instance.class, new InstanceVolumeCleanupStrategyValidationFilter());
-        c.router.filter(Instance.class, new InstancePortsValidationFilter());
-        c.router.filter(ProcessInstance.class, resourceIdInputFilter);
-        c.router.filter(Secret.class, new SecretValidationFilter());
-        c.router.filter(Service.class, serviceCreateValidationFilter);
-        c.router.filter(Service.class, serviceStackNetworkDriverFilter);
-        c.router.filter(Service.class, serviceStackStorageDriverFilter);
-        c.router.filter(Service.class, serviceUpgradeValidationFilter);
-        c.router.filter(ServiceConstants.KIND_DNS_SERVICE, serviceRollbackValidationFilter);
-        c.router.filter(ServiceConstants.KIND_EXTERNAL_SERVICE, serviceRollbackValidationFilter);
-        c.router.filter(ServiceConstants.KIND_LOAD_BALANCER_SERVICE, serviceRestartValidationFilter);
-        c.router.filter(ServiceConstants.KIND_LOAD_BALANCER_SERVICE, serviceRollbackValidationFilter);
-        c.router.filter(ServiceConstants.KIND_SCALING_GROUP_SERVICE, serviceRestartValidationFilter);
-        c.router.filter(ServiceConstants.KIND_SCALING_GROUP_SERVICE, serviceRollbackValidationFilter);
-        c.router.filter(ServiceConstants.KIND_SELECTOR_SERVICE, selectorServiceCreateValidationFilter);
-        c.router.filter(ServiceConstants.KIND_SERVICE, selectorServiceCreateValidationFilter);
-        c.router.filter(ServiceConstants.KIND_SERVICE, serviceRestartValidationFilter);
-        c.router.filter(ServiceConstants.KIND_SERVICE, serviceRollbackValidationFilter);
-        c.router.filter(ServiceEvent.class, new ServiceEventFilter(f.objectManager, d.agentDao, d.serviceDao));
-        c.router.filter(Stack.class, serviceStackNetworkDriverFilter);
-        c.router.filter(Stack.class, serviceStackStorageDriverFilter);
-        c.router.filter(StoragePoolConstants.KIND_REGISTRY, new RegistryServerAddressFilter(f.objectManager));
-        c.router.filter(UserPreference.class, userPreferenceFilter);
-        c.router.filter(Volume.class, new VolumeCreateValidationFilter(f.objectManager));
-        c.router.filter(VolumeTemplate.class, new VolumeTemplateCreateValidationFilter(f.objectManager));
+        c.router.validationFilter(Account.class, new AccountFilter(d.accountDao));
+        c.router.validationFilter(Agent.class, new AgentFilter(c.locator, d.agentDao));
+        c.router.validationFilter(AuditLog.class, resourceIdInputFilter);
+        c.router.validationFilter(Certificate.class, certificateCreateValidationFilter);
+        c.router.validationFilter(Certificate.class, new LoadBalancerServiceCertificateRemoveFilter(f.objectManager, d.serviceDao));
+        c.router.validationFilter(ContainerEvent.class, new ContainerEventFilter(d.agentDao, f.objectManager, f.jsonMapper, f.eventService));
+        c.router.validationFilter(Credential.class, new CredentialUniqueFilter(f.coreSchemaFactory, d.passwordDao, f.jsonMapper));
+        c.router.validationFilter(DynamicSchema.class, new DynamicSchemaFilter(f.schemaJsonMapper, f.lockManager));
+        c.router.validationFilter(ExternalEvent.class, new ExternalEventFilter(f.objectManager));
+        c.router.validationFilter(Host.class, new MachineDriverFilter(f.objectManager));
+        c.router.validationFilter(Host.class, new MachineValidationFilter(c.secretsService));
+        c.router.validationFilter(HostTemplate.class, new HostTemplateValidationFilter());
+        c.router.validationFilter(Instance.class, new ContainerCreateValidationFilter(f.objectManager));
+        c.router.validationFilter(Instance.class, new InstanceAgentValidationFilter(f.objectManager));
+        c.router.validationFilter(Instance.class, new InstanceImageValidationFilter(c.storageService));
+        c.router.validationFilter(Instance.class, new InstanceStopRemoveValidationFilter(f.objectManager));
+        c.router.validationFilter(Instance.class, new InstanceVolumeCleanupStrategyValidationFilter());
+        c.router.validationFilter(Instance.class, new InstancePortsValidationFilter());
+        c.router.validationFilter(ProcessInstance.class, resourceIdInputFilter);
+        c.router.validationFilter(Secret.class, new SecretValidationFilter());
+        c.router.validationFilter(Service.class, selectorServiceCreateValidationFilter);
+        c.router.validationFilter(Service.class, serviceCreateValidationFilter);
+        c.router.validationFilter(Service.class, serviceRestartValidationFilter);
+        c.router.validationFilter(Service.class, serviceRollbackValidationFilter);
+        c.router.validationFilter(Service.class, serviceStackNetworkDriverFilter);
+        c.router.validationFilter(Service.class, serviceStackStorageDriverFilter);
+        c.router.validationFilter(Service.class, serviceUpgradeValidationFilter);
+        c.router.validationFilter(ServiceEvent.class, new ServiceEventFilter(f.objectManager, d.agentDao, d.serviceDao));
+        c.router.validationFilter(Stack.class, serviceStackNetworkDriverFilter);
+        c.router.validationFilter(Stack.class, serviceStackStorageDriverFilter);
+        c.router.validationFilter(UserPreference.class, userPreferenceFilter);
+        c.router.validationFilter(Volume.class, new VolumeCreateValidationFilter(f.objectManager));
+        c.router.validationFilter(VolumeTemplate.class, new VolumeTemplateCreateValidationFilter(f.objectManager));
+
+        c.router.validationFilter(CredentialConstants.KIND_API_KEY, new ApiKeyFilter());
+        c.router.validationFilter(StoragePoolConstants.KIND_REGISTRY, new RegistryServerAddressFilter(f.objectManager));
     }
 
     private void addHandlers() throws IOException {
@@ -375,6 +367,10 @@ public class Api {
     }
 
     private void addResourceManagers() throws IOException {
+
+        c.router.defaultResourceManager(new DefaultResourceManager(c.support));
+        c.router.defaultActionHandler(new DefaultActionHandler(f.objectManager, f.processManager));
+
         c.router.resourceManager(Data.class, new DataManager(c.support));
         c.router.resourceManager(HostApiProxyTokenImpl.class, new HostApiProxyTokenManager(c.tokenService, d.agentDao, f.objectManager));
         c.router.resourceManager(HostTemplate.class, new HostTemplateManager(c.support, c.secretsService, f.jsonMapper));
@@ -384,19 +380,8 @@ public class Api {
         c.router.resourceManager(ServiceProxy.class, new ServiceProxyManager(d.serviceDao, containerProxyActionHandler, f.objectManager));
         c.router.resourceManager(TypeDocumentation.class, new DocumentationHandler(f.jsonMapper, f.resourceLoader.getResources("schema/base/documentation.json")));
         c.router.resourceManager(Volume.class, new VolumeManager(c.support));
-
-        InstanceManager instanceManager = new InstanceManager(c.support, c.revisionManager, referenceValidator);
-        c.router.resourceManager("instance", instanceManager);
-        c.router.resourceManager("container", instanceManager);
-        c.router.resourceManager("virtualMachine", instanceManager);
-        c.router.resourceManager(Instance.class, instanceManager);
-
-        SettingManager settingManager = new SettingManager(c.support, f.jooqConfig);
-        c.router.resourceManager(Setting.class, new AuthorizationResourceManagerWrapper(settingManager, settingManager));
-        c.router.resourceManager(ActiveSetting.class, new AuthorizationResourceManagerWrapper(settingManager, settingManager));
-
-        c.router.defaultResourceManager(new DefaultResourceManager(c.support));
-        c.router.defaultActionHandler(new DefaultActionHandler(f.objectManager, f.processManager));
+        c.router.resourceManager(Instance.class, new InstanceManager(c.support, c.revisionManager, referenceValidator));
+        c.router.resourceManager(Setting.class, new SettingManager(d.settingDao));
     }
 
     private void setupPubSub() {

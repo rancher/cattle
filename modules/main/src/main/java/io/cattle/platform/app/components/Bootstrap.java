@@ -7,6 +7,7 @@ import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.config.sources.JDBCConfigurationSource;
 import io.cattle.platform.archaius.polling.RefreshableFixedDelayPollingScheduler;
 import io.cattle.platform.archaius.sources.DefaultTransformedEnvironmentProperties;
+import io.cattle.platform.archaius.sources.FixedConfigurationSource;
 import io.cattle.platform.archaius.sources.LazyJDBCSource;
 import io.cattle.platform.archaius.sources.NamedDynamicConfiguration;
 import io.cattle.platform.archaius.sources.NamedMapConfiguration;
@@ -150,6 +151,9 @@ public class Bootstrap {
         ArchaiusUtil.setScheduler(scheduler);
 
         getSources().forEach((s) -> {
+            if (s instanceof FixedConfigurationSource) {
+                s = ((FixedConfigurationSource) s).getAbstractConfig();
+            }
             s.setDelimiterParsingDisabled(true);
             baseConfig.addConfiguration(s);
         });
@@ -230,9 +234,9 @@ public class Bootstrap {
         File etcCattleProps = new File(home + "/etc/cattle.properties");
 
         return Arrays.asList(
-                new TransformedEnvironmentProperties(),
-                new NamedSystemConfiguration(),
-                OptionalPropertiesConfigurationFactory.getConfiguration("cattle-local.properties"),
+                new FixedConfigurationSource(new TransformedEnvironmentProperties()),
+                new FixedConfigurationSource(new NamedSystemConfiguration()),
+                new FixedConfigurationSource(OptionalPropertiesConfigurationFactory.getConfiguration("cattle-local.properties")),
                 new NamedDynamicConfiguration(dbConfigSource, scheduler, "Database"),
                 OptionalPropertiesConfigurationFactory.getConfiguration(etcCattleProps),
                 OptionalPropertiesConfigurationFactory.getConfiguration("cattle.properties"),

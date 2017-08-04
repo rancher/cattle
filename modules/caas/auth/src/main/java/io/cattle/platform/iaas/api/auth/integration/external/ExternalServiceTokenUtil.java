@@ -1,8 +1,8 @@
 package io.cattle.platform.iaas.api.auth.integration.external;
 
 import io.cattle.platform.core.dao.AccountDao;
+import io.cattle.platform.core.dao.SettingDao;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.core.util.SettingsUtils;
 import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
@@ -11,16 +11,15 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.token.TokenService;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-
 public class ExternalServiceTokenUtil extends AbstractTokenUtil {
 
     public ExternalServiceTokenUtil(AuthDao authDao, TokenService tokenService, AuthTokenDao authTokenDao, ObjectManager objectManager,
-            SettingsUtils settingsUtils, AccountDao accountDao) {
+                                    SettingDao settingsUtils, AccountDao accountDao) {
         super(authDao, tokenService, authTokenDao, objectManager, settingsUtils, accountDao);
     }
 

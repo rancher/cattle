@@ -3,7 +3,7 @@ package io.cattle.platform.iaas.api.auth.integration.azure;
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.resource.AbstractNoOpResourceManager;
 import io.cattle.platform.core.constants.IdentityConstants;
-import io.cattle.platform.core.util.SettingsUtils;
+import io.cattle.platform.core.dao.SettingDao;
 import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -12,14 +12,13 @@ import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class AzureConfigManager extends AbstractNoOpResourceManager {
 
@@ -30,9 +29,9 @@ public class AzureConfigManager extends AbstractNoOpResourceManager {
 
     AzureRESTClient client;
     AzureIdentityProvider azureIdentitySearchProvider;
-    SettingsUtils settingsUtils;
+    SettingDao settingsUtils;
 
-    public AzureConfigManager(AzureRESTClient client, AzureIdentityProvider azureIdentitySearchProvider, SettingsUtils settingsUtils) {
+    public AzureConfigManager(AzureRESTClient client, AzureIdentityProvider azureIdentitySearchProvider, SettingDao settingsUtils) {
         super();
         this.client = client;
         this.azureIdentitySearchProvider = azureIdentitySearchProvider;
@@ -88,36 +87,36 @@ public class AzureConfigManager extends AbstractNoOpResourceManager {
 
     @Override
     public Object list(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
-        return getCurrentConfig(new HashMap<String, Object>());
+        return getCurrentConfig(new HashMap<>());
     }
 
     public AzureConfig updateCurrentConfig(Map<String, Object> config) {
 
-        settingsUtils.changeSetting(SecurityConstants.SECURITY_SETTING, config.get(SecurityConstants.ENABLED));
+        settingsUtils.setValue(SecurityConstants.SECURITY_SETTING, config.get(SecurityConstants.ENABLED));
 
         if (config.get(CLIENT_ID) != null) {
-            settingsUtils.changeSetting(AzureConstants.CLIENT_ID_SETTING, config.get(CLIENT_ID));
+            settingsUtils.setValue(AzureConstants.CLIENT_ID_SETTING, config.get(CLIENT_ID));
         }
         if (config.get(TENANT_ID) != null) {
-            settingsUtils.changeSetting(AzureConstants.TENANT_ID_SETTING, config.get(TENANT_ID));
+            settingsUtils.setValue(AzureConstants.TENANT_ID_SETTING, config.get(TENANT_ID));
         }
         if (config.get(AzureConstants.DOMAIN) != null) {
-            settingsUtils.changeSetting(AzureConstants.DOMAIN_SETTING, config.get(AzureConstants.DOMAIN));
+            settingsUtils.setValue(AzureConstants.DOMAIN_SETTING, config.get(AzureConstants.DOMAIN));
         }
         if (config.get(ADMIN_USERNAME) != null) {
-            settingsUtils.changeSetting(AzureConstants.ADMIN_USERNAME_SETTING, config.get(ADMIN_USERNAME));
+            settingsUtils.setValue(AzureConstants.ADMIN_USERNAME_SETTING, config.get(ADMIN_USERNAME));
         }
         if (config.get(ADMIN_PWD) != null) {
-            settingsUtils.changeSetting(AzureConstants.ADMIN_PASSWORD_SETTING, config.get(ADMIN_PWD));
+            settingsUtils.setValue(AzureConstants.ADMIN_PASSWORD_SETTING, config.get(ADMIN_PWD));
         }
 
 
-        settingsUtils.changeSetting(AzureConstants.ACCESSMODE_SETTING, config.get(AbstractTokenUtil.ACCESSMODE));
+        settingsUtils.setValue(AzureConstants.ACCESSMODE_SETTING, config.get(AbstractTokenUtil.ACCESSMODE));
 
         if (config.get(SecurityConstants.ENABLED) != null){
-            settingsUtils.changeSetting(SecurityConstants.AUTH_PROVIDER_SETTING, AzureConstants.CONFIG);
+            settingsUtils.setValue(SecurityConstants.AUTH_PROVIDER_SETTING, AzureConstants.CONFIG);
         } else {
-            settingsUtils.changeSetting(SecurityConstants.AUTH_PROVIDER_SETTING, SecurityConstants.NO_PROVIDER);
+            settingsUtils.setValue(SecurityConstants.AUTH_PROVIDER_SETTING, SecurityConstants.NO_PROVIDER);
         }
 
         return getCurrentConfig(config);

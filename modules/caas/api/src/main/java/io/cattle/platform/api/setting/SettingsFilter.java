@@ -2,23 +2,18 @@ package io.cattle.platform.api.setting;
 
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.utils.ApiUtils;
-import io.cattle.platform.core.addon.ActiveSetting;
 import io.cattle.platform.core.model.Setting;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.RequestUtils;
 
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class SettingsFilter {
 
-    Set<String> publicSettings;
     boolean all;
     boolean canListAll;
 
-    public SettingsFilter(List<String> publicSettings, ApiRequest apiRequest) {
+    public SettingsFilter(ApiRequest apiRequest) {
         String value = null;
         Map<String, String[]> params = apiRequest == null ? null : apiRequest.getRequestParams();
 
@@ -26,19 +21,18 @@ public class SettingsFilter {
             value = RequestUtils.getSingularStringValue("all", params);
         }
 
-        this.publicSettings = new HashSet<>(publicSettings);
         this.all = value == null || !value.toString().equalsIgnoreCase("false");
         this.canListAll = "true".equals(ApiUtils.getPolicy().getOption(Policy.LIST_ALL_SETTINGS));
     }
 
-    public boolean evaluate(Object object) {
-        String name = null;
-        if (object instanceof ActiveSetting) {
-            name = ((ActiveSetting) object).getName();
-        } else if (object instanceof Setting) {
-            name = ((Setting) object).getName();
+    public boolean isAuthorized(Setting setting) {
+        if (setting == null) {
+            return false;
         }
+        return isAuthorized(setting.getName());
+    }
 
+    public boolean isAuthorized(String name) {
         if (name == null) {
             return false;
         }
@@ -47,8 +41,11 @@ public class SettingsFilter {
             return true;
         }
 
-        ActiveSetting setting = (ActiveSetting) object;
-        return publicSettings.contains(setting.getName());
+        return SettingManager.PUBLIC.contains(name);
+    }
+
+    public static boolean isAuthorized(String name, ApiRequest apiRequest) {
+        return new SettingsFilter(apiRequest).isAuthorized(name);
     }
 
 }

@@ -1,6 +1,5 @@
 package io.cattle.platform.api.auth;
 
-import java.util.List;
 import java.util.Set;
 
 public interface Policy {
@@ -30,9 +29,7 @@ public interface Policy {
 
     String getUserName();
 
-    <T> List<T> authorizeList(List<T> list);
-
-    <T> T authorizeObject(T obj);
+    <T> T checkAuthorized(T obj);
 
     <T> void grantObjectAccess(T obj);
 

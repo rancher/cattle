@@ -8,16 +8,15 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
+import org.apache.commons.beanutils.PropertyUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
-import org.apache.commons.beanutils.PropertyUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class AccountPolicy extends DefaultPolicy {
 
@@ -28,44 +27,38 @@ public class AccountPolicy extends DefaultPolicy {
     }
 
     @Override
-    public <T> T authorizeObject(T obj) {
+    public <T> T checkAuthorized(T obj) {
         if (hasGrantedAccess(obj)) {
             return obj;
         }
+
         if (isOption(AUTHORIZED_FOR_ALL_ACCOUNTS) || obj == null) {
             return obj;
-        } else {
-            if (obj instanceof Account) {
-                if (((Account) obj).getId().longValue() == getAccountId()) {
-                    return obj;
-                } else {
-                    return null;
-                }
-            }
+        }
 
-            try {
-                Object prop = PropertyUtils.getProperty(obj, ObjectMetaDataManager.ACCOUNT_FIELD);
-                if (prop != null && prop.equals(getAccountId())) {
-                    return obj;
-                } else {
-                    Object isPublic = ObjectUtils.getPropertyIgnoreErrors(obj, ObjectMetaDataManager.PUBLIC_FIELD);
-                    if (isPublic instanceof Boolean && ((Boolean) isPublic).booleanValue()) {
-                        return obj;
-                    }
-                    log.error("Dropping unauthorized object [{}] for acccount [{}]", ObjectUtils.toStringWrapper(obj), getAccountId());
-                }
-            } catch (IllegalAccessException e) {
-                log.error("Failed to access [{}] field for authorization", ObjectMetaDataManager.ACCOUNT_FIELD, e);
-                return null;
-            } catch (InvocationTargetException e) {
-                log.error("Failed to access [{}] field for authorization", ObjectMetaDataManager.ACCOUNT_FIELD, e);
-                return null;
-            } catch (NoSuchMethodException e) {
-                /* If it doesn't have "accountId," then its authorized */
+        if (obj instanceof Account) {
+            return (((Account) obj).getId() == getAccountId()) ? obj : null;
+        }
+
+        Object isPublic = ObjectUtils.getPropertyIgnoreErrors(obj, ObjectMetaDataManager.PUBLIC_FIELD);
+        if (isPublic instanceof Boolean && (Boolean) isPublic) {
+            return obj;
+        }
+
+        try {
+            Object prop = PropertyUtils.getProperty(obj, ObjectMetaDataManager.ACCOUNT_FIELD);
+            if (prop != null && prop.equals(getAccountId())) {
                 return obj;
             }
-            return null;
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            log.error("Failed to access [{}] field for authorization", ObjectMetaDataManager.ACCOUNT_FIELD, e);
+        } catch (NoSuchMethodException e) {
+            /* If it doesn't have "accountId," then its authorized */
+            return obj;
         }
+
+        log.error("Dropping unauthorized object [{}] for acccount [{}]", ObjectUtils.toStringWrapper(obj), getAccountId());
+        return null;
     }
 
     @Override

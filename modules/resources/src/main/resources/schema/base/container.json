@@ -500,6 +500,10 @@
       "type": "boolean",
       "default": false,
       "nullable": true
+    },
+    "instanceLinks": {
+      "type": "array[link]",
+      "nullable": true
     }
   },
   "resourceActions": {

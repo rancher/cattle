@@ -42,15 +42,12 @@
         "capability": "owner"
       }
     },
-    "setComputeFlavor": {
+    "setcomputeflavor": {
       "input": "setComputeFlavorInput",
       "outpu": "project",
       "attributes": {
         "capability": "!computeFlavorChangeable"
       }
-    },
-    "defaultNetworkId": {
-      "type": "reference[network]"
     }
   },
   "resourceFields": {
@@ -94,6 +91,9 @@
         "scheduleUpdate": true
       },
       "nullable": true
+    },
+    "defaultNetworkId": {
+      "type": "reference[network]"
     }
   }
 }

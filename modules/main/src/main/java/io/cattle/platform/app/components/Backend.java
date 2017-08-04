@@ -21,7 +21,7 @@ import io.cattle.platform.allocator.service.AllocationHelperImpl;
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.allocator.service.impl.AllocatorServiceImpl;
 import io.cattle.platform.api.change.impl.ResourceChangeEventListenerImpl;
-import io.cattle.platform.archaius.eventing.impl.ArchaiusEventListenerImpl;
+import io.cattle.platform.archaius.eventing.ArchaiusEventListener;
 import io.cattle.platform.backpopulate.BackPopulater;
 import io.cattle.platform.backpopulate.impl.BackPopulaterImpl;
 import io.cattle.platform.containersync.PingInstancesMonitor;
@@ -399,7 +399,7 @@ public class Backend {
         eventListeners.add(agentSimulator);
         eventListeners.add(d.dbCacheManager);
         eventListeners.add(f.resourceMonitor);
-        eventListeners.add(new ArchaiusEventListenerImpl());
+        eventListeners.add(new ArchaiusEventListener());
         eventListeners.add(containerSync);
         eventListeners.add(processEventListener);
         eventListeners.add(resourceChangeEventListener);

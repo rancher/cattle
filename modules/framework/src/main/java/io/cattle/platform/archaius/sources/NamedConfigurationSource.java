@@ -1,6 +1,8 @@
 package io.cattle.platform.archaius.sources;
 
-public interface NamedConfigurationSource {
+import org.apache.commons.configuration.Configuration;
+
+public interface NamedConfigurationSource extends Configuration {
 
     String getSourceName();
 

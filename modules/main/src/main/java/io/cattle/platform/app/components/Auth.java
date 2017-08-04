@@ -2,7 +2,6 @@ package io.cattle.platform.app.components;
 
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.schema.builder.SchemaFactoryBuilder;
-import io.cattle.platform.core.util.SettingsUtils;
 import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
 import io.cattle.platform.iaas.api.auth.AchaiusPolicyOptionsFactory;
 import io.cattle.platform.iaas.api.auth.AuthorizationProvider;
@@ -75,14 +74,10 @@ public class Auth {
     List<AccountLookup> accountLookups = new ArrayList<>();
     List<AuthorizationProvider> authorizationProviders = new ArrayList<>();
 
-    SettingsUtils settingsUtils;
-
     public Auth(Framework framework, Common common, DataAccess dataAccess) throws IOException {
         this.f = framework;
         this.c = common;
         this.d = dataAccess;
-
-        this.settingsUtils = new SettingsUtils(framework.objectManager);
 
         setupAD();
         setupAzure();
@@ -137,10 +132,10 @@ public class Auth {
                 c.tokenService,
                 d.authTokenDao,
                 f.objectManager,
-                settingsUtils,
+                d.settingDao,
                 d.accountDao);
         ADIdentityProvider adIdentityProvider = new ADIdentityProvider(adTokenUtils, f.executorService, d.authTokenDao);
-        ADConfigManager adConfigResourceManager = new ADConfigManager(settingsUtils, f.jsonMapper, adIdentityProvider);
+        ADConfigManager adConfigResourceManager = new ADConfigManager(d.settingDao, f.jsonMapper, adIdentityProvider);
         ADTokenCreator adTokenCreator = new ADTokenCreator(adIdentityProvider, adTokenUtils);
 
         identityProviders.add(adIdentityProvider);
@@ -155,12 +150,12 @@ public class Auth {
                 c.tokenService,
                 d.authTokenDao,
                 f.objectManager,
-                settingsUtils,
+                d.settingDao,
                 d.accountDao);
         AzureRESTClient azureRestClient = new AzureRESTClient(f.jsonMapper, azureTokenUtils);
         AzureTokenCreator azureTokenCreator = new AzureTokenCreator(azureTokenUtils, azureRestClient);
         AzureIdentityProvider azureIdentityProvider = new AzureIdentityProvider(azureRestClient, azureTokenUtils, d.authTokenDao, azureTokenCreator);
-        AzureConfigManager azureConfigManager = new AzureConfigManager(azureRestClient, azureIdentityProvider, settingsUtils);
+        AzureConfigManager azureConfigManager = new AzureConfigManager(azureRestClient, azureIdentityProvider, d.settingDao);
 
         identityProviders.add(azureIdentityProvider);
         tokenCreators.add(azureTokenCreator);
@@ -174,11 +169,11 @@ public class Auth {
                 c.tokenService,
                 d.authTokenDao,
                 f.objectManager,
-                settingsUtils,
+                d.settingDao,
                 d.accountDao);
         RancherIdentityProvider rancherIdentityProvider = new RancherIdentityProvider(d.authDao, f.idFormatter);
         LocalAuthTokenCreator localAuthTokenCreator = new LocalAuthTokenCreator(d.authDao, localAuthTokenUtils, rancherIdentityProvider);
-        LocalAuthConfigManager localAuthConfigManager = new LocalAuthConfigManager(d.passwordDao, settingsUtils, f.jsonMapper);
+        LocalAuthConfigManager localAuthConfigManager = new LocalAuthConfigManager(d.passwordDao, d.settingDao, f.jsonMapper);
 
         identityProviders.add(rancherIdentityProvider);
         tokenCreators.add(localAuthTokenCreator);
@@ -192,11 +187,11 @@ public class Auth {
                 c.tokenService,
                 d.authTokenDao,
                 f.objectManager,
-                settingsUtils,
+                d.settingDao,
                 d.accountDao);
         OpenLDAPIdentityProvider openLDAPIdentityProvider = new OpenLDAPIdentityProvider(openLDAPUtils, d.authTokenDao, f.executorService);
         OpenLDAPTokenCreator openLDAPTokenCreator = new OpenLDAPTokenCreator(openLDAPIdentityProvider, openLDAPUtils);
-        OpenLDAPConfigManager openLDAPConfigManager = new OpenLDAPConfigManager(settingsUtils, openLDAPIdentityProvider);
+        OpenLDAPConfigManager openLDAPConfigManager = new OpenLDAPConfigManager(d.settingDao, openLDAPIdentityProvider);
 
         identityProviders.add(openLDAPIdentityProvider);
         tokenCreators.add(openLDAPTokenCreator);
@@ -210,7 +205,7 @@ public class Auth {
                 c.tokenService,
                 d.authTokenDao,
                 f.objectManager,
-                settingsUtils,
+                d.settingDao,
                 d.accountDao);
 
         externalServiceAuthProvider = new ExternalServiceAuthProvider(
@@ -234,11 +229,12 @@ public class Auth {
                 tokenCreators);
 
         router.resourceManager(Token.class, tokenResourceManager);
+        router.resourceManager(Identity.class, identityManager);
+
         router.resourceManager("project", projectResourceManager);
         router.resourceManager("projectMember", projectMemberResourceManager);
-        router.resourceManager(Identity.class, identityManager);
-        router.action("account.setmembers", new SetProjectMembersActionHandler(d.authDao, projectMemberResourceManager));
 
+        router.action("project", "setmembers", new SetProjectMembersActionHandler(d.authDao, projectMemberResourceManager));
 
         resourceManagers.forEach(router::resourceManager);
 
@@ -267,10 +263,12 @@ public class Auth {
                         "schema/auth/user-auth.json",
                         "schema/auth/project-auth.json")
                 .build(c.schemaFactories);
+
         SchemaFactoryBuilder.id("superadmin")
                 .parent(f.coreSchemaFactory)
                 .jsonAuthOverlay(f.jsonMapper, "schema/auth/super-admin-auth.json")
                 .build(c.schemaFactories);
+
         SchemaFactory adminSchemaFactory = SchemaFactoryBuilder.id("admin")
                 .parent(f.coreSchemaFactory)
                 .jsonSchemaFromPath(f.jsonMapper, f.schemaJsonMapper, f.resourceLoader, "schema/admin")
@@ -278,6 +276,7 @@ public class Auth {
                         "schema/auth/user-auth.json",
                         "schema/auth/admin-auth.json")
                 .build(c.schemaFactories);
+
         SchemaFactoryBuilder.id("service")
                 .parent(f.coreSchemaFactory)
                 .jsonSchemaFromPath(f.jsonMapper, f.schemaJsonMapper, f.resourceLoader, "schema/service")
@@ -287,41 +286,49 @@ public class Auth {
                         "schema/auth/project-auth.json",
                         "schema/auth/service-auth.json")
                 .build(c.schemaFactories);
+
         SchemaFactoryBuilder.id("token")
                 .parent(f.coreSchemaFactory)
                 .jsonSchemaFromPath(f.jsonMapper, f.schemaJsonMapper, f.resourceLoader, "schema/token")
                 .jsonAuthOverlay(f.jsonMapper,
                         "schema/auth/token-auth.json")
                 .build(c.schemaFactories);
+
         SchemaFactoryBuilder.id("readonly")
                 .parent(projectSchemaFactory)
                 .notWriteable()
                 .jsonAuthOverlay(f.jsonMapper,
                         "schema/auth/read-user-auth.json")
                 .build(c.schemaFactories);
+
         SchemaFactoryBuilder.id("owner")
                 .parent(projectSchemaFactory)
                 .jsonAuthOverlay(f.jsonMapper,
                         "schema/auth/owner-auth.json")
                 .build(c.schemaFactories);
+
         SchemaFactoryBuilder.id("member")
                 .parent(projectSchemaFactory)
                 .build(c.schemaFactories);
+
         SchemaFactoryBuilder.id("restricted")
                 .parent(projectSchemaFactory)
                 .jsonAuthOverlay(f.jsonMapper, "schema/auth/restricted-user-auth.json")
                 .build(c.schemaFactories);
+
         SchemaFactoryBuilder.id("readAdmin")
                 .parent(adminSchemaFactory)
                 .notWriteable()
                 .jsonSchemaFromPath(f.jsonMapper, f.schemaJsonMapper, f.resourceLoader, "schema/read-admin")
                 .jsonAuthOverlay(f.jsonMapper, "schema/auth/read-admin-auth.json")
                 .build(c.schemaFactories);
+
         SchemaFactoryBuilder.id("user")
                 .parent(f.coreSchemaFactory)
                 .jsonSchemaFromPath(f.jsonMapper, f.schemaJsonMapper, f.resourceLoader, "schema/user")
                 .jsonAuthOverlay(f.jsonMapper, "schema/auth/user-auth.json")
                 .build(c.schemaFactories);
+
         SchemaFactoryBuilder.id("environment")
                 .parent(f.coreSchemaFactory)
                 .jsonSchemaFromPath(f.jsonMapper, f.schemaJsonMapper, f.resourceLoader, "schema/environment")
@@ -330,6 +337,7 @@ public class Auth {
                         "schema/auth/project-auth.json",
                         "schema/auth/environment-auth.json")
                 .build(c.schemaFactories);
+
         SchemaFactoryBuilder.id("projectadmin")
                 .parent(f.coreSchemaFactory)
                 .jsonSchemaFromPath(f.jsonMapper, f.schemaJsonMapper, f.resourceLoader, "schema/projectadmin")
@@ -338,16 +346,19 @@ public class Auth {
                         "schema/auth/project-auth.json",
                         "schema/auth/projectadmin-auth.json")
                 .build(c.schemaFactories);
+
         SchemaFactoryBuilder.id("agentRegister")
                 .parent(f.coreSchemaFactory)
                 .notWriteable()
                 .whitelistJsonSchemaFromPath(f.jsonMapper, f.schemaJsonMapper, f.resourceLoader, "schema/agent-register")
                 .build(c.schemaFactories);
+
         SchemaFactoryBuilder.id("agent")
                 .parent(f.coreSchemaFactory)
                 .notWriteable()
                 .whitelistJsonSchemaFromPath(f.jsonMapper, f.schemaJsonMapper, f.resourceLoader, "schema/agent")
                 .build(c.schemaFactories);
+
         SchemaFactoryBuilder.id("register")
                 .parent(adminSchemaFactory)
                 .jsonSchemaFromPath(f.jsonMapper, f.schemaJsonMapper, f.resourceLoader, "schema/register")

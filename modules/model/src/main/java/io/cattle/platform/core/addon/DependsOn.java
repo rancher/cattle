@@ -12,6 +12,7 @@ public class DependsOn {
     };
 
     String service;
+    String container;
     DependsOnCondition condition;
 
     @Field(nullable = false)
@@ -30,6 +31,14 @@ public class DependsOn {
 
     public void setCondition(DependsOnCondition condition) {
         this.condition = condition;
+    }
+
+    public String getContainer() {
+        return container;
+    }
+
+    public void setContainer(String container) {
+        this.container = container;
     }
 
 }

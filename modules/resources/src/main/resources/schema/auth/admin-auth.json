@@ -239,8 +239,6 @@
         "resourceDefinition.name" : "r",
 
         "setting" : "crud",
-        "setting.activeValue" : "r",
-        "setting.inDb": "r",
         "setting.name" : "cr",
         "setting.source": "r",
         "setting.value" : "cru",

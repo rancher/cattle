@@ -221,6 +221,10 @@
         "scheduleUpdate": true
       },
       "required": false
+    },
+    "serviceLinks": {
+      "type": "array[link]",
+      "nullable": true
     }
   },
   "resourceActions": {

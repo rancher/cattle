@@ -183,6 +183,7 @@
 
         "dependsOn" : "r",
         "dependsOn.service" : "cr",
+        "dependsOn.container" : "cr",
         "dependsOn.condition" : "cr",
 
         "ulimit" : "r",
@@ -753,8 +754,8 @@
         "serviceEvent.reportedHealth" : "r",
 
         "setting" : "r",
-        "setting.activeValue" : "r",
         "setting.name" : "r",
+        "setting.source" : "r",
         "setting.value" : "r",
 
         "activeSetting" : "r",

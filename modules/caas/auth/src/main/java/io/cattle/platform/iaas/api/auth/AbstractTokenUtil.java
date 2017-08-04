@@ -4,9 +4,9 @@ import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.dao.AccountDao;
+import io.cattle.platform.core.dao.SettingDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.AuthToken;
-import io.cattle.platform.core.util.SettingsUtils;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
 import io.cattle.platform.iaas.api.auth.identity.Token;
@@ -57,11 +57,11 @@ public abstract class AbstractTokenUtil implements TokenUtil {
     TokenService tokenService;
     AuthTokenDao authTokenDao;
     ObjectManager objectManager;
-    SettingsUtils settingsUtils;
+    SettingDao settingsUtils;
     AccountDao accountDao;
     ProjectResourceManager projectResourceManager;
 
-    public AbstractTokenUtil(AuthDao authDao, TokenService tokenService, AuthTokenDao authTokenDao, ObjectManager objectManager, SettingsUtils settingsUtils,
+    public AbstractTokenUtil(AuthDao authDao, TokenService tokenService, AuthTokenDao authTokenDao, ObjectManager objectManager, SettingDao settingsUtils,
             AccountDao accountDao) {
         super();
         this.authDao = authDao;
@@ -314,7 +314,7 @@ public abstract class AbstractTokenUtil implements TokenUtil {
                 account = authDao.getAdminAccount();
             }
             authDao.ensureAllProjectsHaveNonRancherIdMembers(user);
-            settingsUtils.changeSetting(SecurityConstants.AUTH_ENABLER, user.getId());
+            settingsUtils.setValue(SecurityConstants.AUTH_ENABLER, user.getId());
         }
         if (account != null) {
             DataAccessor.fields(account).withKey(SecurityConstants.HAS_LOGGED_IN).set(true);

@@ -12,7 +12,7 @@ public class AuthorizationAssertionRequestHandler implements ApiRequestHandler {
     public void handle(ApiRequest request) throws IOException {
         Object obj = request.getResponseObject();
         if (obj != null && obj.getClass() != Object.class) {
-            request.setResponseObject(ApiUtils.authorize(obj));
+            request.setResponseObject(ApiUtils.filterAuthorized(obj));
         }
     }
 

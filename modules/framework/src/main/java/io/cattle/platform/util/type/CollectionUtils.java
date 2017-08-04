@@ -1,19 +1,12 @@
 package io.cattle.platform.util.type;
 
-import io.cattle.platform.archaius.util.ArchaiusUtil;
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 public class CollectionUtils {
 
@@ -47,22 +40,6 @@ public class CollectionUtils {
                 map = nestedMap;
             }
         }
-    }
-
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static <K, V extends Collection<T>, T> void addToMap(Map<K, V> data, K key, T value, Class<? extends Collection> clz) {
-        V values = data.get(key);
-        if (values == null) {
-            try {
-                values = (V) clz.newInstance();
-            } catch (InstantiationException|IllegalAccessException e) {
-                throw new IllegalArgumentException("Failed to create collection class", e);
-            }
-
-            data.put(key, values);
-        }
-
-        values.add(value);
     }
 
     public static List<?> toList(Object obj) {
@@ -119,97 +96,6 @@ public class CollectionUtils {
         }
 
         return result;
-    }
-
-    private static List<?> getObjectsByName(Map<String, Object> objectByName, String name) {
-        Object obj = objectByName.get(name);
-        if (obj == null) {
-            return Collections.emptyList();
-        }
-        return Collections.singletonList(obj);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static synchronized <T> List<T> orderList(Class<?> clz, List<T> objects) {
-        String key = NamedUtils.toDotSeparated(clz.getSimpleName());
-        Map<String, Object> objectsByName = new HashMap<>();
-        final Map<Object, String> objectToName = new HashMap<>();
-
-        if (objects != null) {
-            for (T obj : objects) {
-                String name = NamedUtils.getName(obj);
-                objectsByName.put(name, obj);
-                objectToName.put(obj, name);
-            }
-        }
-
-        Set<String> excludes = getSetting(key + ".exclude");
-
-        String list = ArchaiusUtil.getString(key + ".list").get();
-        if (!StringUtils.isBlank(list)) {
-            List<Object> result = new ArrayList<>();
-            for (String name : list.split("\\s*,\\s*")) {
-                if (excludes.contains(name)) {
-                    continue;
-                }
-
-                result.addAll(getObjectsByName(objectsByName, name));
-            }
-            return (List<T>) result;
-        }
-
-        Set<String> includes = getSetting(key + ".include");
-
-        Set<Object> ordered = new TreeSet<>((o1, o2) -> {
-            int left = PriorityUtils.getPriority(o1);
-            int right = PriorityUtils.getPriority(o2);
-            if (left < right) {
-                return -1;
-            } else if (left > right) {
-                return 1;
-            }
-            String leftName = objectToName.get(o1);
-            String rightName = objectToName.get(o2);
-            int comparisonResult = leftName.compareTo(rightName);
-            if (comparisonResult == 0 && !o1.equals(o2)) {
-                throw new RuntimeException("Trying to add 2 objects with the same name: " + leftName + ".  Second object is ignored!");
-            }
-            return comparisonResult;
-        });
-
-        if (objects != null) {
-            ordered.addAll(objects);
-        }
-
-        for (String include : includes) {
-            ordered.addAll(getObjectsByName(objectsByName, include));
-        }
-
-        Iterator<Object> iter = ordered.iterator();
-        while (iter.hasNext()) {
-            String name = objectToName.get(iter.next());
-            if (excludes.contains(name)) {
-                iter.remove();
-            }
-        }
-
-        return (List<T>) new ArrayList<>(ordered);
-    }
-
-    private static Set<String> getSetting(String key) {
-        String value = getSettingValue(key);
-        if (StringUtils.isBlank(value)) {
-            return Collections.emptySet();
-        }
-
-        Set<String> result = new HashSet<>();
-
-        Collections.addAll(result, value.trim().split("\\s*,\\s*"));
-        return result;
-    }
-
-    private static String getSettingValue(String key) {
-        return ArchaiusUtil.getString(key).get();
     }
 
     @SafeVarargs

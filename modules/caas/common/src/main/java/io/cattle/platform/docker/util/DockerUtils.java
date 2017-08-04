@@ -13,7 +13,7 @@ public class DockerUtils {
         Host found = objectManager.loadResource(Host.class, instance.getHostId());
 
         if (found != null) {
-            found = ApiUtils.getPolicy().authorizeObject(found);
+            found = ApiUtils.getPolicy().checkAuthorized(found);
         }
 
         if (found == null) {

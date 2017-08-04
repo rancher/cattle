@@ -2,7 +2,7 @@ package io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP;
 
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.resource.AbstractNoOpResourceManager;
-import io.cattle.platform.core.util.SettingsUtils;
+import io.cattle.platform.core.dao.SettingDao;
 import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.integration.ldap.LDAPUtils;
@@ -11,18 +11,17 @@ import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-
 public class OpenLDAPConfigManager extends AbstractNoOpResourceManager {
 
-    SettingsUtils settingsUtils;
+    SettingDao settingsUtils;
     OpenLDAPIdentityProvider openLDAPIdentityProvider;
 
-    public OpenLDAPConfigManager(SettingsUtils settingsUtils, OpenLDAPIdentityProvider openLDAPIdentityProvider) {
+    public OpenLDAPConfigManager(SettingDao settingsUtils, OpenLDAPIdentityProvider openLDAPIdentityProvider) {
         super();
         this.settingsUtils = settingsUtils;
         this.openLDAPIdentityProvider = openLDAPIdentityProvider;
@@ -184,46 +183,46 @@ public class OpenLDAPConfigManager extends AbstractNoOpResourceManager {
     }
 
     public OpenLDAPConfig updateCurrentConfig(Map<String, Object> config) {
-        settingsUtils.changeSetting(OpenLDAPConstants.ACCESS_MODE_SETTING, config.get(AbstractTokenUtil.ACCESSMODE));
-        settingsUtils.changeSetting(OpenLDAPConstants.DOMAIN_SETTING, config.get(OpenLDAPConstants.CONFIG_DOMAIN));
-        settingsUtils.changeSetting(OpenLDAPConstants.GROUP_SEARCH_DOMAIN_SETTING, config.get(OpenLDAPConstants.CONFIG_GROUP_SEARCH_DOMAIN));
-        settingsUtils.changeSetting(OpenLDAPConstants.GROUP_NAME_FIELD_SETTING, config.get(OpenLDAPConstants.CONFIG_GROUP_NAME_FIELD));
-        settingsUtils.changeSetting(OpenLDAPConstants.GROUP_OBJECT_CLASS_SETTING, config.get(OpenLDAPConstants.CONFIG_GROUP_OBJECT_CLASS));
-        settingsUtils.changeSetting(OpenLDAPConstants.GROUP_SEARCH_FIELD_SETTING, config.get(OpenLDAPConstants.CONFIG_GROUP_SEARCH_FIELD));
-        settingsUtils.changeSetting(OpenLDAPConstants.GROUP_USER_MAPPING_ATTRIBUTE_SETTING, config.get(OpenLDAPConstants.CONFIG_GROUP_USER_MAPPING_ATTRIBUTE));
-        settingsUtils.changeSetting(OpenLDAPConstants.LOGIN_DOMAIN_SETTING, config.get(OpenLDAPConstants.CONFIG_LOGIN_DOMAIN));
-        settingsUtils.changeSetting(OpenLDAPConstants.PORT_SETTING, config.get(OpenLDAPConstants.CONFIG_PORT));
-        settingsUtils.changeSetting(OpenLDAPConstants.SERVER_SETTING, config.get(OpenLDAPConstants.CONFIG_SERVER));
+        settingsUtils.setValue(OpenLDAPConstants.ACCESS_MODE_SETTING, config.get(AbstractTokenUtil.ACCESSMODE));
+        settingsUtils.setValue(OpenLDAPConstants.DOMAIN_SETTING, config.get(OpenLDAPConstants.CONFIG_DOMAIN));
+        settingsUtils.setValue(OpenLDAPConstants.GROUP_SEARCH_DOMAIN_SETTING, config.get(OpenLDAPConstants.CONFIG_GROUP_SEARCH_DOMAIN));
+        settingsUtils.setValue(OpenLDAPConstants.GROUP_NAME_FIELD_SETTING, config.get(OpenLDAPConstants.CONFIG_GROUP_NAME_FIELD));
+        settingsUtils.setValue(OpenLDAPConstants.GROUP_OBJECT_CLASS_SETTING, config.get(OpenLDAPConstants.CONFIG_GROUP_OBJECT_CLASS));
+        settingsUtils.setValue(OpenLDAPConstants.GROUP_SEARCH_FIELD_SETTING, config.get(OpenLDAPConstants.CONFIG_GROUP_SEARCH_FIELD));
+        settingsUtils.setValue(OpenLDAPConstants.GROUP_USER_MAPPING_ATTRIBUTE_SETTING, config.get(OpenLDAPConstants.CONFIG_GROUP_USER_MAPPING_ATTRIBUTE));
+        settingsUtils.setValue(OpenLDAPConstants.LOGIN_DOMAIN_SETTING, config.get(OpenLDAPConstants.CONFIG_LOGIN_DOMAIN));
+        settingsUtils.setValue(OpenLDAPConstants.PORT_SETTING, config.get(OpenLDAPConstants.CONFIG_PORT));
+        settingsUtils.setValue(OpenLDAPConstants.SERVER_SETTING, config.get(OpenLDAPConstants.CONFIG_SERVER));
         if(config.get(OpenLDAPConstants.CONFIG_SERVICE_ACCOUNT_PASSWORD) != null){
-            settingsUtils.changeSetting(OpenLDAPConstants.SERVICE_ACCOUNT_PASSWORD_SETTING, config.get(OpenLDAPConstants.CONFIG_SERVICE_ACCOUNT_PASSWORD));
+            settingsUtils.setValue(OpenLDAPConstants.SERVICE_ACCOUNT_PASSWORD_SETTING, config.get(OpenLDAPConstants.CONFIG_SERVICE_ACCOUNT_PASSWORD));
         }
-        settingsUtils.changeSetting(OpenLDAPConstants.SERVICE_ACCOUNT_USERNAME_SETTING, config.get(OpenLDAPConstants.CONFIG_SERVICE_ACCOUNT_USERNAME));
-        settingsUtils.changeSetting(OpenLDAPConstants.TLS_SETTING, config.get(OpenLDAPConstants.CONFIG_TLS));
-        settingsUtils.changeSetting(OpenLDAPConstants.USER_DISABLED_BIT_MASK_SETTING, config.get(OpenLDAPConstants.CONFIG_USER_DISABLED_BIT_MASK));
-        settingsUtils.changeSetting(OpenLDAPConstants.USER_ENABLED_ATTRIBUTE_SETTING, config.get(OpenLDAPConstants.CONFIG_USER_ENABLED_ATTRIBUTE));
-        settingsUtils.changeSetting(OpenLDAPConstants.USER_LOGIN_FIELD_SETTING, config.get(OpenLDAPConstants.CONFIG_USER_LOGIN_FIELD));
-        settingsUtils.changeSetting(OpenLDAPConstants.USER_MEMBER_ATTRIBUTE_SETTING, config.get(OpenLDAPConstants.CONFIG_USER_MEMBER_ATTRIBUTE));
-        settingsUtils.changeSetting(OpenLDAPConstants.USER_NAME_FIELD_SETTING, config.get(OpenLDAPConstants.CONFIG_USER_NAME_FIELD));
-        settingsUtils.changeSetting(OpenLDAPConstants.USER_OBJECT_CLASS_SETTING, config.get(OpenLDAPConstants.CONFIG_USER_OBJECT_CLASS));
-        settingsUtils.changeSetting(OpenLDAPConstants.USER_SEARCH_FIELD_SETTING, config.get(OpenLDAPConstants.CONFIG_USER_SEARCH_FIELD));
-        settingsUtils.changeSetting(OpenLDAPConstants.TIMEOUT_SETTING, config.get(OpenLDAPConstants.CONFIG_TIMEOUT));
-        settingsUtils.changeSetting(OpenLDAPConstants.GROUP_DN_FIELD_SETTING, config.get(OpenLDAPConstants.CONFIG_GROUP_DN_FIELD));
-        settingsUtils.changeSetting(OpenLDAPConstants.GROUP_MEMBER_USER_ATTRIBUTE_SETTING, config.get(OpenLDAPConstants.CONFIG_GROUP_MEMBER_USER_ATTRIBUTE));
-        settingsUtils.changeSetting(SecurityConstants.SECURITY_SETTING, config.get(OpenLDAPConstants.CONFIG_SECURITY));
+        settingsUtils.setValue(OpenLDAPConstants.SERVICE_ACCOUNT_USERNAME_SETTING, config.get(OpenLDAPConstants.CONFIG_SERVICE_ACCOUNT_USERNAME));
+        settingsUtils.setValue(OpenLDAPConstants.TLS_SETTING, config.get(OpenLDAPConstants.CONFIG_TLS));
+        settingsUtils.setValue(OpenLDAPConstants.USER_DISABLED_BIT_MASK_SETTING, config.get(OpenLDAPConstants.CONFIG_USER_DISABLED_BIT_MASK));
+        settingsUtils.setValue(OpenLDAPConstants.USER_ENABLED_ATTRIBUTE_SETTING, config.get(OpenLDAPConstants.CONFIG_USER_ENABLED_ATTRIBUTE));
+        settingsUtils.setValue(OpenLDAPConstants.USER_LOGIN_FIELD_SETTING, config.get(OpenLDAPConstants.CONFIG_USER_LOGIN_FIELD));
+        settingsUtils.setValue(OpenLDAPConstants.USER_MEMBER_ATTRIBUTE_SETTING, config.get(OpenLDAPConstants.CONFIG_USER_MEMBER_ATTRIBUTE));
+        settingsUtils.setValue(OpenLDAPConstants.USER_NAME_FIELD_SETTING, config.get(OpenLDAPConstants.CONFIG_USER_NAME_FIELD));
+        settingsUtils.setValue(OpenLDAPConstants.USER_OBJECT_CLASS_SETTING, config.get(OpenLDAPConstants.CONFIG_USER_OBJECT_CLASS));
+        settingsUtils.setValue(OpenLDAPConstants.USER_SEARCH_FIELD_SETTING, config.get(OpenLDAPConstants.CONFIG_USER_SEARCH_FIELD));
+        settingsUtils.setValue(OpenLDAPConstants.TIMEOUT_SETTING, config.get(OpenLDAPConstants.CONFIG_TIMEOUT));
+        settingsUtils.setValue(OpenLDAPConstants.GROUP_DN_FIELD_SETTING, config.get(OpenLDAPConstants.CONFIG_GROUP_DN_FIELD));
+        settingsUtils.setValue(OpenLDAPConstants.GROUP_MEMBER_USER_ATTRIBUTE_SETTING, config.get(OpenLDAPConstants.CONFIG_GROUP_MEMBER_USER_ATTRIBUTE));
+        settingsUtils.setValue(SecurityConstants.SECURITY_SETTING, config.get(OpenLDAPConstants.CONFIG_SECURITY));
         if (config.get(OpenLDAPConstants.CONFIG_SECURITY) != null){
-            settingsUtils.changeSetting(SecurityConstants.AUTH_PROVIDER_SETTING, OpenLDAPConstants.CONFIG);
+            settingsUtils.setValue(SecurityConstants.AUTH_PROVIDER_SETTING, OpenLDAPConstants.CONFIG);
         } else {
-            settingsUtils.changeSetting(SecurityConstants.AUTH_PROVIDER_SETTING, SecurityConstants.NO_PROVIDER);
+            settingsUtils.setValue(SecurityConstants.AUTH_PROVIDER_SETTING, SecurityConstants.NO_PROVIDER);
         }
         String accessModeInConfig = (String)config.get(AbstractTokenUtil.ACCESSMODE);
         if (AbstractTokenUtil.isRestrictedAccess(accessModeInConfig) || AbstractTokenUtil.isRequiredAccess(accessModeInConfig)) {
             //validate the allowedIdentities
             @SuppressWarnings("unchecked")
             String ids = openLDAPIdentityProvider.validateIdentities((List<Map<String, String>>) config.get(OpenLDAPConstants.CONFIG_ALLOWED_IDENTITIES));
-            settingsUtils.changeSetting(OpenLDAPConstants.ALLOWED_IDENTITIES_SETTING, ids);
+            settingsUtils.setValue(OpenLDAPConstants.ALLOWED_IDENTITIES_SETTING, ids);
         } else if (AbstractTokenUtil.isUnrestrictedAccess(accessModeInConfig)) {
             //clear out the allowedIdentities Set
-            settingsUtils.changeSetting(OpenLDAPConstants.ALLOWED_IDENTITIES_SETTING, null);
+            settingsUtils.setValue(OpenLDAPConstants.ALLOWED_IDENTITIES_SETTING, null);
         }
         return currentLdapConfig(config);
     }

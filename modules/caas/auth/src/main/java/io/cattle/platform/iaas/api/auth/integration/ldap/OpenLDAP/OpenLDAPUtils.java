@@ -2,23 +2,22 @@ package io.cattle.platform.iaas.api.auth.integration.ldap.OpenLDAP;
 
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.core.dao.AccountDao;
+import io.cattle.platform.core.dao.SettingDao;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.core.util.SettingsUtils;
 import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.token.TokenService;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-
 public class OpenLDAPUtils extends AbstractTokenUtil {
 
-    public OpenLDAPUtils(AuthDao authDao, TokenService tokenService, AuthTokenDao authTokenDao, ObjectManager objectManager, SettingsUtils settingsUtils,
+    public OpenLDAPUtils(AuthDao authDao, TokenService tokenService, AuthTokenDao authTokenDao, ObjectManager objectManager, SettingDao settingsUtils,
             AccountDao accountDao) {
         super(authDao, tokenService, authTokenDao, objectManager, settingsUtils, accountDao);
     }

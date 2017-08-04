@@ -2,8 +2,8 @@ package io.cattle.platform.iaas.api.auth.integration.local;
 
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.dao.AccountDao;
+import io.cattle.platform.core.dao.SettingDao;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.core.util.SettingsUtils;
 import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
@@ -14,7 +14,7 @@ import java.util.List;
 
 public class LocalAuthTokenUtils extends AbstractTokenUtil {
 
-    public LocalAuthTokenUtils(AuthDao authDao, TokenService tokenService, AuthTokenDao authTokenDao, ObjectManager objectManager, SettingsUtils settingsUtils,
+    public LocalAuthTokenUtils(AuthDao authDao, TokenService tokenService, AuthTokenDao authTokenDao, ObjectManager objectManager, SettingDao settingsUtils,
             AccountDao accountDao) {
         super(authDao, tokenService, authTokenDao, objectManager, settingsUtils, accountDao);
     }

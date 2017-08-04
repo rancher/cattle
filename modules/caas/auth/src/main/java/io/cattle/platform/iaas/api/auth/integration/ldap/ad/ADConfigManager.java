@@ -2,7 +2,7 @@ package io.cattle.platform.iaas.api.auth.integration.ldap.ad;
 
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.resource.AbstractNoOpResourceManager;
-import io.cattle.platform.core.util.SettingsUtils;
+import io.cattle.platform.core.dao.SettingDao;
 import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.iaas.api.auth.integration.ldap.LDAPUtils;
@@ -12,19 +12,18 @@ import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-
 public class ADConfigManager extends AbstractNoOpResourceManager {
 
-    SettingsUtils settingsUtils;
+    SettingDao settingsUtils;
     JsonMapper jsonMapper;
     ADIdentityProvider adIdentityProvider;
 
-    public ADConfigManager(SettingsUtils settingsUtils, JsonMapper jsonMapper, ADIdentityProvider adIdentityProvider) {
+    public ADConfigManager(SettingDao settingsUtils, JsonMapper jsonMapper, ADIdentityProvider adIdentityProvider) {
         super();
         this.settingsUtils = settingsUtils;
         this.jsonMapper = jsonMapper;
@@ -183,33 +182,33 @@ public class ADConfigManager extends AbstractNoOpResourceManager {
     }
 
     public ADConfig updateCurrentConfig(Map<String, Object> config) {
-        settingsUtils.changeSetting(ADConstants.ACCESS_MODE_SETTING, config.get(AbstractTokenUtil.ACCESSMODE));
-        settingsUtils.changeSetting(ADConstants.DOMAIN_SETTING, config.get(ADConstants.CONFIG_DOMAIN));
-        settingsUtils.changeSetting(ADConstants.GROUP_SEARCH_DOMAIN_SETTING, config.get(ADConstants.CONFIG_GROUP_SEARCH_DOMAIN));
-        settingsUtils.changeSetting(ADConstants.GROUP_NAME_FIELD_SETTING, config.get(ADConstants.CONFIG_GROUP_NAME_FIELD));
-        settingsUtils.changeSetting(ADConstants.GROUP_OBJECT_CLASS_SETTING, config.get(ADConstants.CONFIG_GROUP_OBJECT_CLASS));
-        settingsUtils.changeSetting(ADConstants.GROUP_SEARCH_FIELD_SETTING, config.get(ADConstants.CONFIG_GROUP_SEARCH_FIELD));
-        settingsUtils.changeSetting(ADConstants.LOGIN_DOMAIN_SETTING, config.get(ADConstants.CONFIG_LOGIN_DOMAIN));
-        settingsUtils.changeSetting(ADConstants.PORT_SETTING, config.get(ADConstants.CONFIG_PORT));
-        settingsUtils.changeSetting(ADConstants.SERVER_SETTING, config.get(ADConstants.CONFIG_SERVER));
+        settingsUtils.setValue(ADConstants.ACCESS_MODE_SETTING, config.get(AbstractTokenUtil.ACCESSMODE));
+        settingsUtils.setValue(ADConstants.DOMAIN_SETTING, config.get(ADConstants.CONFIG_DOMAIN));
+        settingsUtils.setValue(ADConstants.GROUP_SEARCH_DOMAIN_SETTING, config.get(ADConstants.CONFIG_GROUP_SEARCH_DOMAIN));
+        settingsUtils.setValue(ADConstants.GROUP_NAME_FIELD_SETTING, config.get(ADConstants.CONFIG_GROUP_NAME_FIELD));
+        settingsUtils.setValue(ADConstants.GROUP_OBJECT_CLASS_SETTING, config.get(ADConstants.CONFIG_GROUP_OBJECT_CLASS));
+        settingsUtils.setValue(ADConstants.GROUP_SEARCH_FIELD_SETTING, config.get(ADConstants.CONFIG_GROUP_SEARCH_FIELD));
+        settingsUtils.setValue(ADConstants.LOGIN_DOMAIN_SETTING, config.get(ADConstants.CONFIG_LOGIN_DOMAIN));
+        settingsUtils.setValue(ADConstants.PORT_SETTING, config.get(ADConstants.CONFIG_PORT));
+        settingsUtils.setValue(ADConstants.SERVER_SETTING, config.get(ADConstants.CONFIG_SERVER));
         if(config.get(ADConstants.CONFIG_SERVICE_ACCOUNT_PASSWORD) != null){
-            settingsUtils.changeSetting(ADConstants.SERVICE_ACCOUNT_PASSWORD_SETTING, config.get(ADConstants.CONFIG_SERVICE_ACCOUNT_PASSWORD));
+            settingsUtils.setValue(ADConstants.SERVICE_ACCOUNT_PASSWORD_SETTING, config.get(ADConstants.CONFIG_SERVICE_ACCOUNT_PASSWORD));
         }
-        settingsUtils.changeSetting(ADConstants.SERVICE_ACCOUNT_USERNAME_SETTING, config.get(ADConstants.CONFIG_SERVICE_ACCOUNT_USERNAME));
-        settingsUtils.changeSetting(ADConstants.TLS_SETTING, config.get(ADConstants.CONFIG_TLS));
-        settingsUtils.changeSetting(ADConstants.USER_DISABLED_BIT_MASK_SETTING, config.get(ADConstants.CONFIG_USER_DISABLED_BIT_MASK));
-        settingsUtils.changeSetting(ADConstants.USER_ENABLED_ATTRIBUTE_SETTING, config.get(ADConstants.CONFIG_USER_ENABLED_ATTRIBUTE));
-        settingsUtils.changeSetting(ADConstants.USER_LOGIN_FIELD_SETTING, config.get(ADConstants.CONFIG_USER_LOGIN_FIELD));
-        settingsUtils.changeSetting(ADConstants.USER_NAME_FIELD_SETTING, config.get(ADConstants.CONFIG_USER_NAME_FIELD));
-        settingsUtils.changeSetting(ADConstants.USER_OBJECT_CLASS_SETTING, config.get(ADConstants.CONFIG_USER_OBJECT_CLASS));
-        settingsUtils.changeSetting(ADConstants.USER_SEARCH_FIELD_SETTING, config.get(ADConstants.CONFIG_USER_SEARCH_FIELD));
-        settingsUtils.changeSetting(ADConstants.TIMEOUT_SETTING, config.get(ADConstants.CONFIG_TIMEOUT));
-        settingsUtils.changeSetting(SecurityConstants.SECURITY_SETTING, config.get(ADConstants.CONFIG_SECURITY));
+        settingsUtils.setValue(ADConstants.SERVICE_ACCOUNT_USERNAME_SETTING, config.get(ADConstants.CONFIG_SERVICE_ACCOUNT_USERNAME));
+        settingsUtils.setValue(ADConstants.TLS_SETTING, config.get(ADConstants.CONFIG_TLS));
+        settingsUtils.setValue(ADConstants.USER_DISABLED_BIT_MASK_SETTING, config.get(ADConstants.CONFIG_USER_DISABLED_BIT_MASK));
+        settingsUtils.setValue(ADConstants.USER_ENABLED_ATTRIBUTE_SETTING, config.get(ADConstants.CONFIG_USER_ENABLED_ATTRIBUTE));
+        settingsUtils.setValue(ADConstants.USER_LOGIN_FIELD_SETTING, config.get(ADConstants.CONFIG_USER_LOGIN_FIELD));
+        settingsUtils.setValue(ADConstants.USER_NAME_FIELD_SETTING, config.get(ADConstants.CONFIG_USER_NAME_FIELD));
+        settingsUtils.setValue(ADConstants.USER_OBJECT_CLASS_SETTING, config.get(ADConstants.CONFIG_USER_OBJECT_CLASS));
+        settingsUtils.setValue(ADConstants.USER_SEARCH_FIELD_SETTING, config.get(ADConstants.CONFIG_USER_SEARCH_FIELD));
+        settingsUtils.setValue(ADConstants.TIMEOUT_SETTING, config.get(ADConstants.CONFIG_TIMEOUT));
+        settingsUtils.setValue(SecurityConstants.SECURITY_SETTING, config.get(ADConstants.CONFIG_SECURITY));
 
         if (config.get(ADConstants.CONFIG_SECURITY) != null){
-            settingsUtils.changeSetting(SecurityConstants.AUTH_PROVIDER_SETTING, ADConstants.CONFIG);
+            settingsUtils.setValue(SecurityConstants.AUTH_PROVIDER_SETTING, ADConstants.CONFIG);
         } else {
-            settingsUtils.changeSetting(SecurityConstants.AUTH_PROVIDER_SETTING, SecurityConstants.NO_PROVIDER);
+            settingsUtils.setValue(SecurityConstants.AUTH_PROVIDER_SETTING, SecurityConstants.NO_PROVIDER);
         }
 
         String accessModeInConfig = (String)config.get(AbstractTokenUtil.ACCESSMODE);
@@ -217,10 +216,10 @@ public class ADConfigManager extends AbstractNoOpResourceManager {
             //validate the allowedIdentities
             @SuppressWarnings("unchecked")
             String ids = adIdentityProvider.validateIdentities((List<Map<String, String>>) config.get(ADConstants.CONFIG_ALLOWED_IDENTITIES));
-            settingsUtils.changeSetting(ADConstants.ALLOWED_IDENTITIES_SETTING, ids);
+            settingsUtils.setValue(ADConstants.ALLOWED_IDENTITIES_SETTING, ids);
         } else if (AbstractTokenUtil.isUnrestrictedAccess(accessModeInConfig)) {
             //clear out the allowedIdentities Set
-            settingsUtils.changeSetting(ADConstants.ALLOWED_IDENTITIES_SETTING, null);
+            settingsUtils.setValue(ADConstants.ALLOWED_IDENTITIES_SETTING, null);
         }
 
         return currentLdapConfig(config);

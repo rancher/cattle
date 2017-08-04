@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static java.util.stream.Collectors.*;
+
 public class ApiUtils {
 
     private static final Policy DEFAULT_POLICY = new DefaultPolicy();
@@ -48,16 +50,15 @@ public class ApiUtils {
         }
     }
 
-    public static <T> List<T> authorize(List<T> list) {
-        return getPolicy().authorizeList(list);
-    }
-
     @SuppressWarnings("unchecked")
-    public static <T> T authorize(T obj) {
+    public static <T> T filterAuthorized(T obj) {
+        Policy policy = getPolicy();
         if (obj instanceof List) {
-            return (T) authorize((List<T>) obj);
+            return (T) ((List<T>) obj).stream()
+                    .filter((x) -> policy.checkAuthorized(x) != null)
+                    .collect(toList());
         }
-        return getPolicy().authorizeObject(obj);
+        return policy.checkAuthorized(obj);
     }
 
     public static Resource createResource(final ApiRequest request, final IdFormatter idFormatter,

@@ -3,6 +3,7 @@ package io.cattle.platform.framework.event;
 public class FrameworkEvents {
 
     public static final String API_CHANGE = "api.change";
+    public static final String SETTINGS_CHANGE = "settings.change";
     public static final String API_EXCEPTION = "api.exception";
     public static final String STATE_CHANGE = "state.change";
     public static final String SERVICE_EVENT = "service.event";

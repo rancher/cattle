@@ -5,10 +5,8 @@ import io.cattle.platform.api.auth.Policy;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class DefaultPolicy implements Policy {
@@ -54,18 +52,7 @@ public class DefaultPolicy implements Policy {
     }
 
     @Override
-    public <T> List<T> authorizeList(List<T> list) {
-        List<T> result = new ArrayList<>(list.size());
-        for (T obj : list) {
-            T authorized = authorizeObject(obj);
-            if (authorized != null)
-                result.add(authorized);
-        }
-        return result;
-    }
-
-    @Override
-    public <T> T authorizeObject(T obj) {
+    public <T> T checkAuthorized(T obj) {
         return obj;
     }
 
@@ -91,9 +78,9 @@ public class DefaultPolicy implements Policy {
         Set<Object> whitelist = (Set<Object>) (apiRequest.getAttribute("whitelist"));
         if (whitelist == null) {
             whitelist = new HashSet<>();
+            apiRequest.setAttribute("whitelist", whitelist);
         }
         whitelist.add(obj);
-        apiRequest.setAttribute("whitelist", whitelist);
     }
 
     protected <T> boolean hasGrantedAccess(T obj) {

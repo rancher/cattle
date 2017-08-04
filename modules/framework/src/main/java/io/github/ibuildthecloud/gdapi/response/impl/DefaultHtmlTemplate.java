@@ -5,7 +5,6 @@ import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.response.HtmlTemplate;
 import io.github.ibuildthecloud.gdapi.util.Settings;
-import io.github.ibuildthecloud.gdapi.util.SettingsUtil;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -44,8 +43,8 @@ public class DefaultHtmlTemplate implements HtmlTemplate {
             result = result.replace("%SCHEMAS%", schemaUrl.toExternalForm());
         }
 
-        result = result.replace("%JS%", SettingsUtil.getSetting(settings, "api.js.url", getJsUrl()));
-        result = result.replace("%CSS%", SettingsUtil.getSetting(settings, "api.css.url", getCssUrl()));
+        result = result.replace("%JS%", getSetting(settings, "api.js.url", getJsUrl()));
+        result = result.replace("%CSS%", getSetting(settings, "api.css.url", getCssUrl()));
 
         String user = getUser(request, response);
         if (user == null) {
@@ -88,6 +87,16 @@ public class DefaultHtmlTemplate implements HtmlTemplate {
         } finally {
             IOUtils.closeQuietly(is);
         }
+    }
+
+    private static String getSetting(Settings settings, String key, String defaultValue) {
+        if (settings == null) {
+            String value = System.getProperty(key);
+            return value == null ? defaultValue : value;
+        }
+
+        String result = settings.getProperty(key);
+        return result == null ? defaultValue : result;
     }
 
     public String getJsUrl() {

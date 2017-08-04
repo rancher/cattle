@@ -1,6 +1,5 @@
 package io.github.ibuildthecloud.gdapi.factory.impl;
 
-import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.annotation.Actions;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.Action;
@@ -34,7 +33,6 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
     final io.github.ibuildthecloud.gdapi.annotation.Type defaultType;
 
     String id = "base";
-    boolean includeDefaultTypes = true, writableByDefault = false;
     Map<String, SchemaImpl> schemasByName = new TreeMap<>();
     Map<Class<?>, SchemaImpl> schemasByClass = new HashMap<>();
     Map<String, Class<?>> typeToClass = new HashMap<>();
@@ -308,9 +306,9 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
             type = defaultType;
 
         if (type == defaultType) {
-            schema.setCreate(writableByDefault);
-            schema.setUpdate(writableByDefault);
-            schema.setDeletable(writableByDefault);
+            schema.setCreate(false);
+            schema.setUpdate(false);
+            schema.setDeletable(false);
         } else {
             schema.setCreate(type.create());
             schema.setUpdate(type.update());
@@ -437,9 +435,9 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
         }
 
         if (f == this.defaultField) {
-            field.setNullable(writableByDefault);
-            field.setUpdate(writableByDefault);
-            field.setCreate(writableByDefault);
+            field.setNullable(false);
+            field.setUpdate(false);
+            field.setCreate(false);
         } else {
             field.setNullable(f.nullable());
             field.setUpdate(f.update());
@@ -619,13 +617,11 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
     }
 
     public void init() {
-        if (includeDefaultTypes) {
-            registerSchema(Schema.class);
-            registerSchema(ApiVersion.class);
-            registerSchema(ApiError.class);
-            registerSchema(Collection.class);
-            registerSchema(Resource.class);
-        }
+        registerSchema(Schema.class);
+        registerSchema(ApiVersion.class);
+        registerSchema(ApiError.class);
+        registerSchema(Collection.class);
+        registerSchema(Resource.class);
 
         for (Class<?> clz : types) {
             registerSchema(clz);
@@ -669,34 +665,6 @@ public class SchemaFactoryImpl extends AbstractSchemaFactory implements SchemaFa
 
     public List<SchemaPostProcessor> getPostProcessors() {
         return postProcessors;
-    }
-
-    public void setPostProcessors(List<SchemaPostProcessor> postProcessors) {
-        this.postProcessors = CollectionUtils.orderList(SchemaPostProcessor.class, postProcessors);
-    }
-
-    public List<String> getTypeNames() {
-        return typeNames;
-    }
-
-    public void setTypeNames(List<String> typeNames) {
-        this.typeNames = typeNames;
-    }
-
-    public boolean isIncludeDefaultTypes() {
-        return includeDefaultTypes;
-    }
-
-    public void setIncludeDefaultTypes(boolean includeDefaultTypes) {
-        this.includeDefaultTypes = includeDefaultTypes;
-    }
-
-    public boolean isWritableByDefault() {
-        return writableByDefault;
-    }
-
-    public void setWritableByDefault(boolean writableByDefault) {
-        this.writableByDefault = writableByDefault;
     }
 
     public void setId(String id) {

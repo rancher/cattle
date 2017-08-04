@@ -5,7 +5,6 @@ import io.cattle.platform.api.hostapi.HostApiProxyTokenImpl;
 import io.cattle.platform.api.pubsub.model.Publish;
 import io.cattle.platform.api.pubsub.model.Subscribe;
 import io.cattle.platform.api.stats.StatsAccess;
-import io.cattle.platform.core.addon.ActiveSetting;
 import io.cattle.platform.core.addon.BaseMachineConfig;
 import io.cattle.platform.core.addon.BlkioDeviceOption;
 import io.cattle.platform.core.addon.ComposeConfig;
@@ -267,7 +266,6 @@ public class Model {
 
     private TypeSet addons() {
         return TypeSet.ofClasses(
-                ActiveSetting.class,
                 ADConfig.class,
                 AzureConfig.class,
                 BaseMachineConfig.class,

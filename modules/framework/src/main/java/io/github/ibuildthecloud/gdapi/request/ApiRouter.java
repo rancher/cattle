@@ -17,23 +17,15 @@ public interface ApiRouter {
 
     ApiRouter handlers(ApiRequestHandler... handlers);
 
-    ApiRouter resourceManager(Class<?> type, ResourceManager rm);
+    ApiRouter resourceManager(Object type, ResourceManager rm);
 
-    ApiRouter resourceManager(String type, ResourceManager rm);
+    ApiRouter validationFilter(Object type, ValidationFilter filter);
 
-    ApiRouter filter(Class<?> type, ValidationFilter filter);
+    ApiRouter outputFilter(Object type, ResourceOutputFilter filter);
 
-    ApiRouter filter(String type, ValidationFilter filter);
+    ApiRouter link(Object type, LinkHandler link);
 
-    ApiRouter outputFilter(Class<?> type, ResourceOutputFilter filter);
-
-    ApiRouter outputFilter(String type, ResourceOutputFilter filter);
-
-    ApiRouter link(Class<?> type, LinkHandler link);
-
-    ApiRouter link(String type, LinkHandler link);
-
-    ApiRouter action(String name, ActionHandler action);
+    ApiRouter action(Object type, String name, ActionHandler action);
 
     ApiRouter defaultResourceManager(ResourceManager rm);
 

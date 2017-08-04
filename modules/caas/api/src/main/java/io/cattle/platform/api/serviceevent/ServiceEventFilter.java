@@ -56,9 +56,9 @@ public class ServiceEventFilter extends AbstractValidationFilter {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN, VERIFY_AGENT);
         }
 
-        Instance instance = ApiUtils.authorize(objectManager.findAny(Instance.class,
+        Instance instance = ApiUtils.filterAuthorized(objectManager.findAny(Instance.class,
                 ObjectMetaDataManager.UUID_FIELD, splitted[1]));
-        Host host = ApiUtils.authorize(objectManager.findAny(Host.class,
+        Host host = ApiUtils.filterAuthorized(objectManager.findAny(Host.class,
                 ObjectMetaDataManager.UUID_FIELD, splitted[0]));
 
 
