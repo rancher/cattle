@@ -12,6 +12,7 @@ import io.cattle.platform.framework.event.FrameworkEvents;
 import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
+import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 import org.apache.cloudstack.managed.threadlocal.ManagedThreadLocal;
 import org.jooq.Configuration;
 
@@ -28,9 +29,11 @@ public class SettingDaoImpl extends AbstractJooqDao implements SettingDao {
 
     ObjectManager objectManager;
     EventService eventService;
+    TransactionDelegate transaction;
 
-    public SettingDaoImpl(Configuration configuration, ObjectManager objectManager, EventService eventService) {
+    public SettingDaoImpl(Configuration configuration, TransactionDelegate transaction, ObjectManager objectManager, EventService eventService) {
         super(configuration);
+        this.transaction = transaction;
         this.objectManager = objectManager;
         this.eventService = eventService;
     }
@@ -61,23 +64,28 @@ public class SettingDaoImpl extends AbstractJooqDao implements SettingDao {
                     "Setting is locked to the value " + ArchaiusUtil.getStringValue(name));
         }
 
-        int count = create().update(SETTING)
-                .set(SETTING.VALUE, value.toString())
-                .where(SETTING.NAME.eq(name))
-                .execute();
-        if (count == 0) {
-            create().insertInto(SETTING, SETTING.NAME, SETTING.VALUE)
-                    .values(name, value.toString())
+        transaction.doInTransaction(() -> {
+            int count = create().update(SETTING)
+                    .set(SETTING.VALUE, value.toString())
+                    .where(SETTING.NAME.eq(name))
                     .execute();
-        }
+            if (count == 0) {
+                create().insertInto(SETTING, SETTING.NAME, SETTING.VALUE)
+                        .values(name, value.toString())
+                        .execute();
+            }
+        });
 
         notifySettingsChanged();
     }
 
     @Override
     public void deleteSetting(String name) {
-        create().delete(SETTING)
-                .where(SETTING.NAME.eq(name));
+        transaction.doInTransaction(() -> {
+            create().delete(SETTING)
+                    .where(SETTING.NAME.eq(name))
+                    .execute();
+        });
 
         notifySettingsChanged();
     }

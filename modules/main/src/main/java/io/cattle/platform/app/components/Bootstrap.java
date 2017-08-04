@@ -152,9 +152,10 @@ public class Bootstrap {
 
         getSources().forEach((s) -> {
             if (s instanceof FixedConfigurationSource) {
-                s = ((FixedConfigurationSource) s).getAbstractConfig();
+                ((FixedConfigurationSource) s).getAbstractConfig().setDelimiterParsingDisabled(true);
+            } else {
+                s.setDelimiterParsingDisabled(true);
             }
-            s.setDelimiterParsingDisabled(true);
             baseConfig.addConfiguration(s);
         });
 

@@ -49,13 +49,6 @@
         "haConfig.dbSize" : "r",
         "haConfig.dbHost" : "r",
 
-        "activeSetting" : "rud",
-        "activeSetting.activeValue" : "r",
-        "activeSetting.inDb": "r",
-        "activeSetting.name": "r",
-        "activeSetting.source": "r",
-        "activeSetting.value" : "ru",
-
         "agent" : "r",
         "agent.managedConfig" : "r",
         "agent.uri" : "r",

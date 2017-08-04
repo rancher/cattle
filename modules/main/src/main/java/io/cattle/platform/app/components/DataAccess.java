@@ -104,7 +104,7 @@ public class DataAccess {
         this.auditLogDao = new AuditLogDaoImpl(f.jooqConfig, f.objectManager);
         this.authDao = new AuthDaoImpl(f.jooqConfig, resourceDao, f.objectManager, f.processManager, f.lockManager, accountDao);
         this.authTokenDao = new AuthTokenDaoImpl(f.jooqConfig, resourceDao, f.objectManager, f.processManager);
-        this.dataDao = new DataDaoImpl(f.jooqConfig, f.lockManager, f.objectManager, f.newConnJooqConfig);
+        this.dataDao = new DataDaoImpl(f.jooqConfig, f.lockManager, f.objectManager, f.newConnJooqConfig, f.newTransaction);
         this.dbCacheManager = new DBCacheManager();
         this.dynamicSchemaDao = new DynamicSchemaDaoImpl(f.jooqConfig, dbCacheManager);
         this.hostDao = new HostDaoImpl(f.jooqConfig);
@@ -118,7 +118,7 @@ public class DataAccess {
         this.registrationTokenAuthDao = new RegistrationTokenAuthDaoImpl(f.jooqConfig);
         this.secretsDao = new SecretDaoImpl(f.jooqConfig);
         this.serviceDao = new ServiceDaoImpl(f.jooqConfig, f.objectManager, f.lockManager, resourceDao, f.transaction);
-        this.settingDao = new SettingDaoImpl(f.newConnJooqConfig, f.objectManager, f.eventService);
+        this.settingDao = new SettingDaoImpl(f.newConnJooqConfig, f.newTransaction, f.objectManager, f.eventService);
         this.stackDao = new StackDaoImpl(f.jooqConfig);
         this.storagePoolDao = new StoragePoolDaoImpl(f.jooqConfig, resourceDao, f.objectManager, f.transaction);
         this.storageDriverDao = new StorageDriverDaoImpl(f.jooqConfig, f.objectManager, f.jsonMapper);

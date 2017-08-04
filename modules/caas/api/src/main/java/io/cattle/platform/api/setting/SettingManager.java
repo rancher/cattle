@@ -99,7 +99,7 @@ public class SettingManager implements ResourceManager {
 
         settingDao.deleteSetting(id);
         ArchaiusUtil.refresh();
-        return null;
+        return getById(type, id, null);
     }
 
 }

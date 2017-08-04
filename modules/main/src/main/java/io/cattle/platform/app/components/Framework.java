@@ -57,7 +57,7 @@ import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 import org.jooq.Configuration;
 import org.jooq.conf.SettingsTools;
 import org.jooq.impl.DefaultConfiguration;
-import org.jooq.impl.DefaultTransactionProvider;
+import org.jooq.impl.ThreadLocalTransactionProvider;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -105,6 +105,7 @@ public class Framework {
     ResourcePoolManager resourcePoolManager;
     RetryTimeoutService retryTimeoutService;
     TransactionDelegate transaction;
+    TransactionDelegate newTransaction;
     ProcessBuilder processBuilder;
 
     ThreadPoolExecutor executorService = new ThreadPoolExecutor(20, 20, 5L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), (r) -> {
@@ -216,8 +217,9 @@ public class Framework {
                 .set(jooqConfig.dialect())
                 .set(SettingsTools.clone(jooqConfig.settings()).withExecuteWithOptimisticLocking(true))
                 .set(jooqConfig.connectionProvider())
-                .set(new DefaultTransactionProvider(jooqConfig.connectionProvider(), false))
+                .set(new ThreadLocalTransactionProvider(jooqConfig.connectionProvider(), false))
                 .set(jooqConfig.executeListenerProviders());
+        this.newTransaction = new TransactionDelegateImpl(newConnJooqConfig);
     }
 
     private IdFormatter buildIdFormatter() {

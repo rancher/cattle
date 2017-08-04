@@ -758,11 +758,6 @@
         "setting.source" : "r",
         "setting.value" : "r",
 
-        "activeSetting" : "r",
-        "activeSetting.activeValue" : "r",
-        "activeSetting.name": "r",
-        "activeSetting.value" : "r",
-
         "containerConfig" : "cru",
         "containerConfig.resourceActions.logs" : "",
 

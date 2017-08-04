@@ -95,7 +95,6 @@ import io.cattle.platform.api.service.VolumeTemplateCreateValidationFilter;
 import io.cattle.platform.api.serviceevent.ServiceEventFilter;
 import io.cattle.platform.api.serviceproxy.ServiceProxyManager;
 import io.cattle.platform.api.setting.SettingManager;
-import io.cattle.platform.api.setting.SettingsOutputFilter;
 import io.cattle.platform.api.stack.AddOutputsActionHandler;
 import io.cattle.platform.api.stack.ServiceDiscoveryStackOutputFilter;
 import io.cattle.platform.api.stack.StackActivateServicesActionHandler;
@@ -270,7 +269,6 @@ public class Api {
         c.router.outputFilter(ServiceConstants.KIND_SCALING_GROUP_SERVICE, statsOutputFilter);
         c.router.outputFilter(ServiceConstants.KIND_SERVICE, statsOutputFilter);
         c.router.outputFilter(ServiceConstants.TYPE_STACK, statsOutputFilter);
-        c.router.outputFilter(Setting.class, new SettingsOutputFilter());
         c.router.outputFilter(Stack.class, new ServiceDiscoveryStackOutputFilter());
         c.router.outputFilter(Stack.class, new StackOutputFilter(d.stackDao, f.objectManager));
         c.router.outputFilter(StoragePool.class, new StoragePoolOutputFilter(d.storagePoolDao));

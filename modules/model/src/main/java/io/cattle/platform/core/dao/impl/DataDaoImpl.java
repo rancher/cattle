@@ -1,33 +1,34 @@
 package io.cattle.platform.core.dao.impl;
 
-import static io.cattle.platform.core.model.tables.DataTable.*;
-
 import io.cattle.platform.core.dao.DataDao;
 import io.cattle.platform.core.model.Data;
 import io.cattle.platform.core.model.tables.records.DataRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
-import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.util.exception.ExceptionUtils;
-
-import java.util.concurrent.Callable;
-
+import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 import org.jooq.Configuration;
 import org.jooq.DSLContext;
 import org.jooq.impl.DefaultDSLContext;
+
+import java.util.concurrent.Callable;
+
+import static io.cattle.platform.core.model.tables.DataTable.*;
 
 public class DataDaoImpl extends AbstractJooqDao implements DataDao {
 
     LockManager lockManager;
     ObjectManager objectManager;
     Configuration newConfiguration;
+    TransactionDelegate newTransaction;
 
-    public DataDaoImpl(Configuration configuration, LockManager lockManager, ObjectManager objectManager, Configuration newConfiguration) {
+    public DataDaoImpl(Configuration configuration, LockManager lockManager, ObjectManager objectManager, Configuration newConfiguration, TransactionDelegate newTransaction) {
         super(configuration);
         this.lockManager = lockManager;
         this.objectManager = objectManager;
         this.newConfiguration = newConfiguration;
+        this.newTransaction = newTransaction;
     }
 
     @Override
@@ -45,39 +46,38 @@ public class DataDaoImpl extends AbstractJooqDao implements DataDao {
             return data.getValue();
         }
 
-        return lockManager.lock(new DataChangeLock(key), new LockCallback<String>() {
-            @Override
-            public String doWithLock() {
-                DataRecord data = create().selectFrom(DATA)
-                        .where(DATA.NAME.eq(key))
-                        .fetchAny();
+        return lockManager.lock(new DataChangeLock(key), () -> {
+            DataRecord data1 = create().selectFrom(DATA)
+                    .where(DATA.NAME.eq(key))
+                    .fetchAny();
 
 
-                if ( data != null && data.getVisible() != null && data.getVisible() == visible ) {
-                    return data.getValue();
-                } else if ( data != null ) {
-                    data.setVisible(visible);
-                    data.update();
-                    return data.getValue();
+            if ( data1 != null && data1.getVisible() != null && data1.getVisible() == visible ) {
+                return data1.getValue();
+            } else if ( data1 != null ) {
+                data1.setVisible(visible);
+                data1.update();
+                return data1.getValue();
+            }
+
+            try {
+                String value = generator.call();
+                if ( value == null ) {
+                    return value;
                 }
 
-                try {
-                    String value = generator.call();
-                    if ( value == null ) {
-                        return value;
-                    }
-
+                newTransaction.doInTransaction(() -> {
                     DataRecord record = new DataRecord();
                     record.attach(newConfiguration);
                     record.setName(key);
                     record.setVisible(visible);
                     record.setValue(value);
                     record.insert();
-                    return record.getValue();
-                } catch (Exception e) {
-                    ExceptionUtils.rethrowRuntime(e);
-                    throw new RuntimeException("Failed to generate value for [" + key + "]", e);
-                }
+                });
+                return value;
+            } catch (Exception e) {
+                ExceptionUtils.rethrowRuntime(e);
+                throw new RuntimeException("Failed to generate value for [" + key + "]", e);
             }
         });
     }
