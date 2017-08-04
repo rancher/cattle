@@ -70,6 +70,13 @@ public class DeploymentSyncRequestHandler extends AgentBasedProcessHandler {
     }
 
     @Override
+    protected void preProcessEvent(EventVO<?> event, ProcessState state, ProcessInstance process, Object eventResource, Object dataResource, Object agentResource) {
+        super.preProcessEvent(event, state, process, eventResource, dataResource, agentResource);
+
+        event.setName("external." + event.getName());
+    }
+
+    @Override
     protected Map<Object, Object> getResourceDataMap(EventVO<?> event, Event reply, ProcessState state, ProcessInstance process, Object eventResource, Object dataResource, Object agentResource) {
         Map<Object, Object> data = new HashMap<>();
 

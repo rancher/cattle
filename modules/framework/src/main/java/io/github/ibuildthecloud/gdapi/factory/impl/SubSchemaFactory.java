@@ -1,5 +1,6 @@
 package io.github.ibuildthecloud.gdapi.factory.impl;
 
+import com.netflix.config.DynamicBooleanProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.Field;
@@ -18,8 +19,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import com.netflix.config.DynamicBooleanProperty;
 
 public class SubSchemaFactory extends AbstractSchemaFactory implements SchemaFactory {
 
@@ -115,6 +114,11 @@ public class SubSchemaFactory extends AbstractSchemaFactory implements SchemaFac
                     filters.remove(name);
                     break;
                 }
+            }
+
+            if (field.getTypeEnum() == FieldType.TYPE && !schemaMap.containsKey(field.getType())) {
+                fields.remove(name);
+                filters.remove(name);
             }
         }
 
