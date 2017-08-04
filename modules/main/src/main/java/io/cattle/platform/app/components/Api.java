@@ -130,6 +130,7 @@ import io.cattle.platform.core.model.AuditLog;
 import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.Data;
+import io.cattle.platform.core.model.DynamicSchema;
 import io.cattle.platform.core.model.ExternalEvent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.HostTemplate;
@@ -298,7 +299,7 @@ public class Api {
         c.router.filter(ContainerEvent.class, new ContainerEventFilter(d.agentDao, f.objectManager, f.jsonMapper, f.eventService));
         c.router.filter(Credential.class, new CredentialUniqueFilter(f.coreSchemaFactory, d.passwordDao, f.jsonMapper));
         c.router.filter(CredentialConstants.KIND_API_KEY, new ApiKeyFilter());
-        c.router.filter(DynamicSchemaFilter.class, new DynamicSchemaFilter(f.schemaJsonMapper, f.lockManager));
+        c.router.filter(DynamicSchema.class, new DynamicSchemaFilter(f.schemaJsonMapper, f.lockManager));
         c.router.filter(ExternalEvent.class, new ExternalEventFilter(f.objectManager));
         c.router.filter(Host.class, new MachineDriverFilter(f.objectManager));
         c.router.filter(Host.class, new MachineValidationFilter(c.secretsService));
