@@ -247,17 +247,17 @@ public abstract class AbstractTokenUtil implements TokenUtil {
                 if (isWhitelisted(idList)) {
                     break;
                 }
-                throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
+                throw new ClientVisibleException(ResponseCodes.FORBIDDEN, "AuthError", "Your account does not have access", null);
             case RESTRICTED_ACCESSMODE:
                 boolean hasAccessToAProject = authDao.hasAccessToAnyProject(identities, false, null);
                 if (hasAccessToAProject || isWhitelisted(idList)) {
                     break;
                 }
-                throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
+                throw new ClientVisibleException(ResponseCodes.FORBIDDEN, "AuthError", "Your account does not have access", null);
             case UNRESTRICTED_ACCESSMODE:
                 break;
             default:
-                throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
+                throw new ClientVisibleException(ResponseCodes.FORBIDDEN, "AuthError", "Your account does not have access", null);
         }
         return true;
     }
