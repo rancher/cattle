@@ -191,9 +191,9 @@ public class Model {
                     .process("deactivate")
                     .process("error")
                     .process("provision")
-                        .from("inactive")
+                        .from("creating")
                         .transitioning("provisioning")
-                        .to("active")
+                        .to("inactive")
 
                 .type("mount")
                     .process("create")
