@@ -41,6 +41,9 @@ public class SelectorServiceCreateValidationFilter extends AbstractValidationFil
     protected void validateImage(Map<String, Object> primaryLaunchConfig, boolean isSelector) {
         if (!isSelector && primaryLaunchConfig != null) {
             Object image = primaryLaunchConfig.get(InstanceConstants.FIELD_IMAGE);
+            if (image == null) {
+                image = primaryLaunchConfig.get(InstanceConstants.FIELD_IMAGE_UUID);
+            }
             if (image == null || image.toString().equalsIgnoreCase(ServiceConstants.IMAGE_NONE)) {
                 throw new ValidationErrorException(ValidationErrorCodes.INVALID_OPTION,
                         "Image is required when " + ServiceConstants.FIELD_SELECTOR_CONTAINER

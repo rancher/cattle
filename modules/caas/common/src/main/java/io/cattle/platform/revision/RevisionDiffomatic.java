@@ -165,7 +165,7 @@ public class RevisionDiffomatic {
             Map<String, Object> newLc = new HashMap<>();
 
             // New LaunchConfig
-            if (currentLc == null || complete) {
+            if (currentLc == null) {
                 createRevision = true;
                 newLc.putAll(lc);
                 newLc.put(ServiceConstants.FIELD_VERSION, newVersion);
@@ -175,7 +175,7 @@ public class RevisionDiffomatic {
 
             // Compare LaunchConfigs
             try {
-                boolean lcComplete = complete || DataAccessor.fromMap(lc)
+                boolean lcComplete = DataAccessor.fromMap(lc)
                         .withKey(ServiceConstants.FIELD_COMPLETE_UPDATE)
                         .withDefault(false)
                         .as(Boolean.class);
@@ -235,6 +235,8 @@ public class RevisionDiffomatic {
                     }
 
                     newLc.put(ServiceConstants.FIELD_VERSION, version);
+                }
+                if (lcChanged || complete) {
                     result.put(name, newLc);
                 }
             }

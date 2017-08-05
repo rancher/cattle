@@ -73,7 +73,10 @@ public class DeploymentSyncRequestHandler extends AgentBasedProcessHandler {
     protected void preProcessEvent(EventVO<?> event, ProcessState state, ProcessInstance process, Object eventResource, Object dataResource, Object agentResource) {
         super.preProcessEvent(event, state, process, eventResource, dataResource, agentResource);
 
-        event.setName("external." + event.getName());
+        // Long means that we are going to an agent, not instance. So it's external. A bit hacky.
+        if (agentResource instanceof Long) {
+            event.setName("external." + event.getName());
+        }
     }
 
     @Override
