@@ -9,8 +9,12 @@ public class TypeUtils {
             return null;
         }
 
-        if (name.endsWith("s") || name.endsWith("ch") || name.endsWith("x"))
+        if (name.endsWith("s") || name.endsWith("ch") || name.endsWith("x")) {
             return name + "es";
+        }
+        if (name.endsWith("y")) {
+            return name.substring(0, name.length()-1) + "ies";
+        }
         return name + "s";
     }
 
@@ -19,8 +23,12 @@ public class TypeUtils {
             return null;
         }
 
-        if (name.endsWith("ses") || name.endsWith("ches") || name.endsWith("xes"))
-            return name.substring(0, name.length()-2);
+        if (name.endsWith("ses") || name.endsWith("ches") || name.endsWith("xes")) {
+            return name.substring(0, name.length() - 2);
+        }
+        if (name.endsWith("ies")) {
+            return name.substring(0, name.length() - 3) + "y";
+        }
         return name.substring(0, name.length()-1);
     }
 

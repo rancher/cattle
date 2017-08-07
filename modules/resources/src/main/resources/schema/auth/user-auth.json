@@ -15,6 +15,9 @@
         ".*\\.transitioning": "r",
         ".*\\.uuid" : "r",
 
+        "error" : "r",
+        "error\\..*" : "r",
+
         "account": "r",
         "account.metadata": "r",
         "account.version": "r",
@@ -760,6 +763,16 @@
 
         "containerConfig" : "cru",
         "containerConfig.resourceActions.logs" : "",
+
+        "cluster" : "r",
+        "cluster.identity" : "r",
+        "cluster.embedded" : "cr",
+
+        "clusterIdentity" : "r",
+        "clusterIdentity.username" : "r",
+        "clusterIdentity.userId" : "r",
+        "clusterIdentity.groups" : "r",
+        "clusterIdentity.attributes" : "r",
 
         "launchConfig" : "cru",
         "launchConfig.completeUpdate" : "ru",

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.2.xsd">
+    <property name="mediumtext" value="TEXT" dbms="postgresql" />
+    <property name="mediumtext" value="MEDIUMTEXT" />
+    <property name="mediumtext" value="varchar" dbms="H2" />
+    <changeSet author="rancher (generated)" id="dump1">
+        <createTable tableName="cluster">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="${mediumtext}"/>
+            <column defaultValueNumeric="0" name="embedded" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump2">
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_cluster_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="cluster"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump3">
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="cluster" constraintName="fk_cluster__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump4">
+        <createIndex indexName="idx_cluster_name" tableName="cluster" unique="false">
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump5">
+        <createIndex indexName="idx_cluster_remove_time" tableName="cluster" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump6">
+        <createIndex indexName="idx_cluster_removed" tableName="cluster" unique="false">
+            <column name="removed"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump7">
+        <createIndex indexName="idx_cluster_state" tableName="cluster" unique="false">
+            <column name="state"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

@@ -10,6 +10,7 @@ import io.cattle.platform.core.model.tables.AuditLogTable;
 import io.cattle.platform.core.model.tables.AuthTokenTable;
 import io.cattle.platform.core.model.tables.CertificateTable;
 import io.cattle.platform.core.model.tables.ClusterMembershipTable;
+import io.cattle.platform.core.model.tables.ClusterTable;
 import io.cattle.platform.core.model.tables.CredentialTable;
 import io.cattle.platform.core.model.tables.DataTable;
 import io.cattle.platform.core.model.tables.DatabasechangelogTable;
@@ -22,7 +23,6 @@ import io.cattle.platform.core.model.tables.GenericObjectTable;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.HostTemplateTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
-import io.cattle.platform.core.model.tables.KeyValueTable;
 import io.cattle.platform.core.model.tables.MachineDriverTable;
 import io.cattle.platform.core.model.tables.MountTable;
 import io.cattle.platform.core.model.tables.NetworkDriverTable;
@@ -72,7 +72,7 @@ import org.jooq.impl.SchemaImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class CattleTable extends SchemaImpl {
 
-    private static final long serialVersionUID = 1970586882;
+    private static final long serialVersionUID = -151580490;
 
     /**
      * The reference instance of <code>cattle</code>
@@ -103,6 +103,11 @@ public class CattleTable extends SchemaImpl {
      * The table <code>cattle.certificate</code>.
      */
     public final CertificateTable CERTIFICATE = io.cattle.platform.core.model.tables.CertificateTable.CERTIFICATE;
+
+    /**
+     * The table <code>cattle.cluster</code>.
+     */
+    public final ClusterTable CLUSTER = io.cattle.platform.core.model.tables.ClusterTable.CLUSTER;
 
     /**
      * The table <code>cattle.cluster_membership</code>.
@@ -173,11 +178,6 @@ public class CattleTable extends SchemaImpl {
      * The table <code>cattle.instance</code>.
      */
     public final InstanceTable INSTANCE = io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
-
-    /**
-     * The table <code>cattle.key_value</code>.
-     */
-    public final KeyValueTable KEY_VALUE = io.cattle.platform.core.model.tables.KeyValueTable.KEY_VALUE;
 
     /**
      * The table <code>cattle.machine_driver</code>.
@@ -324,6 +324,7 @@ public class CattleTable extends SchemaImpl {
             AuditLogTable.AUDIT_LOG,
             AuthTokenTable.AUTH_TOKEN,
             CertificateTable.CERTIFICATE,
+            ClusterTable.CLUSTER,
             ClusterMembershipTable.CLUSTER_MEMBERSHIP,
             CredentialTable.CREDENTIAL,
             DataTable.DATA,
@@ -338,7 +339,6 @@ public class CattleTable extends SchemaImpl {
             HostTable.HOST,
             HostTemplateTable.HOST_TEMPLATE,
             InstanceTable.INSTANCE,
-            KeyValueTable.KEY_VALUE,
             MachineDriverTable.MACHINE_DRIVER,
             MountTable.MOUNT,
             NetworkTable.NETWORK,

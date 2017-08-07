@@ -13,10 +13,6 @@
     "driver": {
       "type": "string"
     },
-    "apiProxy": {
-      "type": "string",
-      "nullable": true
-    },
     "agentIpAddress": {
       "type": "string",
       "nullable": true

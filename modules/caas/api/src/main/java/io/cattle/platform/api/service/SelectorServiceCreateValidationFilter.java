@@ -38,6 +38,7 @@ public class SelectorServiceCreateValidationFilter extends AbstractValidationFil
         validateImage(primaryLaunchConfig, isSelector);
     }
 
+    @SuppressWarnings("deprecated")
     protected void validateImage(Map<String, Object> primaryLaunchConfig, boolean isSelector) {
         if (!isSelector && primaryLaunchConfig != null) {
             Object image = primaryLaunchConfig.get(InstanceConstants.FIELD_IMAGE);

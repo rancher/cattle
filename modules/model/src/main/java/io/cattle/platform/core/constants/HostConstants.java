@@ -23,9 +23,6 @@ public class HostConstants {
     public static final String FIELD_MILLI_CPU = "milliCpu";
     public static final String FIELD_PUBLIC_ENDPOINTS = "publicEndpoints";
 
-    public static final String PROCESS_REMOVE = "host.remove";
-    public static final String PROCESS_CREATE = "host.create";
-    public static final String PROCESS_UPDATE = "host.update";
     public static final String PROCESS_ACTIVATE = "host.activate";
     public static final String PROCESS_PROVISION = "host.provision";
 

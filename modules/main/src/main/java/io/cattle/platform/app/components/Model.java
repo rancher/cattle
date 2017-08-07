@@ -7,6 +7,7 @@ import io.cattle.platform.api.pubsub.model.Subscribe;
 import io.cattle.platform.api.stats.StatsAccess;
 import io.cattle.platform.core.addon.BaseMachineConfig;
 import io.cattle.platform.core.addon.BlkioDeviceOption;
+import io.cattle.platform.core.addon.ClusterIdentity;
 import io.cattle.platform.core.addon.ComposeConfig;
 import io.cattle.platform.core.addon.ContainerEvent;
 import io.cattle.platform.core.addon.ContainerUpgrade;
@@ -143,6 +144,7 @@ public class Model {
 
                 // Simple types
                 .type("certificate").processes("update")
+                .type("cluster")
                 .type("credential").processes("activate", "deactivate")
                 .type("deploymentUnit").processes("activate", "deactivate", "error", "update", "pause")
                 .type("dynamicSchema")
@@ -188,6 +190,7 @@ public class Model {
 
                 .type("host")
                     .process("activate")
+                    .process("update")
                     .process("deactivate")
                     .process("error")
                     .process("provision")
@@ -270,6 +273,7 @@ public class Model {
                 AzureConfig.class,
                 BaseMachineConfig.class,
                 BlkioDeviceOption.class,
+                ClusterIdentity.class,
                 ComposeConfig.class,
                 ContainerExec.class,
                 ContainerEvent.class,

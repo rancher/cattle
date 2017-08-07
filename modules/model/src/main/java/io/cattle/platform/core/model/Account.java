@@ -177,6 +177,17 @@ public interface Account extends Serializable {
     @Column(name = "default_network_id", precision = 19)
     public Long getDefaultNetworkId();
 
+    /**
+     * Setter for <code>cattle.account.version</code>.
+     */
+    public void setVersion(String value);
+
+    /**
+     * Getter for <code>cattle.account.version</code>.
+     */
+    @Column(name = "version", length = 128)
+    public String getVersion();
+
     // -------------------------------------------------------------------------
     // FROM and INTO
     // -------------------------------------------------------------------------

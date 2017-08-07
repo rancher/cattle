@@ -39,7 +39,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AccountTable extends TableImpl<AccountRecord> {
 
-    private static final long serialVersionUID = -1921812411;
+    private static final long serialVersionUID = 1250798198;
 
     /**
      * The reference instance of <code>cattle.account</code>
@@ -118,6 +118,11 @@ public class AccountTable extends TableImpl<AccountRecord> {
      * The column <code>cattle.account.default_network_id</code>.
      */
     public final TableField<AccountRecord, Long> DEFAULT_NETWORK_ID = createField("default_network_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
+     * The column <code>cattle.account.version</code>.
+     */
+    public final TableField<AccountRecord, String> VERSION = createField("version", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
 
     /**
      * Create a <code>cattle.account</code> table reference
