@@ -1,4 +1,4 @@
-# Maybe I should just learn m4...
+# Examples to generate some SQL to start defining tables
 
 . tables-common.sh
 
@@ -76,5 +76,3 @@ map instance host
 map image storage_pool
 map storage_pool host
 map volume storage_pool
-
-cat end.sql
