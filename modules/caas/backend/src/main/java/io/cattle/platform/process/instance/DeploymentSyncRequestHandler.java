@@ -1,8 +1,11 @@
 package io.cattle.platform.process.instance;
 
+import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.agent.AgentLocator;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.addon.DeploymentSyncResponse;
 import io.cattle.platform.core.addon.InstanceStatus;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.util.SystemLabels;
@@ -29,6 +32,8 @@ import java.util.TreeSet;
 import static io.cattle.platform.core.model.Tables.*;
 
 public class DeploymentSyncRequestHandler extends AgentBasedProcessHandler {
+
+    public static final DynamicStringProperty EXTERNAL_STYLE = ArchaiusUtil.getString("external.compute.event.target");
 
     DeploymentSyncFactory syncFactory;
     EnvironmentResourceManager envResourceManager;
@@ -60,13 +65,29 @@ public class DeploymentSyncRequestHandler extends AgentBasedProcessHandler {
         }
 
         try {
-            Set<Long> agentIds = new TreeSet<>(envResourceManager.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_COMPUTE,
-                    instance.getAccountId()));
-            return agentIds.iterator().next();
-        } catch (NoSuchElementException e) {
+            if ("container".equals(EXTERNAL_STYLE.get())) {
+                Set<Long> agentIds = new TreeSet<>(envResourceManager.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_COMPUTE,
+                        instance.getAccountId()));
+                return agentIds.iterator().next();
+            } else if ("host".equals(EXTERNAL_STYLE.get())) {
+                long agentId = Long.MAX_VALUE;
+                for (HostInfo info : envResourceManager.getMetadata(instance.getAccountId()).getHosts()) {
+                    if (CommonStatesConstants.ACTIVE.equals(info.getAgentState()) &&
+                            CommonStatesConstants.ACTIVE.equals(info.getState()) &&
+                            info.getAgentId() != null &&
+                            info.getAgentId() < agentId) {
+                        agentId = info.getAgentId();
+                    }
+                }
 
-            throw new ExecutionErrorException("Failed to find external agent provider", instance);
+                if (agentId != Long.MAX_VALUE) {
+                    return agentId;
+                }
+            }
+        } catch (NoSuchElementException e) {
         }
+
+        throw new ExecutionErrorException("Failed to find external agent provider", instance);
     }
 
     @Override
