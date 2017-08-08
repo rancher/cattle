@@ -45,9 +45,17 @@ public class StackExportConfigActionHandler implements ActionHandler {
                 }
             }
         }
-        Map.Entry<String, String> composeConfig = composeExportService.buildComposeConfig(toExport, stack);
+        String format = (String) DataAccessor.fromMap(request.getRequestObject()).withKey(ServiceConstants.FORMAT).get();
+        boolean combined = false;
+        if ("compose".equals(format)) {
+            combined = true;
+        }
 
-        return new ComposeConfig(composeConfig.getKey(), composeConfig.getValue());
+        Map.Entry<String, String> composeConfig = composeExportService.buildComposeConfig(toExport, stack, combined);
+        if (combined) {
+            return new ComposeConfig("", "", composeConfig.getKey());
+        }
+        return new ComposeConfig(composeConfig.getKey(), composeConfig.getValue(), "");
 
     }
 }

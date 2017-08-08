@@ -108,6 +108,8 @@ public class ServiceConstants {
 
     public static final List<String> SERVICE_INSTANCE_NAME_DIVIDORS = Arrays.asList("-", "_");
 
+    public static final String FORMAT = "format";
+
     public static final String[] NS_DEPS = new String[] {
             InstanceConstants.FIELD_IPC_CONTAINER_ID,
             InstanceConstants.FIELD_PID_CONTAINER_ID,

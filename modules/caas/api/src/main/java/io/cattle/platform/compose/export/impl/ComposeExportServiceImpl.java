@@ -54,17 +54,17 @@ public class ComposeExportServiceImpl implements ComposeExportService {
     }
 
     @Override
-    public Map.Entry<String, String> buildComposeConfig(List<? extends Service> services, Stack stack) {
-        return new SimpleEntry<>(buildDockerComposeConfig(services, stack), buildRancherComposeConfig(services));
+    public Map.Entry<String, String> buildComposeConfig(List<? extends Service> services, Stack stack, boolean combined) {
+        return new SimpleEntry<>(buildDockerComposeConfig(services, stack, combined), buildRancherComposeConfig(services, combined));
     }
 
     @Override
-    public String buildDockerComposeConfig(List<? extends Service> services, Stack stack) {
+    public String buildDockerComposeConfig(List<? extends Service> services, Stack stack, boolean combined) {
         List<? extends VolumeTemplate> volumes = objectManager.find(VolumeTemplate.class, VOLUME_TEMPLATE.STACK_ID,
                 stack.getId(),
                 VOLUME_TEMPLATE.REMOVED, null);
 
-        Map<String, Object> dockerComposeData = createComposeData(services, true, volumes);
+        Map<String, Object> dockerComposeData = createComposeData(services, true, volumes, combined);
         if (dockerComposeData.isEmpty()) {
             return COMPOSE_PREFIX;
         } else {
@@ -73,8 +73,11 @@ public class ComposeExportServiceImpl implements ComposeExportService {
     }
 
     @Override
-    public String buildRancherComposeConfig(List<? extends Service> services) {
-        Map<String, Object> dockerComposeData = createComposeData(services, false, new ArrayList<>());
+    public String buildRancherComposeConfig(List<? extends Service> services, boolean combined) {
+        if (combined) {
+            return "";
+        }
+        Map<String, Object> dockerComposeData = createComposeData(services, false, new ArrayList<>(), combined);
         if (dockerComposeData.isEmpty()) {
             return COMPOSE_PREFIX;
         } else {
@@ -109,7 +112,7 @@ public class ComposeExportServiceImpl implements ComposeExportService {
 
     @SuppressWarnings("unchecked")
     private Map<String, Object> createComposeData(List<? extends Service> servicesToExport, boolean forDockerCompose,
-            List<? extends VolumeTemplate> volumes) {
+            List<? extends VolumeTemplate> volumes, boolean combined) {
         Map<String, Object> servicesData = new HashMap<>();
         List<Long> servicesToExportIds = servicesToExport.stream().map(Service::getId).collect(toList());
         Map<String, Object> volumesData = new HashMap<>();
@@ -127,10 +130,10 @@ public class ComposeExportServiceImpl implements ComposeExportService {
                 setupServiceType(cattleServiceData);
                 for (String cattleService : cattleServiceData.keySet()) {
                     translateRancherToCompose(forDockerCompose, cattleServiceData, composeServiceData, cattleService,
-                            service, false);
+                            service, false, combined);
                 }
 
-                if (forDockerCompose) {
+                if (forDockerCompose || combined) {
                     populateLinksForService(service, servicesToExportIds, composeServiceData);
                     populateNetworkForService(service, launchConfigName, composeServiceData);
                     populateVolumesForService(service, launchConfigName, composeServiceData);
@@ -141,7 +144,7 @@ public class ComposeExportServiceImpl implements ComposeExportService {
                     populateTmpfs(cattleServiceData, composeServiceData);
                     populateUlimit(cattleServiceData, composeServiceData);
                     populateBlkioOptions(cattleServiceData, composeServiceData);
-                    translateV1VolumesToV2(cattleServiceData, composeServiceData, volumesData);
+                    translateV1VolumesToV2(cattleServiceData, composeServiceData, volumesData, combined);
                 }
                 if (!composeServiceData.isEmpty()) {
                     servicesData.put(isPrimaryConfig ? service.getName() : launchConfigName, composeServiceData);
@@ -158,7 +161,7 @@ public class ComposeExportServiceImpl implements ComposeExportService {
             Map<String, Object> composeVolumeData = new HashMap<>();
             for (String cattleVolume : cattleVolumeData.keySet()) {
                 translateRancherToCompose(forDockerCompose, cattleVolumeData, composeVolumeData, cattleVolume,
-                        null, true);
+                        null, true, combined);
             }
             if (!composeVolumeData.isEmpty()) {
                 volumesData.put(volume.getName(), composeVolumeData);
@@ -403,10 +406,10 @@ public class ComposeExportServiceImpl implements ComposeExportService {
     }
 
     protected void translateRancherToCompose(boolean forDockerCompose, Map<String, Object> rancherServiceData,
-            Map<String, Object> composeServiceData, String cattleName, Service service, boolean isVolume) {
+            Map<String, Object> composeServiceData, String cattleName, Service service, boolean isVolume, boolean combined) {
         ComposeExportConfigItem item = ComposeExportConfigItem.getServiceConfigItemByCattleName(cattleName,
                 service, isVolume);
-        if (item != null && item.isDockerComposeProperty() == forDockerCompose) {
+        if (item != null && (item.isDockerComposeProperty() == forDockerCompose || combined)) {
             Object value = rancherServiceData.get(cattleName);
             boolean export = false;
             if (value instanceof List) {
@@ -482,7 +485,7 @@ public class ComposeExportServiceImpl implements ComposeExportService {
 
     @SuppressWarnings("unchecked")
     private void translateV1VolumesToV2(Map<String, Object> cattleServiceData,
-            Map<String, Object> composeServiceData, Map<String, Object> volumesData) {
+            Map<String, Object> composeServiceData, Map<String, Object> volumesData, boolean combined) {
         // volume driver presence defines the v1 format for the volumes
         String volumeDriver = String.valueOf(cattleServiceData.get(ComposeExportConfigItem.VOLUME_DRIVER
                 .getCattleName()));
@@ -518,7 +521,7 @@ public class ComposeExportServiceImpl implements ComposeExportService {
             Map<String, Object> composeVolumeData = new HashMap<>();
             for (String cattleVolume : cattleVolumeData.keySet()) {
                 translateRancherToCompose(true, cattleVolumeData, composeVolumeData, cattleVolume,
-                        null, true);
+                        null, true, combined);
             }
             if (!composeVolumeData.isEmpty()) {
                 volumesData.put(dataVolumeName, composeVolumeData);

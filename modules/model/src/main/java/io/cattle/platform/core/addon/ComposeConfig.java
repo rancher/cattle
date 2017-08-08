@@ -6,11 +6,13 @@ import io.github.ibuildthecloud.gdapi.annotation.Type;
 public class ComposeConfig {
     String dockerComposeConfig;
     String rancherComposeConfig;
+    String composeConfig;
 
-    public ComposeConfig(String dockerComposeConfig, String rancherComposeConfig) {
+    public ComposeConfig(String dockerComposeConfig, String rancherComposeConfig, String composeConfig) {
         super();
         this.dockerComposeConfig = dockerComposeConfig;
         this.rancherComposeConfig = rancherComposeConfig;
+        this.composeConfig = composeConfig;
     }
 
     public ComposeConfig() {
@@ -30,5 +32,13 @@ public class ComposeConfig {
 
     public void setRancherComposeConfig(String rancherComposeConfig) {
         this.rancherComposeConfig = rancherComposeConfig;
+    }
+
+    public String getComposeConfig() {
+        return composeConfig;
+    }
+
+    public void setComposeConfig(String composeConfig) {
+        this.composeConfig = composeConfig;
     }
 }
