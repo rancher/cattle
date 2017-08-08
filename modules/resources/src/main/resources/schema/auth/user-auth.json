@@ -61,14 +61,6 @@
         "changeSecretInput.oldSecret" : "cr",
         "changeSecretInput.newSecret" : "cr",
 
-        "cluster" : "r",
-        "cluster.discoverySpec" : "r",
-        "cluster.port" : "cru",
-        "cluster.managingHostId" : "",
-        "cluster.certificateId" : "",
-
-        "clusterHostMap" : "",
-
         "container" : "r",
         "container.blkioDeviceOptions" : "cr",
         "container.blkioWeight" : "cr",
@@ -661,16 +653,16 @@
         "lbConfig.portRules" : "cr",
 
         "portRule": "r",
+        "portRule.backendName": "cr",
         "portRule.hostname": "cr",
+        "portRule.instance": "cr",
         "portRule.path": "cr",
-        "portRule.sourcePort": "cr",
         "portRule.priority": "cr",
         "portRule.protocol": "cr",
-        "portRule.serviceId": "cr",
-        "portRule.targetPort": "cr",
-        "portRule.backendName": "cr",
         "portRule.selector": "cr",
-        "portRule.instanceId": "cr",
+        "portRule.service": "cr",
+        "portRule.sourcePort": "cr",
+        "portRule.targetPort": "cr",
 
         "lbTargetConfig" : "r",
         "lbTargetConfig.portRules" : "cru",
