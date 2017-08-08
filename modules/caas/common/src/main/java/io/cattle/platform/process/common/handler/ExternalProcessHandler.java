@@ -90,6 +90,7 @@ public class ExternalProcessHandler implements ProcessHandler, CompletableLogic 
                         Object reloaded = objectManager.reload(resource);
                         objectManager.setFields(reloaded, data);
                         dce = null;
+                        ObjectUtils.publishChanged(eventService, objectManager, reloaded);
                         break;
                     } catch (DataChangedException e) {
                         dce = e;

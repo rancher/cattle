@@ -1,18 +1,21 @@
 package io.cattle.platform.agent.server.resource.impl;
 
-import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Map;
-import java.util.TreeMap;
-
+import io.cattle.platform.object.util.ObjectUtils;
+import io.cattle.platform.util.type.CollectionUtils;
 import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+
 public class AgentResources {
 
     private static final Logger log = LoggerFactory.getLogger(AgentResources.class);
+    private static final Set<String> IGNORE_FIELDS = CollectionUtils.set("localStorageMb");
 
     Map<String, Map<String, Object>> hosts = new TreeMap<>();
     Map<String, Map<String, Object>> storagePools = new TreeMap<>();
@@ -31,9 +34,9 @@ public class AgentResources {
             throw new RuntimeException("Failed to find SHA1 digest", e);
         }
 
-        hashMap(md, hosts);
-        hashMap(md, storagePools);
-        hashMap(md, ipAddresses);
+        hash(md, hosts);
+        hash(md, storagePools);
+        hash(md, ipAddresses);
 
         return Hex.encodeHexString(md.digest());
     }
@@ -42,24 +45,24 @@ public class AgentResources {
         return hosts.size() > 0;
     }
 
-    protected void hashMap(MessageDigest md, Map<String, Map<String, Object>> data) {
+    protected void hash(MessageDigest md, Map<String, Map<String, Object>> data) {
         for (Map<String, Object> value : data.values()) {
-            for (Map.Entry<String, Object> entry : value.entrySet()) {
-                try {
-                    md.update(entry.getKey().getBytes("UTF-8"));
-                    Object obj = entry.getValue();
-                    if (obj != null) {
-                        md.update(obj.toString().getBytes("UTF-8"));
-                    }
-                } catch (UnsupportedEncodingException e) {
-                    log.error("Failed to hash [{}]", entry, e);
-                }
-            }
+            hashMap(md, value);
         }
     }
 
-    public void setHost(String uuid, Map<String, Object> data) {
-        hosts.put(uuid, new TreeMap<>(data));
+    protected void hashMap(MessageDigest md, Map<?, ?> data) {
+        new TreeMap<>(data).forEach((key, value) -> {
+            if (IGNORE_FIELDS.contains(key)) {
+                return;
+            }
+
+            if (value instanceof String) {
+                md.update(((String) value).getBytes(ObjectUtils.UTF8));
+            } else if (value instanceof Map<?, ?>) {
+                hashMap(md, (Map<?, ?>) value);
+            }
+        });
     }
 
     public Map<String, Map<String, Object>> getHosts() {

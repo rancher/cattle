@@ -21,6 +21,6 @@ public interface ResourceManagerLocator {
 
     ActionHandler getActionHandler(String name, String type);
 
-    ResourceOutputFilter getOutputFilter(Resource resource);
+    List<ResourceOutputFilter> getOutputFilters(Resource resource);
 
 }

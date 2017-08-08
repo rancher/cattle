@@ -28,7 +28,6 @@ import io.cattle.platform.api.host.HostEvacuateActionHandler;
 import io.cattle.platform.api.host.HostStoragePoolsLinkHandler;
 import io.cattle.platform.api.host.HostsOutputFilter;
 import io.cattle.platform.api.host.MachineConfigLinkHandler;
-import io.cattle.platform.api.host.MachineOutputFilter;
 import io.cattle.platform.api.host.MachineValidationFilter;
 import io.cattle.platform.api.hostapi.HostApiProxyTokenImpl;
 import io.cattle.platform.api.hostapi.HostApiProxyTokenManager;
@@ -256,8 +255,7 @@ public class Api {
         c.router.outputFilter(AuditLog.class, resourceIdOutputFilter);
         c.router.outputFilter(Credential.class, new ApiKeyOutputFilter());
         c.router.outputFilter(CredentialConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN, new RegistrationTokenOutputFilter());
-        c.router.outputFilter(Host.class, new HostsOutputFilter(d.hostDao));
-        c.router.outputFilter(Host.class, new MachineOutputFilter(c.secretsService));
+        c.router.outputFilter(Host.class, new HostsOutputFilter(d.hostDao, c.secretsService));
         c.router.outputFilter(HostConstants.TYPE, statsOutputFilter);
         c.router.outputFilter(HostTemplate.class, new HostTemplateOutputFilter());
         c.router.outputFilter(Instance.class, new InstanceOutputFilter(d.volumeDao, c.dockerTransformer));

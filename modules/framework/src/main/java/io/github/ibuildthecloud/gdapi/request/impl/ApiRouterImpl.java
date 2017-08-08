@@ -12,7 +12,6 @@ import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerLocator;
 import io.github.ibuildthecloud.gdapi.request.resource.ValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.impl.ApiFilterChain;
 import io.github.ibuildthecloud.gdapi.response.ResourceOutputFilter;
-import io.github.ibuildthecloud.gdapi.response.impl.ResourceOutputFilterChain;
 import org.apache.commons.collections4.ListValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 
@@ -34,7 +33,6 @@ public class ApiRouterImpl implements ResourceManagerLocator, ApiRouter {
     ListValuedMap<String, LinkHandler> linkByType = new ArrayListValuedHashMap<>();
     Map<String, ActionHandler> actionHandlersMap = new HashMap<>();
     ListValuedMap<String, ResourceOutputFilter> outputFiltersByType = new ArrayListValuedHashMap<>();
-    Map<String, ResourceOutputFilter> outputFilterByType = new ConcurrentHashMap<>();
     ResourceManager defaultResourceManager;
     ActionHandler defaultActionHandler;
     SchemaFactory schemaFactory;
@@ -98,7 +96,7 @@ public class ApiRouterImpl implements ResourceManagerLocator, ApiRouter {
 
     @Override
     public ApiRouterImpl outputFilter(Object type, ResourceOutputFilter filter) {
-        forEach(type, typeName -> outputFilterByType.put(typeName, filter));
+        forEach(type, typeName -> outputFiltersByType.put(typeName, filter));
         return this;
     }
 
@@ -233,47 +231,13 @@ public class ApiRouterImpl implements ResourceManagerLocator, ApiRouter {
     }
 
     @Override
-    public ResourceOutputFilter getOutputFilter(Resource resource) {
+    public List<ResourceOutputFilter> getOutputFilters(Resource resource) {
         if (resource == null) {
             return null;
         }
 
         String type = resource.getType();
-
-        ResourceOutputFilter outputFilter = outputFilterByType.get(type);
-        if (outputFilter != null) {
-            return outputFilter;
-        }
-
-        if (outputFilter == null && !outputFiltersByType.containsKey(type)) {
-            return null;
-        }
-
-        outputFilter = buildChain(type);
-        if (outputFilter != null) {
-            outputFilterByType.put(type, buildChain(type));
-        }
-
-        return outputFilter;
-    }
-
-    protected ResourceOutputFilter buildChain(String type) {
-        List<ResourceOutputFilter> outputFilters = outputFiltersByType.get(type);
-        if (outputFilters == null) {
-            return null;
-        }
-
-        ResourceOutputFilter result = null;
-
-        for (ResourceOutputFilter filter : outputFilters) {
-            if (result == null) {
-                result = filter;
-            } else {
-                result = new ResourceOutputFilterChain(result, filter);
-            }
-        }
-
-        return result;
+        return outputFiltersByType.get(type);
     }
 
 }

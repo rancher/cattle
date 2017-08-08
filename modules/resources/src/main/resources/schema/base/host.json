@@ -49,6 +49,50 @@
       "attributes": {
         "scheduleUpdate": true
       }
+    },
+    "authCertificateAuthority": {
+      "type": "string",
+      "nullable": true
+    },
+    "authKey": {
+      "type": "string",
+      "nullable": true
+    },
+    "extractedConfig": {
+      "type": "string",
+      "nullable": true
+    },
+    "engineInstallUrl": {
+      "type": "string",
+      "nullable": true
+    },
+    "dockerVersion": {
+      "type": "string",
+      "nullable": true
+    },
+    "engineOpt": {
+      "type": "map[string]",
+      "nullable": true
+    },
+    "engineInsecureRegistry": {
+      "type": "array[string]",
+      "nullable": true
+    },
+    "engineRegistryMirror": {
+      "type": "array[string]",
+      "nullable": true
+    },
+    "engineLabel": {
+      "type": "map[string]",
+      "nullable": true
+    },
+    "engineStorageDriver": {
+      "type": "string",
+      "nullable": true
+    },
+    "engineEnv": {
+      "type": "map[string]",
+      "nullable": true
     }
   },
   "resourceActions": {

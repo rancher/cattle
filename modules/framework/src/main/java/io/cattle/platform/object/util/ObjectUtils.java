@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +21,8 @@ import java.util.Map;
 import java.util.Objects;
 
 public class ObjectUtils {
+
+    public static final Charset UTF8 = Charset.forName("UTF-8");
 
     public static void copy(Object src, Object dest) {
         try {

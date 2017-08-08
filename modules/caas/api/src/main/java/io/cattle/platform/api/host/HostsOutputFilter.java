@@ -5,6 +5,7 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.model.Host;
+import io.cattle.platform.framework.secret.SecretsService;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
@@ -13,6 +14,8 @@ import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -21,20 +24,38 @@ import static io.cattle.platform.core.constants.HostConstants.*;
 
 public class HostsOutputFilter extends CachedOutputFilter<HostsOutputFilter.Data> {
 
-    HostDao hostDao;
+    private static final Logger log = LoggerFactory.getLogger(HostsOutputFilter.class);
 
-    public HostsOutputFilter(HostDao hostDao) {
+    HostDao hostDao;
+    SecretsService serviceService;
+
+    public HostsOutputFilter(HostDao hostDao, SecretsService serviceService) {
         this.hostDao = hostDao;
+        this.serviceService = serviceService;
     }
 
     @Override
     public Resource filter(ApiRequest request, Object original, Resource converted) {
-        if (original instanceof Host) {
-            Host host = (Host)original;
-            Data data = getCached(request);
-            if (data == null) {
-                return converted;
+        if (!(original instanceof Host)) {
+            return converted;
+        }
+
+        Host host = (Host)original;
+
+        Object extracted = converted.getFields().get(HostConstants.EXTRACTED_CONFIG_FIELD);
+        if (extracted instanceof String) {
+            try {
+                if (((String) extracted).startsWith("{")) {
+                    extracted = serviceService.decrypt(((Host)original).getAccountId(), (String)extracted);
+                }
+            } catch (Exception e) {
+                log.error("Failed to decrypt machine extracted config", e);
             }
+            converted.getFields().put(HostConstants.EXTRACTED_CONFIG_FIELD, extracted);
+        }
+
+        Data data = getCached(request);
+        if (data != null) {
             Map<String, Object> fields = converted.getFields();
             fields.put(HostConstants.FIELD_INSTANCE_IDS, data.instancesPerHost.get(host.getId()));
 
@@ -43,6 +64,7 @@ public class HostsOutputFilter extends CachedOutputFilter<HostsOutputFilter.Data
                 fields.put(ObjectMetaDataManager.STATE_FIELD, agentState);
             }
         }
+
         return addLinks(request, original, converted);
     }
 

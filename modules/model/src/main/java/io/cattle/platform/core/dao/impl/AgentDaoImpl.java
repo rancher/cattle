@@ -118,7 +118,7 @@ public class AgentDaoImpl extends AbstractJooqDao implements AgentDao {
 
             if (uuid != null) {
                 hosts.put(uuid, host);
-                if (uuid.equals(agent.getUuid() + "-h")) {
+                if (uuid.equals(AgentConstants.defaultUuid(agent, Host.class))) {
                     hosts.put("DEFAULT", host);
                 }
             }
@@ -206,7 +206,7 @@ public class AgentDaoImpl extends AbstractJooqDao implements AgentDao {
     @Override
     public Host getHost(Agent agent, String externalId) {
         if ("DEFAULT".equals(externalId)) {
-            externalId = agent.getUuid() + "-h";
+            externalId = AgentConstants.defaultUuid(agent, Host.class);
         }
         return create()
             .select(HOST.fields())

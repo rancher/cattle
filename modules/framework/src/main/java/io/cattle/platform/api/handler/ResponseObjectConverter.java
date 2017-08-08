@@ -75,10 +75,17 @@ public class ResponseObjectConverter implements ApiRequestHandler, ResponseConve
     @Override
     public Resource convertResponse(Object obj, ApiRequest request) {
         Resource resource = createResource(obj, ApiContext.getContext().getIdFormatter(), request);
-        ResourceOutputFilter filter = locator.getOutputFilter(resource);
+        List<ResourceOutputFilter> filters = locator.getOutputFilters(resource);
 
-        if (filter != null) {
+        if (filters == null) {
+            return resource;
+        }
+
+        for (ResourceOutputFilter filter : filters) {
             resource = filter.filter(request, obj, resource);
+            if (resource == null) {
+                break;
+            }
         }
 
         return resource;

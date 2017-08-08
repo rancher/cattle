@@ -39,6 +39,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import static io.cattle.platform.object.meta.ObjectMetaDataManager.*;
+
 public class AgentResourcesMonitor {
 
     private static final Logger log = LoggerFactory.getLogger(AgentResourcesMonitor.class);
@@ -90,9 +92,10 @@ public class AgentResourcesMonitor {
             return;
         }
 
-        Boolean done = resourceCache.getIfPresent(resources.getHash());
+        String hash = resources.getHash();
+        Boolean done = resourceCache.getIfPresent(hash);
 
-        if (done != null && done.booleanValue()) {
+        if (done != null && done) {
             return;
         }
 
@@ -101,7 +104,7 @@ public class AgentResourcesMonitor {
             @Override
             public void doWithLockNoResult() {
                 Boolean done = resourceCache.getIfPresent(resources.getHash());
-                if (done != null && done.booleanValue()) {
+                if (done != null && done) {
                     return;
                 }
 
@@ -110,7 +113,7 @@ public class AgentResourcesMonitor {
                     setStoragePools(hosts, agent, resources);
                     setIpAddresses(hosts, agent, resources);
 
-                    resourceCache.put(resources.getHash(), true);
+                    resourceCache.put(hash, true);
                 } catch (DataChangedException e) {
                     // ignore
                 }
@@ -118,13 +121,13 @@ public class AgentResourcesMonitor {
         });
     }
 
-    protected Map<String, StoragePool> setStoragePools(Map<String, Host> hosts, Agent agent, AgentResources resources) {
+    protected void setStoragePools(Map<String, Host> hosts, Agent agent, AgentResources resources) {
         Map<String, StoragePool> pools = agentDao.getStoragePools(agent.getId());
 
         for (Map.Entry<String, Map<String, Object>> poolData : resources.getStoragePools().entrySet()) {
             String uuid = poolData.getKey();
             if (DEFAULT_UUID.equals(uuid)) {
-                uuid = agent.getUuid() + "-s";
+                uuid = AgentConstants.defaultUuid(agent, StoragePool.class);
             }
             Map<String, Object> data = poolData.getValue();
 
@@ -132,7 +135,7 @@ public class AgentResourcesMonitor {
                 continue;
             }
 
-            Host host = getHost(agent, data, hosts);
+            Host host = getHostForResource(agent, data, resources, hosts);
             if (host == null) {
                 continue;
             }
@@ -141,38 +144,48 @@ public class AgentResourcesMonitor {
             pools.put(uuid, storagePoolDao.mapNewPool(host, data));
         }
 
-        return pools;
     }
 
-    protected Host getHost(Agent agent, Map<String, Object> data, Map<String, Host> hosts) {
-        String hostUuid = Objects.toString(data.get(HostConstants.FIELD_HOST_UUID), null);
-        if (hostUuid == null) {
-            hostUuid = agent.getUuid() + "-h";
+    protected Host getHostForResource(Agent agent, Map<String, Object> resource, AgentResources resources, Map<String, Host> hosts) {
+        String uuid = getString(resource, HostConstants.FIELD_HOST_UUID);
+
+        if (StringUtils.isBlank(uuid)) {
+            if (resources.getHosts().size() != 1) {
+                return null;
+            }
+
+            Map<String, Object> hostResource = resources.getHosts().values().iterator().next();
+            uuid = getString(hostResource, UUID_FIELD);
+            Host host = hosts.get(uuid);
+            if (host != null) {
+                return host;
+            }
+
+            return hosts.get(AgentConstants.defaultUuid(agent, Host.class));
         }
 
-        return hosts.get(hostUuid);
+        return hosts.get(uuid);
+    }
+
+    private static String getString(Map<String, Object> resource, String key) {
+        return DataAccessor.fromMap(resource).withKey(key).as(String.class);
     }
 
     protected void setIpAddresses(Map<String, Host> hosts, Agent agent, AgentResources resources) {
         for (Map.Entry<String, Map<String, Object>> ipData : resources.getIpAddresses().entrySet()) {
             String address = ipData.getKey();
-            Host host = getHost(agent, ipData.getValue(), hosts);
+            Host host = getHostForResource(agent, ipData.getValue(), resources, hosts);
             if (host == null) {
                 continue;
             }
 
             String currentIp = DataAccessor.fieldString(host, HostConstants.FIELD_IP_ADDRESS);
             if (!Objects.equals(currentIp, address)) {
-                objectManager.setFields(host, HostConstants.FIELD_IP_ADDRESS, address);
-                publishChanged(host);
+                Metadata metadata = envResourceManager.getMetadata(host.getAccountId());
+                host = metadata.modify(Host.class, host.getId(), obj -> objectManager.setFields(obj, HostConstants.FIELD_IP_ADDRESS, address));
+                hosts.put(host.getExternalId(), host);
             }
         }
-    }
-
-    protected void publishChanged(Host host) {
-        io.cattle.platform.object.util.ObjectUtils.publishChanged(eventService, objectManager, host);
-        Metadata metadata = envResourceManager.getMetadata(host.getAccountId());
-        metadata.changed(host);
     }
 
     protected Map<String, Host> setHosts(Agent agent, AgentResources resources) {
@@ -183,11 +196,12 @@ public class AgentResourcesMonitor {
             Map<Object, Object> updates = new HashMap<>();
             String uuid = hostData.getKey();
             if (DEFAULT_UUID.equals(uuid)) {
-                uuid = agent.getUuid() + "-h";
+                uuid = AgentConstants.defaultUuid(agent, Host.class);
             }
 
             Map<String, Object> data = hostData.getValue();
             boolean orchestrate = false;
+            String registrationUuid = Objects.toString(data.get(HostConstants.FIELD_MACHINE_SERVICE_REGISTRATION_UUID), null);
 
             if (hosts.containsKey(uuid)) {
                 /* Host already exists, look for updates */
@@ -238,42 +252,50 @@ public class AgentResourcesMonitor {
                     updates.remove(HostConstants.FIELD_LOCAL_STORAGE_MB);
                 }
 
+                updates.put(HostConstants.FIELD_HOST_UUID, AgentConstants.defaultUuid(agent, Host.class));
+                updates.put(HostConstants.FIELD_AGENT_ID, agent.getId());
+            } else if (StringUtils.isBlank(registrationUuid)) {
+                /* Create new */
+                data = createData(agent, uuid, data);
+
+                /* Copy createLabels to labels */
+                Map<String, Object> labels = CollectionUtils.toMap(data.get(HostConstants.FIELD_LABELS));
+                labels.putAll(CollectionUtils.toMap(data.get(HostConstants.FIELD_CREATE_LABELS)));
+                data.put(HostConstants.FIELD_LABELS, labels);
+
+                hosts.put(uuid, resourceDao.createAndSchedule(Host.class, data));
             } else {
+                /* Machine registration */
                 host = objectManager.findAny(Host.class,
                         ObjectMetaDataManager.REMOVED_FIELD, null,
                         HostConstants.FIELD_AGENT_ID, null,
                         ObjectMetaDataManager.ACCOUNT_FIELD, agent.getResourceAccountId(),
-                        ObjectMetaDataManager.UUID_FIELD, uuid);
+                        ObjectMetaDataManager.UUID_FIELD, registrationUuid);
 
                 if (host == null) {
-                    /* Create new */
-                    data = createData(agent, uuid, data);
-
-                    /* Copy createLabels to labels */
-                    Map<String, Object> labels = CollectionUtils.toMap(data.get(HostConstants.FIELD_LABELS));
-                    labels.putAll(CollectionUtils.toMap(data.get(HostConstants.FIELD_CREATE_LABELS)));
-                    data.put(HostConstants.FIELD_LABELS, labels);
-
-                    hosts.put(uuid, resourceDao.createAndSchedule(Host.class, data));
-                } else {
-                    /* Take ownership */
-                    Map<String, Object> labels = CollectionUtils.toMap(data.get(HostConstants.FIELD_LABELS));
-                    labels.putAll(CollectionUtils.toMap(data.get(HostConstants.FIELD_CREATE_LABELS)));
-
-                    updates.putAll(createData(agent, uuid, data));
-                    updates.put(HostConstants.FIELD_LABELS, labels);
-                    updates.put(HostConstants.FIELD_AGENT_ID, agent.getId());
+                    // Didn't find existing host
+                    continue;
                 }
+
+                /* Take ownership */
+                Map<String, Object> labels = CollectionUtils.toMap(data.get(HostConstants.FIELD_LABELS));
+                labels.putAll(CollectionUtils.toMap(data.get(HostConstants.FIELD_CREATE_LABELS)));
+
+                updates.putAll(createData(agent, uuid, data));
+                updates.put(HostConstants.FIELD_LABELS, labels);
+                updates.put(HostConstants.FIELD_AGENT_ID, agent.getId());
             }
 
             if (updates.size() > 0) {
-                host = objectManager.reload(host);
                 Map<String, Object> updateFields = objectManager.convertToPropertiesFor(host, updates);
                 if (orchestrate && !HostConstants.STATE_PROVISIONING.equals(host.getState())) {
-                    resourceDao.updateAndSchedule(host, updateFields);
+                    host = resourceDao.updateAndSchedule(host, updateFields);
                 } else {
-                    objectManager.setFields(host, updateFields);
-                    publishChanged(host);
+                    Metadata metadata = envResourceManager.getMetadata(agent.getResourceAccountId());
+                    host = metadata.modify(Host.class, host.getId(), obj -> objectManager.setFields(obj, updateFields));
+                }
+                if (StringUtils.isNotBlank(host.getExternalId())) {
+                    hosts.put(host.getExternalId(), host);
                 }
             }
         }
@@ -284,7 +306,7 @@ public class AgentResourcesMonitor {
     protected Map<String, Object> createData(Agent agent, String uuid, Map<String, Object> data) {
         Map<String, Object> properties = new HashMap<>(data);
         properties.put(HostConstants.FIELD_EXTERNAL_ID, uuid);
-        properties.remove(ObjectMetaDataManager.UUID_FIELD);
+        properties.remove(UUID_FIELD);
 
         Long accountId = agent.getResourceAccountId();
 
@@ -308,23 +330,27 @@ public class AgentResourcesMonitor {
 
         for (Map<String, Object> resource : pingData) {
             String type = Objects.toString(resource.get(ObjectMetaDataManager.TYPE_FIELD), null);
-            String uuid = Objects.toString(resource.get(ObjectMetaDataManager.UUID_FIELD), null);
+            String uuid = Objects.toString(resource.get(UUID_FIELD), null);
 
             if (uuid == null) {
                 uuid = DEFAULT_UUID;
             }
 
-            if (type == null || uuid == null) {
-                log.error("type [{}] or uuid [{}] is null for resource on pong from agent [{}]", type, uuid, ping.getResourceId());
+            if (type == null) {
+                log.error("type [{}] is null for resource [{}] on pong from agent [{}]", null, pingData, ping.getResourceId());
                 continue;
             }
 
-            if (type.equals(HostConstants.TYPE)) {
-                resources.getHosts().put(uuid, resource);
-            } else if (type.equals(StoragePoolConstants.TYPE)) {
-                resources.getStoragePools().put(uuid, resource);
-            } else if (type.equals(IpAddressConstants.TYPE)) {
-                resources.getIpAddresses().put(uuid, resource);
+            switch (type) {
+                case HostConstants.TYPE:
+                    resources.getHosts().put(uuid, resource);
+                    break;
+                case StoragePoolConstants.TYPE:
+                    resources.getStoragePools().put(uuid, resource);
+                    break;
+                case IpAddressConstants.TYPE:
+                    resources.getIpAddresses().put(uuid, resource);
+                    break;
             }
         }
 

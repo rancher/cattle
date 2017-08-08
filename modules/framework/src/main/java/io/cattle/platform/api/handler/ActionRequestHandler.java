@@ -14,10 +14,9 @@ import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerLocator;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
+import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.Map;
-
-import javax.servlet.ServletException;
 
 public class ActionRequestHandler implements ApiRequestHandler {
 
@@ -81,8 +80,7 @@ public class ActionRequestHandler implements ApiRequestHandler {
     }
 
     protected String getProcessName(Object obj, ApiRequest request) {
-        String baseType = request.getSchemaFactory().getBaseType(request.getType());
-        return String.format("%s.%s", baseType == null ? request.getType() : baseType, request.getAction()).toLowerCase();
+        return String.format("%s.%s", request.getType(), request.getAction()).toLowerCase();
     }
 
     @Override
