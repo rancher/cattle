@@ -103,6 +103,9 @@
     "healthcheckStates": {
       "type": "array[healthcheckState]"
     },
+    "lbRulesOnRemove": {
+      "type": "map[json]"
+    },
     "dependsOn": {
       "type": "array[dependsOn]",
       "nullable": true

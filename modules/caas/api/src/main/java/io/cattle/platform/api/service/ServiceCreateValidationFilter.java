@@ -168,8 +168,8 @@ public class ServiceCreateValidationFilter extends AbstractValidationFilter {
                     lbConfig.get(ServiceConstants.FIELD_PORT_RULES), List.class, PortRule.class);
             for (PortRule rule : portRules) {
                 // either serviceId or instanceId or selector are required
-                boolean emptyService = StringUtils.isEmpty(rule.getService());
-                boolean emptyInstance = StringUtils.isEmpty(rule.getInstance());
+                boolean emptyService = StringUtils.isEmpty(rule.getServiceId());
+                boolean emptyInstance = StringUtils.isEmpty(rule.getInstanceId());
                 boolean emptySelector = StringUtils.isEmpty(rule.getSelector());
                 int count = 0;
                 count = !emptySelector ? ++count : count;
@@ -178,11 +178,11 @@ public class ServiceCreateValidationFilter extends AbstractValidationFilter {
 
                 if (count == 0) {
                     throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED,
-                            "service");
+                            "serviceId");
                 }
                 if (count > 1) {
                     throw new ValidationErrorException(ValidationErrorCodes.INVALID_OPTION,
-                            "Can't specify both selector and service");
+                            "Can't specify both selector and serviceId");
                 }
 
                 if (emptySelector && rule.getTargetPort() == null) {

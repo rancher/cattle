@@ -11,11 +11,11 @@ public class PortRule {
     Integer sourcePort;
     Integer priority;
     Protocol protocol;
-    String service;
+    String serviceId;
     Integer targetPort;
     String backendName;
     String selector;
-    String instance;
+    String instanceId;
 
     public enum Protocol {
         http,
@@ -35,26 +35,27 @@ public class PortRule {
         this.sourcePort = other.sourcePort;
         this.priority = other.priority;
         this.protocol = other.protocol;
-        this.service = other.service;
+        this.serviceId = other.serviceId;
         this.targetPort = other.targetPort;
         this.backendName = other.backendName;
         this.selector = other.selector;
-        this.instance = other.instance;
+        this.instanceId = other.instanceId;
     }
 
     public PortRule(String hostname, String path, Integer sourcePort, Integer priority, Protocol protocol,
-            String service, Integer targetPort, String backendName, String selector, String instance) {
+            String serviceId,
+            Integer targetPort, String backendName, String selector, String instanceId) {
         super();
         this.hostname = hostname;
         this.path = path;
         this.sourcePort = sourcePort;
         this.priority = priority;
         this.protocol = protocol;
-        this.service = service;
+        this.serviceId = serviceId;
         this.targetPort = targetPort;
         this.backendName = backendName;
         this.selector = selector;
-        this.instance = instance;
+        this.instanceId = instanceId;
     }
 
     @Field(nullable = true)
@@ -102,12 +103,13 @@ public class PortRule {
         this.protocol = protocol;
     }
 
-    public String getService() {
-        return service;
+    @Field(typeString = "reference[service]", nullable = true)
+    public String getServiceId() {
+        return serviceId;
     }
 
-    public void setService(String service) {
-        this.service = service;
+    public void setServiceId(String serviceId) {
+        this.serviceId = serviceId;
     }
 
     @Field(min = 1, max = 65535, nullable = true)
@@ -137,12 +139,13 @@ public class PortRule {
         this.selector = selector;
     }
 
-    public String getInstance() {
-        return instance;
+    @Field(typeString = "reference[instance]", nullable = true)
+    public String getInstanceId() {
+        return instanceId;
     }
 
-    public void setInstance(String instance) {
-        this.instance = instance;
+    public void setInstanceId(String instanceId) {
+        this.instanceId = instanceId;
     }
 
     @Override
@@ -151,12 +154,12 @@ public class PortRule {
         int result = 1;
         result = prime * result + ((backendName == null) ? 0 : backendName.hashCode());
         result = prime * result + ((hostname == null) ? 0 : hostname.hashCode());
-        result = prime * result + ((instance == null) ? 0 : instance.hashCode());
+        result = prime * result + ((instanceId == null) ? 0 : instanceId.hashCode());
         result = prime * result + ((path == null) ? 0 : path.hashCode());
         result = prime * result + ((priority == null) ? 0 : priority.hashCode());
         result = prime * result + ((protocol == null) ? 0 : protocol.hashCode());
         result = prime * result + ((selector == null) ? 0 : selector.hashCode());
-        result = prime * result + ((service == null) ? 0 : service.hashCode());
+        result = prime * result + ((serviceId == null) ? 0 : serviceId.hashCode());
         result = prime * result + ((sourcePort == null) ? 0 : sourcePort.hashCode());
         result = prime * result + ((targetPort == null) ? 0 : targetPort.hashCode());
         return result;
@@ -181,10 +184,10 @@ public class PortRule {
                 return false;
         } else if (!hostname.equals(other.hostname))
             return false;
-        if (instance == null) {
-            if (other.instance != null)
+        if (instanceId == null) {
+            if (other.instanceId != null)
                 return false;
-        } else if (!instance.equals(other.instance))
+        } else if (!instanceId.equals(other.instanceId))
             return false;
         if (path == null) {
             if (other.path != null)
@@ -203,10 +206,10 @@ public class PortRule {
                 return false;
         } else if (!selector.equals(other.selector))
             return false;
-        if (service == null) {
-            if (other.service != null)
+        if (serviceId == null) {
+            if (other.serviceId != null)
                 return false;
-        } else if (!service.equals(other.service))
+        } else if (!serviceId.equals(other.serviceId))
             return false;
         if (sourcePort == null) {
             if (other.sourcePort != null)

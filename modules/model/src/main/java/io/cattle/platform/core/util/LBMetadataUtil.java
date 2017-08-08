@@ -2,12 +2,13 @@ package io.cattle.platform.core.util;
 
 import io.cattle.platform.core.addon.LoadBalancerCookieStickinessPolicy;
 import io.cattle.platform.core.addon.PortRule;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 /*
  * this class it to support haproxy legacy API format
@@ -161,33 +162,32 @@ public class LBMetadataUtil {
             }
 
             if (portRules != null) {
-                // TODO: All compose export code will be removed, so no point refactoring ATM
-//                for (PortRule portRule : portRules) {
-//                    if (portRule.getServiceId() != null) {
-//                        Long svcId = Long.valueOf(portRule.getServiceId());
-//                        Pair<String, String> svcStackName = serviceIdToServiceStackName.get(svcId);
-//
-//                        if (svcStackName == null) {
-//                            continue;
-//                        }
-//
-//                        if (dropStackName && svcStackName.getRight().equals(serviceStackName)) {
-//                            this.port_rules.add(new MetadataPortRule(portRule, svcStackName.getLeft(),
-//                                    null, null));
-//                        } else {
-//                            this.port_rules.add(new MetadataPortRule(portRule, svcStackName.getLeft(),
-//                                    svcStackName.getRight(), null));
-//                        }
-//                    } else if (portRule.getInstanceId() != null) {
-//                        String instanceName = instancesNames.get(Long.valueOf(portRule.getInstanceId()));
-//                        if (StringUtils.isEmpty(instanceName)) {
-//                            continue;
-//                        }
-//                        this.port_rules.add(new MetadataPortRule(portRule, null, null, instanceName));
-//                    } else {
-//                        this.port_rules.add(new MetadataPortRule(portRule, null, null, null));
-//                    }
-//                }
+                for (PortRule portRule : portRules) {
+                    if (portRule.getServiceId() != null) {
+                        Long svcId = Long.valueOf(portRule.getServiceId());
+                        Pair<String, String> svcStackName = serviceIdToServiceStackName.get(svcId);
+
+                        if (svcStackName == null) {
+                            continue;
+                        }
+
+                        if (dropStackName && svcStackName.getRight().equals(serviceStackName)) {
+                            this.port_rules.add(new MetadataPortRule(portRule, svcStackName.getLeft(),
+                                    null, null));
+                        } else {
+                            this.port_rules.add(new MetadataPortRule(portRule, svcStackName.getLeft(),
+                                    svcStackName.getRight(), null));
+                        }
+                    } else if (portRule.getInstanceId() != null) {
+                        String instanceName = instancesNames.get(Long.valueOf(portRule.getInstanceId()));
+                        if (StringUtils.isEmpty(instanceName)) {
+                            continue;
+                        }
+                        this.port_rules.add(new MetadataPortRule(portRule, null, null, instanceName));
+                    } else {
+                        this.port_rules.add(new MetadataPortRule(portRule, null, null, null));
+                    }
+                }
             }
 
             this.config = config;

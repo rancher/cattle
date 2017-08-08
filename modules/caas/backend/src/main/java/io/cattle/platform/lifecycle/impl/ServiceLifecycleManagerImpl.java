@@ -11,6 +11,7 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.lifecycle.ServiceLifecycleManager;
+import io.cattle.platform.loadbalancer.LoadBalancerService;
 import io.cattle.platform.network.NetworkService;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
@@ -32,16 +33,18 @@ public class ServiceLifecycleManagerImpl implements ServiceLifecycleManager {
     NetworkService networkService;
     ServiceDao serviceDao;
     RevisionManager revisionManager;
+    LoadBalancerService loadbalancerService;
 
     public ServiceLifecycleManagerImpl(ObjectManager objectManager, ResourcePoolManager poolManager,
             NetworkService networkService, ServiceDao serviceDao, RevisionManager revisionManager,
-            ObjectProcessManager processManager) {
+            LoadBalancerService loadbalancerService, ObjectProcessManager processManager) {
         super();
         this.objectManager = objectManager;
         this.poolManager = poolManager;
         this.networkService = networkService;
         this.serviceDao = serviceDao;
         this.revisionManager = revisionManager;
+        this.loadbalancerService = loadbalancerService;
         this.processManager = processManager;
     }
 
@@ -57,6 +60,7 @@ public class ServiceLifecycleManagerImpl implements ServiceLifecycleManager {
 
     @Override
     public void postRemove(Instance instance) {
+        loadbalancerService.removeFromLoadBalancerServices(instance);
         revisionManager.leaveDeploymentUnit(instance);
     }
 
@@ -86,6 +90,8 @@ public class ServiceLifecycleManagerImpl implements ServiceLifecycleManager {
 
     @Override
     public void remove(Service service) {
+        loadbalancerService.removeFromLoadBalancerServices(service);
+
         releasePorts(service);
     }
 

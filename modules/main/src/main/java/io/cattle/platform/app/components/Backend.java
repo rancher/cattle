@@ -67,6 +67,8 @@ import io.cattle.platform.lifecycle.impl.SecretsLifecycleManagerImpl;
 import io.cattle.platform.lifecycle.impl.ServiceLifecycleManagerImpl;
 import io.cattle.platform.lifecycle.impl.VirtualMachineLifecycleManagerImpl;
 import io.cattle.platform.lifecycle.impl.VolumeLifecycleManagerImpl;
+import io.cattle.platform.loadbalancer.LoadBalancerService;
+import io.cattle.platform.loadbalancer.impl.LoadBalancerServiceImpl;
 import io.cattle.platform.network.NetworkService;
 import io.cattle.platform.network.impl.NetworkServiceImpl;
 import io.cattle.platform.object.purge.impl.PurgeMonitorImpl;
@@ -158,6 +160,7 @@ public class Backend {
     ImageCredentialLookup imageCredentialLookup;
     InstanceLifecycleManager instanceLifecycleManager;
     K8sLifecycleManager k8sLifecycleManager;
+    LoadBalancerService loadBalancerService;
     LoopManager loopManager;
     NetworkLifecycleManager networkLifecycleManager;
     NetworkService networkService;
@@ -216,7 +219,8 @@ public class Backend {
         networkLifecycleManager = new NetworkLifecycleManagerImpl(f.objectManager, networkService, f.resourcePoolManager);
         agentLifecycleManager = new AgentLifecycleManagerImpl(agentInstanceFactory);
         secretsLifecycleManager = new SecretsLifecycleManagerImpl(c.tokenService, d.storageDriverDao);
-        serviceLifecycleManager = new ServiceLifecycleManagerImpl(f.objectManager, f.resourcePoolManager, networkService, d.serviceDao, c.revisionManager, f.processManager);
+        loadBalancerService = new LoadBalancerServiceImpl(f.jsonMapper, f.lockManager, f.objectManager);
+        serviceLifecycleManager = new ServiceLifecycleManagerImpl(f.objectManager, f.resourcePoolManager, networkService, d.serviceDao, c.revisionManager, loadBalancerService, f.processManager);
         upgradeManager = new UpgradeManager(c.catalogService, d.stackDao, d.resourceDao, f.lockManager, f.processManager);
         containerSync = new ContainerSyncImpl(f.objectManager, f.processManager, d.instanceDao, f.lockManager, d.resourceDao, f.scheduledExecutorService, f.cluster);
 
