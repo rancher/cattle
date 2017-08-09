@@ -61,8 +61,15 @@ public class ActionRequestHandler implements ApiRequestHandler {
     }
 
     private Object resourceActionInternal(Object obj, ApiRequest request) {
-        String processName = getProcessName(obj, request);
-        ActionHandler handler = locator.getActionHandler(processName, request.getType());
+        String processName = null; //getProcessName(obj, request);
+        ActionHandler handler = null;
+        String type = request.getType();
+
+        while (type != null && handler == null) {
+            processName = String.format("%s.%s", type, request.getAction()).toLowerCase();
+            handler = locator.getActionHandler(processName, type);
+            type = objectManager.getSchemaFactory().getBaseType(type);
+        }
         if (handler != null) {
             return handler.perform(processName, obj, request);
         }
@@ -70,17 +77,13 @@ public class ActionRequestHandler implements ApiRequestHandler {
         Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
 
         try {
-            processManager.scheduleProcessInstance(getProcessName(obj, request), obj, data);
+            processManager.scheduleProcessInstance(processName, obj, data);
         } catch (ProcessNotFoundException e) {
             throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
         }
 
         request.setResponseCode(ResponseCodes.ACCEPTED);
         return objectManager.reload(obj);
-    }
-
-    protected String getProcessName(Object obj, ApiRequest request) {
-        return String.format("%s.%s", request.getType(), request.getAction()).toLowerCase();
     }
 
     @Override

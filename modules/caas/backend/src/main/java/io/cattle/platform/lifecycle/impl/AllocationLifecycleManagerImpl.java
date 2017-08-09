@@ -44,12 +44,7 @@ public class AllocationLifecycleManagerImpl implements AllocationLifecycleManage
                     /* Check if we should defer to external agent for schedule/create/delete.  This should use a different
                        than checking for the agent.
                      */
-                    if ("host".equals(EXTERNAL_STYLE)) {
-                        return;
-                    }
-
-                    List<Long> agents = envResourceManager.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_COMPUTE, instance.getAccountId());
-                    if (agents.size() > 0) {
+                    if ("host".equals(EXTERNAL_STYLE.get()) || envResourceManager.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_COMPUTE, instance.getAccountId()).size() > 0) {
                         DataAccessor.setField(instance, InstanceConstants.FIELD_EXTERNAL_COMPUTE_AGENT, true);
                         return;
                     }

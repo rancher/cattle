@@ -12,7 +12,7 @@ public class TypeUtils {
         if (name.endsWith("s") || name.endsWith("ch") || name.endsWith("x")) {
             return name + "es";
         }
-        if (name.endsWith("y")) {
+        if (name.endsWith("y") && name.length() > 2 && !name.substring(name.length()-2, name.length()-1).matches("[aeiou]")) {
             return name.substring(0, name.length()-1) + "ies";
         }
         return name + "s";
