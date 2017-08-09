@@ -1,7 +1,9 @@
 package io.cattle.platform.lifecycle.impl;
 
+import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.service.AllocatorService;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Instance;
@@ -20,6 +22,8 @@ import static io.cattle.platform.core.model.tables.VolumeTable.*;
 
 public class AllocationLifecycleManagerImpl implements AllocationLifecycleManager {
 
+    public static final DynamicStringProperty EXTERNAL_STYLE = ArchaiusUtil.getString("external.compute.event.target");
+
     AllocatorService allocatorService;
     VolumeDao volumeDao;
     ObjectManager objectManager;
@@ -37,9 +41,13 @@ public class AllocationLifecycleManagerImpl implements AllocationLifecycleManage
         try {
             if (instance.getHostId() == null) {
                 if (!instance.getNativeContainer()) {
-                /* Check if we should defer to external agent for schedule/create/delete.  This should use a different
-                   than checking for the agent.
-                 */
+                    /* Check if we should defer to external agent for schedule/create/delete.  This should use a different
+                       than checking for the agent.
+                     */
+                    if ("host".equals(EXTERNAL_STYLE)) {
+                        return;
+                    }
+
                     List<Long> agents = envResourceManager.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_COMPUTE, instance.getAccountId());
                     if (agents.size() > 0) {
                         DataAccessor.setField(instance, InstanceConstants.FIELD_EXTERNAL_COMPUTE_AGENT, true);
