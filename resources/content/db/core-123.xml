@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <property name="mediumtext" value="TEXT" dbms="postgresql" />
+    <property name="mediumtext" value="MEDIUMTEXT" />
+    <property name="mediumtext" value="varchar" dbms="H2" />
+    <changeSet author="rancher (generated)" id="dump1">
+        <createTable tableName="region">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="account_id" type="BIGINT"/>
+            <column name="kind" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1024)"/>
+            <column name="state" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="datetime"/>
+            <column name="removed" type="datetime"/>
+            <column name="remove_time" type="datetime"/>
+            <column name="data" type="TEXT"/>
+            <column name="url" type="VARCHAR(255)"/>
+            <column name="public_value" type="VARCHAR(255)"/>
+            <column name="secret_value" type="VARCHAR(255)"/>
+            <column defaultValueNumeric="0" name="local" type="BIT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump2">
+        <addUniqueConstraint columnNames="uuid" constraintName="idx_region_uuid" deferrable="false" disabled="false" initiallyDeferred="false" tableName="region"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump3">
+        <addForeignKeyConstraint baseColumnNames="account_id" baseTableName="region" constraintName="fk_region__account_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="account"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump4">
+        <createIndex indexName="idx_region_name" tableName="region" unique="false">
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump5">
+        <createIndex indexName="idx_region_remove_time" tableName="region" unique="false">
+            <column name="remove_time"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump6">
+        <createIndex indexName="idx_region_removed" tableName="region" unique="false">
+            <column name="removed"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump7">
+        <createIndex indexName="idx_region_state" tableName="region" unique="false">
+            <column name="state"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump8">
+        <addColumn tableName="service_consume_map">
+            <column name="consumed_service" type="VARCHAR(255)"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump9">
+        <addColumn tableName="agent">
+            <column name="external_id" type="VARCHAR(128)"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump10">
+        <addColumn tableName="account_link">
+            <column name="linked_account" type="VARCHAR(255)"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump11">
+        <addColumn tableName="account_link">
+            <column name="linked_region_id" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+     <changeSet author="rancher (generated)" id="dump12">
+        <addColumn tableName="account_link">
+            <column name="linked_region" type="VARCHAR(255)"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump13">
+        <addColumn tableName="account_link">
+            <column name="external" type="BIT" defaultValueBoolean="false"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump14">
+        <addForeignKeyConstraint baseColumnNames="linked_region_id" baseTableName="account_link" constraintName="fk_region__linked_region_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="region"/>
+    </changeSet>
+</databaseChangeLog>

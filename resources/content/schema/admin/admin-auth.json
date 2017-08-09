@@ -48,6 +48,11 @@
         "haConfig.dbSize" : "r",
         "haConfig.dbHost" : "r",
 
+        "accountLink" : "r",
+        "accountLink.linkedRegion" : "r",
+        "accountLink.linkedAccount" : "r",
+        "accountLink.external": "r",
+
         "activeSetting" : "rud",
         "activeSetting.activeValue" : "r",
         "activeSetting.inDb": "r",
@@ -55,9 +60,15 @@
         "activeSetting.source": "r",
         "activeSetting.value" : "ru",
 
-        "agent" : "r",
-        "agent.managedConfig" : "r",
-        "agent.uri" : "r",
+        "agent" : "crud",
+        "agent.managedConfig" : "cr",
+        "agent.uri" : "cr",
+        "agent.publicValue" : "cr",
+        "agent.secretValue" : "cro",
+        "agent.agentResourcesAccountId": "cr",
+        "agent.labels": "cr",
+        "agent.externalId": "cr",
+        "agent.externalCredentials": "cr",
 
         "apiKey" : "crud",
         "apiKey.accountId" : "cr",
@@ -91,6 +102,12 @@
 
         "extensionImplementation" : "r",
         "extensionImplementation\\..*" : "r",
+
+        "externalCredential" : "r",
+        "externalCredential.agentUuid" : "r",
+        "externalCredential.environment" : "r",
+        "externalCredential.linkedRegion" : "r",
+        "externalCredential.publicValue" : "r",
 
         "extensionPoint" : "r",
         "extensionPoint.excludeSetting" : "r",
@@ -244,7 +261,14 @@
         "projectTemplate.isPublic" : "cru",
         
         "genericObject" : "crud",
-		
+
+        "region": "crud",
+        "region.url" : "cru",
+        "region.local" : "cru",
+        "region.publicValue" : "cru",
+        "region.secretValue" : "curo",
+        "region.name" : "cr",
+
         "end" : ""
     }
 }

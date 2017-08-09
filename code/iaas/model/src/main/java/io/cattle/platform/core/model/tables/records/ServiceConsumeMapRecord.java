@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "service_consume_map", schema = "cattle")
-public class ServiceConsumeMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ServiceConsumeMapRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record13<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Long>, io.cattle.platform.core.model.ServiceConsumeMap {
+public class ServiceConsumeMapRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.ServiceConsumeMapRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record14<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String>, io.cattle.platform.core.model.ServiceConsumeMap {
 
-	private static final long serialVersionUID = 1439485501;
+	private static final long serialVersionUID = 1992401255;
 
 	/**
 	 * Setter for <code>cattle.service_consume_map.id</code>.
@@ -237,6 +237,23 @@ public class ServiceConsumeMapRecord extends org.jooq.impl.UpdatableRecordImpl<i
 		return (java.lang.Long) getValue(12);
 	}
 
+	/**
+	 * Setter for <code>cattle.service_consume_map.consumed_service</code>.
+	 */
+	@Override
+	public void setConsumedService(java.lang.String value) {
+		setValue(13, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.service_consume_map.consumed_service</code>.
+	 */
+	@javax.persistence.Column(name = "consumed_service", length = 255)
+	@Override
+	public java.lang.String getConsumedService() {
+		return (java.lang.String) getValue(13);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -250,23 +267,23 @@ public class ServiceConsumeMapRecord extends org.jooq.impl.UpdatableRecordImpl<i
 	}
 
 	// -------------------------------------------------------------------------
-	// Record13 type implementation
+	// Record14 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row13<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Long> fieldsRow() {
-		return (org.jooq.Row13) super.fieldsRow();
+	public org.jooq.Row14<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String> fieldsRow() {
+		return (org.jooq.Row14) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row13<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Long> valuesRow() {
-		return (org.jooq.Row13) super.valuesRow();
+	public org.jooq.Row14<java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.Long, java.lang.Long, java.lang.String> valuesRow() {
+		return (org.jooq.Row14) super.valuesRow();
 	}
 
 	/**
@@ -377,6 +394,14 @@ public class ServiceConsumeMapRecord extends org.jooq.impl.UpdatableRecordImpl<i
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.lang.String> field14() {
+		return io.cattle.platform.core.model.tables.ServiceConsumeMapTable.SERVICE_CONSUME_MAP.CONSUMED_SERVICE;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -475,6 +500,14 @@ public class ServiceConsumeMapRecord extends org.jooq.impl.UpdatableRecordImpl<i
 	@Override
 	public java.lang.Long value13() {
 		return getAccountId();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.String value14() {
+		return getConsumedService();
 	}
 
 	/**
@@ -598,7 +631,16 @@ public class ServiceConsumeMapRecord extends org.jooq.impl.UpdatableRecordImpl<i
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ServiceConsumeMapRecord values(java.lang.Long value1, java.lang.String value2, java.lang.String value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.util.Date value7, java.util.Date value8, java.util.Date value9, java.util.Map<String,Object> value10, java.lang.Long value11, java.lang.Long value12, java.lang.Long value13) {
+	public ServiceConsumeMapRecord value14(java.lang.String value) {
+		setConsumedService(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public ServiceConsumeMapRecord values(java.lang.Long value1, java.lang.String value2, java.lang.String value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.util.Date value7, java.util.Date value8, java.util.Date value9, java.util.Map<String,Object> value10, java.lang.Long value11, java.lang.Long value12, java.lang.Long value13, java.lang.String value14) {
 		return this;
 	}
 
@@ -624,6 +666,7 @@ public class ServiceConsumeMapRecord extends org.jooq.impl.UpdatableRecordImpl<i
 		setServiceId(from.getServiceId());
 		setConsumedServiceId(from.getConsumedServiceId());
 		setAccountId(from.getAccountId());
+		setConsumedService(from.getConsumedService());
 	}
 
 	/**
@@ -649,7 +692,7 @@ public class ServiceConsumeMapRecord extends org.jooq.impl.UpdatableRecordImpl<i
 	/**
 	 * Create a detached, initialised ServiceConsumeMapRecord
 	 */
-	public ServiceConsumeMapRecord(java.lang.Long id, java.lang.String name, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long serviceId, java.lang.Long consumedServiceId, java.lang.Long accountId) {
+	public ServiceConsumeMapRecord(java.lang.Long id, java.lang.String name, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long serviceId, java.lang.Long consumedServiceId, java.lang.Long accountId, java.lang.String consumedService) {
 		super(io.cattle.platform.core.model.tables.ServiceConsumeMapTable.SERVICE_CONSUME_MAP);
 
 		setValue(0, id);
@@ -665,5 +708,6 @@ public class ServiceConsumeMapRecord extends org.jooq.impl.UpdatableRecordImpl<i
 		setValue(10, serviceId);
 		setValue(11, consumedServiceId);
 		setValue(12, accountId);
+		setValue(13, consumedService);
 	}
 }

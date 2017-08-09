@@ -74,14 +74,18 @@ public class ServiceOutputFilter extends CachedOutputFilter<Map<Long, ServiceOut
             if (info.serviceLinks != null) {
                 for (ServiceLink link : info.serviceLinks) {
                     String name = link.linkName;
-                    if (Strings.isNullOrEmpty(name)) {
+                    if (Strings.isNullOrEmpty(name) && link.serviceId != null) {
                         if (link.stackId.equals(service.getStackId())) {
                             name = link.serviceName;
                         } else {
                             name = String.format("%s/%s", link.stackName, link.serviceName);
                         }
                     }
-                    links.put(name, idFormatter.formatId(ServiceConstants.KIND_SERVICE, link.serviceId));
+                    if (link.serviceId == null) {
+                        links.put(name, link.serviceName);
+                    } else {
+                        links.put(name, idFormatter.formatId(ServiceConstants.KIND_SERVICE, link.serviceId));
+                    }
                 }
                 fields.put(ServiceConstants.FIELD_LINKED_SERVICES, links);
             }

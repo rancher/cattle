@@ -316,6 +316,7 @@
     <process:defaultProcesses resourceType="serviceIndex" />
     <process:defaultProcesses resourceType="volumeTemplate" />
     <process:defaultProcesses resourceType="accountLink" />
+    <process:defaultProcesses resourceType="region" />
 
     <!-- Volume Storage Pool Map -->
     <process:defaultProcesses resourceType="volumeStoragePoolMap" exclude="volumestoragepoolmap.purge"/>

@@ -11,7 +11,7 @@ package io.cattle.platform.core.model.tables;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AgentTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.model.tables.records.AgentRecord> {
 
-	private static final long serialVersionUID = 1713433720;
+	private static final long serialVersionUID = 160436772;
 
 	/**
 	 * The singleton instance of <code>cattle.agent</code>
@@ -95,6 +95,11 @@ public class AgentTable extends org.jooq.impl.TableImpl<io.cattle.platform.core.
 	 * The column <code>cattle.agent.zone_id</code>.
 	 */
 	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.AgentRecord, java.lang.Long> ZONE_ID = createField("zone_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+	/**
+	 * The column <code>cattle.agent.external_id</code>.
+	 */
+	public final org.jooq.TableField<io.cattle.platform.core.model.tables.records.AgentRecord, java.lang.String> EXTERNAL_ID = createField("external_id", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
 
 	/**
 	 * Create a <code>cattle.agent</code> table reference

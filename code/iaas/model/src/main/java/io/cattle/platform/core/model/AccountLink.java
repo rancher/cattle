@@ -146,6 +146,50 @@ public interface AccountLink extends java.io.Serializable {
 	@javax.persistence.Column(name = "linked_account_id", precision = 19)
 	public java.lang.Long getLinkedAccountId();
 
+	/**
+	 * Setter for <code>cattle.account_link.linked_account</code>.
+	 */
+	public void setLinkedAccount(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.account_link.linked_account</code>.
+	 */
+	@javax.persistence.Column(name = "linked_account", length = 255)
+	public java.lang.String getLinkedAccount();
+
+	/**
+	 * Setter for <code>cattle.account_link.linked_region_id</code>.
+	 */
+	public void setLinkedRegionId(java.lang.Long value);
+
+	/**
+	 * Getter for <code>cattle.account_link.linked_region_id</code>.
+	 */
+	@javax.persistence.Column(name = "linked_region_id", precision = 19)
+	public java.lang.Long getLinkedRegionId();
+
+	/**
+	 * Setter for <code>cattle.account_link.linked_region</code>.
+	 */
+	public void setLinkedRegion(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.account_link.linked_region</code>.
+	 */
+	@javax.persistence.Column(name = "linked_region", length = 255)
+	public java.lang.String getLinkedRegion();
+
+	/**
+	 * Setter for <code>cattle.account_link.external</code>.
+	 */
+	public void setExternal(java.lang.Boolean value);
+
+	/**
+	 * Getter for <code>cattle.account_link.external</code>.
+	 */
+	@javax.persistence.Column(name = "external", precision = 1)
+	public java.lang.Boolean getExternal();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

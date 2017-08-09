@@ -3,6 +3,7 @@ package io.cattle.platform.servicediscovery.process;
 import static io.cattle.platform.core.model.tables.AccountLinkTable.*;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
+
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Account;
@@ -21,7 +22,9 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 import io.cattle.platform.process.common.lock.AccountLinksUpdateLock;
+import io.cattle.platform.servicediscovery.service.RegionService;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
+
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
@@ -36,23 +39,29 @@ import org.apache.commons.collections.TransformerUtils;
 
 @Named
 public class AccountLinkRemove extends AbstractObjectProcessLogic implements ProcessPostListener {
-
     @Inject
     ServiceDiscoveryService sdSvc;
     @Inject
     LockManager lockManager;
     @Inject
     EventService eventService;
+    @Inject
+    RegionService regionSvc;
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         AccountLink accountLink = (AccountLink) state.getResource();
-        updateServices(accountLink);
-        Account account = objectManager.loadResource(Account.class, accountLink.getAccountId());
-        if (account == null) {
-            return null;
+        if (accountLink.getLinkedAccountId() == null) {
+            regionSvc.deleteExternalAccountLink(accountLink);
+        } else {
+            updateServices(accountLink);
+            Account account = objectManager.loadResource(Account.class, accountLink.getAccountId());
+            if (account == null) {
+                return null;
+            }
+            regenerateAccountLinks(account);
         }
-        regenerateAccountLinks(account);
+
         return null;
     }
 
@@ -100,7 +109,7 @@ public class AccountLinkRemove extends AbstractObjectProcessLogic implements Pro
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { "accountlink.remove" };
+        return new String[] { AccountConstants.PROCESS_ACCOUNT_LINK_REMOVE };
     }
 
 }

@@ -2,6 +2,7 @@ package io.cattle.platform.process.agent;
 
 import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.AgentTable.*;
+
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.AgentConstants;
@@ -54,9 +55,12 @@ public class AgentCreate extends AbstractDefaultProcessHandler {
         }
 
         DataAccessor.fromMap(state.getData()).withScope(AccountConstants.class).withKey(AccountConstants.OPTION_CREATE_APIKEY).set(true);
-
         DataAccessor.fromMap(state.getData()).withScope(AccountConstants.class).withKey(AccountConstants.OPTION_CREATE_APIKEY_KIND).set(
                 CredentialConstants.KIND_AGENT_API_KEY);
+        DataAccessor.fromMap(state.getData()).withScope(CredentialConstants.class).withKey(CredentialConstants.PUBLIC_VALUE)
+                .set(state.getData().get(CredentialConstants.PUBLIC_VALUE));
+        DataAccessor.fromMap(state.getData()).withScope(CredentialConstants.class).withKey(CredentialConstants.SECRET_VALUE)
+                .set(state.getData().get(CredentialConstants.SECRET_VALUE));
 
         List<? extends String> roles =
                 DataAccessor.fromDataFieldOf(agent).withKey(AgentConstants.DATA_REQUESTED_ROLES).withDefault(Collections.EMPTY_LIST)

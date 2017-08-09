@@ -7,11 +7,10 @@ public class ServiceLinkMetaData {
     // helper field needed by metadata service to process object
     String metadata_kind;
 
-    public ServiceLinkMetaData(String service_uuid, String consumed_service_name,
-            String consumed_stack_name, String alias) {
+    public ServiceLinkMetaData(String service_uuid, String consumed_service, String alias) {
         super();
         this.service_uuid = service_uuid;
-        this.key = consumed_stack_name + "/" + consumed_service_name;
+        this.key = consumed_service;
         this.value = alias;
         this.metadata_kind = "serviceLink";
     }

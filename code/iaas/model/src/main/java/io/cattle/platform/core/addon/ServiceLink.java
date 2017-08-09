@@ -6,16 +6,18 @@ import io.github.ibuildthecloud.gdapi.annotation.Type;
 public class ServiceLink {
     // This field is not used publically through the API, only on the backend
     long consumingServiceId;
-    long serviceId;
+    Long serviceId;
     String name;
+    String service;
 
     public ServiceLink() {
     }
 
-    public ServiceLink(long serviceId, String name) {
+    public ServiceLink(Long serviceId, String name, String serviceName) {
         super();
         this.serviceId = serviceId;
         this.name = name;
+        this.service = serviceName;
     }
 
     public String getName() {
@@ -26,11 +28,11 @@ public class ServiceLink {
         this.name = name;
     }
 
-    public long getServiceId() {
+    public Long getServiceId() {
         return serviceId;
     }
 
-    public void setServiceId(long serviceId) {
+    public void setServiceId(Long serviceId) {
         this.serviceId = serviceId;
     }
 
@@ -43,6 +45,17 @@ public class ServiceLink {
     }
 
     public String getUuid() {
-        return serviceId + "." + (name == null ? "" : name);
+        if (serviceId != null) {
+            return serviceId + "." + (name == null ? "" : name);
+        }
+        return service + "." + (name == null ? "" : name);
+    }
+
+    public String getService() {
+        return service;
+    }
+
+    public void setService(String serviceName) {
+        this.service = serviceName;
     }
 }

@@ -65,6 +65,20 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
     }
 
     @Override
+    public ServiceConsumeMap findMapToRemove(long serviceId, String consumedServiceName) {
+        List<ServiceConsumeMap> maps = objectManager.find(ServiceConsumeMap.class,
+                SERVICE_CONSUME_MAP.SERVICE_ID,
+                serviceId, SERVICE_CONSUME_MAP.CONSUMED_SERVICE, consumedServiceName);
+        for (ServiceConsumeMap map : maps) {
+            if (map != null && (map.getRemoved() == null || map.getState().equals(CommonStatesConstants.REMOVING))) {
+                return map;
+            }
+        }
+
+        return null;
+    }
+
+    @Override
     public ServiceConsumeMap findNonRemovedMap(long serviceId, long consumedServiceId, String linkName) {
         ServiceConsumeMap map = null;
         List<? extends ServiceConsumeMap> maps = new ArrayList<>();
@@ -77,6 +91,31 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
             maps = objectManager.find(ServiceConsumeMap.class,
                     SERVICE_CONSUME_MAP.SERVICE_ID,
                     serviceId, SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID, consumedServiceId, SERVICE_CONSUME_MAP.NAME,
+                    linkName, SERVICE_CONSUME_MAP.REMOVED,
+                    null);
+        }
+
+        for (ServiceConsumeMap m : maps) {
+            if (m.getState().equalsIgnoreCase(CommonStatesConstants.REMOVING)) {
+                continue;
+            }
+            map = m;
+        }
+        return map;
+    }
+
+    private ServiceConsumeMap findNonRemovedMap(long serviceId, String consumedServiceName, String linkName) {
+        ServiceConsumeMap map = null;
+        List<? extends ServiceConsumeMap> maps = new ArrayList<>();
+        if (linkName == null) {
+            maps = objectManager.find(ServiceConsumeMap.class,
+                    SERVICE_CONSUME_MAP.SERVICE_ID,
+                    serviceId, SERVICE_CONSUME_MAP.CONSUMED_SERVICE, consumedServiceName, SERVICE_CONSUME_MAP.REMOVED,
+                    null);
+        } else {
+            maps = objectManager.find(ServiceConsumeMap.class,
+                    SERVICE_CONSUME_MAP.SERVICE_ID,
+                    serviceId, SERVICE_CONSUME_MAP.CONSUMED_SERVICE, consumedServiceName, SERVICE_CONSUME_MAP.NAME,
                     linkName, SERVICE_CONSUME_MAP.REMOVED,
                     null);
         }
@@ -172,7 +211,7 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
 
     @Override
     public ServiceConsumeMap createServiceLink(final Service service, final ServiceLink serviceLink) {
-        return lockManager.lock(new ServiceLinkLock(service.getId(), serviceLink.getServiceId()),
+        return lockManager.lock(new ServiceLinkLock(service.getId(), serviceLink.getServiceId(), serviceLink.getService()),
                 new LockCallback<ServiceConsumeMap>() {
             @Override
                     public ServiceConsumeMap doWithLock() {
@@ -187,21 +226,30 @@ public class ServiceConsumeMapDaoImpl extends AbstractJooqDao implements Service
                 || linkFrom.getState().equalsIgnoreCase(CommonStatesConstants.REMOVING)) {
             return null;
         }
-        Service linkTo = objectManager.loadResource(Service.class, serviceLink.getServiceId());
-        if (linkTo == null || linkTo.getRemoved() != null
-                || linkTo.getState().equalsIgnoreCase(CommonStatesConstants.REMOVING)) {
-            return null;
+        if (serviceLink.getServiceId() != null) {
+            Service linkTo = objectManager.loadResource(Service.class, serviceLink.getServiceId());
+            if (linkTo == null || linkTo.getRemoved() != null
+                    || linkTo.getState().equalsIgnoreCase(CommonStatesConstants.REMOVING)) {
+                return null;
+            }
         }
 
-        ServiceConsumeMap map = findNonRemovedMap(service.getId(), serviceLink.getServiceId(),
-                serviceLink.getName());
+        ServiceConsumeMap map = null;
+        if (serviceLink.getServiceId() != null) {
+            map = findNonRemovedMap(service.getId(), serviceLink.getServiceId(),
+                    serviceLink.getName());
+        } else {
+            map = findNonRemovedMap(service.getId(), serviceLink.getService(),
+                    serviceLink.getName());
+        }
 
         if (map == null) {
             Map<Object,Object> properties = CollectionUtils.asMap(
                     (Object)SERVICE_CONSUME_MAP.SERVICE_ID,
                     service.getId(), SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID, serviceLink.getServiceId(),
                     SERVICE_CONSUME_MAP.ACCOUNT_ID, service.getAccountId(),
-                    SERVICE_CONSUME_MAP.NAME, serviceLink.getName());
+                    SERVICE_CONSUME_MAP.NAME, serviceLink.getName(),
+                    SERVICE_CONSUME_MAP.CONSUMED_SERVICE, serviceLink.getService());
 
             map = objectManager.create(ServiceConsumeMap.class, objectManager.convertToPropertiesFor(ServiceConsumeMap.class,
                     properties));

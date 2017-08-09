@@ -19,6 +19,7 @@ public class CredentialConstants {
 
     public static final String KIND_REGISTRY_CREDENTIAL = "registryCredential";
     public static final String PUBLIC_VALUE = "publicValue";
+    public static final String SECRET_VALUE = "secretValue";
 
     public static final String PROCESSS_DEACTIVATE = "credential.deactivate";
     public static final String PROCESSS_REMOVE = "credential.remove";

@@ -3,6 +3,7 @@ package io.cattle.platform.configitem.context.data.metadata.common;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
+import io.cattle.platform.core.model.Region;
 
 import java.util.List;
 import java.util.Map;
@@ -15,10 +16,11 @@ public class MetaHelperInfo {
     Set<Long> otherAccountsServicesIds;
     Set<Long> otherAccountsStackIds;
     Account account;
+    String regionName;
 
     public MetaHelperInfo(Account account, Map<Long, Account> accounts, Set<Long> otherAccountsServicesIds,
             Set<Long> otherAccountsStackIds,
-            MetaDataInfoDao dao) {
+            MetaDataInfoDao dao, Region regionObj) {
         super();
         this.accounts = accounts;
         this.otherAccountsServicesIds = otherAccountsServicesIds;
@@ -28,6 +30,9 @@ public class MetaHelperInfo {
         // otherwise this info is irrelevant
         this.instanceIdToHealthCheckers = dao.getInstanceIdToHealthCheckers(account);
         this.hostIdToHostMetadata = dao.getHostIdToHostMetadata(account, accounts, otherAccountsServicesIds);
+        if (regionObj != null) {
+            regionName = regionObj.getName();
+        }
     }
 
     public Map<Long, List<HealthcheckInstanceHostMap>> getInstanceIdToHealthCheckers() {
@@ -52,5 +57,9 @@ public class MetaHelperInfo {
 
     public Set<Long> getOtherAccountsStackIds() {
         return otherAccountsStackIds;
+    }
+
+    public String getRegionName() {
+        return regionName;
     }
 }

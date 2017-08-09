@@ -13,6 +13,8 @@ public interface ServiceConsumeMapDao {
 
     ServiceConsumeMap findMapToRemove(long serviceId, long consumedServiceId);
 
+    ServiceConsumeMap findMapToRemove(long serviceId, String consumedServiceName);
+
     ServiceConsumeMap findNonRemovedMap(long serviceId, long consumedServiceId, String linkName);
 
     /**

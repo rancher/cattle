@@ -16,4 +16,6 @@ public interface AgentInstanceDao {
     List<Long> getAgentProvider(String providedServiceLabel, long accountId);
 
     List<Long> getAgentProviderIgnoreHealth(String providedServiceLabel, long accountId);
+
+    List<Long> getExternalAgentProvider(String providedServiceLabel, long accountId);
 }

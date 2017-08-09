@@ -82,6 +82,9 @@ public class SetServiceLinksActionHandler implements ActionHandler {
 
     protected void validateLinks(final Map<String, ServiceLink> newServiceLinks) {
         for (ServiceLink link : newServiceLinks.values()) {
+            if (link.getServiceId() == null) {
+                continue;
+            }
             Service targetService = objMgr.loadResource(Service.class, link.getServiceId());
             if (targetService == null || targetService.getRemoved() != null
                     || targetService.getState().equalsIgnoreCase(CommonStatesConstants.REMOVING)) {
@@ -120,7 +123,7 @@ public class SetServiceLinksActionHandler implements ActionHandler {
         List<ServiceLink> linksToRemove = new ArrayList<>();
 
         for (ServiceConsumeMap existingMap : existingMaps) {
-            ServiceLink existingLink = new ServiceLink(existingMap.getConsumedServiceId(), existingMap.getName());
+            ServiceLink existingLink = new ServiceLink(existingMap.getConsumedServiceId(), existingMap.getName(), existingMap.getConsumedService());
             if (!newServiceLinks.containsKey(existingLink.getUuid())) {
                 linksToRemove.add(existingLink);
             }

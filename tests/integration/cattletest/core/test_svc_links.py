@@ -1,5 +1,6 @@
 from common_fixtures import *  # NOQA
 from cattle import ApiError
+import yaml
 
 
 def _create_stack(client):
@@ -564,3 +565,136 @@ def test_validate_svc_link_name(client, context):
     service_link2 = {"serviceId": service3.id, "name": 'm.gh_kl.a-b'}
     service1 = service1.addservicelink(serviceLink=service_link2)
     _validate_add_service_link(service1, service3, client)
+
+
+def test_set_external_links(client, context):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+
+    service1 = client.create_service(name=random_str(),
+                                     stackId=env.id,
+                                     launchConfig=launch_config)
+    service1 = client.wait_success(service1)
+
+    # set service2, service3 links for service1
+    link1 = "foo/bar/foo/bar"
+    link2 = "bar/foo/bar/foo"
+    service_link1 = {"service": link1, "name": "link1"}
+    service_link2 = {"service": link2, "name": "link2"}
+    service1 = service1. \
+        setservicelinks(serviceLinks=[service_link1, service_link2])
+    _validate_add_service_link_name(service1, link1, client, "link1")
+    _validate_add_service_link_name(service1, link2, client, "link2")
+
+    # update the link with new name
+    service_link1 = {"service": link1, "name": "link3"}
+    service_link2 = {"service": link2, "name": "link4"}
+    service1 = service1. \
+        setservicelinks(serviceLinks=[service_link1, service_link2])
+    _validate_remove_service_link_name(service1, link1, client, "link1")
+    _validate_remove_service_link_name(service1, link2, client, "link2")
+    _validate_add_service_link_name(service1, link1, client, "link3")
+    _validate_add_service_link_name(service1, link2, client, "link4")
+
+    # set service2 links for service1
+    service_link = {"service": link1, "name": "link1"}
+    service1 = service1. \
+        setservicelinks(serviceLinks=[service_link])
+    _validate_remove_service_link_name(service1, link2, client, "link4")
+
+    # set empty service link set
+    service1 = service1.setservicelinks(serviceLinks=[])
+    _validate_remove_service_link_name(service1, link1, client, "link3")
+
+
+def test_set_external_links_validation(client, context):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+
+    svc = client.create_service(name=random_str(),
+                                stackId=env.id,
+                                launchConfig=launch_config)
+    svc = client.wait_success(svc)
+
+    with pytest.raises(ApiError) as e:
+        svc = svc. \
+            setservicelinks(serviceLinks=[{"name": "link1"}])
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'MissingRequired'
+    assert e.value.error.fieldName == 'serviceId'
+
+    with pytest.raises(ApiError) as e:
+        svc = svc. \
+            setservicelinks(serviceLinks=[{"service": "link1"}])
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'MissingRequired'
+    assert e.value.error.fieldName == 'name'
+
+    # set service2, service3 links for service1
+    link1 = "foo/bar/foo/bar"
+    link2 = "bar/foo/bar/foo"
+    service_link1 = {"service": link1, "name": "link1"}
+    service_link2 = {"service": link2, "name": "link2"}
+    svc = svc. \
+        setservicelinks(serviceLinks=[service_link1, service_link2])
+    _validate_add_service_link_name(svc, link1, client, "link1")
+    _validate_add_service_link_name(svc, link2, client, "link2")
+
+    # validate compose export
+    compose_config = env.exportconfig()
+
+    assert compose_config is not None
+    y = yaml.load(compose_config.dockerComposeConfig)
+    s = y['services'][svc.name]
+    ls = s["external_links"]
+    assert len(ls) == 2
+    assert "foo/bar/foo/bar:link1" in ls
+    assert "bar/foo/bar/foo:link2" in ls
+
+    client.wait_success(svc.remove())
+
+
+def _validate_add_service_link_name(service,
+                                    consumedService, client,
+                                    link_name=None):
+    if link_name is None:
+        service_maps = client. \
+            list_serviceConsumeMap(serviceId=service.id,
+                                   consumedService=consumedService)
+    else:
+        service_maps = client. \
+            list_serviceConsumeMap(serviceId=service.id,
+                                   consumedService=consumedService,
+                                   name=link_name)
+
+    assert len(service_maps) == 1
+    if link_name is not None:
+        assert service_maps[0].name is not None
+
+    service_map = service_maps[0]
+    wait_for_condition(
+        client, service_map, _resource_is_active,
+        lambda x: 'State is: ' + x.state)
+
+
+def _validate_remove_service_link_name(service,
+                                       consumedService,
+                                       client, link_name=None):
+    def check():
+        if link_name is None:
+            service_maps = client. \
+                list_serviceConsumeMap(serviceId=service.id,
+                                       consumedService=consumedService)
+        else:
+            service_maps = client. \
+                list_serviceConsumeMap(serviceId=service.id,
+                                       consumedService=consumedService,
+                                       name=link_name)
+
+        return len(service_maps) == 0
+
+    wait_for(check)

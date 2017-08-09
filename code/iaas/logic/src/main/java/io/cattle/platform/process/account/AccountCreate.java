@@ -4,6 +4,7 @@ import static io.cattle.platform.core.model.tables.CredentialTable.*;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AccountConstants;
+import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Credential;
@@ -16,6 +17,7 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.process.util.ProcessHelpers;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -54,18 +56,30 @@ public class AccountCreate extends AbstractDefaultProcessHandler {
 
         String apiKeyKind = DataAccessor.fromMap(state.getData()).withScope(AccountConstants.class).withKey(AccountConstants.OPTION_CREATE_APIKEY_KIND)
                 .withDefault(CREDENTIAL_TYPE.get()).as(String.class);
+        String requestedPublicValue = DataAccessor.fromMap(state.getData()).withScope(CredentialConstants.class).withKey(CredentialConstants.PUBLIC_VALUE)
+                .as(String.class);
+        String requestedSecretValue = DataAccessor.fromMap(state.getData()).withScope(CredentialConstants.class).withKey(CredentialConstants.SECRET_VALUE)
+                .as(String.class);
 
         if (shouldCreateCredentials(account, state)) {
             if (createApiKey || CREATE_CREDENTIAL.get()) {
-                List<Credential> creds = ProcessHelpers.createOneChild(getObjectManager(), processManager, account, Credential.class, CREDENTIAL.ACCOUNT_ID,
-                        account.getId(), CREDENTIAL.KIND, apiKeyKind);
+                List<Credential> creds = new ArrayList<>();
+                if (requestedPublicValue == null) {
+                    creds = ProcessHelpers.createOneChild(getObjectManager(), processManager, account, Credential.class, CREDENTIAL.ACCOUNT_ID,
+                            account.getId(), CREDENTIAL.KIND, apiKeyKind);
+                } else {
+                    creds = ProcessHelpers.createOneChild(getObjectManager(), processManager, account, Credential.class, CREDENTIAL.ACCOUNT_ID,
+                            account.getId(), CREDENTIAL.KIND, apiKeyKind, CREDENTIAL.PUBLIC_VALUE,
+                            requestedPublicValue, CREDENTIAL.SECRET_VALUE, requestedSecretValue);
+                }
 
                 for (Credential cred : creds) {
                     result.put("_createdCredential" + cred.getId(), true);
                 }
             }
         }
-        
+
+
         List<? extends Long> accountLinks = DataAccessor.fromMap(state.getData()).withKey(
                 AccountConstants.FIELD_ACCOUNT_LINKS).withDefault(Collections.EMPTY_LIST)
             .asList(jsonMapper, Long.class);

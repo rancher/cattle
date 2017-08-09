@@ -86,6 +86,7 @@ import io.cattle.platform.iaas.api.filter.storagepool.StoragePoolOutputFilter;
 import io.cattle.platform.iaas.api.filter.volume.VolumeOutputFilter;
 import io.cattle.platform.iaas.api.infrastructure.InfrastructureAccessManager;
 import io.cattle.platform.iaas.api.infrastructure.InfrastructureAccessManagerImpl;
+import io.cattle.platform.iaas.api.manager.AgentManager;
 import io.cattle.platform.iaas.api.manager.DataManager;
 import io.cattle.platform.iaas.api.manager.HaConfigManager;
 import io.cattle.platform.iaas.api.manager.HostTemplateManager;
@@ -121,6 +122,7 @@ import io.cattle.platform.servicediscovery.api.filter.ServiceStackNetworkDriverF
 import io.cattle.platform.servicediscovery.api.filter.ServiceStackStorageDriverFilter;
 import io.cattle.platform.spring.resource.SpringUrlListFactory;
 import io.cattle.platform.systemstack.api.AccountCreateFilter;
+
 import io.github.ibuildthecloud.gdapi.doc.FieldDocumentation;
 import io.github.ibuildthecloud.gdapi.doc.TypeDocumentation;
 import io.github.ibuildthecloud.gdapi.doc.handler.DocumentationHandler;
@@ -917,6 +919,11 @@ public class IaasApiConfig {
     @Bean
     InfrastructureAccessManager InfrastructureAccessManager() {
         return new InfrastructureAccessManagerImpl();
+    }
+
+    @Bean
+    AgentManager AgentManager() {
+        return new AgentManager();
     }
 
 }

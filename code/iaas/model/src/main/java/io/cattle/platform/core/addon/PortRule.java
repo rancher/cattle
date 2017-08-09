@@ -15,6 +15,9 @@ public class PortRule {
     Integer targetPort;
     String backendName;
     String selector;
+    String environment;
+    String region;
+    Integer weight;
     
     public enum Protocol {
         http,
@@ -124,4 +127,30 @@ public class PortRule {
         this.selector = selector;
     }
 
+    @Field(nullable = true)
+    public String getEnvironment() {
+        return environment;
+    }
+
+    public void setEnvironment(String environment) {
+        this.environment = environment;
+    }
+
+    @Field(nullable = true)
+    public String getRegion() {
+        return region;
+    }
+
+    public void setRegion(String region) {
+        this.region = region;
+    }
+
+    @Field(nullable = true, defaultValue = "1", min = 0, max = 256)
+    public Integer getWeight() {
+        return weight;
+    }
+
+    public void setWeight(Integer weight) {
+        this.weight = weight;
+    }
 }

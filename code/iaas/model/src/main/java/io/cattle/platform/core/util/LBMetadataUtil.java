@@ -27,6 +27,9 @@ public class LBMetadataUtil {
         public Integer priority = 0;
         public String backend_name;
         public String selector;
+        public String region;
+        public String environment;
+        public Integer weight = 1;
 
         public MetadataPortRule(PortRule portRule, Service service, Stack stack) {
             this.source_port = portRule.getSourcePort();
@@ -46,6 +49,11 @@ public class LBMetadataUtil {
             this.backend_name = portRule.getBackendName();
             this.priority = portRule.getPriority();
             this.selector = portRule.getSelector();
+            this.region = portRule.getRegion();
+            this.environment = portRule.getEnvironment();
+            if (portRule.getWeight() != null) {
+                this.weight = portRule.getWeight();
+            }
         }
 
         public String getSelector() {
@@ -119,6 +127,31 @@ public class LBMetadataUtil {
         public void setBackend_name(String backend_name) {
             this.backend_name = backend_name;
         }
+
+        public String getRegion() {
+            return region;
+        }
+
+        public void setRegion(String region) {
+            this.region = region;
+        }
+
+        public String getEnvironment() {
+            return environment;
+        }
+
+        public void setEnvironment(String environment) {
+            this.environment = environment;
+        }
+
+        public Integer getWeight() {
+            return weight;
+        }
+
+        public void setWeight(Integer weight) {
+            this.weight = weight;
+        }
+
     }
 
     public static class LBConfigMetadataStyle {

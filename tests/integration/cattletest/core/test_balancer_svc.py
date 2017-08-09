@@ -774,3 +774,111 @@ def _resource_is_active(resource):
 
 def _resource_is_removed(resource):
     return resource.state == 'removed'
+
+
+def test_region_selector(client, image_uuid):
+    env = _create_stack(client)
+
+    labels = {'foo': "bar"}
+    launch_config = {"imageUuid": image_uuid, "labels": labels}
+
+    svc = client. \
+        create_service(name=random_str(),
+                       stackId=env.id,
+                       launchConfig=launch_config)
+
+    svc = client.wait_success(svc)
+
+    lb_launch_config = {"ports": [8289],
+                        "imageUuid": image_uuid}
+    hostname = "foo"
+    path = "bar"
+    port = 32
+    port_rule = {"hostname": hostname,
+                 "path": path, "sourcePort": port,
+                 "selector": "foo=bar",
+                 "region": "foo",
+                 "environment": "bar",
+                 "weight": 100}
+    port_rules = [port_rule]
+
+    lb_config = {"portRules": port_rules}
+
+    # create service
+    lb_svc = client. \
+        create_loadBalancerService(name=random_str(),
+                                   stackId=env.id,
+                                   launchConfig=lb_launch_config,
+                                   lbConfig=lb_config)
+    lb_svc = client.wait_success(lb_svc)
+
+    port_rule = lb_svc.lbConfig.portRules[0]
+    assert port_rule.region == 'foo'
+    assert port_rule.environment == 'bar'
+    assert port_rule.weight == 100
+
+    # validate service link is not created for the target service
+    # as the selector is external
+    links = client. \
+        list_serviceConsumeMap(serviceId=lb_svc.id,
+                               consumedServiceId=svc.id)
+    assert len(links) == 0
+
+    compose_config = env.exportconfig()
+
+    assert compose_config is not None
+    y = yaml.load(compose_config.rancherComposeConfig)
+    assert "lb_config" in y['services'][lb_svc.name]
+    lb = y['services'][lb_svc.name]["lb_config"]
+    assert lb is not None
+    assert len(lb["port_rules"]) == 1
+    rule = lb["port_rules"][0]
+    assert rule["region"] == "foo"
+    assert rule["environment"] == "bar"
+
+    client.wait_success(lb_svc.remove())
+
+
+def test_region_validation(client, image_uuid):
+    env = _create_stack(client)
+    lb_launch_config = {"ports": [8289],
+                        "imageUuid": image_uuid}
+
+    # missing environment
+    hostname = "foo"
+    path = "bar"
+    port = 32
+    port_rule = {"hostname": hostname,
+                 "path": path, "sourcePort": port,
+                 "selector": "foo=bar",
+                 "region": "foo",
+                 "weight": 100}
+    port_rules = [port_rule]
+    lb_config = {"portRules": port_rules}
+
+    with pytest.raises(ApiError) as e:
+        client. \
+            create_loadBalancerService(name=random_str(),
+                                       stackId=env.id,
+                                       launchConfig=lb_launch_config,
+                                       lbConfig=lb_config)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'MissingRequired'
+
+    # invalid weight
+    port_rule = {"hostname": hostname,
+                 "path": path, "sourcePort": port,
+                 "selector": "foo=bar",
+                 "region": "foo",
+                 "environment": "bar",
+                 "weight": 500}
+    port_rules = [port_rule]
+    lb_config = {"portRules": port_rules}
+    with pytest.raises(ApiError) as e:
+        client. \
+            create_loadBalancerService(name=random_str(),
+                                       stackId=env.id,
+                                       launchConfig=lb_launch_config,
+                                       lbConfig=lb_config)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'MaxLimitExceeded'

@@ -153,7 +153,8 @@ public class CoreModelConfig {
                 "lbTargetConfig",
                 "balancerServiceConfig",
                 "balancerTargetConfig",
-                "defaultNetwork,parent=network"
+                "defaultNetwork,parent=network",
+                "externalCredential"
                 ));
         typeSet.setPriority(Priority.PRE);
         return typeSet;

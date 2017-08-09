@@ -10,6 +10,7 @@ import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
 import static io.cattle.platform.core.model.tables.NetworkTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
+import static io.cattle.platform.core.model.tables.RegionTable.*;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
@@ -18,7 +19,9 @@ import static io.cattle.platform.core.model.tables.StackTable.*;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerLinkMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.ContainerMetaData;
+import io.cattle.platform.configitem.context.data.metadata.common.CredentialMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.DefaultMetaData;
+import io.cattle.platform.configitem.context.data.metadata.common.EnvironmentMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.HostMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.MetaHelperInfo;
 import io.cattle.platform.configitem.context.data.metadata.common.NetworkMetaData;
@@ -26,7 +29,9 @@ import io.cattle.platform.configitem.context.data.metadata.common.ServiceContain
 import io.cattle.platform.configitem.context.data.metadata.common.ServiceLinkMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.ServiceMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.StackMetaData;
+import io.cattle.platform.core.addon.ExternalCredential;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
+import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
@@ -35,9 +40,11 @@ import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.LoadBalancerInfoDao;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.IpAddress;
+import io.cattle.platform.core.model.Region;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.InstanceHostMapTable;
@@ -55,6 +62,7 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
+import io.cattle.platform.servicediscovery.service.RegionService;
 import io.cattle.platform.util.exception.ExceptionUtils;
 
 import java.io.OutputStream;
@@ -63,6 +71,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.inject.Inject;
 
@@ -86,6 +95,12 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
     LoadBalancerInfoDao lbInfoDao;
     @Inject
     JsonMapper jsonMapper;
+    @Inject
+    RegionService regionSvc;
+    @Inject
+    ObjectManager objectMgr;
+    @Inject
+    RegionService regionService;
 
     @Override
     public void fetchContainers(final MetaHelperInfo helperInfo,
@@ -402,9 +417,13 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
     }
 
     @Override
-    public void fetchSelf(HostMetaData selfHost, String version, OutputStream os) {
+    public void fetchSelf(Agent agent, HostMetaData selfHost, String version, OutputStream os, MetaHelperInfo helperInfo) {
         DefaultMetaData def = new DefaultMetaData(version, selfHost);
         writeToJson(os, def);
+        // add credentials to other environments
+        if (agent.getExternalId() == null) {
+            fetchCredentials(helperInfo, agent, os);
+        }
     }
 
     protected void fetchLaunchConfigInfo(final MetaHelperInfo helperInfo, final OutputStream os, Service service,
@@ -489,6 +508,13 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
     }
 
     @Override
+    public void fetchEnvironment(final MetaHelperInfo helperInfo, final OutputStream os) {
+        Account env = helperInfo.getAccount();
+        EnvironmentMetaData data = new EnvironmentMetaData(env.getName(), env.getUuid(), helperInfo.getRegionName());
+        writeToJson(os, data);
+    }
+
+    @Override
     public void fetchStacks(final MetaHelperInfo helperInfo, final OutputStream os) {
         Condition condition = STACK.ACCOUNT_ID.eq(helperInfo.getAccount().getId());
         if (!helperInfo.getOtherAccountsServicesIds().isEmpty()) {
@@ -514,6 +540,11 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
 
     @Override
     public void fetchServiceLinks(final MetaHelperInfo helperInfo, final OutputStream os) {
+        fetchInternalServiceLinks(helperInfo, os);
+        fetchExternalServiceLinks(helperInfo, os);
+    }
+
+    private void fetchInternalServiceLinks(final MetaHelperInfo helperInfo, final OutputStream os) {
         final ServiceTable consumedService = SERVICE.as("consumed_service");
         Condition condition = SERVICE_CONSUME_MAP.ACCOUNT_ID.eq(helperInfo.getAccount().getId());
         if (!helperInfo.getOtherAccountsServicesIds().isEmpty()) {
@@ -533,19 +564,46 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .and(SERVICE.REMOVED.isNull())
                 .and(consumedService.REMOVED.isNull())
                 .and(STACK.REMOVED.isNull())
+                .and(SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID.isNotNull())
                 .and(condition)
                 .fetchInto(new RecordHandler<Record4<String, String, String, String>>() {
                     @Override
                     public void next(Record4<String, String, String, String> record) {
                         String consumeMapName = record.getValue(SERVICE_CONSUME_MAP.NAME);
                         String serviceUUID = record.getValue(SERVICE.UUID);
-                        String stackName = record.getValue(STACK.NAME);
+                        String consumedStackName = record.getValue(STACK.NAME);
                         String consumedServiceName = record.getValue(consumedService.NAME);
                         String linkAlias = !StringUtils.isEmpty(consumeMapName) ? consumeMapName : consumedServiceName;
-
                         ServiceLinkMetaData data = new ServiceLinkMetaData(serviceUUID,
-                                consumedServiceName,
-                                stackName, linkAlias);
+                                consumedStackName + "/" + consumedServiceName, linkAlias);
+                        writeToJson(os, data);
+                    }
+                });
+    }
+
+    private void fetchExternalServiceLinks(final MetaHelperInfo helperInfo, final OutputStream os) {
+        Condition condition = SERVICE_CONSUME_MAP.ACCOUNT_ID.eq(helperInfo.getAccount().getId());
+        if (!helperInfo.getOtherAccountsServicesIds().isEmpty()) {
+            condition = SERVICE_CONSUME_MAP.ACCOUNT_ID.eq(helperInfo.getAccount().getId()).or(
+                    SERVICE_CONSUME_MAP.SERVICE_ID.in(helperInfo.getOtherAccountsServicesIds()));
+        }
+        create()
+                .select(SERVICE_CONSUME_MAP.NAME, SERVICE_CONSUME_MAP.CONSUMED_SERVICE, SERVICE.UUID)
+                .from(SERVICE_CONSUME_MAP)
+                .join(SERVICE)
+                .on(SERVICE_CONSUME_MAP.SERVICE_ID.eq(SERVICE.ID))
+                .where(SERVICE_CONSUME_MAP.REMOVED.isNull())
+                .and(SERVICE.REMOVED.isNull())
+                .and(SERVICE_CONSUME_MAP.CONSUMED_SERVICE.isNotNull())
+                .and(condition)
+                .fetchInto(new RecordHandler<Record3<String, String, String>>() {
+                    @Override
+                    public void next(Record3<String, String, String> record) {
+                        String serviceUUID = record.getValue(SERVICE.UUID);
+                        String linkAlias = record.getValue(SERVICE_CONSUME_MAP.NAME);
+                        String consumedService = record.getValue(SERVICE_CONSUME_MAP.CONSUMED_SERVICE);
+                        ServiceLinkMetaData data = new ServiceLinkMetaData(serviceUUID,
+                                consumedService, linkAlias);
                         writeToJson(os, data);
                     }
                 });
@@ -582,5 +640,27 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                         writeToJson(os, data);
                     }
                 });
+    }
+
+    @Override
+    public void fetchCredentials(MetaHelperInfo helperInfo, Agent agent, OutputStream os) {
+        List<Region> regions = objectMgr.find(Region.class, REGION.REMOVED, (Object) null);
+        if (regions.isEmpty()) {
+            return;
+        }
+        Map<String, Region> regionsMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        for (Region region : regions) {
+            if (region.getRemoved() != null) {
+                continue;
+            }
+            regionsMap.put(region.getName(), region);
+        }
+        regionService.reconcileAgentExternalCredentials(agent, helperInfo.getAccount());
+        List<ExternalCredential> creds = DataAccessor.fieldObjectList(agent, AccountConstants.FIELD_EXTERNAL_CREDENTIALS, ExternalCredential.class, jsonMapper);
+        for (ExternalCredential cred : creds) {
+            Region region = regionsMap.get(cred.getRegionName());
+            CredentialMetaData meta = new CredentialMetaData(region.getUrl(), cred.getPublicValue(), cred.getSecretValue());
+            writeToJson(os, meta);
+        }
     }
 }

@@ -143,8 +143,11 @@ public class LoadBalancerServiceCreatePostListener extends AbstractObjectProcess
             if (targetService.getId().equals(service.getId())) {
                 continue;
             }
-            if (sdService.isSelectorLinkMatch(rule.getSelector(), targetService)) {
-                svcIds.add(targetService.getId());
+            
+            if (validateSelector(rule)) {
+                if (sdService.isSelectorLinkMatch(rule.getSelector(), targetService)) {
+                    svcIds.add(targetService.getId());
+                }
             }
             if (sdService.isSelectorLinkMatch(targetService.getSelectorLink(), service)) {
                 svcIds.add(targetService.getId());
@@ -154,13 +157,25 @@ public class LoadBalancerServiceCreatePostListener extends AbstractObjectProcess
     }
 
 
+    private boolean validateSelector(PortRule rule) {
+        // generate links only for port rules with empty environment and region fields
+        if (StringUtils.isEmpty(rule.getSelector())) {
+            return false;
+        }
+        
+        if (StringUtils.isEmpty( rule.getRegion()) && StringUtils.isEmpty(rule.getEnvironment())) {
+            return true;
+        }
+        return false;
+    }
+    
     protected void removeServiceLink(Service service, Long targetServiceId) {
-        ServiceLink link = new ServiceLink(targetServiceId, null);
+        ServiceLink link = new ServiceLink(targetServiceId, null, null);
         sdService.removeServiceLink(service, link);
     }
 
     protected void addServiceLink(Service service, Long targetServiceId) {
-        ServiceLink link = new ServiceLink(targetServiceId, null);
+        ServiceLink link = new ServiceLink(targetServiceId, null, null);
         sdService.addServiceLink(service, link);
     }
 

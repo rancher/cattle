@@ -536,26 +536,6 @@ def _create_members(user_clients, members):
     return newMembers
 
 
-def test_project_links(admin_user_client):
-    a1 = admin_user_client.create_project()
-    a1 = admin_user_client.wait_success(a1)
-    a2 = admin_user_client.create_project()
-    a2 = admin_user_client.wait_success(a2)
-    a3 = admin_user_client.create_project(projectLinks=[a1.id, a2.id])
-    assert a3.projectLinks is not None
-    assert len(a3.projectLinks) == 2
-    a3 = admin_user_client.wait_success(a3)
-
-    a3 = admin_user_client.update(a3, projectLinks=[a1.id])
-    assert a3.projectLinks is not None
-    assert len(a3.projectLinks) == 1
-    a3 = admin_user_client.wait_success(a3)
-
-    a1 = admin_user_client.wait_success(a1.deactivate())
-    admin_user_client.wait_success(a1.remove())
-    wait_for(lambda: len(admin_user_client.reload(a3).projectLinks) == 0)
-
-
 @pytest.fixture()
 def set_member_roles_setting(admin_user_client):
     yield

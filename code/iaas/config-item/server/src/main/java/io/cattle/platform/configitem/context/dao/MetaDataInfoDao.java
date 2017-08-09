@@ -3,6 +3,7 @@ package io.cattle.platform.configitem.context.dao;
 import io.cattle.platform.configitem.context.data.metadata.common.HostMetaData;
 import io.cattle.platform.configitem.context.data.metadata.common.MetaHelperInfo;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
 
 import java.io.OutputStream;
@@ -20,7 +21,7 @@ public interface MetaDataInfoDao {
 
     void fetchHosts(MetaHelperInfo helperInfo, OutputStream os);
 
-    void fetchSelf(HostMetaData selfHost, String version, OutputStream os);
+    void fetchSelf(Agent agent, HostMetaData selfHost, String version, OutputStream os, MetaHelperInfo helperInfo);
 
     void fetchServices(MetaHelperInfo helperInfo, OutputStream os);
 
@@ -35,4 +36,8 @@ public interface MetaDataInfoDao {
 
     Map<Long, HostMetaData> getHostIdToHostMetadata(Account account, Map<Long, Account> accounts,
             Set<Long> linkedServicesIds);
+
+    void fetchEnvironment(MetaHelperInfo helperInfo, OutputStream os);
+
+    void fetchCredentials(MetaHelperInfo helperInfo, Agent agent, OutputStream os);
 }

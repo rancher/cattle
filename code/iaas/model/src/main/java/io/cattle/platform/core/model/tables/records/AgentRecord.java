@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "agent", schema = "cattle")
-public class AgentRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.AgentRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Boolean, java.lang.Long>, io.cattle.platform.core.model.Agent {
+public class AgentRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.AgentRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Boolean, java.lang.Long, java.lang.String>, io.cattle.platform.core.model.Agent {
 
-	private static final long serialVersionUID = 908106523;
+	private static final long serialVersionUID = -176558183;
 
 	/**
 	 * Setter for <code>cattle.agent.id</code>.
@@ -254,6 +254,23 @@ public class AgentRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 		return (java.lang.Long) getValue(13);
 	}
 
+	/**
+	 * Setter for <code>cattle.agent.external_id</code>.
+	 */
+	@Override
+	public void setExternalId(java.lang.String value) {
+		setValue(14, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.agent.external_id</code>.
+	 */
+	@javax.persistence.Column(name = "external_id", length = 128)
+	@Override
+	public java.lang.String getExternalId() {
+		return (java.lang.String) getValue(14);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -267,23 +284,23 @@ public class AgentRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	}
 
 	// -------------------------------------------------------------------------
-	// Record14 type implementation
+	// Record15 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Boolean, java.lang.Long> fieldsRow() {
-		return (org.jooq.Row14) super.fieldsRow();
+	public org.jooq.Row15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Boolean, java.lang.Long, java.lang.String> fieldsRow() {
+		return (org.jooq.Row15) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row14<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Boolean, java.lang.Long> valuesRow() {
-		return (org.jooq.Row14) super.valuesRow();
+	public org.jooq.Row15<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.String, java.lang.Boolean, java.lang.Long, java.lang.String> valuesRow() {
+		return (org.jooq.Row15) super.valuesRow();
 	}
 
 	/**
@@ -402,6 +419,14 @@ public class AgentRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.lang.String> field15() {
+		return io.cattle.platform.core.model.tables.AgentTable.AGENT.EXTERNAL_ID;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -508,6 +533,14 @@ public class AgentRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	@Override
 	public java.lang.Long value14() {
 		return getZoneId();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.String value15() {
+		return getExternalId();
 	}
 
 	/**
@@ -640,7 +673,16 @@ public class AgentRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	 * {@inheritDoc}
 	 */
 	@Override
-	public AgentRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.Boolean value13, java.lang.Long value14) {
+	public AgentRecord value15(java.lang.String value) {
+		setExternalId(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public AgentRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.String value12, java.lang.Boolean value13, java.lang.Long value14, java.lang.String value15) {
 		return this;
 	}
 
@@ -667,6 +709,7 @@ public class AgentRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 		setUri(from.getUri());
 		setManagedConfig(from.getManagedConfig());
 		setZoneId(from.getZoneId());
+		setExternalId(from.getExternalId());
 	}
 
 	/**
@@ -692,7 +735,7 @@ public class AgentRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 	/**
 	 * Create a detached, initialised AgentRecord
 	 */
-	public AgentRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String uri, java.lang.Boolean managedConfig, java.lang.Long zoneId) {
+	public AgentRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.String uri, java.lang.Boolean managedConfig, java.lang.Long zoneId, java.lang.String externalId) {
 		super(io.cattle.platform.core.model.tables.AgentTable.AGENT);
 
 		setValue(0, id);
@@ -709,5 +752,6 @@ public class AgentRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.pla
 		setValue(11, uri);
 		setValue(12, managedConfig);
 		setValue(13, zoneId);
+		setValue(14, externalId);
 	}
 }
