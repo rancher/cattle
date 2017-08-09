@@ -208,6 +208,7 @@ public class AccountDaoImpl extends AbstractCoreDao implements AccountDao {
         List<Long> linkedToAccounts = Arrays.asList(create().select(ACCOUNT_LINK.LINKED_ACCOUNT_ID)
                 .from(ACCOUNT_LINK)
                 .where(ACCOUNT_LINK.ACCOUNT_ID.eq(accountId)
+                        .and(ACCOUNT_LINK.LINKED_ACCOUNT_ID.isNotNull())
                         .and(ACCOUNT_LINK.REMOVED.isNull()))
                 .fetch().intoArray(ACCOUNT_LINK.LINKED_ACCOUNT_ID));
 

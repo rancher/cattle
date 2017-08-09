@@ -1,0 +1,26 @@
+{
+    "resourceFields": {
+        "name":{
+            "type": "string",
+            "required": true,
+            "nullable": false,
+            "unique": true
+        },
+        "publicValue":{
+            "type": "string",
+            "required": true,
+            "nullable": false
+        },
+        "secretValue":{
+            "type": "string",
+            "required": true,
+            "nullable": false
+        },
+        "local":{
+            "type": "boolean",
+            "required": false,
+            "nullable": true,
+            "default": false
+        }
+    }
+}

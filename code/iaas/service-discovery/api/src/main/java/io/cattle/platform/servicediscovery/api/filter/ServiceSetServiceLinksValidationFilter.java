@@ -58,11 +58,24 @@ public class ServiceSetServiceLinksValidationFilter extends AbstractDefaultResou
                             ServiceConstants.FIELD_SERVICE_ID + " and link name combination");
                 }
                 serviceIdAndLinkName.add(serviceLink.getUuid());
-                Service consumedService = objectManager.loadResource(Service.class, serviceLink.getServiceId());
-                if (service == null || consumedService == null) {
-                    ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_REFERENCE,
-                            ServiceConstants.FIELD_SERVICE_ID);
+                if (serviceLink.getServiceId() != null) {
+                    Service consumedService = objectManager.loadResource(Service.class, serviceLink.getServiceId());
+                    if (service == null || consumedService == null) {
+                        ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_REFERENCE,
+                                ServiceConstants.FIELD_SERVICE_ID);
+                    }
+                } else {
+                    if (serviceLink.getService() == null) {
+                        ValidationErrorCodes.throwValidationError(ValidationErrorCodes.MISSING_REQUIRED,
+                                ServiceConstants.FIELD_SERVICE_ID);
+                    }
+                    // external service link should be aliased
+                    if (serviceLink.getName() == null) {
+                        ValidationErrorCodes.throwValidationError(ValidationErrorCodes.MISSING_REQUIRED,
+                                ServiceConstants.FIELD_SERVICE_LINK_NAME);
+                    }
                 }
+
                 validateLinkName(serviceLink.getName());
             }
         }

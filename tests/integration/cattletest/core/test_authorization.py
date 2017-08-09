@@ -222,6 +222,7 @@ def test_user_types(user_client, adds=set(), removes=set()):
         'scheduledUpgrade',
         'genericObject',
         'hostTemplate',
+        'region',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -471,6 +472,9 @@ def test_admin_types(admin_user_client, adds=set(), removes=set()):
         'processSummary',
         'scheduledUpgrade',
         'hostTemplate',
+        'region',
+        'accountLink',
+        'externalCredential',
     }
     types.update(adds)
     types.difference_update(removes)
@@ -1774,11 +1778,17 @@ def test_agent_auth(admin_user_client, user_client, project_client):
     assert 'agent' not in user_client.schema.types
     assert 'agent' not in project_client.schema.types
 
-    auth_check(admin_user_client.schema, 'agent', 'r', {
-        'managedConfig': 'r',
-        'uri': 'r',
+    auth_check(admin_user_client.schema, 'agent', 'crud', {
+        'managedConfig': 'cr',
+        'uri': 'cr',
         'accountId': 'r',
         'data': 'r',
+        'publicValue': 'cr',
+        'secretValue': 'cro',
+        'labels': 'cr',
+        'externalId': 'cr',
+        'agentResourcesAccountId': 'cr',
+        'externalCredentials': 'cr',
     })
 
 
@@ -2515,7 +2525,8 @@ def test_svc_discovery_consume_map(admin_user_client, user_client,
         'consumedServiceId': 'r',
         'ports': 'r',
         'data': 'r',
-        'accountId': 'r'
+        'accountId': 'r',
+        'consumedService': 'r',
     })
 
     auth_check(user_client.schema, 'serviceConsumeMap', 'r', {
@@ -2523,7 +2534,8 @@ def test_svc_discovery_consume_map(admin_user_client, user_client,
         'serviceId': 'r',
         'consumedServiceId': 'r',
         'ports': 'r',
-        'accountId': 'r'
+        'accountId': 'r',
+        'consumedService': 'r',
     })
 
     auth_check(project_client.schema, 'serviceConsumeMap', 'r', {
@@ -2532,6 +2544,7 @@ def test_svc_discovery_consume_map(admin_user_client, user_client,
         'consumedServiceId': 'r',
         'ports': 'r',
         'accountId': 'r',
+        'consumedService': 'r',
     })
 
 

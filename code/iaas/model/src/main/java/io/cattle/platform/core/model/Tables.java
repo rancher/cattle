@@ -279,6 +279,11 @@ public class Tables {
 	public static final io.cattle.platform.core.model.tables.ProjectTemplateTable PROJECT_TEMPLATE = io.cattle.platform.core.model.tables.ProjectTemplateTable.PROJECT_TEMPLATE;
 
 	/**
+	 * The table cattle.region
+	 */
+	public static final io.cattle.platform.core.model.tables.RegionTable REGION = io.cattle.platform.core.model.tables.RegionTable.REGION;
+
+	/**
 	 * The table cattle.resource_pool
 	 */
 	public static final io.cattle.platform.core.model.tables.ResourcePoolTable RESOURCE_POOL = io.cattle.platform.core.model.tables.ResourcePoolTable.RESOURCE_POOL;

@@ -61,6 +61,9 @@ import io.cattle.platform.servicediscovery.api.util.selector.SelectorUtils;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.util.exception.ResourceExhaustionException;
 
+import io.github.ibuildthecloud.gdapi.condition.Condition;
+import io.github.ibuildthecloud.gdapi.condition.ConditionType;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -175,7 +178,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         List<ServiceLink> linksToCreate = new ArrayList<>();
 
         for (ServiceConsumeMap map : consumeMapDao.findConsumingServices(fromService.getId())) {
-            ServiceLink link = new ServiceLink(toService.getId(), map.getName());
+            ServiceLink link = new ServiceLink(toService.getId(), map.getName(), null);
 
             link.setConsumingServiceId(map.getServiceId());
             linksToCreate.add(link);
@@ -933,7 +936,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
         // add all accounts that are linked to service's account
         List<? extends AccountLink> linkedAccounts = objectManager.find(AccountLink.class,
                 ACCOUNT_LINK.ACCOUNT_ID, service.getAccountId(),
-                ACCOUNT_LINK.REMOVED, null);
+                ACCOUNT_LINK.REMOVED, null, ACCOUNT_LINK.LINKED_ACCOUNT_ID, new Condition(ConditionType.NOTNULL));
         for (AccountLink linkedAccount : linkedAccounts) {
             targetAccountIds.add(linkedAccount.getLinkedAccountId());
         }
@@ -956,7 +959,7 @@ public class ServiceDiscoveryServiceImpl implements ServiceDiscoveryService {
     }
 
     protected void addServiceLink(Service service, Service targetService) {
-        ServiceLink link = new ServiceLink(targetService.getId(), null);
+        ServiceLink link = new ServiceLink(targetService.getId(), null, null);
         addServiceLink(service, link);
     }
 }

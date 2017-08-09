@@ -32,6 +32,7 @@ import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
+
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.ArrayList;
@@ -46,7 +47,7 @@ import javax.inject.Named;
 import org.jooq.Record;
 import org.jooq.Record2;
 import org.jooq.Record3;
-import org.jooq.Record6;
+import org.jooq.Record7;
 import org.jooq.RecordHandler;
 
 @Named
@@ -155,30 +156,33 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
     @Override
     public Map<Long, List<ServiceLink>> getServiceLinks(List<Long> ids) {
         final Map<Long, List<ServiceLink>> result = new HashMap<>();
-        create().select(SERVICE_CONSUME_MAP.NAME, SERVICE_CONSUME_MAP.SERVICE_ID, SERVICE.ID,
+        create().select(SERVICE_CONSUME_MAP.NAME, SERVICE_CONSUME_MAP.SERVICE_ID, SERVICE_CONSUME_MAP.CONSUMED_SERVICE, SERVICE.ID,
                 SERVICE.NAME, STACK.ID, STACK.NAME)
             .from(SERVICE_CONSUME_MAP)
-            .join(SERVICE)
+                .leftOuterJoin(SERVICE)
                 .on(SERVICE.ID.eq(SERVICE_CONSUME_MAP.CONSUMED_SERVICE_ID))
-            .join(STACK)
+                .leftOuterJoin(STACK)
                 .on(STACK.ID.eq(SERVICE.STACK_ID))
             .where(SERVICE_CONSUME_MAP.SERVICE_ID.in(ids)
                     .and(SERVICE_CONSUME_MAP.REMOVED.isNull()))
-            .fetchInto(new RecordHandler<Record6<String, Long, Long, String, Long, String>>(){
+                .fetchInto(new RecordHandler<Record7<String, Long, String, Long, String, Long, String>>() {
                 @Override
-                public void next(Record6<String, Long, Long, String, Long, String> record) {
+                    public void next(Record7<String, Long, String, Long, String, Long, String> record) {
                     Long serviceId = record.getValue(SERVICE_CONSUME_MAP.SERVICE_ID);
                     List<ServiceLink> links = result.get(serviceId);
                     if (links == null) {
                         links = new ArrayList<>();
                         result.put(serviceId, links);
                     }
+                    
+                    String consumedServiceName = (record.getValue(SERVICE_CONSUME_MAP.CONSUMED_SERVICE)) != null ? record.getValue(SERVICE_CONSUME_MAP.CONSUMED_SERVICE) : record.getValue(SERVICE.NAME);
+                    
                     links.add(new ServiceLink(
-                            record.getValue(SERVICE_CONSUME_MAP.NAME),
-                            record.getValue(SERVICE.NAME),
-                            record.getValue(SERVICE.ID),
-                            record.getValue(STACK.ID),
-                            record.getValue(STACK.NAME)));
+                                record.getValue(SERVICE_CONSUME_MAP.NAME),
+                                consumedServiceName,
+                                record.getValue(SERVICE.ID),
+                                record.getValue(STACK.ID),
+                                record.getValue(STACK.NAME)));
                 }
             });
         return result;

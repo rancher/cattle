@@ -2,11 +2,11 @@ package io.cattle.platform.agent.instance.dao.impl;
 
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 import static io.cattle.platform.core.model.tables.CredentialTable.*;
+import static io.cattle.platform.core.model.tables.HostTable.*;
+import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceLabelMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.LabelTable.*;
-import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
-import static io.cattle.platform.core.model.tables.HostTable.*;
 
 import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.core.constants.AgentConstants;
@@ -21,6 +21,9 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 
+import io.github.ibuildthecloud.gdapi.condition.Condition;
+import io.github.ibuildthecloud.gdapi.condition.ConditionType;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,6 +36,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jooq.Record2;
 import org.jooq.RecordHandler;
 import org.slf4j.Logger;
@@ -164,5 +168,25 @@ public class AgentInstanceDaoImpl extends AbstractJooqDao implements AgentInstan
                         .and(INSTANCE.STATE.in(InstanceConstants.STATE_RUNNING, InstanceConstants.STATE_STARTING)))
                 .orderBy(INSTANCE.AGENT_ID.asc())
                 .fetch().intoArray(INSTANCE.AGENT_ID));
+    }
+
+    @Override
+    public List<Long> getExternalAgentProvider(String providedServiceLabel, long accountId) {
+        List<Agent> agents = objectManager.find(Agent.class, AGENT.EXTERNAL_ID, new Condition(ConditionType.NOTNULL), AGENT.REMOVED, null);
+        List<Long> agentIds = new ArrayList<>();
+        for (Agent agent : agents) {
+            Long resourceAccountId = DataAccessor.fieldLong(agent, AgentConstants.DATA_AGENT_RESOURCES_ACCOUNT_ID);
+            if (resourceAccountId == null || resourceAccountId.longValue() != accountId) {
+                continue;
+            }
+            Map<String, Object> labels = DataAccessor.fieldMap(agent, InstanceConstants.FIELD_LABELS);
+            for (String key : labels.keySet()) {
+                if (StringUtils.equals(providedServiceLabel, key)) {
+                    agentIds.add(agent.getId());
+                    break;
+                }
+            }
+        }
+        return agentIds;
     }
 }

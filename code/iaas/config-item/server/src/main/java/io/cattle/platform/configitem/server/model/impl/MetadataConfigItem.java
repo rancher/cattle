@@ -1,12 +1,14 @@
 package io.cattle.platform.configitem.server.model.impl;
 
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.AgentTable.*;
 
 import io.cattle.platform.configitem.context.impl.ServiceMetadataInfoFactory;
 import io.cattle.platform.configitem.registry.ConfigItemRegistry;
 import io.cattle.platform.configitem.server.model.ConfigItem;
 import io.cattle.platform.configitem.server.model.Request;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
+import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.object.ObjectManager;
 import io.github.ibuildthecloud.gdapi.util.RequestUtils;
@@ -43,12 +45,9 @@ public class MetadataConfigItem extends AbstractConfigItem {
 
     @Override
     public void handleRequest(final Request req) throws IOException {
+        Agent agent = objectManager.findAny(Agent.class, AGENT.ID, req.getClient().getResourceId());
         Instance instance = objectManager.findAny(Instance.class,
                 INSTANCE.AGENT_ID, req.getClient().getResourceId());
-        if (instance == null) {
-            return;
-        }
-
         Object obj = req.getParams().get("client");
         if (!"v2".equals(RequestUtils.makeSingular(obj))) {
             req.setResponseCode(Request.NOT_FOUND);
@@ -62,7 +61,7 @@ public class MetadataConfigItem extends AbstractConfigItem {
             return;
         }
 
-        factory.writeMetadata(instance, new Callable<String>() {
+        factory.writeMetadata(instance, agent, new Callable<String>() {
             @Override
             public String call() throws Exception {
                 return getVersion(req);

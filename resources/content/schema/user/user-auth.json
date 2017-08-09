@@ -707,6 +707,9 @@
         "portRule.targetPort": "cr",
         "portRule.backendName": "cr",
         "portRule.selector": "cr",
+        "portRule.environment": "cr",
+        "portRule.region": "cr",
+        "portRule.weight": "cr",
 
         "lbTargetConfig" : "r",
         "lbTargetConfig.portRules" : "cru",
@@ -754,6 +757,7 @@
         "serviceConsumeMap.serviceId" : "r",
         "serviceConsumeMap.consumedServiceId" : "r",
         "serviceConsumeMap.ports" : "r",
+        "serviceConsumeMap.consumedService": "r",
 
         "serviceExposeMap" : "r",
         "serviceExposeMap.instanceId" : "r",
@@ -885,6 +889,7 @@
         "serviceLink" : "cr",
         "serviceLink.serviceId" : "cr",
         "serviceLink.name" : "cr",
+        "serviceLink.service": "cr",
 
         "addOutputsInput" : "r",
         "addOutputsInput.outputs" : "cr",
@@ -1044,6 +1049,11 @@
         "hostTemplate.secretValues" : "cro",
         "hostTemplate.driver" : "cr",
         "hostTemplate.flavorPrefix" : "cr",
+
+        "region": "r",
+        "region.url" : "r",
+        "region.local" : "r",
+        "region.name" : "r",
 
         "end" : ""
     }

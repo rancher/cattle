@@ -121,6 +121,7 @@ import io.cattle.platform.servicediscovery.service.impl.AgentServiceLookup;
 import io.cattle.platform.servicediscovery.service.impl.GlobalHostActivateServiceLookup;
 import io.cattle.platform.servicediscovery.service.impl.HostServiceLookup;
 import io.cattle.platform.servicediscovery.service.impl.InstanceServiceLookup;
+import io.cattle.platform.servicediscovery.service.impl.RegionServiceImpl;
 import io.cattle.platform.servicediscovery.service.impl.ServiceDiscoveryServiceImpl;
 import io.cattle.platform.servicediscovery.service.impl.SkipServiceLookup;
 import io.cattle.platform.servicediscovery.upgrade.impl.UpgradeManagerImpl;
@@ -138,6 +139,7 @@ import io.cattle.platform.task.dao.impl.TaskDaoImpl;
 import io.cattle.platform.task.eventing.impl.TaskManagerEventListenerImpl;
 import io.cattle.platform.task.impl.TaskManagerImpl;
 import io.cattle.platform.token.impl.JwtTokenServiceImpl;
+
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.json.JacksonMapper;
 import io.github.ibuildthecloud.gdapi.model.Transformer;
@@ -683,6 +685,11 @@ public class SystemServicesConfig {
     @Bean
     ServiceDiscoveryServiceImpl ServiceDiscoveryServiceImpl() {
         return new ServiceDiscoveryServiceImpl();
+    }
+
+    @Bean
+    RegionServiceImpl RegionServiceImpl() {
+        return new RegionServiceImpl();
     }
 
     @Bean

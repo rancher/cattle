@@ -136,6 +136,10 @@ public class ServiceValidationFilter extends AbstractDefaultResourceManagerFilte
                 if (!emptyService && rule.getTargetPort() == null) {
                     throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED, "targetPort");
                 }
+
+                if (!StringUtils.isEmpty(rule.getRegion()) && StringUtils.isEmpty(rule.getEnvironment())) {
+                    throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED, "environment");
+                }
             }
         }
     }

@@ -9,7 +9,12 @@
         },
         "serviceId": {
             "type": "reference[service]",
-            "required": true,
+            "required": false,
+            "nullable": false
+        },
+        "service": {
+            "type": "string",
+            "required": false,
             "nullable": false
         }
     }

@@ -23,6 +23,12 @@
         "project.name": "cr",
         "project.description": "cr",
         "hostTemplate.secretValues": "cr",
+        "accountLink" : "crd",
+        "accountLink.linkedAccount" : "cr",
+        "accountLink.linkedRegionId" : "cr",
+        "accountLink.linkedRegion" : "cr",
+        "accountLink.accountId" : "cr",
+        "accountLink.external" : "cr",
         "end" : ""
     }
 }

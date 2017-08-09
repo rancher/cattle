@@ -31,6 +31,7 @@ public class AccountConstants {
     public static final String FIELD_ACCOUNT_LINKS = "projectLinks";
     public static final String FIELD_HOST_REMOVE_DELAY = "hostRemoveDelaySeconds";
     public static final String FIELD_SCHEDULED_UPGRADE_DELAY = "scheduledUpgradeDelayMinutes";
+    public static final String FIELD_EXTERNAL_CREDENTIALS = "externalCredentials";
 
     public static final DynamicStringProperty ACCOUNT_VERSION = ArchaiusUtil.getString("account.version");
     public static final String ACCOUNT_ID = ConstantsUtils.property(Account.class, "accountId");
@@ -61,6 +62,9 @@ public class AccountConstants {
     public static final String ORC_SWARM = "swarm";
     public static final String ORC_MESOS = "mesos";
     public static final String ORC_WINDOWS = "windows";
+
+    public static final String PROCESS_ACCOUNT_LINK_CREATE = "accountlink.create";
+    public static final String PROCESS_ACCOUNT_LINK_REMOVE = "accountlink.remove";
 
     public static ServicesPortRange getDefaultServicesPortRange() {
         PortRangeSpec spec = new PortRangeSpec(ENV_PORT_RANGE.get());

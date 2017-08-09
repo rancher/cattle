@@ -157,6 +157,17 @@ public interface ServiceConsumeMap extends java.io.Serializable {
 	@javax.persistence.Column(name = "account_id", precision = 19)
 	public java.lang.Long getAccountId();
 
+	/**
+	 * Setter for <code>cattle.service_consume_map.consumed_service</code>.
+	 */
+	public void setConsumedService(java.lang.String value);
+
+	/**
+	 * Getter for <code>cattle.service_consume_map.consumed_service</code>.
+	 */
+	@javax.persistence.Column(name = "consumed_service", length = 255)
+	public java.lang.String getConsumedService();
+
 	// -------------------------------------------------------------------------
 	// FROM and INTO
 	// -------------------------------------------------------------------------

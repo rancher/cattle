@@ -102,7 +102,12 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
 
     @Override
     public void removeServiceLink(Service service, ServiceLink serviceLink) {
-        ServiceConsumeMap map = consumeMapDao.findMapToRemove(service.getId(), serviceLink.getServiceId());
+        ServiceConsumeMap map = null;
+        if (serviceLink.getServiceId() != null) {
+            map = consumeMapDao.findMapToRemove(service.getId(), serviceLink.getServiceId());
+        } else {
+            map = consumeMapDao.findMapToRemove(service.getId(), serviceLink.getService());
+        }
 
         if (map != null) {
             objectProcessManager.scheduleProcessInstance(ServiceConstants.PROCESS_SERVICE_CONSUME_MAP_REMOVE,
@@ -666,20 +671,24 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
         List<String> externalLinksServices = new ArrayList<>();
         List<? extends ServiceConsumeMap> consumedServiceMaps = consumeMapDao.findConsumedServices(service.getId());
         for (ServiceConsumeMap consumedServiceMap : consumedServiceMaps) {
-            Service consumedService = objectManager.findOne(Service.class, SERVICE.ID,
-                    consumedServiceMap.getConsumedServiceId());
+            if (consumedServiceMap.getConsumedServiceId() != null) {
+                Service consumedService = objectManager.findOne(Service.class, SERVICE.ID,
+                        consumedServiceMap.getConsumedServiceId());
 
-            String linkName = consumedService.getName()
-                    + ":"
-                    + (!StringUtils.isEmpty(consumedServiceMap.getName()) ? consumedServiceMap.getName()
-                            : consumedService
-                    .getName());
-            if (servicesToExportIds.contains(consumedServiceMap.getConsumedServiceId())) {
-                serviceLinksWithNames.add(linkName);
-            } else if (!consumedService.getStackId().equals(service.getStackId())) {
-                Stack externalStack = objectManager.loadResource(Stack.class,
-                        consumedService.getStackId());
-                externalLinksServices.add(externalStack.getName() + "/" + linkName);
+                String linkName = consumedService.getName()
+                        + ":"
+                        + (!StringUtils.isEmpty(consumedServiceMap.getName()) ? consumedServiceMap.getName()
+                                : consumedService
+                                        .getName());
+                if (servicesToExportIds.contains(consumedServiceMap.getConsumedServiceId())) {
+                    serviceLinksWithNames.add(linkName);
+                } else if (!consumedService.getStackId().equals(service.getStackId())) {
+                    Stack externalStack = objectManager.loadResource(Stack.class,
+                            consumedService.getStackId());
+                    externalLinksServices.add(externalStack.getName() + "/" + linkName);
+                }
+            } else {
+                externalLinksServices.add(consumedServiceMap.getConsumedService() + ":" + consumedServiceMap.getName());
             }
         }
         if (!serviceLinksWithNames.isEmpty()) {

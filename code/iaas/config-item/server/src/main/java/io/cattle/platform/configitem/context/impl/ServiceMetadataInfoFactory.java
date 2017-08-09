@@ -3,6 +3,7 @@ package io.cattle.platform.configitem.context.impl;
 import static io.cattle.platform.core.model.tables.AccountLinkTable.*;
 import static io.cattle.platform.core.model.tables.AccountTable.*;
 import static io.cattle.platform.core.model.tables.InstanceHostMapTable.*;
+import static io.cattle.platform.core.model.tables.RegionTable.*;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.configitem.context.dao.MetaDataInfoDao;
@@ -13,15 +14,19 @@ import io.cattle.platform.configitem.model.ItemVersion;
 import io.cattle.platform.configitem.server.model.ConfigItem;
 import io.cattle.platform.configitem.server.model.Request;
 import io.cattle.platform.configitem.server.model.impl.ArchiveContext;
+import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.AccountLink;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
+import io.cattle.platform.core.model.Region;
 import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.lock.exception.FailedToAcquireLockException;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.util.exception.ExceptionUtils;
+
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.util.RequestUtils;
@@ -89,14 +94,22 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         // this method is never being called
     }
 
-    public void writeMetadata(final Instance instance, final Callable<String> version, final Request req) throws IOException {
-        if (instance == null) {
-            return;
+    public void writeMetadata(final Instance instance, final Agent agent, final Callable<String> version, final Request req) throws IOException {
+        Long hostId = null;
+        Long accountId = null;
+        if (instance != null) {
+            final InstanceHostMap hostMap = objectManager.findAny(InstanceHostMap.class, INSTANCE_HOST_MAP.INSTANCE_ID,
+                    instance.getId());
+            if (hostMap == null) {
+                return;
+            }
+            hostId = hostMap.getHostId();
+            accountId = instance.getAccountId();
+        } else {
+            accountId = DataAccessor.fieldLong(agent, AgentConstants.DATA_AGENT_RESOURCES_ACCOUNT_ID);
         }
 
-        final InstanceHostMap hostMap = objectManager.findAny(InstanceHostMap.class, INSTANCE_HOST_MAP.INSTANCE_ID,
-                instance.getId());
-        if (hostMap == null) {
+        if (accountId == null) {
             return;
         }
 
@@ -104,11 +117,12 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
             OutputStream os = req.getOutputStream();
             if (CACHE.get()) {
                 req.setContentType("application/octet-stream");
-                writeCachedGenericData(hostMap.getHostId(), instance, version, getRequestedVersion(req), os);
+                writeCachedGenericData(agent, hostId, accountId, version, getRequestedVersion(req), os);
             } else {
                 String itemVersion = version.call();
-                Map<Long, HostMetaData> hostIdToHostMetadata = writeGenericData(instance, os);
-                metaDataInfoDao.fetchSelf(hostIdToHostMetadata.get(hostMap.getHostId()), itemVersion, os);
+                Map<Long, HostMetaData> hostIdToHostMetadata = writeGenericData(agent, accountId, os);
+                metaDataInfoDao.fetchSelf(agent, hostIdToHostMetadata.get(hostId), itemVersion, os,
+                        fetchHelperData(objectManager.loadResource(Account.class, accountId)));
             }
 
         } catch (ExecutionException e) {
@@ -126,11 +140,11 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         return v == null ? "" : v;
     }
 
-    protected ReentrantLock doLock(final Instance instance) {
+    protected ReentrantLock doLock(final long accountId) {
         if (!CACHE_LOCK.get()) {
             return null;
         }
-        ReentrantLock lock = lockCache.getUnchecked(instance.getAccountId());
+        ReentrantLock lock = lockCache.getUnchecked(accountId);
         try {
             if (lock.tryLock(1, TimeUnit.MINUTES)) {
                 return lock;
@@ -138,7 +152,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
             throw new FailedToAcquireLockException(new LockDefinition() {
                 @Override
                 public String getLockId() {
-                    return "HOST.META." + instance.getAccountId();
+                    return "HOST.META." + accountId;
                 }
             });
         } catch (InterruptedException e) {
@@ -146,30 +160,30 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         }
     }
 
-    private void writeCachedGenericData(Long hostId, final Instance instance, final Callable<String> versionCallback,
+    private void writeCachedGenericData(Agent agent, Long hostId, final long accountId, final Callable<String> versionCallback,
             String clientRequestedVersion, OutputStream os) throws Exception {
         final String itemVersion;
         // Get version before lock
         String startItemVersion = versionCallback.call();
-        ReentrantLock lock = doLock(instance);
+        ReentrantLock lock = doLock(accountId);
         CacheData data = null;
         try {
-            itemVersion = determineItemVersion(instance.getAccountId(), startItemVersion, clientRequestedVersion, versionCallback);
-            data = cache.get(instance.getAccountId() + "/" + itemVersion, new Callable<CacheData>() {
+            itemVersion = determineItemVersion(accountId, startItemVersion, clientRequestedVersion, versionCallback);
+            data = cache.get(accountId + "/" + itemVersion, new Callable<CacheData>() {
                 @Override
                 public CacheData call() throws Exception {
                     long start = System.currentTimeMillis();
                     CacheData data = new CacheData();
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     DeflaterOutputStream gz = new DeflaterOutputStream(baos, new Deflater(Deflater.DEFAULT_COMPRESSION, true), true);
-                    data.hostIdToHostMetadata = writeGenericData(instance, gz);
+                    data.hostIdToHostMetadata = writeGenericData(agent, accountId, gz);
                     gz.flush();
                     data.bytes = baos.toByteArray();
                     log.debug("Generated [{}] in {}ms", itemVersion, System.currentTimeMillis()-start);
                     return data;
                 }
             });
-            latestVersion.put(instance.getAccountId(), itemVersion);
+            latestVersion.put(accountId, itemVersion);
         } finally {
             if (lock != null) {
                 lock.unlock();
@@ -178,7 +192,13 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
 
         IOUtils.write(data.bytes, os);
         try (DeflaterOutputStream gz = new DeflaterOutputStream(os, new Deflater(Deflater.DEFAULT_COMPRESSION, true), true)) {
-            metaDataInfoDao.fetchSelf(data.hostIdToHostMetadata.get(hostId), itemVersion, gz);
+            if (hostId != null) {
+                metaDataInfoDao.fetchSelf(agent, data.hostIdToHostMetadata.get(hostId), itemVersion, gz,
+                        fetchHelperData(objectManager.loadResource(Account.class, accountId)));
+            } else if (agent.getExternalId() != null) {
+                // for external agent, instance/host are null
+                metaDataInfoDao.fetchSelf(agent, null, itemVersion, gz, fetchHelperData(objectManager.loadResource(Account.class, accountId)));
+            }
         }
     }
 
@@ -217,8 +237,8 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         return result;
     }
 
-    private Map<Long, HostMetaData> writeGenericData(Instance instance, OutputStream os) {
-        MetaHelperInfo helperInfo = fetchHelperData(objectManager.loadResource(Account.class, instance.getAccountId()));
+    private Map<Long, HostMetaData> writeGenericData(Agent agent, long accountId, OutputStream os) {
+        MetaHelperInfo helperInfo = fetchHelperData(objectManager.loadResource(Account.class, accountId));
 
         // Metadata visible to the user
         metaDataInfoDao.fetchContainers(helperInfo, os);
@@ -231,9 +251,11 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         metaDataInfoDao.fetchServiceContainerLinks(helperInfo, os);
         metaDataInfoDao.fetchServiceLinks(helperInfo, os);
         metaDataInfoDao.fetchContainerLinks(helperInfo, os);
+        metaDataInfoDao.fetchEnvironment(helperInfo, os);
 
         return helperInfo.getHostIdToHostMetadata();
     }
+
 
     private MetaHelperInfo fetchHelperData(Account account) {
         Map<Long, Account> accounts = new HashMap<>();
@@ -248,7 +270,7 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         // fetch accounts/services that are linked TO your account
         accounts.put(account.getId(), account);
         List<? extends AccountLink> accountLinks = objectManager.find(AccountLink.class, ACCOUNT_LINK.ACCOUNT_ID,
-                account.getId(), ACCOUNT_LINK.REMOVED, null);
+                account.getId(), ACCOUNT_LINK.REMOVED, null, ACCOUNT_LINK.LINKED_ACCOUNT_ID, new Condition(ConditionType.NOTNULL));
         for (AccountLink accountLink : accountLinks) {
             Long accountId = accountLink.getLinkedAccountId();
             accounts.put(accountId, allAccountsMap.get(accountId));
@@ -269,9 +291,11 @@ public class ServiceMetadataInfoFactory extends AbstractAgentBaseContextFactory 
         linkedStackIds.addAll(map1.values());
         linkedServicesIds.addAll(map2.keySet());
         linkedStackIds.addAll(map2.values());
+        
+        Region region = objectManager.findAny(Region.class, REGION.LOCAL, true, REGION.REMOVED, null);
 
         return new MetaHelperInfo(account, accounts, linkedServicesIds, linkedStackIds,
-                metaDataInfoDao);
+                metaDataInfoDao, region);
     }
 
     private static class CacheData {

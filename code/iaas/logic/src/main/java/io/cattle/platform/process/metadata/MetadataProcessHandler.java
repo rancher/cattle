@@ -4,8 +4,10 @@ import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.agent.instance.service.AgentMetadataService;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.configitem.version.ConfigItemStatusManager;
+import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.HostIpAddressMap;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.InstanceHostMap;
@@ -17,6 +19,7 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessLogic;
 
@@ -55,9 +58,12 @@ public class MetadataProcessHandler extends AbstractObjectProcessLogic implement
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Object obj = getAccountObject(state.getResource());
-        Object accountId;
+        Object accountId = null;
         if (obj instanceof Account) {
             accountId = ObjectUtils.getId(obj);
+        } else if (obj instanceof Agent) {
+            Agent agent = (Agent) obj;
+            accountId = DataAccessor.fieldLong(agent, AgentConstants.DATA_AGENT_RESOURCES_ACCOUNT_ID);
         } else {
             accountId = ObjectUtils.getAccountId(obj);
         }

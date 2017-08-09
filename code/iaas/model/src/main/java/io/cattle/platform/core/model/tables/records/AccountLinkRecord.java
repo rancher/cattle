@@ -11,9 +11,9 @@ package io.cattle.platform.core.model.tables.records;
 @java.lang.SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @javax.persistence.Entity
 @javax.persistence.Table(name = "account_link", schema = "cattle")
-public class AccountLinkRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.AccountLinkRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record12<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long>, io.cattle.platform.core.model.AccountLink {
+public class AccountLinkRecord extends org.jooq.impl.UpdatableRecordImpl<io.cattle.platform.core.model.tables.records.AccountLinkRecord> implements io.cattle.platform.db.jooq.utils.TableRecordJaxb, org.jooq.Record16<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.Boolean>, io.cattle.platform.core.model.AccountLink {
 
-	private static final long serialVersionUID = 770451770;
+	private static final long serialVersionUID = -1149966441;
 
 	/**
 	 * Setter for <code>cattle.account_link.id</code>.
@@ -220,6 +220,74 @@ public class AccountLinkRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 		return (java.lang.Long) getValue(11);
 	}
 
+	/**
+	 * Setter for <code>cattle.account_link.linked_account</code>.
+	 */
+	@Override
+	public void setLinkedAccount(java.lang.String value) {
+		setValue(12, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.account_link.linked_account</code>.
+	 */
+	@javax.persistence.Column(name = "linked_account", length = 255)
+	@Override
+	public java.lang.String getLinkedAccount() {
+		return (java.lang.String) getValue(12);
+	}
+
+	/**
+	 * Setter for <code>cattle.account_link.linked_region_id</code>.
+	 */
+	@Override
+	public void setLinkedRegionId(java.lang.Long value) {
+		setValue(13, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.account_link.linked_region_id</code>.
+	 */
+	@javax.persistence.Column(name = "linked_region_id", precision = 19)
+	@Override
+	public java.lang.Long getLinkedRegionId() {
+		return (java.lang.Long) getValue(13);
+	}
+
+	/**
+	 * Setter for <code>cattle.account_link.linked_region</code>.
+	 */
+	@Override
+	public void setLinkedRegion(java.lang.String value) {
+		setValue(14, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.account_link.linked_region</code>.
+	 */
+	@javax.persistence.Column(name = "linked_region", length = 255)
+	@Override
+	public java.lang.String getLinkedRegion() {
+		return (java.lang.String) getValue(14);
+	}
+
+	/**
+	 * Setter for <code>cattle.account_link.external</code>.
+	 */
+	@Override
+	public void setExternal(java.lang.Boolean value) {
+		setValue(15, value);
+	}
+
+	/**
+	 * Getter for <code>cattle.account_link.external</code>.
+	 */
+	@javax.persistence.Column(name = "external", precision = 1)
+	@Override
+	public java.lang.Boolean getExternal() {
+		return (java.lang.Boolean) getValue(15);
+	}
+
 	// -------------------------------------------------------------------------
 	// Primary key information
 	// -------------------------------------------------------------------------
@@ -233,23 +301,23 @@ public class AccountLinkRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	}
 
 	// -------------------------------------------------------------------------
-	// Record12 type implementation
+	// Record16 type implementation
 	// -------------------------------------------------------------------------
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row12<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long> fieldsRow() {
-		return (org.jooq.Row12) super.fieldsRow();
+	public org.jooq.Row16<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.Boolean> fieldsRow() {
+		return (org.jooq.Row16) super.fieldsRow();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public org.jooq.Row12<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long> valuesRow() {
-		return (org.jooq.Row12) super.valuesRow();
+	public org.jooq.Row16<java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date, java.util.Date, java.util.Map<String,Object>, java.lang.Long, java.lang.String, java.lang.Long, java.lang.String, java.lang.Boolean> valuesRow() {
+		return (org.jooq.Row16) super.valuesRow();
 	}
 
 	/**
@@ -352,6 +420,38 @@ public class AccountLinkRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
+	public org.jooq.Field<java.lang.String> field13() {
+		return io.cattle.platform.core.model.tables.AccountLinkTable.ACCOUNT_LINK.LINKED_ACCOUNT;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public org.jooq.Field<java.lang.Long> field14() {
+		return io.cattle.platform.core.model.tables.AccountLinkTable.ACCOUNT_LINK.LINKED_REGION_ID;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public org.jooq.Field<java.lang.String> field15() {
+		return io.cattle.platform.core.model.tables.AccountLinkTable.ACCOUNT_LINK.LINKED_REGION;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public org.jooq.Field<java.lang.Boolean> field16() {
+		return io.cattle.platform.core.model.tables.AccountLinkTable.ACCOUNT_LINK.EXTERNAL;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public java.lang.Long value1() {
 		return getId();
 	}
@@ -442,6 +542,38 @@ public class AccountLinkRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	@Override
 	public java.lang.Long value12() {
 		return getLinkedAccountId();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.String value13() {
+		return getLinkedAccount();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.Long value14() {
+		return getLinkedRegionId();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.String value15() {
+		return getLinkedRegion();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public java.lang.Boolean value16() {
+		return getExternal();
 	}
 
 	/**
@@ -556,7 +688,43 @@ public class AccountLinkRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	 * {@inheritDoc}
 	 */
 	@Override
-	public AccountLinkRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.Long value12) {
+	public AccountLinkRecord value13(java.lang.String value) {
+		setLinkedAccount(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public AccountLinkRecord value14(java.lang.Long value) {
+		setLinkedRegionId(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public AccountLinkRecord value15(java.lang.String value) {
+		setLinkedRegion(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public AccountLinkRecord value16(java.lang.Boolean value) {
+		setExternal(value);
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public AccountLinkRecord values(java.lang.Long value1, java.lang.String value2, java.lang.Long value3, java.lang.String value4, java.lang.String value5, java.lang.String value6, java.lang.String value7, java.util.Date value8, java.util.Date value9, java.util.Date value10, java.util.Map<String,Object> value11, java.lang.Long value12, java.lang.String value13, java.lang.Long value14, java.lang.String value15, java.lang.Boolean value16) {
 		return this;
 	}
 
@@ -581,6 +749,10 @@ public class AccountLinkRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 		setRemoveTime(from.getRemoveTime());
 		setData(from.getData());
 		setLinkedAccountId(from.getLinkedAccountId());
+		setLinkedAccount(from.getLinkedAccount());
+		setLinkedRegionId(from.getLinkedRegionId());
+		setLinkedRegion(from.getLinkedRegion());
+		setExternal(from.getExternal());
 	}
 
 	/**
@@ -606,7 +778,7 @@ public class AccountLinkRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 	/**
 	 * Create a detached, initialised AccountLinkRecord
 	 */
-	public AccountLinkRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long linkedAccountId) {
+	public AccountLinkRecord(java.lang.Long id, java.lang.String name, java.lang.Long accountId, java.lang.String kind, java.lang.String uuid, java.lang.String description, java.lang.String state, java.util.Date created, java.util.Date removed, java.util.Date removeTime, java.util.Map<String,Object> data, java.lang.Long linkedAccountId, java.lang.String linkedAccount, java.lang.Long linkedRegionId, java.lang.String linkedRegion, java.lang.Boolean external) {
 		super(io.cattle.platform.core.model.tables.AccountLinkTable.ACCOUNT_LINK);
 
 		setValue(0, id);
@@ -621,5 +793,9 @@ public class AccountLinkRecord extends org.jooq.impl.UpdatableRecordImpl<io.catt
 		setValue(9, removeTime);
 		setValue(10, data);
 		setValue(11, linkedAccountId);
+		setValue(12, linkedAccount);
+		setValue(13, linkedRegionId);
+		setValue(14, linkedRegion);
+		setValue(15, external);
 	}
 }

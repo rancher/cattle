@@ -19,6 +19,34 @@
         "authorizedRoleAccountIds": {
             "type": "array[reference[account]]",
             "nullable": true
+        },
+        "publicValue":{
+            "type": "string",
+            "required": false,
+            "nullable": true
+        },
+        "secretValue":{
+            "type": "string",
+            "required": false,
+            "nullable": true
+        },
+        "labels": {
+          "type": "map[string]",
+          "nullable": true,
+          "create": true
+        },
+        "activateOnCreate": {
+            "type": "boolean",
+            "nullable": true,
+            "default": false
+        },
+        "externalCredentials": {
+            "type": "array[externalCredential]",
+            "nullable": true
+        },
+        "agentResourcesAccountId": {
+            "type": "reference[account]",
+            "nullable": true
         }
     },
     "resourceActions" : {

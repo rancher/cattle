@@ -99,7 +99,7 @@ public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogi
 
 
     protected void removeServiceLink(Service service, Service targetService) {
-        ServiceLink link = new ServiceLink(targetService.getId(), null);
+        ServiceLink link = new ServiceLink(targetService.getId(), null, null);
         sdService.removeServiceLink(service, link);
     }
 
