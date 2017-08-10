@@ -1,10 +1,7 @@
 package io.cattle.platform.api.handler;
 
-import io.cattle.platform.engine.manager.ProcessNotFoundException;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
-import io.cattle.platform.util.type.CollectionUtils;
-import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.model.Schema.Method;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -12,11 +9,9 @@ import io.github.ibuildthecloud.gdapi.request.handler.ApiRequestHandler;
 import io.github.ibuildthecloud.gdapi.request.resource.ActionHandler;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerLocator;
-import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
-import java.util.Map;
 
 public class ActionRequestHandler implements ApiRequestHandler {
 
@@ -61,29 +56,11 @@ public class ActionRequestHandler implements ApiRequestHandler {
     }
 
     private Object resourceActionInternal(Object obj, ApiRequest request) {
-        String processName = null; //getProcessName(obj, request);
-        ActionHandler handler = null;
-        String type = request.getType();
-
-        while (type != null && handler == null) {
-            processName = String.format("%s.%s", type, request.getAction()).toLowerCase();
-            handler = locator.getActionHandler(processName, type);
-            type = objectManager.getSchemaFactory().getBaseType(type);
-        }
+        ActionHandler handler = locator.getActionHandler(request.getAction(), request.getType());
         if (handler != null) {
-            return handler.perform(processName, obj, request);
+            return handler.perform(obj, request);
         }
-
-        Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
-
-        try {
-            processManager.scheduleProcessInstance(processName, obj, data);
-        } catch (ProcessNotFoundException e) {
-            throw new ClientVisibleException(ResponseCodes.NOT_FOUND);
-        }
-
-        request.setResponseCode(ResponseCodes.ACCEPTED);
-        return objectManager.reload(obj);
+        return null;
     }
 
     @Override

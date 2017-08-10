@@ -5,6 +5,7 @@ import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.core.addon.PortInstance;
 import io.cattle.platform.core.constants.HealthcheckConstants;
+import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.model.Host;
@@ -16,8 +17,11 @@ import io.cattle.platform.core.model.tables.records.HostRecord;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.deferred.util.DeferredUtils;
+import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.object.util.ObjectUtils;
 import io.github.ibuildthecloud.gdapi.util.ProxyUtils;
 import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 import org.jooq.Configuration;
@@ -55,11 +59,14 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
     ObjectManager objectManager;
     TransactionDelegate transaction;
+    EventService eventService;
 
-    public AllocatorDaoImpl(Configuration configuration, ObjectManager objectManager, TransactionDelegate transaction) {
+    public AllocatorDaoImpl(Configuration configuration, ObjectManager objectManager, TransactionDelegate transaction,
+                            EventService eventService) {
         super(configuration);
         this.objectManager = objectManager;
         this.transaction = transaction;
+        this.eventService = eventService;
     }
 
     @Override
@@ -85,19 +92,21 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
     @Override
     public boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate) {
-        return transaction.doInTransactionResult(() -> {
-            Long newHost = candidate.getHost();
-            if (newHost != null) {
-                for (Instance instance : attempt.getInstances()) {
-                    log.info("Associating instance [{}] to host [{}]", instance.getId(), newHost);
-                    instance.setHostId(newHost);
-                    updateInstancePorts(instance, attempt.getAllocatedIPs());
-                    objectManager.persist(instance);
+        return DeferredUtils.nest(() -> {
+            transaction.doInTransaction(() -> {
+                Long newHost = candidate.getHost();
+                if (newHost != null) {
+                    for (Instance instance : attempt.getInstances()) {
+                        log.info("Associating instance [{}] to host [{}]", instance.getId(), newHost);
+                        instance.setHostId(newHost);
+                        updateInstancePorts(instance, attempt.getAllocatedIPs());
+                        objectManager.persist(instance);
+                        ObjectUtils.publishChanged(eventService, instance.getAccountId(), newHost, HostConstants.TYPE);
+                    }
+
+                    updateVolumeHostInfo(attempt, candidate, newHost);
                 }
-
-                updateVolumeHostInfo(attempt, candidate, newHost);
-            }
-
+            });
             return true;
         });
     }

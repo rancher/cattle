@@ -17,7 +17,7 @@ public class ServiceRestartValidationFilter extends AbstractValidationFilter {
     }
 
     @Override
-    public Object perform(String name, Object obj, ApiRequest request, ActionHandler next) {
+    public Object perform(Object obj, ApiRequest request, ActionHandler next) {
         if (request.getAction().equals(ServiceConstants.ACTION_SERVICE_RESTART)) {
             Service service = objectManager.loadResource(Service.class, request.getId());
             Long restartCount = DataAccessor.fieldLong(service, ServiceConstants.FIELD_RESTART_TRIGGER);
@@ -29,6 +29,6 @@ public class ServiceRestartValidationFilter extends AbstractValidationFilter {
                     ServiceConstants.FIELD_RESTART_TRIGGER, restartCount);
         }
 
-        return super.perform(name, obj, request, next);
+        return super.perform(obj, request, next);
     }
 }

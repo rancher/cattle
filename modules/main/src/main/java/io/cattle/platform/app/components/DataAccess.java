@@ -100,7 +100,7 @@ public class DataAccess {
 
         this.accountDao = new AccountDaoImpl(f.jooqConfig, f.objectManager);
         this.agentDao = new AgentDaoImpl(f.jooqConfig);
-        this.allocatorDao = new AllocatorDaoImpl(f.jooqConfig, f.objectManager, f.transaction);
+        this.allocatorDao = new AllocatorDaoImpl(f.jooqConfig, f.objectManager, f.transaction, f.eventService);
         this.auditLogDao = new AuditLogDaoImpl(f.jooqConfig, f.objectManager);
         this.authDao = new AuthDaoImpl(f.jooqConfig, resourceDao, f.objectManager, f.processManager, f.lockManager, accountDao);
         this.authTokenDao = new AuthTokenDaoImpl(f.jooqConfig, resourceDao, f.objectManager, f.processManager);

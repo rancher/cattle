@@ -20,7 +20,7 @@ public class ChangeSecretActionHandler implements ActionHandler {
     }
 
     @Override
-    public Object perform(String name, Object obj, ApiRequest request) {
+    public Object perform(Object obj, ApiRequest request) {
         Credential password = (Credential) obj;
         ChangePassword changePassword = request.proxyRequestObject(ChangePassword.class);
         Policy policy = (Policy) ApiContext.getContext().getPolicy();

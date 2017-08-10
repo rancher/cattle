@@ -229,7 +229,7 @@ public class Backend {
         envResourceManager = reconcile.envResourceManager;
         allocationHelper = reconcile.allocationHelper;
 
-        allocatorService = new AllocatorServiceImpl(d.agentDao, c.agentLocator, d.allocatorDao, f.lockManager, f.objectManager,f. processManager, allocationHelper, d.volumeDao, envResourceManager,
+        allocatorService = new AllocatorServiceImpl(d.agentDao, c.agentLocator, d.allocatorDao, f.lockManager, f.objectManager,f. processManager, allocationHelper, d.volumeDao, envResourceManager, f.eventService,
                 new AccountConstraintsProvider(),
                 new BaseConstraintsProvider(d.allocatorDao),
                 new AffinityConstraintsProvider(allocationHelper),

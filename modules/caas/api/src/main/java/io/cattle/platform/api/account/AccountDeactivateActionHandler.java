@@ -25,7 +25,7 @@ public class AccountDeactivateActionHandler implements ActionHandler {
     }
 
     @Override
-    public Object perform(String name, Object obj, ApiRequest request) {
+    public Object perform(Object obj, ApiRequest request) {
         if (obj instanceof Account) {
             Account accountToDeactivate = (Account) obj;
             if (AccountConstants.ADMIN_KIND.equalsIgnoreCase(accountToDeactivate.getKind())) {

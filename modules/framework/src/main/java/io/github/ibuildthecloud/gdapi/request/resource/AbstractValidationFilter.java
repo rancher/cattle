@@ -39,8 +39,8 @@ public abstract class AbstractValidationFilter implements ValidationFilter {
     }
 
     @Override
-    public Object perform(String name, Object obj, ApiRequest request, ActionHandler next) {
-        return next.perform(name, obj, request);
+    public Object perform(Object obj, ApiRequest request, ActionHandler next) {
+        return next.perform(obj, request);
     }
 
 }

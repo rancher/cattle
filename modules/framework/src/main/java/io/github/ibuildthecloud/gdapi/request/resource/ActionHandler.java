@@ -4,6 +4,6 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 public interface ActionHandler {
 
-    Object perform(String name, Object obj, ApiRequest request);
+    Object perform(Object obj, ApiRequest request);
 
 }

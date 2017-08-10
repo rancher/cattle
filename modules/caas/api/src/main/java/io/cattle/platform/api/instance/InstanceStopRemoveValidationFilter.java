@@ -19,13 +19,13 @@ public class InstanceStopRemoveValidationFilter extends AbstractValidationFilter
     }
 
     @Override
-    public Object perform(String name, Object obj, ApiRequest request, ActionHandler next) {
+    public Object perform(Object obj, ApiRequest request, ActionHandler next) {
         Instance instance = objectManager.loadResource(Instance.class, request.getId());
         if (request.getAction().equals("stop")) {
             setStopSource(instance, request);
         }
 
-        return super.perform(name, obj, request, next);
+        return super.perform(obj, request, next);
     }
 
     protected void setStopSource(Instance instance, ApiRequest request) {

@@ -19,7 +19,7 @@ public class HostEvacuateActionHandler implements ActionHandler {
     }
 
     @Override
-    public Object perform(String name, Object obj, ApiRequest request) {
+    public Object perform(Object obj, ApiRequest request) {
         if (obj instanceof Host) {
             Host host = (Host) obj;
             resourceDao.createAndSchedule(ExternalEvent.class,

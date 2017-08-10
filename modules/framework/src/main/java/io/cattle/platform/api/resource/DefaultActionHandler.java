@@ -22,8 +22,10 @@ public class DefaultActionHandler implements ActionHandler {
     }
 
     @Override
-    public Object perform(String name, Object obj, ApiRequest request) {
+    public Object perform(Object obj, ApiRequest request) {
         Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
+
+        String name = String.format("%s.%s", objectManager.getType(request.getType()), request.getAction());
 
         try {
             processManager.scheduleProcessInstance(name, obj, data);

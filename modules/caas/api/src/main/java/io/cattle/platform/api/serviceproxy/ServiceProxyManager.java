@@ -50,7 +50,7 @@ public class ServiceProxyManager extends AbstractNoOpResourceManager {
         if (service != null) {
             List<Long> instanceIds = DataAccessor.fieldLongList(service, ServiceConstants.FIELD_INSTANCE_IDS);
             if (instanceIds.size() > 0) {
-                return actionHandler.perform(null, objectManager.loadResource(Instance.class, instanceIds.get(0)), request);
+                return actionHandler.perform(objectManager.loadResource(Instance.class, instanceIds.get(0)), request);
             }
         }
 

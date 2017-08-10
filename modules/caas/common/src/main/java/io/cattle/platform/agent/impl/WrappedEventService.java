@@ -1,5 +1,6 @@
 package io.cattle.platform.agent.impl;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.core.constants.AgentConstants;
@@ -17,8 +18,6 @@ import io.cattle.platform.json.JsonMapper;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-
-import com.google.common.util.concurrent.ListenableFuture;
 
 public class WrappedEventService implements EventService {
 
@@ -88,11 +87,6 @@ public class WrappedEventService implements EventService {
     @Override
     public void unsubscribe(EventListener listener) {
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Event callSync(Event event, EventCallOptions callOptions) {
-        return AsyncUtils.get(call(event, callOptions));
     }
 
 }

@@ -35,6 +35,7 @@ import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.client.DockerImage;
 import io.cattle.platform.environment.EnvironmentResourceManager;
+import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.exception.EventExecutionException;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
@@ -94,12 +95,13 @@ public class AllocatorServiceImpl implements AllocatorService {
     AllocationHelper allocationHelper;
     VolumeDao volumeDao;
     EnvironmentResourceManager envResourceManager;
+    EventService eventService;
     List<AllocationConstraintsProvider> allocationConstraintProviders;
 
 
     public AllocatorServiceImpl(AgentDao agentDao, AgentLocator agentLocator, AllocatorDao allocatorDao, LockManager lockManager,
-            ObjectManager objectManager, ObjectProcessManager processManager, AllocationHelper allocationHelper, VolumeDao volumeDao,
-            EnvironmentResourceManager envResourceManager, AllocationConstraintsProvider... allocationConstraintProviders) {
+                                ObjectManager objectManager, ObjectProcessManager processManager, AllocationHelper allocationHelper, VolumeDao volumeDao,
+                                EnvironmentResourceManager envResourceManager, EventService eventService, AllocationConstraintsProvider... allocationConstraintProviders) {
         super();
         this.agentDao = agentDao;
         this.agentLocator = agentLocator;
@@ -110,6 +112,7 @@ public class AllocatorServiceImpl implements AllocatorService {
         this.allocationHelper = allocationHelper;
         this.volumeDao = volumeDao;
         this.envResourceManager = envResourceManager;
+        this.eventService = eventService;
         this.allocationConstraintProviders = Arrays.asList(allocationConstraintProviders);
     }
 
@@ -570,6 +573,7 @@ public class AllocatorServiceImpl implements AllocatorService {
 
         allocatorDao.releaseAllocation(instance);
         releaseResources(instance, host.getUuid(), InstanceConstants.PROCESS_DEALLOCATE);
+        ObjectUtils.publishChanged(eventService, objectManager, host);
     }
 
     protected boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate) {

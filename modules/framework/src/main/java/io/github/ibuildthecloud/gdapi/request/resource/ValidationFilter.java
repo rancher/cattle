@@ -20,6 +20,6 @@ public interface ValidationFilter {
 
     Object delete(String type, String id, ApiRequest request, ResourceManager next);
 
-    Object perform(String name, Object obj, ApiRequest request, ActionHandler next);
+    Object perform(Object obj, ApiRequest request, ActionHandler next);
 
 }

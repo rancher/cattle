@@ -1,9 +1,12 @@
 package io.cattle.platform.eventing.impl;
 
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
+import com.netflix.config.DynamicIntProperty;
+import com.netflix.config.DynamicLongProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.retry.Retry;
 import io.cattle.platform.async.retry.RetryTimeoutService;
-import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.eventing.EventCallOptions;
 import io.cattle.platform.eventing.EventListener;
@@ -14,7 +17,13 @@ import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.pool.PoolConfig;
+import org.apache.commons.pool2.ObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,19 +34,6 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-
-import javax.annotation.PostConstruct;
-
-import org.apache.commons.pool2.ObjectPool;
-import org.apache.commons.pool2.impl.GenericObjectPool;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.SettableFuture;
-import com.netflix.config.DynamicIntProperty;
-import com.netflix.config.DynamicLongProperty;
 
 public abstract class AbstractEventService implements EventService {
 
@@ -235,15 +231,6 @@ public abstract class AbstractEventService implements EventService {
         for (String eventName : getSubscriptions(listener)) {
             unsubscribe(eventName, listener);
         }
-    }
-
-    protected EventCallOptions defaultCallOptions() {
-        return new EventCallOptions().withRetry(DEFAULT_RETRIES.get()).withTimeoutMillis(DEFAULT_TIMEOUT.get());
-    }
-
-    @Override
-    public Event callSync(Event event, EventCallOptions options) {
-        return AsyncUtils.get(call(event, options));
     }
 
     @Override

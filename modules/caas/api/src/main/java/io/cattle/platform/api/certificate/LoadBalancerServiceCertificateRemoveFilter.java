@@ -70,11 +70,11 @@ public class LoadBalancerServiceCertificateRemoveFilter extends AbstractValidati
     }
 
     @Override
-    public Object perform(String name, Object obj, ApiRequest request, ActionHandler next) {
+    public Object perform(Object obj, ApiRequest request, ActionHandler next) {
         if (request.getAction().equalsIgnoreCase("remove")) {
             validateIfCertificateInUse(request.getId());
         }
 
-        return super.perform(name, obj, request, next);
+        return super.perform(obj, request, next);
     }
 }

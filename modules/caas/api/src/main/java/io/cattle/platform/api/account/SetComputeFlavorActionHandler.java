@@ -15,7 +15,7 @@ public class SetComputeFlavorActionHandler implements ActionHandler {
     }
 
     @Override
-    public Object perform(String name, Object obj, ApiRequest request) {
+    public Object perform(Object obj, ApiRequest request) {
         SetComputeFlavorInput input = request.proxyRequestObject(SetComputeFlavorInput.class);
         objectManager.setFields(obj,
                 AccountConstants.FIELD_COMPUTE_FLAVOR, input.getComputeFlavor());

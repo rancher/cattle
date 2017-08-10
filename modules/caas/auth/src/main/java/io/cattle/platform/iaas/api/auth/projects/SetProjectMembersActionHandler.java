@@ -23,7 +23,7 @@ public class SetProjectMembersActionHandler implements ActionHandler {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Object perform(String name, Object obj, ApiRequest request) {
+    public Object perform(Object obj, ApiRequest request) {
         Account project = (Account) obj;
         project = authDao.getAccountById(project.getId());
         if (project == null) {

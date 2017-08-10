@@ -80,11 +80,11 @@ public class ServiceStackNetworkDriverFilter extends AbstractValidationFilter {
     }
 
     @Override
-    public Object perform(String name, Object obj, ApiRequest request, ActionHandler next) {
+    public Object perform(Object obj, ApiRequest request, ActionHandler next) {
         if (ACTIONS.contains(request.getAction())) {
             validateInUse(obj, request);
         }
-        return super.perform(name, obj, request, next);
+        return super.perform(obj, request, next);
     }
 
 }

@@ -88,6 +88,8 @@ public abstract class AbstractObjectManager implements ObjectManager {
         Schema schema = null;
         if (obj instanceof Class<?>) {
             schema = schemaFactory.getSchema((Class<?>) obj);
+        } else if (obj instanceof String) {
+            schema = schemaFactory.getSchema(obj.toString());
         } else {
             schema = schemaFactory.getSchema(obj.getClass());
         }

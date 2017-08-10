@@ -111,7 +111,7 @@ public class ApiRouterImpl implements ResourceManagerLocator, ApiRouter {
         forEach(type, typeName -> {
             Schema schema = schemaFactory.getSchema(typeName);
             if (schema.getResourceActions().containsKey(name)) {
-                actionHandlersMap.put(String.format("%s.%s", typeName, name).toLowerCase(), action);
+                actionHandlersMap.put(key(typeName, name), action);
             } else {
                 // A subtype could drop the action in authorization, so don't blow up if the
                 // action is defined in the original type requested
@@ -123,6 +123,10 @@ public class ApiRouterImpl implements ResourceManagerLocator, ApiRouter {
             }
         });
         return this;
+    }
+
+    private String key(String typeName, String name) {
+        return String.format("%s.%s", typeName, name).toLowerCase();
     }
 
     @Override
@@ -182,6 +186,10 @@ public class ApiRouterImpl implements ResourceManagerLocator, ApiRouter {
     }
 
     protected ActionHandler wrapAction(List<ValidationFilter> filters, ActionHandler actionHandler) {
+        if (actionHandler == null) {
+            return null;
+        }
+
         if (filters.size() == 0) {
             return actionHandler;
         }
@@ -204,19 +212,16 @@ public class ApiRouterImpl implements ResourceManagerLocator, ApiRouter {
             return null;
         }
 
-        ActionHandler rm = cachedAction.get(name);
+        String key = key(type, name);
+
+        ActionHandler rm = cachedAction.get(key);
         if (rm != null) {
             return rm;
         }
 
-        rm = actionHandlersMap.get(name);
-
+        rm = actionHandlersMap.get(key);
         if (rm == null) {
             rm = defaultActionHandler;
-        }
-
-        if (rm == null) {
-            return rm;
         }
 
         List<ValidationFilter> filters = filterByType.get(type);
@@ -225,7 +230,7 @@ public class ApiRouterImpl implements ResourceManagerLocator, ApiRouter {
         }
 
         rm = wrapAction(filters, rm);
-        cachedAction.put(name, rm);
+        cachedAction.put(key, rm);
 
         return rm;
     }

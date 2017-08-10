@@ -30,15 +30,15 @@ public class ServiceUpgradeValidationFilter extends AbstractValidationFilter {
     }
 
     @Override
-    public Object perform(String name, Object obj, ApiRequest request, ActionHandler next) {
+    public Object perform(Object obj, ApiRequest request, ActionHandler next) {
         if (request.getAction().equals(ServiceConstants.ACTION_SERVICE_UPGRADE)) {
-            return processInServiceUpgradeStrategy(name, obj, request, next);
+            return processInServiceUpgradeStrategy(obj, request, next);
         }
 
-        return super.perform(name, obj, request, next);
+        return super.perform(obj, request, next);
     }
 
-    protected Object processInServiceUpgradeStrategy(String name, Object obj, ApiRequest request, ActionHandler next) {
+    protected Object processInServiceUpgradeStrategy(Object obj, ApiRequest request, ActionHandler next) {
         Service service = objectManager.loadResource(Service.class, request.getId());
         ServiceUpgrade upgrade = jsonMapper.convertValue(request.getRequestObject(), ServiceUpgrade.class);
         InServiceUpgradeStrategy strategy = finalizeUpgradeStrategy(service, upgrade.getInServiceStrategy());
@@ -51,7 +51,7 @@ public class ServiceUpgradeValidationFilter extends AbstractValidationFilter {
         request.setRequestObject(diff.getNewRevisionData());
         service = revisionManager.assignRevision(diff, service);
 
-        return super.perform(name, obj, request, next);
+        return super.perform(obj, request, next);
     }
 
     @SuppressWarnings("unchecked")

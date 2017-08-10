@@ -23,7 +23,7 @@ public class ServiceCertificateActionHandler implements ActionHandler {
     }
 
     @Override
-    public Object perform(String name, Object obj, ApiRequest request) {
+    public Object perform(Object obj, ApiRequest request) {
         if (!(obj instanceof Service)) {
             return null;
         }

@@ -39,7 +39,7 @@ public class ContainerProxyActionHandler implements ActionHandler {
     }
 
     @Override
-    public Object perform(String name, Object obj, ApiRequest request) {
+    public Object perform(Object obj, ApiRequest request) {
         Host host = null;
         Instance container = null;
 

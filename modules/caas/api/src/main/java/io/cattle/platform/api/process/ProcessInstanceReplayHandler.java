@@ -21,7 +21,7 @@ public class ProcessInstanceReplayHandler implements ActionHandler {
     }
 
     @Override
-    public Object perform(String name, Object obj, ApiRequest request) {
+    public Object perform(Object obj, ApiRequest request) {
         ProcessInstance pi = objectManager.loadResource(ProcessInstance.class, request.getId());
         if (pi == null) {
             return null;

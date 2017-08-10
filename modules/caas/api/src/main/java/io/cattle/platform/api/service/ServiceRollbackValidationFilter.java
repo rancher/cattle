@@ -24,7 +24,7 @@ public class ServiceRollbackValidationFilter extends AbstractValidationFilter {
     }
 
     @Override
-    public Object perform(String name, Object obj, ApiRequest request, ActionHandler next) {
+    public Object perform(Object obj, ApiRequest request, ActionHandler next) {
         if (request.getAction().equals(ServiceConstants.ACTION_SERVICE_ROLLBACK)) {
             Service service = objectManager.loadResource(Service.class, request.getId());
             Long revisionId = request.proxyRequestObject(ServiceRollback.class).getRevisionId();
@@ -40,7 +40,7 @@ public class ServiceRollbackValidationFilter extends AbstractValidationFilter {
             objectManager.setFields(service, data);
         }
 
-        return super.perform(name, obj, request, next);
+        return super.perform(obj, request, next);
     }
 
 }

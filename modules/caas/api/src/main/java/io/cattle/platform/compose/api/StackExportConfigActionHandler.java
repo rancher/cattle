@@ -27,7 +27,7 @@ public class StackExportConfigActionHandler implements ActionHandler {
     }
 
     @Override
-    public Object perform(String name, Object obj, ApiRequest request) {
+    public Object perform(Object obj, ApiRequest request) {
         if (!(obj instanceof Stack)) {
             return null;
         }

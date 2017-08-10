@@ -58,8 +58,8 @@ public class ApiFilterChain implements ResourceManager, ActionHandler {
     }
 
     @Override
-    public Object perform(String name, Object obj, ApiRequest request) {
-        return filter.perform(name, obj, request, nextActionHandler);
+    public Object perform(Object obj, ApiRequest request) {
+        return filter.perform(obj, request, nextActionHandler);
     }
 
 }
