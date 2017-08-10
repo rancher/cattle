@@ -144,7 +144,7 @@ public class AccountProcessManager {
                     deleteAgentAccount(instance.getAgentId(), state.getData());
                     processManager.stopThenRemove(instance, null);
                 } else {
-                    processManager.executeDeactivateThenRemove(obj, null);
+                    processManager.deactivateThenRemove(obj, null);
                 }
             }
         }
@@ -157,7 +157,7 @@ public class AccountProcessManager {
 
         for (Agent agent : resourceAgents) {
             Account agentAccount = objectManager.loadResource(Account.class, agent.getAccountId());
-            processManager.executeDeactivateThenRemove(agentAccount, null);
+            processManager.deactivateThenRemove(agentAccount, null);
         }
 
         return null;
