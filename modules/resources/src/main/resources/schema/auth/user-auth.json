@@ -625,7 +625,7 @@
         "service.name": "cr",
         "service.networkDriver" : "cru",
         "service.previousRevisionId": "r",
-        "service.publicEndpoints" : "cru",
+        "service.publicEndpoints" : "r",
         "service.resourceActions.certificate": "",
         "service.revisionId" : "r",
         "service.scale" : "cru",
