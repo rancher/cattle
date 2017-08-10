@@ -295,6 +295,9 @@ public class ExternalServiceAuthProvider {
                 }
             });
 
+            if (jsonData == null) {
+                return null;
+            }
             return tokenUtil.jsonToIdentity(jsonData);
 
         } catch(HttpHostConnectException ex) {
