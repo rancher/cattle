@@ -43,9 +43,8 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 import static io.cattle.platform.core.constants.ExternalEventConstants.*;
-import static io.cattle.platform.core.model.tables.AgentTable.*;
-import static io.cattle.platform.core.model.tables.ServiceTable.*;
-import static io.cattle.platform.core.model.tables.StackTable.*;
+import static io.cattle.platform.core.model.Tables.*;
+import static io.cattle.platform.core.model.tables.AgentTable.AGENT;
 
 public class ExternalEventProcessManager {
 
@@ -113,49 +112,53 @@ public class ExternalEventProcessManager {
             return null;
         }
 
-        if (ExternalEventConstants.KIND_EXTERNAL_DNS_EVENT.equals(event.getKind())) {
+        switch (event.getKind()) {
+        case ExternalEventConstants.KIND_EXTERNAL_DNS_EVENT:
             handleExternalDnsEvent(event, state, process);
-        } else if (ExternalEventConstants.KIND_EXTERNAL_HOST_EVENT.equals(event.getKind()) &&
-                ExternalEventConstants.TYPE_HOST_EVACUATE.equals(event.getEventType())) {
-            handleHostEvacuate(event);
-        } if (ExternalEventConstants.KIND_SERVICE_EVENT.equals(event.getKind())) {
+            break;
+        case ExternalEventConstants.KIND_EXTERNAL_HOST_EVENT:
+            if (ExternalEventConstants.TYPE_HOST_EVACUATE.equals(event.getEventType())) {
+                handleHostEvacuate(event);
+            }
+            break;
+        case ExternalEventConstants.KIND_SERVICE_EVENT:
             handleServiceEvent(event);
+            break;
         }
 
         return null;
     }
 
     private void handleExternalDnsEvent(final ExternalEvent event, ProcessState state, ProcessInstance process) {
-        lockManager.lock(new ExternalEventLock(EXERNAL_DNS_LOCK_NAME, event.getAccountId(), event.getExternalId()), () -> {
-            String fqdn = DataAccessor.fieldString(event, ExternalEventConstants.FIELD_FQDN);
-            String serviceName = DataAccessor
-                    .fieldString(event, ExternalEventConstants.FIELD_SERVICE_NAME);
-            String stackName = DataAccessor.fieldString(event, ExternalEventConstants.FIELD_STACK_NAME);
-            if (fqdn == null || serviceName == null || stackName == null) {
-                log.info("External DNS [event: " + event.getId() + "] misses some fields");
-                return null;
-            }
+        String fqdn = DataAccessor.fieldString(event, ExternalEventConstants.FIELD_FQDN);
+        String serviceName = DataAccessor.fieldString(event, ExternalEventConstants.FIELD_SERVICE_NAME);
+        String stackName = DataAccessor.fieldString(event, ExternalEventConstants.FIELD_STACK_NAME);
+        if (fqdn == null || serviceName == null || stackName == null) {
+            log.info("External DNS [event: " + event.getId() + "] misses some fields");
+            return;
+        }
 
-            Stack stack = objectManager.findAny(Stack.class, STACK.ACCOUNT_ID,
-                    event.getAccountId(), STACK.REMOVED, null, STACK.NAME, stackName);
-            if (stack == null) {
-                log.info("Stack not found for external DNS [event: " + event.getId() + "]");
-                return null;
-            }
-            Service service = objectManager.findAny(Service.class, SERVICE.ACCOUNT_ID,
-                    event.getAccountId(), SERVICE.REMOVED, null, SERVICE.STACK_ID, stack.getId(),
-                    SERVICE.NAME, serviceName);
-            if (service == null) {
-                log.info("Service not found for external DNS [event: " + event.getId() + "]");
-                return null;
-            }
-            Map<String, Object> data = new HashMap<>();
-            data.put(ExternalEventConstants.FIELD_FQDN, fqdn);
-            DataAccessor.getWritableFields(service).putAll(data);
-            objectManager.persist(service);
-            processManager.scheduleStandardProcessAsync(StandardProcess.UPDATE, service, data);
-            return null;
-        });
+        Stack stack = objectManager.findAny(Stack.class,
+                STACK.ACCOUNT_ID, event.getAccountId(),
+                STACK.REMOVED, null,
+                STACK.NAME, stackName);
+        if (stack == null) {
+            log.info("Stack not found for external DNS [event: " + event.getId() + "]");
+            return;
+        }
+
+        Service service = objectManager.findAny(Service.class,
+                SERVICE.ACCOUNT_ID, event.getAccountId(),
+                SERVICE.REMOVED, null,
+                SERVICE.STACK_ID, stack.getId(),
+                SERVICE.NAME, serviceName);
+        if (service == null) {
+            log.info("Service not found for external DNS [event: " + event.getId() + "]");
+            return;
+        }
+
+        resourceDao.updateAndSchedule(service,
+                ExternalEventConstants.FIELD_FQDN, fqdn);
     }
 
     private void handleHostEvacuate(ExternalEvent event) {
@@ -190,7 +193,7 @@ public class ExternalEventProcessManager {
         if (StringUtils.isNotBlank(label)) {
             Map<String, String> labels = new HashMap<>();
             labels.put(HostAffinityConstraint.LABEL_HEADER_AFFINITY_HOST_LABEL, DataAccessor.fieldString(event, ExternalEventConstants.FIELD_HOST_LABEL));
-            hosts.addAll(allocationHelper.getAllHostsSatisfyingHostAffinity(event.getAccountId(), labels));
+            hosts.addAll(allocationHelper.getAllHostsSatisfyingHostAffinity(event.getClusterId(), labels));
         }
 
         Long hostId = DataAccessor.fieldLong(event, ExternalEventConstants.FIELD_HOST_ID);

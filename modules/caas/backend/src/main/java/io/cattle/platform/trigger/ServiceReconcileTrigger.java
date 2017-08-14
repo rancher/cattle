@@ -34,7 +34,7 @@ public class ServiceReconcileTrigger implements Trigger {
     }
 
     @Override
-    public void trigger(Long accountId, Object resource, String source) {
+    public void trigger(Long accountId, Long clusterId, Object resource, String source) {
         for (Long id : getServices(resource)) {
             loopManager.kick(LoopFactoryImpl.RECONCILE, ServiceConstants.KIND_SERVICE, id, resource);
         }
@@ -54,7 +54,7 @@ public class ServiceReconcileTrigger implements Trigger {
 
         if (host != null) {
             List<? extends Service> allServices = objectManager.find(Service.class,
-                    SERVICE.ACCOUNT_ID, host.getAccountId(),
+                    SERVICE.CLUSTER_ID, host.getClusterId(),
                     SERVICE.REMOVED, null);
             List<Long> svcsToReconcile = new ArrayList<>();
             for (Service service : allServices) {

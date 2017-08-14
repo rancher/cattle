@@ -16,6 +16,7 @@ import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.RequestUtils;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,8 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class ProjectMemberResourceManager extends DefaultResourceManager {
 
@@ -38,7 +37,7 @@ public class ProjectMemberResourceManager extends DefaultResourceManager {
     }
 
     @Override
-    public Object list(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
+    public Object listSupport(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
         Policy policy = (Policy) ApiContext.getContext().getPolicy();
         String id = RequestUtils.makeSingularStringIfCan(criteria.get("id"));
         if (StringUtils.isNotEmpty(id)) {
@@ -125,7 +124,7 @@ public class ProjectMemberResourceManager extends DefaultResourceManager {
         }
 
         if (!hasOwner) {
-            throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidFormat", "Members list does not have an owner.", null);
+            throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "InvalidFormat", "Members listSupport does not have an owner.", null);
 
         }
         membersCreated.addAll(authDao.setProjectMembers(project, membersTransformed, ApiContext.getContext()

@@ -82,8 +82,6 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
 
         setLogConfig(instance);
 
-        setSystemLabel(instance);
-
         Object secretsOpaque = secretsLifecycle.create(instance);
 
         vmLifecycle.instanceCreate(instance);
@@ -205,13 +203,6 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
         if (logConfig != null && !StringUtils.isEmpty(logConfig.getDriver()) && logConfig.getConfig() == null) {
             logConfig.setConfig(new HashMap<>());
             DataAccessor.setField(instance, InstanceConstants.FIELD_LOG_CONFIG, logConfig);
-        }
-    }
-
-    protected void setSystemLabel(Instance instance) {
-        if(Boolean.TRUE.equals(instance.getSystem()) &&
-                StringUtils.isBlank(getLabel(instance, SystemLabels.LABEL_CONTAINER_SYSTEM))) {
-            setLabel(instance, SystemLabels.LABEL_CONTAINER_SYSTEM, "true");
         }
     }
 

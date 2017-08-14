@@ -9,7 +9,6 @@ public class AgentConstants {
     public static final String STATE_RECONNECTING = "reconnecting";
     public static final String STATE_DISCONNECTED = "disconnected";
     public static final String STATE_DISCONNECTING = "disconnecting";
-    public static final String STATE_FINISHING_RECONNECT = "finishing-reconnect";
     public static final String STATE_RECONNECTED = "reconnected";
     public static final String ID_REF = "agentId";
 

@@ -3,6 +3,8 @@ package io.cattle.platform.eventing.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import javax.xml.bind.annotation.XmlTransient;
+
 public interface Event {
 
     String TRANSITIONING_YES = "yes";
@@ -19,21 +21,18 @@ public interface Event {
     @JsonInclude(Include.NON_EMPTY)
     String getReplyTo();
 
+    @XmlTransient
+    Object getRequestData();
+
     String getResourceId();
 
     String getResourceType();
 
     @JsonInclude(Include.NON_EMPTY)
-    String[] getPreviousIds();
-
-    @JsonInclude(Include.NON_EMPTY)
-    String[] getPreviousNames();
+    String getPreviousId();
 
     @JsonInclude(Include.NON_EMPTY)
     String getTransitioning();
-
-    @JsonInclude(Include.NON_EMPTY)
-    Integer getTransitioningProgress();
 
     @JsonInclude(Include.NON_EMPTY)
     String getTransitioningMessage();

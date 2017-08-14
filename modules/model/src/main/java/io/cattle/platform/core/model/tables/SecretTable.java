@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class SecretTable extends TableImpl<SecretRecord> {
 
-    private static final long serialVersionUID = 1207176480;
+    private static final long serialVersionUID = 141392528;
 
     /**
      * The reference instance of <code>cattle.secret</code>
@@ -121,6 +121,11 @@ public class SecretTable extends TableImpl<SecretRecord> {
     public final TableField<SecretRecord, Long> STACK_ID = createField("environment_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
+     * The column <code>cattle.secret.creator_id</code>.
+     */
+    public final TableField<SecretRecord, Long> CREATOR_ID = createField("creator_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
      * Create a <code>cattle.secret</code> table reference
      */
     public SecretTable() {
@@ -179,7 +184,7 @@ public class SecretTable extends TableImpl<SecretRecord> {
      */
     @Override
     public List<ForeignKey<SecretRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<SecretRecord, ?>>asList(Keys.FK_SECRET__ACCOUNT_ID, Keys.FK_SECRET__ENVIRONMENT_ID);
+        return Arrays.<ForeignKey<SecretRecord, ?>>asList(Keys.FK_SECRET__ACCOUNT_ID, Keys.FK_SECRET__ENVIRONMENT_ID, Keys.FK_SECRET__CREATOR_ID);
     }
 
     /**

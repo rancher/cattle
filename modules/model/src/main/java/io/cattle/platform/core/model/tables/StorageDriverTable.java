@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class StorageDriverTable extends TableImpl<StorageDriverRecord> {
 
-    private static final long serialVersionUID = 253531903;
+    private static final long serialVersionUID = -422000150;
 
     /**
      * The reference instance of <code>cattle.storage_driver</code>
@@ -64,11 +64,6 @@ public class StorageDriverTable extends TableImpl<StorageDriverRecord> {
      * The column <code>cattle.storage_driver.name</code>.
      */
     public final TableField<StorageDriverRecord, String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
-
-    /**
-     * The column <code>cattle.storage_driver.account_id</code>.
-     */
-    public final TableField<StorageDriverRecord, Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
      * The column <code>cattle.storage_driver.kind</code>.
@@ -114,6 +109,11 @@ public class StorageDriverTable extends TableImpl<StorageDriverRecord> {
      * The column <code>cattle.storage_driver.service_id</code>.
      */
     public final TableField<StorageDriverRecord, Long> SERVICE_ID = createField("service_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
+     * The column <code>cattle.storage_driver.cluster_id</code>.
+     */
+    public final TableField<StorageDriverRecord, Long> CLUSTER_ID = createField("cluster_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
 
     /**
      * Create a <code>cattle.storage_driver</code> table reference
@@ -174,7 +174,7 @@ public class StorageDriverTable extends TableImpl<StorageDriverRecord> {
      */
     @Override
     public List<ForeignKey<StorageDriverRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<StorageDriverRecord, ?>>asList(Keys.FK_STORAGE_DRIVER__ACCOUNT_ID, Keys.FK_STORAGE_DRIVER__SERVICE_ID);
+        return Arrays.<ForeignKey<StorageDriverRecord, ?>>asList(Keys.FK_STORAGE_DRIVER__SERVICE_ID, Keys.FK_STORAGE_DRIVER__CLUSTER_ID);
     }
 
     /**

@@ -57,10 +57,7 @@ public class EventExecutionException extends ExecutionException implements Logga
     public void log(Logger log) {
         Object name = null;
         if (event != null) {
-            name = event.getPreviousNames();
-            if (name == null) {
-                name = event.getName();
-            }
+            name = event.getName();
         }
         log.error("Agent error for [{}]: {}", name, getMessage());
     }

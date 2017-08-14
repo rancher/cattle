@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ProcessInstanceTable extends TableImpl<ProcessInstanceRecord> {
 
-    private static final long serialVersionUID = 1384987406;
+    private static final long serialVersionUID = 1209898642;
 
     /**
      * The reference instance of <code>cattle.process_instance</code>
@@ -136,6 +136,11 @@ public class ProcessInstanceTable extends TableImpl<ProcessInstanceRecord> {
     public final TableField<ProcessInstanceRecord, Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
+     * The column <code>cattle.process_instance.cluster_id</code>.
+     */
+    public final TableField<ProcessInstanceRecord, Long> CLUSTER_ID = createField("cluster_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
      * Create a <code>cattle.process_instance</code> table reference
      */
     public ProcessInstanceTable() {
@@ -194,7 +199,7 @@ public class ProcessInstanceTable extends TableImpl<ProcessInstanceRecord> {
      */
     @Override
     public List<ForeignKey<ProcessInstanceRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<ProcessInstanceRecord, ?>>asList(Keys.FK_PROCESS_INSTANCE__ACCOUNT_ID);
+        return Arrays.<ForeignKey<ProcessInstanceRecord, ?>>asList(Keys.FK_PROCESS_INSTANCE__ACCOUNT_ID, Keys.FK_PROCESS_INSTANCE__CLUSTER_ID);
     }
 
     /**

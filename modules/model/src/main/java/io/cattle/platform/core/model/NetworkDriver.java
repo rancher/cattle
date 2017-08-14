@@ -57,17 +57,6 @@ public interface NetworkDriver extends Serializable {
     public String getName();
 
     /**
-     * Setter for <code>cattle.network_driver.account_id</code>.
-     */
-    public void setAccountId(Long value);
-
-    /**
-     * Getter for <code>cattle.network_driver.account_id</code>.
-     */
-    @Column(name = "account_id", precision = 19)
-    public Long getAccountId();
-
-    /**
      * Setter for <code>cattle.network_driver.kind</code>.
      */
     public void setKind(String value);
@@ -165,6 +154,17 @@ public interface NetworkDriver extends Serializable {
      */
     @Column(name = "service_id", precision = 19)
     public Long getServiceId();
+
+    /**
+     * Setter for <code>cattle.network_driver.cluster_id</code>.
+     */
+    public void setClusterId(Long value);
+
+    /**
+     * Getter for <code>cattle.network_driver.cluster_id</code>.
+     */
+    @Column(name = "cluster_id", nullable = false, precision = 19)
+    public Long getClusterId();
 
     // -------------------------------------------------------------------------
     // FROM and INTO

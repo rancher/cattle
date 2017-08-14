@@ -99,9 +99,9 @@ public abstract class AbstractEventService implements EventService {
         List<EventListener> result = eventToListeners.get(eventName);
 
         if (event instanceof EventVO) {
-            String listenerKey = ((EventVO<?>) event).getListenerKey();
+            String listenerKey = ((EventVO<?, ?>) event).getListenerKey();
             if (listenerKey != null && !listenerKey.equals(eventName)) {
-                List<EventListener> additional = eventToListeners.get(((EventVO<?>) event).getListenerKey());
+                List<EventListener> additional = eventToListeners.get(((EventVO<?, ?>) event).getListenerKey());
                 if (additional != null) {
                     if (result == null) {
                         return additional;
@@ -261,7 +261,7 @@ public abstract class AbstractEventService implements EventService {
             return future;
         }
 
-        final EventVO<Object> request = new EventVO<>(event, listener.getReplyTo());
+        final EventVO<Object, Object> request = new EventVO<>(event, listener.getReplyTo());
         request.setTimeoutMillis(timeoutMillis);
 
         Retry retry = new Retry(retries, timeoutMillis, future, new Runnable() {

@@ -2,7 +2,6 @@ package io.cattle.platform.api.secret;
 
 import io.cattle.platform.api.resource.DefaultResourceManager;
 import io.cattle.platform.api.resource.DefaultResourceManagerSupport;
-import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.core.model.Secret;
 import io.cattle.platform.framework.secret.SecretsService;
 import io.cattle.platform.object.util.DataAccessor;
@@ -34,7 +33,7 @@ public class SecretManager extends DefaultResourceManager {
         String value = DataAccessor.fromMap(properties).withKey("value").as(String.class);
         if (StringUtils.isNotBlank(value)) {
             try {
-                String newValue = secretsService.encrypt(ApiUtils.getPolicy().getAccountId(), value);
+                String newValue = secretsService.encrypt(value);
                 properties.put("value", newValue);
                 request.setRequestObject(properties);
             } catch (IOException e) {

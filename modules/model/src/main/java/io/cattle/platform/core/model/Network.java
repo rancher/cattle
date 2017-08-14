@@ -57,17 +57,6 @@ public interface Network extends Serializable {
     public String getName();
 
     /**
-     * Setter for <code>cattle.network.account_id</code>.
-     */
-    public void setAccountId(Long value);
-
-    /**
-     * Getter for <code>cattle.network.account_id</code>.
-     */
-    @Column(name = "account_id", precision = 19)
-    public Long getAccountId();
-
-    /**
      * Setter for <code>cattle.network.kind</code>.
      */
     public void setKind(String value);
@@ -156,17 +145,6 @@ public interface Network extends Serializable {
     public Map<String,Object> getData();
 
     /**
-     * Setter for <code>cattle.network.is_public</code>.
-     */
-    public void setIsPublic(Boolean value);
-
-    /**
-     * Getter for <code>cattle.network.is_public</code>.
-     */
-    @Column(name = "is_public", nullable = false, precision = 1)
-    public Boolean getIsPublic();
-
-    /**
      * Setter for <code>cattle.network.domain</code>.
      */
     public void setDomain(String value);
@@ -187,6 +165,17 @@ public interface Network extends Serializable {
      */
     @Column(name = "network_driver_id", precision = 19)
     public Long getNetworkDriverId();
+
+    /**
+     * Setter for <code>cattle.network.cluster_id</code>.
+     */
+    public void setClusterId(Long value);
+
+    /**
+     * Getter for <code>cattle.network.cluster_id</code>.
+     */
+    @Column(name = "cluster_id", nullable = false, precision = 19)
+    public Long getClusterId();
 
     // -------------------------------------------------------------------------
     // FROM and INTO

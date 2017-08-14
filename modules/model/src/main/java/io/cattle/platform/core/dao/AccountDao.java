@@ -23,4 +23,6 @@ public interface AccountDao {
 
     List<String> getAccountActiveStates();
 
+    Long getAccountIdForCluster(Long clusterId);
+
 }

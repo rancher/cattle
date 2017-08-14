@@ -1,5 +1,6 @@
 package io.cattle.platform.iaas.api.auth.identity;
 
+import com.netflix.config.DynamicBooleanProperty;
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.pubsub.manager.SubscribeManager;
@@ -19,17 +20,13 @@ import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
+import org.apache.commons.lang3.StringUtils;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.lang3.StringUtils;
-
-import com.netflix.config.DynamicBooleanProperty;
 
 public class TokenResourceManager extends AbstractNoOpResourceManager {
 
@@ -110,7 +107,7 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
     }
 
     @Override
-    public Object list(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
+    public Object listSupport(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
         Token token = listToken();
         return Collections.singletonList(token);
     }
@@ -140,7 +137,7 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
     }
 
     @Override
-    public Object deleteObject(String type, String id, Object obj, ApiRequest request) {
+    public Object deleteObjectSupport(String type, String id, Object obj, ApiRequest request) {
         if (!StringUtils.equals(AbstractTokenUtil.TOKEN, request.getType())) {
             return null;
         }

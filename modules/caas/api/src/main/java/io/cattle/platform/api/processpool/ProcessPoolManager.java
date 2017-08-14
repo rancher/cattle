@@ -24,7 +24,7 @@ public class ProcessPoolManager extends AbstractNoOpResourceManager {
     }
 
     @Override
-    public Object list(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
+    public Object listSupport(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
         List<ProcessPool> pools = new ArrayList<>();
 
         for (ThreadPoolExecutor executor : executors) {

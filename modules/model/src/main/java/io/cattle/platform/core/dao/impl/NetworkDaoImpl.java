@@ -4,6 +4,7 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.core.model.Cluster;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.model.tables.records.NetworkRecord;
@@ -16,10 +17,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
-import static io.cattle.platform.core.model.tables.NetworkDriverTable.*;
-import static io.cattle.platform.core.model.tables.NetworkTable.*;
-import static io.cattle.platform.core.model.tables.SubnetTable.*;
+import static io.cattle.platform.core.model.Tables.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
+import static io.cattle.platform.core.model.tables.NetworkDriverTable.NETWORK_DRIVER;
+import static io.cattle.platform.core.model.tables.NetworkTable.NETWORK;
+import static io.cattle.platform.core.model.tables.SubnetTable.SUBNET;
 
 public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
     ObjectManager objectManager;
@@ -35,18 +37,28 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
 
     @Override
     public Network getNetworkByKind(long accountId, String kind) {
-        return objectManager.findAny(Network.class,
-                NETWORK.KIND, kind,
-                NETWORK.ACCOUNT_ID, accountId,
-                NETWORK.REMOVED, null);
+        return create()
+                .select(NETWORK.fields())
+                .from(NETWORK)
+                .join(ACCOUNT)
+                    .on(NETWORK.CLUSTER_ID.eq(ACCOUNT.CLUSTER_ID))
+                .where(ACCOUNT.ID.eq(accountId)
+                        .and(NETWORK.KIND.eq(kind))
+                        .and(NETWORK.REMOVED.isNull()))
+                .fetchAnyInto(NetworkRecord.class);
     }
 
     @Override
     public Network getNetworkByName(long accountId, String name) {
-        return objectManager.findAny(Network.class,
-                NETWORK.NAME, name,
-                NETWORK.ACCOUNT_ID, accountId,
-                NETWORK.REMOVED, null);
+        return create()
+                .select(NETWORK.fields())
+                .from(NETWORK)
+                .join(ACCOUNT)
+                    .on(NETWORK.CLUSTER_ID.eq(ACCOUNT.CLUSTER_ID))
+                .where(ACCOUNT.ID.eq(accountId)
+                        .and(NETWORK.NAME.eq(name))
+                        .and(NETWORK.REMOVED.isNull()))
+                .fetchAnyInto(NetworkRecord.class);
     }
 
     @Override
@@ -55,7 +67,13 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
         if (account == null) {
             return null;
         }
-        return objectManager.loadResource(Network.class, account.getDefaultNetworkId());
+
+        Cluster cluster = objectManager.loadResource(Cluster.class, account.getClusterId());
+        if (cluster == null) {
+            return null;
+        }
+
+        return objectManager.loadResource(Network.class, cluster.getDefaultNetworkId());
     }
 
     @Override
@@ -95,10 +113,10 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
     }
 
     @Override
-    public List<? extends Network> getActiveNetworks(Long accountId) {
+    public List<? extends Network> getActiveNetworks(Long clusterId) {
         return create().select(NETWORK.fields())
                 .from(NETWORK)
-                .where(NETWORK.ACCOUNT_ID.eq(accountId)
+                .where(NETWORK.CLUSTER_ID.eq(clusterId)
                     .and(NETWORK.STATE.in(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE)))
                 .fetchInto(NetworkRecord.class);
     }

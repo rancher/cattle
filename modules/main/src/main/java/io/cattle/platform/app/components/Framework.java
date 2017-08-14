@@ -184,7 +184,7 @@ public class Framework {
         postProcessors.add(new JsonFileOverlayPostProcessor(resourceLoader, jsonMapper, schemaJsonMapper, "schema/base"));
         postProcessors.add(new AuthSchemaAdditionsPostProcessor());
 
-        objectManager = new JooqObjectManager(coreSchemaFactory, metaDataManager, jooqConfig, lockingJooqConfig, transaction);
+        objectManager = new JooqObjectManager(coreSchemaFactory, metaDataManager, jooqConfig, lockingJooqConfig);
 
         List<ObjectPostInstantiationHandler> postInitHandlers = objectManager.getPostInitHandlers();
         postInitHandlers.add(objectDefaultsPostInstantiationHandler);

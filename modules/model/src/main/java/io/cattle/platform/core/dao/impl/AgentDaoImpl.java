@@ -15,6 +15,7 @@ import io.cattle.platform.core.model.tables.records.HostRecord;
 import io.cattle.platform.core.model.tables.records.StoragePoolRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.util.DataAccessor;
+import org.jooq.Condition;
 import org.jooq.Configuration;
 import org.jooq.Record1;
 
@@ -216,5 +217,18 @@ public class AgentDaoImpl extends AbstractJooqDao implements AgentDao {
                     .and(HOST.EXTERNAL_ID.eq(externalId))
                     .and(HOST.REMOVED.isNull()))
             .fetchAnyInto(HostRecord.class);
+    }
+
+    @Override
+    public List<? extends Agent> findAgentsToPing() {
+        Condition c = AGENT.STATE.eq(CommonStatesConstants.ACTIVE);
+        for (String prefix : AgentConstants.AGENT_IGNORE_PREFIXES) {
+            c = c.and(AGENT.URI.notLike(prefix + "%"));
+        }
+        return create()
+                .select(AGENT.fields())
+                .from(AGENT)
+                .where(c)
+                .fetchInto(AgentRecord.class);
     }
 }

@@ -57,17 +57,6 @@ public interface Cluster extends Serializable {
     public String getName();
 
     /**
-     * Setter for <code>cattle.cluster.account_id</code>.
-     */
-    public void setAccountId(Long value);
-
-    /**
-     * Getter for <code>cattle.cluster.account_id</code>.
-     */
-    @Column(name = "account_id", precision = 19)
-    public Long getAccountId();
-
-    /**
      * Setter for <code>cattle.cluster.kind</code>.
      */
     public void setKind(String value);
@@ -152,7 +141,7 @@ public interface Cluster extends Serializable {
     /**
      * Getter for <code>cattle.cluster.data</code>.
      */
-    @Column(name = "data", length = 65535)
+    @Column(name = "data", length = 16777215)
     public Map<String,Object> getData();
 
     /**
@@ -165,6 +154,28 @@ public interface Cluster extends Serializable {
      */
     @Column(name = "embedded", nullable = false, precision = 1)
     public Boolean getEmbedded();
+
+    /**
+     * Setter for <code>cattle.cluster.creator_id</code>.
+     */
+    public void setCreatorId(Long value);
+
+    /**
+     * Getter for <code>cattle.cluster.creator_id</code>.
+     */
+    @Column(name = "creator_id", precision = 19)
+    public Long getCreatorId();
+
+    /**
+     * Setter for <code>cattle.cluster.default_network_id</code>.
+     */
+    public void setDefaultNetworkId(Long value);
+
+    /**
+     * Getter for <code>cattle.cluster.default_network_id</code>.
+     */
+    @Column(name = "default_network_id", precision = 19)
+    public Long getDefaultNetworkId();
 
     // -------------------------------------------------------------------------
     // FROM and INTO

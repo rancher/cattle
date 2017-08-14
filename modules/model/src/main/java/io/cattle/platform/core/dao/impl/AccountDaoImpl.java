@@ -131,4 +131,17 @@ public class AccountDaoImpl extends AbstractJooqDao implements AccountDao {
         return Arrays.asList(CommonStatesConstants.ACTIVE, ServiceConstants.STATE_UPGRADING);
     }
 
+    @Override
+    public Long getAccountIdForCluster(Long clusterId) {
+        if (clusterId == null) {
+            return null;
+        }
+        return create()
+                .select(ACCOUNT.ID)
+                .from(ACCOUNT)
+                .where(ACCOUNT.CLUSTER_ID.eq(clusterId)
+                    .and(ACCOUNT.CLUSTER_OWNER.isTrue()))
+                .fetchAny(ACCOUNT.ID);
+    }
+
 }

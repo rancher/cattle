@@ -21,16 +21,14 @@ public class AccountConstants {
     public static final String ADMIN_KIND = "admin";
     public static final String PROJECT_KIND = "project";
     public static final String FIELD_PORT_RANGE = "servicesPortRange";
-    public static final String FIELD_HOST_REMOVE_DELAY = "hostRemoveDelaySeconds";
     public static final String FIELD_SCHEDULED_UPGRADE_DELAY = "scheduledUpgradeDelayMinutes";
-    public static final String FIELD_COMPUTE_FLAVOR = "computeFlavor";
 
     public static final String SYSTEM_UUID = "system";
 
     public static final String OPTION_CREATE_APIKEY = "createApiKey";
     public static final String OPTION_CREATE_APIKEY_KIND = "createApiKeyKind";
+    public static final String OPTION_CREATE_OWNER_ACCESS = "ownerAccess";
 
-    public static final String FIELD_DEFAULT_NETWORK_ID = "defaultNetworkId";
     public static final String FIELD_ALLOW_SYSTEM_ROLE = "allowSystemRole";
 
     public static final String DATA_ACT_AS_RESOURCE_ACCOUNT = "actAsResourceAccount";
@@ -43,6 +41,7 @@ public class AccountConstants {
 
     public static final String AUTH_TYPE = "authType";
     public static final String LAST_ADMIN_ACCOUNT = "LastAdminAccount";
+    public static final String CLUSTER_ALREADY_SET = "ClusterAlreadySet";
     public static final String ADMIN_REQUIRED_MESSAGE = "At least one admin account is required at all times";
 
     public static final String STATE_PURGED = "purged";
@@ -50,10 +49,6 @@ public class AccountConstants {
     public static ServicesPortRange getDefaultServicesPortRange() {
         PortRangeSpec spec = new PortRangeSpec(ENV_PORT_RANGE.get());
         return new ServicesPortRange(spec.getStartPort(), spec.getEndPort());
-    }
-
-    public static boolean isFlavorKubernetes(String flavor) {
-        return flavor != null && flavor.endsWith("Kubernetes");
     }
 
 }

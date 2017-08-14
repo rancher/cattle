@@ -41,9 +41,15 @@ public class DeploymentUnitWrapper implements BasicStateWrapper {
             host = svc.objectManager.loadResource(Host.class, unit.getHostId());
         }
         if (host == null) {
-            return svc.hostDao.hasActiveHosts(unit.getAccountId());
+            return hasActiveHosts(unit.getClusterId());
         }
         return StringUtils.isBlank(host.getAgentState()) || CommonStatesConstants.ACTIVE.equals(host.getAgentState());
+    }
+
+    private boolean hasActiveHosts(Long clusterId) {
+        return svc.metadataManager.getMetadataForCluster(clusterId).getHosts().stream()
+                .anyMatch(host -> CommonStatesConstants.ACTIVE.equals(host.getAgentState())
+                        && CommonStatesConstants.ACTIVE.equals(host.getState()));
     }
 
     public Inator.DesiredState getDesiredState() {
@@ -64,7 +70,7 @@ public class DeploymentUnitWrapper implements BasicStateWrapper {
 
     @Override
     public boolean isTransitioning() {
-        return svc.metadataManager.isTransitioningState(DeploymentUnit.class, unit.getState());
+        return svc.objectMetadataManager.isTransitioningState(DeploymentUnit.class, unit.getState());
     }
 
     @Override
@@ -99,7 +105,7 @@ public class DeploymentUnitWrapper implements BasicStateWrapper {
 
     @Override
     public ObjectMetaDataManager getMetadataManager() {
-        return svc.metadataManager;
+        return svc.objectMetadataManager;
     }
 
     public DeploymentUnit getInternal() {

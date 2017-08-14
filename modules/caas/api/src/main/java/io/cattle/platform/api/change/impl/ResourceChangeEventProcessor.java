@@ -33,7 +33,7 @@ public class ResourceChangeEventProcessor implements ApiPubSubEventPostProcessor
     }
 
     @Override
-    public boolean processEvent(EventVO<Object> event) {
+    public boolean processEvent(EventVO<Object, Object> event) {
         if (event.getName() == null || !event.getName().startsWith(FrameworkEvents.RESOURCE_CHANGE)) {
             return true;
         }

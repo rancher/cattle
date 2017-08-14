@@ -6,10 +6,10 @@ import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.engine.model.Loop;
-import io.cattle.platform.environment.EnvironmentResourceManager;
+import io.cattle.platform.metadata.Metadata;
+import io.cattle.platform.metadata.MetadataManager;
 import io.cattle.platform.metadata.model.HostInfo;
 import io.cattle.platform.metadata.model.InstanceInfo;
-import io.cattle.platform.metadata.service.Metadata;
 import io.cattle.platform.object.ObjectManager;
 
 import java.util.ArrayList;
@@ -22,18 +22,18 @@ import java.util.concurrent.ThreadLocalRandom;
 public class HealthcheckScheduleLoop implements Loop {
 
     long accountId;
-    EnvironmentResourceManager envResourceManager;
+    MetadataManager metadataManager;
     ObjectManager objectManager;
 
-    public HealthcheckScheduleLoop(long accountId, EnvironmentResourceManager envResourceManager, ObjectManager objectManager) {
+    public HealthcheckScheduleLoop(long accountId, MetadataManager metadataManager, ObjectManager objectManager) {
         this.accountId = accountId;
-        this.envResourceManager = envResourceManager;
+        this.metadataManager = metadataManager;
         this.objectManager = objectManager;
     }
 
     @Override
     public Result run(Object input) {
-        Metadata metadata = envResourceManager.getMetadata(accountId);
+        Metadata metadata = metadataManager.getMetadataForAccount(accountId);
 
         Set<Long> hostIds = validHostIds(metadata);
         if (hostIds.size() == 0) {

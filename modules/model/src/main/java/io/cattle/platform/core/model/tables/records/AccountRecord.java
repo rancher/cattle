@@ -21,8 +21,8 @@ import javax.persistence.Table;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record14;
-import org.jooq.Row14;
+import org.jooq.Record15;
+import org.jooq.Row15;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -39,9 +39,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "account", schema = "cattle")
-public class AccountRecord extends UpdatableRecordImpl<AccountRecord> implements TableRecordJaxb, Record14<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, Long, String>, Account {
+public class AccountRecord extends UpdatableRecordImpl<AccountRecord> implements TableRecordJaxb, Record15<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String, Long, Boolean>, Account {
 
-    private static final long serialVersionUID = -1086351853;
+    private static final long serialVersionUID = -936561398;
 
     /**
      * Setter for <code>cattle.account.id</code>.
@@ -250,28 +250,11 @@ public class AccountRecord extends UpdatableRecordImpl<AccountRecord> implements
     }
 
     /**
-     * Setter for <code>cattle.account.default_network_id</code>.
-     */
-    @Override
-    public void setDefaultNetworkId(Long value) {
-        set(12, value);
-    }
-
-    /**
-     * Getter for <code>cattle.account.default_network_id</code>.
-     */
-    @Column(name = "default_network_id", precision = 19)
-    @Override
-    public Long getDefaultNetworkId() {
-        return (Long) get(12);
-    }
-
-    /**
      * Setter for <code>cattle.account.version</code>.
      */
     @Override
     public void setVersion(String value) {
-        set(13, value);
+        set(12, value);
     }
 
     /**
@@ -280,7 +263,41 @@ public class AccountRecord extends UpdatableRecordImpl<AccountRecord> implements
     @Column(name = "version", length = 128)
     @Override
     public String getVersion() {
-        return (String) get(13);
+        return (String) get(12);
+    }
+
+    /**
+     * Setter for <code>cattle.account.cluster_id</code>.
+     */
+    @Override
+    public void setClusterId(Long value) {
+        set(13, value);
+    }
+
+    /**
+     * Getter for <code>cattle.account.cluster_id</code>.
+     */
+    @Column(name = "cluster_id", precision = 19)
+    @Override
+    public Long getClusterId() {
+        return (Long) get(13);
+    }
+
+    /**
+     * Setter for <code>cattle.account.cluster_owner</code>.
+     */
+    @Override
+    public void setClusterOwner(Boolean value) {
+        set(14, value);
+    }
+
+    /**
+     * Getter for <code>cattle.account.cluster_owner</code>.
+     */
+    @Column(name = "cluster_owner", nullable = false, precision = 1)
+    @Override
+    public Boolean getClusterOwner() {
+        return (Boolean) get(14);
     }
 
     // -------------------------------------------------------------------------
@@ -296,23 +313,23 @@ public class AccountRecord extends UpdatableRecordImpl<AccountRecord> implements
     }
 
     // -------------------------------------------------------------------------
-    // Record14 type implementation
+    // Record15 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row14<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, Long, String> fieldsRow() {
-        return (Row14) super.fieldsRow();
+    public Row15<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String, Long, Boolean> fieldsRow() {
+        return (Row15) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row14<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, Long, String> valuesRow() {
-        return (Row14) super.valuesRow();
+    public Row15<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String, Long, Boolean> valuesRow() {
+        return (Row15) super.valuesRow();
     }
 
     /**
@@ -415,16 +432,24 @@ public class AccountRecord extends UpdatableRecordImpl<AccountRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public Field<Long> field13() {
-        return AccountTable.ACCOUNT.DEFAULT_NETWORK_ID;
+    public Field<String> field13() {
+        return AccountTable.ACCOUNT.VERSION;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field14() {
-        return AccountTable.ACCOUNT.VERSION;
+    public Field<Long> field14() {
+        return AccountTable.ACCOUNT.CLUSTER_ID;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Field<Boolean> field15() {
+        return AccountTable.ACCOUNT.CLUSTER_OWNER;
     }
 
     /**
@@ -527,16 +552,24 @@ public class AccountRecord extends UpdatableRecordImpl<AccountRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public Long value13() {
-        return getDefaultNetworkId();
+    public String value13() {
+        return getVersion();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public String value14() {
-        return getVersion();
+    public Long value14() {
+        return getClusterId();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Boolean value15() {
+        return getClusterOwner();
     }
 
     /**
@@ -651,16 +684,7 @@ public class AccountRecord extends UpdatableRecordImpl<AccountRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public AccountRecord value13(Long value) {
-        setDefaultNetworkId(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public AccountRecord value14(String value) {
+    public AccountRecord value13(String value) {
         setVersion(value);
         return this;
     }
@@ -669,7 +693,25 @@ public class AccountRecord extends UpdatableRecordImpl<AccountRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public AccountRecord values(Long value1, String value2, String value3, String value4, String value5, String value6, Date value7, Date value8, Date value9, Map<String,Object> value10, String value11, String value12, Long value13, String value14) {
+    public AccountRecord value14(Long value) {
+        setClusterId(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AccountRecord value15(Boolean value) {
+        setClusterOwner(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AccountRecord values(Long value1, String value2, String value3, String value4, String value5, String value6, Date value7, Date value8, Date value9, Map<String,Object> value10, String value11, String value12, String value13, Long value14, Boolean value15) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -684,6 +726,7 @@ public class AccountRecord extends UpdatableRecordImpl<AccountRecord> implements
         value12(value12);
         value13(value13);
         value14(value14);
+        value15(value15);
         return this;
     }
 
@@ -708,8 +751,9 @@ public class AccountRecord extends UpdatableRecordImpl<AccountRecord> implements
         setData(from.getData());
         setExternalId(from.getExternalId());
         setExternalIdType(from.getExternalIdType());
-        setDefaultNetworkId(from.getDefaultNetworkId());
         setVersion(from.getVersion());
+        setClusterId(from.getClusterId());
+        setClusterOwner(from.getClusterOwner());
     }
 
     /**
@@ -735,7 +779,7 @@ public class AccountRecord extends UpdatableRecordImpl<AccountRecord> implements
     /**
      * Create a detached, initialised AccountRecord
      */
-    public AccountRecord(Long id, String name, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String externalId, String externalIdType, Long defaultNetworkId, String version) {
+    public AccountRecord(Long id, String name, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String externalId, String externalIdType, String version, Long clusterId, Boolean clusterOwner) {
         super(AccountTable.ACCOUNT);
 
         set(0, id);
@@ -750,7 +794,8 @@ public class AccountRecord extends UpdatableRecordImpl<AccountRecord> implements
         set(9, data);
         set(10, externalId);
         set(11, externalIdType);
-        set(12, defaultNetworkId);
-        set(13, version);
+        set(12, version);
+        set(13, clusterId);
+        set(14, clusterOwner);
     }
 }

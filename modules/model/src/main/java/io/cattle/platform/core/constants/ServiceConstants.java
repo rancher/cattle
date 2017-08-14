@@ -1,8 +1,5 @@
 package io.cattle.platform.core.constants;
 
-import io.cattle.platform.core.model.Service;
-import io.cattle.platform.core.model.Stack;
-import io.cattle.platform.object.util.DataAccessor;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
@@ -54,7 +51,6 @@ public class ServiceConstants {
     public static final String FIELD_START_FIRST_ON_UPGRADE = "startFirst";
     public static final String FIELD_START_ON_CREATE = "startOnCreate";
     public static final String FIELD_STORAGE_DRIVER = "storageDriver";
-    public static final String FIELD_SYSTEM = "system";
     public static final String FIELD_TMPFS= "tmpfs";
     public static final String FIELD_TOKEN = "token";
     public static final String FIELD_ULIMITS = "ulimits";
@@ -114,14 +110,6 @@ public class ServiceConstants {
             InstanceConstants.FIELD_NETWORK_CONTAINER_ID,
             InstanceConstants.FIELD_VOLUMES_FROM
     };
-
-    public static boolean isSystem(Stack stack) {
-        return stack.getSystem() || DataAccessor.fieldBool(stack, FIELD_SYSTEM)|| DataAccessor.fieldBool(stack, "isSystem");
-    }
-
-    public static boolean isSystem(Service service) {
-        return service.getSystem() || DataAccessor.fieldBool(service, FIELD_SYSTEM);
-    }
 
     public static String getServiceIndexFromInstanceName(String instanceName) {
         for (String divider : SERVICE_INSTANCE_NAME_DIVIDORS) {

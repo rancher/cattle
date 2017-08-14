@@ -1,19 +1,27 @@
 package io.cattle.platform.framework.event;
 
 import io.cattle.platform.eventing.model.EventVO;
+import io.cattle.platform.framework.event.data.PingClient;
 import io.cattle.platform.framework.event.data.PingData;
 
 import java.util.Map;
 
-public class Ping extends EventVO<PingData> {
+import static io.cattle.platform.framework.event.FrameworkEvents.*;
+
+public class Ping extends EventVO<PingData, PingClient> {
 
     public static final String STATS = "stats";
     public static final String RESOURCES = "resources";
     public static final String INSTANCES = "instances";
 
     public Ping() {
-        setName(FrameworkEvents.PING);
+        setName(PING);
         setData(new PingData());
+    }
+
+    public Ping(long accountId, Long clusterId) {
+        this();
+        setRequestData(new PingClient(accountId, clusterId));
     }
 
     public void setOption(String name, boolean value) {

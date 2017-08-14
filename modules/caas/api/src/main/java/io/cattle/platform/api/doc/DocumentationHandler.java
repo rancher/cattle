@@ -28,7 +28,7 @@ public class DocumentationHandler extends AbstractNoOpResourceManager {
     }
 
     @Override
-    public Object list(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
+    public Object listSupport(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
         return new ArrayList<Object>(docs.values());
     }
 

@@ -4,7 +4,6 @@ import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
@@ -33,15 +32,12 @@ public class ServiceProcessManager {
         Service service = (Service) state.getResource();
         serviceLifecycle.create(service);
 
-        Stack stack = objectManager.loadResource(Stack.class, service.getStackId());
-        boolean system = ServiceConstants.isSystem(stack);
-
         if (DataAccessor.fieldBool(service, ServiceConstants.FIELD_START_ON_CREATE)) {
-            return new HandlerResult(ServiceConstants.FIELD_SYSTEM, system)
+            return new HandlerResult()
                     .withChainProcessName(ServiceConstants.PROCESS_SERVICE_ACTIVATE);
         }
 
-        return new HandlerResult(ServiceConstants.FIELD_SYSTEM, system);
+        return null;
     }
 
     public HandlerResult remove(ProcessState state, ProcessInstance process) {

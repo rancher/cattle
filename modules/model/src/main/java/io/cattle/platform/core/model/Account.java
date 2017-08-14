@@ -167,17 +167,6 @@ public interface Account extends Serializable {
     public String getExternalIdType();
 
     /**
-     * Setter for <code>cattle.account.default_network_id</code>.
-     */
-    public void setDefaultNetworkId(Long value);
-
-    /**
-     * Getter for <code>cattle.account.default_network_id</code>.
-     */
-    @Column(name = "default_network_id", precision = 19)
-    public Long getDefaultNetworkId();
-
-    /**
      * Setter for <code>cattle.account.version</code>.
      */
     public void setVersion(String value);
@@ -187,6 +176,28 @@ public interface Account extends Serializable {
      */
     @Column(name = "version", length = 128)
     public String getVersion();
+
+    /**
+     * Setter for <code>cattle.account.cluster_id</code>.
+     */
+    public void setClusterId(Long value);
+
+    /**
+     * Getter for <code>cattle.account.cluster_id</code>.
+     */
+    @Column(name = "cluster_id", precision = 19)
+    public Long getClusterId();
+
+    /**
+     * Setter for <code>cattle.account.cluster_owner</code>.
+     */
+    public void setClusterOwner(Boolean value);
+
+    /**
+     * Getter for <code>cattle.account.cluster_owner</code>.
+     */
+    @Column(name = "cluster_owner", nullable = false, precision = 1)
+    public Boolean getClusterOwner();
 
     // -------------------------------------------------------------------------
     // FROM and INTO

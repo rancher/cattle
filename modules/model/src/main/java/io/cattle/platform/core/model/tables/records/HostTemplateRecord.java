@@ -21,8 +21,8 @@ import javax.persistence.Table;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record13;
-import org.jooq.Row13;
+import org.jooq.Record15;
+import org.jooq.Row15;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -39,9 +39,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "host_template", schema = "cattle")
-public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> implements TableRecordJaxb, Record13<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String>, HostTemplate {
+public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> implements TableRecordJaxb, Record15<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, Long, Long>, HostTemplate {
 
-    private static final long serialVersionUID = -306939694;
+    private static final long serialVersionUID = 91235346;
 
     /**
      * Setter for <code>cattle.host_template.id</code>.
@@ -266,6 +266,40 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
         return (String) get(12);
     }
 
+    /**
+     * Setter for <code>cattle.host_template.cluster_id</code>.
+     */
+    @Override
+    public void setClusterId(Long value) {
+        set(13, value);
+    }
+
+    /**
+     * Getter for <code>cattle.host_template.cluster_id</code>.
+     */
+    @Column(name = "cluster_id", nullable = false, precision = 19)
+    @Override
+    public Long getClusterId() {
+        return (Long) get(13);
+    }
+
+    /**
+     * Setter for <code>cattle.host_template.creator_id</code>.
+     */
+    @Override
+    public void setCreatorId(Long value) {
+        set(14, value);
+    }
+
+    /**
+     * Getter for <code>cattle.host_template.creator_id</code>.
+     */
+    @Column(name = "creator_id", precision = 19)
+    @Override
+    public Long getCreatorId() {
+        return (Long) get(14);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -279,23 +313,23 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
     }
 
     // -------------------------------------------------------------------------
-    // Record13 type implementation
+    // Record15 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row13<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String> fieldsRow() {
-        return (Row13) super.fieldsRow();
+    public Row15<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, Long, Long> fieldsRow() {
+        return (Row15) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row13<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String> valuesRow() {
-        return (Row13) super.valuesRow();
+    public Row15<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, Long, Long> valuesRow() {
+        return (Row15) super.valuesRow();
     }
 
     /**
@@ -406,6 +440,22 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
+    public Field<Long> field14() {
+        return HostTemplateTable.HOST_TEMPLATE.CLUSTER_ID;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Field<Long> field15() {
+        return HostTemplateTable.HOST_TEMPLATE.CREATOR_ID;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Long value1() {
         return getId();
     }
@@ -504,6 +554,22 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
     @Override
     public String value13() {
         return getFlavorPrefix();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Long value14() {
+        return getClusterId();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Long value15() {
+        return getCreatorId();
     }
 
     /**
@@ -627,7 +693,25 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public HostTemplateRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, String value12, String value13) {
+    public HostTemplateRecord value14(Long value) {
+        setClusterId(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public HostTemplateRecord value15(Long value) {
+        setCreatorId(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public HostTemplateRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, String value12, String value13, Long value14, Long value15) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -641,6 +725,8 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
         value11(value11);
         value12(value12);
         value13(value13);
+        value14(value14);
+        value15(value15);
         return this;
     }
 
@@ -666,6 +752,8 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
         setData(from.getData());
         setDriver(from.getDriver());
         setFlavorPrefix(from.getFlavorPrefix());
+        setClusterId(from.getClusterId());
+        setCreatorId(from.getCreatorId());
     }
 
     /**
@@ -691,7 +779,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
     /**
      * Create a detached, initialised HostTemplateRecord
      */
-    public HostTemplateRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String driver, String flavorPrefix) {
+    public HostTemplateRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String driver, String flavorPrefix, Long clusterId, Long creatorId) {
         super(HostTemplateTable.HOST_TEMPLATE);
 
         set(0, id);
@@ -707,5 +795,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
         set(10, data);
         set(11, driver);
         set(12, flavorPrefix);
+        set(13, clusterId);
+        set(14, creatorId);
     }
 }

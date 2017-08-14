@@ -5,10 +5,10 @@ import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.model.Loop;
-import io.cattle.platform.environment.EnvironmentResourceManager;
+import io.cattle.platform.metadata.Metadata;
+import io.cattle.platform.metadata.MetadataManager;
 import io.cattle.platform.metadata.model.InstanceInfo;
 import io.cattle.platform.metadata.model.ServiceInfo;
-import io.cattle.platform.metadata.service.Metadata;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.servicediscovery.api.util.selector.SelectorUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -24,20 +24,20 @@ import static java.util.stream.Collectors.*;
 
 public class ServiceMembershipLoop implements Loop {
 
-    EnvironmentResourceManager envResourceManager;
+    MetadataManager metadataManager;
     long accountId;
     ObjectManager objectManager;
 
-    public ServiceMembershipLoop(EnvironmentResourceManager envResourceManager, long accountId, ObjectManager objectManager) {
+    public ServiceMembershipLoop(MetadataManager metadataManager, long accountId, ObjectManager objectManager) {
         super();
-        this.envResourceManager = envResourceManager;
+        this.metadataManager = metadataManager;
         this.accountId = accountId;
         this.objectManager = objectManager;
     }
 
     @Override
     public Result run(Object input) {
-        Metadata metadata = envResourceManager.getMetadata(accountId);
+        Metadata metadata = metadataManager.getMetadataForAccount(accountId);
         Map<Long, Set<Long>> serviceToInstances = new HashMap<>();
         Map<String, List<ServiceInfo>> selectorServices = metadata.getServices().stream()
                 .filter((service) -> StringUtils.isNotBlank(service.getSelector()))

@@ -21,8 +21,8 @@ import javax.persistence.Table;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record14;
-import org.jooq.Row14;
+import org.jooq.Record13;
+import org.jooq.Row13;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -39,9 +39,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "network", schema = "cattle")
-public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements TableRecordJaxb, Record14<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Boolean, String, Long>, Network {
+public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements TableRecordJaxb, Record13<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long>, Network {
 
-    private static final long serialVersionUID = -161879277;
+    private static final long serialVersionUID = -1087786891;
 
     /**
      * Setter for <code>cattle.network.id</code>.
@@ -80,28 +80,11 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
     }
 
     /**
-     * Setter for <code>cattle.network.account_id</code>.
-     */
-    @Override
-    public void setAccountId(Long value) {
-        set(2, value);
-    }
-
-    /**
-     * Getter for <code>cattle.network.account_id</code>.
-     */
-    @Column(name = "account_id", precision = 19)
-    @Override
-    public Long getAccountId() {
-        return (Long) get(2);
-    }
-
-    /**
      * Setter for <code>cattle.network.kind</code>.
      */
     @Override
     public void setKind(String value) {
-        set(3, value);
+        set(2, value);
     }
 
     /**
@@ -110,7 +93,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
     @Column(name = "kind", nullable = false, length = 255)
     @Override
     public String getKind() {
-        return (String) get(3);
+        return (String) get(2);
     }
 
     /**
@@ -118,7 +101,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      */
     @Override
     public void setUuid(String value) {
-        set(4, value);
+        set(3, value);
     }
 
     /**
@@ -127,7 +110,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
     @Column(name = "uuid", unique = true, nullable = false, length = 128)
     @Override
     public String getUuid() {
-        return (String) get(4);
+        return (String) get(3);
     }
 
     /**
@@ -135,7 +118,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      */
     @Override
     public void setDescription(String value) {
-        set(5, value);
+        set(4, value);
     }
 
     /**
@@ -144,7 +127,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
     @Column(name = "description", length = 1024)
     @Override
     public String getDescription() {
-        return (String) get(5);
+        return (String) get(4);
     }
 
     /**
@@ -152,7 +135,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      */
     @Override
     public void setState(String value) {
-        set(6, value);
+        set(5, value);
     }
 
     /**
@@ -161,7 +144,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
     @Column(name = "state", nullable = false, length = 128)
     @Override
     public String getState() {
-        return (String) get(6);
+        return (String) get(5);
     }
 
     /**
@@ -169,7 +152,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      */
     @Override
     public void setCreated(Date value) {
-        set(7, value);
+        set(6, value);
     }
 
     /**
@@ -178,7 +161,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
     @Column(name = "created")
     @Override
     public Date getCreated() {
-        return (Date) get(7);
+        return (Date) get(6);
     }
 
     /**
@@ -186,7 +169,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      */
     @Override
     public void setRemoved(Date value) {
-        set(8, value);
+        set(7, value);
     }
 
     /**
@@ -195,7 +178,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
     @Column(name = "removed")
     @Override
     public Date getRemoved() {
-        return (Date) get(8);
+        return (Date) get(7);
     }
 
     /**
@@ -203,7 +186,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      */
     @Override
     public void setRemoveTime(Date value) {
-        set(9, value);
+        set(8, value);
     }
 
     /**
@@ -212,7 +195,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
     @Column(name = "remove_time")
     @Override
     public Date getRemoveTime() {
-        return (Date) get(9);
+        return (Date) get(8);
     }
 
     /**
@@ -220,7 +203,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      */
     @Override
     public void setData(Map<String,Object> value) {
-        set(10, value);
+        set(9, value);
     }
 
     /**
@@ -229,24 +212,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
     @Column(name = "data", length = 16777215)
     @Override
     public Map<String,Object> getData() {
-        return (Map<String,Object>) get(10);
-    }
-
-    /**
-     * Setter for <code>cattle.network.is_public</code>.
-     */
-    @Override
-    public void setIsPublic(Boolean value) {
-        set(11, value);
-    }
-
-    /**
-     * Getter for <code>cattle.network.is_public</code>.
-     */
-    @Column(name = "is_public", nullable = false, precision = 1)
-    @Override
-    public Boolean getIsPublic() {
-        return (Boolean) get(11);
+        return (Map<String,Object>) get(9);
     }
 
     /**
@@ -254,7 +220,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      */
     @Override
     public void setDomain(String value) {
-        set(12, value);
+        set(10, value);
     }
 
     /**
@@ -263,7 +229,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
     @Column(name = "domain", length = 128)
     @Override
     public String getDomain() {
-        return (String) get(12);
+        return (String) get(10);
     }
 
     /**
@@ -271,7 +237,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      */
     @Override
     public void setNetworkDriverId(Long value) {
-        set(13, value);
+        set(11, value);
     }
 
     /**
@@ -280,7 +246,24 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
     @Column(name = "network_driver_id", precision = 19)
     @Override
     public Long getNetworkDriverId() {
-        return (Long) get(13);
+        return (Long) get(11);
+    }
+
+    /**
+     * Setter for <code>cattle.network.cluster_id</code>.
+     */
+    @Override
+    public void setClusterId(Long value) {
+        set(12, value);
+    }
+
+    /**
+     * Getter for <code>cattle.network.cluster_id</code>.
+     */
+    @Column(name = "cluster_id", nullable = false, precision = 19)
+    @Override
+    public Long getClusterId() {
+        return (Long) get(12);
     }
 
     // -------------------------------------------------------------------------
@@ -296,23 +279,23 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
     }
 
     // -------------------------------------------------------------------------
-    // Record14 type implementation
+    // Record13 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row14<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Boolean, String, Long> fieldsRow() {
-        return (Row14) super.fieldsRow();
+    public Row13<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long> fieldsRow() {
+        return (Row13) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row14<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Boolean, String, Long> valuesRow() {
-        return (Row14) super.valuesRow();
+    public Row13<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long> valuesRow() {
+        return (Row13) super.valuesRow();
     }
 
     /**
@@ -335,15 +318,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public Field<Long> field3() {
-        return NetworkTable.NETWORK.ACCOUNT_ID;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<String> field4() {
+    public Field<String> field3() {
         return NetworkTable.NETWORK.KIND;
     }
 
@@ -351,7 +326,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field5() {
+    public Field<String> field4() {
         return NetworkTable.NETWORK.UUID;
     }
 
@@ -359,7 +334,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field6() {
+    public Field<String> field5() {
         return NetworkTable.NETWORK.DESCRIPTION;
     }
 
@@ -367,7 +342,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field7() {
+    public Field<String> field6() {
         return NetworkTable.NETWORK.STATE;
     }
 
@@ -375,7 +350,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public Field<Date> field8() {
+    public Field<Date> field7() {
         return NetworkTable.NETWORK.CREATED;
     }
 
@@ -383,7 +358,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public Field<Date> field9() {
+    public Field<Date> field8() {
         return NetworkTable.NETWORK.REMOVED;
     }
 
@@ -391,7 +366,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public Field<Date> field10() {
+    public Field<Date> field9() {
         return NetworkTable.NETWORK.REMOVE_TIME;
     }
 
@@ -399,7 +374,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public Field<Map<String,Object>> field11() {
+    public Field<Map<String,Object>> field10() {
         return NetworkTable.NETWORK.DATA;
     }
 
@@ -407,15 +382,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public Field<Boolean> field12() {
-        return NetworkTable.NETWORK.IS_PUBLIC;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<String> field13() {
+    public Field<String> field11() {
         return NetworkTable.NETWORK.DOMAIN;
     }
 
@@ -423,8 +390,16 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public Field<Long> field14() {
+    public Field<Long> field12() {
         return NetworkTable.NETWORK.NETWORK_DRIVER_ID;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Field<Long> field13() {
+        return NetworkTable.NETWORK.CLUSTER_ID;
     }
 
     /**
@@ -447,15 +422,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public Long value3() {
-        return getAccountId();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String value4() {
+    public String value3() {
         return getKind();
     }
 
@@ -463,7 +430,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public String value5() {
+    public String value4() {
         return getUuid();
     }
 
@@ -471,7 +438,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public String value6() {
+    public String value5() {
         return getDescription();
     }
 
@@ -479,7 +446,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public String value7() {
+    public String value6() {
         return getState();
     }
 
@@ -487,7 +454,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public Date value8() {
+    public Date value7() {
         return getCreated();
     }
 
@@ -495,7 +462,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public Date value9() {
+    public Date value8() {
         return getRemoved();
     }
 
@@ -503,7 +470,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public Date value10() {
+    public Date value9() {
         return getRemoveTime();
     }
 
@@ -511,7 +478,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public Map<String,Object> value11() {
+    public Map<String,Object> value10() {
         return getData();
     }
 
@@ -519,15 +486,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public Boolean value12() {
-        return getIsPublic();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String value13() {
+    public String value11() {
         return getDomain();
     }
 
@@ -535,8 +494,16 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public Long value14() {
+    public Long value12() {
         return getNetworkDriverId();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Long value13() {
+        return getClusterId();
     }
 
     /**
@@ -561,16 +528,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public NetworkRecord value3(Long value) {
-        setAccountId(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NetworkRecord value4(String value) {
+    public NetworkRecord value3(String value) {
         setKind(value);
         return this;
     }
@@ -579,7 +537,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public NetworkRecord value5(String value) {
+    public NetworkRecord value4(String value) {
         setUuid(value);
         return this;
     }
@@ -588,7 +546,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public NetworkRecord value6(String value) {
+    public NetworkRecord value5(String value) {
         setDescription(value);
         return this;
     }
@@ -597,7 +555,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public NetworkRecord value7(String value) {
+    public NetworkRecord value6(String value) {
         setState(value);
         return this;
     }
@@ -606,7 +564,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public NetworkRecord value8(Date value) {
+    public NetworkRecord value7(Date value) {
         setCreated(value);
         return this;
     }
@@ -615,7 +573,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public NetworkRecord value9(Date value) {
+    public NetworkRecord value8(Date value) {
         setRemoved(value);
         return this;
     }
@@ -624,7 +582,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public NetworkRecord value10(Date value) {
+    public NetworkRecord value9(Date value) {
         setRemoveTime(value);
         return this;
     }
@@ -633,7 +591,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public NetworkRecord value11(Map<String,Object> value) {
+    public NetworkRecord value10(Map<String,Object> value) {
         setData(value);
         return this;
     }
@@ -642,16 +600,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public NetworkRecord value12(Boolean value) {
-        setIsPublic(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NetworkRecord value13(String value) {
+    public NetworkRecord value11(String value) {
         setDomain(value);
         return this;
     }
@@ -660,7 +609,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public NetworkRecord value14(Long value) {
+    public NetworkRecord value12(Long value) {
         setNetworkDriverId(value);
         return this;
     }
@@ -669,7 +618,16 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public NetworkRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, Boolean value12, String value13, Long value14) {
+    public NetworkRecord value13(Long value) {
+        setClusterId(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public NetworkRecord values(Long value1, String value2, String value3, String value4, String value5, String value6, Date value7, Date value8, Date value9, Map<String,Object> value10, String value11, Long value12, Long value13) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -683,7 +641,6 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
         value11(value11);
         value12(value12);
         value13(value13);
-        value14(value14);
         return this;
     }
 
@@ -698,7 +655,6 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
     public void from(Network from) {
         setId(from.getId());
         setName(from.getName());
-        setAccountId(from.getAccountId());
         setKind(from.getKind());
         setUuid(from.getUuid());
         setDescription(from.getDescription());
@@ -707,9 +663,9 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
         setRemoved(from.getRemoved());
         setRemoveTime(from.getRemoveTime());
         setData(from.getData());
-        setIsPublic(from.getIsPublic());
         setDomain(from.getDomain());
         setNetworkDriverId(from.getNetworkDriverId());
+        setClusterId(from.getClusterId());
     }
 
     /**
@@ -735,22 +691,21 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
     /**
      * Create a detached, initialised NetworkRecord
      */
-    public NetworkRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Boolean isPublic, String domain, Long networkDriverId) {
+    public NetworkRecord(Long id, String name, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String domain, Long networkDriverId, Long clusterId) {
         super(NetworkTable.NETWORK);
 
         set(0, id);
         set(1, name);
-        set(2, accountId);
-        set(3, kind);
-        set(4, uuid);
-        set(5, description);
-        set(6, state);
-        set(7, created);
-        set(8, removed);
-        set(9, removeTime);
-        set(10, data);
-        set(11, isPublic);
-        set(12, domain);
-        set(13, networkDriverId);
+        set(2, kind);
+        set(3, uuid);
+        set(4, description);
+        set(5, state);
+        set(6, created);
+        set(7, removed);
+        set(8, removeTime);
+        set(9, data);
+        set(10, domain);
+        set(11, networkDriverId);
+        set(12, clusterId);
     }
 }

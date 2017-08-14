@@ -9,7 +9,6 @@ import io.cattle.platform.core.model.tables.AgentTable;
 import io.cattle.platform.core.model.tables.AuditLogTable;
 import io.cattle.platform.core.model.tables.AuthTokenTable;
 import io.cattle.platform.core.model.tables.CertificateTable;
-import io.cattle.platform.core.model.tables.ClusterMembershipTable;
 import io.cattle.platform.core.model.tables.ClusterTable;
 import io.cattle.platform.core.model.tables.CredentialTable;
 import io.cattle.platform.core.model.tables.DataTable;
@@ -20,9 +19,11 @@ import io.cattle.platform.core.model.tables.DynamicSchemaRoleTable;
 import io.cattle.platform.core.model.tables.DynamicSchemaTable;
 import io.cattle.platform.core.model.tables.ExternalEventTable;
 import io.cattle.platform.core.model.tables.GenericObjectTable;
+import io.cattle.platform.core.model.tables.HaMembershipTable;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.HostTemplateTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
+import io.cattle.platform.core.model.tables.KeyValueTable;
 import io.cattle.platform.core.model.tables.MachineDriverTable;
 import io.cattle.platform.core.model.tables.MountTable;
 import io.cattle.platform.core.model.tables.NetworkDriverTable;
@@ -72,7 +73,7 @@ import org.jooq.impl.SchemaImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class CattleTable extends SchemaImpl {
 
-    private static final long serialVersionUID = -151580490;
+    private static final long serialVersionUID = -296767861;
 
     /**
      * The reference instance of <code>cattle</code>
@@ -110,11 +111,6 @@ public class CattleTable extends SchemaImpl {
     public final ClusterTable CLUSTER = io.cattle.platform.core.model.tables.ClusterTable.CLUSTER;
 
     /**
-     * The table <code>cattle.cluster_membership</code>.
-     */
-    public final ClusterMembershipTable CLUSTER_MEMBERSHIP = io.cattle.platform.core.model.tables.ClusterMembershipTable.CLUSTER_MEMBERSHIP;
-
-    /**
      * The table <code>cattle.credential</code>.
      */
     public final CredentialTable CREDENTIAL = io.cattle.platform.core.model.tables.CredentialTable.CREDENTIAL;
@@ -150,11 +146,6 @@ public class CattleTable extends SchemaImpl {
     public final DynamicSchemaRoleTable DYNAMIC_SCHEMA_ROLE = io.cattle.platform.core.model.tables.DynamicSchemaRoleTable.DYNAMIC_SCHEMA_ROLE;
 
     /**
-     * The table <code>cattle.environment</code>.
-     */
-    public final StackTable STACK = io.cattle.platform.core.model.tables.StackTable.STACK;
-
-    /**
      * The table <code>cattle.external_event</code>.
      */
     public final ExternalEventTable EXTERNAL_EVENT = io.cattle.platform.core.model.tables.ExternalEventTable.EXTERNAL_EVENT;
@@ -163,6 +154,11 @@ public class CattleTable extends SchemaImpl {
      * The table <code>cattle.generic_object</code>.
      */
     public final GenericObjectTable GENERIC_OBJECT = io.cattle.platform.core.model.tables.GenericObjectTable.GENERIC_OBJECT;
+
+    /**
+     * The table <code>cattle.ha_membership</code>.
+     */
+    public final HaMembershipTable HA_MEMBERSHIP = io.cattle.platform.core.model.tables.HaMembershipTable.HA_MEMBERSHIP;
 
     /**
      * The table <code>cattle.host</code>.
@@ -178,6 +174,11 @@ public class CattleTable extends SchemaImpl {
      * The table <code>cattle.instance</code>.
      */
     public final InstanceTable INSTANCE = io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
+
+    /**
+     * The table <code>cattle.key_value</code>.
+     */
+    public final KeyValueTable KEY_VALUE = io.cattle.platform.core.model.tables.KeyValueTable.KEY_VALUE;
 
     /**
      * The table <code>cattle.machine_driver</code>.
@@ -255,6 +256,11 @@ public class CattleTable extends SchemaImpl {
     public final SettingTable SETTING = io.cattle.platform.core.model.tables.SettingTable.SETTING;
 
     /**
+     * The table <code>cattle.stack</code>.
+     */
+    public final StackTable STACK = io.cattle.platform.core.model.tables.StackTable.STACK;
+
+    /**
      * The table <code>cattle.storage_driver</code>.
      */
     public final StorageDriverTable STORAGE_DRIVER = io.cattle.platform.core.model.tables.StorageDriverTable.STORAGE_DRIVER;
@@ -325,7 +331,6 @@ public class CattleTable extends SchemaImpl {
             AuthTokenTable.AUTH_TOKEN,
             CertificateTable.CERTIFICATE,
             ClusterTable.CLUSTER,
-            ClusterMembershipTable.CLUSTER_MEMBERSHIP,
             CredentialTable.CREDENTIAL,
             DataTable.DATA,
             DatabasechangelogTable.DATABASECHANGELOG,
@@ -333,12 +338,13 @@ public class CattleTable extends SchemaImpl {
             DeploymentUnitTable.DEPLOYMENT_UNIT,
             DynamicSchemaTable.DYNAMIC_SCHEMA,
             DynamicSchemaRoleTable.DYNAMIC_SCHEMA_ROLE,
-            StackTable.STACK,
             ExternalEventTable.EXTERNAL_EVENT,
             GenericObjectTable.GENERIC_OBJECT,
+            HaMembershipTable.HA_MEMBERSHIP,
             HostTable.HOST,
             HostTemplateTable.HOST_TEMPLATE,
             InstanceTable.INSTANCE,
+            KeyValueTable.KEY_VALUE,
             MachineDriverTable.MACHINE_DRIVER,
             MountTable.MOUNT,
             NetworkTable.NETWORK,
@@ -354,6 +360,7 @@ public class CattleTable extends SchemaImpl {
             ServiceEventTable.SERVICE_EVENT,
             ServiceLogTable.SERVICE_LOG,
             SettingTable.SETTING,
+            StackTable.STACK,
             StorageDriverTable.STORAGE_DRIVER,
             StoragePoolTable.STORAGE_POOL,
             StoragePoolHostMapTable.STORAGE_POOL_HOST_MAP,

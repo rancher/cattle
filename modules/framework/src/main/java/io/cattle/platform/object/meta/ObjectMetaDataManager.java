@@ -18,23 +18,21 @@ public interface ObjectMetaDataManager {
     String TRANSITIONING_MESSAGE_FIELD = "transitioningMessage";
 
     String STATE_FIELD = "state";
-    String STATES_FIELD = "states";
 
     String ACCOUNT_FIELD = "accountId";
     String CAPABILITIES_FIELD = "capabilities";
+    String CLUSTER_FIELD = "clusterId";
+    String CREATED_FIELD = "created";
+    String CREATOR_FIELD = "creatorId";
     String DATA_FIELD = "data";
-    String KIND_FIELD = "kind";
     String ID_FIELD = TypeUtils.ID_FIELD;
+    String KIND_FIELD = "kind";
     String NAME_FIELD = "name";
-    String PUBLIC_FIELD = "isPublic";
     String REMOVED_FIELD = "removed";
     String REMOVE_TIME_FIELD = "removeTime";
+    String SYSTEM_FIELD = "system";
     String TYPE_FIELD = "type";
     String UUID_FIELD = "uuid";
-    String CREATED_FIELD = "created";
-    String SYSTEM_FIELD = "system";
-
-    String APPEND = "+";
 
     String convertToPropertyNameString(Class<?> recordClass, Object key);
 

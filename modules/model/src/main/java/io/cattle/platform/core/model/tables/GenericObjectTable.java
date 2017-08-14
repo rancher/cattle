@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class GenericObjectTable extends TableImpl<GenericObjectRecord> {
 
-    private static final long serialVersionUID = -150041693;
+    private static final long serialVersionUID = -1671573143;
 
     /**
      * The reference instance of <code>cattle.generic_object</code>
@@ -116,6 +116,16 @@ public class GenericObjectTable extends TableImpl<GenericObjectRecord> {
     public final TableField<GenericObjectRecord, String> KEY = createField("key", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
     /**
+     * The column <code>cattle.generic_object.creator_id</code>.
+     */
+    public final TableField<GenericObjectRecord, Long> CREATOR_ID = createField("creator_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
+     * The column <code>cattle.generic_object.cluster_id</code>.
+     */
+    public final TableField<GenericObjectRecord, Long> CLUSTER_ID = createField("cluster_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
      * Create a <code>cattle.generic_object</code> table reference
      */
     public GenericObjectTable() {
@@ -174,7 +184,7 @@ public class GenericObjectTable extends TableImpl<GenericObjectRecord> {
      */
     @Override
     public List<ForeignKey<GenericObjectRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<GenericObjectRecord, ?>>asList(Keys.FK_GENERIC_OBJECT__ACCOUNT_ID);
+        return Arrays.<ForeignKey<GenericObjectRecord, ?>>asList(Keys.FK_GENERIC_OBJECT__ACCOUNT_ID, Keys.FK_GENERIC_OBJECT__CREATOR_ID, Keys.FK_GENERIC_OBJECT__CLUSTER_ID);
     }
 
     /**

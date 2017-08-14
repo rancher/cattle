@@ -9,8 +9,8 @@ import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.model.ClusterMembership;
-import io.cattle.platform.hazelcast.membership.dao.ClusterMembershipDAO;
+import io.cattle.platform.core.model.HaMembership;
+import io.cattle.platform.hazelcast.membership.dao.HaMembershipDAO;
 import io.cattle.platform.json.JsonMapper;
 import org.apache.cloudstack.managed.context.NoExceptionRunnable;
 import org.apache.commons.io.IOUtils;
@@ -52,7 +52,7 @@ public class DBDiscovery extends NoExceptionRunnable implements DiscoveryStrateg
 
     private static final Logger log = LoggerFactory.getLogger("ConsoleStatus");
 
-    ClusterMembershipDAO clusterMembershipDao;
+    HaMembershipDAO HaMembershipDao;
     JsonMapper jsonMapper;
     ScheduledExecutorService executorService;
     DiscoveryNode selfNode;
@@ -67,8 +67,8 @@ public class DBDiscovery extends NoExceptionRunnable implements DiscoveryStrateg
     Pair<Integer, Integer> countAndIndex = new ImmutablePair<>(0, 0);
 
 
-    public DBDiscovery(ClusterMembershipDAO clusterMembershipDao, JsonMapper jsonMapper) {
-        this.clusterMembershipDao = clusterMembershipDao;
+    public DBDiscovery(HaMembershipDAO HaMembershipDao, JsonMapper jsonMapper) {
+        this.HaMembershipDao = HaMembershipDao;
         this.jsonMapper = jsonMapper;
         init();
     }
@@ -172,11 +172,11 @@ public class DBDiscovery extends NoExceptionRunnable implements DiscoveryStrateg
     }
 
     public synchronized void checkin() throws Exception {
-        Map<Long, ClusterMembership> activeSet = new TreeMap<>();
+        Map<Long, HaMembership> activeSet = new TreeMap<>();
         ClusterConfig config = getLocalConfig();
-        clusterMembershipDao.checkin(uuid, config, initial);
+        HaMembershipDao.checkin(uuid, config, initial);
 
-        for (ClusterMembership member : clusterMembershipDao.listMembers()) {
+        for (HaMembership member : HaMembershipDao.listMembers()) {
             Checkin checkin = heartbeats.get(member.getId());
             if (checkin == null) {
                 checkin = new Checkin();
@@ -189,7 +189,7 @@ public class DBDiscovery extends NoExceptionRunnable implements DiscoveryStrateg
             }
 
             if (checkin.count > MISSED_COUNT.get()) {
-                clusterMembershipDao.delete(member);
+                HaMembershipDao.delete(member);
             } else {
                 activeSet.put(member.getId(), member);
             }
@@ -212,14 +212,14 @@ public class DBDiscovery extends NoExceptionRunnable implements DiscoveryStrateg
         this.notifyAll();
     }
 
-    protected void setupMembers(Map<Long, ClusterMembership> activeSet, ClusterConfig config) throws IOException {
+    protected void setupMembers(Map<Long, HaMembership> activeSet, ClusterConfig config) throws IOException {
         Map<Long, ClusteredMember> members = new TreeMap<>();
 
         int count = 0;
         int selfIndex = 0;
-        for (Map.Entry<Long, ClusterMembership> entry : activeSet.entrySet()) {
+        for (Map.Entry<Long, HaMembership> entry : activeSet.entrySet()) {
             Long id = entry.getKey();
-            ClusterMembership member = entry.getValue();
+            HaMembership member = entry.getValue();
             ClusterConfig memberConfig = jsonMapper.readValue(member.getConfig(), ClusterConfig.class);
             ClusteredMember clusteredMember = new ClusteredMember(id, memberConfig, uuid.equals(member.getUuid()), member.getClustered());
             members.put(id, clusteredMember);
@@ -235,7 +235,12 @@ public class DBDiscovery extends NoExceptionRunnable implements DiscoveryStrateg
     }
 
     @Override
-    public boolean isInPartition(Long id) {
+    public boolean isInPartition(Long accountId, Long clusterId) {
+        Long id = clusterId;
+        if (id == null) {
+            id = accountId;
+        }
+
         int count = countAndIndex.getLeft();
         int index = countAndIndex.getRight();
         if (count <= 1) {
@@ -247,9 +252,9 @@ public class DBDiscovery extends NoExceptionRunnable implements DiscoveryStrateg
         return (id % count) == index;
     }
 
-    protected void setupHz(Map<Long, ClusterMembership> activeSet, ClusterConfig selfConfig) {
+    protected void setupHz(Map<Long, HaMembership> activeSet, ClusterConfig selfConfig) {
         Map<String, DiscoveryNode> newNodes = new TreeMap<>();
-        for (ClusterMembership member : activeSet.values()) {
+        for (HaMembership member : activeSet.values()) {
             try {
                 ClusterConfig config = jsonMapper.readValue(member.getConfig(), ClusterConfig.class);
                 String address = getAddress(config.getAdvertiseAddress());

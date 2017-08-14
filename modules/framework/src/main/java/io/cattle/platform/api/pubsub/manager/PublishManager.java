@@ -14,6 +14,7 @@ import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.regex.Pattern;
@@ -56,28 +57,30 @@ public class PublishManager extends AbstractNoOpResourceManager {
     }
 
     private Event createEvent(Publish publish) {
-        EventVO<Object> event = new EventVO<>();
+        EventVO<Object, Object> event = new EventVO<>();
 
         if (publish.getId() != null) {
             event.setId(publish.getId());
         }
 
+        event.setData(publish.getData());
         event.setId(publish.getId());
         event.setName(publish.getName());
+        event.setPreviousId(publish.getPreviousId());
         event.setResourceId(getResourceId(publish.getResourceId()));
         event.setResourceType(publish.getResourceType());
-        event.setData(publish.getData());
-        event.setTransitioning(publish.getTransitioning());
         event.setTransitioningMessage(publish.getTransitioningMessage());
-        event.setTransitioningProgress(publish.getTransitioningProgress());
+        event.setTransitioning(publish.getTransitioning());
+
+        if (StringUtils.isBlank(event.getPreviousId())) {
+            List<String> previousIds = publish.getPreviousIds();
+            if (previousIds != null && previousIds.size() > 0) {
+                event.setPreviousId(previousIds.get(0));
+            }
+        }
 
         if (publish.getTime() != null) {
             event.setTime(publish.getTime());
-        }
-
-        List<String> previous = publish.getPreviousIds();
-        if (previous != null) {
-            event.setPreviousIds(previous.toArray(new String[previous.size()]));
         }
 
         return event;

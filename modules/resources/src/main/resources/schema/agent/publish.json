@@ -7,6 +7,9 @@
         "name": {
             "create": true
         },
+        "previousId": {
+            "create": true
+        },
         "previousIds": {
             "create": true
         },

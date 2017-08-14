@@ -100,7 +100,7 @@ public class AgentActivateReconnect implements CompletableLogic {
         }
 
         Ping resp = jsonMapper.convertValue(obj, Ping.class);
-        pingMonitor.pingSuccess(agent.getId(), resp);
+        pingMonitor.pingSuccess(agent, resp);
 
         return null;
     }

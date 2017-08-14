@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ClusterTable extends TableImpl<ClusterRecord> {
 
-    private static final long serialVersionUID = -584036670;
+    private static final long serialVersionUID = 1306406104;
 
     /**
      * The reference instance of <code>cattle.cluster</code>
@@ -64,11 +64,6 @@ public class ClusterTable extends TableImpl<ClusterRecord> {
      * The column <code>cattle.cluster.name</code>.
      */
     public final TableField<ClusterRecord, String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
-
-    /**
-     * The column <code>cattle.cluster.account_id</code>.
-     */
-    public final TableField<ClusterRecord, Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
      * The column <code>cattle.cluster.kind</code>.
@@ -114,6 +109,16 @@ public class ClusterTable extends TableImpl<ClusterRecord> {
      * The column <code>cattle.cluster.embedded</code>.
      */
     public final TableField<ClusterRecord, Boolean> EMBEDDED = createField("embedded", org.jooq.impl.SQLDataType.BIT.nullable(false).defaultValue(org.jooq.impl.DSL.inline("b'0'", org.jooq.impl.SQLDataType.BIT)), this, "");
+
+    /**
+     * The column <code>cattle.cluster.creator_id</code>.
+     */
+    public final TableField<ClusterRecord, Long> CREATOR_ID = createField("creator_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
+     * The column <code>cattle.cluster.default_network_id</code>.
+     */
+    public final TableField<ClusterRecord, Long> DEFAULT_NETWORK_ID = createField("default_network_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
      * Create a <code>cattle.cluster</code> table reference
@@ -174,7 +179,7 @@ public class ClusterTable extends TableImpl<ClusterRecord> {
      */
     @Override
     public List<ForeignKey<ClusterRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<ClusterRecord, ?>>asList(Keys.FK_CLUSTER__ACCOUNT_ID);
+        return Arrays.<ForeignKey<ClusterRecord, ?>>asList(Keys.FK_CLUSTER__CREATOR_ID, Keys.FK_CLUSTER__NETWORK_ID);
     }
 
     /**

@@ -6,7 +6,9 @@ import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.addon.ServicesPortRange;
 import io.cattle.platform.core.constants.AccountConstants;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
+import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.InstanceDao;
@@ -20,6 +22,7 @@ import io.cattle.platform.core.model.GenericObject;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
+import io.cattle.platform.core.model.ProjectMember;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.StoragePool;
@@ -32,12 +35,13 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.util.type.CollectionUtils;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static io.cattle.platform.core.model.Tables.*;
 import static io.cattle.platform.core.model.tables.CredentialTable.CREDENTIAL;
@@ -48,7 +52,6 @@ public class AccountProcessManager {
     public static final DynamicBooleanProperty CREATE_CREDENTIAL = ArchaiusUtil.getBoolean("process.account.create.create.credential");
     public static final DynamicStringProperty CREDENTIAL_TYPE = ArchaiusUtil.getString("process.account.create.create.credential.default.kind");
     public static final DynamicStringListProperty ACCOUNT_KIND_CREDENTIALS = ArchaiusUtil.getList("process.account.create.create.credential.account.kinds");
-    public static final DynamicStringListProperty KINDS = ArchaiusUtil.getList("docker.network.create.account.types");
 
     private static final Class<?>[] REMOVE_TYPES = new Class<?>[]{
         Service.class,
@@ -104,9 +107,9 @@ public class AccountProcessManager {
             if (createApiKey || CREATE_CREDENTIAL.get()) {
                 List<Credential> creds = objectManager.children(account, Credential.class);
                 if (creds.size() == 0) {
-                    creds = Arrays.asList(objectManager.create(Credential.class,
-                            CREDENTIAL.ACCOUNT_ID, account.getId(),
-                            CREDENTIAL.KIND, apiKeyKind));
+                    creds = Collections.singletonList(objectManager.create(Credential.class,
+                                CREDENTIAL.ACCOUNT_ID, account.getId(),
+                                CREDENTIAL.KIND, apiKeyKind));
                 }
 
                 for (Credential cred : creds) {
@@ -115,11 +118,54 @@ public class AccountProcessManager {
             }
         }
 
-        if (AccountConstants.PROJECT_KIND.equals(account.getKind())) {
-            serviceDao.getOrCreateDefaultStack(account.getId());
-        }
+        createOwnerAccess(state, account);
 
         return setupNetworking(account);
+    }
+
+    private void createOwnerAccess(ProcessState state, Account account) {
+        Boolean createOwnerAccess = (DataAccessor.fromDataFieldOf(state)
+                .withKey(AccountConstants.OPTION_CREATE_OWNER_ACCESS)
+                .as(Boolean.class));
+
+        if (createOwnerAccess == null || !createOwnerAccess) {
+            return;
+        }
+
+        Account owner = objectManager.findAny(Account.class,
+                ACCOUNT.CLUSTER_ID, account.getClusterId(),
+                ACCOUNT.CLUSTER_OWNER, true,
+                ACCOUNT.REMOVED, null);
+        if (owner == null) {
+            return;
+        }
+
+        Set<String> existingAccess = new HashSet<>();
+        for (ProjectMember member : objectManager.find(ProjectMember.class,
+                PROJECT_MEMBER.PROJECT_ID, account.getId())) {
+            existingAccess.add(externalId(member));
+        }
+
+        for (ProjectMember member : objectManager.find(ProjectMember.class,
+                PROJECT_MEMBER.STATE, CommonStatesConstants.ACTIVE,
+                PROJECT_MEMBER.ROLE, ProjectConstants.OWNER,
+                PROJECT_MEMBER.PROJECT_ID, owner.getId())) {
+            if (existingAccess.contains(externalId(member))) {
+                continue;
+            }
+
+            objectManager.create(ProjectMember.class,
+                    PROJECT_MEMBER.ACCOUNT_ID, account.getId(),
+                    PROJECT_MEMBER.PROJECT_ID, account.getId(),
+                    PROJECT_MEMBER.EXTERNAL_ID, member.getExternalId(),
+                    PROJECT_MEMBER.EXTERNAL_ID_TYPE, member.getExternalIdType(),
+                    PROJECT_MEMBER.STATE, CommonStatesConstants.ACTIVE,
+                    PROJECT_MEMBER.ROLE, ProjectConstants.OWNER);
+        }
+    }
+
+    private String externalId(ProjectMember member) {
+        return String.format("%s:%s", member.getExternalIdType(), member.getExternalId());
     }
 
     public HandlerResult remove(ProcessState state, ProcessInstance process) {
@@ -164,16 +210,16 @@ public class AccountProcessManager {
     }
 
     private HandlerResult setupNetworking(Account account) {
-        if (!KINDS.get().contains(account.getKind())) {
+        if (!account.getClusterOwner() || account.getClusterId() == null) {
             return null;
         }
 
         Map<String, Network> networksByKind = getNetworksByKind(account);
 
-        createNetwork(NetworkConstants.KIND_DOCKER_HOST, account, networksByKind, "Docker Host Network Mode", null);
-        createNetwork(NetworkConstants.KIND_DOCKER_NONE, account, networksByKind, "Docker None Network Mode", null);
-        createNetwork(NetworkConstants.KIND_DOCKER_CONTAINER, account, networksByKind, "Docker Container Network Mode", null);
-        createNetwork(NetworkConstants.KIND_DOCKER_BRIDGE, account, networksByKind, "Docker Bridge Network Mode", null);
+        createNetwork(NetworkConstants.KIND_DOCKER_HOST, account, networksByKind, "Host Network Mode");
+        createNetwork(NetworkConstants.KIND_DOCKER_NONE, account, networksByKind, "No Network Mode");
+        createNetwork(NetworkConstants.KIND_DOCKER_CONTAINER, account, networksByKind, "Container Network Mode");
+        createNetwork(NetworkConstants.KIND_DOCKER_BRIDGE, account, networksByKind, "Docker Bridge Network Mode");
 
         ServicesPortRange portRange = DataAccessor.field(account, AccountConstants.FIELD_PORT_RANGE, ServicesPortRange.class);
         if (portRange == null) {
@@ -183,20 +229,17 @@ public class AccountProcessManager {
         return new HandlerResult(AccountConstants.FIELD_PORT_RANGE, portRange);
     }
 
-    protected Network createNetwork(String kind, Account account, Map<String, Network> networksByKind,
-                                  String name, String key, Object... valueKeyValue) {
+    protected void createNetwork(String kind, Account account, Map<String, Network> networksByKind, String name) {
         Network network = networksByKind.get(kind);
         if (network != null) {
-            return network;
+            return;
         }
-        Map<String, Object> data = key == null ? new HashMap<>() :
-                CollectionUtils.asMap(key, valueKeyValue);
 
-        data.put(ObjectMetaDataManager.NAME_FIELD, name);
-        data.put(ObjectMetaDataManager.ACCOUNT_FIELD, account.getId());
-        data.put(ObjectMetaDataManager.KIND_FIELD, kind);
-
-        return resourceDao.createAndSchedule(Network.class, data);
+        resourceDao.createAndSchedule(Network.class,
+                ObjectMetaDataManager.NAME_FIELD, name,
+                ObjectMetaDataManager.NAME_FIELD, name,
+                NETWORK.CLUSTER_ID, account.getClusterId(),
+                ObjectMetaDataManager.KIND_FIELD, kind);
     }
 
 
@@ -204,7 +247,7 @@ public class AccountProcessManager {
         Map<String, Network> result = new HashMap<>();
 
         for (Network network : objectManager.find(Network.class,
-                NETWORK.ACCOUNT_ID, account.getId(),
+                NETWORK.CLUSTER_ID, account.getClusterId(),
                 NETWORK.REMOVED, null)) {
             result.put(network.getKind(), network);
         }

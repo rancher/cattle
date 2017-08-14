@@ -176,7 +176,7 @@ public class VirtualMachineLifecycleManagerImpl implements VirtualMachineLifecyc
                 if (localDriver == null) {
                     localDriver = volumeDriver;
                 }
-                List<? extends StoragePool> pools = storagePoolDao.findStoragePoolByDriverName(instance.getAccountId(), localDriver);
+                List<? extends StoragePool> pools = storagePoolDao.findStoragePoolByDriverName(instance.getClusterId(), localDriver);
                 String blockDevPath = null;
                 if (pools.size() > 0) {
                     blockDevPath = DataAccessor.fieldString(pools.get(0), StoragePoolConstants.FIELD_BLOCK_DEVICE_PATH);

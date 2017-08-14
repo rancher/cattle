@@ -57,17 +57,6 @@ public interface Subnet extends Serializable {
     public String getName();
 
     /**
-     * Setter for <code>cattle.subnet.account_id</code>.
-     */
-    public void setAccountId(Long value);
-
-    /**
-     * Getter for <code>cattle.subnet.account_id</code>.
-     */
-    @Column(name = "account_id", precision = 19)
-    public Long getAccountId();
-
-    /**
      * Setter for <code>cattle.subnet.kind</code>.
      */
     public void setKind(String value);
@@ -222,15 +211,15 @@ public interface Subnet extends Serializable {
     public Long getNetworkId();
 
     /**
-     * Setter for <code>cattle.subnet.is_public</code>.
+     * Setter for <code>cattle.subnet.cluster_id</code>.
      */
-    public void setIsPublic(Boolean value);
+    public void setClusterId(Long value);
 
     /**
-     * Getter for <code>cattle.subnet.is_public</code>.
+     * Getter for <code>cattle.subnet.cluster_id</code>.
      */
-    @Column(name = "is_public", nullable = false, precision = 1)
-    public Boolean getIsPublic();
+    @Column(name = "cluster_id", nullable = false, precision = 19)
+    public Long getClusterId();
 
     // -------------------------------------------------------------------------
     // FROM and INTO

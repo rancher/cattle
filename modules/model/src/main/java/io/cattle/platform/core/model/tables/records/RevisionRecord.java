@@ -21,8 +21,8 @@ import javax.persistence.Table;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record12;
-import org.jooq.Row12;
+import org.jooq.Record13;
+import org.jooq.Row13;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -39,9 +39,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "revision", schema = "cattle")
-public class RevisionRecord extends UpdatableRecordImpl<RevisionRecord> implements TableRecordJaxb, Record12<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long>, Revision {
+public class RevisionRecord extends UpdatableRecordImpl<RevisionRecord> implements TableRecordJaxb, Record13<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, Long>, Revision {
 
-    private static final long serialVersionUID = -1101777977;
+    private static final long serialVersionUID = -1942530268;
 
     /**
      * Setter for <code>cattle.revision.id</code>.
@@ -249,6 +249,23 @@ public class RevisionRecord extends UpdatableRecordImpl<RevisionRecord> implemen
         return (Long) get(11);
     }
 
+    /**
+     * Setter for <code>cattle.revision.creator_id</code>.
+     */
+    @Override
+    public void setCreatorId(Long value) {
+        set(12, value);
+    }
+
+    /**
+     * Getter for <code>cattle.revision.creator_id</code>.
+     */
+    @Column(name = "creator_id", precision = 19)
+    @Override
+    public Long getCreatorId() {
+        return (Long) get(12);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -262,23 +279,23 @@ public class RevisionRecord extends UpdatableRecordImpl<RevisionRecord> implemen
     }
 
     // -------------------------------------------------------------------------
-    // Record12 type implementation
+    // Record13 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row12<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long> fieldsRow() {
-        return (Row12) super.fieldsRow();
+    public Row13<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, Long> fieldsRow() {
+        return (Row13) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row12<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long> valuesRow() {
-        return (Row12) super.valuesRow();
+    public Row13<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, Long> valuesRow() {
+        return (Row13) super.valuesRow();
     }
 
     /**
@@ -381,6 +398,14 @@ public class RevisionRecord extends UpdatableRecordImpl<RevisionRecord> implemen
      * {@inheritDoc}
      */
     @Override
+    public Field<Long> field13() {
+        return RevisionTable.REVISION.CREATOR_ID;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Long value1() {
         return getId();
     }
@@ -471,6 +496,14 @@ public class RevisionRecord extends UpdatableRecordImpl<RevisionRecord> implemen
     @Override
     public Long value12() {
         return getServiceId();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Long value13() {
+        return getCreatorId();
     }
 
     /**
@@ -585,7 +618,16 @@ public class RevisionRecord extends UpdatableRecordImpl<RevisionRecord> implemen
      * {@inheritDoc}
      */
     @Override
-    public RevisionRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, Long value12) {
+    public RevisionRecord value13(Long value) {
+        setCreatorId(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public RevisionRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, Long value12, Long value13) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -598,6 +640,7 @@ public class RevisionRecord extends UpdatableRecordImpl<RevisionRecord> implemen
         value10(value10);
         value11(value11);
         value12(value12);
+        value13(value13);
         return this;
     }
 
@@ -622,6 +665,7 @@ public class RevisionRecord extends UpdatableRecordImpl<RevisionRecord> implemen
         setRemoveTime(from.getRemoveTime());
         setData(from.getData());
         setServiceId(from.getServiceId());
+        setCreatorId(from.getCreatorId());
     }
 
     /**
@@ -647,7 +691,7 @@ public class RevisionRecord extends UpdatableRecordImpl<RevisionRecord> implemen
     /**
      * Create a detached, initialised RevisionRecord
      */
-    public RevisionRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Long serviceId) {
+    public RevisionRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Long serviceId, Long creatorId) {
         super(RevisionTable.REVISION);
 
         set(0, id);
@@ -662,5 +706,6 @@ public class RevisionRecord extends UpdatableRecordImpl<RevisionRecord> implemen
         set(9, removeTime);
         set(10, data);
         set(11, serviceId);
+        set(12, creatorId);
     }
 }

@@ -33,6 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -235,17 +236,17 @@ public class ServiceLaunchConfig implements LaunchConfig {
             }
         });
 
-        Set<String> currentPorts = instance.getPorts().stream().collect(Collectors.toSet());
+        Set<String> currentPorts = new HashSet<>(instance.getPorts());
         List<String> newPortList = CollectionUtils.toList(testData.get(InstanceConstants.FIELD_PORTS)).stream()
-                    .map((x) -> x.toString())
+                    .map(Object::toString)
                     .collect(Collectors.toList());
-        Set<String> newPorts = newPortList.stream().collect(Collectors.toSet());
+        Set<String> newPorts = new HashSet<>(newPortList);
 
         if (currentPorts.equals(newPorts)) {
             return;
         }
 
-        svc.envResourceManager.getMetadata(instance.getInternal().getAccountId()).modify(Instance.class, instance.getId(), (i) -> {
+        svc.metadataManager.getMetadataForAccount(instance.getInternal().getAccountId()).modify(Instance.class, instance.getId(), (i) -> {
             return svc.objectManager.setFields(i, InstanceConstants.FIELD_PORTS, newPorts);
         });
     }

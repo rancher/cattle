@@ -1,6 +1,5 @@
 package io.cattle.platform.api.host;
 
-import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.framework.secret.SecretsService;
 import io.cattle.platform.object.util.DataAccessor;
@@ -57,7 +56,7 @@ public class MachineValidationFilter extends AbstractValidationFilter {
         String extracted = DataAccessor.fromMap(data).withKey(EXTRACTED_CONFIG_FIELD).as(String.class);
         if (extracted != null) {
             try {
-                extracted = secretsService.encrypt(ApiUtils.getPolicy().getAccountId(), extracted);
+                extracted = secretsService.encrypt(extracted);
             } catch (IOException e) {
                 log.error("Failed to encrypt machine secrets", e);
                 throw new ClientVisibleException(ResponseCodes.INTERNAL_SERVER_ERROR, "FailedEncryption");

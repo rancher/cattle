@@ -66,16 +66,16 @@ public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDa
     }
 
     @Override
-    public List<? extends StoragePool> findStoragePoolByDriverName(Long accountId, String driverName) {
+    public List<? extends StoragePool> findStoragePoolByDriverName(long clusterId, String driverName) {
         return create().selectFrom(STORAGE_POOL)
-            .where(STORAGE_POOL.ACCOUNT_ID.eq(accountId))
+            .where(STORAGE_POOL.CLUSTER_ID.eq(clusterId))
             .and((STORAGE_POOL.REMOVED.isNull().or(STORAGE_POOL.STATE.eq(CommonStatesConstants.REMOVING))))
             .and(STORAGE_POOL.DRIVER_NAME.eq(driverName))
             .fetchInto(StoragePoolRecord.class);
     }
 
     @Override
-    public Map<Long, Long> findStoragePoolHostsByDriver(Long accountId, Long storageDriverId) {
+    public Map<Long, Long> findStoragePoolHostsByDriver(long clusterId, Long storageDriverId) {
         final Map<Long, Long> result = new HashMap<>();
         create().select(HOST.ID, STORAGE_POOL.ID)
             .from(HOST)
@@ -86,16 +86,13 @@ public class StoragePoolDaoImpl extends AbstractJooqDao implements StoragePoolDa
                         .and(STORAGE_POOL.STORAGE_DRIVER_ID.eq(storageDriverId)))
             .where(STORAGE_POOL.REMOVED.isNull()
                 .and(STORAGE_POOL_HOST_MAP.REMOVED.isNull())
-                .and(HOST.ACCOUNT_ID.eq(accountId))
+                .and(HOST.CLUSTER_ID.eq(clusterId))
                 .and(HOST.REMOVED.isNull()))
-            .fetchInto(new RecordHandler<Record2<Long, Long>>() {
-                @Override
-                public void next(Record2<Long, Long> record) {
-                    Long hostId = record.getValue(HOST.ID);
-                    Long storagePoolId = record.getValue(STORAGE_POOL.ID);
-                    if (!result.containsKey(hostId) || storagePoolId != null) {
-                        result.put(hostId, storagePoolId);
-                    }
+            .fetchInto((RecordHandler<Record2<Long, Long>>) record -> {
+                Long hostId = record.getValue(HOST.ID);
+                Long storagePoolId = record.getValue(STORAGE_POOL.ID);
+                if (!result.containsKey(hostId) || storagePoolId != null) {
+                    result.put(hostId, storagePoolId);
                 }
             });
         return result;

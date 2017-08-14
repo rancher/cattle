@@ -69,7 +69,7 @@ public class Ports {
     }
 
     /**
-     * Adds the specified {@link PortBinding}(s) to the list of
+     * Adds the specified {@link PortBinding}(s) to the listSupport of
      * {@link PortBinding}s.
      */
     public void add(PortBinding... portBindings) {

@@ -15,9 +15,9 @@ public interface StoragePoolDao {
 
     void mapPoolToHost(Long storagePoolId, Long hostId);
 
-    List<? extends StoragePool> findStoragePoolByDriverName(Long accountId, String driverName);
+    List<? extends StoragePool> findStoragePoolByDriverName(long clusterId, String driverName);
 
-    Map<Long, Long> findStoragePoolHostsByDriver(Long accountId, Long storageDriverId);
+    Map<Long, Long> findStoragePoolHostsByDriver(long clusterId, Long storageDriverId);
 
     List<? extends StoragePool> findNonRemovedStoragePoolByDriver(Long storageDriverId);
 

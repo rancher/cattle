@@ -1,9 +1,7 @@
 package io.cattle.platform.inator.planner.impl;
 
-import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.ServiceUtil;
-import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.inator.InatorContext;
 import io.cattle.platform.inator.Unit;
 import io.cattle.platform.inator.UnitRef;
@@ -106,11 +104,7 @@ public class GlobalServicePlanner implements UnitPlanner {
 
     protected Set<Long> getHostIds() {
         Map<String, String> labels = ServiceUtil.getMergedServiceLabels(service.getInternal());
-        if (ServiceConstants.isSystem(service.getInternal())) {
-            labels.put(SystemLabels.LABEL_CONTAINER_SYSTEM, "true");
-        }
-
-        List<Long> hostIds = svc.allocationHelper.getAllHostsSatisfyingHostAffinity(service.getAccountId(), labels);
+        List<Long> hostIds = svc.allocationHelper.getAllHostsSatisfyingHostAffinity(service.getClusterId(), labels);
         return new HashSet<>(hostIds);
     }
 

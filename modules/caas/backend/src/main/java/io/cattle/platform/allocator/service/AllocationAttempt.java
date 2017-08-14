@@ -14,7 +14,7 @@ import java.util.Set;
 public class AllocationAttempt {
     String id = io.cattle.platform.util.resource.UUID.randomUUID().toString();
 
-    Long accountId;
+    Long clusterId;
 
     List<Instance> instances;
 
@@ -31,9 +31,9 @@ public class AllocationAttempt {
     AllocationCandidate matchedCandidate;
     List<ResourceRequest> resourceRequests;
 
-    public AllocationAttempt(long accountId, List<Instance> instances, Long hostId, Long requestedHostId, Set<Volume> volumes) {
+    public AllocationAttempt(long clusterId, List<Instance> instances, Long hostId, Long requestedHostId, Set<Volume> volumes) {
         super();
-        this.accountId = accountId;
+        this.clusterId = clusterId;
         this.instances = instances;
         this.hostId = hostId;
         this.requestedHostId = requestedHostId;
@@ -44,8 +44,8 @@ public class AllocationAttempt {
         return id;
     }
 
-    public Long getAccountId() {
-        return accountId;
+    public Long getClusterId() {
+        return clusterId;
     }
 
     public List<Instance> getInstances() {

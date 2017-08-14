@@ -34,8 +34,12 @@ public class ObjectUtils {
         }
     }
 
-    public static Object getAccountId(Object obj) {
-        return getPropertyIgnoreErrors(obj, ObjectMetaDataManager.ACCOUNT_FIELD);
+    public static Long getAccountId(Object obj) {
+        return (Long) getPropertyIgnoreErrors(obj, ObjectMetaDataManager.ACCOUNT_FIELD);
+    }
+
+    public static Long getClusterId(Object obj) {
+        return (Long) getPropertyIgnoreErrors(obj, ObjectMetaDataManager.CLUSTER_FIELD);
     }
 
     public static boolean isSystem(Object obj) {

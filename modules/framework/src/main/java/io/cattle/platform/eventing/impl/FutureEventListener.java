@@ -1,5 +1,6 @@
 package io.cattle.platform.eventing.impl;
 
+import com.google.common.util.concurrent.SettableFuture;
 import io.cattle.platform.async.retry.Retry;
 import io.cattle.platform.eventing.EventListener;
 import io.cattle.platform.eventing.EventProgress;
@@ -7,8 +8,6 @@ import io.cattle.platform.eventing.PoolSpecificListener;
 import io.cattle.platform.eventing.exception.EventExecutionException;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
-
-import com.google.common.util.concurrent.SettableFuture;
 
 public class FutureEventListener implements EventListener, PoolSpecificListener {
 
@@ -29,24 +28,29 @@ public class FutureEventListener implements EventListener, PoolSpecificListener 
     @Override
     public synchronized void onEvent(Event reply) {
         if (future != null && event != null) {
-            String[] previous = reply.getPreviousIds();
+            String previous = reply.getPreviousId();
 
-            if (previous != null && previous.length > 0 && previous[0].equals(event.getId())) {
-                EventVO<Object> replyWithName = new EventVO<Object>(reply);
-                replyWithName.setName(appendReply(event.getName()));
+            if (!event.getId().equals(reply.getPreviousId())) {
+                return;
+            }
 
-                String transitioning = replyWithName.getTransitioning();
+            EventVO<Object, Object> finalReply = new EventVO<Object, Object>(reply)
+                    .withName(appendReply(event.getName()))
+                    .withResourceId(null) // clear resourceId/Type because they can't be trusted
+                    .withResourceType(null)
+                    .withRequestData(event.getRequestData());
 
-                if (transitioning == null || Event.TRANSITIONING_NO.equals(transitioning)) {
-                    future.set(replyWithName);
-                } else if (Event.TRANSITIONING_ERROR.equals(transitioning)) {
-                    future.setException(EventExecutionException.fromEvent(replyWithName));
-                } else if (progress != null) {
-                    if (retry != null) {
-                        retry.setKeepalive(true);
-                    }
-                    progress.progress(replyWithName);
+            String transitioning = finalReply.getTransitioning();
+
+            if (transitioning == null || Event.TRANSITIONING_NO.equals(transitioning)) {
+                future.set(finalReply);
+            } else if (Event.TRANSITIONING_ERROR.equals(transitioning)) {
+                future.setException(EventExecutionException.fromEvent(finalReply));
+            } else if (progress != null) {
+                if (retry != null) {
+                    retry.setKeepalive(true);
                 }
+                progress.progress(finalReply);
             }
         }
     }

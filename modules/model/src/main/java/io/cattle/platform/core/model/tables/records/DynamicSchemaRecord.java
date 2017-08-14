@@ -21,8 +21,8 @@ import javax.persistence.Table;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record13;
-import org.jooq.Row13;
+import org.jooq.Record14;
+import org.jooq.Row14;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -39,9 +39,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "dynamic_schema", schema = "cattle")
-public class DynamicSchemaRecord extends UpdatableRecordImpl<DynamicSchemaRecord> implements TableRecordJaxb, Record13<Long, String, Long, String, String, String, String, Date, Map<String,Object>, String, String, Long, Date>, DynamicSchema {
+public class DynamicSchemaRecord extends UpdatableRecordImpl<DynamicSchemaRecord> implements TableRecordJaxb, Record14<Long, String, Long, String, String, String, String, Date, Map<String,Object>, String, String, Long, Date, Long>, DynamicSchema {
 
-    private static final long serialVersionUID = 1052968725;
+    private static final long serialVersionUID = 1002050079;
 
     /**
      * Setter for <code>cattle.dynamic_schema.id</code>.
@@ -266,6 +266,23 @@ public class DynamicSchemaRecord extends UpdatableRecordImpl<DynamicSchemaRecord
         return (Date) get(12);
     }
 
+    /**
+     * Setter for <code>cattle.dynamic_schema.creator_id</code>.
+     */
+    @Override
+    public void setCreatorId(Long value) {
+        set(13, value);
+    }
+
+    /**
+     * Getter for <code>cattle.dynamic_schema.creator_id</code>.
+     */
+    @Column(name = "creator_id", precision = 19)
+    @Override
+    public Long getCreatorId() {
+        return (Long) get(13);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -279,23 +296,23 @@ public class DynamicSchemaRecord extends UpdatableRecordImpl<DynamicSchemaRecord
     }
 
     // -------------------------------------------------------------------------
-    // Record13 type implementation
+    // Record14 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row13<Long, String, Long, String, String, String, String, Date, Map<String,Object>, String, String, Long, Date> fieldsRow() {
-        return (Row13) super.fieldsRow();
+    public Row14<Long, String, Long, String, String, String, String, Date, Map<String,Object>, String, String, Long, Date, Long> fieldsRow() {
+        return (Row14) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row13<Long, String, Long, String, String, String, String, Date, Map<String,Object>, String, String, Long, Date> valuesRow() {
-        return (Row13) super.valuesRow();
+    public Row14<Long, String, Long, String, String, String, String, Date, Map<String,Object>, String, String, Long, Date, Long> valuesRow() {
+        return (Row14) super.valuesRow();
     }
 
     /**
@@ -406,6 +423,14 @@ public class DynamicSchemaRecord extends UpdatableRecordImpl<DynamicSchemaRecord
      * {@inheritDoc}
      */
     @Override
+    public Field<Long> field14() {
+        return DynamicSchemaTable.DYNAMIC_SCHEMA.CREATOR_ID;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Long value1() {
         return getId();
     }
@@ -504,6 +529,14 @@ public class DynamicSchemaRecord extends UpdatableRecordImpl<DynamicSchemaRecord
     @Override
     public Date value13() {
         return getRemoved();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Long value14() {
+        return getCreatorId();
     }
 
     /**
@@ -627,7 +660,16 @@ public class DynamicSchemaRecord extends UpdatableRecordImpl<DynamicSchemaRecord
      * {@inheritDoc}
      */
     @Override
-    public DynamicSchemaRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Map<String,Object> value9, String value10, String value11, Long value12, Date value13) {
+    public DynamicSchemaRecord value14(Long value) {
+        setCreatorId(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DynamicSchemaRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Map<String,Object> value9, String value10, String value11, Long value12, Date value13, Long value14) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -641,6 +683,7 @@ public class DynamicSchemaRecord extends UpdatableRecordImpl<DynamicSchemaRecord
         value11(value11);
         value12(value12);
         value13(value13);
+        value14(value14);
         return this;
     }
 
@@ -666,6 +709,7 @@ public class DynamicSchemaRecord extends UpdatableRecordImpl<DynamicSchemaRecord
         setDefinition(from.getDefinition());
         setServiceId(from.getServiceId());
         setRemoved(from.getRemoved());
+        setCreatorId(from.getCreatorId());
     }
 
     /**
@@ -691,7 +735,7 @@ public class DynamicSchemaRecord extends UpdatableRecordImpl<DynamicSchemaRecord
     /**
      * Create a detached, initialised DynamicSchemaRecord
      */
-    public DynamicSchemaRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Map<String,Object> data, String parent, String definition, Long serviceId, Date removed) {
+    public DynamicSchemaRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Map<String,Object> data, String parent, String definition, Long serviceId, Date removed, Long creatorId) {
         super(DynamicSchemaTable.DYNAMIC_SCHEMA);
 
         set(0, id);
@@ -707,5 +751,6 @@ public class DynamicSchemaRecord extends UpdatableRecordImpl<DynamicSchemaRecord
         set(10, definition);
         set(11, serviceId);
         set(12, removed);
+        set(13, creatorId);
     }
 }

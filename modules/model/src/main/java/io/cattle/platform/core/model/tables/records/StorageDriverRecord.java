@@ -39,9 +39,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "storage_driver", schema = "cattle")
-public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord> implements TableRecordJaxb, Record12<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long>, StorageDriver {
+public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord> implements TableRecordJaxb, Record12<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, Long>, StorageDriver {
 
-    private static final long serialVersionUID = 2945522;
+    private static final long serialVersionUID = -1418768955;
 
     /**
      * Setter for <code>cattle.storage_driver.id</code>.
@@ -80,28 +80,11 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
     }
 
     /**
-     * Setter for <code>cattle.storage_driver.account_id</code>.
-     */
-    @Override
-    public void setAccountId(Long value) {
-        set(2, value);
-    }
-
-    /**
-     * Getter for <code>cattle.storage_driver.account_id</code>.
-     */
-    @Column(name = "account_id", precision = 19)
-    @Override
-    public Long getAccountId() {
-        return (Long) get(2);
-    }
-
-    /**
      * Setter for <code>cattle.storage_driver.kind</code>.
      */
     @Override
     public void setKind(String value) {
-        set(3, value);
+        set(2, value);
     }
 
     /**
@@ -110,7 +93,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
     @Column(name = "kind", nullable = false, length = 255)
     @Override
     public String getKind() {
-        return (String) get(3);
+        return (String) get(2);
     }
 
     /**
@@ -118,7 +101,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      */
     @Override
     public void setUuid(String value) {
-        set(4, value);
+        set(3, value);
     }
 
     /**
@@ -127,7 +110,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
     @Column(name = "uuid", unique = true, nullable = false, length = 128)
     @Override
     public String getUuid() {
-        return (String) get(4);
+        return (String) get(3);
     }
 
     /**
@@ -135,7 +118,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      */
     @Override
     public void setDescription(String value) {
-        set(5, value);
+        set(4, value);
     }
 
     /**
@@ -144,7 +127,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
     @Column(name = "description", length = 1024)
     @Override
     public String getDescription() {
-        return (String) get(5);
+        return (String) get(4);
     }
 
     /**
@@ -152,7 +135,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      */
     @Override
     public void setState(String value) {
-        set(6, value);
+        set(5, value);
     }
 
     /**
@@ -161,7 +144,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
     @Column(name = "state", nullable = false, length = 128)
     @Override
     public String getState() {
-        return (String) get(6);
+        return (String) get(5);
     }
 
     /**
@@ -169,7 +152,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      */
     @Override
     public void setCreated(Date value) {
-        set(7, value);
+        set(6, value);
     }
 
     /**
@@ -178,7 +161,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
     @Column(name = "created")
     @Override
     public Date getCreated() {
-        return (Date) get(7);
+        return (Date) get(6);
     }
 
     /**
@@ -186,7 +169,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      */
     @Override
     public void setRemoved(Date value) {
-        set(8, value);
+        set(7, value);
     }
 
     /**
@@ -195,7 +178,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
     @Column(name = "removed")
     @Override
     public Date getRemoved() {
-        return (Date) get(8);
+        return (Date) get(7);
     }
 
     /**
@@ -203,7 +186,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      */
     @Override
     public void setRemoveTime(Date value) {
-        set(9, value);
+        set(8, value);
     }
 
     /**
@@ -212,7 +195,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
     @Column(name = "remove_time")
     @Override
     public Date getRemoveTime() {
-        return (Date) get(9);
+        return (Date) get(8);
     }
 
     /**
@@ -220,7 +203,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      */
     @Override
     public void setData(Map<String,Object> value) {
-        set(10, value);
+        set(9, value);
     }
 
     /**
@@ -229,7 +212,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
     @Column(name = "data", length = 16777215)
     @Override
     public Map<String,Object> getData() {
-        return (Map<String,Object>) get(10);
+        return (Map<String,Object>) get(9);
     }
 
     /**
@@ -237,7 +220,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      */
     @Override
     public void setServiceId(Long value) {
-        set(11, value);
+        set(10, value);
     }
 
     /**
@@ -246,6 +229,23 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
     @Column(name = "service_id", precision = 19)
     @Override
     public Long getServiceId() {
+        return (Long) get(10);
+    }
+
+    /**
+     * Setter for <code>cattle.storage_driver.cluster_id</code>.
+     */
+    @Override
+    public void setClusterId(Long value) {
+        set(11, value);
+    }
+
+    /**
+     * Getter for <code>cattle.storage_driver.cluster_id</code>.
+     */
+    @Column(name = "cluster_id", nullable = false, precision = 19)
+    @Override
+    public Long getClusterId() {
         return (Long) get(11);
     }
 
@@ -269,7 +269,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public Row12<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long> fieldsRow() {
+    public Row12<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, Long> fieldsRow() {
         return (Row12) super.fieldsRow();
     }
 
@@ -277,7 +277,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public Row12<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long> valuesRow() {
+    public Row12<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, Long> valuesRow() {
         return (Row12) super.valuesRow();
     }
 
@@ -301,15 +301,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public Field<Long> field3() {
-        return StorageDriverTable.STORAGE_DRIVER.ACCOUNT_ID;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<String> field4() {
+    public Field<String> field3() {
         return StorageDriverTable.STORAGE_DRIVER.KIND;
     }
 
@@ -317,7 +309,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field5() {
+    public Field<String> field4() {
         return StorageDriverTable.STORAGE_DRIVER.UUID;
     }
 
@@ -325,7 +317,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field6() {
+    public Field<String> field5() {
         return StorageDriverTable.STORAGE_DRIVER.DESCRIPTION;
     }
 
@@ -333,7 +325,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field7() {
+    public Field<String> field6() {
         return StorageDriverTable.STORAGE_DRIVER.STATE;
     }
 
@@ -341,7 +333,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public Field<Date> field8() {
+    public Field<Date> field7() {
         return StorageDriverTable.STORAGE_DRIVER.CREATED;
     }
 
@@ -349,7 +341,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public Field<Date> field9() {
+    public Field<Date> field8() {
         return StorageDriverTable.STORAGE_DRIVER.REMOVED;
     }
 
@@ -357,7 +349,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public Field<Date> field10() {
+    public Field<Date> field9() {
         return StorageDriverTable.STORAGE_DRIVER.REMOVE_TIME;
     }
 
@@ -365,7 +357,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public Field<Map<String,Object>> field11() {
+    public Field<Map<String,Object>> field10() {
         return StorageDriverTable.STORAGE_DRIVER.DATA;
     }
 
@@ -373,8 +365,16 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public Field<Long> field12() {
+    public Field<Long> field11() {
         return StorageDriverTable.STORAGE_DRIVER.SERVICE_ID;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Field<Long> field12() {
+        return StorageDriverTable.STORAGE_DRIVER.CLUSTER_ID;
     }
 
     /**
@@ -397,15 +397,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public Long value3() {
-        return getAccountId();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String value4() {
+    public String value3() {
         return getKind();
     }
 
@@ -413,7 +405,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public String value5() {
+    public String value4() {
         return getUuid();
     }
 
@@ -421,7 +413,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public String value6() {
+    public String value5() {
         return getDescription();
     }
 
@@ -429,7 +421,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public String value7() {
+    public String value6() {
         return getState();
     }
 
@@ -437,7 +429,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public Date value8() {
+    public Date value7() {
         return getCreated();
     }
 
@@ -445,7 +437,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public Date value9() {
+    public Date value8() {
         return getRemoved();
     }
 
@@ -453,7 +445,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public Date value10() {
+    public Date value9() {
         return getRemoveTime();
     }
 
@@ -461,7 +453,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public Map<String,Object> value11() {
+    public Map<String,Object> value10() {
         return getData();
     }
 
@@ -469,8 +461,16 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public Long value12() {
+    public Long value11() {
         return getServiceId();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Long value12() {
+        return getClusterId();
     }
 
     /**
@@ -495,16 +495,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public StorageDriverRecord value3(Long value) {
-        setAccountId(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public StorageDriverRecord value4(String value) {
+    public StorageDriverRecord value3(String value) {
         setKind(value);
         return this;
     }
@@ -513,7 +504,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public StorageDriverRecord value5(String value) {
+    public StorageDriverRecord value4(String value) {
         setUuid(value);
         return this;
     }
@@ -522,7 +513,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public StorageDriverRecord value6(String value) {
+    public StorageDriverRecord value5(String value) {
         setDescription(value);
         return this;
     }
@@ -531,7 +522,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public StorageDriverRecord value7(String value) {
+    public StorageDriverRecord value6(String value) {
         setState(value);
         return this;
     }
@@ -540,7 +531,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public StorageDriverRecord value8(Date value) {
+    public StorageDriverRecord value7(Date value) {
         setCreated(value);
         return this;
     }
@@ -549,7 +540,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public StorageDriverRecord value9(Date value) {
+    public StorageDriverRecord value8(Date value) {
         setRemoved(value);
         return this;
     }
@@ -558,7 +549,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public StorageDriverRecord value10(Date value) {
+    public StorageDriverRecord value9(Date value) {
         setRemoveTime(value);
         return this;
     }
@@ -567,7 +558,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public StorageDriverRecord value11(Map<String,Object> value) {
+    public StorageDriverRecord value10(Map<String,Object> value) {
         setData(value);
         return this;
     }
@@ -576,7 +567,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public StorageDriverRecord value12(Long value) {
+    public StorageDriverRecord value11(Long value) {
         setServiceId(value);
         return this;
     }
@@ -585,7 +576,16 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
      * {@inheritDoc}
      */
     @Override
-    public StorageDriverRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, Long value12) {
+    public StorageDriverRecord value12(Long value) {
+        setClusterId(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public StorageDriverRecord values(Long value1, String value2, String value3, String value4, String value5, String value6, Date value7, Date value8, Date value9, Map<String,Object> value10, Long value11, Long value12) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -612,7 +612,6 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
     public void from(StorageDriver from) {
         setId(from.getId());
         setName(from.getName());
-        setAccountId(from.getAccountId());
         setKind(from.getKind());
         setUuid(from.getUuid());
         setDescription(from.getDescription());
@@ -622,6 +621,7 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
         setRemoveTime(from.getRemoveTime());
         setData(from.getData());
         setServiceId(from.getServiceId());
+        setClusterId(from.getClusterId());
     }
 
     /**
@@ -647,20 +647,20 @@ public class StorageDriverRecord extends UpdatableRecordImpl<StorageDriverRecord
     /**
      * Create a detached, initialised StorageDriverRecord
      */
-    public StorageDriverRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Long serviceId) {
+    public StorageDriverRecord(Long id, String name, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Long serviceId, Long clusterId) {
         super(StorageDriverTable.STORAGE_DRIVER);
 
         set(0, id);
         set(1, name);
-        set(2, accountId);
-        set(3, kind);
-        set(4, uuid);
-        set(5, description);
-        set(6, state);
-        set(7, created);
-        set(8, removed);
-        set(9, removeTime);
-        set(10, data);
-        set(11, serviceId);
+        set(2, kind);
+        set(3, uuid);
+        set(4, description);
+        set(5, state);
+        set(6, created);
+        set(7, removed);
+        set(8, removeTime);
+        set(9, data);
+        set(10, serviceId);
+        set(11, clusterId);
     }
 }

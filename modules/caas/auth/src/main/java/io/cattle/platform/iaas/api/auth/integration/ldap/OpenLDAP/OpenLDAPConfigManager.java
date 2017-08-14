@@ -40,7 +40,7 @@ public class OpenLDAPConfigManager extends AbstractNoOpResourceManager {
 
     @SuppressWarnings("unchecked")
     private OpenLDAPConfig currentLdapConfig(Map<String, Object> config) {
-        OpenLDAPConfig currentConfig = (OpenLDAPConfig) list(null, null, null, null);
+        OpenLDAPConfig currentConfig = (OpenLDAPConfig) listSupport(null, null, null, null);
         String domain = currentConfig.getDomain();
         if (config.get(OpenLDAPConstants.CONFIG_DOMAIN) != null) {
             domain = (String)config.get(OpenLDAPConstants.CONFIG_DOMAIN);
@@ -149,7 +149,7 @@ public class OpenLDAPConfigManager extends AbstractNoOpResourceManager {
     }
 
     @Override
-    public Object list(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
+    public Object listSupport(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
         boolean enabled = SecurityConstants.SECURITY.get();
         boolean tls = OpenLDAPConstants.TLS_ENABLED.get();
         int port = OpenLDAPConstants.LDAP_PORT.get();

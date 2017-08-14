@@ -28,17 +28,17 @@ public class DefaultResourceManager implements ResourceManagerBaseSupport {
     }
 
     @Override
-    public Object list(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
+    public Object listSupport(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
         return jooqResourceListSupport.list(schemaFactory, type, criteria, options);
     }
 
     @Override
-    public Object updateObject(String type, String id, Object obj, ApiRequest request) {
+    public Object updateObjectSupport(String type, String id, Object obj, ApiRequest request) {
         return objectResourceManagerSupport.updateObject(type, id, obj, request);
     }
 
     @Override
-    public Object deleteObject(String type, String id, Object obj, ApiRequest request) {
+    public Object deleteObjectSupport(String type, String id, Object obj, ApiRequest request) {
         return objectResourceManagerSupport.deleteObject(type, id, obj, request);
     }
 

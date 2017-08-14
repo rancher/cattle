@@ -1,12 +1,13 @@
 package io.cattle.platform.ha.monitor.event;
 
-import static io.cattle.platform.core.constants.InstanceConstants.*;
 import io.cattle.platform.eventing.model.EventVO;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class InstanceForceStop extends EventVO<Map<String, Object>> {
+import static io.cattle.platform.core.constants.InstanceConstants.*;
+
+public class InstanceForceStop extends EventVO<Map<String, Object>, Object> {
 
     public InstanceForceStop(String externalId) {
         setName(EVENT_INSTANCE_FORCE_STOP);

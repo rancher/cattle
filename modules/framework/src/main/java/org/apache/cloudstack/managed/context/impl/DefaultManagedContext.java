@@ -96,7 +96,7 @@ public class DefaultManagedContext implements ManagedContext {
 
                 /*
                  * Stack data structure is used because in between onEnter and
-                 * onLeave the listeners list could have changed
+                 * onLeave the listeners listSupport could have changed
                  */
                 invocations.push(new ListenerInvocation((ManagedContextListener<Object>) listener, data));
             }

@@ -1,12 +1,10 @@
 package io.cattle.platform.process.agent;
 
-import static io.cattle.platform.core.model.tables.HostTable.*;
-
-import io.cattle.platform.core.constants.AccountConstants;
+import io.cattle.platform.core.constants.ClusterConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.dao.HostDao;
-import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
+import io.cattle.platform.core.model.Cluster;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessDefinition;
@@ -21,13 +19,14 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static io.cattle.platform.core.model.tables.HostTable.*;
 
 public class AgentHostStateUpdate {
 
@@ -79,8 +78,8 @@ public class AgentHostStateUpdate {
         Map<Object, Object> props = new HashMap<>();
         props.put(HOST.AGENT_STATE, newState);
 
-        Account account = objectManager.loadResource(Account.class, host.getAccountId());
-        Long delay = DataAccessor.fieldLong(account, AccountConstants.FIELD_HOST_REMOVE_DELAY);
+        Cluster cluster = objectManager.loadResource(Cluster.class, host.getClusterId());
+        Long delay = DataAccessor.fieldLong(cluster, ClusterConstants.FIELD_HOST_REMOVE_DELAY);
         if (delay == null && HostDao.HOST_REMOVE_DELAY.get() > -1) {
             delay = HostDao.HOST_REMOVE_DELAY.get();
         }
@@ -95,7 +94,7 @@ public class AgentHostStateUpdate {
 
     protected void trigger(Host host) {
         Map<String, Object> data = new HashMap<>();
-        data.put(ObjectMetaDataManager.ACCOUNT_FIELD, host.getAccountId());
+        data.put(ObjectMetaDataManager.CLUSTER_FIELD, host.getClusterId());
 
         Event event = EventVO.newEvent(FrameworkEvents.STATE_CHANGE)
                 .withData(data)

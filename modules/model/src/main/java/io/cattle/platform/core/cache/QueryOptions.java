@@ -5,7 +5,7 @@ import java.util.Set;
 
 public class QueryOptions {
 
-    Long accountId;
+    Long clusterId;
     String kind;
     boolean includeUsedPorts;
     Set<Long> hosts = new HashSet<>();
@@ -23,12 +23,16 @@ public class QueryOptions {
         return hosts;
     }
 
-    public Long getAccountId() {
-        return accountId;
+    public Long getClusterId() {
+        return clusterId;
     }
 
-    public void setAccountId(Long accountId) {
-        this.accountId = accountId;
+    public void setClusterId(Long clusterId) {
+        this.clusterId = clusterId;
+    }
+
+    public void setHosts(Set<Long> hosts) {
+        this.hosts = hosts;
     }
 
     public boolean isIncludeUsedPorts() {

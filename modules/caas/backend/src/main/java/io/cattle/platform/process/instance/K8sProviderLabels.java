@@ -1,16 +1,14 @@
 package io.cattle.platform.process.instance;
 
 import io.cattle.platform.agent.AgentLocator;
-import io.cattle.platform.core.constants.AccountConstants;
-import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
-import io.cattle.platform.environment.EnvironmentResourceManager;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.lifecycle.impl.K8sLifecycleManagerImpl;
+import io.cattle.platform.metadata.MetadataManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.serialization.ObjectSerializer;
@@ -25,12 +23,12 @@ import java.util.Map;
 
 public class K8sProviderLabels extends AgentBasedProcessHandler {
 
-    EnvironmentResourceManager envResourceManager;
+    MetadataManager metadataManager;
 
     public K8sProviderLabels(AgentLocator agentLocator, ObjectSerializer serializer, ObjectManager objectManager, ObjectProcessManager processManager,
-                             EnvironmentResourceManager envResourceManager) {
+                             MetadataManager metadataManager) {
         super(agentLocator, serializer, objectManager, processManager);
-        this.envResourceManager = envResourceManager;
+        this.metadataManager = metadataManager;
 
         commandName = "compute.instance.providelables";
         timeoutIsError = true;
@@ -44,27 +42,17 @@ public class K8sProviderLabels extends AgentBasedProcessHandler {
             return null;
         }
         Long accountId = instance.getAccountId();
-        List<Long> agentIds = envResourceManager.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_LABELS_PROVIDER, accountId);
+        List<Long> agentIds = metadataManager.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_LABELS_PROVIDER, accountId);
         Long agentId = agentIds.size() == 0 ? null : agentIds.get(0);
-        if ((instance instanceof Instance) && (agentIds.contains(instance.getAgentId()) || instance.getSystem())) {
+        if (agentIds.contains(instance.getAgentId()) || instance.getSystem()) {
             return null;
         }
 
         if (agentId == null) {
-            if (k8sRequired(instance)) {
-                throw new ExecutionErrorException("Failed to find labels provider", instance);
-            } else {
-                return null;
-            }
+            throw new ExecutionErrorException("Failed to find labels provider", instance);
         }
 
         return agentId;
-    }
-
-    protected boolean k8sRequired(Instance instance) {
-        Account account = objectManager.loadResource(Account.class, instance.getAccountId());
-        String compute = DataAccessor.fieldString(account, AccountConstants.FIELD_COMPUTE_FLAVOR);
-        return AccountConstants.isFlavorKubernetes(compute);
     }
 
     protected boolean isPod(Instance instance) {
@@ -84,7 +72,7 @@ public class K8sProviderLabels extends AgentBasedProcessHandler {
     }
 
     @Override
-    protected void preProcessEvent(EventVO<?> event, ProcessState state, ProcessInstance process, Object eventResource, Object dataResource,
+    protected void preProcessEvent(EventVO<?, ?> event, ProcessState state, ProcessInstance process, Object eventResource, Object dataResource,
             Object agentResource) {
         Map<String, Object> data = CollectionUtils.toMap(event.getData());
         if (!data.containsKey("instance")) {
@@ -95,7 +83,7 @@ public class K8sProviderLabels extends AgentBasedProcessHandler {
     }
 
     @Override
-    protected void postProcessEvent(EventVO<?> event, Event reply, ProcessState state, ProcessInstance process,
+    protected void postProcessEvent(EventVO<?, ?> event, Event reply, ProcessState state, ProcessInstance process,
             Object eventResource, Object dataResource, Object agentResource) {
         Map<String, String> labels = CollectionUtils.toMap(CollectionUtils.getNestedValue(reply.getData(),
                 "instance", "+data", "+fields", "+labels"));

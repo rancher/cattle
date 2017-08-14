@@ -34,7 +34,6 @@ public class InstanceFactory {
         addHostnameOverride(instanceName, fields);
 
         fields.put(ObjectMetaDataManager.NAME_FIELD, instanceName);
-        fields.put(ServiceConstants.FIELD_SYSTEM, ServiceConstants.isSystem(stack.getInternal()));
 
         return fields;
     }
@@ -96,6 +95,7 @@ public class InstanceFactory {
 
     protected static void addAdditionalFields(Map<String, Object> fields, StackWrapper stack, RevisionWrapper revision,
             DeploymentUnitWrapper unit, String launchConfigName) {
+        fields.put(ObjectMetaDataManager.CLUSTER_FIELD, stack.getClusterId());
         fields.put(InstanceConstants.FIELD_DEPLOYMENT_UNIT_UUID, unit.getUuid());
         fields.put(InstanceConstants.FIELD_DEPLOYMENT_UNIT_ID, unit.getId());
         fields.put(InstanceConstants.FIELD_STACK_ID, stack.getId());

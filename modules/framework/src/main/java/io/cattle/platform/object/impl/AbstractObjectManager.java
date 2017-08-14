@@ -100,8 +100,8 @@ public abstract class AbstractObjectManager implements ObjectManager {
         return schema.getParent() == null ? schema.getId() : schemaFactory.getBaseType(schema.getId());
     }
 
-    protected String getPossibleSubType(Object obj, Map<Object, Object> toWrite) {
-        Object kind = toWrite.get(ObjectMetaDataManager.KIND_FIELD);
+    protected String getPossibleSubType(Object obj, Map<String, Object> values) {
+        Object kind = values.get(ObjectMetaDataManager.KIND_FIELD);
         if (kind == null) {
             kind = ObjectUtils.getPropertyIgnoreErrors(obj, ObjectMetaDataManager.KIND_FIELD);
         }
@@ -111,7 +111,7 @@ public abstract class AbstractObjectManager implements ObjectManager {
             String baseType = schemaFactory.getBaseType(kindString);
             Class<?> clz = schemaFactory.getSchemaClass(baseType);
 
-            if (kind != null && clz != null && clz.isAssignableFrom(obj.getClass())) {
+            if (clz != null && clz.isAssignableFrom(obj.getClass())) {
                 return kindString;
             }
         }
@@ -120,17 +120,15 @@ public abstract class AbstractObjectManager implements ObjectManager {
     }
 
     @Override
-    public <T> T setFields(Object obj, Object key, Object... valueKeyValue) {
+    public <T> T setFields(T obj, Object key, Object... valueKeyValue) {
         if (obj == null) {
             return null;
         }
 
         Map<Object, Object> values = CollectionUtils.asMap(key, valueKeyValue);
-
         return setFields(obj, convertToPropertiesFor(obj, values));
     }
 
-    @SuppressWarnings("unchecked")
     protected Map<Object, Object> toObjectsToWrite(Object obj, Map<String, Object> values) {
         String type = getType(obj);
         Map<String, Relationship> relationships = null;
@@ -170,7 +168,7 @@ public abstract class AbstractObjectManager implements ObjectManager {
         }
 
         if (!rel.isListResult()) {
-            throw new IllegalArgumentException("Relationation arguement is not a list result");
+            throw new IllegalArgumentException("Relationation arguement is not a listSupport result");
         }
 
         if (rel.getRelationshipType() == RelationshipType.CHILD) {

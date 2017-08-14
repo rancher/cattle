@@ -7,13 +7,13 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.netflix.config.DynamicLongProperty;
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
-import io.cattle.platform.agent.server.ping.dao.PingDao;
 import io.cattle.platform.agent.server.resource.impl.AgentResourcesMonitor;
 import io.cattle.platform.agent.util.AgentUtils;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.containersync.PingInstancesMonitor;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.dao.AgentDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.ProcessInstanceException;
@@ -48,7 +48,7 @@ public class PingMonitor implements Task, TaskOptions {
     ObjectProcessManager processManager;
     ObjectManager objectManager;
     int interation = 0;
-    PingDao pingDao;
+    AgentDao agentDao;
     AgentLocator agentLocator;
     Cluster cluster;
     LoadingCache<Long, PingStatus> status = CacheBuilder.newBuilder().expireAfterAccess(PING_SCHEDULE.get() * 3, TimeUnit.SECONDS).build(
@@ -61,19 +61,19 @@ public class PingMonitor implements Task, TaskOptions {
 
 
     public PingMonitor(AgentResourcesMonitor agentResourceManager, PingInstancesMonitor pingInstanceMonitor, ObjectProcessManager processManager,
-                       ObjectManager objectManager, PingDao pingDao, AgentLocator agentLocator, Cluster cluster) {
+                       ObjectManager objectManager, AgentDao agentDao, AgentLocator agentLocator, Cluster cluster) {
         super();
         this.agentResourceManager = agentResourceManager;
         this.pingInstanceMonitor = pingInstanceMonitor;
         this.processManager = processManager;
         this.objectManager = objectManager;
-        this.pingDao = pingDao;
+        this.agentDao = agentDao;
         this.agentLocator = agentLocator;
         this.cluster = cluster;
     }
 
-    private void handleOwned(Long agentId) {
-        Ping ping = AgentUtils.newPing(agentId);
+    private void handleOwned(Agent agent) {
+        Ping ping = AgentUtils.newPing(agent);
 
         if (isInterval(PING_STATS_EVERY.get())) {
             ping.setOption(Ping.STATS, true);
@@ -87,42 +87,42 @@ public class PingMonitor implements Task, TaskOptions {
             ping.setOption(Ping.INSTANCES, true);
         }
 
-        doPing(agentId, ping);
+        doPing(agent, ping);
     }
 
     private boolean isInterval(long every) {
         return interation % every == 0;
     }
 
-    private void ping(Long agentId) {
-        if (!cluster.isInPartition(agentId)) {
+    private void ping(Agent agent) {
+        if (!cluster.isInPartition(agent.getAccountId(), agent.getClusterId())) {
             return;
         }
 
-        handleOwned(agentId);
+        handleOwned(agent);
     }
 
-    private void doPing(final Long agentId, Ping ping) {
-        RemoteAgent remoteAgent = agentLocator.lookupAgent(agentId);
+    private void doPing(Agent agent, Ping ping) {
+        RemoteAgent remoteAgent = agentLocator.lookupAgent(agent);
 
         EventCallOptions options = new EventCallOptions(0, PING_TIMEOUT.get() * 1000);
         addCallback(remoteAgent.call(ping, Ping.class, options), new FutureCallback<Ping>() {
             @Override
             public void onSuccess(Ping pong) {
-                pingSuccess(agentId, pong);
+                pingSuccess(agent, pong);
             }
 
             @Override
             public void onFailure(Throwable t) {
-                pingFailure(agentId);
+                pingFailure(agent.getId());
             }
         });
     }
 
-    public void pingSuccess(Long agentId, Ping pong) {
-        status.getUnchecked(agentId).success();
-        agentResourceManager.processPingReply(pong);
-        pingInstanceMonitor.processPingReply(pong);
+    public void pingSuccess(Agent agent, Ping pong) {
+        status.getUnchecked(agent.getId()).success();
+        agentResourceManager.processPingReply(agent, pong);
+        pingInstanceMonitor.processPingReply(agent, pong);
     }
 
     private void pingFailure(Long agentId) {
@@ -153,7 +153,7 @@ public class PingMonitor implements Task, TaskOptions {
             return;
         }
 
-        for (Long agent : pingDao.findAgentsToPing()) {
+        for (Agent agent : agentDao.findAgentsToPing()) {
             ping(agent);
         }
         interation++;

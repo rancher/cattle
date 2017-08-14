@@ -14,25 +14,25 @@ public class ContainerEvent {
     String externalStatus;
     String reportedHostUuid;
     Long hostId;
-    Long accountId;
+    Long clusterId;
 
     public ContainerEvent() {
     }
 
-    public ContainerEvent(String status, long accountId, long hostId, String uuid, String externaId) {
+    public ContainerEvent(String status, long clusterId, long hostId, String uuid, String externaId) {
         this.externalStatus = status;
-        this.accountId = accountId;
+        this.clusterId = clusterId;
         this.uuid = uuid;
         this.externalId = externaId;
         this.hostId = hostId;
     }
 
-    public ContainerEvent(long accountId, long hostId, String uuid, String externaId, Map<String, Object> inspect) {
+    public ContainerEvent(long clusterId, long hostId, String uuid, String externaId, Map<String, Object> inspect) {
         this.uuid = uuid;
         this.dockerInspect = inspect;
         this.externalId = externaId;
         this.externalStatus = ContainerEventConstants.EVENT_START;
-        this.accountId = accountId;
+        this.clusterId = clusterId;
         this.hostId = hostId;
     }
 
@@ -68,14 +68,6 @@ public class ContainerEvent {
         this.hostId = hostId;
     }
 
-    public Long getAccountId() {
-        return accountId;
-    }
-
-    public void setAccountId(Long accountId) {
-        this.accountId = accountId;
-    }
-
     public Map<String, Object> getDockerInspect() {
         return dockerInspect;
     }
@@ -92,4 +84,11 @@ public class ContainerEvent {
         this.uuid = uuid;
     }
 
+    public Long getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(Long clusterId) {
+        this.clusterId = clusterId;
+    }
 }

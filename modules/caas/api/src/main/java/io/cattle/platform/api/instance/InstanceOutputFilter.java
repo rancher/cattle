@@ -14,6 +14,7 @@ import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.net.URL;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +34,7 @@ public class InstanceOutputFilter extends CachedOutputFilter<Map<Long, Map<Strin
     public Resource filter(ApiRequest request, Object original, Resource converted) {
         if (request == null) {
             if (original instanceof Instance) {
-                Map<Long, Map<String, Object>> data = getCached(request);
+                Map<Long, Map<String, Object>> data = getCached(null);
                 if (data != null) {
                     Map<String, Object> fields = data.get(((Instance) original).getId());
                     if (fields != null) {
@@ -72,7 +73,7 @@ public class InstanceOutputFilter extends CachedOutputFilter<Map<Long, Map<Strin
         List<Long> ids = getIds(apiRequest);
         IdFormatter idF = ApiContext.getContext().getIdFormatter();
 
-        for (Map.Entry<Long, List<MountEntry>> entry : volumeDao.getMountsForInstances(ids, idF).entrySet()) {
+        for (Map.Entry<Long, Collection<MountEntry>> entry : volumeDao.getMountsForInstances(ids, idF).entrySet()) {
             Map<String, Object> fields = result.get(entry.getKey());
             if (fields == null) {
                 fields = new HashMap<>();

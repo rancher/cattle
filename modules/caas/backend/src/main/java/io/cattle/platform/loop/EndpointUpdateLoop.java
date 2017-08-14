@@ -8,11 +8,11 @@ import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.model.Loop;
-import io.cattle.platform.environment.EnvironmentResourceManager;
+import io.cattle.platform.metadata.Metadata;
+import io.cattle.platform.metadata.MetadataManager;
 import io.cattle.platform.metadata.model.HostInfo;
 import io.cattle.platform.metadata.model.InstanceInfo;
 import io.cattle.platform.metadata.model.ServiceInfo;
-import io.cattle.platform.metadata.service.Metadata;
 import io.cattle.platform.object.ObjectManager;
 import org.apache.commons.lang3.StringUtils;
 
@@ -26,18 +26,18 @@ import static java.util.stream.Collectors.*;
 public class EndpointUpdateLoop implements Loop {
 
     long accountId;
-    EnvironmentResourceManager envResourceManager;
+    MetadataManager metadataManager;
     ObjectManager objectManager;
 
-    public EndpointUpdateLoop(long accountId, EnvironmentResourceManager envResourceManager, ObjectManager objectManager) {
+    public EndpointUpdateLoop(long accountId, MetadataManager metadataManager, ObjectManager objectManager) {
         this.accountId = accountId;
-        this.envResourceManager = envResourceManager;
+        this.metadataManager = metadataManager;
         this.objectManager = objectManager;
     }
 
     @Override
     public Result run(Object input) {
-        Metadata metadata = envResourceManager.getMetadata(accountId);
+        Metadata metadata = metadataManager.getMetadataForAccount(accountId);
         Map<Long, String> agentIps = new HashMap<>();
         Map<Long, ServiceInfo> services = metadata.getServices().stream().collect(toMap(ServiceInfo::getId, (x) -> x));
         Map<Long, Set<PortInstance>> servicePorts = new HashMap<>();

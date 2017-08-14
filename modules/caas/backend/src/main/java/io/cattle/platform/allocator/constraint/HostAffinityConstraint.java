@@ -2,7 +2,7 @@ package io.cattle.platform.allocator.constraint;
 
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.AffinityOps;
 import io.cattle.platform.allocator.service.AllocationCandidate;
-import io.cattle.platform.environment.EnvironmentResourceManager;
+import io.cattle.platform.allocator.service.AllocationHelper;
 
 import java.util.Map;
 
@@ -13,13 +13,13 @@ public class HostAffinityConstraint implements Constraint {
     AffinityOps op;
     String labelKey;
     String labelValue;
-    EnvironmentResourceManager envResourceManager;
+    AllocationHelper allocationHelper;
 
-    public HostAffinityConstraint(AffinityConstraintDefinition def, EnvironmentResourceManager envResourceManager) {
+    public HostAffinityConstraint(AffinityConstraintDefinition def, AllocationHelper allocationHelper) {
         this.op = def.op;
         this.labelKey = def.key;
         this.labelValue = def.value;
-        this.envResourceManager = envResourceManager;
+        this.allocationHelper = allocationHelper;
     }
 
     @Override
@@ -29,7 +29,7 @@ public class HostAffinityConstraint implements Constraint {
         }
 
         if (op == AffinityOps.SOFT_EQ || op == AffinityOps.EQ) {
-            Map<String, String> labelsForHost = envResourceManager.getLabelsForHost(candidate.getAccountId(), candidate.getHostUuid());
+            Map<String, String> labelsForHost = allocationHelper.getLabelsForHost(candidate.getClusterId(), candidate.getHostUuid());
             String value = labelsForHost.get(labelsForHost);
             if (value == null) { // key doesn't exist
                 return false;
@@ -38,7 +38,7 @@ public class HostAffinityConstraint implements Constraint {
                 return false;
             }
         } else {
-            Map<String, String> labelsForHost = envResourceManager.getLabelsForHost(candidate.getAccountId(), candidate.getHostUuid());
+            Map<String, String> labelsForHost = allocationHelper.getLabelsForHost(candidate.getClusterId(), candidate.getHostUuid());
             if (labelValue.equals(labelsForHost.get(labelKey))) {
                 return false;
             }

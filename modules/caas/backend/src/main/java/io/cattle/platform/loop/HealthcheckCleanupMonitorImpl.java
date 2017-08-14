@@ -1,5 +1,6 @@
 package io.cattle.platform.loop;
 
+import com.netflix.config.DynamicIntProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -9,18 +10,16 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.engine.manager.LoopFactory;
 import io.cattle.platform.engine.manager.LoopManager;
 import io.cattle.platform.engine.model.Loop;
-import io.cattle.platform.environment.EnvironmentResourceManager;
+import io.cattle.platform.metadata.Metadata;
+import io.cattle.platform.metadata.MetadataManager;
 import io.cattle.platform.metadata.model.HealthcheckInfo;
 import io.cattle.platform.metadata.model.InstanceInfo;
-import io.cattle.platform.metadata.service.Metadata;
 import io.cattle.platform.object.ObjectManager;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import com.netflix.config.DynamicIntProperty;
 
 public class HealthcheckCleanupMonitorImpl implements Loop {
 
@@ -30,22 +29,22 @@ public class HealthcheckCleanupMonitorImpl implements Loop {
     ObjectManager objectManager;
     LoopManager loopManager;
     ScheduledExecutorService scheduledExecutorService;
-    EnvironmentResourceManager envResourceManager;
+    MetadataManager metadataManager;
     Map<Long, Long> firstSeen = new HashMap<>();
 
     public HealthcheckCleanupMonitorImpl(long accountId, ObjectManager objectManager, LoopManager loopManager,
-            ScheduledExecutorService scheduledExecutorService, EnvironmentResourceManager envResourceManager) {
+            ScheduledExecutorService scheduledExecutorService, MetadataManager metadataManager) {
         super();
         this.accountId = accountId;
         this.objectManager = objectManager;
         this.loopManager = loopManager;
         this.scheduledExecutorService = scheduledExecutorService;
-        this.envResourceManager = envResourceManager;
+        this.metadataManager = metadataManager;
     }
 
     @Override
     public Result run(Object input) {
-        Metadata metadata = envResourceManager.getMetadata(accountId);
+        Metadata metadata = metadataManager.getMetadataForAccount(accountId);
         Map<Long, Long> firstSeen = new HashMap<>();
         Long checkNext = null;
 

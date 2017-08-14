@@ -21,8 +21,8 @@ import javax.persistence.Table;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record10;
-import org.jooq.Row10;
+import org.jooq.Record12;
+import org.jooq.Row12;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -39,9 +39,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "external_event", schema = "cattle")
-public class ExternalEventRecord extends UpdatableRecordImpl<ExternalEventRecord> implements TableRecordJaxb, Record10<Long, Long, String, String, String, Date, Map<String,Object>, String, String, Long>, ExternalEvent {
+public class ExternalEventRecord extends UpdatableRecordImpl<ExternalEventRecord> implements TableRecordJaxb, Record12<Long, Long, String, String, String, Date, Map<String,Object>, String, String, Long, Long, Long>, ExternalEvent {
 
-    private static final long serialVersionUID = -729342394;
+    private static final long serialVersionUID = -482968617;
 
     /**
      * Setter for <code>cattle.external_event.id</code>.
@@ -215,6 +215,40 @@ public class ExternalEventRecord extends UpdatableRecordImpl<ExternalEventRecord
         return (Long) get(9);
     }
 
+    /**
+     * Setter for <code>cattle.external_event.creator_id</code>.
+     */
+    @Override
+    public void setCreatorId(Long value) {
+        set(10, value);
+    }
+
+    /**
+     * Getter for <code>cattle.external_event.creator_id</code>.
+     */
+    @Column(name = "creator_id", precision = 19)
+    @Override
+    public Long getCreatorId() {
+        return (Long) get(10);
+    }
+
+    /**
+     * Setter for <code>cattle.external_event.cluster_id</code>.
+     */
+    @Override
+    public void setClusterId(Long value) {
+        set(11, value);
+    }
+
+    /**
+     * Getter for <code>cattle.external_event.cluster_id</code>.
+     */
+    @Column(name = "cluster_id", precision = 19)
+    @Override
+    public Long getClusterId() {
+        return (Long) get(11);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -228,23 +262,23 @@ public class ExternalEventRecord extends UpdatableRecordImpl<ExternalEventRecord
     }
 
     // -------------------------------------------------------------------------
-    // Record10 type implementation
+    // Record12 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row10<Long, Long, String, String, String, Date, Map<String,Object>, String, String, Long> fieldsRow() {
-        return (Row10) super.fieldsRow();
+    public Row12<Long, Long, String, String, String, Date, Map<String,Object>, String, String, Long, Long, Long> fieldsRow() {
+        return (Row12) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row10<Long, Long, String, String, String, Date, Map<String,Object>, String, String, Long> valuesRow() {
-        return (Row10) super.valuesRow();
+    public Row12<Long, Long, String, String, String, Date, Map<String,Object>, String, String, Long, Long, Long> valuesRow() {
+        return (Row12) super.valuesRow();
     }
 
     /**
@@ -331,6 +365,22 @@ public class ExternalEventRecord extends UpdatableRecordImpl<ExternalEventRecord
      * {@inheritDoc}
      */
     @Override
+    public Field<Long> field11() {
+        return ExternalEventTable.EXTERNAL_EVENT.CREATOR_ID;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Field<Long> field12() {
+        return ExternalEventTable.EXTERNAL_EVENT.CLUSTER_ID;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Long value1() {
         return getId();
     }
@@ -405,6 +455,22 @@ public class ExternalEventRecord extends UpdatableRecordImpl<ExternalEventRecord
     @Override
     public Long value10() {
         return getReportedAccountId();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Long value11() {
+        return getCreatorId();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Long value12() {
+        return getClusterId();
     }
 
     /**
@@ -501,7 +567,25 @@ public class ExternalEventRecord extends UpdatableRecordImpl<ExternalEventRecord
      * {@inheritDoc}
      */
     @Override
-    public ExternalEventRecord values(Long value1, Long value2, String value3, String value4, String value5, Date value6, Map<String,Object> value7, String value8, String value9, Long value10) {
+    public ExternalEventRecord value11(Long value) {
+        setCreatorId(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ExternalEventRecord value12(Long value) {
+        setClusterId(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ExternalEventRecord values(Long value1, Long value2, String value3, String value4, String value5, Date value6, Map<String,Object> value7, String value8, String value9, Long value10, Long value11, Long value12) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -512,6 +596,8 @@ public class ExternalEventRecord extends UpdatableRecordImpl<ExternalEventRecord
         value8(value8);
         value9(value9);
         value10(value10);
+        value11(value11);
+        value12(value12);
         return this;
     }
 
@@ -534,6 +620,8 @@ public class ExternalEventRecord extends UpdatableRecordImpl<ExternalEventRecord
         setExternalId(from.getExternalId());
         setEventType(from.getEventType());
         setReportedAccountId(from.getReportedAccountId());
+        setCreatorId(from.getCreatorId());
+        setClusterId(from.getClusterId());
     }
 
     /**
@@ -559,7 +647,7 @@ public class ExternalEventRecord extends UpdatableRecordImpl<ExternalEventRecord
     /**
      * Create a detached, initialised ExternalEventRecord
      */
-    public ExternalEventRecord(Long id, Long accountId, String kind, String uuid, String state, Date created, Map<String,Object> data, String externalId, String eventType, Long reportedAccountId) {
+    public ExternalEventRecord(Long id, Long accountId, String kind, String uuid, String state, Date created, Map<String,Object> data, String externalId, String eventType, Long reportedAccountId, Long creatorId, Long clusterId) {
         super(ExternalEventTable.EXTERNAL_EVENT);
 
         set(0, id);
@@ -572,5 +660,7 @@ public class ExternalEventRecord extends UpdatableRecordImpl<ExternalEventRecord
         set(7, externalId);
         set(8, eventType);
         set(9, reportedAccountId);
+        set(10, creatorId);
+        set(11, clusterId);
     }
 }

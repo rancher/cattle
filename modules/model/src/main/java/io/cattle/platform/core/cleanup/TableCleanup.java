@@ -225,7 +225,7 @@ public class TableCleanup extends AbstractJooqDao implements Task {
     }
 
     /**
-     * Returns a list of foreign keys referencing a table
+     * Returns a listSupport of foreign keys referencing a table
      *
      * @param table
      * @param others
@@ -240,10 +240,10 @@ public class TableCleanup extends AbstractJooqDao implements Task {
     }
 
     /**
-     * Sorts a list of tables by their primary key references such that tables may be cleaned in an order
+     * Sorts a listSupport of tables by their primary key references such that tables may be cleaned in an order
      * that doesn't violate any key constraints.
      *
-     * @param tables The list of tables to sort
+     * @param tables The listSupport of tables to sort
      */
     public static List<CleanableTable> sortByReferences(List<CleanableTable> tables) {
         List<CleanableTable> unsorted = new ArrayList<>(tables);
@@ -330,7 +330,7 @@ public class TableCleanup extends AbstractJooqDao implements Task {
                 CleanableTable.from(SubnetTable.SUBNET),
                 CleanableTable.from(UserPreferenceTable.USER_PREFERENCE),
                 CleanableTable.from(VolumeTable.VOLUME),
-                // These tables are cleaned through specialized logic but we need to keep them in the "other" list so that they
+                // These tables are cleaned through specialized logic but we need to keep them in the "other" listSupport so that they
                 // are picked up for foreign key references.
                 CleanableTable.from(ServiceEventTable.SERVICE_EVENT),
                 CleanableTable.from(ScheduledUpgradeTable.SCHEDULED_UPGRADE),

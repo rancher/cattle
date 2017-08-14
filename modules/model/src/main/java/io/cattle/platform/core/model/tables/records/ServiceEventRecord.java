@@ -21,8 +21,8 @@ import javax.persistence.Table;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record16;
-import org.jooq.Row16;
+import org.jooq.Record17;
+import org.jooq.Row17;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -39,9 +39,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "service_event", schema = "cattle")
-public class ServiceEventRecord extends UpdatableRecordImpl<ServiceEventRecord> implements TableRecordJaxb, Record16<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, String, Long, String, Long>, ServiceEvent {
+public class ServiceEventRecord extends UpdatableRecordImpl<ServiceEventRecord> implements TableRecordJaxb, Record17<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, String, Long, String, Long, Long>, ServiceEvent {
 
-    private static final long serialVersionUID = -45416572;
+    private static final long serialVersionUID = -445258482;
 
     /**
      * Setter for <code>cattle.service_event.id</code>.
@@ -317,6 +317,23 @@ public class ServiceEventRecord extends UpdatableRecordImpl<ServiceEventRecord> 
         return (Long) get(15);
     }
 
+    /**
+     * Setter for <code>cattle.service_event.creator_id</code>.
+     */
+    @Override
+    public void setCreatorId(Long value) {
+        set(16, value);
+    }
+
+    /**
+     * Getter for <code>cattle.service_event.creator_id</code>.
+     */
+    @Column(name = "creator_id", precision = 19)
+    @Override
+    public Long getCreatorId() {
+        return (Long) get(16);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -330,23 +347,23 @@ public class ServiceEventRecord extends UpdatableRecordImpl<ServiceEventRecord> 
     }
 
     // -------------------------------------------------------------------------
-    // Record16 type implementation
+    // Record17 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row16<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, String, Long, String, Long> fieldsRow() {
-        return (Row16) super.fieldsRow();
+    public Row17<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, String, Long, String, Long, Long> fieldsRow() {
+        return (Row17) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row16<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, String, Long, String, Long> valuesRow() {
-        return (Row16) super.valuesRow();
+    public Row17<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, String, Long, String, Long, Long> valuesRow() {
+        return (Row17) super.valuesRow();
     }
 
     /**
@@ -481,6 +498,14 @@ public class ServiceEventRecord extends UpdatableRecordImpl<ServiceEventRecord> 
      * {@inheritDoc}
      */
     @Override
+    public Field<Long> field17() {
+        return ServiceEventTable.SERVICE_EVENT.CREATOR_ID;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Long value1() {
         return getId();
     }
@@ -603,6 +628,14 @@ public class ServiceEventRecord extends UpdatableRecordImpl<ServiceEventRecord> 
     @Override
     public Long value16() {
         return getExternalTimestamp();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Long value17() {
+        return getCreatorId();
     }
 
     /**
@@ -753,7 +786,16 @@ public class ServiceEventRecord extends UpdatableRecordImpl<ServiceEventRecord> 
      * {@inheritDoc}
      */
     @Override
-    public ServiceEventRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, Long value12, String value13, Long value14, String value15, Long value16) {
+    public ServiceEventRecord value17(Long value) {
+        setCreatorId(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ServiceEventRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, Long value12, String value13, Long value14, String value15, Long value16, Long value17) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -770,6 +812,7 @@ public class ServiceEventRecord extends UpdatableRecordImpl<ServiceEventRecord> 
         value14(value14);
         value15(value15);
         value16(value16);
+        value17(value17);
         return this;
     }
 
@@ -798,6 +841,7 @@ public class ServiceEventRecord extends UpdatableRecordImpl<ServiceEventRecord> 
         setInstanceId(from.getInstanceId());
         setReportedHealth(from.getReportedHealth());
         setExternalTimestamp(from.getExternalTimestamp());
+        setCreatorId(from.getCreatorId());
     }
 
     /**
@@ -823,7 +867,7 @@ public class ServiceEventRecord extends UpdatableRecordImpl<ServiceEventRecord> 
     /**
      * Create a detached, initialised ServiceEventRecord
      */
-    public ServiceEventRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Long hostId, String healthcheckUuid, Long instanceId, String reportedHealth, Long externalTimestamp) {
+    public ServiceEventRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Long hostId, String healthcheckUuid, Long instanceId, String reportedHealth, Long externalTimestamp, Long creatorId) {
         super(ServiceEventTable.SERVICE_EVENT);
 
         set(0, id);
@@ -842,5 +886,6 @@ public class ServiceEventRecord extends UpdatableRecordImpl<ServiceEventRecord> 
         set(13, instanceId);
         set(14, reportedHealth);
         set(15, externalTimestamp);
+        set(16, creatorId);
     }
 }

@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class NetworkDriverTable extends TableImpl<NetworkDriverRecord> {
 
-    private static final long serialVersionUID = -61119443;
+    private static final long serialVersionUID = -1498005416;
 
     /**
      * The reference instance of <code>cattle.network_driver</code>
@@ -64,11 +64,6 @@ public class NetworkDriverTable extends TableImpl<NetworkDriverRecord> {
      * The column <code>cattle.network_driver.name</code>.
      */
     public final TableField<NetworkDriverRecord, String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
-
-    /**
-     * The column <code>cattle.network_driver.account_id</code>.
-     */
-    public final TableField<NetworkDriverRecord, Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
      * The column <code>cattle.network_driver.kind</code>.
@@ -114,6 +109,11 @@ public class NetworkDriverTable extends TableImpl<NetworkDriverRecord> {
      * The column <code>cattle.network_driver.service_id</code>.
      */
     public final TableField<NetworkDriverRecord, Long> SERVICE_ID = createField("service_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
+     * The column <code>cattle.network_driver.cluster_id</code>.
+     */
+    public final TableField<NetworkDriverRecord, Long> CLUSTER_ID = createField("cluster_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
 
     /**
      * Create a <code>cattle.network_driver</code> table reference
@@ -174,7 +174,7 @@ public class NetworkDriverTable extends TableImpl<NetworkDriverRecord> {
      */
     @Override
     public List<ForeignKey<NetworkDriverRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<NetworkDriverRecord, ?>>asList(Keys.FK_NETWORK_DRIVER__ACCOUNT_ID, Keys.FK_NETWORK_DRIVER__SERVICE_ID);
+        return Arrays.<ForeignKey<NetworkDriverRecord, ?>>asList(Keys.FK_NETWORK_DRIVER__SERVICE_ID, Keys.FK_NETWORK_DRIVER__CLUSTER_ID);
     }
 
     /**

@@ -38,7 +38,7 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
 
     protected void onEvent(String listenerKey, String eventName, byte[] bytes) {
         try {
-            EventVO<?> event = jsonMapper.readValue(bytes, EventVO.class);
+            EventVO<?, ?> event = jsonMapper.readValue(bytes, EventVO.class);
             if (eventName != null) {
                 event.setName(eventName);
             }
@@ -58,7 +58,7 @@ public abstract class AbstractThreadPoolingEventService extends AbstractEventSer
         getEventLogIn().debug(eventString);
 
         try {
-            EventVO<?> event = jsonMapper.readValue(eventString, EventVO.class);
+            EventVO<?, ?> event = jsonMapper.readValue(eventString, EventVO.class);
             if (eventName != null) {
                 event.setName(eventName);
             }

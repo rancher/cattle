@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AgentTable extends TableImpl<AgentRecord> {
 
-    private static final long serialVersionUID = -334886271;
+    private static final long serialVersionUID = 956344574;
 
     /**
      * The reference instance of <code>cattle.agent</code>
@@ -126,6 +126,11 @@ public class AgentTable extends TableImpl<AgentRecord> {
     public final TableField<AgentRecord, Long> RESOURCE_ACCOUNT_ID = createField("resource_account_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
+     * The column <code>cattle.agent.cluster_id</code>.
+     */
+    public final TableField<AgentRecord, Long> CLUSTER_ID = createField("cluster_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
      * Create a <code>cattle.agent</code> table reference
      */
     public AgentTable() {
@@ -184,7 +189,7 @@ public class AgentTable extends TableImpl<AgentRecord> {
      */
     @Override
     public List<ForeignKey<AgentRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<AgentRecord, ?>>asList(Keys.FK_AGENT__ACCOUNT_ID, Keys.FK_AGENT__RESOURCE_ACCOUNT_ID);
+        return Arrays.<ForeignKey<AgentRecord, ?>>asList(Keys.FK_AGENT__ACCOUNT_ID, Keys.FK_AGENT__RESOURCE_ACCOUNT_ID, Keys.FK_AGENT__CLUSTER_ID);
     }
 
     /**

@@ -21,8 +21,8 @@ import javax.persistence.Table;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record16;
-import org.jooq.Row16;
+import org.jooq.Record18;
+import org.jooq.Row18;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -38,13 +38,13 @@ import org.jooq.impl.UpdatableRecordImpl;
 )
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
-@Table(name = "environment", schema = "cattle")
-public class StackRecord extends UpdatableRecordImpl<StackRecord> implements TableRecordJaxb, Record16<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String, Boolean, Long>, Stack {
+@Table(name = "stack", schema = "cattle")
+public class StackRecord extends UpdatableRecordImpl<StackRecord> implements TableRecordJaxb, Record18<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String, Boolean, Long, Long, Long>, Stack {
 
-    private static final long serialVersionUID = -1184463957;
+    private static final long serialVersionUID = 788726830;
 
     /**
-     * Setter for <code>cattle.environment.id</code>.
+     * Setter for <code>cattle.stack.id</code>.
      */
     @Override
     public void setId(Long value) {
@@ -52,7 +52,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Getter for <code>cattle.environment.id</code>.
+     * Getter for <code>cattle.stack.id</code>.
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -63,7 +63,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Setter for <code>cattle.environment.name</code>.
+     * Setter for <code>cattle.stack.name</code>.
      */
     @Override
     public void setName(String value) {
@@ -71,7 +71,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Getter for <code>cattle.environment.name</code>.
+     * Getter for <code>cattle.stack.name</code>.
      */
     @Column(name = "name", length = 255)
     @Override
@@ -80,7 +80,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Setter for <code>cattle.environment.account_id</code>.
+     * Setter for <code>cattle.stack.account_id</code>.
      */
     @Override
     public void setAccountId(Long value) {
@@ -88,7 +88,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Getter for <code>cattle.environment.account_id</code>.
+     * Getter for <code>cattle.stack.account_id</code>.
      */
     @Column(name = "account_id", precision = 19)
     @Override
@@ -97,7 +97,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Setter for <code>cattle.environment.kind</code>.
+     * Setter for <code>cattle.stack.kind</code>.
      */
     @Override
     public void setKind(String value) {
@@ -105,7 +105,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Getter for <code>cattle.environment.kind</code>.
+     * Getter for <code>cattle.stack.kind</code>.
      */
     @Column(name = "kind", nullable = false, length = 255)
     @Override
@@ -114,7 +114,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Setter for <code>cattle.environment.uuid</code>.
+     * Setter for <code>cattle.stack.uuid</code>.
      */
     @Override
     public void setUuid(String value) {
@@ -122,7 +122,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Getter for <code>cattle.environment.uuid</code>.
+     * Getter for <code>cattle.stack.uuid</code>.
      */
     @Column(name = "uuid", unique = true, nullable = false, length = 128)
     @Override
@@ -131,7 +131,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Setter for <code>cattle.environment.description</code>.
+     * Setter for <code>cattle.stack.description</code>.
      */
     @Override
     public void setDescription(String value) {
@@ -139,7 +139,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Getter for <code>cattle.environment.description</code>.
+     * Getter for <code>cattle.stack.description</code>.
      */
     @Column(name = "description", length = 1024)
     @Override
@@ -148,7 +148,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Setter for <code>cattle.environment.state</code>.
+     * Setter for <code>cattle.stack.state</code>.
      */
     @Override
     public void setState(String value) {
@@ -156,7 +156,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Getter for <code>cattle.environment.state</code>.
+     * Getter for <code>cattle.stack.state</code>.
      */
     @Column(name = "state", nullable = false, length = 128)
     @Override
@@ -165,7 +165,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Setter for <code>cattle.environment.created</code>.
+     * Setter for <code>cattle.stack.created</code>.
      */
     @Override
     public void setCreated(Date value) {
@@ -173,7 +173,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Getter for <code>cattle.environment.created</code>.
+     * Getter for <code>cattle.stack.created</code>.
      */
     @Column(name = "created")
     @Override
@@ -182,7 +182,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Setter for <code>cattle.environment.removed</code>.
+     * Setter for <code>cattle.stack.removed</code>.
      */
     @Override
     public void setRemoved(Date value) {
@@ -190,7 +190,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Getter for <code>cattle.environment.removed</code>.
+     * Getter for <code>cattle.stack.removed</code>.
      */
     @Column(name = "removed")
     @Override
@@ -199,7 +199,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Setter for <code>cattle.environment.remove_time</code>.
+     * Setter for <code>cattle.stack.remove_time</code>.
      */
     @Override
     public void setRemoveTime(Date value) {
@@ -207,7 +207,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Getter for <code>cattle.environment.remove_time</code>.
+     * Getter for <code>cattle.stack.remove_time</code>.
      */
     @Column(name = "remove_time")
     @Override
@@ -216,7 +216,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Setter for <code>cattle.environment.data</code>.
+     * Setter for <code>cattle.stack.data</code>.
      */
     @Override
     public void setData(Map<String,Object> value) {
@@ -224,7 +224,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Getter for <code>cattle.environment.data</code>.
+     * Getter for <code>cattle.stack.data</code>.
      */
     @Column(name = "data", length = 16777215)
     @Override
@@ -233,7 +233,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Setter for <code>cattle.environment.external_id</code>.
+     * Setter for <code>cattle.stack.external_id</code>.
      */
     @Override
     public void setExternalId(String value) {
@@ -241,7 +241,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Getter for <code>cattle.environment.external_id</code>.
+     * Getter for <code>cattle.stack.external_id</code>.
      */
     @Column(name = "external_id", length = 128)
     @Override
@@ -250,7 +250,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Setter for <code>cattle.environment.health_state</code>.
+     * Setter for <code>cattle.stack.health_state</code>.
      */
     @Override
     public void setHealthState(String value) {
@@ -258,7 +258,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Getter for <code>cattle.environment.health_state</code>.
+     * Getter for <code>cattle.stack.health_state</code>.
      */
     @Column(name = "health_state", length = 128)
     @Override
@@ -267,7 +267,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Setter for <code>cattle.environment.folder</code>.
+     * Setter for <code>cattle.stack.folder</code>.
      */
     @Override
     public void setGroup(String value) {
@@ -275,7 +275,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Getter for <code>cattle.environment.folder</code>.
+     * Getter for <code>cattle.stack.folder</code>.
      */
     @Column(name = "folder", length = 255)
     @Override
@@ -284,7 +284,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Setter for <code>cattle.environment.system</code>.
+     * Setter for <code>cattle.stack.system</code>.
      */
     @Override
     public void setSystem(Boolean value) {
@@ -292,7 +292,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Getter for <code>cattle.environment.system</code>.
+     * Getter for <code>cattle.stack.system</code>.
      */
     @Column(name = "system", nullable = false, precision = 1)
     @Override
@@ -301,7 +301,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Setter for <code>cattle.environment.parent_environment_id</code>.
+     * Setter for <code>cattle.stack.parent_environment_id</code>.
      */
     @Override
     public void setParentStackId(Long value) {
@@ -309,12 +309,46 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Getter for <code>cattle.environment.parent_environment_id</code>.
+     * Getter for <code>cattle.stack.parent_environment_id</code>.
      */
     @Column(name = "parent_environment_id", precision = 19)
     @Override
     public Long getParentStackId() {
         return (Long) get(15);
+    }
+
+    /**
+     * Setter for <code>cattle.stack.cluster_id</code>.
+     */
+    @Override
+    public void setClusterId(Long value) {
+        set(16, value);
+    }
+
+    /**
+     * Getter for <code>cattle.stack.cluster_id</code>.
+     */
+    @Column(name = "cluster_id", nullable = false, precision = 19)
+    @Override
+    public Long getClusterId() {
+        return (Long) get(16);
+    }
+
+    /**
+     * Setter for <code>cattle.stack.creator_id</code>.
+     */
+    @Override
+    public void setCreatorId(Long value) {
+        set(17, value);
+    }
+
+    /**
+     * Getter for <code>cattle.stack.creator_id</code>.
+     */
+    @Column(name = "creator_id", precision = 19)
+    @Override
+    public Long getCreatorId() {
+        return (Long) get(17);
     }
 
     // -------------------------------------------------------------------------
@@ -330,23 +364,23 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     // -------------------------------------------------------------------------
-    // Record16 type implementation
+    // Record18 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row16<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String, Boolean, Long> fieldsRow() {
-        return (Row16) super.fieldsRow();
+    public Row18<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String, Boolean, Long, Long, Long> fieldsRow() {
+        return (Row18) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row16<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String, Boolean, Long> valuesRow() {
-        return (Row16) super.valuesRow();
+    public Row18<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String, Boolean, Long, Long, Long> valuesRow() {
+        return (Row18) super.valuesRow();
     }
 
     /**
@@ -481,6 +515,22 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
      * {@inheritDoc}
      */
     @Override
+    public Field<Long> field17() {
+        return StackTable.STACK.CLUSTER_ID;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Field<Long> field18() {
+        return StackTable.STACK.CREATOR_ID;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Long value1() {
         return getId();
     }
@@ -603,6 +653,22 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     @Override
     public Long value16() {
         return getParentStackId();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Long value17() {
+        return getClusterId();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Long value18() {
+        return getCreatorId();
     }
 
     /**
@@ -753,7 +819,25 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
      * {@inheritDoc}
      */
     @Override
-    public StackRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, String value12, String value13, String value14, Boolean value15, Long value16) {
+    public StackRecord value17(Long value) {
+        setClusterId(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public StackRecord value18(Long value) {
+        setCreatorId(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public StackRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, String value12, String value13, String value14, Boolean value15, Long value16, Long value17, Long value18) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -770,6 +854,8 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
         value14(value14);
         value15(value15);
         value16(value16);
+        value17(value17);
+        value18(value18);
         return this;
     }
 
@@ -798,6 +884,8 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
         setGroup(from.getGroup());
         setSystem(from.getSystem());
         setParentStackId(from.getParentStackId());
+        setClusterId(from.getClusterId());
+        setCreatorId(from.getCreatorId());
     }
 
     /**
@@ -823,7 +911,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     /**
      * Create a detached, initialised StackRecord
      */
-    public StackRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String externalId, String healthState, String folder, Boolean system, Long parentEnvironmentId) {
+    public StackRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String externalId, String healthState, String folder, Boolean system, Long parentEnvironmentId, Long clusterId, Long creatorId) {
         super(StackTable.STACK);
 
         set(0, id);
@@ -842,5 +930,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
         set(13, folder);
         set(14, system);
         set(15, parentEnvironmentId);
+        set(16, clusterId);
+        set(17, creatorId);
     }
 }

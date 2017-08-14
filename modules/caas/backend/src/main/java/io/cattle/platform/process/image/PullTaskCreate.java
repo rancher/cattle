@@ -88,7 +88,7 @@ public class PullTaskCreate implements ProcessHandler {
             labels = new HashMap<>();
         }
 
-        List<Long> hostIds = allocationHelper.getHostsSatisfyingHostAffinity(pullTask.getAccountId(), labels);
+        List<Long> hostIds = allocationHelper.getHostsSatisfyingHostAffinity(pullTask.getClusterId(), labels);
         Map<Host, ListenableFuture<? extends Event>> pullFutures = new HashMap<>();
         Map<Host, ListenableFuture<? extends Event>> cleanupFutures = new HashMap<>();
 

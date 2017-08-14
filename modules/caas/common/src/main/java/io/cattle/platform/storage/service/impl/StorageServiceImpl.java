@@ -187,7 +187,7 @@ public class StorageServiceImpl implements StorageService {
 
 
     protected Map<String, Object> getStoragePoolProperties(StorageDriver storageDriver) {
-        return objectManager.convertToPropertiesFor(StoragePool.class, CollectionUtils.asMap(STORAGE_POOL.ACCOUNT_ID, storageDriver.getAccountId(),
+        return objectManager.convertToPropertiesFor(StoragePool.class, CollectionUtils.asMap(STORAGE_POOL.CLUSTER_ID, storageDriver.getClusterId(),
                 STORAGE_POOL.NAME, storageDriver.getName(),
                 STORAGE_POOL.DRIVER_NAME, storageDriver.getName(),
                 STORAGE_POOL.STORAGE_DRIVER_ID, storageDriver.getId(),
@@ -202,7 +202,7 @@ public class StorageServiceImpl implements StorageService {
         StoragePool globalPool = objectManager.findAny(StoragePool.class,
                 STORAGE_POOL.STORAGE_DRIVER_ID, storageDriver.getId(),
                 STORAGE_POOL.REMOVED, null);
-        Map<Long, Long> hostToPool = storagePoolDao.findStoragePoolHostsByDriver(storageDriver.getAccountId(),
+        Map<Long, Long> hostToPool = storagePoolDao.findStoragePoolHostsByDriver(storageDriver.getClusterId(),
                 storageDriver.getId());
         for (Map.Entry<Long, Long> entry : hostToPool.entrySet()) {
             Long hostId = entry.getKey();

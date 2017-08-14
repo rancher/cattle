@@ -60,7 +60,7 @@ public class DeploymentUnitUnit implements Unit, BasicStateUnit, PausableUnit {
         }
 
         Service service = this.service.getService();
-        DeploymentUnit unit = svc.serviceDao.createDeploymentUnit(service.getAccountId(), service.getId(),
+        DeploymentUnit unit = svc.serviceDao.createDeploymentUnit(service.getAccountId(), service.getClusterId(), service.getId(),
                 service.getStackId(), hostId, index, service.getRevisionId(), context.getInator().getDesiredState() == DesiredState.ACTIVE);
         this.unit = new DeploymentUnitWrapper(unit, service, svc);
 

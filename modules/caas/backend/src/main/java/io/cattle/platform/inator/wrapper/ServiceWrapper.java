@@ -111,6 +111,10 @@ public class ServiceWrapper {
         return service.getAccountId();
     }
 
+    public Long getClusterId() {
+        return service.getClusterId();
+    }
+
     public void setUpgradeLastRunToNow() {
         svc.objectManager.setFields(service, ServiceConstants.FIELD_UPGRADE_LAST_RUN, System.currentTimeMillis());
     }

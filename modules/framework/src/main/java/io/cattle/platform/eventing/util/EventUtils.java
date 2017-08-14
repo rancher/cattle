@@ -31,7 +31,7 @@ public class EventUtils {
                     return;
                 }
 
-                EventVO<Object> reply = EventVO.reply(previousEvent);
+                EventVO<Object, Object> reply = EventVO.reply(previousEvent);
                 copyTransitioning(event, reply);
 
                 eventService.publish(event);
@@ -48,9 +48,8 @@ public class EventUtils {
         return !(event == null || event.getTransitioning() == null || Event.TRANSITIONING_NO.equals(event.getTransitioning()));
     }
 
-    public static void copyTransitioning(Event from, EventVO<?> to) {
+    public static void copyTransitioning(Event from, EventVO<?, ?> to) {
         to.setTransitioning(from.getTransitioning());
         to.setTransitioningMessage(from.getTransitioningMessage());
-        to.setTransitioningProgress(from.getTransitioningProgress());
     }
 }

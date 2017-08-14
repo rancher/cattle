@@ -34,7 +34,6 @@ import io.cattle.platform.core.util.InstanceHelpers;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.docker.client.DockerImage;
-import io.cattle.platform.environment.EnvironmentResourceManager;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.exception.EventExecutionException;
 import io.cattle.platform.eventing.model.Event;
@@ -42,6 +41,7 @@ import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.lock.definition.LockDefinition;
+import io.cattle.platform.metadata.MetadataManager;
 import io.cattle.platform.metadata.model.HostInfo;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
@@ -94,14 +94,14 @@ public class AllocatorServiceImpl implements AllocatorService {
     ObjectProcessManager processManager;
     AllocationHelper allocationHelper;
     VolumeDao volumeDao;
-    EnvironmentResourceManager envResourceManager;
+    MetadataManager metadataManager;
     EventService eventService;
     List<AllocationConstraintsProvider> allocationConstraintProviders;
 
 
     public AllocatorServiceImpl(AgentDao agentDao, AgentLocator agentLocator, AllocatorDao allocatorDao, LockManager lockManager,
                                 ObjectManager objectManager, ObjectProcessManager processManager, AllocationHelper allocationHelper, VolumeDao volumeDao,
-                                EnvironmentResourceManager envResourceManager, EventService eventService, AllocationConstraintsProvider... allocationConstraintProviders) {
+                                MetadataManager metadataManager, EventService eventService, AllocationConstraintsProvider... allocationConstraintProviders) {
         super();
         this.agentDao = agentDao;
         this.agentLocator = agentLocator;
@@ -111,7 +111,7 @@ public class AllocatorServiceImpl implements AllocatorService {
         this.processManager = processManager;
         this.allocationHelper = allocationHelper;
         this.volumeDao = volumeDao;
-        this.envResourceManager = envResourceManager;
+        this.metadataManager = metadataManager;
         this.eventService = eventService;
         this.allocationConstraintProviders = Arrays.asList(allocationConstraintProviders);
     }
@@ -152,7 +152,7 @@ public class AllocatorServiceImpl implements AllocatorService {
         String hostUuid = getHostUuid(instance);
         for (Long agentId: agentIds) {
             if (agentId != null && hostUuid != null) {
-                EventVO<Map<String, Object>> schedulerEvent = buildEvent(SCHEDULER_RESERVE_EVENT, InstanceConstants.PROCESS_START,
+                EventVO<Map<String, Object>, ?> schedulerEvent = buildEvent(SCHEDULER_RESERVE_EVENT, InstanceConstants.PROCESS_START,
                         instances, new HashSet<>(), agentId);
                 if (schedulerEvent != null) {
                     Map<String, Object> reqData = CollectionUtils.toMap(schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME));
@@ -183,13 +183,13 @@ public class AllocatorServiceImpl implements AllocatorService {
     @Override
     @SuppressWarnings("unchecked")
     public List<String> callExternalSchedulerForHostsSatisfyingLabels(Long accountId, Map<String, String> labels) {
-        List<Long> agentIds = envResourceManager.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_SCHEDULING_PROVIDER, accountId);
+        List<Long> agentIds = metadataManager.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_SCHEDULING_PROVIDER, accountId);
         List<String> hosts = null;
         List<Object> instances = new ArrayList<>();
         Map<String, Object> instance = constructInstanceMapWithLabel(labels);
         instances.add(instance);
         for (Long agentId : agentIds) {
-            EventVO<Map<String, Object>> schedulerEvent = buildEvent(SCHEDULER_PRIORITIZE_EVENT, "globalServicePlanning", instances);
+            EventVO<Map<String, Object>, ?> schedulerEvent = buildEvent(SCHEDULER_PRIORITIZE_EVENT, "globalServicePlanning", instances);
             if (schedulerEvent != null) {
                 RemoteAgent agent = agentLocator.lookupAgent(agentId);
                 Event eventResult = callScheduler("Error getting hosts for resources for global service", schedulerEvent, agent);
@@ -204,7 +204,7 @@ public class AllocatorServiceImpl implements AllocatorService {
         return hosts;
     }
 
-    private EventVO<Map<String, Object>> buildEvent(String eventName, String phase, Object instances) {
+    private EventVO<Map<String, Object>, ?> buildEvent(String eventName, String phase, Object instances) {
         return newEvent(eventName, null, "instance", phase, null, instances);
     }
 
@@ -284,7 +284,7 @@ public class AllocatorServiceImpl implements AllocatorService {
             }
         }
 
-        doAllocate(new AllocationAttempt(origInstance.getAccountId(), instances, hostId, requestedHostId, volumes));
+        doAllocate(new AllocationAttempt(origInstance.getClusterId(), instances, hostId, requestedHostId, volumes));
     }
 
     protected LockDefinition getInstanceLockDef(Instance origInstance, List<Instance> instances, Set<Long> volumeIds) {
@@ -379,48 +379,43 @@ public class AllocatorServiceImpl implements AllocatorService {
 
         List<Set<Constraint>> candidateFailedConstraintSets = new ArrayList<>();
         Iterator<AllocationCandidate> iter = getCandidates(attempt);
-        try {
-            boolean foundOne = false;
-            while (iter.hasNext()) {
-                foundOne = true;
-                AllocationCandidate candidate = iter.next();
-                Set<Constraint> failedConstraints = new HashSet<>();
-                attempt.getCandidates().add(candidate);
 
-                String prefix = String.format("[%s][%s]", attempt.getId(), candidate.getId());
-                logCandidate(prefix, attempt, candidate);
+        boolean foundOne = false;
+        while (iter.hasNext()) {
+            foundOne = true;
+            AllocationCandidate candidate = iter.next();
+            Set<Constraint> failedConstraints = new HashSet<>();
+            attempt.getCandidates().add(candidate);
 
-                StringBuilder lg = new StringBuilder(String.format("%s Checking constraints:\n", prefix));
-                boolean good = true;
-                for (Constraint constraint : attempt.getConstraints()) {
-                    boolean match = constraint.matches(candidate);
-                    lg.append(String.format("  %s   constraint result [%s] : %s\n", prefix, match, constraint));
-                    if (!match) {
-                        good = false;
-                        failedConstraints.add(constraint);
-                    }
+            String prefix = String.format("[%s][%s]", attempt.getId(), candidate.getId());
+            logCandidate(prefix, candidate);
+
+            StringBuilder lg = new StringBuilder(String.format("%s Checking constraints:\n", prefix));
+            boolean good = true;
+            for (Constraint constraint : attempt.getConstraints()) {
+                boolean match = constraint.matches(candidate);
+                lg.append(String.format("  %s   constraint result [%s] : %s\n", prefix, match, constraint));
+                if (!match) {
+                    good = false;
+                    failedConstraints.add(constraint);
                 }
-                lg.append(String.format("  %s   candidate result  [%s]", prefix, good));
-                log.info(lg.toString());
-                if (good) {
-                    if (recordCandidate(attempt, candidate)) {
-                        attempt.setMatchedCandidate(candidate);
-                        return failedConstraints;
-                    } else {
-                        log.info("{}   can not record result", prefix);
-                    }
+            }
+            lg.append(String.format("  %s   candidate result  [%s]", prefix, good));
+            log.info(lg.toString());
+            if (good) {
+                if (recordCandidate(attempt, candidate)) {
+                    attempt.setMatchedCandidate(candidate);
+                    return failedConstraints;
+                } else {
+                    log.info("{}   can not record result", prefix);
                 }
-                candidateFailedConstraintSets.add(failedConstraints);
             }
-            if (!foundOne) {
-                throw new FailedToAllocate("No healthy hosts with sufficient resources available");
-            }
-            return getWeakestConstraintSet(candidateFailedConstraintSets);
-        } finally {
-            if (iter != null) {
-                close(iter);
-            }
+            candidateFailedConstraintSets.add(failedConstraints);
         }
+        if (!foundOne) {
+            throw new FailedToAllocate("No healthy hosts with sufficient resources available");
+        }
+        return getWeakestConstraintSet(candidateFailedConstraintSets);
     }
 
     // ideally we want zero hard constraints and the fewest soft constraints
@@ -428,43 +423,38 @@ public class AllocatorServiceImpl implements AllocatorService {
         if (candidateFailedConstraintSets == null || candidateFailedConstraintSets.isEmpty()) {
             return Collections.emptySet();
         }
-        Collections.sort(candidateFailedConstraintSets, new Comparator<Set<Constraint>>() {
+        candidateFailedConstraintSets.sort(new Comparator<Set<Constraint>>() {
             @Override
             public int compare(Set<Constraint> o1, Set<Constraint> o2) {
                 if (o1 == o2) return 0;
                 if (o1 != null && o2 == null) return 1;
-                if (o1 == null && o2 != null) return -1;
+                if (o1 == null) return -1;
 
                 int[] o1NumOfHardAndSoftConstraints = getNumberOfConstraints(o1);
                 int[] o2NumOfHardAndSoftConstraints = getNumberOfConstraints(o2);
 
-                if (o1NumOfHardAndSoftConstraints[0] > o2NumOfHardAndSoftConstraints[0]) return 1;
-                if (o1NumOfHardAndSoftConstraints[0] < o2NumOfHardAndSoftConstraints[0]) return -1;
-                if (o1NumOfHardAndSoftConstraints[1] > o2NumOfHardAndSoftConstraints[1]) return 1;
-                if (o1NumOfHardAndSoftConstraints[1] < o2NumOfHardAndSoftConstraints[1]) return -1;
-                return 0;
+                int result = Integer.compare(o1NumOfHardAndSoftConstraints[0], o2NumOfHardAndSoftConstraints[0]);
+                return result != 0 ? result : Integer.compare(o1NumOfHardAndSoftConstraints[1], o2NumOfHardAndSoftConstraints[1]);
             }
 
             private int[] getNumberOfConstraints(Set<Constraint> failedConstraints) {
                 int hard = 0;
                 int soft = 0;
-                Iterator<Constraint> iter = failedConstraints.iterator();
-                while (iter.hasNext()) {
-                    Constraint c = iter.next();
+                for (Constraint c : failedConstraints) {
                     if (c.isHardConstraint()) {
                         hard++;
                     } else {
                         soft++;
                     }
                 }
-                return new int[] { hard, soft };
+                return new int[]{hard, soft};
             }
 
         });
         return candidateFailedConstraintSets.get(0);
     }
 
-    protected void logCandidate(String prefix, AllocationAttempt attempt, AllocationCandidate candidate) {
+    protected void logCandidate(String prefix, AllocationCandidate candidate) {
         StringBuilder candidateLog = new StringBuilder(String.format("%s Checking candidate:\n", prefix));
         if (candidate.getHost() != null) {
             candidateLog.append(String.format("  %s   host [%s]\n", prefix, candidate.getHost()));
@@ -496,30 +486,24 @@ public class AllocatorServiceImpl implements AllocatorService {
         log.info(candidateLog.toString());
     }
 
-    protected void close(Iterator<AllocationCandidate> iter) {
-    }
-
     protected void populateConstraints(AllocationAttempt attempt, AllocationLog log) {
         List<Constraint> constraints = attempt.getConstraints();
 
         for (AllocationConstraintsProvider provider : allocationConstraintProviders) {
             if (attempt.getRequestedHostId() == null || provider.isCritical()) {
-                if (provider instanceof PortsConstraintProvider  && !useLegacyPortAllocation(attempt.getAccountId(), attempt.getInstances())) {
+                if (provider instanceof PortsConstraintProvider  && !useLegacyPortAllocation(attempt.getClusterId(), attempt.getInstances())) {
                     continue;
                 }
                 provider.appendConstraints(attempt, log, constraints);
             }
         }
-        Collections.sort(constraints, new Comparator<Constraint>() {
-            @Override
-            public int compare(Constraint o1, Constraint o2) {
-                if (o1 == o2) return 0;
-                if (o1 != null && o2 == null) return -1;
-                if (o1 == null && o2 != null) return 1;
-                if (o1.isHardConstraint() && o2.isHardConstraint()) return 0;
-                if (o1.isHardConstraint() && !o2.isHardConstraint()) return -1;
-                return 1;
-            }
+        constraints.sort((o1, o2) -> {
+            if (o1 == o2) return 0;
+            if (o1 != null && o2 == null) return -1;
+            if (o1 == null) return 1;
+            if (o1.isHardConstraint() && o2.isHardConstraint()) return 0;
+            if (o1.isHardConstraint() && !o2.isHardConstraint()) return -1;
+            return 1;
         });
     }
 
@@ -530,9 +514,7 @@ public class AllocatorServiceImpl implements AllocatorService {
         }
 
         QueryOptions options = new QueryOptions();
-
-        options.setAccountId(attempt.getAccountId());
-
+        options.setClusterId(attempt.getClusterId());
         options.setRequestedHostId(attempt.getRequestedHostId());
 
         for (Constraint constraint : attempt.getConstraints()) {
@@ -550,7 +532,7 @@ public class AllocatorServiceImpl implements AllocatorService {
             orderedHostUUIDs = callExternalSchedulerForHosts(attempt);
         }
 
-        Iterator<HostInfo> iter = envResourceManager.iterateHosts(options, orderedHostUUIDs);
+        Iterator<HostInfo> iter = allocationHelper.iterateHosts(options, orderedHostUUIDs);
         return new Iterator<AllocationCandidate>() {
             @Override
             public boolean hasNext() {
@@ -560,7 +542,7 @@ public class AllocatorServiceImpl implements AllocatorService {
             @Override
             public AllocationCandidate next() {
                 HostInfo host = iter.next();
-                return new AllocationCandidate(host.getId(), host.getUuid(), host.getPorts(), options.getAccountId());
+                return new AllocationCandidate(host.getId(), host.getUuid(), host.getPorts(), options.getClusterId());
             }
         };
     }
@@ -591,9 +573,9 @@ public class AllocatorServiceImpl implements AllocatorService {
 
     @SuppressWarnings("unchecked")
     private void callExternalSchedulerToReserve(AllocationAttempt attempt, AllocationCandidate candidate) {
-        List<Long> agentIds = getAgentResource(attempt.getAccountId(), attempt.getInstances());
+        List<Long> agentIds = getAgentResource(attempt.getClusterId(), attempt.getInstances());
         for (Long agentId : agentIds) {
-            EventVO<Map<String, Object>> schedulerEvent = buildEvent(SCHEDULER_RESERVE_EVENT, InstanceConstants.PROCESS_ALLOCATE, attempt.getInstances(),
+            EventVO<Map<String, Object>, ?> schedulerEvent = buildEvent(SCHEDULER_RESERVE_EVENT, InstanceConstants.PROCESS_ALLOCATE, attempt.getInstances(),
                     attempt.getVolumes(), agentId);
             if (schedulerEvent != null) {
                 Map<String, Object> reqData = CollectionUtils.toMap(schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME));
@@ -620,7 +602,7 @@ public class AllocatorServiceImpl implements AllocatorService {
     private void releaseResources(Instance instance, String hostUuid, String process) {
         List<Long> agentIds = getAgentResource(instance);
         for (Long agentId : agentIds) {
-            EventVO<Map<String, Object>> schedulerEvent = buildReleaseEvent(process, instance, agentId);
+            EventVO<Map<String, Object>, ?> schedulerEvent = buildReleaseEvent(process, instance, agentId);
             if (schedulerEvent != null) {
                 Map<String, Object> reqData = CollectionUtils.toMap(schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME));
                 reqData.put(HOST_ID, hostUuid);
@@ -638,9 +620,9 @@ public class AllocatorServiceImpl implements AllocatorService {
     @SuppressWarnings("unchecked")
     private List<String> callExternalSchedulerForHosts(AllocationAttempt attempt) {
         List<String> hosts = null;
-        List<Long> agentIds = getAgentResource(attempt.getAccountId(), attempt.getInstances());
+        List<Long> agentIds = getAgentResource(attempt.getClusterId(), attempt.getInstances());
         for (Long agentId : agentIds) {
-            EventVO<Map<String, Object>> schedulerEvent = buildEvent(SCHEDULER_PRIORITIZE_EVENT, InstanceConstants.PROCESS_ALLOCATE, attempt.getInstances(),
+            EventVO<Map<String, Object>, ?> schedulerEvent = buildEvent(SCHEDULER_PRIORITIZE_EVENT, InstanceConstants.PROCESS_ALLOCATE, attempt.getInstances(),
                     attempt.getVolumes(), agentId);
             List<ResourceRequest> requests = extractResourceRequests(schedulerEvent);
             attempt.setResourceRequests(requests);
@@ -662,7 +644,7 @@ public class AllocatorServiceImpl implements AllocatorService {
         return hosts;
     }
 
-    Event callScheduler(String message, EventVO<Map<String, Object>> schedulerEvent, RemoteAgent agent) {
+    Event callScheduler(String message, EventVO<Map<String, Object>, ?> schedulerEvent, RemoteAgent agent) {
         try {
             return agent.callSync(schedulerEvent);
         } catch (EventExecutionException e) {
@@ -672,11 +654,11 @@ public class AllocatorServiceImpl implements AllocatorService {
     }
 
     @SuppressWarnings("unchecked")
-    private List<ResourceRequest> extractResourceRequests(EventVO<Map<String, Object>> schedulerEvent) {
+    private List<ResourceRequest> extractResourceRequests(EventVO<Map<String, Object>, ?> schedulerEvent) {
         return  (List<ResourceRequest>)((Map<String, Object>)schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME)).get(RESOURCE_REQUESTS);
     }
 
-    private EventVO<Map<String, Object>> buildReleaseEvent(String phase, Object resource, Long agentId) {
+    private EventVO<Map<String, Object>, ?> buildReleaseEvent(String phase, Object resource, Long agentId) {
         List<ResourceRequest> resourceRequests = new ArrayList<>();
         if (resource instanceof Instance) {
             String schedulerVersion = getSchedulerVersion(agentId);
@@ -690,7 +672,7 @@ public class AllocatorServiceImpl implements AllocatorService {
         return newEvent(SCHEDULER_RELEASE_EVENT, resourceRequests, resource.getClass().getSimpleName(), phase, ObjectUtils.getId(resource), null);
     }
 
-    private EventVO<Map<String, Object>> buildEvent(String eventName, String phase, List<Instance> instances, Set<Volume> volumes, Long agentId) {
+    private EventVO<Map<String, Object>, ?> buildEvent(String eventName, String phase, List<Instance> instances, Set<Volume> volumes, Long agentId) {
         List<ResourceRequest> resourceRequests = gatherResourceRequests(instances, volumes, agentId);
         if (resourceRequests.isEmpty()) {
             return null;
@@ -699,7 +681,7 @@ public class AllocatorServiceImpl implements AllocatorService {
         return newEvent(eventName, resourceRequests, "instance", phase, instances.get(0).getId(), instances);
     }
 
-    private EventVO<Map<String, Object>> newEvent(String eventName, List<ResourceRequest> resourceRequests, String resourceType, String phase,
+    private EventVO<Map<String, Object>, ?> newEvent(String eventName, List<ResourceRequest> resourceRequests, String resourceType, String phase,
             Object resourceId, Object context) {
         Map<String, Object> eventData = new HashMap<>();
         Map<String, Object> reqData = new HashMap<>();
@@ -709,7 +691,7 @@ public class AllocatorServiceImpl implements AllocatorService {
         reqData.put(CONTEXT, context);
         reqData.put(PHASE, phase);
         eventData.put(SCHEDULER_REQUEST_DATA_NAME, reqData);
-        EventVO<Map<String, Object>> schedulerEvent = EventVO.<Map<String, Object>> newEvent(eventName).withData(eventData);
+        EventVO<Map<String, Object>, ?> schedulerEvent = EventVO.<Map<String, Object>, Object> newEvent(eventName).withData(eventData);
         schedulerEvent.setResourceType(resourceType);
         if (resourceId != null) {
             schedulerEvent.setResourceId(resourceId.toString());
@@ -757,8 +739,8 @@ public class AllocatorServiceImpl implements AllocatorService {
         requests.add(instanceRequest);
     }
 
-    private List<Long> getAgentResource(Long accountId, List<Instance> instances) {
-        List<Long> agentIds = envResourceManager.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_SCHEDULING_PROVIDER, accountId);
+    private List<Long> getAgentResource(Long clusterId, List<Instance> instances) {
+        List<Long> agentIds = metadataManager.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_SCHEDULING_PROVIDER, clusterId);
         for (Instance instance : instances) {
             if (agentIds.contains(instance.getAgentId())) {
                 return new ArrayList<>();
@@ -768,8 +750,8 @@ public class AllocatorServiceImpl implements AllocatorService {
     }
 
     private List<Long> getAgentResource(Object resource) {
-        Long accountId = (Long)ObjectUtils.getAccountId(resource);
-        List<Long> agentIds = envResourceManager.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_SCHEDULING_PROVIDER, accountId);
+        Long clusterId = ObjectUtils.getClusterId(resource);
+        List<Long> agentIds = metadataManager.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_SCHEDULING_PROVIDER, clusterId);
         // If the resource being allocated is a scheduling provider agent, return null so that we don't try to send the container to the scheduler.
         Long resourceAgentId = (Long)ObjectUtils.getPropertyIgnoreErrors(resource, "agentId");
         if (resourceAgentId != null && agentIds.contains(resourceAgentId)) {
@@ -808,25 +790,23 @@ public class AllocatorServiceImpl implements AllocatorService {
             request.setType(poolType);
             return request;
         case INSTANCE_RESERVATION:
-            return new ComputeResourceRequest(INSTANCE_RESERVATION, 1l, poolType);
+            return new ComputeResourceRequest(INSTANCE_RESERVATION, 1L, poolType);
         case MEMORY_RESERVATION:
             if (instance.getMemoryReservation() != null && instance.getMemoryReservation() > 0) {
-                ResourceRequest rr = new ComputeResourceRequest(MEMORY_RESERVATION, instance.getMemoryReservation(), poolType);
-                return rr;
+                return new ComputeResourceRequest(MEMORY_RESERVATION, instance.getMemoryReservation(), poolType);
             }
             return null;
         case CPU_RESERVATION:
             if (instance.getMilliCpuReservation() != null && instance.getMilliCpuReservation() > 0) {
-                ResourceRequest rr = new ComputeResourceRequest(CPU_RESERVATION, instance.getMilliCpuReservation(), poolType);
-                return rr;
+                return new ComputeResourceRequest(CPU_RESERVATION, instance.getMilliCpuReservation(), poolType);
             }
             return null;
         }
         return null;
     }
 
-    protected boolean useLegacyPortAllocation(Long accountId, List<Instance> instances) {
-        List<Long> agentIds = getAgentResource(accountId, instances);
+    protected boolean useLegacyPortAllocation(Long clusterId, List<Instance> instances) {
+        List<Long> agentIds = getAgentResource(clusterId, instances);
         if (agentIds == null || agentIds.size() == 0) {
             return true;
         }
@@ -847,6 +827,9 @@ public class AllocatorServiceImpl implements AllocatorService {
         Instance instance = agentDao.getInstanceByAgent(agentId);
         String imageUuid = (String) DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_IMAGE).get();
         DockerImage img = DockerImage.parse(imageUuid);
+        if (img == null) {
+            return "";
+        }
         String[] imageParts = img.getFullName().split(":");
         if (imageParts.length <= 1) {
             return "";
@@ -868,7 +851,7 @@ public class AllocatorServiceImpl implements AllocatorService {
             // Required image is not following semantic versioning. Assume custom, don't use legacy
             return false;
         }
-        int requiredMajor, requiredMinor = 0;
+        int requiredMajor, requiredMinor;
         try {
             String majorTemp = requiredParts[0].startsWith("v") ? requiredParts[0].substring(1, requiredParts[0].length()) : requiredParts[0];
             requiredMajor = Integer.valueOf(majorTemp);
@@ -884,11 +867,11 @@ public class AllocatorServiceImpl implements AllocatorService {
             return false;
         }
 
-        int actualMajor, actualMinor = 0;
+        int actualMajor, actualMinor;
         try {
             String majorTemp = actualParts[0].startsWith("v") ? actualParts[0].substring(1, actualParts[0].length()) : actualParts[0];
-            actualMajor = Integer.valueOf(majorTemp).intValue();
-            actualMinor = Integer.valueOf(actualParts[1]).intValue();
+            actualMajor = Integer.valueOf(majorTemp);
+            actualMinor = Integer.valueOf(actualParts[1]);
         } catch (NumberFormatException e) {
             // Image is not following semantic versioning. Assume custom, don't use legacy
             return false;

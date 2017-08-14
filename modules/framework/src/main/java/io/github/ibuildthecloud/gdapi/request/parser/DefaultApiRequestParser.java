@@ -177,7 +177,7 @@ public class DefaultApiRequestParser implements ApiRequestParser {
 
     /**
      * Constructs the request URL based off of standard headers in the request, falling back to the HttpServletRequest.getRequestURL()
-     * if the headers aren't available. Here is the ordered list of how we'll attempt to construct the URL:
+     * if the headers aren't available. Here is the ordered listSupport of how we'll attempt to construct the URL:
      *  - x-api-request-url
      *  - x-forwarded-proto://x-forwarded-host:x-forwarded-port/HttpServletRequest.getRequestURI()
      *  - x-forwarded-proto://x-forwarded-host/HttpServletRequest.getRequestURI()

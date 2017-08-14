@@ -38,7 +38,7 @@ public class HostTemplateLinkHandler implements LinkHandler {
             String secrets = DataAccessor.fieldString(obj, HostTemplateConstants.FIELD_SECRET_VALUES);
             if (secrets != null) {
                 try {
-                    secrets = secretService.decrypt(ht.getAccountId(), secrets);
+                    secrets = secretService.decrypt(secrets);
                     request.setResponseContentType("application/json");
                     request.setResponseObject(new Object());
                     IOUtils.write(Base64.decodeBase64(secrets), request.getOutputStream());

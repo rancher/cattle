@@ -1,12 +1,13 @@
 package io.cattle.platform.process.network;
 
-import io.cattle.platform.core.constants.AccountConstants;
+import io.cattle.platform.core.constants.ClusterConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.NetworkDriverConstants;
+import io.cattle.platform.core.dao.ClusterDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.NetworkDao;
-import io.cattle.platform.core.model.Account;
+import io.cattle.platform.core.model.Cluster;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.NetworkDriver;
 import io.cattle.platform.core.model.Subnet;
@@ -49,6 +50,7 @@ public class NetworkProcessManager {
     LockManager lockManager;
     JsonMapper jsonMapper;
     ResourcePoolManager resourcePoolManager;
+    ClusterDao clusterDao;
 
     public NetworkProcessManager(GenericResourceDao resourceDao, ObjectManager objectManager, ObjectProcessManager processManager, NetworkDao networkDao, LockManager lockManager, JsonMapper jsonMapper, ResourcePoolManager resourcePoolManager) {
         this.resourceDao = resourceDao;
@@ -102,7 +104,7 @@ public class NetworkProcessManager {
                     SUBNET.NETWORK_ID, network.getId(),
                     SUBNET.START_ADDRESS, subnet.getStartAddress(),
                     SUBNET.DATA, CollectionUtils.asMap(SUBNET_INDEX, key),
-                    SUBNET.ACCOUNT_ID, network.getAccountId());
+                    SUBNET.CLUSTER_ID, network.getClusterId());
 
             existingSubnets.put(key, subnet);
         }
@@ -148,7 +150,7 @@ public class NetworkProcessManager {
         lockManager.lock(new DefaultNetworkLock(network), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
-                setDefaultNetwork(network.getAccountId());
+                setDefaultNetwork(network.getClusterId());
             }
         });
         return null;
@@ -164,15 +166,15 @@ public class NetworkProcessManager {
         return new HandlerResult(NetworkConstants.FIELD_MAC_PREFIX, new Object[] { null });
     }
 
-    protected void setDefaultNetwork(Long accountId) {
-        Account account = objectManager.loadResource(Account.class, accountId);
-        if (account == null) {
+    protected void setDefaultNetwork(Long clusterId) {
+        Cluster cluster = objectManager.loadResource(Cluster.class, clusterId);
+        if (cluster == null) {
             return;
         }
 
-        Long defaultNetworkId = account.getDefaultNetworkId();
+        Long defaultNetworkId = cluster.getDefaultNetworkId();
         Long newDefaultNetworkId = null;
-        for (Network network : networkDao.getActiveNetworks(account.getId())) {
+        for (Network network : networkDao.getActiveNetworks(cluster.getId())) {
             if (network.getKind().startsWith(NetworkConstants.PREFIX_KIND_DOCKER) ||
                     network.getKind().equals("hostOnlyNetwork")) {
                 continue;
@@ -193,7 +195,7 @@ public class NetworkProcessManager {
         }
 
         if (!Objects.equals(defaultNetworkId, newDefaultNetworkId)) {
-            objectManager.setFields(account, AccountConstants.FIELD_DEFAULT_NETWORK_ID, newDefaultNetworkId);
+            objectManager.setFields(cluster, ClusterConstants.FIELD_DEFAULT_NETWORK_ID, newDefaultNetworkId);
         }
     }
 
@@ -207,7 +209,7 @@ public class NetworkProcessManager {
 
         Map<Object, Object> props = new HashMap<>();
         props.putAll(network);
-        props.put(NETWORK.ACCOUNT_ID, networkDriver.getAccountId());
+        props.put(NETWORK.CLUSTER_ID, networkDriver.getClusterId());
         props.put(NETWORK.NETWORK_DRIVER_ID, networkDriver.getId());
 
         Map<String, Object> cniConf = DataAccessor.fieldMap(networkDriver, NetworkDriverConstants.FIELD_CNI_CONFIG);

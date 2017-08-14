@@ -11,6 +11,7 @@ import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +48,7 @@ public class VolumeOutputFilter extends CachedOutputFilter<Map<Long, Map<String,
         List<Long> ids = getIds(apiRequest);
         IdFormatter idF = ApiContext.getContext().getIdFormatter();
 
-        for (Map.Entry<Long, List<MountEntry>> entry : volumeDao.getMountsForVolumes(ids, idF).entrySet()) {
+        for (Map.Entry<Long, Collection<MountEntry>> entry : volumeDao.getMountsForVolumes(ids, idF).entrySet()) {
             Map<String, Object> fields = result.get(entry.getKey());
             if (fields == null) {
                 fields = new HashMap<>();

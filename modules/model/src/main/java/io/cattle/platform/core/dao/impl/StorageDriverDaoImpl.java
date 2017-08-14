@@ -1,8 +1,5 @@
 package io.cattle.platform.core.dao.impl;
 
-import static io.cattle.platform.core.model.tables.StorageDriverTable.*;
-import static io.cattle.platform.core.model.tables.VolumeTable.*;
-
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.StorageDriverConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
@@ -15,14 +12,16 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
+import org.apache.commons.codec.binary.Hex;
+import org.jooq.Configuration;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.apache.commons.codec.binary.Hex;
-import org.jooq.Configuration;
+import static io.cattle.platform.core.model.tables.StorageDriverTable.*;
+import static io.cattle.platform.core.model.tables.VolumeTable.*;
 
 public class StorageDriverDaoImpl extends AbstractJooqDao implements StorageDriverDao {
 
@@ -36,9 +35,9 @@ public class StorageDriverDaoImpl extends AbstractJooqDao implements StorageDriv
     }
 
     @Override
-    public StorageDriver findSecretsDriver(long accountId) {
+    public StorageDriver findSecretsDriver(long clusterId) {
         for (StorageDriver driver : objectManager.find(StorageDriver.class,
-                STORAGE_DRIVER.ACCOUNT_ID, accountId,
+                STORAGE_DRIVER.CLUSTER_ID, clusterId,
                 STORAGE_DRIVER.REMOVED, null)) {
             List<String> caps = DataAccessor.fieldStringList(driver, StorageDriverConstants.FIELD_VOLUME_CAPABILITES);
             if (caps != null && caps.contains(StorageDriverConstants.CAPABILITY_SECRETS)) {

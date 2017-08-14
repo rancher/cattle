@@ -46,7 +46,7 @@ public class HostsOutputFilter extends CachedOutputFilter<HostsOutputFilter.Data
         if (extracted instanceof String) {
             try {
                 if (((String) extracted).startsWith("{")) {
-                    extracted = serviceService.decrypt(((Host)original).getAccountId(), (String)extracted);
+                    extracted = serviceService.decrypt((String)extracted);
                 }
             } catch (Exception e) {
                 log.error("Failed to decrypt machine extracted config", e);
@@ -65,16 +65,16 @@ public class HostsOutputFilter extends CachedOutputFilter<HostsOutputFilter.Data
             }
         }
 
-        return addLinks(request, original, converted);
+        return addLinks(original, converted);
     }
 
-    private Resource addLinks(ApiRequest request, Object original, Resource converted) {
+    private Resource addLinks(Object original, Resource converted) {
         boolean add = false;
         if (original instanceof Host) {
             if (StringUtils.isNotEmpty((String) DataAccessor.getFields(original).get(EXTRACTED_CONFIG_FIELD))) {
                 add = canAccessConfig();
             }
-            if (!add && original instanceof Host && StringUtils.isNotEmpty((String) converted.getFields().get(FIELD_DRIVER))) {
+            if (!add && StringUtils.isNotEmpty((String) converted.getFields().get(FIELD_DRIVER))) {
                 add = canAccessConfig();
             }
         }

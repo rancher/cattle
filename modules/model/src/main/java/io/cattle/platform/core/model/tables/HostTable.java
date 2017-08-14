@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class HostTable extends TableImpl<HostRecord> {
 
-    private static final long serialVersionUID = 1005750968;
+    private static final long serialVersionUID = 272860317;
 
     /**
      * The reference instance of <code>cattle.host</code>
@@ -64,11 +64,6 @@ public class HostTable extends TableImpl<HostRecord> {
      * The column <code>cattle.host.name</code>.
      */
     public final TableField<HostRecord, String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
-
-    /**
-     * The column <code>cattle.host.account_id</code>.
-     */
-    public final TableField<HostRecord, Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
      * The column <code>cattle.host.kind</code>.
@@ -121,11 +116,6 @@ public class HostTable extends TableImpl<HostRecord> {
     public final TableField<HostRecord, Long> AGENT_ID = createField("agent_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
-     * The column <code>cattle.host.is_public</code>.
-     */
-    public final TableField<HostRecord, Boolean> IS_PUBLIC = createField("is_public", org.jooq.impl.SQLDataType.BIT.nullable(false).defaultValue(org.jooq.impl.DSL.inline("b'0'", org.jooq.impl.SQLDataType.BIT)), this, "");
-
-    /**
      * The column <code>cattle.host.agent_state</code>.
      */
     public final TableField<HostRecord, String> AGENT_STATE = createField("agent_state", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
@@ -169,6 +159,16 @@ public class HostTable extends TableImpl<HostRecord> {
      * The column <code>cattle.host.revision</code>.
      */
     public final TableField<HostRecord, Long> REVISION = createField("revision", org.jooq.impl.SQLDataType.BIGINT.nullable(false).defaultValue(org.jooq.impl.DSL.inline("0", org.jooq.impl.SQLDataType.BIGINT)), this, "");
+
+    /**
+     * The column <code>cattle.host.cluster_id</code>.
+     */
+    public final TableField<HostRecord, Long> CLUSTER_ID = createField("cluster_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
+
+    /**
+     * The column <code>cattle.host.creator_id</code>.
+     */
+    public final TableField<HostRecord, Long> CREATOR_ID = createField("creator_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
      * Create a <code>cattle.host</code> table reference
@@ -229,7 +229,7 @@ public class HostTable extends TableImpl<HostRecord> {
      */
     @Override
     public List<ForeignKey<HostRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<HostRecord, ?>>asList(Keys.FK_HOST__ACCOUNT_ID, Keys.FK_HOST__AGENT_ID, Keys.FK_HOST__ENVIRONMENT_ID, Keys.FK_HOST__HOST_TEMPLATE_ID);
+        return Arrays.<ForeignKey<HostRecord, ?>>asList(Keys.FK_HOST__AGENT_ID, Keys.FK_HOST__ENVIRONMENT_ID, Keys.FK_HOST__HOST_TEMPLATE_ID, Keys.FK_HOST__CLUSTER_ID, Keys.FK_HOST__CREATOR_ID);
     }
 
     /**

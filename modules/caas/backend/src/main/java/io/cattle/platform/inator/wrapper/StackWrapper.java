@@ -19,12 +19,12 @@ public class StackWrapper {
         return stack.getId();
     }
 
-    public Long getAccountId() {
-        return stack.getAccountId();
+    public Long getClusterId() {
+        return stack.getClusterId();
     }
 
-    public Stack getInternal() {
-        return stack;
+    public Long getAccountId() {
+        return stack.getAccountId();
     }
 
 }

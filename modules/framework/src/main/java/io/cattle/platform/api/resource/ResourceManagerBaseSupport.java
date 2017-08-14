@@ -28,18 +28,20 @@ public interface ResourceManagerBaseSupport extends ResourceManager {
     String DEFAULT_CRITERIA = " _defaultCriteria";
     DynamicIntProperty REMOVE_DELAY = ArchaiusUtil.getInt("api.show.removed.for.seconds");
 
-    Object updateObject(String type, String id, Object obj, ApiRequest request);
+    Object updateObjectSupport(String type, String id, Object obj, ApiRequest request);
 
-    Object list(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options);
+    Object listSupport(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options);
 
-    Object deleteObject(String type, String id, Object obj, ApiRequest request);
+    Object deleteObjectSupport(String type, String id, Object obj, ApiRequest request);
+
+    void addAccountAuthorization(boolean byId, boolean byLink, String type, Map<Object, Object> criteria, Policy policy);
 
     @Override
     default Object getById(String type, String id, ListOptions options) {
         Map<Object, Object> criteria = getDefaultCriteria(true, false, type);
         criteria.put(TypeUtils.ID_FIELD, id);
 
-        return ApiUtils.getFirstFromList(list(ApiContext.getSchemaFactory(), type, criteria, options));
+        return ApiUtils.getFirstFromList(listSupport(ApiContext.getSchemaFactory(), type, criteria, options));
     }
 
     @Override
@@ -53,7 +55,7 @@ public interface ResourceManagerBaseSupport extends ResourceManager {
             criteria = mergeCriteria(criteria, getDefaultCriteria(false, false, type));
         }
 
-        Object result = list(ApiContext.getSchemaFactory(), type, criteria, options);
+        Object result = listSupport(ApiContext.getSchemaFactory(), type, criteria, options);
         return RequestUtils.toList(result);
     }
 
@@ -89,7 +91,7 @@ public interface ResourceManagerBaseSupport extends ResourceManager {
             return null;
         }
 
-        return updateObject(type, id, object, request);
+        return updateObjectSupport(type, id, object, request);
     }
 
     @Override
@@ -99,7 +101,7 @@ public interface ResourceManagerBaseSupport extends ResourceManager {
             return null;
         }
 
-        return deleteObject(type, id, object, request);
+        return deleteObjectSupport(type, id, object, request);
     }
 
     default Map<Object, Object> getDefaultCriteria(boolean byId, boolean byLink, String type) {
@@ -132,8 +134,6 @@ public interface ResourceManagerBaseSupport extends ResourceManager {
         }
         return request.getOptions().containsKey("_removed");
     }
-
-    void addAccountAuthorization(boolean byId, boolean byLink, String type, Map<Object, Object> criteria, Policy policy);
 
     default boolean isDefaultCriteria(Map<Object, Object> criteria) {
         return criteria != null && criteria.containsKey(DEFAULT_CRITERIA);

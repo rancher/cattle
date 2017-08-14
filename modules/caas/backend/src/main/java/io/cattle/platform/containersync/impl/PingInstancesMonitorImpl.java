@@ -1,8 +1,5 @@
 package io.cattle.platform.containersync.impl;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import io.cattle.platform.agent.AgentLocator;
@@ -13,26 +10,25 @@ import io.cattle.platform.containersync.model.ContainerEventEvent;
 import io.cattle.platform.core.addon.ContainerEvent;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Agent;
-import io.cattle.platform.environment.EnvironmentResourceManager;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.framework.event.FrameworkEvents;
 import io.cattle.platform.framework.event.Ping;
 import io.cattle.platform.framework.event.data.PingData;
+import io.cattle.platform.metadata.Metadata;
+import io.cattle.platform.metadata.MetadataManager;
+import io.cattle.platform.metadata.model.EnvironmentInfo;
 import io.cattle.platform.metadata.model.HostInfo;
-import io.cattle.platform.metadata.model.InstanceInfo;
-import io.cattle.platform.metadata.service.Metadata;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import static io.cattle.platform.core.constants.ContainerEventConstants.*;
 import static io.cattle.platform.core.constants.HostConstants.*;
@@ -40,30 +36,29 @@ import static io.cattle.platform.core.constants.InstanceConstants.*;
 
 public class PingInstancesMonitorImpl implements PingInstancesMonitor {
 
-    LoadingCache<Long, Long> accountCache = CacheBuilder.newBuilder()
-            .expireAfterAccess(15, TimeUnit.MINUTES)
-            .build(new CacheLoader<Long, Long>() {
-                @Override
-                public Long load(Long key) throws Exception {
-                    return getAccountId(key);
-                }
-            });
-
     ObjectManager objectManager;
-    EnvironmentResourceManager envResourceManager;
+    MetadataManager metadataManager;
     EventService eventService;
     AgentLocator agentLocator;
 
-    public PingInstancesMonitorImpl(ObjectManager objectManager, EnvironmentResourceManager envResourceManager,
+    public PingInstancesMonitorImpl(ObjectManager objectManager, MetadataManager metadataManager,
             EventService eventService, AgentLocator agentLocator) {
         this.objectManager = objectManager;
-        this.envResourceManager = envResourceManager;
+        this.metadataManager = metadataManager;
         this.eventService = eventService;
         this.agentLocator = agentLocator;
     }
 
+    protected void addInstances(Map<String, String> knownExternalIdToState, Metadata metadata, HostInfo host) {
+        metadata.getInstances().forEach(instance -> {
+            if (instance.getHostId() != null && instance.getHostId() == host.getId()) {
+                knownExternalIdToState.put(instance.getExternalId(), instance.getState());
+            }
+        });
+    }
+
     @Override
-    public void processPingReply(Ping ping) {
+    public void processPingReply(Agent agent, Ping ping) {
         List<Map<String, Object>> resources = getResources(ping);
         if (resources == null) {
             return;
@@ -74,28 +69,19 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
                 .map(this::getHostUuid)
                 .findFirst().orElse(null);
 
-        long agentId = Long.parseLong(ping.getResourceId());
-        Long accountId = accountCache.getUnchecked(agentId);
-        if (accountId < 0L) {
-            accountCache.invalidate(agentId);
-            return;
-        }
-
-        Metadata metadata = envResourceManager.getMetadata(accountId);
+        Metadata metadata = metadataManager.getMetadataForCluster(agent.getClusterId());
         HostInfo host = metadata.getHosts().stream()
-                .filter((x) -> Objects.equals(hostUuid, x.getUuid()) || Objects.equals(agentId, x.getAgentId()))
+                .filter((x) -> Objects.equals(hostUuid, x.getUuid()) || Objects.equals(agent.getClusterId(), x.getClusterId()))
                 .findFirst().orElse(null);
         if (host == null) {
             return;
         }
 
-        Map<String, String> knownExternalIdToState = metadata.getInstances().stream()
-                .filter((i) -> i.getHostId() != null && i.getHostId() == host.getId())
-                .collect(Collectors.toMap(
-                        InstanceInfo::getExternalId,
-                        InstanceInfo::getState,
-                        (k, v) -> v));
-
+        Map<String, String> knownExternalIdToState = new HashMap<>();
+        addInstances(knownExternalIdToState, metadata, host);
+        for (EnvironmentInfo env : metadata.getEnvironments()) {
+            addInstances(knownExternalIdToState, metadataManager.getMetadataForAccount(env.getAccountId()), host);
+        }
 
         for (Map<String, Object> resource : resources) {
             if (!InstanceConstants.TYPE.equals(DataAccessor.fromMap(resource).withKey(ObjectMetaDataManager.TYPE_FIELD).get())) {
@@ -105,29 +91,29 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
             ReportedInstance ri = new ReportedInstance(resource);
             String expectedState = knownExternalIdToState.remove(ri.getExternalId());
             if (expectedState == null) {
-                importInstance(accountId, host.getId(), agentId, ri);
+                importInstance(agent.getClusterId(), host.getId(), agent.getId(), ri);
             } else if (STATE_RUNNING.equals(expectedState) && STATE_STOPPED.equals(ri.getState())) {
-                sendSimpleEvent(EVENT_STOP, host.getId(), ri, accountId);
+                sendSimpleEvent(EVENT_STOP, host, ri.getUuid(), ri.getExternalId());
             } else if (STATE_STOPPED.equals(expectedState) && STATE_RUNNING.equals(ri.getState())) {
-                sendSimpleEvent(EVENT_START, host.getId(), ri, accountId);
+                sendSimpleEvent(EVENT_START, host, ri.getUuid(), ri.getExternalId());
             }
         }
 
         knownExternalIdToState.forEach((externalId, state) -> {
             if (STATE_RUNNING.equals(state)) {
-                sendSimpleEvent(EVENT_DESTROY, host.getId(), externalId, accountId);
+                sendSimpleEvent(EVENT_DESTROY, host, null, externalId);
             }
         });
     }
 
-    private void importInstance(long accountId, long hostId, long agentId, ReportedInstance ri) {
+    private void importInstance(long clusterId, long hostId, long agentId, ReportedInstance ri) {
         Event event = newInspectEvent(ri.getExternalId());
         RemoteAgent agent = agentLocator.lookupAgent(agentId);
         Futures.addCallback(agent.call(event), new FutureCallback<Event>() {
             @Override
             public void onSuccess(Event result) {
                 Map<String, Object> inspect = CollectionUtils.toMap(CollectionUtils.getNestedValue(result.getData(), "instanceInspect"));
-                ContainerEvent data = new ContainerEvent(accountId, hostId, ri.getUuid(), ri.getExternalId(), inspect);
+                ContainerEvent data = new ContainerEvent(clusterId, hostId, ri.getUuid(), ri.getExternalId(), inspect);
                 eventService.publish(new ContainerEventEvent(data));
             }
 
@@ -137,27 +123,15 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
         });
     }
 
-    private void sendSimpleEvent(String status, long hostId, String externalId, long accountId) {
-        ContainerEvent data = new ContainerEvent(status, accountId, hostId, null, externalId);
+    private void sendSimpleEvent(String status, HostInfo host, String uuid, String externalId) {
+        ContainerEvent data = new ContainerEvent(status, host.getClusterId(), host.getId(), uuid, externalId);
         eventService.publish(new ContainerEventEvent(data));
-    }
-    private void sendSimpleEvent(String status, long hostId, ReportedInstance ri, long accountId) {
-        ContainerEvent data = new ContainerEvent(status, accountId, hostId, ri.getUuid(), ri.getExternalId());
-        eventService.publish(new ContainerEventEvent(data));
-    }
-
-    private Long getAccountId(Long agentId) {
-        Agent agent = objectManager.loadResource(Agent.class, agentId);
-        if (agent == null || agent.getResourceAccountId() == null) {
-            return -1L;
-        }
-        return agent.getResourceAccountId();
     }
 
     protected List<Map<String, Object>> getResources(Ping ping) {
         PingData data = ping.getData();
 
-        if (data == null || ping.getResourceId() == null) {
+        if (data == null) {
             return null;
         }
 

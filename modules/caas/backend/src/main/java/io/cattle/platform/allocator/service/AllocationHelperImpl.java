@@ -7,23 +7,31 @@ import io.cattle.platform.allocator.constraint.ContainerAffinityConstraint;
 import io.cattle.platform.allocator.constraint.ContainerLabelAffinityConstraint;
 import io.cattle.platform.allocator.constraint.HostAffinityConstraint;
 import io.cattle.platform.allocator.lock.AllocateConstraintLock;
+import io.cattle.platform.core.cache.QueryOptions;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.util.SystemLabels;
-import io.cattle.platform.environment.EnvironmentResourceManager;
 import io.cattle.platform.lock.definition.LockDefinition;
+import io.cattle.platform.metadata.Metadata;
+import io.cattle.platform.metadata.MetadataManager;
 import io.cattle.platform.metadata.model.HostInfo;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import org.jooq.tools.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+
+import static java.util.stream.Collectors.*;
 
 public class AllocationHelperImpl implements AllocationHelper {
 
@@ -32,32 +40,32 @@ public class AllocationHelperImpl implements AllocationHelper {
 
     InstanceDao instanceDao;
     ObjectManager objectManager;
-    EnvironmentResourceManager envResourceManager;
+    MetadataManager metadataManager;
 
-    public AllocationHelperImpl(InstanceDao instanceDao, ObjectManager objectManager, EnvironmentResourceManager envResourceManager) {
+    public AllocationHelperImpl(InstanceDao instanceDao, ObjectManager objectManager, MetadataManager metadataManager) {
         this.instanceDao = instanceDao;
         this.objectManager = objectManager;
-        this.envResourceManager = envResourceManager;
+        this.metadataManager = metadataManager;
     }
 
     @Override
-    public List<Long> getAllHostsSatisfyingHostAffinity(long accountId, Map<String, ?> labelConstraints) {
-        return getHostsSatisfyingHostAffinityInternal(true, accountId, labelConstraints);
+    public List<Long> getAllHostsSatisfyingHostAffinity(long clusterId, Map<String, ?> labelConstraints) {
+        return getHostsSatisfyingHostAffinityInternal(true, clusterId, labelConstraints);
     }
 
     @Override
-    public List<Long> getHostsSatisfyingHostAffinity(long accountId, Map<String, ?> labelConstraints) {
-        return getHostsSatisfyingHostAffinityInternal(false, accountId, labelConstraints);
+    public List<Long> getHostsSatisfyingHostAffinity(long clusterId, Map<String, ?> labelConstraints) {
+        return getHostsSatisfyingHostAffinityInternal(false, clusterId, labelConstraints);
     }
 
-    protected List<Long> getHostsSatisfyingHostAffinityInternal(boolean includeRemoved, long accountId, Map<String, ?> labelConstraints) {
-        List<HostInfo> hosts = includeRemoved ? envResourceManager.getHosts(accountId) : envResourceManager.getActiveHosts(accountId);
+    protected List<Long> getHostsSatisfyingHostAffinityInternal(boolean includeInvalid, long clusterId, Map<String, ?> labelConstraints) {
+        List<HostInfo> hosts = includeInvalid ? getHosts(clusterId) : getActiveHosts(clusterId);
 
         List<Constraint> hostAffinityConstraints = getHostAffinityConstraintsFromLabels(labelConstraints);
 
         List<Long> acceptableHostIds = new ArrayList<>();
         for (HostInfo host : hosts) {
-            if (hostSatisfiesHostAffinity(accountId, host, hostAffinityConstraints)) {
+            if (hostSatisfiesHostAffinity(clusterId, host, hostAffinityConstraints)) {
                 acceptableHostIds.add(host.getId());
             }
         }
@@ -76,9 +84,9 @@ public class AllocationHelperImpl implements AllocationHelper {
         return hostConstraints;
     }
 
-    private boolean hostSatisfiesHostAffinity(long accountId, HostInfo host, List<Constraint> hostAffinityConstraints) {
+    private boolean hostSatisfiesHostAffinity(long clusterId, HostInfo host, List<Constraint> hostAffinityConstraints) {
         for (Constraint constraint: hostAffinityConstraints) {
-            AllocationCandidate candidate = new AllocationCandidate(accountId, host.getId(), host.getUuid());
+            AllocationCandidate candidate = new AllocationCandidate(clusterId, host.getId(), host.getUuid());
             if (!constraint.matches(candidate)) {
                 return false;
             }
@@ -107,14 +115,14 @@ public class AllocationHelperImpl implements AllocationHelper {
                     affinityDef = affinityDef.substring(HostAffinityConstraint.ENV_HEADER_AFFINITY_HOST_LABEL.length());
                     AffinityConstraintDefinition def = extractAffinitionConstraintDefinitionFromEnv(affinityDef);
                     if (def != null && !StringUtils.isEmpty(def.getKey())) {
-                        constraints.add(new HostAffinityConstraint(def, envResourceManager));
+                        constraints.add(new HostAffinityConstraint(def, this));
                     }
 
                 } else if (affinityDef.startsWith(ContainerLabelAffinityConstraint.ENV_HEADER_AFFINITY_CONTAINER_LABEL)) {
                     affinityDef = affinityDef.substring(ContainerLabelAffinityConstraint.ENV_HEADER_AFFINITY_CONTAINER_LABEL.length());
                     AffinityConstraintDefinition def = extractAffinitionConstraintDefinitionFromEnv(affinityDef);
                     if (def != null && !StringUtils.isEmpty(def.getKey())) {
-                        constraints.add(new ContainerLabelAffinityConstraint(def, envResourceManager));
+                        constraints.add(new ContainerLabelAffinityConstraint(def, this));
                     }
                 }
             }
@@ -144,7 +152,7 @@ public class AllocationHelperImpl implements AllocationHelper {
                 opStr = key.substring(ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL.length());
                 List<AffinityConstraintDefinition> defs = extractAffinityConstraintDefinitionFromLabel(opStr, valueStr, true);
                 for (AffinityConstraintDefinition def: defs) {
-                    constraints.add(new ContainerLabelAffinityConstraint(def, envResourceManager));
+                    constraints.add(new ContainerLabelAffinityConstraint(def, this));
                 }
 
             } else if (key.startsWith(ContainerAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER)) {
@@ -158,7 +166,7 @@ public class AllocationHelperImpl implements AllocationHelper {
                 opStr = key.substring(HostAffinityConstraint.LABEL_HEADER_AFFINITY_HOST_LABEL.length());
                 List<AffinityConstraintDefinition> defs = extractAffinityConstraintDefinitionFromLabel(opStr, valueStr, true);
                 for (AffinityConstraintDefinition def: defs) {
-                    constraints.add(new HostAffinityConstraint(def, envResourceManager));
+                    constraints.add(new HostAffinityConstraint(def, this));
                 }
             }
         }
@@ -333,5 +341,111 @@ public class AllocationHelperImpl implements AllocationHelper {
         return constraints;
     }
 
+    @Override
+    public boolean hostHasContainerLabel(long clusterId, String hostUuid, String labelKey, String labelValue) {
+        HostInfo host = metadataManager.getMetadataForCluster(clusterId).getHost(hostUuid);
+        if (host == null) {
+            return false;
+        }
+
+        return Objects.equals(labelValue, host.getLabels().get(labelKey));
+    }
+
+    private List<HostInfo> getActiveHosts(long clusterId) {
+        return metadataManager.getMetadataForCluster(clusterId).getHosts().stream()
+                .filter((host) -> CommonStatesConstants.ACTIVE.equals(host.getState()) && CommonStatesConstants.ACTIVE.equals(host.getAgentState()))
+                .collect(toList());
+    }
+
+    private List<HostInfo> getHosts(long clusterId) {
+        return new ArrayList<>(metadataManager.getMetadataForCluster(clusterId).getHosts());
+    }
+
+    @Override
+    public Map<String, String> getLabelsForHost(long clusterId, String hostUuid) {
+        if (hostUuid == null) {
+            return Collections.emptyMap();
+        }
+        HostInfo hostInfo = metadataManager.getMetadataForCluster(clusterId).getHost(hostUuid);
+        return hostInfo == null ? Collections.emptyMap() : hostInfo.getLabels();
+    }
+
+    @Override
+    public Iterator<HostInfo> iterateHosts(QueryOptions options, List<String> orderedHostUUIDs) {
+        return new Iterator<HostInfo>() {
+            HostInfo next;
+            int orderedIndex;
+            int restIndex;
+            List<HostInfo> rest;
+            Metadata metadata = metadataManager.getMetadataForCluster(options.getClusterId());
+            Set<String> ignore = new HashSet<>();
+
+            {
+                advance();
+            }
+
+            @Override
+            public boolean hasNext() {
+                return next != null;
+            }
+
+            @Override
+            public HostInfo next() {
+                HostInfo result = next;
+                advance();
+                if (result != null) {
+                    ignore.add(result.getUuid());
+                }
+                return result;
+            }
+
+            private void advance() {
+                if (options.getRequestedHostId() != null) {
+                    if (next != null) {
+                        next = null;
+                        return;
+                    }
+
+                    next = metadata.getHosts().stream()
+                            .filter((host) -> host.getId() == options.getRequestedHostId())
+                            .findFirst().orElse(null);
+                    return;
+                }
+
+                if (orderedHostUUIDs != null) {
+                    for (; orderedIndex < orderedHostUUIDs.size(); orderedIndex++) {
+                        next = metadata.getHost(orderedHostUUIDs.get(orderedIndex));
+                        if (next != null && !ignore.contains(next.getUuid()) && validHost(next)) {
+                            orderedIndex++;
+                            return;
+                        }
+                    }
+                }
+
+                if (rest == null) {
+                    rest = new ArrayList<>(metadata.getHosts());
+                    Collections.shuffle(rest);
+                }
+
+                for (; restIndex < rest.size() ; restIndex++) {
+                    next = rest.get(restIndex);
+                    if (!ignore.contains(next.getUuid()) && validHost(next)) {
+                        restIndex++;
+                        return;
+                    }
+                }
+
+                next = null;
+            }
+        };
+    }
+
+    private boolean validHost(HostInfo hostInfo) {
+        if (hostInfo == null) {
+            return false;
+        }
+        return CommonStatesConstants.ACTIVE.equals(hostInfo.getAgentState()) &&
+                CommonStatesConstants.ACTIVE.equals(hostInfo.getState());
+    }
 
 }

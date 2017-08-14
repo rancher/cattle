@@ -11,7 +11,7 @@ public interface RevisionManager {
 
     Revision createInitialRevision(Service service, Map<String, Object> data);
 
-    void createInitialRevisionForInstance(long accountId, Map<String, Object> data);
+    void createInitialRevisionForInstance(long accountId, long clusterId, Map<String, Object> data);
 
     RevisionDiffomatic createNewRevision(SchemaFactory factory, Service service, Map<String, Object> data);
 

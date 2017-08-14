@@ -14,12 +14,12 @@ import io.cattle.platform.core.dao.StoragePoolDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.StoragePool;
-import io.cattle.platform.environment.EnvironmentResourceManager;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.framework.event.Ping;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
-import io.cattle.platform.metadata.service.Metadata;
+import io.cattle.platform.metadata.Metadata;
+import io.cattle.platform.metadata.MetadataManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
@@ -62,10 +62,10 @@ public class AgentResourcesMonitor {
     LockManager lockManager;
     EventService eventService;
     Cache<String, Boolean> resourceCache = CacheBuilder.newBuilder().expireAfterAccess(CACHE_RESOURCE.get(), TimeUnit.SECONDS).build();
-    EnvironmentResourceManager envResourceManager;
+    MetadataManager metadataManager;
 
     public AgentResourcesMonitor(AgentDao agentDao, StoragePoolDao storagePoolDao, GenericResourceDao resourceDao, ObjectManager objectManager,
-            LockManager lockManager, EventService eventService, EnvironmentResourceManager envResourceManager) {
+            LockManager lockManager, EventService eventService, MetadataManager metadataManager) {
         super();
         this.agentDao = agentDao;
         this.storagePoolDao = storagePoolDao;
@@ -73,20 +73,10 @@ public class AgentResourcesMonitor {
         this.objectManager = objectManager;
         this.lockManager = lockManager;
         this.eventService = eventService;
-        this.envResourceManager = envResourceManager;
+        this.metadataManager = metadataManager;
     }
 
-    public void processPingReply(Ping ping) {
-        String agentIdStr = ping.getResourceId();
-        if (agentIdStr == null) {
-            return;
-        }
-
-        long agentId = Long.parseLong(agentIdStr);
-        if (ping.getData() == null) {
-            return;
-        }
-
+    public void processPingReply(Agent agent, Ping ping) {
         final AgentResources resources = processResources(ping);
         if (!resources.hasContent()) {
             return;
@@ -99,7 +89,6 @@ public class AgentResourcesMonitor {
             return;
         }
 
-        final Agent agent = objectManager.loadResource(Agent.class, agentId);
         lockManager.lock(new AgentResourceCreateLock(agent), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
@@ -181,7 +170,7 @@ public class AgentResourcesMonitor {
 
             String currentIp = DataAccessor.fieldString(host, HostConstants.FIELD_IP_ADDRESS);
             if (!Objects.equals(currentIp, address)) {
-                Metadata metadata = envResourceManager.getMetadata(host.getAccountId());
+                Metadata metadata = metadataManager.getMetadataForCluster(host.getClusterId());
                 host = metadata.modify(Host.class, host.getId(), obj -> objectManager.setFields(obj, HostConstants.FIELD_IP_ADDRESS, address));
                 hosts.put(host.getExternalId(), host);
             }
@@ -291,7 +280,7 @@ public class AgentResourcesMonitor {
                 if (orchestrate && !HostConstants.STATE_PROVISIONING.equals(host.getState())) {
                     host = resourceDao.updateAndSchedule(host, updateFields);
                 } else {
-                    Metadata metadata = envResourceManager.getMetadata(agent.getResourceAccountId());
+                    Metadata metadata = metadataManager.getMetadataForAccount(agent.getResourceAccountId());
                     host = metadata.modify(Host.class, host.getId(), obj -> objectManager.setFields(obj, updateFields));
                 }
                 if (StringUtils.isNotBlank(host.getExternalId())) {
@@ -315,6 +304,7 @@ public class AgentResourcesMonitor {
         }
 
         properties.put(ObjectMetaDataManager.ACCOUNT_FIELD, accountId);
+        properties.put(ObjectMetaDataManager.CLUSTER_FIELD, agent.getClusterId());
         properties.put(AgentConstants.ID_REF, agent.getId());
 
         return properties;

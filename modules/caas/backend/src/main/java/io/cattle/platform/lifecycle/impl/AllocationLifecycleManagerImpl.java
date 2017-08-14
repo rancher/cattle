@@ -10,9 +10,9 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.util.InstanceHelpers;
 import io.cattle.platform.core.util.SystemLabels;
-import io.cattle.platform.environment.EnvironmentResourceManager;
 import io.cattle.platform.lifecycle.AllocationLifecycleManager;
 import io.cattle.platform.lifecycle.util.LifecycleException;
+import io.cattle.platform.metadata.MetadataManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 
@@ -27,13 +27,13 @@ public class AllocationLifecycleManagerImpl implements AllocationLifecycleManage
     AllocatorService allocatorService;
     VolumeDao volumeDao;
     ObjectManager objectManager;
-    EnvironmentResourceManager envResourceManager;
+    MetadataManager metadataManager;
 
-    public AllocationLifecycleManagerImpl(AllocatorService allocatorService, VolumeDao volumeDao, ObjectManager objectManager, EnvironmentResourceManager envResourceManager) {
+    public AllocationLifecycleManagerImpl(AllocatorService allocatorService, VolumeDao volumeDao, ObjectManager objectManager, MetadataManager metadataManager) {
         this.allocatorService = allocatorService;
         this.volumeDao = volumeDao;
         this.objectManager = objectManager;
-        this.envResourceManager = envResourceManager;
+        this.metadataManager = metadataManager;
     }
 
     @Override
@@ -44,7 +44,7 @@ public class AllocationLifecycleManagerImpl implements AllocationLifecycleManage
                     /* Check if we should defer to external agent for schedule/create/delete.  This should use a different
                        than checking for the agent.
                      */
-                    if ("host".equals(EXTERNAL_STYLE.get()) || envResourceManager.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_COMPUTE, instance.getAccountId()).size() > 0) {
+                    if ("host".equals(EXTERNAL_STYLE.get()) || metadataManager.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_COMPUTE, instance.getAccountId()).size() > 0) {
                         DataAccessor.setField(instance, InstanceConstants.FIELD_EXTERNAL_COMPUTE_AGENT, true);
                         return;
                     }

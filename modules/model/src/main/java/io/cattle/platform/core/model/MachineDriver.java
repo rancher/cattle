@@ -166,6 +166,17 @@ public interface MachineDriver extends Serializable {
     @Column(name = "md5checksum", length = 255)
     public String getMd5checksum();
 
+    /**
+     * Setter for <code>cattle.machine_driver.creator_id</code>.
+     */
+    public void setCreatorId(Long value);
+
+    /**
+     * Getter for <code>cattle.machine_driver.creator_id</code>.
+     */
+    @Column(name = "creator_id", precision = 19)
+    public Long getCreatorId();
+
     // -------------------------------------------------------------------------
     // FROM and INTO
     // -------------------------------------------------------------------------

@@ -24,7 +24,7 @@ public class EventNotificationChangeMonitor implements StateChangeMonitor {
         publish(schedule, event, context);
     }
 
-    protected EventVO<Object> makeEvent(String resourceType, String resourceId) {
+    protected EventVO<Object, Object> makeEvent(String resourceType, String resourceId) {
         return EventVO.newEvent(FrameworkEvents.STATE_CHANGE).withResourceType(resourceType).withResourceId(resourceId);
 
     }

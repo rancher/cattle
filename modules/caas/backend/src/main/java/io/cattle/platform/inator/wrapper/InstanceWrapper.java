@@ -86,7 +86,7 @@ public class InstanceWrapper implements BasicStateWrapper {
 
     @Override
     public ObjectMetaDataManager getMetadataManager() {
-        return svc.metadataManager;
+        return svc.objectMetadataManager;
     }
 
     public Long getId() {

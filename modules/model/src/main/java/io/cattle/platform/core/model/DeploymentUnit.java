@@ -221,6 +221,17 @@ public interface DeploymentUnit extends Serializable {
     @Column(name = "revision_id", precision = 19)
     public Long getRevisionId();
 
+    /**
+     * Setter for <code>cattle.deployment_unit.cluster_id</code>.
+     */
+    public void setClusterId(Long value);
+
+    /**
+     * Getter for <code>cattle.deployment_unit.cluster_id</code>.
+     */
+    @Column(name = "cluster_id", precision = 19)
+    public Long getClusterId();
+
     // -------------------------------------------------------------------------
     // FROM and INTO
     // -------------------------------------------------------------------------

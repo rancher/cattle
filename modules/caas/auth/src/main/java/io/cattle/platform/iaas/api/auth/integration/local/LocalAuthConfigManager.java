@@ -58,7 +58,7 @@ public class LocalAuthConfigManager extends AbstractNoOpResourceManager {
     }
 
     @Override
-    public Object list(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
+    public Object listSupport(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
         return new LocalAuthConfig("", "", "", LocalAuthConstants.ACCESS_MODE.get(), SecurityConstants.SECURITY.get());
     }
 }

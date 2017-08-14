@@ -28,14 +28,11 @@ public class VolumeManager extends DefaultResourceManager {
 
         String driver = DataAccessor.fieldString(v, VolumeConstants.FIELD_VOLUME_DRIVER);
         if (v instanceof Volume && !VolumeConstants.LOCAL_DRIVER.equals(driver)) {
-            Object aId = ObjectUtils.getAccountId(v);
-            if (aId != null) {
-                List<? extends StoragePool> pools = storagePoolDao.findStoragePoolByDriverName((Long)aId, driver);
-                if (pools.size() == 1) {
-                    StoragePool sp = pools.get(0);
-                    ((Volume) v).setStoragePoolId(pools.get(0).getId());
-                    ObjectUtils.publishChanged(eventService, objectResourceManagerSupport.getObjectManager(), sp);
-                }
+            List<? extends StoragePool> pools = storagePoolDao.findStoragePoolByDriverName(((Volume) v).getClusterId(), driver);
+            if (pools.size() == 1) {
+                StoragePool sp = pools.get(0);
+                ((Volume) v).setStoragePoolId(pools.get(0).getId());
+                ObjectUtils.publishChanged(eventService, objectResourceManagerSupport.getObjectManager(), sp);
             }
         }
 

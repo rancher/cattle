@@ -2,7 +2,6 @@ package io.cattle.platform.app.components;
 
 import io.cattle.platform.api.account.AccountDeactivateActionHandler;
 import io.cattle.platform.api.account.AccountFilter;
-import io.cattle.platform.api.account.SetComputeFlavorActionHandler;
 import io.cattle.platform.api.agent.AgentFilter;
 import io.cattle.platform.api.apikey.ApiKeyFilter;
 import io.cattle.platform.api.auditlog.AuditLogOutputFilter;
@@ -10,6 +9,7 @@ import io.cattle.platform.api.auditlog.AuditLogsRequestHandler;
 import io.cattle.platform.api.certificate.CertificateCreateValidationFilter;
 import io.cattle.platform.api.certificate.LoadBalancerServiceCertificateRemoveFilter;
 import io.cattle.platform.api.change.impl.ResourceChangeEventProcessor;
+import io.cattle.platform.api.cluster.ClusterIdCommonFilter;
 import io.cattle.platform.api.containerevent.ContainerEventFilter;
 import io.cattle.platform.api.credential.ApiKeyCertificateDownloadLinkHandler;
 import io.cattle.platform.api.credential.ApiKeyOutputFilter;
@@ -127,6 +127,7 @@ import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.Data;
 import io.cattle.platform.core.model.DynamicSchema;
 import io.cattle.platform.core.model.ExternalEvent;
+import io.cattle.platform.core.model.GenericObject;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.HostTemplate;
 import io.cattle.platform.core.model.Instance;
@@ -176,6 +177,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 
+import static io.cattle.platform.object.meta.ObjectMetaDataManager.*;
+
 public class Api {
 
     Common c;
@@ -224,7 +227,6 @@ public class Api {
         c.router.action("container","proxy", new ContainerProxyActionHandler(c.hostApiService, f.objectManager));
         c.router.action("container", "upgrade", new ContainerUpgradeActionHandler(f.objectManager, f.processManager, c.revisionManager));
         c.router.action("password", "changesecret", new ChangeSecretActionHandler(d.passwordDao, f.jsonMapper));
-        c.router.action("project", "setcomputeflavor", new SetComputeFlavorActionHandler(f.objectManager));
     }
 
     private void addLinkHandlers() {
@@ -255,6 +257,7 @@ public class Api {
         c.router.outputFilter(AuditLog.class, resourceIdOutputFilter);
         c.router.outputFilter(Credential.class, new ApiKeyOutputFilter());
         c.router.outputFilter(CredentialConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN, new RegistrationTokenOutputFilter());
+        c.router.outputFilter(GenericObject.class, new RegisterOutputFilter());
         c.router.outputFilter(Host.class, new HostsOutputFilter(d.hostDao, c.secretsService));
         c.router.outputFilter(HostConstants.TYPE, statsOutputFilter);
         c.router.outputFilter(HostTemplate.class, new HostTemplateOutputFilter());
@@ -276,6 +279,7 @@ public class Api {
     private void addValidationFilters() {
         ResourceIdInputFilter resourceIdInputFilter = new ResourceIdInputFilter(f.idFormatter);
         CertificateCreateValidationFilter certificateCreateValidationFilter = new CertificateCreateValidationFilter();
+        ClusterIdCommonFilter clusterIdCommonFilter = new ClusterIdCommonFilter(f.objectManager);
         SelectorServiceCreateValidationFilter selectorServiceCreateValidationFilter = new SelectorServiceCreateValidationFilter(f.objectManager);
         ServiceCreateValidationFilter serviceCreateValidationFilter = new ServiceCreateValidationFilter(f.objectManager, f.processManager, c.storageService, f.jsonMapper, c.revisionManager);
         ServiceRestartValidationFilter serviceRestartValidationFilter = new ServiceRestartValidationFilter(f.objectManager);
@@ -285,7 +289,12 @@ public class Api {
         ServiceUpgradeValidationFilter serviceUpgradeValidationFilter = new ServiceUpgradeValidationFilter(f.objectManager, f.jsonMapper, c.revisionManager);
         UserPreferenceFilter userPreferenceFilter = new UserPreferenceFilter(d.userPreferenceDao);
 
-        c.router.validationFilter(Account.class, new AccountFilter(d.accountDao));
+        // Assign clusterId first
+        f.coreSchemaFactory.listSchemas().stream()
+                .filter(schema -> schema.getResourceFields().containsKey(CLUSTER_FIELD))
+                .forEach(schema -> c.router.validationFilter(schema.getType(), clusterIdCommonFilter));
+
+        c.router.validationFilter(Account.class, new AccountFilter(d.accountDao, f.objectManager));
         c.router.validationFilter(Agent.class, new AgentFilter(c.locator, d.agentDao));
         c.router.validationFilter(AuditLog.class, resourceIdInputFilter);
         c.router.validationFilter(Certificate.class, certificateCreateValidationFilter);

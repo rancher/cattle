@@ -17,8 +17,6 @@ import io.cattle.platform.util.type.CollectionUtils;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
 
@@ -55,7 +53,7 @@ public class SecretsServiceImpl implements SecretsService {
     }
 
     @Override
-    public String encrypt(long accountId, String value) throws IOException {
+    public String encrypt(String value) throws IOException {
         Map<String, Object> input = new HashMap<>();
         input.put("backend", SECRETS_BACKEND.get());
         input.put("clearText", value);
@@ -63,20 +61,17 @@ public class SecretsServiceImpl implements SecretsService {
 
         return Request.Post(SECRETS_URL.get() + CREATE_PATH)
             .bodyString(jsonMapper.writeValueAsString(input), ContentType.APPLICATION_JSON)
-            .execute().handleResponse(new ResponseHandler<String>() {
-                @Override
-                public String handleResponse(HttpResponse response) throws IOException {
-                    int statusCode = response.getStatusLine().getStatusCode();
-                    if (statusCode >= 300) {
-                        throw new IOException("Failed to encrypt secret :" + response.getStatusLine().getReasonPhrase());
-                    }
-                    return IOUtils.toString(response.getEntity().getContent(), StandardCharset.UTF_8);
+            .execute().handleResponse(response -> {
+                int statusCode = response.getStatusLine().getStatusCode();
+                if (statusCode >= 300) {
+                    throw new IOException("Failed to encrypt secret :" + response.getStatusLine().getReasonPhrase());
                 }
+                return IOUtils.toString(response.getEntity().getContent(), StandardCharset.UTF_8);
             });
     }
 
     @Override
-    public void delete(long accountId, String value) throws IOException {
+    public void delete(String value) throws IOException {
         if (StringUtils.isBlank(value)) {
             return;
         }
@@ -100,15 +95,12 @@ public class SecretsServiceImpl implements SecretsService {
         input.put("rewrapKey", rewrapKey);
         Map<String, Object> response = Request.Post(SECRETS_URL.get() + BULK_PATH).
                 bodyString(jsonMapper.writeValueAsString(input), ContentType.APPLICATION_JSON)
-                .execute().handleResponse(new ResponseHandler<Map<String, Object>>() {
-                    @Override
-                    public Map<String, Object> handleResponse(HttpResponse response) throws IOException {
-                        int statusCode = response.getStatusLine().getStatusCode();
-                        if (statusCode >= 300) {
-                            throw new IOException("Failed to rewrap secret :" + response.getStatusLine().getReasonPhrase());
-                        }
-                        return jsonMapper.readValue(response.getEntity().getContent());
+                .execute().handleResponse(response1 -> {
+                    int statusCode = response1.getStatusLine().getStatusCode();
+                    if (statusCode >= 300) {
+                        throw new IOException("Failed to rewrap secret :" + response1.getStatusLine().getReasonPhrase());
                     }
+                    return jsonMapper.readValue(response1.getEntity().getContent());
                 });
 
         List<?> wrapped = CollectionUtils.toList(response.get("data"));
@@ -148,7 +140,7 @@ public class SecretsServiceImpl implements SecretsService {
     }
 
     @Override
-    public String decrypt(long accountId, String value) throws Exception {
+    public String decrypt(String value) throws Exception {
         RSAPrivateKeyHolder holder = rsaKeyProvider.getPrivateKey();
         PublicKey publicKey = rsaKeyProvider.getPublicKeys().get(holder.getKeyId());
         String encoded = SshKeyGen.toPEM(publicKey);
@@ -158,15 +150,12 @@ public class SecretsServiceImpl implements SecretsService {
 
         String encrypted = Request.Post(SECRETS_URL.get() + REWRAP)
             .bodyString(jsonMapper.writeValueAsString(input), ContentType.APPLICATION_JSON)
-            .execute().handleResponse(new ResponseHandler<String>() {
-                @Override
-                public String handleResponse(HttpResponse response) throws IOException {
-                    int statusCode = response.getStatusLine().getStatusCode();
-                    if (statusCode >= 300) {
-                        throw new IOException("Failed to rewrap secret :" + response.getStatusLine().getReasonPhrase());
-                    }
-                    return IOUtils.toString(response.getEntity().getContent(), StandardCharset.UTF_8);
+            .execute().handleResponse(response -> {
+                int statusCode = response.getStatusLine().getStatusCode();
+                if (statusCode >= 300) {
+                    throw new IOException("Failed to rewrap secret :" + response.getStatusLine().getReasonPhrase());
                 }
+                return IOUtils.toString(response.getEntity().getContent(), StandardCharset.UTF_8);
             });
 
         return unwrap(holder.getKey(), encrypted);

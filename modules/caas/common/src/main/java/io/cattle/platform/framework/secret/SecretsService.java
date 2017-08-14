@@ -12,11 +12,11 @@ public interface SecretsService {
 
     DynamicStringProperty SECRETS_KEY_NAME = ArchaiusUtil.getString("secrets.api.local.key.name");
 
-    String encrypt(long accountId, String value) throws IOException;
+    String encrypt(String value) throws IOException;
 
-    String decrypt(long accountId, String value) throws Exception;
+    String decrypt(String value) throws Exception;
 
-    void delete(long accountId, String value) throws IOException;
+    void delete(String value) throws IOException;
 
     List<SecretValue> getValues(List<SecretReference> refs, Host host) throws IOException;
 

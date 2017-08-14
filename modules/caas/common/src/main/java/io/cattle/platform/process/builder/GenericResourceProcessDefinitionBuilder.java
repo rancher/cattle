@@ -73,7 +73,7 @@ public class GenericResourceProcessDefinitionBuilder {
         } else {
             for (String value : values.trim().split("\\s*,\\s*")) {
                 if (value.indexOf('=') == -1) {
-                    throw new IllegalArgumentException("Setting must be a single value or a list of key/values in the form from1=to1,from2=to2");
+                    throw new IllegalArgumentException("Setting must be a single value or a listSupport of key/values in the form from1=to1,from2=to2");
                 } else {
                     String[] parts = value.split("=");
                     result.put(parts[0], parts[1]);

@@ -18,6 +18,7 @@ import java.util.Map;
 import javax.annotation.Generated;
 
 import org.jooq.Field;
+import org.jooq.ForeignKey;
 import org.jooq.Identity;
 import org.jooq.Schema;
 import org.jooq.Table;
@@ -39,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class MachineDriverTable extends TableImpl<MachineDriverRecord> {
 
-    private static final long serialVersionUID = 222022479;
+    private static final long serialVersionUID = 1568032469;
 
     /**
      * The reference instance of <code>cattle.machine_driver</code>
@@ -115,6 +116,11 @@ public class MachineDriverTable extends TableImpl<MachineDriverRecord> {
     public final TableField<MachineDriverRecord, String> MD5CHECKSUM = createField("md5checksum", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
     /**
+     * The column <code>cattle.machine_driver.creator_id</code>.
+     */
+    public final TableField<MachineDriverRecord, Long> CREATOR_ID = createField("creator_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
      * Create a <code>cattle.machine_driver</code> table reference
      */
     public MachineDriverTable() {
@@ -166,6 +172,14 @@ public class MachineDriverTable extends TableImpl<MachineDriverRecord> {
     @Override
     public List<UniqueKey<MachineDriverRecord>> getKeys() {
         return Arrays.<UniqueKey<MachineDriverRecord>>asList(Keys.KEY_MACHINE_DRIVER_PRIMARY, Keys.KEY_MACHINE_DRIVER_IDX_MACHINE_DRIVER_UUID);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<ForeignKey<MachineDriverRecord, ?>> getReferences() {
+        return Arrays.<ForeignKey<MachineDriverRecord, ?>>asList(Keys.FK_MACHINE_DRIVER__CREATOR_ID);
     }
 
     /**

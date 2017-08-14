@@ -20,20 +20,20 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
+import org.apache.commons.collections4.ListValuedMap;
+import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.Configuration;
 import org.jooq.Record6;
 import org.jooq.RecordHandler;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 
 import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
@@ -84,7 +84,7 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
     }
 
     @Override
-    public Volume createVolumeInPool(Long accountId, String name, String externalId, String driver, StoragePool storagePool, boolean isNative) {
+    public Volume createVolumeInPool(Long accountId, long clusterId, String name, String externalId, String driver, StoragePool storagePool, boolean isNative) {
         return transaction.doInTransactionResult(() -> {
             Volume volume = getVolumeInPoolByExternalId(externalId, storagePool);
             if (volume != null) {
@@ -96,6 +96,7 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
                     VOLUME.NAME, name,
                     VOLUME.STORAGE_POOL_ID, storagePool.getId(),
                     VOLUME.EXTERNAL_ID, externalId,
+                    VOLUME.CLUSTER_ID, clusterId,
                     VolumeConstants.FIELD_DOCKER_IS_NATIVE, isNative,
                     VolumeConstants.FIELD_VOLUME_DRIVER, driver);
 
@@ -114,7 +115,7 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
 
     @Override
     public List<? extends Volume> findSharedOrUnmappedVolumes(long accountId, String volumeName) {
-        List<VolumeRecord> volumes = create()
+        return create()
             .selectDistinct(VOLUME.fields())
             .from(VOLUME)
             .leftOuterJoin(STORAGE_POOL)
@@ -125,13 +126,11 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
                 .and(STORAGE_POOL.KIND.notIn(LOCAL_POOL_KINDS).or(STORAGE_POOL.KIND.isNull()))
                 .and(STORAGE_POOL.REMOVED.isNull())
             .fetchInto(VolumeRecord.class);
-
-        return volumes;
     }
 
     @Override
     public List<? extends Volume> identifyUnmappedVolumes(long accountId, Set<Long> volumeIds) {
-        List<VolumeRecord> volumes = create()
+        return create()
             .selectDistinct(VOLUME.fields())
             .from(VOLUME)
             .where(VOLUME.ID.in(volumeIds)
@@ -139,10 +138,9 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
                 .and(VOLUME.ACCOUNT_ID.eq(accountId))
                 .and(VOLUME.STORAGE_POOL_ID.isNull())
             .fetchInto(VolumeRecord.class);
-        return volumes;
     }
 
-    public static final List<String> INELLIGIBLE_STATES = Arrays.asList(CommonStatesConstants.ACTIVE, CommonStatesConstants.ACTIVATING,
+    public static final List<String> INELIGIBLE_STATES = Arrays.asList(CommonStatesConstants.ACTIVE, CommonStatesConstants.ACTIVATING,
             CommonStatesConstants.REQUESTED);
 
     @Override
@@ -158,7 +156,7 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
                 .from(MOUNT)
                 .where(MOUNT.VOLUME_ID.in(instanceVolumeIds)
                 .and(MOUNT.INSTANCE_ID.ne(instanceId))
-                .and(MOUNT.STATE.in(INELLIGIBLE_STATES)))
+                .and(MOUNT.STATE.in(INELIGIBLE_STATES)))
                 .fetchInto(Long.class);
 
         Set<Long> volumeIds = new HashSet<>(instanceVolumeIds);
@@ -171,8 +169,7 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
                 .and(VOLUME.REMOVED.isNull())
                 .fetchInto(VolumeRecord.class);
 
-        Set<? extends Volume> volumes = new HashSet<Volume>(vols);
-        return volumes;
+        return new HashSet<Volume>(vols);
     }
 
     @Override
@@ -184,27 +181,22 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
     }
 
     @Override
-    public Volume createVolumeForDriver(final long accountId, final String volumeName, final String driverName) {
+    public Volume createVolumeForDriver(long clusterId, long accountId, String volumeName, String driverName) {
         StorageDriver driver = objectManager.findAny(StorageDriver.class,
                 STORAGE_DRIVER.NAME, driverName,
-                STORAGE_DRIVER.ACCOUNT_ID, accountId,
+                STORAGE_DRIVER.CLUSTER_ID, clusterId,
                 STORAGE_DRIVER.REMOVED, null);
         final Long driverId = driver == null ? null : driver.getId();
-        return DeferredUtils.nest(new Callable<Volume>() {
-            @Override
-            public Volume call() throws Exception {
-                return resourceDao.createAndSchedule(Volume.class,
-                        VOLUME.NAME, volumeName,
-                        VOLUME.ACCOUNT_ID, accountId,
-                        VOLUME.STORAGE_DRIVER_ID, driverId,
-                        VolumeConstants.FIELD_VOLUME_DRIVER, driverName);
-            }
-        });
+        return DeferredUtils.nest(() -> resourceDao.createAndSchedule(Volume.class,
+                VOLUME.NAME, volumeName,
+                VOLUME.ACCOUNT_ID, accountId,
+                VOLUME.STORAGE_DRIVER_ID, driverId,
+                VolumeConstants.FIELD_VOLUME_DRIVER, driverName));
     }
 
     @Override
-    public Map<Long, List<MountEntry>> getMountsForInstances(List<Long> ids, final IdFormatter idF) {
-        final Map<Long, List<MountEntry>> result = new HashMap<>();
+    public Map<Long, Collection<MountEntry>> getMountsForInstances(List<Long> ids, final IdFormatter idF) {
+        ListValuedMap<Long, MountEntry> result = new ArrayListValuedHashMap<>();
         create().select(INSTANCE.NAME, VOLUME.NAME, VOLUME.ID, MOUNT.PERMISSIONS, MOUNT.PATH, MOUNT.INSTANCE_ID)
             .from(MOUNT)
             .join(VOLUME)
@@ -214,33 +206,26 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
             .where(MOUNT.REMOVED.isNull()
                     .and(VOLUME.REMOVED.isNull())
                     .and(MOUNT.INSTANCE_ID.in(ids)))
-            .fetchInto(new RecordHandler<Record6<String, String, Long, String, String, Long>>() {
-                @Override
-                public void next(Record6<String, String, Long, String, String, Long> record) {
-                    Long instanceId = record.getValue(MOUNT.INSTANCE_ID);
-                    List<MountEntry> entries = result.get(instanceId);
-                    if (entries == null) {
-                        entries = new ArrayList<>();
-                        result.put(instanceId, entries);
-                    }
+            .fetchInto((RecordHandler<Record6<String, String, Long, String, String, Long>>) record -> {
+                Long instanceId = record.getValue(MOUNT.INSTANCE_ID);
 
-                    MountEntry mount = new MountEntry();
-                    mount.setInstanceName(record.getValue(INSTANCE.NAME));
-                    mount.setInstanceId(idF.formatId(InstanceConstants.TYPE, instanceId));
-                    mount.setPath(record.getValue(MOUNT.PATH));
-                    mount.setPermission(record.getValue(MOUNT.PERMISSIONS));
-                    mount.setVolumeId(idF.formatId(VolumeConstants.TYPE, record.getValue(VOLUME.ID)));
-                    mount.setVolumeName(record.getValue(VOLUME.NAME));
-                    entries.add(mount);
-                }
+                MountEntry mount = new MountEntry();
+                mount.setInstanceName(record.getValue(INSTANCE.NAME));
+                mount.setInstanceId(idF.formatId(InstanceConstants.TYPE, instanceId));
+                mount.setPath(record.getValue(MOUNT.PATH));
+                mount.setPermission(record.getValue(MOUNT.PERMISSIONS));
+                mount.setVolumeId(idF.formatId(VolumeConstants.TYPE, record.getValue(VOLUME.ID)));
+                mount.setVolumeName(record.getValue(VOLUME.NAME));
+
+                result.put(instanceId, mount);
             });
 
-        return result;
+        return result.asMap();
     }
 
     @Override
-    public Map<Long, List<MountEntry>> getMountsForVolumes(List<Long> ids, final IdFormatter idF) {
-        final Map<Long, List<MountEntry>> result = new HashMap<>();
+    public Map<Long, Collection<MountEntry>> getMountsForVolumes(List<Long> ids, final IdFormatter idF) {
+        ListValuedMap<Long, MountEntry> result = new ArrayListValuedHashMap<>();
         create().select(VOLUME.NAME, MOUNT.PERMISSIONS, MOUNT.PATH, MOUNT.INSTANCE_ID, MOUNT.VOLUME_ID, INSTANCE.NAME)
             .from(MOUNT)
             .join(INSTANCE)
@@ -250,29 +235,21 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
             .where(INSTANCE.REMOVED.isNull()
                     .and(VOLUME.REMOVED.isNull())
                     .and(MOUNT.VOLUME_ID.in(ids)))
-            .fetchInto(new RecordHandler<Record6<String, String, String, Long, Long, String>>() {
-                @Override
-                public void next(Record6<String, String, String, Long, Long, String> record) {
-                    Long volumeId = record.getValue(MOUNT.VOLUME_ID);
-                    List<MountEntry> entries = result.get(volumeId);
-                    if (entries == null) {
-                        entries = new ArrayList<>();
-                        result.put(volumeId, entries);
-                    }
+            .fetchInto((RecordHandler<Record6<String, String, String, Long, Long, String>>) record -> {
+                Long volumeId = record.getValue(MOUNT.VOLUME_ID);
 
-                    MountEntry mount = new MountEntry();
-                    mount.setInstanceName(record.getValue(INSTANCE.NAME));
-                    mount.setInstanceId(idF.formatId(InstanceConstants.TYPE, record.getValue(MOUNT.INSTANCE_ID)));
-                    mount.setPath(record.getValue(MOUNT.PATH));
-                    mount.setPermission(record.getValue(MOUNT.PERMISSIONS));
-                    mount.setVolumeId(idF.formatId(VolumeConstants.TYPE, volumeId));
-                    mount.setVolumeName(record.getValue(VOLUME.NAME));
+                MountEntry mount = new MountEntry();
+                mount.setInstanceName(record.getValue(INSTANCE.NAME));
+                mount.setInstanceId(idF.formatId(InstanceConstants.TYPE, record.getValue(MOUNT.INSTANCE_ID)));
+                mount.setPath(record.getValue(MOUNT.PATH));
+                mount.setPermission(record.getValue(MOUNT.PERMISSIONS));
+                mount.setVolumeId(idF.formatId(VolumeConstants.TYPE, volumeId));
+                mount.setVolumeName(record.getValue(VOLUME.NAME));
 
-                    entries.add(mount);
-                }
+                result.put(volumeId, mount);
             });
 
-        return result;
+        return result.asMap();
     }
 
     @Override

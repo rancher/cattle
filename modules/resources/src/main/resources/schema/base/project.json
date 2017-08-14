@@ -41,21 +41,9 @@
       "attributes": {
         "capability": "owner"
       }
-    },
-    "setcomputeflavor": {
-      "input": "setComputeFlavorInput",
-      "outpu": "project",
-      "attributes": {
-        "capability": "!computeFlavorChangeable"
-      }
     }
   },
   "resourceFields": {
-    "hostRemoveDelaySeconds": {
-      "type": "int",
-      "required": false,
-      "nullable": true
-    },
     "allowSystemRole": {
       "type": "boolean",
       "default": false,

@@ -2,7 +2,7 @@ package io.cattle.platform.framework.event;
 
 import io.cattle.platform.eventing.model.EventVO;
 
-public class ExecuteTask extends EventVO<TaskOptions> {
+public class ExecuteTask extends EventVO<TaskOptions, Object> {
 
     public ExecuteTask() {
         setName(FrameworkEvents.EXECUTE_TASK);

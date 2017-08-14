@@ -12,19 +12,20 @@ import java.util.Set;
 public class DefaultPolicy implements Policy {
 
     long accountId;
+    Long clusterId;
     long authenticatedAsAccountId;
     String name;
     Set<Identity> identities;
     PolicyOptions options;
 
-    @SuppressWarnings("unchecked")
     public DefaultPolicy() {
-        this(Policy.NO_ACCOUNT, Policy.NO_ACCOUNT, null, Collections.EMPTY_SET, new NoPolicyOptions());
+        this(NO_ACCOUNT, NO_ACCOUNT, NO_ACCOUNT, null, Collections.emptySet(), new NoPolicyOptions());
     }
 
-    public DefaultPolicy(long accountId, long authenticatedAsAccountId, String name, Set<Identity> identities, PolicyOptions options) {
+    public DefaultPolicy(long accountId, long authenticatedAsAccountId, Long clusterId, String name, Set<Identity> identities, PolicyOptions options) {
         super();
         this.accountId = accountId;
+        this.clusterId = clusterId;
         this.authenticatedAsAccountId = authenticatedAsAccountId;
         this.identities = identities;
         this.options = options;
@@ -59,6 +60,11 @@ public class DefaultPolicy implements Policy {
     @Override
     public long getAccountId() {
         return accountId;
+    }
+
+    @Override
+    public Long getClusterId() {
+        return clusterId;
     }
 
     @Override

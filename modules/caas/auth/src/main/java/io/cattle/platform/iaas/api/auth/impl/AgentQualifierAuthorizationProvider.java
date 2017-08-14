@@ -26,13 +26,12 @@ import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerLocator;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class AgentQualifierAuthorizationProvider implements AuthorizationProvider {
 
@@ -44,7 +43,6 @@ public class AgentQualifierAuthorizationProvider implements AuthorizationProvide
             AgentConstants.STATE_RECONNECTING,
             AgentConstants.STATE_DISCONNECTED,
             AgentConstants.STATE_DISCONNECTING,
-            AgentConstants.STATE_FINISHING_RECONNECT,
             AgentConstants.STATE_RECONNECTED
     ));
     private static final Set<String> DISCONNECTED = new HashSet<>(Arrays.asList(

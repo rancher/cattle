@@ -2,7 +2,6 @@ package io.cattle.platform.api.hosttemplate;
 
 import io.cattle.platform.api.resource.DefaultResourceManager;
 import io.cattle.platform.api.resource.DefaultResourceManagerSupport;
-import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.framework.secret.SecretsService;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.util.DataAccessor;
@@ -38,7 +37,7 @@ public class HostTemplateManager extends DefaultResourceManager {
         if (value != null) {
             try {
                 String encoded = Base64.encodeBase64String(jsonMapper.writeValueAsString(value).getBytes("UTF-8"));
-                String newValue = secretsService.encrypt(ApiUtils.getPolicy().getAccountId(), encoded);
+                String newValue = secretsService.encrypt(encoded);
                 Map<String, Object> empty = emptyMap(CollectionUtils.toMap(value));
                 properties.put("secretValues", newValue);
                 properties.put("secretValuesEmpty", empty);

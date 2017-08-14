@@ -1,21 +1,12 @@
 package io.cattle.platform.core.dao.impl;
 
-import static io.cattle.platform.core.model.tables.CertificateTable.*;
-import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
-import static io.cattle.platform.core.model.tables.ServiceTable.*;
-import static io.cattle.platform.core.model.tables.StackTable.*;
-import static io.cattle.platform.core.model.tables.VolumeTable.*;
-import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
-
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.constants.LoadBalancerConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.ServiceDao;
-import io.cattle.platform.core.model.Certificate;
+import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -36,19 +27,24 @@ import io.cattle.platform.engine.handler.ProcessHandler;
 import io.cattle.platform.lock.LockCallback;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
+import org.jooq.Condition;
+import org.jooq.Configuration;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jooq.Condition;
-import org.jooq.Configuration;
+import static io.cattle.platform.core.model.tables.DeploymentUnitTable.*;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
+import static io.cattle.platform.core.model.tables.StackTable.*;
+import static io.cattle.platform.core.model.tables.VolumeTable.*;
+import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
 
 public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
 
@@ -73,38 +69,6 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                 .and(SERVICE.REMOVED.isNull())
                 .and(SERVICE.EXTERNAL_ID.eq(externalId))
                 .fetchAny();
-    }
-
-    @Override
-    public List<Certificate> getLoadBalancerServiceCertificates(Service lbService) {
-        List<? extends Long> certIds = DataAccessor.fields(lbService)
-                .withKey(LoadBalancerConstants.FIELD_LB_CERTIFICATE_IDS).withDefault(Collections.EMPTY_LIST)
-                .asList(Long.class);
-        Long defaultCertId = DataAccessor.fieldLong(lbService, LoadBalancerConstants.FIELD_LB_DEFAULT_CERTIFICATE_ID);
-        List<Long> allCertIds = new ArrayList<>();
-        allCertIds.addAll(certIds);
-        allCertIds.add(defaultCertId);
-        return create()
-                .select(CERTIFICATE.fields())
-                .from(CERTIFICATE)
-                .where(CERTIFICATE.REMOVED.isNull())
-                .and(CERTIFICATE.ID.in(allCertIds))
-                .fetchInto(Certificate.class);
-    }
-
-    @Override
-    public Certificate getLoadBalancerServiceDefaultCertificate(Service lbService) {
-        Long defaultCertId = DataAccessor.fieldLong(lbService, LoadBalancerConstants.FIELD_LB_DEFAULT_CERTIFICATE_ID);
-        List<? extends Certificate> certs = create()
-                .select(CERTIFICATE.fields())
-                .from(CERTIFICATE)
-                .where(CERTIFICATE.REMOVED.isNull())
-                .and(CERTIFICATE.ID.eq(defaultCertId))
-                .fetchInto(Certificate.class);
-        if (certs.isEmpty()) {
-            return null;
-        }
-        return certs.get(0);
     }
 
     @Override
@@ -137,10 +101,11 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
     }
 
     @Override
-    public DeploymentUnit createDeploymentUnit(long accountId, Long serviceId, long stackId,
+    public DeploymentUnit createDeploymentUnit(long accountId, long clusterId, Long serviceId, long stackId,
             Long hostId, String serviceIndex, Long revisionId, boolean active) {
         Map<Object, Object> params = new HashMap<>();
-        params.put("accountId", accountId);
+        params.put(ObjectMetaDataManager.ACCOUNT_FIELD, accountId);
+        params.put(ObjectMetaDataManager.CLUSTER_FIELD, clusterId);
         params.put(InstanceConstants.FIELD_SERVICE_INDEX, serviceIndex);
         params.put(InstanceConstants.FIELD_SERVICE_ID, serviceId);
         params.put(InstanceConstants.FIELD_STACK_ID, stackId);
@@ -184,8 +149,10 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                     return stacks.get(0);
                 }
 
+                Account account = objectManager.loadResource(Account.class, accountId);
                 return resourceDao.createAndSchedule(Stack.class,
                         STACK.ACCOUNT_ID, accountId,
+                        STACK.CLUSTER_ID, account.getClusterId(),
                         STACK.NAME, ServiceConstants.DEFAULT_STACK_NAME,
                         STACK.HEALTH_STATE, HealthcheckConstants.HEALTH_STATE_HEALTHY);
             }

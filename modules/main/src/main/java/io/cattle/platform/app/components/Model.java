@@ -19,6 +19,7 @@ import io.cattle.platform.core.addon.HealthcheckState;
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.addon.InstanceStatus;
+import io.cattle.platform.core.addon.K8sConfig;
 import io.cattle.platform.core.addon.Link;
 import io.cattle.platform.core.addon.LoadBalancerCookieStickinessPolicy;
 import io.cattle.platform.core.addon.LogConfig;
@@ -38,7 +39,6 @@ import io.cattle.platform.core.addon.ServiceRollback;
 import io.cattle.platform.core.addon.ServiceUpgrade;
 import io.cattle.platform.core.addon.ServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.ServicesPortRange;
-import io.cattle.platform.core.addon.SetComputeFlavorInput;
 import io.cattle.platform.core.addon.StackConfiguration;
 import io.cattle.platform.core.addon.TargetPortRule;
 import io.cattle.platform.core.addon.Ulimit;
@@ -144,7 +144,7 @@ public class Model {
 
                 // Simple types
                 .type("certificate").processes("update")
-                .type("cluster")
+                .type("cluster").processes("error")
                 .type("credential").processes("activate", "deactivate")
                 .type("deploymentUnit").processes("activate", "deactivate", "error", "update", "pause")
                 .type("dynamicSchema")
@@ -167,6 +167,7 @@ public class Model {
                 // Now the more complicated ones
                 .type("account")
                     .process("activate")
+                    .process("update")
                     .process("deactivate")
                     .process("purge")
                         .from("removed")
@@ -292,6 +293,7 @@ public class Model {
                 InServiceUpgradeStrategy.class,
                 InstanceHealthCheck.class,
                 InstanceStatus.class,
+                K8sConfig.class,
                 Link.class,
                 LoadBalancerCookieStickinessPolicy.class,
                 LocalAuthConfig.class,
@@ -316,7 +318,6 @@ public class Model {
                 ServicesPortRange.class,
                 ServiceUpgrade.class,
                 ServiceUpgradeStrategy.class,
-                SetComputeFlavorInput.class,
                 StackConfiguration.class,
                 StatsAccess.class,
                 Subscribe.class,

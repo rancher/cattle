@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class SubnetTable extends TableImpl<SubnetRecord> {
 
-    private static final long serialVersionUID = -1100482125;
+    private static final long serialVersionUID = 376061754;
 
     /**
      * The reference instance of <code>cattle.subnet</code>
@@ -64,11 +64,6 @@ public class SubnetTable extends TableImpl<SubnetRecord> {
      * The column <code>cattle.subnet.name</code>.
      */
     public final TableField<SubnetRecord, String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
-
-    /**
-     * The column <code>cattle.subnet.account_id</code>.
-     */
-    public final TableField<SubnetRecord, Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
      * The column <code>cattle.subnet.kind</code>.
@@ -141,9 +136,9 @@ public class SubnetTable extends TableImpl<SubnetRecord> {
     public final TableField<SubnetRecord, Long> NETWORK_ID = createField("network_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
-     * The column <code>cattle.subnet.is_public</code>.
+     * The column <code>cattle.subnet.cluster_id</code>.
      */
-    public final TableField<SubnetRecord, Boolean> IS_PUBLIC = createField("is_public", org.jooq.impl.SQLDataType.BIT.nullable(false).defaultValue(org.jooq.impl.DSL.inline("b'0'", org.jooq.impl.SQLDataType.BIT)), this, "");
+    public final TableField<SubnetRecord, Long> CLUSTER_ID = createField("cluster_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
 
     /**
      * Create a <code>cattle.subnet</code> table reference
@@ -204,7 +199,7 @@ public class SubnetTable extends TableImpl<SubnetRecord> {
      */
     @Override
     public List<ForeignKey<SubnetRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<SubnetRecord, ?>>asList(Keys.FK_SUBNET__ACCOUNT_ID, Keys.FK_SUBNET__NETWORK_ID);
+        return Arrays.<ForeignKey<SubnetRecord, ?>>asList(Keys.FK_SUBNET__NETWORK_ID, Keys.FK_SUBNET__CLUSTER_ID);
     }
 
     /**

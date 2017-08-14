@@ -12,6 +12,7 @@ import java.util.Set;
 public class HostInfo implements MetadataObject {
     long id;
     Long agentId;
+    Long clusterId;
     String agentIp;
     String name;
     String state;
@@ -35,6 +36,7 @@ public class HostInfo implements MetadataObject {
         this.memory = host.getMemory();
         this.state = host.getState();
         this.agentState = host.getAgentState() == null ? this.state : host.getAgentState();
+        this.clusterId = host.getClusterId();
         this.ports = new HashSet<>(
                 DataAccessor.fieldObjectList(host, HostConstants.FIELD_PUBLIC_ENDPOINTS, PortInstance.class));
     }
@@ -85,12 +87,11 @@ public class HostInfo implements MetadataObject {
     }
 
     public Long getAgentId() {
-
         return agentId;
     }
 
-    public void setAgentId(Long agentId) {
-        this.agentId = agentId;
+    public Long getClusterId() {
+        return clusterId;
     }
 
     @Override
@@ -102,6 +103,7 @@ public class HostInfo implements MetadataObject {
 
         if (id != hostInfo.id) return false;
         if (agentId != null ? !agentId.equals(hostInfo.agentId) : hostInfo.agentId != null) return false;
+        if (clusterId != null ? !clusterId.equals(hostInfo.clusterId) : hostInfo.clusterId != null) return false;
         if (agentIp != null ? !agentIp.equals(hostInfo.agentIp) : hostInfo.agentIp != null) return false;
         if (name != null ? !name.equals(hostInfo.name) : hostInfo.name != null) return false;
         if (state != null ? !state.equals(hostInfo.state) : hostInfo.state != null) return false;
@@ -118,6 +120,7 @@ public class HostInfo implements MetadataObject {
     public int hashCode() {
         int result = (int) (id ^ (id >>> 32));
         result = 31 * result + (agentId != null ? agentId.hashCode() : 0);
+        result = 31 * result + (clusterId != null ? clusterId.hashCode() : 0);
         result = 31 * result + (agentIp != null ? agentIp.hashCode() : 0);
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (state != null ? state.hashCode() : 0);
@@ -130,5 +133,4 @@ public class HostInfo implements MetadataObject {
         result = 31 * result + (memory != null ? memory.hashCode() : 0);
         return result;
     }
-
 }

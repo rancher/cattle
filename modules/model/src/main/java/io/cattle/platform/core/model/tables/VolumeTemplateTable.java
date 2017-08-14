@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class VolumeTemplateTable extends TableImpl<VolumeTemplateRecord> {
 
-    private static final long serialVersionUID = 1702921353;
+    private static final long serialVersionUID = 155770600;
 
     /**
      * The reference instance of <code>cattle.volume_template</code>
@@ -131,6 +131,16 @@ public class VolumeTemplateTable extends TableImpl<VolumeTemplateRecord> {
     public final TableField<VolumeTemplateRecord, Boolean> PER_CONTAINER = createField("per_container", org.jooq.impl.SQLDataType.BIT.nullable(false).defaultValue(org.jooq.impl.DSL.inline("b'0'", org.jooq.impl.SQLDataType.BIT)), this, "");
 
     /**
+     * The column <code>cattle.volume_template.cluster_id</code>.
+     */
+    public final TableField<VolumeTemplateRecord, Long> CLUSTER_ID = createField("cluster_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
+
+    /**
+     * The column <code>cattle.volume_template.creator_id</code>.
+     */
+    public final TableField<VolumeTemplateRecord, Long> CREATOR_ID = createField("creator_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
      * Create a <code>cattle.volume_template</code> table reference
      */
     public VolumeTemplateTable() {
@@ -189,7 +199,7 @@ public class VolumeTemplateTable extends TableImpl<VolumeTemplateRecord> {
      */
     @Override
     public List<ForeignKey<VolumeTemplateRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<VolumeTemplateRecord, ?>>asList(Keys.FK_VOLUME_TEMPLATE__ACCOUNT_ID, Keys.FK_VOLUME_TEMPLATE__ENVIRONMENT_ID);
+        return Arrays.<ForeignKey<VolumeTemplateRecord, ?>>asList(Keys.FK_VOLUME_TEMPLATE__ACCOUNT_ID, Keys.FK_VOLUME_TEMPLATE__ENVIRONMENT_ID, Keys.FK_VOLUME_TEMPLATE__CLUSTER_ID, Keys.FK_VOLUME_TEMPLATE__CREATOR_ID);
     }
 
     /**

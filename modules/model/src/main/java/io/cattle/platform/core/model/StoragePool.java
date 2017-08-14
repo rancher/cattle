@@ -57,17 +57,6 @@ public interface StoragePool extends Serializable {
     public String getName();
 
     /**
-     * Setter for <code>cattle.storage_pool.account_id</code>.
-     */
-    public void setAccountId(Long value);
-
-    /**
-     * Getter for <code>cattle.storage_pool.account_id</code>.
-     */
-    @Column(name = "account_id", precision = 19)
-    public Long getAccountId();
-
-    /**
      * Setter for <code>cattle.storage_pool.kind</code>.
      */
     public void setKind(String value);
@@ -253,6 +242,17 @@ public interface StoragePool extends Serializable {
      */
     @Column(name = "storage_driver_id", precision = 19)
     public Long getStorageDriverId();
+
+    /**
+     * Setter for <code>cattle.storage_pool.cluster_id</code>.
+     */
+    public void setClusterId(Long value);
+
+    /**
+     * Getter for <code>cattle.storage_pool.cluster_id</code>.
+     */
+    @Column(name = "cluster_id", nullable = false, precision = 19)
+    public Long getClusterId();
 
     // -------------------------------------------------------------------------
     // FROM and INTO

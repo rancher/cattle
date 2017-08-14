@@ -6,7 +6,7 @@ import io.cattle.platform.core.model.Volume;
 
 public interface StorageDriverDao {
 
-    StorageDriver findSecretsDriver(long accountId);
+    StorageDriver findSecretsDriver(long clusterId);
 
     Volume createSecretsVolume(Instance instance, StorageDriver storageDriver, String token);
 

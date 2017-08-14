@@ -1,6 +1,5 @@
 package io.cattle.platform.core.dao;
 
-import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -20,15 +19,11 @@ public interface ServiceDao {
 
     Service getServiceByExternalId(Long accountId, String externalId);
 
-    List<Certificate> getLoadBalancerServiceCertificates(Service lbService);
-
-    Certificate getLoadBalancerServiceDefaultCertificate(Service lbService);
-
     Map<String, DeploymentUnit> getDeploymentUnits(Service service);
 
     List<Long> getServiceDeploymentUnitsOnHost(Host host);
 
-    DeploymentUnit createDeploymentUnit(long accountId, Long serviceId,
+    DeploymentUnit createDeploymentUnit(long accountId, long clusterId, Long serviceId,
             long stackId, Long hostId, String serviceIndex, Long revisionId, boolean active);
 
     Stack getOrCreateDefaultStack(long accountId);

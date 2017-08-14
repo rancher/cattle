@@ -21,8 +21,8 @@ import javax.persistence.Table;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record18;
-import org.jooq.Row18;
+import org.jooq.Record17;
+import org.jooq.Row17;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -39,9 +39,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "subnet", schema = "cattle")
-public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements TableRecordJaxb, Record18<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Integer, String, String, String, Long, Boolean>, Subnet {
+public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements TableRecordJaxb, Record17<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Integer, String, String, String, Long, Long>, Subnet {
 
-    private static final long serialVersionUID = -1341032689;
+    private static final long serialVersionUID = -120830156;
 
     /**
      * Setter for <code>cattle.subnet.id</code>.
@@ -80,28 +80,11 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
     }
 
     /**
-     * Setter for <code>cattle.subnet.account_id</code>.
-     */
-    @Override
-    public void setAccountId(Long value) {
-        set(2, value);
-    }
-
-    /**
-     * Getter for <code>cattle.subnet.account_id</code>.
-     */
-    @Column(name = "account_id", precision = 19)
-    @Override
-    public Long getAccountId() {
-        return (Long) get(2);
-    }
-
-    /**
      * Setter for <code>cattle.subnet.kind</code>.
      */
     @Override
     public void setKind(String value) {
-        set(3, value);
+        set(2, value);
     }
 
     /**
@@ -110,7 +93,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
     @Column(name = "kind", nullable = false, length = 255)
     @Override
     public String getKind() {
-        return (String) get(3);
+        return (String) get(2);
     }
 
     /**
@@ -118,7 +101,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      */
     @Override
     public void setUuid(String value) {
-        set(4, value);
+        set(3, value);
     }
 
     /**
@@ -127,7 +110,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
     @Column(name = "uuid", unique = true, nullable = false, length = 128)
     @Override
     public String getUuid() {
-        return (String) get(4);
+        return (String) get(3);
     }
 
     /**
@@ -135,7 +118,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      */
     @Override
     public void setDescription(String value) {
-        set(5, value);
+        set(4, value);
     }
 
     /**
@@ -144,7 +127,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
     @Column(name = "description", length = 1024)
     @Override
     public String getDescription() {
-        return (String) get(5);
+        return (String) get(4);
     }
 
     /**
@@ -152,7 +135,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      */
     @Override
     public void setState(String value) {
-        set(6, value);
+        set(5, value);
     }
 
     /**
@@ -161,7 +144,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
     @Column(name = "state", nullable = false, length = 128)
     @Override
     public String getState() {
-        return (String) get(6);
+        return (String) get(5);
     }
 
     /**
@@ -169,7 +152,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      */
     @Override
     public void setCreated(Date value) {
-        set(7, value);
+        set(6, value);
     }
 
     /**
@@ -178,7 +161,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
     @Column(name = "created")
     @Override
     public Date getCreated() {
-        return (Date) get(7);
+        return (Date) get(6);
     }
 
     /**
@@ -186,7 +169,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      */
     @Override
     public void setRemoved(Date value) {
-        set(8, value);
+        set(7, value);
     }
 
     /**
@@ -195,7 +178,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
     @Column(name = "removed")
     @Override
     public Date getRemoved() {
-        return (Date) get(8);
+        return (Date) get(7);
     }
 
     /**
@@ -203,7 +186,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      */
     @Override
     public void setRemoveTime(Date value) {
-        set(9, value);
+        set(8, value);
     }
 
     /**
@@ -212,7 +195,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
     @Column(name = "remove_time")
     @Override
     public Date getRemoveTime() {
-        return (Date) get(9);
+        return (Date) get(8);
     }
 
     /**
@@ -220,7 +203,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      */
     @Override
     public void setData(Map<String,Object> value) {
-        set(10, value);
+        set(9, value);
     }
 
     /**
@@ -229,7 +212,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
     @Column(name = "data", length = 16777215)
     @Override
     public Map<String,Object> getData() {
-        return (Map<String,Object>) get(10);
+        return (Map<String,Object>) get(9);
     }
 
     /**
@@ -237,7 +220,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      */
     @Override
     public void setNetworkAddress(String value) {
-        set(11, value);
+        set(10, value);
     }
 
     /**
@@ -246,7 +229,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
     @Column(name = "network_address", length = 255)
     @Override
     public String getNetworkAddress() {
-        return (String) get(11);
+        return (String) get(10);
     }
 
     /**
@@ -254,7 +237,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      */
     @Override
     public void setCidrSize(Integer value) {
-        set(12, value);
+        set(11, value);
     }
 
     /**
@@ -263,7 +246,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
     @Column(name = "cidr_size", precision = 10)
     @Override
     public Integer getCidrSize() {
-        return (Integer) get(12);
+        return (Integer) get(11);
     }
 
     /**
@@ -271,7 +254,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      */
     @Override
     public void setStartAddress(String value) {
-        set(13, value);
+        set(12, value);
     }
 
     /**
@@ -280,7 +263,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
     @Column(name = "start_address", length = 255)
     @Override
     public String getStartAddress() {
-        return (String) get(13);
+        return (String) get(12);
     }
 
     /**
@@ -288,7 +271,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      */
     @Override
     public void setEndAddress(String value) {
-        set(14, value);
+        set(13, value);
     }
 
     /**
@@ -297,7 +280,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
     @Column(name = "end_address", length = 255)
     @Override
     public String getEndAddress() {
-        return (String) get(14);
+        return (String) get(13);
     }
 
     /**
@@ -305,7 +288,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      */
     @Override
     public void setGateway(String value) {
-        set(15, value);
+        set(14, value);
     }
 
     /**
@@ -314,7 +297,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
     @Column(name = "gateway", length = 255)
     @Override
     public String getGateway() {
-        return (String) get(15);
+        return (String) get(14);
     }
 
     /**
@@ -322,7 +305,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      */
     @Override
     public void setNetworkId(Long value) {
-        set(16, value);
+        set(15, value);
     }
 
     /**
@@ -331,24 +314,24 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
     @Column(name = "network_id", precision = 19)
     @Override
     public Long getNetworkId() {
+        return (Long) get(15);
+    }
+
+    /**
+     * Setter for <code>cattle.subnet.cluster_id</code>.
+     */
+    @Override
+    public void setClusterId(Long value) {
+        set(16, value);
+    }
+
+    /**
+     * Getter for <code>cattle.subnet.cluster_id</code>.
+     */
+    @Column(name = "cluster_id", nullable = false, precision = 19)
+    @Override
+    public Long getClusterId() {
         return (Long) get(16);
-    }
-
-    /**
-     * Setter for <code>cattle.subnet.is_public</code>.
-     */
-    @Override
-    public void setIsPublic(Boolean value) {
-        set(17, value);
-    }
-
-    /**
-     * Getter for <code>cattle.subnet.is_public</code>.
-     */
-    @Column(name = "is_public", nullable = false, precision = 1)
-    @Override
-    public Boolean getIsPublic() {
-        return (Boolean) get(17);
     }
 
     // -------------------------------------------------------------------------
@@ -364,23 +347,23 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
     }
 
     // -------------------------------------------------------------------------
-    // Record18 type implementation
+    // Record17 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row18<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Integer, String, String, String, Long, Boolean> fieldsRow() {
-        return (Row18) super.fieldsRow();
+    public Row17<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Integer, String, String, String, Long, Long> fieldsRow() {
+        return (Row17) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row18<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Integer, String, String, String, Long, Boolean> valuesRow() {
-        return (Row18) super.valuesRow();
+    public Row17<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Integer, String, String, String, Long, Long> valuesRow() {
+        return (Row17) super.valuesRow();
     }
 
     /**
@@ -403,15 +386,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public Field<Long> field3() {
-        return SubnetTable.SUBNET.ACCOUNT_ID;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<String> field4() {
+    public Field<String> field3() {
         return SubnetTable.SUBNET.KIND;
     }
 
@@ -419,7 +394,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field5() {
+    public Field<String> field4() {
         return SubnetTable.SUBNET.UUID;
     }
 
@@ -427,7 +402,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field6() {
+    public Field<String> field5() {
         return SubnetTable.SUBNET.DESCRIPTION;
     }
 
@@ -435,7 +410,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field7() {
+    public Field<String> field6() {
         return SubnetTable.SUBNET.STATE;
     }
 
@@ -443,7 +418,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public Field<Date> field8() {
+    public Field<Date> field7() {
         return SubnetTable.SUBNET.CREATED;
     }
 
@@ -451,7 +426,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public Field<Date> field9() {
+    public Field<Date> field8() {
         return SubnetTable.SUBNET.REMOVED;
     }
 
@@ -459,7 +434,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public Field<Date> field10() {
+    public Field<Date> field9() {
         return SubnetTable.SUBNET.REMOVE_TIME;
     }
 
@@ -467,7 +442,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public Field<Map<String,Object>> field11() {
+    public Field<Map<String,Object>> field10() {
         return SubnetTable.SUBNET.DATA;
     }
 
@@ -475,7 +450,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field12() {
+    public Field<String> field11() {
         return SubnetTable.SUBNET.NETWORK_ADDRESS;
     }
 
@@ -483,7 +458,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public Field<Integer> field13() {
+    public Field<Integer> field12() {
         return SubnetTable.SUBNET.CIDR_SIZE;
     }
 
@@ -491,7 +466,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field14() {
+    public Field<String> field13() {
         return SubnetTable.SUBNET.START_ADDRESS;
     }
 
@@ -499,7 +474,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field15() {
+    public Field<String> field14() {
         return SubnetTable.SUBNET.END_ADDRESS;
     }
 
@@ -507,7 +482,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field16() {
+    public Field<String> field15() {
         return SubnetTable.SUBNET.GATEWAY;
     }
 
@@ -515,7 +490,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public Field<Long> field17() {
+    public Field<Long> field16() {
         return SubnetTable.SUBNET.NETWORK_ID;
     }
 
@@ -523,8 +498,8 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public Field<Boolean> field18() {
-        return SubnetTable.SUBNET.IS_PUBLIC;
+    public Field<Long> field17() {
+        return SubnetTable.SUBNET.CLUSTER_ID;
     }
 
     /**
@@ -547,15 +522,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public Long value3() {
-        return getAccountId();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String value4() {
+    public String value3() {
         return getKind();
     }
 
@@ -563,7 +530,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public String value5() {
+    public String value4() {
         return getUuid();
     }
 
@@ -571,7 +538,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public String value6() {
+    public String value5() {
         return getDescription();
     }
 
@@ -579,7 +546,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public String value7() {
+    public String value6() {
         return getState();
     }
 
@@ -587,7 +554,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public Date value8() {
+    public Date value7() {
         return getCreated();
     }
 
@@ -595,7 +562,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public Date value9() {
+    public Date value8() {
         return getRemoved();
     }
 
@@ -603,7 +570,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public Date value10() {
+    public Date value9() {
         return getRemoveTime();
     }
 
@@ -611,7 +578,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public Map<String,Object> value11() {
+    public Map<String,Object> value10() {
         return getData();
     }
 
@@ -619,7 +586,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public String value12() {
+    public String value11() {
         return getNetworkAddress();
     }
 
@@ -627,7 +594,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public Integer value13() {
+    public Integer value12() {
         return getCidrSize();
     }
 
@@ -635,7 +602,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public String value14() {
+    public String value13() {
         return getStartAddress();
     }
 
@@ -643,7 +610,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public String value15() {
+    public String value14() {
         return getEndAddress();
     }
 
@@ -651,7 +618,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public String value16() {
+    public String value15() {
         return getGateway();
     }
 
@@ -659,7 +626,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public Long value17() {
+    public Long value16() {
         return getNetworkId();
     }
 
@@ -667,8 +634,8 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public Boolean value18() {
-        return getIsPublic();
+    public Long value17() {
+        return getClusterId();
     }
 
     /**
@@ -693,16 +660,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public SubnetRecord value3(Long value) {
-        setAccountId(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public SubnetRecord value4(String value) {
+    public SubnetRecord value3(String value) {
         setKind(value);
         return this;
     }
@@ -711,7 +669,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public SubnetRecord value5(String value) {
+    public SubnetRecord value4(String value) {
         setUuid(value);
         return this;
     }
@@ -720,7 +678,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public SubnetRecord value6(String value) {
+    public SubnetRecord value5(String value) {
         setDescription(value);
         return this;
     }
@@ -729,7 +687,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public SubnetRecord value7(String value) {
+    public SubnetRecord value6(String value) {
         setState(value);
         return this;
     }
@@ -738,7 +696,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public SubnetRecord value8(Date value) {
+    public SubnetRecord value7(Date value) {
         setCreated(value);
         return this;
     }
@@ -747,7 +705,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public SubnetRecord value9(Date value) {
+    public SubnetRecord value8(Date value) {
         setRemoved(value);
         return this;
     }
@@ -756,7 +714,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public SubnetRecord value10(Date value) {
+    public SubnetRecord value9(Date value) {
         setRemoveTime(value);
         return this;
     }
@@ -765,7 +723,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public SubnetRecord value11(Map<String,Object> value) {
+    public SubnetRecord value10(Map<String,Object> value) {
         setData(value);
         return this;
     }
@@ -774,7 +732,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public SubnetRecord value12(String value) {
+    public SubnetRecord value11(String value) {
         setNetworkAddress(value);
         return this;
     }
@@ -783,7 +741,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public SubnetRecord value13(Integer value) {
+    public SubnetRecord value12(Integer value) {
         setCidrSize(value);
         return this;
     }
@@ -792,7 +750,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public SubnetRecord value14(String value) {
+    public SubnetRecord value13(String value) {
         setStartAddress(value);
         return this;
     }
@@ -801,7 +759,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public SubnetRecord value15(String value) {
+    public SubnetRecord value14(String value) {
         setEndAddress(value);
         return this;
     }
@@ -810,7 +768,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public SubnetRecord value16(String value) {
+    public SubnetRecord value15(String value) {
         setGateway(value);
         return this;
     }
@@ -819,7 +777,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public SubnetRecord value17(Long value) {
+    public SubnetRecord value16(Long value) {
         setNetworkId(value);
         return this;
     }
@@ -828,8 +786,8 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public SubnetRecord value18(Boolean value) {
-        setIsPublic(value);
+    public SubnetRecord value17(Long value) {
+        setClusterId(value);
         return this;
     }
 
@@ -837,7 +795,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public SubnetRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, String value12, Integer value13, String value14, String value15, String value16, Long value17, Boolean value18) {
+    public SubnetRecord values(Long value1, String value2, String value3, String value4, String value5, String value6, Date value7, Date value8, Date value9, Map<String,Object> value10, String value11, Integer value12, String value13, String value14, String value15, Long value16, Long value17) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -855,7 +813,6 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
         value15(value15);
         value16(value16);
         value17(value17);
-        value18(value18);
         return this;
     }
 
@@ -870,7 +827,6 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
     public void from(Subnet from) {
         setId(from.getId());
         setName(from.getName());
-        setAccountId(from.getAccountId());
         setKind(from.getKind());
         setUuid(from.getUuid());
         setDescription(from.getDescription());
@@ -885,7 +841,7 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
         setEndAddress(from.getEndAddress());
         setGateway(from.getGateway());
         setNetworkId(from.getNetworkId());
-        setIsPublic(from.getIsPublic());
+        setClusterId(from.getClusterId());
     }
 
     /**
@@ -911,26 +867,25 @@ public class SubnetRecord extends UpdatableRecordImpl<SubnetRecord> implements T
     /**
      * Create a detached, initialised SubnetRecord
      */
-    public SubnetRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String networkAddress, Integer cidrSize, String startAddress, String endAddress, String gateway, Long networkId, Boolean isPublic) {
+    public SubnetRecord(Long id, String name, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String networkAddress, Integer cidrSize, String startAddress, String endAddress, String gateway, Long networkId, Long clusterId) {
         super(SubnetTable.SUBNET);
 
         set(0, id);
         set(1, name);
-        set(2, accountId);
-        set(3, kind);
-        set(4, uuid);
-        set(5, description);
-        set(6, state);
-        set(7, created);
-        set(8, removed);
-        set(9, removeTime);
-        set(10, data);
-        set(11, networkAddress);
-        set(12, cidrSize);
-        set(13, startAddress);
-        set(14, endAddress);
-        set(15, gateway);
-        set(16, networkId);
-        set(17, isPublic);
+        set(2, kind);
+        set(3, uuid);
+        set(4, description);
+        set(5, state);
+        set(6, created);
+        set(7, removed);
+        set(8, removeTime);
+        set(9, data);
+        set(10, networkAddress);
+        set(11, cidrSize);
+        set(12, startAddress);
+        set(13, endAddress);
+        set(14, gateway);
+        set(15, networkId);
+        set(16, clusterId);
     }
 }

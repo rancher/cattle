@@ -19,10 +19,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record21;
-import org.jooq.Row21;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -39,9 +36,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "service", schema = "cattle")
-public class ServiceRecord extends UpdatableRecordImpl<ServiceRecord> implements TableRecordJaxb, Record21<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, String, Long, String, String, String, Boolean, Long, Long, Long>, Service {
+public class ServiceRecord extends UpdatableRecordImpl<ServiceRecord> implements TableRecordJaxb, Service {
 
-    private static final long serialVersionUID = 368176369;
+    private static final long serialVersionUID = -368473977;
 
     /**
      * Setter for <code>cattle.service.id</code>.
@@ -402,6 +399,40 @@ public class ServiceRecord extends UpdatableRecordImpl<ServiceRecord> implements
         return (Long) get(20);
     }
 
+    /**
+     * Setter for <code>cattle.service.cluster_id</code>.
+     */
+    @Override
+    public void setClusterId(Long value) {
+        set(21, value);
+    }
+
+    /**
+     * Getter for <code>cattle.service.cluster_id</code>.
+     */
+    @Column(name = "cluster_id", nullable = false, precision = 19)
+    @Override
+    public Long getClusterId() {
+        return (Long) get(21);
+    }
+
+    /**
+     * Setter for <code>cattle.service.creator_id</code>.
+     */
+    @Override
+    public void setCreatorId(Long value) {
+        set(22, value);
+    }
+
+    /**
+     * Getter for <code>cattle.service.creator_id</code>.
+     */
+    @Column(name = "creator_id", precision = 19)
+    @Override
+    public Long getCreatorId() {
+        return (Long) get(22);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -412,580 +443,6 @@ public class ServiceRecord extends UpdatableRecordImpl<ServiceRecord> implements
     @Override
     public Record1<Long> key() {
         return (Record1) super.key();
-    }
-
-    // -------------------------------------------------------------------------
-    // Record21 type implementation
-    // -------------------------------------------------------------------------
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Row21<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, String, Long, String, String, String, Boolean, Long, Long, Long> fieldsRow() {
-        return (Row21) super.fieldsRow();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Row21<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, String, Long, String, String, String, Boolean, Long, Long, Long> valuesRow() {
-        return (Row21) super.valuesRow();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Long> field1() {
-        return ServiceTable.SERVICE.ID;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<String> field2() {
-        return ServiceTable.SERVICE.NAME;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Long> field3() {
-        return ServiceTable.SERVICE.ACCOUNT_ID;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<String> field4() {
-        return ServiceTable.SERVICE.KIND;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<String> field5() {
-        return ServiceTable.SERVICE.UUID;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<String> field6() {
-        return ServiceTable.SERVICE.DESCRIPTION;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<String> field7() {
-        return ServiceTable.SERVICE.STATE;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Date> field8() {
-        return ServiceTable.SERVICE.CREATED;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Date> field9() {
-        return ServiceTable.SERVICE.REMOVED;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Date> field10() {
-        return ServiceTable.SERVICE.REMOVE_TIME;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Map<String,Object>> field11() {
-        return ServiceTable.SERVICE.DATA;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Long> field12() {
-        return ServiceTable.SERVICE.STACK_ID;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<String> field13() {
-        return ServiceTable.SERVICE.VIP;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Long> field14() {
-        return ServiceTable.SERVICE.CREATE_INDEX;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<String> field15() {
-        return ServiceTable.SERVICE.SELECTOR;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<String> field16() {
-        return ServiceTable.SERVICE.EXTERNAL_ID;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<String> field17() {
-        return ServiceTable.SERVICE.HEALTH_STATE;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Boolean> field18() {
-        return ServiceTable.SERVICE.SYSTEM;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Long> field19() {
-        return ServiceTable.SERVICE.PREVIOUS_REVISION_ID;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Long> field20() {
-        return ServiceTable.SERVICE.REVISION_ID;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Long> field21() {
-        return ServiceTable.SERVICE.REVISION;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Long value1() {
-        return getId();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String value2() {
-        return getName();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Long value3() {
-        return getAccountId();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String value4() {
-        return getKind();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String value5() {
-        return getUuid();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String value6() {
-        return getDescription();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String value7() {
-        return getState();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Date value8() {
-        return getCreated();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Date value9() {
-        return getRemoved();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Date value10() {
-        return getRemoveTime();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Map<String,Object> value11() {
-        return getData();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Long value12() {
-        return getStackId();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String value13() {
-        return getVip();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Long value14() {
-        return getCreateIndex();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String value15() {
-        return getSelector();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String value16() {
-        return getExternalId();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String value17() {
-        return getHealthState();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Boolean value18() {
-        return getSystem();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Long value19() {
-        return getPreviousRevisionId();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Long value20() {
-        return getRevisionId();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Long value21() {
-        return getRevision();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ServiceRecord value1(Long value) {
-        setId(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ServiceRecord value2(String value) {
-        setName(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ServiceRecord value3(Long value) {
-        setAccountId(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ServiceRecord value4(String value) {
-        setKind(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ServiceRecord value5(String value) {
-        setUuid(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ServiceRecord value6(String value) {
-        setDescription(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ServiceRecord value7(String value) {
-        setState(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ServiceRecord value8(Date value) {
-        setCreated(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ServiceRecord value9(Date value) {
-        setRemoved(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ServiceRecord value10(Date value) {
-        setRemoveTime(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ServiceRecord value11(Map<String,Object> value) {
-        setData(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ServiceRecord value12(Long value) {
-        setStackId(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ServiceRecord value13(String value) {
-        setVip(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ServiceRecord value14(Long value) {
-        setCreateIndex(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ServiceRecord value15(String value) {
-        setSelector(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ServiceRecord value16(String value) {
-        setExternalId(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ServiceRecord value17(String value) {
-        setHealthState(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ServiceRecord value18(Boolean value) {
-        setSystem(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ServiceRecord value19(Long value) {
-        setPreviousRevisionId(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ServiceRecord value20(Long value) {
-        setRevisionId(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ServiceRecord value21(Long value) {
-        setRevision(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ServiceRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, Long value12, String value13, Long value14, String value15, String value16, String value17, Boolean value18, Long value19, Long value20, Long value21) {
-        value1(value1);
-        value2(value2);
-        value3(value3);
-        value4(value4);
-        value5(value5);
-        value6(value6);
-        value7(value7);
-        value8(value8);
-        value9(value9);
-        value10(value10);
-        value11(value11);
-        value12(value12);
-        value13(value13);
-        value14(value14);
-        value15(value15);
-        value16(value16);
-        value17(value17);
-        value18(value18);
-        value19(value19);
-        value20(value20);
-        value21(value21);
-        return this;
     }
 
     // -------------------------------------------------------------------------
@@ -1018,6 +475,8 @@ public class ServiceRecord extends UpdatableRecordImpl<ServiceRecord> implements
         setPreviousRevisionId(from.getPreviousRevisionId());
         setRevisionId(from.getRevisionId());
         setRevision(from.getRevision());
+        setClusterId(from.getClusterId());
+        setCreatorId(from.getCreatorId());
     }
 
     /**
@@ -1043,7 +502,7 @@ public class ServiceRecord extends UpdatableRecordImpl<ServiceRecord> implements
     /**
      * Create a detached, initialised ServiceRecord
      */
-    public ServiceRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Long environmentId, String vip, Long createIndex, String selector, String externalId, String healthState, Boolean system, Long previousRevisionId, Long revisionId, Long revision) {
+    public ServiceRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Long environmentId, String vip, Long createIndex, String selector, String externalId, String healthState, Boolean system, Long previousRevisionId, Long revisionId, Long revision, Long clusterId, Long creatorId) {
         super(ServiceTable.SERVICE);
 
         set(0, id);
@@ -1067,5 +526,7 @@ public class ServiceRecord extends UpdatableRecordImpl<ServiceRecord> implements
         set(18, previousRevisionId);
         set(19, revisionId);
         set(20, revision);
+        set(21, clusterId);
+        set(22, creatorId);
     }
 }

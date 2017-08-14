@@ -188,6 +188,17 @@ public interface Certificate extends Serializable {
     @Column(name = "key", length = 65535)
     public String getKey();
 
+    /**
+     * Setter for <code>cattle.certificate.creator_id</code>.
+     */
+    public void setCreatorId(Long value);
+
+    /**
+     * Getter for <code>cattle.certificate.creator_id</code>.
+     */
+    @Column(name = "creator_id", precision = 19)
+    public Long getCreatorId();
+
     // -------------------------------------------------------------------------
     // FROM and INTO
     // -------------------------------------------------------------------------

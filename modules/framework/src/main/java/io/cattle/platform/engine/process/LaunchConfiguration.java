@@ -8,7 +8,8 @@ public class LaunchConfiguration {
     protected String processName;
     protected String resourceType;
     protected String resourceId;
-    protected Object accountId;
+    protected Long accountId;
+    protected Long clusterId;
     protected Integer priority;
     protected Map<String, Object> data;
     protected ProcessState parentProcessState;
@@ -17,11 +18,12 @@ public class LaunchConfiguration {
     public LaunchConfiguration() {
     }
 
-    public LaunchConfiguration(String processName, String resourceType, String resourceId, Object accountId, Integer priority, Map<String, Object> data) {
+    public LaunchConfiguration(String processName, String resourceType, String resourceId, Long accountId, Long clusterId, Integer priority, Map<String, Object> data) {
         this.processName = processName;
         this.resourceType = resourceType;
         this.resourceId = resourceId;
         this.accountId = accountId;
+        this.clusterId = clusterId;
         this.data = data;
         this.priority = priority;
     }
@@ -34,6 +36,7 @@ public class LaunchConfiguration {
         this.parentProcessState = config.getParentProcessState();
         this.runAfter = config.getRunAfter();
         this.accountId = config.getAccountId();
+        this.clusterId = config.getClusterId();
         this.priority = config.getPriority();
     }
 
@@ -55,9 +58,17 @@ public class LaunchConfiguration {
 
     @Override
     public String toString() {
-        return "LaunchConfiguration [processName=" + processName + ", resourceType=" + resourceType + ", resourceId=" + resourceId + ", accountId=" + accountId
-                + ", priority=" + priority + ", data=" + data + ", runAfter=" + runAfter + ", parentProcessState="
-                + parentProcessState + "]";
+        return "LaunchConfiguration{" +
+                "processName='" + processName + '\'' +
+                ", resourceType='" + resourceType + '\'' +
+                ", resourceId='" + resourceId + '\'' +
+                ", accountId=" + accountId +
+                ", clusterId=" + clusterId +
+                ", priority=" + priority +
+                ", data=" + data +
+                ", parentProcessState=" + parentProcessState +
+                ", runAfter=" + runAfter +
+                '}';
     }
 
     public ProcessState getParentProcessState() {
@@ -68,19 +79,12 @@ public class LaunchConfiguration {
         return runAfter;
     }
 
-    public Object getAccountId() {
+    public Long getAccountId() {
         return accountId;
     }
 
-    public Long getAccountIdLong() {
-        if (accountId instanceof Long) {
-            return (Long)accountId;
-        } else if (accountId instanceof Number) {
-            return ((Number) accountId).longValue();
-        } else if (accountId instanceof String) {
-            return new Long((String) accountId);
-        }
-        return null;
+    public Long getClusterId() {
+        return clusterId;
     }
 
     public Integer getPriority() {

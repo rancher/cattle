@@ -21,8 +21,8 @@ import javax.persistence.Table;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record16;
-import org.jooq.Row16;
+import org.jooq.Record17;
+import org.jooq.Row17;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -39,9 +39,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "process_instance", schema = "cattle")
-public class ProcessInstanceRecord extends UpdatableRecordImpl<ProcessInstanceRecord> implements TableRecordJaxb, Record16<Long, Date, Date, Map<String,Object>, Integer, String, String, String, String, String, String, String, String, Long, Date, Long>, ProcessInstance {
+public class ProcessInstanceRecord extends UpdatableRecordImpl<ProcessInstanceRecord> implements TableRecordJaxb, Record17<Long, Date, Date, Map<String,Object>, Integer, String, String, String, String, String, String, String, String, Long, Date, Long, Long>, ProcessInstance {
 
-    private static final long serialVersionUID = -262319900;
+    private static final long serialVersionUID = 1650817579;
 
     /**
      * Setter for <code>cattle.process_instance.id</code>.
@@ -317,6 +317,23 @@ public class ProcessInstanceRecord extends UpdatableRecordImpl<ProcessInstanceRe
         return (Long) get(15);
     }
 
+    /**
+     * Setter for <code>cattle.process_instance.cluster_id</code>.
+     */
+    @Override
+    public void setClusterId(Long value) {
+        set(16, value);
+    }
+
+    /**
+     * Getter for <code>cattle.process_instance.cluster_id</code>.
+     */
+    @Column(name = "cluster_id", precision = 19)
+    @Override
+    public Long getClusterId() {
+        return (Long) get(16);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -330,23 +347,23 @@ public class ProcessInstanceRecord extends UpdatableRecordImpl<ProcessInstanceRe
     }
 
     // -------------------------------------------------------------------------
-    // Record16 type implementation
+    // Record17 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row16<Long, Date, Date, Map<String,Object>, Integer, String, String, String, String, String, String, String, String, Long, Date, Long> fieldsRow() {
-        return (Row16) super.fieldsRow();
+    public Row17<Long, Date, Date, Map<String,Object>, Integer, String, String, String, String, String, String, String, String, Long, Date, Long, Long> fieldsRow() {
+        return (Row17) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row16<Long, Date, Date, Map<String,Object>, Integer, String, String, String, String, String, String, String, String, Long, Date, Long> valuesRow() {
-        return (Row16) super.valuesRow();
+    public Row17<Long, Date, Date, Map<String,Object>, Integer, String, String, String, String, String, String, String, String, Long, Date, Long, Long> valuesRow() {
+        return (Row17) super.valuesRow();
     }
 
     /**
@@ -481,6 +498,14 @@ public class ProcessInstanceRecord extends UpdatableRecordImpl<ProcessInstanceRe
      * {@inheritDoc}
      */
     @Override
+    public Field<Long> field17() {
+        return ProcessInstanceTable.PROCESS_INSTANCE.CLUSTER_ID;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Long value1() {
         return getId();
     }
@@ -603,6 +628,14 @@ public class ProcessInstanceRecord extends UpdatableRecordImpl<ProcessInstanceRe
     @Override
     public Long value16() {
         return getAccountId();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Long value17() {
+        return getClusterId();
     }
 
     /**
@@ -753,7 +786,16 @@ public class ProcessInstanceRecord extends UpdatableRecordImpl<ProcessInstanceRe
      * {@inheritDoc}
      */
     @Override
-    public ProcessInstanceRecord values(Long value1, Date value2, Date value3, Map<String,Object> value4, Integer value5, String value6, String value7, String value8, String value9, String value10, String value11, String value12, String value13, Long value14, Date value15, Long value16) {
+    public ProcessInstanceRecord value17(Long value) {
+        setClusterId(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ProcessInstanceRecord values(Long value1, Date value2, Date value3, Map<String,Object> value4, Integer value5, String value6, String value7, String value8, String value9, String value10, String value11, String value12, String value13, Long value14, Date value15, Long value16, Long value17) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -770,6 +812,7 @@ public class ProcessInstanceRecord extends UpdatableRecordImpl<ProcessInstanceRe
         value14(value14);
         value15(value15);
         value16(value16);
+        value17(value17);
         return this;
     }
 
@@ -798,6 +841,7 @@ public class ProcessInstanceRecord extends UpdatableRecordImpl<ProcessInstanceRe
         setExecutionCount(from.getExecutionCount());
         setRunAfter(from.getRunAfter());
         setAccountId(from.getAccountId());
+        setClusterId(from.getClusterId());
     }
 
     /**
@@ -823,7 +867,7 @@ public class ProcessInstanceRecord extends UpdatableRecordImpl<ProcessInstanceRe
     /**
      * Create a detached, initialised ProcessInstanceRecord
      */
-    public ProcessInstanceRecord(Long id, Date startTime, Date endTime, Map<String,Object> data, Integer priority, String processName, String resourceType, String resourceId, String result, String exitReason, String phase, String startProcessServerId, String runningProcessServerId, Long executionCount, Date runAfter, Long accountId) {
+    public ProcessInstanceRecord(Long id, Date startTime, Date endTime, Map<String,Object> data, Integer priority, String processName, String resourceType, String resourceId, String result, String exitReason, String phase, String startProcessServerId, String runningProcessServerId, Long executionCount, Date runAfter, Long accountId, Long clusterId) {
         super(ProcessInstanceTable.PROCESS_INSTANCE);
 
         set(0, id);
@@ -842,5 +886,6 @@ public class ProcessInstanceRecord extends UpdatableRecordImpl<ProcessInstanceRe
         set(13, executionCount);
         set(14, runAfter);
         set(15, accountId);
+        set(16, clusterId);
     }
 }

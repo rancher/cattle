@@ -25,6 +25,8 @@ public interface Policy {
 
     long getAccountId();
 
+    Long getClusterId();
+
     long getAuthenticatedAsAccountId();
 
     String getUserName();

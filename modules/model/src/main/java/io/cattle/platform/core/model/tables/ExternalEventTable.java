@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ExternalEventTable extends TableImpl<ExternalEventRecord> {
 
-    private static final long serialVersionUID = 1038518945;
+    private static final long serialVersionUID = -1956973739;
 
     /**
      * The reference instance of <code>cattle.external_event</code>
@@ -106,6 +106,16 @@ public class ExternalEventTable extends TableImpl<ExternalEventRecord> {
     public final TableField<ExternalEventRecord, Long> REPORTED_ACCOUNT_ID = createField("reported_account_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
+     * The column <code>cattle.external_event.creator_id</code>.
+     */
+    public final TableField<ExternalEventRecord, Long> CREATOR_ID = createField("creator_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
+     * The column <code>cattle.external_event.cluster_id</code>.
+     */
+    public final TableField<ExternalEventRecord, Long> CLUSTER_ID = createField("cluster_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
      * Create a <code>cattle.external_event</code> table reference
      */
     public ExternalEventTable() {
@@ -164,7 +174,7 @@ public class ExternalEventTable extends TableImpl<ExternalEventRecord> {
      */
     @Override
     public List<ForeignKey<ExternalEventRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<ExternalEventRecord, ?>>asList(Keys.FK_EXTERNAL_EVENT__ACCOUNT_ID, Keys.FK_EXTERNAL_EVENT__REPORTED_ACCOUNT_ID);
+        return Arrays.<ForeignKey<ExternalEventRecord, ?>>asList(Keys.FK_EXTERNAL_EVENT__ACCOUNT_ID, Keys.FK_EXTERNAL_EVENT__REPORTED_ACCOUNT_ID, Keys.FK_EXTERNAL_EVENT__CREATOR_ID, Keys.FK_EXTERNAL_EVENT__CLUSTER_ID);
     }
 
     /**

@@ -155,7 +155,7 @@ public class BackPopulaterImpl implements BackPopulater {
         return lockManager.lock(new DockerStoragePoolVolumeCreateLock(storagePool, dVol.getExternalId()), new LockCallback<Volume>() {
             @Override
             public Volume doWithLock() {
-                Volume volume = volumeDao.createVolumeInPool(instance.getAccountId(), dVol.getName(), dVol.getExternalId(),
+                Volume volume = volumeDao.createVolumeInPool(instance.getAccountId(), instance.getClusterId(), dVol.getName(), dVol.getExternalId(),
                         dVol.getDriver(), storagePool, instance.getNativeContainer());
                 return volume;
             }

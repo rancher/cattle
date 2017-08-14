@@ -21,8 +21,8 @@ import javax.persistence.Table;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record14;
-import org.jooq.Row14;
+import org.jooq.Record15;
+import org.jooq.Row15;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -39,9 +39,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "certificate", schema = "cattle")
-public class CertificateRecord extends UpdatableRecordImpl<CertificateRecord> implements TableRecordJaxb, Record14<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String>, Certificate {
+public class CertificateRecord extends UpdatableRecordImpl<CertificateRecord> implements TableRecordJaxb, Record15<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String, Long>, Certificate {
 
-    private static final long serialVersionUID = -617048401;
+    private static final long serialVersionUID = 97902520;
 
     /**
      * Setter for <code>cattle.certificate.id</code>.
@@ -283,6 +283,23 @@ public class CertificateRecord extends UpdatableRecordImpl<CertificateRecord> im
         return (String) get(13);
     }
 
+    /**
+     * Setter for <code>cattle.certificate.creator_id</code>.
+     */
+    @Override
+    public void setCreatorId(Long value) {
+        set(14, value);
+    }
+
+    /**
+     * Getter for <code>cattle.certificate.creator_id</code>.
+     */
+    @Column(name = "creator_id", precision = 19)
+    @Override
+    public Long getCreatorId() {
+        return (Long) get(14);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -296,23 +313,23 @@ public class CertificateRecord extends UpdatableRecordImpl<CertificateRecord> im
     }
 
     // -------------------------------------------------------------------------
-    // Record14 type implementation
+    // Record15 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row14<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String> fieldsRow() {
-        return (Row14) super.fieldsRow();
+    public Row15<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String, Long> fieldsRow() {
+        return (Row15) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row14<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String> valuesRow() {
-        return (Row14) super.valuesRow();
+    public Row15<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String, Long> valuesRow() {
+        return (Row15) super.valuesRow();
     }
 
     /**
@@ -431,6 +448,14 @@ public class CertificateRecord extends UpdatableRecordImpl<CertificateRecord> im
      * {@inheritDoc}
      */
     @Override
+    public Field<Long> field15() {
+        return CertificateTable.CERTIFICATE.CREATOR_ID;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Long value1() {
         return getId();
     }
@@ -537,6 +562,14 @@ public class CertificateRecord extends UpdatableRecordImpl<CertificateRecord> im
     @Override
     public String value14() {
         return getKey();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Long value15() {
+        return getCreatorId();
     }
 
     /**
@@ -669,7 +702,16 @@ public class CertificateRecord extends UpdatableRecordImpl<CertificateRecord> im
      * {@inheritDoc}
      */
     @Override
-    public CertificateRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, String value12, String value13, String value14) {
+    public CertificateRecord value15(Long value) {
+        setCreatorId(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public CertificateRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, String value12, String value13, String value14, Long value15) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -684,6 +726,7 @@ public class CertificateRecord extends UpdatableRecordImpl<CertificateRecord> im
         value12(value12);
         value13(value13);
         value14(value14);
+        value15(value15);
         return this;
     }
 
@@ -710,6 +753,7 @@ public class CertificateRecord extends UpdatableRecordImpl<CertificateRecord> im
         setCertChain(from.getCertChain());
         setCert(from.getCert());
         setKey(from.getKey());
+        setCreatorId(from.getCreatorId());
     }
 
     /**
@@ -735,7 +779,7 @@ public class CertificateRecord extends UpdatableRecordImpl<CertificateRecord> im
     /**
      * Create a detached, initialised CertificateRecord
      */
-    public CertificateRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String certChain, String cert, String key) {
+    public CertificateRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String certChain, String cert, String key, Long creatorId) {
         super(CertificateTable.CERTIFICATE);
 
         set(0, id);
@@ -752,5 +796,6 @@ public class CertificateRecord extends UpdatableRecordImpl<CertificateRecord> im
         set(11, certChain);
         set(12, cert);
         set(13, key);
+        set(14, creatorId);
     }
 }

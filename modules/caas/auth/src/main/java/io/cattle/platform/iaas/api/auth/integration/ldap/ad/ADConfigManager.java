@@ -44,7 +44,7 @@ public class ADConfigManager extends AbstractNoOpResourceManager {
 
     @SuppressWarnings("unchecked")
     private ADConfig currentLdapConfig(Map<String, Object> config) {
-        ADConfig currentConfig = (ADConfig) list(null, null, null, null);
+        ADConfig currentConfig = (ADConfig) listSupport(null, null, null, null);
         String domain = currentConfig.getDomain();
         if (config.get(ADConstants.CONFIG_DOMAIN) != null) {
             domain = (String)config.get(ADConstants.CONFIG_DOMAIN);
@@ -149,7 +149,7 @@ public class ADConfigManager extends AbstractNoOpResourceManager {
     }
 
     @Override
-    public Object list(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
+    public Object listSupport(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
         boolean enabled = SecurityConstants.SECURITY.get();
         boolean tls = ADConstants.TLS_ENABLED.get();
 

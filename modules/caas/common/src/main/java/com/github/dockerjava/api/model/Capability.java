@@ -1,7 +1,7 @@
 package com.github.dockerjava.api.model;
 
 /**
- * The Linux capabilities supported by Docker. The list of capabilities is
+ * The Linux capabilities supported by Docker. The listSupport of capabilities is
  * defined in Docker's types.go, {@link #ALL} was added manually.
  * 
  * @see <a href=
@@ -138,7 +138,7 @@ public enum Capability {
     /**
      * <ul>
      * <li>Make arbitrary manipulations of process GIDs and supplementary GID
-     * list.
+     * listSupport.
      * <li>Forge GID when passing socket credentials via UNIX domain sockets.
      * </ul>
      */

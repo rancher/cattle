@@ -9,27 +9,27 @@ import java.util.Set;
 public class AllocationCandidate {
 
     String id = UUID.randomUUID().toString();
-    Long accountId;
+    Long clusterId;
     Long host;
     String hostUuid;
     Set<PortInstance> usedPorts;
 
-    public AllocationCandidate(long accountId, long hostId, String hostUuid) {
-        this.accountId = accountId;
+    public AllocationCandidate(long clusterId, long hostId, String hostUuid) {
+        this.clusterId = clusterId;
         this.host = hostId;
         this.hostUuid = hostUuid;
     }
 
     public AllocationCandidate(AllocationCandidate candidate) {
-        this.accountId = candidate.accountId;
+        this.clusterId = candidate.clusterId;
         this.host = candidate.host;
         this.hostUuid = candidate.hostUuid;
         this.usedPorts = candidate.usedPorts == null ? new HashSet<>() : new HashSet<>(candidate.usedPorts);
     }
 
-    public AllocationCandidate(Long hostId, String hostUuid, Set<PortInstance> usedPorts, Long accountId) {
+    public AllocationCandidate(Long hostId, String hostUuid, Set<PortInstance> usedPorts, Long clusterId) {
         super();
-        this.accountId = accountId;
+        this.clusterId = clusterId;
         this.host = hostId;
         this.hostUuid = hostUuid;
         this.usedPorts = usedPorts;
@@ -55,8 +55,8 @@ public class AllocationCandidate {
         return usedPorts;
     }
 
-    public Long getAccountId() {
-        return accountId;
+    public Long getClusterId() {
+        return clusterId;
     }
 
 }

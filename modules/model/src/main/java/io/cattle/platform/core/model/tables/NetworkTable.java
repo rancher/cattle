@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class NetworkTable extends TableImpl<NetworkRecord> {
 
-    private static final long serialVersionUID = -1548275937;
+    private static final long serialVersionUID = -1539832348;
 
     /**
      * The reference instance of <code>cattle.network</code>
@@ -64,11 +64,6 @@ public class NetworkTable extends TableImpl<NetworkRecord> {
      * The column <code>cattle.network.name</code>.
      */
     public final TableField<NetworkRecord, String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
-
-    /**
-     * The column <code>cattle.network.account_id</code>.
-     */
-    public final TableField<NetworkRecord, Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
      * The column <code>cattle.network.kind</code>.
@@ -111,11 +106,6 @@ public class NetworkTable extends TableImpl<NetworkRecord> {
     public final TableField<NetworkRecord, Map<String,Object>> DATA = createField("data", org.jooq.impl.SQLDataType.CLOB, this, "", new DataConverter());
 
     /**
-     * The column <code>cattle.network.is_public</code>.
-     */
-    public final TableField<NetworkRecord, Boolean> IS_PUBLIC = createField("is_public", org.jooq.impl.SQLDataType.BIT.nullable(false).defaultValue(org.jooq.impl.DSL.inline("b'0'", org.jooq.impl.SQLDataType.BIT)), this, "");
-
-    /**
      * The column <code>cattle.network.domain</code>.
      */
     public final TableField<NetworkRecord, String> DOMAIN = createField("domain", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
@@ -124,6 +114,11 @@ public class NetworkTable extends TableImpl<NetworkRecord> {
      * The column <code>cattle.network.network_driver_id</code>.
      */
     public final TableField<NetworkRecord, Long> NETWORK_DRIVER_ID = createField("network_driver_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
+     * The column <code>cattle.network.cluster_id</code>.
+     */
+    public final TableField<NetworkRecord, Long> CLUSTER_ID = createField("cluster_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
 
     /**
      * Create a <code>cattle.network</code> table reference
@@ -184,7 +179,7 @@ public class NetworkTable extends TableImpl<NetworkRecord> {
      */
     @Override
     public List<ForeignKey<NetworkRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<NetworkRecord, ?>>asList(Keys.FK_NETWORK__ACCOUNT_ID, Keys.FK_NETWORK__NETWORK_DRIVER_ID);
+        return Arrays.<ForeignKey<NetworkRecord, ?>>asList(Keys.FK_NETWORK__NETWORK_DRIVER_ID, Keys.FK_NETWORK__CLUSTER_ID);
     }
 
     /**

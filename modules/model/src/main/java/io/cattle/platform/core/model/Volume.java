@@ -287,6 +287,28 @@ public interface Volume extends Serializable {
     @Column(name = "storage_pool_id", precision = 19)
     public Long getStoragePoolId();
 
+    /**
+     * Setter for <code>cattle.volume.cluster_id</code>.
+     */
+    public void setClusterId(Long value);
+
+    /**
+     * Getter for <code>cattle.volume.cluster_id</code>.
+     */
+    @Column(name = "cluster_id", nullable = false, precision = 19)
+    public Long getClusterId();
+
+    /**
+     * Setter for <code>cattle.volume.creator_id</code>.
+     */
+    public void setCreatorId(Long value);
+
+    /**
+     * Getter for <code>cattle.volume.creator_id</code>.
+     */
+    @Column(name = "creator_id", precision = 19)
+    public Long getCreatorId();
+
     // -------------------------------------------------------------------------
     // FROM and INTO
     // -------------------------------------------------------------------------

@@ -110,7 +110,7 @@ public class VolumeLifecycleManagerImpl implements VolumeLifecycleManager {
             }
 
             if (createVol && isNonlocalDriver(volumeDriver)) {
-                Volume newVol = volumeDao.createVolumeForDriver(instance.getAccountId(), volName, volumeDriver);
+                Volume newVol = volumeDao.createVolumeForDriver(instance.getClusterId(), instance.getAccountId(), volName, volumeDriver);
                 dataVolumeMounts.put(volPath, newVol.getId());
             }
             newDataVolumes.add(v);
@@ -196,7 +196,7 @@ public class VolumeLifecycleManagerImpl implements VolumeLifecycleManager {
     protected void setVolumeAccessMode(Volume v) {
         String driver = fieldString(v, VolumeConstants.FIELD_VOLUME_DRIVER);
         if (StringUtils.isNotEmpty(driver) && !VolumeConstants.LOCAL_DRIVER.equals(driver)) {
-            List<? extends StoragePool> pools = storagePoolDao.findStoragePoolByDriverName(v.getAccountId(), driver);
+            List<? extends StoragePool> pools = storagePoolDao.findStoragePoolByDriverName(v.getClusterId(), driver);
             if (pools.size() == 0) {
                 return;
             }

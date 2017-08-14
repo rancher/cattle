@@ -53,7 +53,7 @@ public class ContainerEventFilter extends AbstractValidationFilter {
         }
 
         event.setHostId(host.getId());
-        event.setAccountId(host.getAccountId());
+        event.setClusterId(host.getClusterId());
 
         eventService.publish(new ContainerEventEvent(event));
         return event;

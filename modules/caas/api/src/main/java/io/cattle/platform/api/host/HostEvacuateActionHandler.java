@@ -26,7 +26,7 @@ public class HostEvacuateActionHandler implements ActionHandler {
                     EXTERNAL_EVENT.KIND, ExternalEventConstants.KIND_EXTERNAL_HOST_EVENT,
                     EXTERNAL_EVENT.EVENT_TYPE, ExternalEventConstants.TYPE_HOST_EVACUATE,
                     ExternalEventConstants.FIELD_HOST_ID, host.getId(),
-                    EXTERNAL_EVENT.ACCOUNT_ID, host.getAccountId());
+                    EXTERNAL_EVENT.CLUSTER_ID, host.getClusterId());
             return host;
         } else {
             return null;

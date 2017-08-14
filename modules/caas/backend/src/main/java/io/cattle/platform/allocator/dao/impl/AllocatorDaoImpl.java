@@ -91,6 +91,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     }
 
     @Override
+
     public boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate) {
         return DeferredUtils.nest(() -> {
             transaction.doInTransaction(() -> {
@@ -203,7 +204,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
     /* (non-Java doc)
      * @see io.cattle.platform.allocator.dao.AllocatorDao#updateInstancePorts(java.util.Map)
-     * Scheduler will return a list of map showing the allocated result in the following format:
+     * Scheduler will return a listSupport of map showing the allocated result in the following format:
      * {
      *      "instanceID" : "xx",
      *      "allocatedIPs" : {

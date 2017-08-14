@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class RevisionTable extends TableImpl<RevisionRecord> {
 
-    private static final long serialVersionUID = -466861138;
+    private static final long serialVersionUID = 819842493;
 
     /**
      * The reference instance of <code>cattle.revision</code>
@@ -116,6 +116,11 @@ public class RevisionTable extends TableImpl<RevisionRecord> {
     public final TableField<RevisionRecord, Long> SERVICE_ID = createField("service_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
+     * The column <code>cattle.revision.creator_id</code>.
+     */
+    public final TableField<RevisionRecord, Long> CREATOR_ID = createField("creator_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
      * Create a <code>cattle.revision</code> table reference
      */
     public RevisionTable() {
@@ -174,7 +179,7 @@ public class RevisionTable extends TableImpl<RevisionRecord> {
      */
     @Override
     public List<ForeignKey<RevisionRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<RevisionRecord, ?>>asList(Keys.FK_REVISION__ACCOUNT_ID, Keys.FK_REVISION__SERVICE_ID);
+        return Arrays.<ForeignKey<RevisionRecord, ?>>asList(Keys.FK_REVISION__ACCOUNT_ID, Keys.FK_REVISION__SERVICE_ID, Keys.FK_REVISION__CREATOR_ID);
     }
 
     /**

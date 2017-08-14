@@ -5,7 +5,7 @@ import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.framework.event.FrameworkEvents;
 
-public class AgentRequest extends EventVO<Event> {
+public class AgentRequest extends EventVO<Event, Object> {
 
     public AgentRequest() {
     }

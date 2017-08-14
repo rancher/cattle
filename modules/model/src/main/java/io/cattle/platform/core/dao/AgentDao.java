@@ -28,4 +28,6 @@ public interface AgentDao {
 
     Agent findNonRemovedByUri(String uri);
 
+    List<? extends Agent> findAgentsToPing();
+
 }

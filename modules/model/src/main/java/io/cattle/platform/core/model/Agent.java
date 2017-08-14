@@ -188,6 +188,17 @@ public interface Agent extends Serializable {
     @Column(name = "resource_account_id", precision = 19)
     public Long getResourceAccountId();
 
+    /**
+     * Setter for <code>cattle.agent.cluster_id</code>.
+     */
+    public void setClusterId(Long value);
+
+    /**
+     * Getter for <code>cattle.agent.cluster_id</code>.
+     */
+    @Column(name = "cluster_id", precision = 19)
+    public Long getClusterId();
+
     // -------------------------------------------------------------------------
     // FROM and INTO
     // -------------------------------------------------------------------------

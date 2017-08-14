@@ -21,8 +21,8 @@ import javax.persistence.Table;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record12;
-import org.jooq.Row12;
+import org.jooq.Record14;
+import org.jooq.Row14;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -39,9 +39,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "generic_object", schema = "cattle")
-public class GenericObjectRecord extends UpdatableRecordImpl<GenericObjectRecord> implements TableRecordJaxb, Record12<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String>, GenericObject {
+public class GenericObjectRecord extends UpdatableRecordImpl<GenericObjectRecord> implements TableRecordJaxb, Record14<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long>, GenericObject {
 
-    private static final long serialVersionUID = -820032042;
+    private static final long serialVersionUID = 1755434453;
 
     /**
      * Setter for <code>cattle.generic_object.id</code>.
@@ -249,6 +249,40 @@ public class GenericObjectRecord extends UpdatableRecordImpl<GenericObjectRecord
         return (String) get(11);
     }
 
+    /**
+     * Setter for <code>cattle.generic_object.creator_id</code>.
+     */
+    @Override
+    public void setCreatorId(Long value) {
+        set(12, value);
+    }
+
+    /**
+     * Getter for <code>cattle.generic_object.creator_id</code>.
+     */
+    @Column(name = "creator_id", precision = 19)
+    @Override
+    public Long getCreatorId() {
+        return (Long) get(12);
+    }
+
+    /**
+     * Setter for <code>cattle.generic_object.cluster_id</code>.
+     */
+    @Override
+    public void setClusterId(Long value) {
+        set(13, value);
+    }
+
+    /**
+     * Getter for <code>cattle.generic_object.cluster_id</code>.
+     */
+    @Column(name = "cluster_id", precision = 19)
+    @Override
+    public Long getClusterId() {
+        return (Long) get(13);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -262,23 +296,23 @@ public class GenericObjectRecord extends UpdatableRecordImpl<GenericObjectRecord
     }
 
     // -------------------------------------------------------------------------
-    // Record12 type implementation
+    // Record14 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row12<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String> fieldsRow() {
-        return (Row12) super.fieldsRow();
+    public Row14<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long> fieldsRow() {
+        return (Row14) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row12<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String> valuesRow() {
-        return (Row12) super.valuesRow();
+    public Row14<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long> valuesRow() {
+        return (Row14) super.valuesRow();
     }
 
     /**
@@ -381,6 +415,22 @@ public class GenericObjectRecord extends UpdatableRecordImpl<GenericObjectRecord
      * {@inheritDoc}
      */
     @Override
+    public Field<Long> field13() {
+        return GenericObjectTable.GENERIC_OBJECT.CREATOR_ID;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Field<Long> field14() {
+        return GenericObjectTable.GENERIC_OBJECT.CLUSTER_ID;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Long value1() {
         return getId();
     }
@@ -471,6 +521,22 @@ public class GenericObjectRecord extends UpdatableRecordImpl<GenericObjectRecord
     @Override
     public String value12() {
         return getKey();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Long value13() {
+        return getCreatorId();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Long value14() {
+        return getClusterId();
     }
 
     /**
@@ -585,7 +651,25 @@ public class GenericObjectRecord extends UpdatableRecordImpl<GenericObjectRecord
      * {@inheritDoc}
      */
     @Override
-    public GenericObjectRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, String value12) {
+    public GenericObjectRecord value13(Long value) {
+        setCreatorId(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GenericObjectRecord value14(Long value) {
+        setClusterId(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GenericObjectRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, String value12, Long value13, Long value14) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -598,6 +682,8 @@ public class GenericObjectRecord extends UpdatableRecordImpl<GenericObjectRecord
         value10(value10);
         value11(value11);
         value12(value12);
+        value13(value13);
+        value14(value14);
         return this;
     }
 
@@ -622,6 +708,8 @@ public class GenericObjectRecord extends UpdatableRecordImpl<GenericObjectRecord
         setRemoveTime(from.getRemoveTime());
         setData(from.getData());
         setKey(from.getKey());
+        setCreatorId(from.getCreatorId());
+        setClusterId(from.getClusterId());
     }
 
     /**
@@ -647,7 +735,7 @@ public class GenericObjectRecord extends UpdatableRecordImpl<GenericObjectRecord
     /**
      * Create a detached, initialised GenericObjectRecord
      */
-    public GenericObjectRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String key) {
+    public GenericObjectRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String key, Long creatorId, Long clusterId) {
         super(GenericObjectTable.GENERIC_OBJECT);
 
         set(0, id);
@@ -662,5 +750,7 @@ public class GenericObjectRecord extends UpdatableRecordImpl<GenericObjectRecord
         set(9, removeTime);
         set(10, data);
         set(11, key);
+        set(12, creatorId);
+        set(13, clusterId);
     }
 }

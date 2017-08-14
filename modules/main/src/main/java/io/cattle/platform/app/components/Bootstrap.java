@@ -21,8 +21,8 @@ import io.cattle.platform.db.jooq.logging.LoggerListener;
 import io.cattle.platform.deferred.context.DeferredContextListener;
 import io.cattle.platform.hazelcast.membership.ClusterService;
 import io.cattle.platform.hazelcast.membership.DBDiscovery;
-import io.cattle.platform.hazelcast.membership.dao.ClusterMembershipDAO;
-import io.cattle.platform.hazelcast.membership.dao.impl.ClusterMembershipDAOImpl;
+import io.cattle.platform.hazelcast.membership.dao.HaMembershipDAO;
+import io.cattle.platform.hazelcast.membership.dao.impl.HaMembershipDAOImpl;
 import io.cattle.platform.json.JacksonJsonMapper;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.liquibase.Loader;
@@ -73,7 +73,7 @@ public class Bootstrap {
     ConcurrentCompositeConfiguration baseConfig = new ConcurrentCompositeConfiguration();
     RefreshableFixedDelayPollingScheduler scheduler = new RefreshableFixedDelayPollingScheduler();
     LazyJDBCSource dbConfigSource = new LazyJDBCSource();
-    ClusterMembershipDAO clusterMembershipDao;
+    HaMembershipDAO HaMembershipDao;
     JsonMapper jsonMapper;
     ClusterService cluster;
 
@@ -115,8 +115,8 @@ public class Bootstrap {
     }
 
     private void setupCluster() {
-        clusterMembershipDao = new ClusterMembershipDAOImpl(jooqConfig, jsonMapper);
-        cluster = new DBDiscovery(clusterMembershipDao, jsonMapper);
+        HaMembershipDao = new HaMembershipDAOImpl(jooqConfig, jsonMapper);
+        cluster = new DBDiscovery(HaMembershipDao, jsonMapper);
     }
 
     private void setHomeAndEnv() throws IOException {

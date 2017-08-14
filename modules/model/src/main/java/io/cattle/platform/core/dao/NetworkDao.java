@@ -15,7 +15,7 @@ public interface NetworkDao {
 
     Network getDefaultNetwork(Long accountId);
 
-    List<? extends Network> getActiveNetworks(Long accountId);
+    List<? extends Network> getActiveNetworks(Long clusterId);
 
     List<Subnet> getSubnets(Network network);
 

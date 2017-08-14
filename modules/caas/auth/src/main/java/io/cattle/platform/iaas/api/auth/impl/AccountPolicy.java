@@ -23,7 +23,7 @@ public class AccountPolicy extends DefaultPolicy {
     private static final Logger log = LoggerFactory.getLogger(AccountPolicy.class);
 
     public AccountPolicy(Account account, Account authenticatedAsAccount, Set<Identity> identities, PolicyOptions options) {
-        super(account.getId(), authenticatedAsAccount.getId(), account.getName(), identities, options);
+        super(account.getId(), authenticatedAsAccount.getId(), account.getClusterId(), account.getName(), identities, options);
     }
 
     @Override
@@ -38,11 +38,6 @@ public class AccountPolicy extends DefaultPolicy {
 
         if (obj instanceof Account) {
             return (((Account) obj).getId() == getAccountId()) ? obj : null;
-        }
-
-        Object isPublic = ObjectUtils.getPropertyIgnoreErrors(obj, ObjectMetaDataManager.PUBLIC_FIELD);
-        if (isPublic instanceof Boolean && (Boolean) isPublic) {
-            return obj;
         }
 
         try {

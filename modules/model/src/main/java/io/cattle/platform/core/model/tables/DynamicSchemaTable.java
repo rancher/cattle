@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class DynamicSchemaTable extends TableImpl<DynamicSchemaRecord> {
 
-    private static final long serialVersionUID = 1126611625;
+    private static final long serialVersionUID = -484478437;
 
     /**
      * The reference instance of <code>cattle.dynamic_schema</code>
@@ -121,6 +121,11 @@ public class DynamicSchemaTable extends TableImpl<DynamicSchemaRecord> {
     public final TableField<DynamicSchemaRecord, Date> REMOVED = createField("removed", org.jooq.impl.SQLDataType.TIMESTAMP, this, "", new DateConverter());
 
     /**
+     * The column <code>cattle.dynamic_schema.creator_id</code>.
+     */
+    public final TableField<DynamicSchemaRecord, Long> CREATOR_ID = createField("creator_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
      * Create a <code>cattle.dynamic_schema</code> table reference
      */
     public DynamicSchemaTable() {
@@ -179,7 +184,7 @@ public class DynamicSchemaTable extends TableImpl<DynamicSchemaRecord> {
      */
     @Override
     public List<ForeignKey<DynamicSchemaRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<DynamicSchemaRecord, ?>>asList(Keys.FK_DYNAMIC_SCHEMA__ACCOUNT_ID, Keys.FK_DYNAMIC_SCHEMA__SERVICE_ID);
+        return Arrays.<ForeignKey<DynamicSchemaRecord, ?>>asList(Keys.FK_DYNAMIC_SCHEMA__ACCOUNT_ID, Keys.FK_DYNAMIC_SCHEMA__SERVICE_ID, Keys.FK_DYNAMIC_SCHEMA__CREATOR_ID);
     }
 
     /**

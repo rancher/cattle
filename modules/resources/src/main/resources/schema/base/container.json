@@ -407,8 +407,7 @@
       "nullable": true
     },
     "name": {
-      "type": "string",
-      "unique": true
+      "type": "string"
     },
     "sidekickTo": {
       "type": "reference[container]",

@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class DeploymentUnitTable extends TableImpl<DeploymentUnitRecord> {
 
-    private static final long serialVersionUID = -2121706611;
+    private static final long serialVersionUID = -1337182712;
 
     /**
      * The reference instance of <code>cattle.deployment_unit</code>
@@ -141,6 +141,11 @@ public class DeploymentUnitTable extends TableImpl<DeploymentUnitRecord> {
     public final TableField<DeploymentUnitRecord, Long> REVISION_ID = createField("revision_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
+     * The column <code>cattle.deployment_unit.cluster_id</code>.
+     */
+    public final TableField<DeploymentUnitRecord, Long> CLUSTER_ID = createField("cluster_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
      * Create a <code>cattle.deployment_unit</code> table reference
      */
     public DeploymentUnitTable() {
@@ -199,7 +204,7 @@ public class DeploymentUnitTable extends TableImpl<DeploymentUnitRecord> {
      */
     @Override
     public List<ForeignKey<DeploymentUnitRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<DeploymentUnitRecord, ?>>asList(Keys.FK_DEPLOYMENT_UNIT__ACCOUNT_ID, Keys.FK_DEPLOYMENT_UNIT__SERVICE_ID, Keys.FK_DEPLOYMENT_UNIT__ENVIRONMENT_ID, Keys.FK_DEPLOYMENT_UNIT__HOST_ID, Keys.FK_DEPLOYMENT_UNIT_REQUESTED_REVISION_ID, Keys.FK_DEPLOYMENT_UNIT__REVISION_ID);
+        return Arrays.<ForeignKey<DeploymentUnitRecord, ?>>asList(Keys.FK_DEPLOYMENT_UNIT__ACCOUNT_ID, Keys.FK_DEPLOYMENT_UNIT__SERVICE_ID, Keys.FK_DEPLOYMENT_UNIT__ENVIRONMENT_ID, Keys.FK_DEPLOYMENT_UNIT__HOST_ID, Keys.FK_DEPLOYMENT_UNIT_REQUESTED_REVISION_ID, Keys.FK_DEPLOYMENT_UNIT__REVISION_ID, Keys.FK_DEPLOYMENT_UNIT__CLUSTER_ID);
     }
 
     /**

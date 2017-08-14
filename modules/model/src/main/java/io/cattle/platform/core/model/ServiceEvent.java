@@ -210,6 +210,17 @@ public interface ServiceEvent extends Serializable {
     @Column(name = "external_timestamp", precision = 19)
     public Long getExternalTimestamp();
 
+    /**
+     * Setter for <code>cattle.service_event.creator_id</code>.
+     */
+    public void setCreatorId(Long value);
+
+    /**
+     * Getter for <code>cattle.service_event.creator_id</code>.
+     */
+    @Column(name = "creator_id", precision = 19)
+    public Long getCreatorId();
+
     // -------------------------------------------------------------------------
     // FROM and INTO
     // -------------------------------------------------------------------------

@@ -1,13 +1,11 @@
 package io.cattle.platform.process.driver;
 
-import static io.cattle.platform.core.model.tables.StorageDriverTable.*;
-
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.constants.StorageDriverConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.StoragePoolDao;
+import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
@@ -29,10 +27,12 @@ import io.cattle.platform.process.lock.DriverLock;
 import io.cattle.platform.storage.service.StorageService;
 import io.cattle.platform.util.type.CollectionUtils;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+
+import static io.cattle.platform.core.model.tables.StorageDriverTable.*;
 
 public class DriverProcessManager {
     public static String[] DRIVERS = new String[]{"networkDriver", "storageDriver"};
@@ -61,9 +61,7 @@ public class DriverProcessManager {
         final Service service = (Service)state.getResource();
 
         for (final String driverKey : DRIVERS) {
-            @SuppressWarnings("unchecked")
-            final Map<String, Object> driverMap = DataAccessor.fields(service).withKey(driverKey)
-                    .withDefault(Collections.EMPTY_MAP).as(Map.class);
+            final Map<String, Object> driverMap = DataAccessor.fieldMapRO(service, driverKey);
             if (driverMap.size() == 0) {
                 continue;
             }
@@ -71,7 +69,7 @@ public class DriverProcessManager {
             if (stack == null) {
                 continue;
             }
-            if (ServiceConstants.isSystem(stack)) {
+            if (canCreateDriver(stack)) {
                 lockManager.lock(new DriverLock(service, driverKey), new LockCallbackNoReturn() {
                     @Override
                     public void doWithLockNoResult() {
@@ -84,13 +82,22 @@ public class DriverProcessManager {
         return null;
     }
 
+    protected boolean canCreateDriver(Stack stack) {
+        Account account = objectManager.loadResource(Account.class, stack.getAccountId());
+        if (account == null) {
+            return false;
+        }
+
+        return account.getClusterOwner() && Objects.equals(account.getClusterId(), stack.getClusterId());
+    }
+
     public HandlerResult remove(ProcessState state, ProcessInstance process) {
         for (String driverKey : DRIVERS) {
             Class<?> driverClass = objectManager.getSchemaFactory().getSchemaClass(driverKey);
 
             Service service = (Service)state.getResource();
             for (Object driver : objectManager.children(service, driverClass)) {
-                processManager.scheduleStandardProcess(StandardProcess.REMOVE, driver, null);
+                processManager.remove(driver, null);
             }
         }
         return null;
@@ -122,8 +129,7 @@ public class DriverProcessManager {
     public HandlerResult storageDriverRemove(ProcessState state, ProcessInstance process) {
         StorageDriver driver = (StorageDriver)state.getResource();
         for (StoragePool pool : storagePoolDao.findNonRemovedStoragePoolByDriver(driver.getId())) {
-            processManager.scheduleStandardChainedProcessAsync(StandardProcess.DEACTIVATE, StandardProcess.REMOVE,
-                    pool, null);
+            processManager.deactivateThenRemove(pool, null);
         }
         return null;
     }
@@ -132,7 +138,7 @@ public class DriverProcessManager {
         Object resource = state.getResource();
         if (resource instanceof Host) {
            List<StorageDriver> drivers = objectManager.find(StorageDriver.class,
-                   STORAGE_DRIVER.ACCOUNT_ID, ((Host) resource).getAccountId(),
+                   STORAGE_DRIVER.CLUSTER_ID, ((Host) resource).getClusterId(),
                    STORAGE_DRIVER.REMOVED, null);
            for (StorageDriver driver : drivers) {
                storageService.setupPools(driver);
@@ -175,7 +181,7 @@ public class DriverProcessManager {
         Map<String, Object> data = CollectionUtils.asMap("fields", fields);
         return objectManager.create(driverClass,
                 ObjectMetaDataManager.NAME_FIELD, name,
-                ObjectMetaDataManager.ACCOUNT_FIELD, service.getAccountId(),
+                ObjectMetaDataManager.CLUSTER_FIELD, service.getClusterId(),
                 "serviceId", service.getId(),
                 ObjectMetaDataManager.DATA_FIELD, data);
     }

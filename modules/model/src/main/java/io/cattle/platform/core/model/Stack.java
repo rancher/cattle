@@ -29,16 +29,16 @@ import javax.persistence.Table;
 )
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
-@Table(name = "environment", schema = "cattle")
+@Table(name = "stack", schema = "cattle")
 public interface Stack extends Serializable {
 
     /**
-     * Setter for <code>cattle.environment.id</code>.
+     * Setter for <code>cattle.stack.id</code>.
      */
     public void setId(Long value);
 
     /**
-     * Getter for <code>cattle.environment.id</code>.
+     * Getter for <code>cattle.stack.id</code>.
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,169 +46,191 @@ public interface Stack extends Serializable {
     public Long getId();
 
     /**
-     * Setter for <code>cattle.environment.name</code>.
+     * Setter for <code>cattle.stack.name</code>.
      */
     public void setName(String value);
 
     /**
-     * Getter for <code>cattle.environment.name</code>.
+     * Getter for <code>cattle.stack.name</code>.
      */
     @Column(name = "name", length = 255)
     public String getName();
 
     /**
-     * Setter for <code>cattle.environment.account_id</code>.
+     * Setter for <code>cattle.stack.account_id</code>.
      */
     public void setAccountId(Long value);
 
     /**
-     * Getter for <code>cattle.environment.account_id</code>.
+     * Getter for <code>cattle.stack.account_id</code>.
      */
     @Column(name = "account_id", precision = 19)
     public Long getAccountId();
 
     /**
-     * Setter for <code>cattle.environment.kind</code>.
+     * Setter for <code>cattle.stack.kind</code>.
      */
     public void setKind(String value);
 
     /**
-     * Getter for <code>cattle.environment.kind</code>.
+     * Getter for <code>cattle.stack.kind</code>.
      */
     @Column(name = "kind", nullable = false, length = 255)
     public String getKind();
 
     /**
-     * Setter for <code>cattle.environment.uuid</code>.
+     * Setter for <code>cattle.stack.uuid</code>.
      */
     public void setUuid(String value);
 
     /**
-     * Getter for <code>cattle.environment.uuid</code>.
+     * Getter for <code>cattle.stack.uuid</code>.
      */
     @Column(name = "uuid", unique = true, nullable = false, length = 128)
     public String getUuid();
 
     /**
-     * Setter for <code>cattle.environment.description</code>.
+     * Setter for <code>cattle.stack.description</code>.
      */
     public void setDescription(String value);
 
     /**
-     * Getter for <code>cattle.environment.description</code>.
+     * Getter for <code>cattle.stack.description</code>.
      */
     @Column(name = "description", length = 1024)
     public String getDescription();
 
     /**
-     * Setter for <code>cattle.environment.state</code>.
+     * Setter for <code>cattle.stack.state</code>.
      */
     public void setState(String value);
 
     /**
-     * Getter for <code>cattle.environment.state</code>.
+     * Getter for <code>cattle.stack.state</code>.
      */
     @Column(name = "state", nullable = false, length = 128)
     public String getState();
 
     /**
-     * Setter for <code>cattle.environment.created</code>.
+     * Setter for <code>cattle.stack.created</code>.
      */
     public void setCreated(Date value);
 
     /**
-     * Getter for <code>cattle.environment.created</code>.
+     * Getter for <code>cattle.stack.created</code>.
      */
     @Column(name = "created")
     public Date getCreated();
 
     /**
-     * Setter for <code>cattle.environment.removed</code>.
+     * Setter for <code>cattle.stack.removed</code>.
      */
     public void setRemoved(Date value);
 
     /**
-     * Getter for <code>cattle.environment.removed</code>.
+     * Getter for <code>cattle.stack.removed</code>.
      */
     @Column(name = "removed")
     public Date getRemoved();
 
     /**
-     * Setter for <code>cattle.environment.remove_time</code>.
+     * Setter for <code>cattle.stack.remove_time</code>.
      */
     public void setRemoveTime(Date value);
 
     /**
-     * Getter for <code>cattle.environment.remove_time</code>.
+     * Getter for <code>cattle.stack.remove_time</code>.
      */
     @Column(name = "remove_time")
     public Date getRemoveTime();
 
     /**
-     * Setter for <code>cattle.environment.data</code>.
+     * Setter for <code>cattle.stack.data</code>.
      */
     public void setData(Map<String,Object> value);
 
     /**
-     * Getter for <code>cattle.environment.data</code>.
+     * Getter for <code>cattle.stack.data</code>.
      */
     @Column(name = "data", length = 16777215)
     public Map<String,Object> getData();
 
     /**
-     * Setter for <code>cattle.environment.external_id</code>.
+     * Setter for <code>cattle.stack.external_id</code>.
      */
     public void setExternalId(String value);
 
     /**
-     * Getter for <code>cattle.environment.external_id</code>.
+     * Getter for <code>cattle.stack.external_id</code>.
      */
     @Column(name = "external_id", length = 128)
     public String getExternalId();
 
     /**
-     * Setter for <code>cattle.environment.health_state</code>.
+     * Setter for <code>cattle.stack.health_state</code>.
      */
     public void setHealthState(String value);
 
     /**
-     * Getter for <code>cattle.environment.health_state</code>.
+     * Getter for <code>cattle.stack.health_state</code>.
      */
     @Column(name = "health_state", length = 128)
     public String getHealthState();
 
     /**
-     * Setter for <code>cattle.environment.folder</code>.
+     * Setter for <code>cattle.stack.folder</code>.
      */
     public void setGroup(String value);
 
     /**
-     * Getter for <code>cattle.environment.folder</code>.
+     * Getter for <code>cattle.stack.folder</code>.
      */
     @Column(name = "folder", length = 255)
     public String getGroup();
 
     /**
-     * Setter for <code>cattle.environment.system</code>.
+     * Setter for <code>cattle.stack.system</code>.
      */
     public void setSystem(Boolean value);
 
     /**
-     * Getter for <code>cattle.environment.system</code>.
+     * Getter for <code>cattle.stack.system</code>.
      */
     @Column(name = "system", nullable = false, precision = 1)
     public Boolean getSystem();
 
     /**
-     * Setter for <code>cattle.environment.parent_environment_id</code>.
+     * Setter for <code>cattle.stack.parent_environment_id</code>.
      */
     public void setParentStackId(Long value);
 
     /**
-     * Getter for <code>cattle.environment.parent_environment_id</code>.
+     * Getter for <code>cattle.stack.parent_environment_id</code>.
      */
     @Column(name = "parent_environment_id", precision = 19)
     public Long getParentStackId();
+
+    /**
+     * Setter for <code>cattle.stack.cluster_id</code>.
+     */
+    public void setClusterId(Long value);
+
+    /**
+     * Getter for <code>cattle.stack.cluster_id</code>.
+     */
+    @Column(name = "cluster_id", nullable = false, precision = 19)
+    public Long getClusterId();
+
+    /**
+     * Setter for <code>cattle.stack.creator_id</code>.
+     */
+    public void setCreatorId(Long value);
+
+    /**
+     * Getter for <code>cattle.stack.creator_id</code>.
+     */
+    @Column(name = "creator_id", precision = 19)
+    public Long getCreatorId();
 
     // -------------------------------------------------------------------------
     // FROM and INTO

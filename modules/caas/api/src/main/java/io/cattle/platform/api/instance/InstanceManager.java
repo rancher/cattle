@@ -32,13 +32,13 @@ public class InstanceManager extends DefaultResourceManager {
     }
 
     @Override
-    public Object deleteObject(String type, String id, Object obj, ApiRequest request) {
+    public Object deleteObjectSupport(String type, String id, Object obj, ApiRequest request) {
         if (!(obj instanceof Instance)) {
-            return super.deleteObject(type, id, obj, request);
+            return super.deleteObjectSupport(type, id, obj, request);
         }
 
         try {
-            return super.deleteObject(type, id, obj, request);
+            return super.deleteObjectSupport(type, id, obj, request);
         } catch (ClientVisibleException e) {
             if (ResponseCodes.METHOD_NOT_ALLOWED == e.getStatus() ) {
                 objectResourceManagerSupport.getObjectProcessManager().stopThenRemove(obj, null);
@@ -91,8 +91,9 @@ public class InstanceManager extends DefaultResourceManager {
         if (accountId == null) {
             accountId = ApiUtils.getPolicy().getAccountId();
         }
+        Long clusterId = ApiUtils.getPolicy().getClusterId();
 
-        revisionManager.createInitialRevisionForInstance(accountId, properties);
+        revisionManager.createInitialRevisionForInstance(accountId, clusterId, properties);
     }
 
     protected static Object error(String code, String fieldName) {

@@ -64,7 +64,7 @@ public class ServiceEventFilter extends AbstractValidationFilter {
 
         Long resourceAccId = agent.getResourceAccountId();
 
-        if (instance == null || host == null || !instance.getAccountId().equals(host.getAccountId()) || !instance.getAccountId().equals(resourceAccId)) {
+        if (instance == null || host == null || !instance.getClusterId().equals(host.getClusterId()) || !instance.getAccountId().equals(resourceAccId)) {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN, VERIFY_AGENT);
         }
 

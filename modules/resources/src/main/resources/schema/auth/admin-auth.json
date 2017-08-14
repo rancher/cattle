@@ -16,8 +16,8 @@
         "account.projectId" : "r",
         "account.identity" : "r",
 
-        "clusterMembership": "r",
-        "clusterMembership\\..*": "r",
+        "HaMembership": "r",
+        "HaMembership\\..*": "r",
 
         "processSummary": "r",
         "processSummary\\..*": "r",
@@ -220,6 +220,7 @@
         "publish.data": "cr",
         "publish.id": "cr",
         "publish.name": "cr",
+        "publish.previousId": "cr",
         "publish.previousIds": "cr",
         "publish.publisher": "cr",
         "publish.resourceId": "cr",

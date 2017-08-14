@@ -1,13 +1,12 @@
 package io.cattle.platform.app.components;
 
-import io.cattle.platform.agent.server.ping.dao.PingDao;
-import io.cattle.platform.agent.server.ping.dao.impl.PingDaoImpl;
 import io.cattle.platform.allocator.dao.AllocatorDao;
 import io.cattle.platform.allocator.dao.impl.AllocatorDaoImpl;
 import io.cattle.platform.core.cache.DBCacheManager;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.AgentDao;
 import io.cattle.platform.core.dao.AuditLogDao;
+import io.cattle.platform.core.dao.ClusterDao;
 import io.cattle.platform.core.dao.DataDao;
 import io.cattle.platform.core.dao.DynamicSchemaDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
@@ -29,6 +28,7 @@ import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.dao.impl.AccountDaoImpl;
 import io.cattle.platform.core.dao.impl.AgentDaoImpl;
 import io.cattle.platform.core.dao.impl.AuditLogDaoImpl;
+import io.cattle.platform.core.dao.impl.ClusterDaoImpl;
 import io.cattle.platform.core.dao.impl.DataDaoImpl;
 import io.cattle.platform.core.dao.impl.DynamicSchemaDaoImpl;
 import io.cattle.platform.core.dao.impl.GenericResourceDaoImpl;
@@ -69,6 +69,7 @@ public class DataAccess {
     AuditLogDao auditLogDao;
     AuthDao authDao;
     AuthTokenDao authTokenDao;
+    ClusterDao clusterDao;
     DataDao dataDao;
     DBCacheManager dbCacheManager;
     DynamicSchemaDao dynamicSchemaDao;
@@ -78,7 +79,6 @@ public class DataAccess {
     LoadBalancerInfoDao loadBalancerInfoDao;
     NetworkDao networkDao;
     PasswordDao passwordDao;
-    PingDao pingDao;
     ProcessSummaryDao processSummaryDao;
     RegistrationTokenAuthDao registrationTokenAuthDao;
     RegisterDao registerDao;
@@ -104,6 +104,7 @@ public class DataAccess {
         this.auditLogDao = new AuditLogDaoImpl(f.jooqConfig, f.objectManager);
         this.authDao = new AuthDaoImpl(f.jooqConfig, resourceDao, f.objectManager, f.processManager, f.lockManager, accountDao);
         this.authTokenDao = new AuthTokenDaoImpl(f.jooqConfig, resourceDao, f.objectManager, f.processManager);
+        this.clusterDao = new ClusterDaoImpl(f.jooqConfig, f.transaction, f.objectManager, resourceDao);
         this.dataDao = new DataDaoImpl(f.jooqConfig, f.lockManager, f.objectManager, f.newConnJooqConfig, f.newTransaction);
         this.dbCacheManager = new DBCacheManager();
         this.dynamicSchemaDao = new DynamicSchemaDaoImpl(f.jooqConfig, dbCacheManager);
@@ -112,7 +113,6 @@ public class DataAccess {
         this.loadBalancerInfoDao = new LoadBalancerInfoDaoImpl(f.jooqConfig);
         this.networkDao = new NetworkDaoImpl(f.jooqConfig, f.objectManager, resourceDao, f.lockManager);
         this.passwordDao = new PasswordDaoImpl(f.jooqConfig, f.objectManager, transformationService, accountDao);
-        this.pingDao = new PingDaoImpl(f.jooqConfig);
         this.processSummaryDao = new ProcessSummaryDaoImpl(f.jooqConfig);
         this.registerDao = new RegisterDaoImpl(f.jooqConfig, f.objectManager, f.transaction);
         this.registrationTokenAuthDao = new RegistrationTokenAuthDaoImpl(f.jooqConfig);

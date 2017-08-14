@@ -39,9 +39,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "storage_pool", schema = "cattle")
-public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> implements TableRecordJaxb, Record20<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, Long, Boolean, Long, Long, String, String, String, Long>, StoragePool {
+public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> implements TableRecordJaxb, Record20<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, Long, Boolean, Long, Long, String, String, String, Long, Long>, StoragePool {
 
-    private static final long serialVersionUID = 63637572;
+    private static final long serialVersionUID = 1550844355;
 
     /**
      * Setter for <code>cattle.storage_pool.id</code>.
@@ -80,28 +80,11 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
     }
 
     /**
-     * Setter for <code>cattle.storage_pool.account_id</code>.
-     */
-    @Override
-    public void setAccountId(Long value) {
-        set(2, value);
-    }
-
-    /**
-     * Getter for <code>cattle.storage_pool.account_id</code>.
-     */
-    @Column(name = "account_id", precision = 19)
-    @Override
-    public Long getAccountId() {
-        return (Long) get(2);
-    }
-
-    /**
      * Setter for <code>cattle.storage_pool.kind</code>.
      */
     @Override
     public void setKind(String value) {
-        set(3, value);
+        set(2, value);
     }
 
     /**
@@ -110,7 +93,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
     @Column(name = "kind", nullable = false, length = 255)
     @Override
     public String getKind() {
-        return (String) get(3);
+        return (String) get(2);
     }
 
     /**
@@ -118,7 +101,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      */
     @Override
     public void setUuid(String value) {
-        set(4, value);
+        set(3, value);
     }
 
     /**
@@ -127,7 +110,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
     @Column(name = "uuid", unique = true, nullable = false, length = 128)
     @Override
     public String getUuid() {
-        return (String) get(4);
+        return (String) get(3);
     }
 
     /**
@@ -135,7 +118,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      */
     @Override
     public void setDescription(String value) {
-        set(5, value);
+        set(4, value);
     }
 
     /**
@@ -144,7 +127,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
     @Column(name = "description", length = 1024)
     @Override
     public String getDescription() {
-        return (String) get(5);
+        return (String) get(4);
     }
 
     /**
@@ -152,7 +135,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      */
     @Override
     public void setState(String value) {
-        set(6, value);
+        set(5, value);
     }
 
     /**
@@ -161,7 +144,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
     @Column(name = "state", nullable = false, length = 128)
     @Override
     public String getState() {
-        return (String) get(6);
+        return (String) get(5);
     }
 
     /**
@@ -169,7 +152,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      */
     @Override
     public void setCreated(Date value) {
-        set(7, value);
+        set(6, value);
     }
 
     /**
@@ -178,7 +161,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
     @Column(name = "created")
     @Override
     public Date getCreated() {
-        return (Date) get(7);
+        return (Date) get(6);
     }
 
     /**
@@ -186,7 +169,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      */
     @Override
     public void setRemoved(Date value) {
-        set(8, value);
+        set(7, value);
     }
 
     /**
@@ -195,7 +178,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
     @Column(name = "removed")
     @Override
     public Date getRemoved() {
-        return (Date) get(8);
+        return (Date) get(7);
     }
 
     /**
@@ -203,7 +186,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      */
     @Override
     public void setRemoveTime(Date value) {
-        set(9, value);
+        set(8, value);
     }
 
     /**
@@ -212,7 +195,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
     @Column(name = "remove_time")
     @Override
     public Date getRemoveTime() {
-        return (Date) get(9);
+        return (Date) get(8);
     }
 
     /**
@@ -220,7 +203,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      */
     @Override
     public void setData(Map<String,Object> value) {
-        set(10, value);
+        set(9, value);
     }
 
     /**
@@ -229,7 +212,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
     @Column(name = "data", length = 16777215)
     @Override
     public Map<String,Object> getData() {
-        return (Map<String,Object>) get(10);
+        return (Map<String,Object>) get(9);
     }
 
     /**
@@ -237,7 +220,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      */
     @Override
     public void setPhysicalTotalSizeMb(Long value) {
-        set(11, value);
+        set(10, value);
     }
 
     /**
@@ -246,7 +229,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
     @Column(name = "physical_total_size_mb", precision = 19)
     @Override
     public Long getPhysicalTotalSizeMb() {
-        return (Long) get(11);
+        return (Long) get(10);
     }
 
     /**
@@ -254,7 +237,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      */
     @Override
     public void setVirtualTotalSizeMb(Long value) {
-        set(12, value);
+        set(11, value);
     }
 
     /**
@@ -263,7 +246,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
     @Column(name = "virtual_total_size_mb", precision = 19)
     @Override
     public Long getVirtualTotalSizeMb() {
-        return (Long) get(12);
+        return (Long) get(11);
     }
 
     /**
@@ -271,7 +254,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      */
     @Override
     public void setExternal(Boolean value) {
-        set(13, value);
+        set(12, value);
     }
 
     /**
@@ -280,7 +263,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
     @Column(name = "external", nullable = false, precision = 1)
     @Override
     public Boolean getExternal() {
-        return (Boolean) get(13);
+        return (Boolean) get(12);
     }
 
     /**
@@ -288,7 +271,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      */
     @Override
     public void setAgentId(Long value) {
-        set(14, value);
+        set(13, value);
     }
 
     /**
@@ -297,7 +280,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
     @Column(name = "agent_id", precision = 19)
     @Override
     public Long getAgentId() {
-        return (Long) get(14);
+        return (Long) get(13);
     }
 
     /**
@@ -305,7 +288,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      */
     @Override
     public void setZoneId(Long value) {
-        set(15, value);
+        set(14, value);
     }
 
     /**
@@ -314,7 +297,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
     @Column(name = "zone_id", precision = 19)
     @Override
     public Long getZoneId() {
-        return (Long) get(15);
+        return (Long) get(14);
     }
 
     /**
@@ -322,7 +305,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      */
     @Override
     public void setExternalId(String value) {
-        set(16, value);
+        set(15, value);
     }
 
     /**
@@ -331,7 +314,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
     @Column(name = "external_id", length = 128)
     @Override
     public String getExternalId() {
-        return (String) get(16);
+        return (String) get(15);
     }
 
     /**
@@ -339,7 +322,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      */
     @Override
     public void setDriverName(String value) {
-        set(17, value);
+        set(16, value);
     }
 
     /**
@@ -348,7 +331,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
     @Column(name = "driver_name", length = 255)
     @Override
     public String getDriverName() {
-        return (String) get(17);
+        return (String) get(16);
     }
 
     /**
@@ -356,7 +339,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      */
     @Override
     public void setVolumeAccessMode(String value) {
-        set(18, value);
+        set(17, value);
     }
 
     /**
@@ -365,7 +348,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
     @Column(name = "volume_access_mode", length = 255)
     @Override
     public String getVolumeAccessMode() {
-        return (String) get(18);
+        return (String) get(17);
     }
 
     /**
@@ -373,7 +356,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      */
     @Override
     public void setStorageDriverId(Long value) {
-        set(19, value);
+        set(18, value);
     }
 
     /**
@@ -382,6 +365,23 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
     @Column(name = "storage_driver_id", precision = 19)
     @Override
     public Long getStorageDriverId() {
+        return (Long) get(18);
+    }
+
+    /**
+     * Setter for <code>cattle.storage_pool.cluster_id</code>.
+     */
+    @Override
+    public void setClusterId(Long value) {
+        set(19, value);
+    }
+
+    /**
+     * Getter for <code>cattle.storage_pool.cluster_id</code>.
+     */
+    @Column(name = "cluster_id", nullable = false, precision = 19)
+    @Override
+    public Long getClusterId() {
         return (Long) get(19);
     }
 
@@ -405,7 +405,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Row20<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, Long, Boolean, Long, Long, String, String, String, Long> fieldsRow() {
+    public Row20<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, Long, Boolean, Long, Long, String, String, String, Long, Long> fieldsRow() {
         return (Row20) super.fieldsRow();
     }
 
@@ -413,7 +413,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Row20<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, Long, Boolean, Long, Long, String, String, String, Long> valuesRow() {
+    public Row20<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, Long, Long, Boolean, Long, Long, String, String, String, Long, Long> valuesRow() {
         return (Row20) super.valuesRow();
     }
 
@@ -437,15 +437,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Field<Long> field3() {
-        return StoragePoolTable.STORAGE_POOL.ACCOUNT_ID;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<String> field4() {
+    public Field<String> field3() {
         return StoragePoolTable.STORAGE_POOL.KIND;
     }
 
@@ -453,7 +445,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field5() {
+    public Field<String> field4() {
         return StoragePoolTable.STORAGE_POOL.UUID;
     }
 
@@ -461,7 +453,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field6() {
+    public Field<String> field5() {
         return StoragePoolTable.STORAGE_POOL.DESCRIPTION;
     }
 
@@ -469,7 +461,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field7() {
+    public Field<String> field6() {
         return StoragePoolTable.STORAGE_POOL.STATE;
     }
 
@@ -477,7 +469,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Field<Date> field8() {
+    public Field<Date> field7() {
         return StoragePoolTable.STORAGE_POOL.CREATED;
     }
 
@@ -485,7 +477,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Field<Date> field9() {
+    public Field<Date> field8() {
         return StoragePoolTable.STORAGE_POOL.REMOVED;
     }
 
@@ -493,7 +485,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Field<Date> field10() {
+    public Field<Date> field9() {
         return StoragePoolTable.STORAGE_POOL.REMOVE_TIME;
     }
 
@@ -501,7 +493,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Field<Map<String,Object>> field11() {
+    public Field<Map<String,Object>> field10() {
         return StoragePoolTable.STORAGE_POOL.DATA;
     }
 
@@ -509,7 +501,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Field<Long> field12() {
+    public Field<Long> field11() {
         return StoragePoolTable.STORAGE_POOL.PHYSICAL_TOTAL_SIZE_MB;
     }
 
@@ -517,7 +509,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Field<Long> field13() {
+    public Field<Long> field12() {
         return StoragePoolTable.STORAGE_POOL.VIRTUAL_TOTAL_SIZE_MB;
     }
 
@@ -525,7 +517,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Field<Boolean> field14() {
+    public Field<Boolean> field13() {
         return StoragePoolTable.STORAGE_POOL.EXTERNAL;
     }
 
@@ -533,7 +525,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Field<Long> field15() {
+    public Field<Long> field14() {
         return StoragePoolTable.STORAGE_POOL.AGENT_ID;
     }
 
@@ -541,7 +533,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Field<Long> field16() {
+    public Field<Long> field15() {
         return StoragePoolTable.STORAGE_POOL.ZONE_ID;
     }
 
@@ -549,7 +541,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field17() {
+    public Field<String> field16() {
         return StoragePoolTable.STORAGE_POOL.EXTERNAL_ID;
     }
 
@@ -557,7 +549,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field18() {
+    public Field<String> field17() {
         return StoragePoolTable.STORAGE_POOL.DRIVER_NAME;
     }
 
@@ -565,7 +557,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field19() {
+    public Field<String> field18() {
         return StoragePoolTable.STORAGE_POOL.VOLUME_ACCESS_MODE;
     }
 
@@ -573,8 +565,16 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Field<Long> field20() {
+    public Field<Long> field19() {
         return StoragePoolTable.STORAGE_POOL.STORAGE_DRIVER_ID;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Field<Long> field20() {
+        return StoragePoolTable.STORAGE_POOL.CLUSTER_ID;
     }
 
     /**
@@ -597,15 +597,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Long value3() {
-        return getAccountId();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String value4() {
+    public String value3() {
         return getKind();
     }
 
@@ -613,7 +605,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public String value5() {
+    public String value4() {
         return getUuid();
     }
 
@@ -621,7 +613,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public String value6() {
+    public String value5() {
         return getDescription();
     }
 
@@ -629,7 +621,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public String value7() {
+    public String value6() {
         return getState();
     }
 
@@ -637,7 +629,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Date value8() {
+    public Date value7() {
         return getCreated();
     }
 
@@ -645,7 +637,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Date value9() {
+    public Date value8() {
         return getRemoved();
     }
 
@@ -653,7 +645,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Date value10() {
+    public Date value9() {
         return getRemoveTime();
     }
 
@@ -661,7 +653,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Map<String,Object> value11() {
+    public Map<String,Object> value10() {
         return getData();
     }
 
@@ -669,7 +661,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Long value12() {
+    public Long value11() {
         return getPhysicalTotalSizeMb();
     }
 
@@ -677,7 +669,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Long value13() {
+    public Long value12() {
         return getVirtualTotalSizeMb();
     }
 
@@ -685,7 +677,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Boolean value14() {
+    public Boolean value13() {
         return getExternal();
     }
 
@@ -693,7 +685,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Long value15() {
+    public Long value14() {
         return getAgentId();
     }
 
@@ -701,7 +693,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Long value16() {
+    public Long value15() {
         return getZoneId();
     }
 
@@ -709,7 +701,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public String value17() {
+    public String value16() {
         return getExternalId();
     }
 
@@ -717,7 +709,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public String value18() {
+    public String value17() {
         return getDriverName();
     }
 
@@ -725,7 +717,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public String value19() {
+    public String value18() {
         return getVolumeAccessMode();
     }
 
@@ -733,8 +725,16 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public Long value20() {
+    public Long value19() {
         return getStorageDriverId();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Long value20() {
+        return getClusterId();
     }
 
     /**
@@ -759,16 +759,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public StoragePoolRecord value3(Long value) {
-        setAccountId(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public StoragePoolRecord value4(String value) {
+    public StoragePoolRecord value3(String value) {
         setKind(value);
         return this;
     }
@@ -777,7 +768,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public StoragePoolRecord value5(String value) {
+    public StoragePoolRecord value4(String value) {
         setUuid(value);
         return this;
     }
@@ -786,7 +777,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public StoragePoolRecord value6(String value) {
+    public StoragePoolRecord value5(String value) {
         setDescription(value);
         return this;
     }
@@ -795,7 +786,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public StoragePoolRecord value7(String value) {
+    public StoragePoolRecord value6(String value) {
         setState(value);
         return this;
     }
@@ -804,7 +795,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public StoragePoolRecord value8(Date value) {
+    public StoragePoolRecord value7(Date value) {
         setCreated(value);
         return this;
     }
@@ -813,7 +804,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public StoragePoolRecord value9(Date value) {
+    public StoragePoolRecord value8(Date value) {
         setRemoved(value);
         return this;
     }
@@ -822,7 +813,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public StoragePoolRecord value10(Date value) {
+    public StoragePoolRecord value9(Date value) {
         setRemoveTime(value);
         return this;
     }
@@ -831,7 +822,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public StoragePoolRecord value11(Map<String,Object> value) {
+    public StoragePoolRecord value10(Map<String,Object> value) {
         setData(value);
         return this;
     }
@@ -840,7 +831,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public StoragePoolRecord value12(Long value) {
+    public StoragePoolRecord value11(Long value) {
         setPhysicalTotalSizeMb(value);
         return this;
     }
@@ -849,7 +840,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public StoragePoolRecord value13(Long value) {
+    public StoragePoolRecord value12(Long value) {
         setVirtualTotalSizeMb(value);
         return this;
     }
@@ -858,7 +849,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public StoragePoolRecord value14(Boolean value) {
+    public StoragePoolRecord value13(Boolean value) {
         setExternal(value);
         return this;
     }
@@ -867,7 +858,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public StoragePoolRecord value15(Long value) {
+    public StoragePoolRecord value14(Long value) {
         setAgentId(value);
         return this;
     }
@@ -876,7 +867,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public StoragePoolRecord value16(Long value) {
+    public StoragePoolRecord value15(Long value) {
         setZoneId(value);
         return this;
     }
@@ -885,7 +876,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public StoragePoolRecord value17(String value) {
+    public StoragePoolRecord value16(String value) {
         setExternalId(value);
         return this;
     }
@@ -894,7 +885,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public StoragePoolRecord value18(String value) {
+    public StoragePoolRecord value17(String value) {
         setDriverName(value);
         return this;
     }
@@ -903,7 +894,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public StoragePoolRecord value19(String value) {
+    public StoragePoolRecord value18(String value) {
         setVolumeAccessMode(value);
         return this;
     }
@@ -912,7 +903,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public StoragePoolRecord value20(Long value) {
+    public StoragePoolRecord value19(Long value) {
         setStorageDriverId(value);
         return this;
     }
@@ -921,7 +912,16 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
      * {@inheritDoc}
      */
     @Override
-    public StoragePoolRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, Long value12, Long value13, Boolean value14, Long value15, Long value16, String value17, String value18, String value19, Long value20) {
+    public StoragePoolRecord value20(Long value) {
+        setClusterId(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public StoragePoolRecord values(Long value1, String value2, String value3, String value4, String value5, String value6, Date value7, Date value8, Date value9, Map<String,Object> value10, Long value11, Long value12, Boolean value13, Long value14, Long value15, String value16, String value17, String value18, Long value19, Long value20) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -956,7 +956,6 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
     public void from(StoragePool from) {
         setId(from.getId());
         setName(from.getName());
-        setAccountId(from.getAccountId());
         setKind(from.getKind());
         setUuid(from.getUuid());
         setDescription(from.getDescription());
@@ -974,6 +973,7 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
         setDriverName(from.getDriverName());
         setVolumeAccessMode(from.getVolumeAccessMode());
         setStorageDriverId(from.getStorageDriverId());
+        setClusterId(from.getClusterId());
     }
 
     /**
@@ -999,28 +999,28 @@ public class StoragePoolRecord extends UpdatableRecordImpl<StoragePoolRecord> im
     /**
      * Create a detached, initialised StoragePoolRecord
      */
-    public StoragePoolRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Long physicalTotalSizeMb, Long virtualTotalSizeMb, Boolean external, Long agentId, Long zoneId, String externalId, String driverName, String volumeAccessMode, Long storageDriverId) {
+    public StoragePoolRecord(Long id, String name, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Long physicalTotalSizeMb, Long virtualTotalSizeMb, Boolean external, Long agentId, Long zoneId, String externalId, String driverName, String volumeAccessMode, Long storageDriverId, Long clusterId) {
         super(StoragePoolTable.STORAGE_POOL);
 
         set(0, id);
         set(1, name);
-        set(2, accountId);
-        set(3, kind);
-        set(4, uuid);
-        set(5, description);
-        set(6, state);
-        set(7, created);
-        set(8, removed);
-        set(9, removeTime);
-        set(10, data);
-        set(11, physicalTotalSizeMb);
-        set(12, virtualTotalSizeMb);
-        set(13, external);
-        set(14, agentId);
-        set(15, zoneId);
-        set(16, externalId);
-        set(17, driverName);
-        set(18, volumeAccessMode);
-        set(19, storageDriverId);
+        set(2, kind);
+        set(3, uuid);
+        set(4, description);
+        set(5, state);
+        set(6, created);
+        set(7, removed);
+        set(8, removeTime);
+        set(9, data);
+        set(10, physicalTotalSizeMb);
+        set(11, virtualTotalSizeMb);
+        set(12, external);
+        set(13, agentId);
+        set(14, zoneId);
+        set(15, externalId);
+        set(16, driverName);
+        set(17, volumeAccessMode);
+        set(18, storageDriverId);
+        set(19, clusterId);
     }
 }

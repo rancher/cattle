@@ -3,6 +3,7 @@
         ".*" : "",
 
         ".*\\.accountId" : "r",
+        ".*\\.clusterId" : "r",
         ".*\\.created" : "r",
         ".*\\.description" : "cru",
         ".*\\.id" : "r",
@@ -60,14 +61,6 @@
         "changeSecretInput" : "cr",
         "changeSecretInput.oldSecret" : "cr",
         "changeSecretInput.newSecret" : "cr",
-
-        "cluster" : "r",
-        "cluster.discoverySpec" : "r",
-        "cluster.port" : "cru",
-        "cluster.managingHostId" : "",
-        "cluster.certificateId" : "",
-
-        "clusterHostMap" : "",
 
         "container" : "r",
         "container.blkioDeviceOptions" : "cr",
@@ -426,7 +419,6 @@
         "port.bindAddress" : "r",
 
         "project" : "crud",
-        "project.computeFlavor" : "r",
         "project.defaultNetworkId" : "r",
         "project.description" : "cru",
         "project.externalId" : "",
@@ -437,6 +429,7 @@
         "project.members" : "cr",
         "project.scheduledUpgradeDelay": "cru",
         "project.servicesPortRange": "cru",
+        "project.clusterId": "cru",
 
         "projectTemplate" : "crud",
         "projectTemplate.stacks" : "cru",
@@ -456,9 +449,6 @@
         "servicesPortRange": "cru",
         "servicesPortRange.startPort": "cru",
         "servicesPortRange.endPort": "cru",
-
-        "setComputeFlavorInput": "cr",
-        "setComputeFlavorInput.computeFlavor": "cr",
 
         "pullTask": "r",
         "pullTask.labels": "cr",
@@ -775,15 +765,20 @@
         "containerConfig" : "cru",
         "containerConfig.resourceActions.logs" : "",
 
-        "cluster" : "r",
-        "cluster.identity" : "r",
+        "cluster" : "crud",
         "cluster.embedded" : "cr",
+        "cluster.hostRemoveDelaySeconds" : "cru",
+        "cluster.k8sConfig" : "cru",
 
-        "clusterIdentity" : "r",
+        "clusterIdentity" : "",
         "clusterIdentity.username" : "r",
         "clusterIdentity.userId" : "r",
         "clusterIdentity.groups" : "r",
         "clusterIdentity.attributes" : "r",
+
+        "k8sConfig" : "cr",
+        "k8sConfig.admissionControllers" : "cr",
+        "k8sConfig.serviceNetCidr" : "cr",
 
         "launchConfig" : "cru",
         "launchConfig.completeUpdate" : "ru",

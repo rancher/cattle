@@ -38,7 +38,7 @@ import org.jooq.impl.UpdatableRecordImpl;
 @Table(name = "instance", schema = "cattle")
 public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implements TableRecordJaxb, Instance {
 
-    private static final long serialVersionUID = -1846393742;
+    private static final long serialVersionUID = 965128384;
 
     /**
      * Setter for <code>cattle.instance.id</code>.
@@ -722,6 +722,40 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
         return (Long) get(39);
     }
 
+    /**
+     * Setter for <code>cattle.instance.cluster_id</code>.
+     */
+    @Override
+    public void setClusterId(Long value) {
+        set(40, value);
+    }
+
+    /**
+     * Getter for <code>cattle.instance.cluster_id</code>.
+     */
+    @Column(name = "cluster_id", nullable = false, precision = 19)
+    @Override
+    public Long getClusterId() {
+        return (Long) get(40);
+    }
+
+    /**
+     * Setter for <code>cattle.instance.creator_id</code>.
+     */
+    @Override
+    public void setCreatorId(Long value) {
+        set(41, value);
+    }
+
+    /**
+     * Getter for <code>cattle.instance.creator_id</code>.
+     */
+    @Column(name = "creator_id", precision = 19)
+    @Override
+    public Long getCreatorId() {
+        return (Long) get(41);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -783,6 +817,8 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
         setServiceIndex(from.getServiceIndex());
         setUpgradeTime(from.getUpgradeTime());
         setRevision(from.getRevision());
+        setClusterId(from.getClusterId());
+        setCreatorId(from.getCreatorId());
     }
 
     /**
@@ -808,7 +844,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
     /**
      * Create a detached, initialised InstanceRecord
      */
-    public InstanceRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Long memoryMb, String hostname, String instanceTriggeredStop, Long agentId, String domain, Date firstRunning, String token, String userdata, Long registryCredentialId, String externalId, Boolean nativeContainer, Long networkContainerId, String healthState, Long startCount, Long createIndex, String version, Long memoryReservation, Long milliCpuReservation, Boolean system, Long serviceId, Long environmentId, Long deploymentUnitId, Long revisionId, Boolean desired, Long hostId, Long networkId, Integer serviceIndex, Date upgradeTime, Long revision) {
+    public InstanceRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Long memoryMb, String hostname, String instanceTriggeredStop, Long agentId, String domain, Date firstRunning, String token, String userdata, Long registryCredentialId, String externalId, Boolean nativeContainer, Long networkContainerId, String healthState, Long startCount, Long createIndex, String version, Long memoryReservation, Long milliCpuReservation, Boolean system, Long serviceId, Long environmentId, Long deploymentUnitId, Long revisionId, Boolean desired, Long hostId, Long networkId, Integer serviceIndex, Date upgradeTime, Long revision, Long clusterId, Long creatorId) {
         super(InstanceTable.INSTANCE);
 
         set(0, id);
@@ -851,5 +887,7 @@ public class InstanceRecord extends UpdatableRecordImpl<InstanceRecord> implemen
         set(37, serviceIndex);
         set(38, upgradeTime);
         set(39, revision);
+        set(40, clusterId);
+        set(41, creatorId);
     }
 }

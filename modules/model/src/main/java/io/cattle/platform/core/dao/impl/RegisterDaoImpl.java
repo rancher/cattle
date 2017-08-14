@@ -33,7 +33,7 @@ public class RegisterDaoImpl extends AbstractJooqDao implements RegisterDao {
     }
 
     @Override
-    public Agent createAgentForRegistration(String key, GenericObject obj) {
+    public Agent createAgentForRegistration(String key, long accountId, long clusterId, GenericObject obj) {
         return transaction.doInTransactionResult(() -> {
             Map<String,Object> data = CollectionUtils.asMap(
                     RegisterConstants.AGENT_DATA_REGISTRATION_KEY, key);
@@ -57,7 +57,8 @@ public class RegisterDaoImpl extends AbstractJooqDao implements RegisterDao {
             Agent agent = objectManager.create(Agent.class,
                     AGENT.KIND, AccountConstants.REGISTERED_AGENT_KIND,
                     AGENT.URI, String.format(format, obj.getUuid()),
-                    AGENT.RESOURCE_ACCOUNT_ID, obj.getAccountId(),
+                    AGENT.RESOURCE_ACCOUNT_ID, accountId,
+                    AGENT.CLUSTER_ID, clusterId,
                     AGENT.DATA, data,
                     AGENT.MANAGED_CONFIG, true);
 

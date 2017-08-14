@@ -21,8 +21,8 @@ import javax.persistence.Table;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record13;
-import org.jooq.Row13;
+import org.jooq.Record14;
+import org.jooq.Row14;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -39,9 +39,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "secret", schema = "cattle")
-public class SecretRecord extends UpdatableRecordImpl<SecretRecord> implements TableRecordJaxb, Record13<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long>, Secret {
+public class SecretRecord extends UpdatableRecordImpl<SecretRecord> implements TableRecordJaxb, Record14<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long>, Secret {
 
-    private static final long serialVersionUID = -1714020264;
+    private static final long serialVersionUID = 483343609;
 
     /**
      * Setter for <code>cattle.secret.id</code>.
@@ -266,6 +266,23 @@ public class SecretRecord extends UpdatableRecordImpl<SecretRecord> implements T
         return (Long) get(12);
     }
 
+    /**
+     * Setter for <code>cattle.secret.creator_id</code>.
+     */
+    @Override
+    public void setCreatorId(Long value) {
+        set(13, value);
+    }
+
+    /**
+     * Getter for <code>cattle.secret.creator_id</code>.
+     */
+    @Column(name = "creator_id", precision = 19)
+    @Override
+    public Long getCreatorId() {
+        return (Long) get(13);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -279,23 +296,23 @@ public class SecretRecord extends UpdatableRecordImpl<SecretRecord> implements T
     }
 
     // -------------------------------------------------------------------------
-    // Record13 type implementation
+    // Record14 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row13<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long> fieldsRow() {
-        return (Row13) super.fieldsRow();
+    public Row14<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long> fieldsRow() {
+        return (Row14) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row13<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long> valuesRow() {
-        return (Row13) super.valuesRow();
+    public Row14<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long> valuesRow() {
+        return (Row14) super.valuesRow();
     }
 
     /**
@@ -406,6 +423,14 @@ public class SecretRecord extends UpdatableRecordImpl<SecretRecord> implements T
      * {@inheritDoc}
      */
     @Override
+    public Field<Long> field14() {
+        return SecretTable.SECRET.CREATOR_ID;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Long value1() {
         return getId();
     }
@@ -504,6 +529,14 @@ public class SecretRecord extends UpdatableRecordImpl<SecretRecord> implements T
     @Override
     public Long value13() {
         return getStackId();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Long value14() {
+        return getCreatorId();
     }
 
     /**
@@ -627,7 +660,16 @@ public class SecretRecord extends UpdatableRecordImpl<SecretRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public SecretRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, String value12, Long value13) {
+    public SecretRecord value14(Long value) {
+        setCreatorId(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SecretRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, String value12, Long value13, Long value14) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -641,6 +683,7 @@ public class SecretRecord extends UpdatableRecordImpl<SecretRecord> implements T
         value11(value11);
         value12(value12);
         value13(value13);
+        value14(value14);
         return this;
     }
 
@@ -666,6 +709,7 @@ public class SecretRecord extends UpdatableRecordImpl<SecretRecord> implements T
         setData(from.getData());
         setValue(from.getValue());
         setStackId(from.getStackId());
+        setCreatorId(from.getCreatorId());
     }
 
     /**
@@ -691,7 +735,7 @@ public class SecretRecord extends UpdatableRecordImpl<SecretRecord> implements T
     /**
      * Create a detached, initialised SecretRecord
      */
-    public SecretRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String value, Long environmentId) {
+    public SecretRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String value, Long environmentId, Long creatorId) {
         super(SecretTable.SECRET);
 
         set(0, id);
@@ -707,5 +751,6 @@ public class SecretRecord extends UpdatableRecordImpl<SecretRecord> implements T
         set(10, data);
         set(11, value);
         set(12, environmentId);
+        set(13, creatorId);
     }
 }

@@ -9,9 +9,9 @@ import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.engine.manager.LoopFactory;
 import io.cattle.platform.engine.manager.LoopManager;
-import io.cattle.platform.environment.EnvironmentResourceManager;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockManager;
+import io.cattle.platform.metadata.MetadataManager;
 import io.cattle.platform.network.NetworkService;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
@@ -25,7 +25,7 @@ public class InatorServices {
     public ServiceDao serviceDao;
     public GenericResourceDao resourceDao;
     public ObjectProcessManager processManager;
-    public ObjectMetaDataManager metadataManager;
+    public ObjectMetaDataManager objectMetadataManager;
     public JsonMapper jsonMapper;
     public NetworkService networkService;
     public IdFormatter idFormatter;
@@ -36,7 +36,7 @@ public class InatorServices {
     public HostDao hostDao;
     public DataDao dataDao;
     public LoopManager loopManager;
-    public EnvironmentResourceManager envResourceManager;
+    public MetadataManager metadataManager;
 
     public void triggerDeploymentUnitReconcile(Long id) {
         if (id == null) {

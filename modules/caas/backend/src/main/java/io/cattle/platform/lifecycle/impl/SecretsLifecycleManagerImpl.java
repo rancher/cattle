@@ -48,7 +48,7 @@ public class SecretsLifecycleManagerImpl implements SecretsLifecycleManager {
             return null;
         }
 
-        StorageDriver driver = storageDriverDao.findSecretsDriver(instance.getAccountId());
+        StorageDriver driver = storageDriverDao.findSecretsDriver(instance.getClusterId());
         if (driver == null) {
             return null;
         }

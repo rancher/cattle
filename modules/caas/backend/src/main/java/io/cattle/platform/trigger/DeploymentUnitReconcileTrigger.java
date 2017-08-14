@@ -35,7 +35,7 @@ public class DeploymentUnitReconcileTrigger implements Trigger {
     }
 
     @Override
-    public void trigger(Long accountId, Object resource, String source) {
+    public void trigger(Long accountId, Long clusterId, Object resource, String source) {
         for (Long id : getDeploymentUnits(resource)) {
             loopManager.kick(LoopFactoryImpl.DU_RECONCILE, ServiceConstants.KIND_DEPLOYMENT_UNIT, id, resource);
         }

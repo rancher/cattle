@@ -6,7 +6,7 @@ import io.cattle.platform.lock.definition.AbstractBlockingLockDefintion;
 public class DefaultNetworkLock extends AbstractBlockingLockDefintion {
 
     public DefaultNetworkLock(Network network) {
-        super("DEFAULT.NETWORK." + network.getAccountId());
+        super("DEFAULT.NETWORK." + network.getClusterId());
     }
 
 }

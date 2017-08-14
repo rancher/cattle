@@ -22,6 +22,9 @@ public interface Publish {
     String getResourceType();
 
     @Field(create = true)
+    String getPreviousId();
+
+    @Field(create = true)
     List<String> getPreviousIds();
 
     @Field(create = true, nullable = true)
@@ -32,9 +35,6 @@ public interface Publish {
 
     @Field(create = true)
     String getTransitioning();
-
-    @Field(create = true)
-    Integer getTransitioningProgress();
 
     @Field(create = true)
     String getTransitioningMessage();

@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class StoragePoolTable extends TableImpl<StoragePoolRecord> {
 
-    private static final long serialVersionUID = -414418982;
+    private static final long serialVersionUID = 70223977;
 
     /**
      * The reference instance of <code>cattle.storage_pool</code>
@@ -64,11 +64,6 @@ public class StoragePoolTable extends TableImpl<StoragePoolRecord> {
      * The column <code>cattle.storage_pool.name</code>.
      */
     public final TableField<StoragePoolRecord, String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
-
-    /**
-     * The column <code>cattle.storage_pool.account_id</code>.
-     */
-    public final TableField<StoragePoolRecord, Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
      * The column <code>cattle.storage_pool.kind</code>.
@@ -156,6 +151,11 @@ public class StoragePoolTable extends TableImpl<StoragePoolRecord> {
     public final TableField<StoragePoolRecord, Long> STORAGE_DRIVER_ID = createField("storage_driver_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
+     * The column <code>cattle.storage_pool.cluster_id</code>.
+     */
+    public final TableField<StoragePoolRecord, Long> CLUSTER_ID = createField("cluster_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
+
+    /**
      * Create a <code>cattle.storage_pool</code> table reference
      */
     public StoragePoolTable() {
@@ -214,7 +214,7 @@ public class StoragePoolTable extends TableImpl<StoragePoolRecord> {
      */
     @Override
     public List<ForeignKey<StoragePoolRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<StoragePoolRecord, ?>>asList(Keys.FK_STORAGE_POOL__ACCOUNT_ID, Keys.FK_STORAGE_POOL__AGENT_ID, Keys.FK_STORAGE_DRIVER__ID);
+        return Arrays.<ForeignKey<StoragePoolRecord, ?>>asList(Keys.FK_STORAGE_POOL__AGENT_ID, Keys.FK_STORAGE_DRIVER__ID, Keys.FK_STORAGE_POOL__CLUSTER_ID);
     }
 
     /**

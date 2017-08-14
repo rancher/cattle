@@ -199,6 +199,28 @@ public interface VolumeTemplate extends Serializable {
     @Column(name = "per_container", nullable = false, precision = 1)
     public Boolean getPerContainer();
 
+    /**
+     * Setter for <code>cattle.volume_template.cluster_id</code>.
+     */
+    public void setClusterId(Long value);
+
+    /**
+     * Getter for <code>cattle.volume_template.cluster_id</code>.
+     */
+    @Column(name = "cluster_id", nullable = false, precision = 19)
+    public Long getClusterId();
+
+    /**
+     * Setter for <code>cattle.volume_template.creator_id</code>.
+     */
+    public void setCreatorId(Long value);
+
+    /**
+     * Getter for <code>cattle.volume_template.creator_id</code>.
+     */
+    @Column(name = "creator_id", precision = 19)
+    public Long getCreatorId();
+
     // -------------------------------------------------------------------------
     // FROM and INTO
     // -------------------------------------------------------------------------

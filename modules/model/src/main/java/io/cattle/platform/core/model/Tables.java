@@ -9,7 +9,6 @@ import io.cattle.platform.core.model.tables.AgentTable;
 import io.cattle.platform.core.model.tables.AuditLogTable;
 import io.cattle.platform.core.model.tables.AuthTokenTable;
 import io.cattle.platform.core.model.tables.CertificateTable;
-import io.cattle.platform.core.model.tables.ClusterMembershipTable;
 import io.cattle.platform.core.model.tables.ClusterTable;
 import io.cattle.platform.core.model.tables.CredentialTable;
 import io.cattle.platform.core.model.tables.DataTable;
@@ -20,9 +19,11 @@ import io.cattle.platform.core.model.tables.DynamicSchemaRoleTable;
 import io.cattle.platform.core.model.tables.DynamicSchemaTable;
 import io.cattle.platform.core.model.tables.ExternalEventTable;
 import io.cattle.platform.core.model.tables.GenericObjectTable;
+import io.cattle.platform.core.model.tables.HaMembershipTable;
 import io.cattle.platform.core.model.tables.HostTable;
 import io.cattle.platform.core.model.tables.HostTemplateTable;
 import io.cattle.platform.core.model.tables.InstanceTable;
+import io.cattle.platform.core.model.tables.KeyValueTable;
 import io.cattle.platform.core.model.tables.MachineDriverTable;
 import io.cattle.platform.core.model.tables.MountTable;
 import io.cattle.platform.core.model.tables.NetworkDriverTable;
@@ -95,11 +96,6 @@ public class Tables {
     public static final ClusterTable CLUSTER = io.cattle.platform.core.model.tables.ClusterTable.CLUSTER;
 
     /**
-     * The table <code>cattle.cluster_membership</code>.
-     */
-    public static final ClusterMembershipTable CLUSTER_MEMBERSHIP = io.cattle.platform.core.model.tables.ClusterMembershipTable.CLUSTER_MEMBERSHIP;
-
-    /**
      * The table <code>cattle.credential</code>.
      */
     public static final CredentialTable CREDENTIAL = io.cattle.platform.core.model.tables.CredentialTable.CREDENTIAL;
@@ -135,11 +131,6 @@ public class Tables {
     public static final DynamicSchemaRoleTable DYNAMIC_SCHEMA_ROLE = io.cattle.platform.core.model.tables.DynamicSchemaRoleTable.DYNAMIC_SCHEMA_ROLE;
 
     /**
-     * The table <code>cattle.environment</code>.
-     */
-    public static final StackTable STACK = io.cattle.platform.core.model.tables.StackTable.STACK;
-
-    /**
      * The table <code>cattle.external_event</code>.
      */
     public static final ExternalEventTable EXTERNAL_EVENT = io.cattle.platform.core.model.tables.ExternalEventTable.EXTERNAL_EVENT;
@@ -148,6 +139,11 @@ public class Tables {
      * The table <code>cattle.generic_object</code>.
      */
     public static final GenericObjectTable GENERIC_OBJECT = io.cattle.platform.core.model.tables.GenericObjectTable.GENERIC_OBJECT;
+
+    /**
+     * The table <code>cattle.ha_membership</code>.
+     */
+    public static final HaMembershipTable HA_MEMBERSHIP = io.cattle.platform.core.model.tables.HaMembershipTable.HA_MEMBERSHIP;
 
     /**
      * The table <code>cattle.host</code>.
@@ -163,6 +159,11 @@ public class Tables {
      * The table <code>cattle.instance</code>.
      */
     public static final InstanceTable INSTANCE = io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
+
+    /**
+     * The table <code>cattle.key_value</code>.
+     */
+    public static final KeyValueTable KEY_VALUE = io.cattle.platform.core.model.tables.KeyValueTable.KEY_VALUE;
 
     /**
      * The table <code>cattle.machine_driver</code>.
@@ -238,6 +239,11 @@ public class Tables {
      * The table <code>cattle.setting</code>.
      */
     public static final SettingTable SETTING = io.cattle.platform.core.model.tables.SettingTable.SETTING;
+
+    /**
+     * The table <code>cattle.stack</code>.
+     */
+    public static final StackTable STACK = io.cattle.platform.core.model.tables.StackTable.STACK;
 
     /**
      * The table <code>cattle.storage_driver</code>.

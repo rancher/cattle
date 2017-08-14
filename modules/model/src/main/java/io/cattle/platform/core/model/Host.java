@@ -57,17 +57,6 @@ public interface Host extends Serializable {
     public String getName();
 
     /**
-     * Setter for <code>cattle.host.account_id</code>.
-     */
-    public void setAccountId(Long value);
-
-    /**
-     * Getter for <code>cattle.host.account_id</code>.
-     */
-    @Column(name = "account_id", precision = 19)
-    public Long getAccountId();
-
-    /**
      * Setter for <code>cattle.host.kind</code>.
      */
     public void setKind(String value);
@@ -178,17 +167,6 @@ public interface Host extends Serializable {
     public Long getAgentId();
 
     /**
-     * Setter for <code>cattle.host.is_public</code>.
-     */
-    public void setIsPublic(Boolean value);
-
-    /**
-     * Getter for <code>cattle.host.is_public</code>.
-     */
-    @Column(name = "is_public", nullable = false, precision = 1)
-    public Boolean getIsPublic();
-
-    /**
      * Setter for <code>cattle.host.agent_state</code>.
      */
     public void setAgentState(String value);
@@ -286,6 +264,28 @@ public interface Host extends Serializable {
      */
     @Column(name = "revision", nullable = false, precision = 19)
     public Long getRevision();
+
+    /**
+     * Setter for <code>cattle.host.cluster_id</code>.
+     */
+    public void setClusterId(Long value);
+
+    /**
+     * Getter for <code>cattle.host.cluster_id</code>.
+     */
+    @Column(name = "cluster_id", nullable = false, precision = 19)
+    public Long getClusterId();
+
+    /**
+     * Setter for <code>cattle.host.creator_id</code>.
+     */
+    public void setCreatorId(Long value);
+
+    /**
+     * Getter for <code>cattle.host.creator_id</code>.
+     */
+    @Column(name = "creator_id", precision = 19)
+    public Long getCreatorId();
 
     // -------------------------------------------------------------------------
     // FROM and INTO

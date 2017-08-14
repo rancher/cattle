@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class CertificateTable extends TableImpl<CertificateRecord> {
 
-    private static final long serialVersionUID = -783061688;
+    private static final long serialVersionUID = -1819604583;
 
     /**
      * The reference instance of <code>cattle.certificate</code>
@@ -126,6 +126,11 @@ public class CertificateTable extends TableImpl<CertificateRecord> {
     public final TableField<CertificateRecord, String> KEY = createField("key", org.jooq.impl.SQLDataType.CLOB, this, "");
 
     /**
+     * The column <code>cattle.certificate.creator_id</code>.
+     */
+    public final TableField<CertificateRecord, Long> CREATOR_ID = createField("creator_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
      * Create a <code>cattle.certificate</code> table reference
      */
     public CertificateTable() {
@@ -184,7 +189,7 @@ public class CertificateTable extends TableImpl<CertificateRecord> {
      */
     @Override
     public List<ForeignKey<CertificateRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<CertificateRecord, ?>>asList(Keys.FK_CERT_DATA__ACCOUNT_ID);
+        return Arrays.<ForeignKey<CertificateRecord, ?>>asList(Keys.FK_CERT_DATA__ACCOUNT_ID, Keys.FK_CERTIFICATE__CREATOR_ID);
     }
 
     /**

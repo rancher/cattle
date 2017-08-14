@@ -51,7 +51,7 @@ public class MachineConfigLinkHandler implements LinkHandler {
             String extractedConfig = (String) DataAccessor.getFields(host).get(EXTRACTED_CONFIG_FIELD);
             if (extractedConfig.startsWith("{")) {
                 try {
-                    extractedConfig = secretsService.decrypt(host.getAccountId(), extractedConfig);
+                    extractedConfig = secretsService.decrypt(extractedConfig);
                 } catch (Exception e) {
                     throw new IOException(e);
                 }
@@ -76,7 +76,7 @@ public class MachineConfigLinkHandler implements LinkHandler {
     protected byte[] writeZip(Host host, String extractedConfig) throws IOException {
         if (extractedConfig.startsWith("{")) {
             try {
-                extractedConfig = secretsService.decrypt(host.getAccountId(), extractedConfig);
+                extractedConfig = secretsService.decrypt(extractedConfig);
             } catch (Exception e) {
                 throw new IOException(e);
             }

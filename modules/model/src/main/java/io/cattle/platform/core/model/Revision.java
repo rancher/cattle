@@ -166,6 +166,17 @@ public interface Revision extends Serializable {
     @Column(name = "service_id", precision = 19)
     public Long getServiceId();
 
+    /**
+     * Setter for <code>cattle.revision.creator_id</code>.
+     */
+    public void setCreatorId(Long value);
+
+    /**
+     * Getter for <code>cattle.revision.creator_id</code>.
+     */
+    @Column(name = "creator_id", precision = 19)
+    public Long getCreatorId();
+
     // -------------------------------------------------------------------------
     // FROM and INTO
     // -------------------------------------------------------------------------

@@ -80,7 +80,7 @@ public class OpenLDAPConstants {
 
     /* * All of these
            * Fields Should be configurable. Make them configurable in ldap config. and used in appropriate places.
-           * Add the member attributes and memberOf attributes. Make Comma separated list of ous that are allowed as setting.
+           * Add the member attributes and memberOf attributes. Make Comma separated listSupport of ous that are allowed as setting.
            * This setting will be iterated on every login request/ search for results. We only support direct membership currently.
         * */
     public static final DynamicStringProperty USER_NAME_FIELD = ArchaiusUtil.getString(USER_NAME_FIELD_SETTING);

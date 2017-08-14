@@ -35,11 +35,11 @@ public interface ObjectManager {
 
     <T> T loadResource(String resourceType, Long resourceId);
 
-    <T> T setFields(Object obj, Map<String, Object> values);
+    <T> T setFields(T obj, Map<String, Object> values);
 
-    <T> T setFields(Schema schema, Object obj, Map<String, Object> values);
+    <T> T setFields(Schema schema, T obj, Map<String, Object> values);
 
-    <T> T setFields(Object obj, Object key, Object... valueKeyValue);
+    <T> T setFields(T obj, Object key, Object... valueKeyValue);
 
     Map<String, Object> convertToPropertiesFor(Object obj, Map<Object, Object> object);
 

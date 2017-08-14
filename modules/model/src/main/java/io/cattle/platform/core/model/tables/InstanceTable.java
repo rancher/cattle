@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class InstanceTable extends TableImpl<InstanceRecord> {
 
-    private static final long serialVersionUID = 2146167555;
+    private static final long serialVersionUID = 1985854694;
 
     /**
      * The reference instance of <code>cattle.instance</code>
@@ -256,6 +256,16 @@ public class InstanceTable extends TableImpl<InstanceRecord> {
     public final TableField<InstanceRecord, Long> REVISION = createField("revision", org.jooq.impl.SQLDataType.BIGINT.nullable(false).defaultValue(org.jooq.impl.DSL.inline("0", org.jooq.impl.SQLDataType.BIGINT)), this, "");
 
     /**
+     * The column <code>cattle.instance.cluster_id</code>.
+     */
+    public final TableField<InstanceRecord, Long> CLUSTER_ID = createField("cluster_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
+
+    /**
+     * The column <code>cattle.instance.creator_id</code>.
+     */
+    public final TableField<InstanceRecord, Long> CREATOR_ID = createField("creator_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
      * Create a <code>cattle.instance</code> table reference
      */
     public InstanceTable() {
@@ -314,7 +324,7 @@ public class InstanceTable extends TableImpl<InstanceRecord> {
      */
     @Override
     public List<ForeignKey<InstanceRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<InstanceRecord, ?>>asList(Keys.FK_INSTANCE__ACCOUNT_ID, Keys.FK_INSTANCE__AGENT_ID, Keys.FK_INSTANCE__REGISTRY_CREDENTIAL_ID, Keys.FK_INSTANCE__INSTANCE_ID, Keys.FK_INSTANCE__SERVICE_ID, Keys.FK_INSTANCE__ENVIRONMENT_ID, Keys.FK_INSTANCE__DEPLOYMENT_UNIT_ID, Keys.FK_INSTANCE__REVISION_ID, Keys.FK_INSTANCE__HOST_ID, Keys.FK_INSTANCE__NETWORK_ID);
+        return Arrays.<ForeignKey<InstanceRecord, ?>>asList(Keys.FK_INSTANCE__ACCOUNT_ID, Keys.FK_INSTANCE__AGENT_ID, Keys.FK_INSTANCE__REGISTRY_CREDENTIAL_ID, Keys.FK_INSTANCE__INSTANCE_ID, Keys.FK_INSTANCE__SERVICE_ID, Keys.FK_INSTANCE__ENVIRONMENT_ID, Keys.FK_INSTANCE__DEPLOYMENT_UNIT_ID, Keys.FK_INSTANCE__REVISION_ID, Keys.FK_INSTANCE__HOST_ID, Keys.FK_INSTANCE__NETWORK_ID, Keys.FK_INSTANCE__CLUSTER_ID, Keys.FK_INSTANCE__CREATOR_ID);
     }
 
     /**

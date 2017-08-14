@@ -4,6 +4,6 @@ public interface Trigger {
 
     String METADATA_SOURCE = "metadata";
 
-    void trigger(Long accountId, Object resource, String source);
+    void trigger(Long accountId, Long clusterId, Object resource, String source);
 
 }

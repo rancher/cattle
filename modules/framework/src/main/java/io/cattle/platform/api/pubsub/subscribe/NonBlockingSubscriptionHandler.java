@@ -88,7 +88,7 @@ public abstract class NonBlockingSubscriptionHandler implements SubscriptionHand
                         return;
                     }
 
-                    EventVO<Object> modified = new EventVO<>(event);
+                    EventVO<Object, Object> modified = new EventVO<>(event);
 
                     ApiRequest request = new ApiRequest(apiRequest);
                     if (!postProcess(modified, idFormatter, request, policy)) {
@@ -117,7 +117,7 @@ public abstract class NonBlockingSubscriptionHandler implements SubscriptionHand
         return result;
     }
 
-    protected boolean postProcess(EventVO<Object> event, IdFormatter idFormatter, ApiRequest request, Object policy) {
+    protected boolean postProcess(EventVO<Object, Object> event, IdFormatter idFormatter, ApiRequest request, Object policy) {
         try {
             ApiContext context = ApiContext.newContext();
             context.setApiRequest(request);
@@ -136,7 +136,7 @@ public abstract class NonBlockingSubscriptionHandler implements SubscriptionHand
         return true;
     }
 
-    protected void obfuscateIds(EventVO<?> event, IdFormatter idFormatter) {
+    protected void obfuscateIds(EventVO<?, ?> event, IdFormatter idFormatter) {
         if (event.getResourceType() == null) {
             event.setResourceId(null);
         } else {
@@ -149,7 +149,7 @@ public abstract class NonBlockingSubscriptionHandler implements SubscriptionHand
 
     protected void write(Event event, MessageWriter writer, Object writeLock, boolean strip, EventListener listener, final AtomicBoolean disconnect)
             throws IOException {
-        EventVO<Object> newEvent = new EventVO<>(event);
+        EventVO<Object, Object> newEvent = new EventVO<>(event);
         if (strip) {
             String name = newEvent.getName();
             if (name != null) {

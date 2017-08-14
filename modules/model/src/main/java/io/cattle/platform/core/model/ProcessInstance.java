@@ -210,6 +210,17 @@ public interface ProcessInstance extends Serializable {
     @Column(name = "account_id", precision = 19)
     public Long getAccountId();
 
+    /**
+     * Setter for <code>cattle.process_instance.cluster_id</code>.
+     */
+    public void setClusterId(Long value);
+
+    /**
+     * Getter for <code>cattle.process_instance.cluster_id</code>.
+     */
+    @Column(name = "cluster_id", precision = 19)
+    public Long getClusterId();
+
     // -------------------------------------------------------------------------
     // FROM and INTO
     // -------------------------------------------------------------------------

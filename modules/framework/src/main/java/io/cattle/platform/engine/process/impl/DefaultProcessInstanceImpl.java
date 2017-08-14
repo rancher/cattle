@@ -166,7 +166,8 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
     protected void trigger() {
         for (Trigger trigger : context.getTriggers()) {
             try {
-                trigger.trigger(record.getAccountIdLong(), instanceContext.getState().getResource(), instanceContext.getProcessDefinition().getName());
+                trigger.trigger(record.getAccountId(), record.getClusterId(), instanceContext.getState().getResource(),
+                        instanceContext.getProcessDefinition().getName());
             } catch (Throwable t) {
                 log.error("Exception while running trigger [{}] on [{}:{}]", trigger, getName(), getId(), t);
             }
@@ -342,8 +343,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             public void run() {
                 Long id = record.getId();
                 if (id != null) {
-                    ProcessExecuteEvent event = new ProcessExecuteEvent(id, getName(), getProcessRecord().getResourceType(),
-                            getProcessRecord().getResourceId(), getProcessRecord().getAccountIdLong());
+                    ProcessExecuteEvent event = new ProcessExecuteEvent(getProcessRecord());
                     context.getEventService().publish(event);
                 }
 
@@ -526,6 +526,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                 record.getResourceType(),
                 record.getResourceId(),
                 record.getAccountId(),
+                record.getClusterId(),
                 record.getPriority(),
                 state.getData());
         config.setParentProcessState(state);

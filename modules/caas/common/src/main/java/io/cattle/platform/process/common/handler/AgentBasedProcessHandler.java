@@ -150,7 +150,7 @@ public class AgentBasedProcessHandler implements CompletableLogic, Named {
             data.put("processData", processData);
         }
 
-        EventVO<Object> event = EventVO.newEvent(getCommandName(process))
+        EventVO<Object, Object> event = EventVO.newEvent(getCommandName(process))
                 .withData(data)
                 .withResourceType(objectManager.getType(eventResource))
                 .withResourceId(ObjectUtils.getId(eventResource).toString());
@@ -183,16 +183,16 @@ public class AgentBasedProcessHandler implements CompletableLogic, Named {
         });
     }
 
-    protected Map<Object, Object> getResourceDataMap(EventVO<?> event, Event reply, ProcessState state, ProcessInstance process, Object eventResource,
+    protected Map<Object, Object> getResourceDataMap(EventVO<?, ?> event, Event reply, ProcessState state, ProcessInstance process, Object eventResource,
                                                      Object dataResource, Object agentResource) {
         return null;
     }
 
-    protected void postProcessEvent(EventVO<?> event, Event reply, ProcessState state, ProcessInstance process, Object eventResource, Object dataResource,
+    protected void postProcessEvent(EventVO<?, ?> event, Event reply, ProcessState state, ProcessInstance process, Object eventResource, Object dataResource,
             Object agentResource) {
     }
 
-    protected void preProcessEvent(EventVO<?> event, ProcessState state, ProcessInstance process, Object eventResource, Object dataResource,
+    protected void preProcessEvent(EventVO<?, ?> event, ProcessState state, ProcessInstance process, Object eventResource, Object dataResource,
             Object agentResource) {
     }
 
@@ -226,13 +226,13 @@ public class AgentBasedProcessHandler implements CompletableLogic, Named {
     }
 
     protected static class Context {
-        EventVO<?> request;
+        EventVO<?, ?> request;
         Event reply;
         Object eventResource;
         Object dataResource;
         Object agentResource;
 
-        public Context(EventVO<?> request, Event reply, Object eventResource, Object dataResource, Object agentResource) {
+        public Context(EventVO<?, ?> request, Event reply, Object eventResource, Object dataResource, Object agentResource) {
             this.reply = reply;
             this.request = request;
             this.eventResource = eventResource;

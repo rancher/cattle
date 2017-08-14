@@ -11,9 +11,9 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
-import io.cattle.platform.environment.EnvironmentResourceManager;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
+import io.cattle.platform.metadata.MetadataManager;
 import io.cattle.platform.metadata.model.HostInfo;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
@@ -36,16 +36,16 @@ public class DeploymentSyncRequestHandler extends AgentBasedProcessHandler {
     public static final DynamicStringProperty EXTERNAL_STYLE = ArchaiusUtil.getString("external.compute.event.target");
 
     DeploymentSyncFactory syncFactory;
-    EnvironmentResourceManager envResourceManager;
+    MetadataManager metadataManager;
     boolean externalAlways;
 
     public DeploymentSyncRequestHandler(AgentLocator agentLocator, ObjectSerializer serializer,
                                         ObjectManager objectManager, ObjectProcessManager processManager,
                                         DeploymentSyncFactory syncFactory,
-                                        EnvironmentResourceManager envResourceManager) {
+                                        MetadataManager metadataManager) {
         super(agentLocator, serializer, objectManager, processManager);
         this.syncFactory = syncFactory;
-        this.envResourceManager = envResourceManager;
+        this.metadataManager = metadataManager;
     }
 
     @Override
@@ -66,12 +66,12 @@ public class DeploymentSyncRequestHandler extends AgentBasedProcessHandler {
 
         try {
             if ("container".equals(EXTERNAL_STYLE.get())) {
-                Set<Long> agentIds = new TreeSet<>(envResourceManager.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_COMPUTE,
+                Set<Long> agentIds = new TreeSet<>(metadataManager.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_COMPUTE,
                         instance.getAccountId()));
                 return agentIds.iterator().next();
             } else if ("host".equals(EXTERNAL_STYLE.get())) {
                 long agentId = Long.MAX_VALUE;
-                for (HostInfo info : envResourceManager.getMetadata(instance.getAccountId()).getHosts()) {
+                for (HostInfo info : metadataManager.getMetadataForAccount(instance.getAccountId()).getHosts()) {
                     if (CommonStatesConstants.ACTIVE.equals(info.getAgentState()) &&
                             CommonStatesConstants.ACTIVE.equals(info.getState()) &&
                             info.getAgentId() != null &&
@@ -91,7 +91,7 @@ public class DeploymentSyncRequestHandler extends AgentBasedProcessHandler {
     }
 
     @Override
-    protected void preProcessEvent(EventVO<?> event, ProcessState state, ProcessInstance process, Object eventResource, Object dataResource, Object agentResource) {
+    protected void preProcessEvent(EventVO<?, ?> event, ProcessState state, ProcessInstance process, Object eventResource, Object dataResource, Object agentResource) {
         super.preProcessEvent(event, state, process, eventResource, dataResource, agentResource);
 
         // Long means that we are going to an agent, not instance. So it's external. A bit hacky.
@@ -101,7 +101,7 @@ public class DeploymentSyncRequestHandler extends AgentBasedProcessHandler {
     }
 
     @Override
-    protected Map<Object, Object> getResourceDataMap(EventVO<?> event, Event reply, ProcessState state, ProcessInstance process, Object eventResource, Object dataResource, Object agentResource) {
+    protected Map<Object, Object> getResourceDataMap(EventVO<?, ?> event, Event reply, ProcessState state, ProcessInstance process, Object eventResource, Object dataResource, Object agentResource) {
         Map<Object, Object> data = new HashMap<>();
 
         Instance instance = (Instance)state.getResource();
@@ -121,7 +121,7 @@ public class DeploymentSyncRequestHandler extends AgentBasedProcessHandler {
                 }
 
                 if (status.getHostUuid() != null && instance.getHostId() == null) {
-                    HostInfo host = envResourceManager.getMetadata(instance.getAccountId()).getHost(status.getHostUuid());
+                    HostInfo host = metadataManager.getMetadataForAccount(instance.getAccountId()).getHost(status.getHostUuid());
                     if (host != null) {
                         data.put(INSTANCE.HOST_ID, host.getId());
                     }

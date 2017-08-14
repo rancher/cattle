@@ -77,7 +77,7 @@ public class VolumeWrapper implements BasicStateWrapper {
 
     @Override
     public ObjectMetaDataManager getMetadataManager() {
-        return svc.metadataManager;
+        return svc.objectMetadataManager;
     }
 
     @Override

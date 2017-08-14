@@ -10,7 +10,7 @@ public interface InstanceDao {
 
     List<? extends Instance> getNonRemovedInstanceOn(Long hostId);
 
-    Instance getInstanceByUuidOrExternalId(Long accountId, String uuid, String externalId);
+    Instance getInstanceByUuidOrExternalId(Long clusterId, String uuid, String externalId);
 
     List<? extends Instance> getOtherDeploymentInstances(Instance instance);
 

@@ -38,7 +38,7 @@ import org.jooq.impl.UpdatableRecordImpl;
 @Table(name = "volume", schema = "cattle")
 public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements TableRecordJaxb, Volume {
 
-    private static final long serialVersionUID = 1965580295;
+    private static final long serialVersionUID = 500186449;
 
     /**
      * Setter for <code>cattle.volume.id</code>.
@@ -433,6 +433,40 @@ public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements T
         return (Long) get(22);
     }
 
+    /**
+     * Setter for <code>cattle.volume.cluster_id</code>.
+     */
+    @Override
+    public void setClusterId(Long value) {
+        set(23, value);
+    }
+
+    /**
+     * Getter for <code>cattle.volume.cluster_id</code>.
+     */
+    @Column(name = "cluster_id", nullable = false, precision = 19)
+    @Override
+    public Long getClusterId() {
+        return (Long) get(23);
+    }
+
+    /**
+     * Setter for <code>cattle.volume.creator_id</code>.
+     */
+    @Override
+    public void setCreatorId(Long value) {
+        set(24, value);
+    }
+
+    /**
+     * Getter for <code>cattle.volume.creator_id</code>.
+     */
+    @Column(name = "creator_id", precision = 19)
+    @Override
+    public Long getCreatorId() {
+        return (Long) get(24);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -477,6 +511,8 @@ public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements T
         setStorageDriverId(from.getStorageDriverId());
         setSizeMb(from.getSizeMb());
         setStoragePoolId(from.getStoragePoolId());
+        setClusterId(from.getClusterId());
+        setCreatorId(from.getCreatorId());
     }
 
     /**
@@ -502,7 +538,7 @@ public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements T
     /**
      * Create a detached, initialised VolumeRecord
      */
-    public VolumeRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Long physicalSizeMb, Long virtualSizeMb, String uri, String externalId, String accessMode, Long hostId, Long deploymentUnitId, Long environmentId, Long volumeTemplateId, Long storageDriverId, Long sizeMb, Long storagePoolId) {
+    public VolumeRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Long physicalSizeMb, Long virtualSizeMb, String uri, String externalId, String accessMode, Long hostId, Long deploymentUnitId, Long environmentId, Long volumeTemplateId, Long storageDriverId, Long sizeMb, Long storagePoolId, Long clusterId, Long creatorId) {
         super(VolumeTable.VOLUME);
 
         set(0, id);
@@ -528,5 +564,7 @@ public class VolumeRecord extends UpdatableRecordImpl<VolumeRecord> implements T
         set(20, storageDriverId);
         set(21, sizeMb);
         set(22, storagePoolId);
+        set(23, clusterId);
+        set(24, creatorId);
     }
 }

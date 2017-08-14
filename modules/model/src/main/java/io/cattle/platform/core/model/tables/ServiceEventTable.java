@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ServiceEventTable extends TableImpl<ServiceEventRecord> {
 
-    private static final long serialVersionUID = -1646026935;
+    private static final long serialVersionUID = -1713622364;
 
     /**
      * The reference instance of <code>cattle.service_event</code>
@@ -136,6 +136,11 @@ public class ServiceEventTable extends TableImpl<ServiceEventRecord> {
     public final TableField<ServiceEventRecord, Long> EXTERNAL_TIMESTAMP = createField("external_timestamp", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
+     * The column <code>cattle.service_event.creator_id</code>.
+     */
+    public final TableField<ServiceEventRecord, Long> CREATOR_ID = createField("creator_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
      * Create a <code>cattle.service_event</code> table reference
      */
     public ServiceEventTable() {
@@ -194,7 +199,7 @@ public class ServiceEventTable extends TableImpl<ServiceEventRecord> {
      */
     @Override
     public List<ForeignKey<ServiceEventRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<ServiceEventRecord, ?>>asList(Keys.FK_SERVICE_EVENT__ACCOUNT_ID, Keys.FK_SERVICE_EVENT__HOST_ID, Keys.FK_SERVICE_EVENT__INSTANCE_ID);
+        return Arrays.<ForeignKey<ServiceEventRecord, ?>>asList(Keys.FK_SERVICE_EVENT__ACCOUNT_ID, Keys.FK_SERVICE_EVENT__HOST_ID, Keys.FK_SERVICE_EVENT__INSTANCE_ID, Keys.FK_SERVICE_EVENT__CREATOR_ID);
     }
 
     /**

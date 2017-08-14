@@ -18,8 +18,13 @@ public class ProcessEventListenerImpl implements ProcessEventListener {
         if (event.getResourceId() == null || event.getData() == null)
             return;
 
-        processServer.submit(new ProcessReference(new Long(event.getResourceId()), event.getData().getName(), event.getData().getResourceType(),
-                event.getData().getResourceId().toString(), event.getData().getAccountId()));
+        processServer.submit(new ProcessReference(
+                new Long(event.getResourceId()),
+                event.getData().getName(),
+                event.getData().getResourceType(),
+                event.getData().getResourceId().toString(),
+                event.getData().getAccountId(),
+                event.getData().getClusterId()));
     }
 
 }

@@ -47,7 +47,7 @@ public class ProjectResourceManager extends DefaultResourceManager {
     }
 
     @Override
-    public Object list(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
+    public Object listSupport(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
         ApiRequest request = ApiContext.getContext().getApiRequest();
         Policy policy = (Policy) ApiContext.getContext().getPolicy();
         String id = RequestUtils.getConditionValue("id", criteria);
@@ -138,9 +138,9 @@ public class ProjectResourceManager extends DefaultResourceManager {
     }
 
     @Override
-    public Object deleteObject(String type, String id, final Object obj, ApiRequest apiRequest) {
+    public Object deleteObjectSupport(String type, String id, final Object obj, ApiRequest apiRequest) {
         if (!(obj instanceof Account) || !(((Account) obj).getKind().equalsIgnoreCase(ProjectConstants.TYPE))) {
-            return super.deleteObject(type, id, obj, apiRequest);
+            return super.deleteObjectSupport(type, id, obj, apiRequest);
         }
         ObjectProcessManager objectProcessManager = objectResourceManagerSupport.getObjectProcessManager();
         ObjectManager objectManager = objectResourceManagerSupport.getObjectManager();
@@ -172,12 +172,12 @@ public class ProjectResourceManager extends DefaultResourceManager {
     }
 
     @Override
-    public Object updateObject(String type, String id, Object obj, ApiRequest apiRequest) {
+    public Object updateObjectSupport(String type, String id, Object obj, ApiRequest apiRequest) {
         Policy policy = (Policy) ApiContext.getContext().getPolicy();
         Account project = (Account) obj;
         if (authDao.isProjectOwner(project.getId(), policy.getAccountId(),
                 policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS), policy.getIdentities())) {
-            return super.updateObject(type, id, obj, apiRequest);
+            return super.updateObjectSupport(type, id, obj, apiRequest);
         } else {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN, "Forbidden", "You must be a project owner to update the name or description.", null);
         }

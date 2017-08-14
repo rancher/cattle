@@ -65,13 +65,20 @@ public class AgentProcessManager {
             return new HandlerResult(AGENT.ACCOUNT_ID, accountId);
         }
 
-        DataAccessor.fromMap(state.getData()).withScope(AccountConstants.class).withKey(AccountConstants.OPTION_CREATE_APIKEY).set(true);
+        DataAccessor.fromMap(state.getData())
+                .withScope(AccountConstants.class)
+                .withKey(AccountConstants.OPTION_CREATE_APIKEY)
+                .set(true);
 
-        DataAccessor.fromMap(state.getData()).withScope(AccountConstants.class).withKey(AccountConstants.OPTION_CREATE_APIKEY_KIND).set(
-                CredentialConstants.KIND_AGENT_API_KEY);
+        DataAccessor.fromMap(state.getData())
+                .withScope(AccountConstants.class)
+                .withKey(AccountConstants.OPTION_CREATE_APIKEY_KIND)
+                .set(CredentialConstants.KIND_AGENT_API_KEY);
 
         List<? extends String> roles =
-                DataAccessor.fromDataFieldOf(agent).withKey(AgentConstants.DATA_REQUESTED_ROLES).withDefault(Collections.EMPTY_LIST)
+                DataAccessor.fromDataFieldOf(agent)
+                        .withKey(AgentConstants.DATA_REQUESTED_ROLES)
+                        .withDefault(Collections.EMPTY_LIST)
                         .asList(String.class);
         sortRoles(roles);
 
@@ -139,6 +146,7 @@ public class AgentProcessManager {
             account = objectManager.create(Account.class,
                     ACCOUNT.UUID, uuid,
                     ACCOUNT.DATA, data,
+                    ACCOUNT.CLUSTER_ID, agent.getClusterId(),
                     ACCOUNT.KIND, "agent");
         }
 

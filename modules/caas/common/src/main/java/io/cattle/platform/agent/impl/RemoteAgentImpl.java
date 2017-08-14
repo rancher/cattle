@@ -1,5 +1,6 @@
 package io.cattle.platform.agent.impl;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import io.cattle.platform.agent.AgentRequest;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.async.utils.AsyncUtils;
@@ -18,8 +19,6 @@ import io.cattle.platform.object.ObjectManager;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-
-import com.google.common.util.concurrent.ListenableFuture;
 
 public class RemoteAgentImpl implements RemoteAgent {
 
@@ -107,9 +106,9 @@ public class RemoteAgentImpl implements RemoteAgent {
 
         T commandReply = jsonMapper.convertValue(resultEvent.getData(), reply);
         if (FRIENDLY_REPLY.contains(inputEvent.getName())) {
-            EventVO<?> publishEvent = null;
+            EventVO<?, ?> publishEvent = null;
             if (commandReply instanceof EventVO) {
-                publishEvent = (EventVO<?>) commandReply;
+                publishEvent = (EventVO<?, ?>) commandReply;
             } else {
                 publishEvent = jsonMapper.convertValue(resultEvent.getData(), EventVO.class);
             }

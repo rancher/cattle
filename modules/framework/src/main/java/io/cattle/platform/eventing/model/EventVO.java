@@ -1,17 +1,16 @@
 package io.cattle.platform.eventing.model;
 
 import javax.xml.bind.annotation.XmlTransient;
-import java.util.Arrays;
 
-public class EventVO<T> implements Event {
+public class EventVO<T, K> implements Event {
 
     private String id, name, replyTo, resourceId, resourceType, transitioning, transitioningMessage;
-    private String[] previousIds, previousNames;
+    private String previousId;
     private T data;
+    private K requestData;
     private Long time;
     private Long timeoutMillis;
     private String listenerKey;
-    private Integer transitioningProgress;
 
     @SuppressWarnings("unchecked")
     public EventVO() {
@@ -28,45 +27,25 @@ public class EventVO<T> implements Event {
         this.replyTo = replyTo;
 
         this.id = event.getId();
-        this.name = event.getName();
-        this.previousIds = event.getPreviousIds();
-        this.previousNames = event.getPreviousNames();
         this.data = (T) event.getData();
-        this.time = event.getTime();
+        this.name = event.getName();
+        this.previousId = event.getPreviousId();
         this.resourceId = event.getResourceId();
         this.resourceType = event.getResourceType();
+        this.time = event.getTime();
+        this.timeoutMillis = event.getTimeoutMillis();
         this.transitioning = event.getTransitioning();
         this.transitioningMessage = event.getTransitioningMessage();
-        this.transitioningProgress = event.getTransitioningProgress();
-        this.timeoutMillis = event.getTimeoutMillis();
     }
 
-    public static EventVO<Object> reply(Event request) {
-        EventVO<Object> event = new EventVO<>();
+    public static EventVO<Object, Object> reply(Event request) {
+        EventVO<Object, Object> event = new EventVO<>();
         event.setName(request.getReplyTo());
-        event.setPreviousNames(prepend(request.getPreviousNames(), request.getName()));
-        event.setPreviousIds(prepend(request.getPreviousIds(), request.getId()));
-        event.setResourceId(request.getResourceId());
-        event.setResourceType(request.getResourceType());
-
+        event.setPreviousId(request.getId());
         return event;
     }
 
-    private static String[] prepend(String[] array, String value) {
-        if (array != null && array.length > 0) {
-            String[] newIds = new String[array.length + 1];
-            System.arraycopy(array, 0, newIds, 1, array.length);
-            newIds[0] = value;
-
-            array = newIds;
-        } else {
-            array = new String[] { value };
-        }
-
-        return array;
-    }
-
-    public static <T> EventVO<T> newEvent(String name) {
+    public static <T, K> EventVO<T, K> newEvent(String name) {
         return new EventVO<>(name);
     }
 
@@ -84,36 +63,22 @@ public class EventVO<T> implements Event {
         this.name = name;
     }
 
-    public EventVO<T> withName(String name) {
+    public EventVO<T, K> withName(String name) {
         this.name = name;
         return this;
     }
 
     @Override
-    public String[] getPreviousIds() {
-        return previousIds;
+    public String getPreviousId() {
+        return previousId;
     }
 
-    public void setPreviousIds(String[] previousIds) {
-        this.previousIds = previousIds;
+    public void setPreviousId(String previousId) {
+        this.previousId = previousId;
     }
 
-    public EventVO<T> withPreviousIds(String[] previousIds) {
-        this.previousIds = previousIds;
-        return this;
-    }
-
-    @Override
-    public String[] getPreviousNames() {
-        return previousNames;
-    }
-
-    public void setPreviousNames(String[] names) {
-        this.previousNames = names;
-    }
-
-    public EventVO<T> withPreviousNames(String[] names) {
-        this.previousNames = names;
+    public EventVO<T, K> withPreviousId(String previousId) {
+        this.previousId = previousId;
         return this;
     }
 
@@ -126,8 +91,22 @@ public class EventVO<T> implements Event {
         this.data = data;
     }
 
-    public EventVO<T> withData(T data) {
+    public EventVO<T, K> withData(T data) {
         this.data = data;
+        return this;
+    }
+
+    @Override
+    public K getRequestData() {
+        return requestData;
+    }
+
+    public void setRequestData(K requestData) {
+        this.requestData = requestData;
+    }
+
+    public EventVO<T, K> withRequestData(K requestData) {
+        this.requestData = requestData;
         return this;
     }
 
@@ -140,7 +119,7 @@ public class EventVO<T> implements Event {
         this.time = time;
     }
 
-    public EventVO<T> withTime(Long time) {
+    public EventVO<T, K> withTime(Long time) {
         this.time = time;
         return this;
     }
@@ -154,7 +133,7 @@ public class EventVO<T> implements Event {
         this.id = id;
     }
 
-    public EventVO<T> withId(String id) {
+    public EventVO<T, K> withId(String id) {
         this.id = id;
         return this;
     }
@@ -168,7 +147,7 @@ public class EventVO<T> implements Event {
         this.replyTo = replyTo;
     }
 
-    public EventVO<T> withReplyTo(String replyTo) {
+    public EventVO<T, K> withReplyTo(String replyTo) {
         this.replyTo = replyTo;
         return this;
     }
@@ -182,7 +161,7 @@ public class EventVO<T> implements Event {
         this.resourceId = resourceId;
     }
 
-    public EventVO<T> withResourceId(String resourceId) {
+    public EventVO<T, K> withResourceId(String resourceId) {
         this.resourceId = resourceId;
         return this;
     }
@@ -196,7 +175,7 @@ public class EventVO<T> implements Event {
         this.resourceType = resourceType;
     }
 
-    public EventVO<T> withResourceType(String resourceType) {
+    public EventVO<T, K> withResourceType(String resourceType) {
         this.resourceType = resourceType;
         return this;
     }
@@ -210,7 +189,7 @@ public class EventVO<T> implements Event {
         this.listenerKey = listenerKey;
     }
 
-    public EventVO<T> withListenerKey(String listenerKey) {
+    public EventVO<T, K> withListenerKey(String listenerKey) {
         this.listenerKey = listenerKey;
         return this;
     }
@@ -224,7 +203,7 @@ public class EventVO<T> implements Event {
         this.transitioning = transitioning;
     }
 
-    public EventVO<T> withTransitioning(String transitioning) {
+    public EventVO<T, K> withTransitioning(String transitioning) {
         this.transitioning = transitioning;
         return this;
     }
@@ -238,22 +217,8 @@ public class EventVO<T> implements Event {
         this.transitioningMessage = transitioningMessage;
     }
 
-    public EventVO<T> withTransitioningMessage(String transitioningMessage) {
+    public EventVO<T, K> withTransitioningMessage(String transitioningMessage) {
         this.transitioningMessage = transitioningMessage;
-        return this;
-    }
-
-    @Override
-    public Integer getTransitioningProgress() {
-        return transitioningProgress;
-    }
-
-    public void setTransitioningProgress(Integer transitioningProgress) {
-        this.transitioningProgress = transitioningProgress;
-    }
-
-    public EventVO<T> withTransitioningProgress(Integer transitioningProgress) {
-        this.transitioningProgress = transitioningProgress;
         return this;
     }
 
@@ -266,7 +231,7 @@ public class EventVO<T> implements Event {
         this.timeoutMillis = timeout;
     }
 
-    public EventVO<T> withTimeoutMillis(Long timeout) {
+    public EventVO<T, K> withTimeoutMillis(Long timeout) {
         this.timeoutMillis = timeout;
         return this;
     }
@@ -281,13 +246,12 @@ public class EventVO<T> implements Event {
                 ", resourceType='" + resourceType + '\'' +
                 ", transitioning='" + transitioning + '\'' +
                 ", transitioningMessage='" + transitioningMessage + '\'' +
-                ", previousIds=" + Arrays.toString(previousIds) +
-                ", previousNames=" + Arrays.toString(previousNames) +
+                ", previousId='" + previousId + '\'' +
                 ", data=" + data +
+                ", requestData=" + requestData +
                 ", time=" + time +
                 ", timeoutMillis=" + timeoutMillis +
                 ", listenerKey='" + listenerKey + '\'' +
-                ", transitioningProgress=" + transitioningProgress +
                 '}';
     }
 

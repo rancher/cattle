@@ -70,7 +70,7 @@ public class ResourceChangeEventListenerImpl implements ResourceChangeEventListe
         }
 
         Event originalEvent = jsonMapper.convertValue(event.getData(), EventVO.class);
-        EventVO<?> eventWithAccount = new EventVO<>(originalEvent, null);
+        EventVO<?, ?> eventWithAccount = new EventVO<>(originalEvent, null);
         eventWithAccount.setName(FrameworkEvents.appendAccount(originalEvent.getName(), resourceAccId));
 
         eventService.publish(originalEvent);

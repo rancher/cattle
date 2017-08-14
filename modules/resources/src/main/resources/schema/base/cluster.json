@@ -1,7 +1,15 @@
 {
   "resourceFields": {
+    "hostRemoveDelaySeconds": {
+      "type": "int",
+      "required": false,
+      "nullable": true
+    },
     "identity": {
       "type": "clusterIdentity"
+    },
+    "k8sConfig": {
+      "type": "k8sConfig"
     }
   }
 }

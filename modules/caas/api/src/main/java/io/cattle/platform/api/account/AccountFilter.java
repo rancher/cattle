@@ -3,6 +3,8 @@ package io.cattle.platform.api.account;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.model.Account;
+import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
@@ -11,14 +13,16 @@ import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import java.util.Map;
+import java.util.Objects;
 
 public class AccountFilter extends AbstractValidationFilter {
 
     AccountDao accountDao;
+    ObjectManager objectManager;
 
-    public AccountFilter(AccountDao accountDao) {
-        super();
+    public AccountFilter(AccountDao accountDao, ObjectManager objectManager) {
         this.accountDao = accountDao;
+        this.objectManager = objectManager;
     }
 
     @Override
@@ -36,7 +40,21 @@ public class AccountFilter extends AbstractValidationFilter {
             }
 
         }
+
+        validateClusterId(id, request);
+
         return super.update(type, id, request, next);
+    }
+
+    protected void validateClusterId(String id, ApiRequest request) {
+        Account account = objectManager.loadResource(Account.class, id);
+        Long newClusterId = request.proxyRequestObject(Account.class).getClusterId();
+        if (account != null && account.getClusterId() != null &&
+                request.getRequestParams().containsKey(ObjectMetaDataManager.CLUSTER_FIELD) &&
+                !Objects.equals(newClusterId, account.getClusterId())) {
+            throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, AccountConstants.CLUSTER_ALREADY_SET,
+                    "Cluster is already assigned", null);
+        }
     }
 
     @Override

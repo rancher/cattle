@@ -18,6 +18,7 @@ import java.util.Map;
 import javax.annotation.Generated;
 
 import org.jooq.Field;
+import org.jooq.ForeignKey;
 import org.jooq.Identity;
 import org.jooq.Schema;
 import org.jooq.Table;
@@ -39,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AccountTable extends TableImpl<AccountRecord> {
 
-    private static final long serialVersionUID = 1250798198;
+    private static final long serialVersionUID = 30035646;
 
     /**
      * The reference instance of <code>cattle.account</code>
@@ -115,14 +116,19 @@ public class AccountTable extends TableImpl<AccountRecord> {
     public final TableField<AccountRecord, String> EXTERNAL_ID_TYPE = createField("external_id_type", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
 
     /**
-     * The column <code>cattle.account.default_network_id</code>.
-     */
-    public final TableField<AccountRecord, Long> DEFAULT_NETWORK_ID = createField("default_network_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
-
-    /**
      * The column <code>cattle.account.version</code>.
      */
     public final TableField<AccountRecord, String> VERSION = createField("version", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
+
+    /**
+     * The column <code>cattle.account.cluster_id</code>.
+     */
+    public final TableField<AccountRecord, Long> CLUSTER_ID = createField("cluster_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
+     * The column <code>cattle.account.cluster_owner</code>.
+     */
+    public final TableField<AccountRecord, Boolean> CLUSTER_OWNER = createField("cluster_owner", org.jooq.impl.SQLDataType.BIT.nullable(false).defaultValue(org.jooq.impl.DSL.inline("b'0'", org.jooq.impl.SQLDataType.BIT)), this, "");
 
     /**
      * Create a <code>cattle.account</code> table reference
@@ -176,6 +182,14 @@ public class AccountTable extends TableImpl<AccountRecord> {
     @Override
     public List<UniqueKey<AccountRecord>> getKeys() {
         return Arrays.<UniqueKey<AccountRecord>>asList(Keys.KEY_ACCOUNT_PRIMARY, Keys.KEY_ACCOUNT_IDX_ACCOUNT_UUID);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<ForeignKey<AccountRecord, ?>> getReferences() {
+        return Arrays.<ForeignKey<AccountRecord, ?>>asList(Keys.FK_ACCOUNT__CLUSTER_ID);
     }
 
     /**

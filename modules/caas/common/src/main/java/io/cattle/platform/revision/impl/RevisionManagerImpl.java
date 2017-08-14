@@ -166,21 +166,20 @@ public class RevisionManagerImpl implements RevisionManager {
     }
 
     @Override
-    public void createInitialRevisionForInstance(long accountId, Map<String, Object> data) {
+    public void createInitialRevisionForInstance(long accountId, long clusterId, Map<String, Object> data) {
         setName(data);
 
         Map<String, Object> revisionData = new HashMap<>(data);
         Long deploymentUnitId = checkNsFields(revisionData);
 
         if (deploymentUnitId == null) {
-            createDeploymentUnit(accountId, deploymentUnitId, revisionData, data, schemaFactory);
+            createDeploymentUnit(accountId, clusterId, data);
         } else {
             joinDeploymentUnit(deploymentUnitId, revisionData, data, schemaFactory);
         }
     }
 
-    private void createDeploymentUnit(long accountId, Long deploymentUnitId, Map<String, Object> lcRevisionData, Map<String, Object> instanceData,
-            SchemaFactory schemaFactory) {
+    private void createDeploymentUnit(long accountId, long clusterId, Map<String, Object> instanceData) {
         String name = DataAccessor.fromMap(instanceData).withKey(ObjectMetaDataManager.NAME_FIELD).as(String.class);
         long stackId = getStackId(accountId, instanceData);
         Map<String, Object> revisionData = CollectionUtils.asMap(
@@ -188,7 +187,7 @@ public class RevisionManagerImpl implements RevisionManager {
                 ServiceConstants.FIELD_LAUNCH_CONFIG, instanceData);
 
         Revision newRevision = createInitialRevision(null, accountId, revisionData);
-        DeploymentUnit unit = serviceDao.createDeploymentUnit(accountId, null, stackId, null, "0", newRevision.getId(), true);
+        DeploymentUnit unit = serviceDao.createDeploymentUnit(accountId, clusterId, null, stackId, null, "0", newRevision.getId(), true);
 
         instanceData.put(InstanceConstants.FIELD_LAUNCH_CONFIG_NAME, ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
         instanceData.put(ServiceConstants.FIELD_VERSION, "0");

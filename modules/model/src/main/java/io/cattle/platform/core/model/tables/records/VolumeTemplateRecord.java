@@ -21,8 +21,8 @@ import javax.persistence.Table;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record15;
-import org.jooq.Row15;
+import org.jooq.Record17;
+import org.jooq.Row17;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -39,9 +39,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "volume_template", schema = "cattle")
-public class VolumeTemplateRecord extends UpdatableRecordImpl<VolumeTemplateRecord> implements TableRecordJaxb, Record15<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Boolean, Boolean>, VolumeTemplate {
+public class VolumeTemplateRecord extends UpdatableRecordImpl<VolumeTemplateRecord> implements TableRecordJaxb, Record17<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Boolean, Boolean, Long, Long>, VolumeTemplate {
 
-    private static final long serialVersionUID = 743481795;
+    private static final long serialVersionUID = 1052919001;
 
     /**
      * Setter for <code>cattle.volume_template.id</code>.
@@ -300,6 +300,40 @@ public class VolumeTemplateRecord extends UpdatableRecordImpl<VolumeTemplateReco
         return (Boolean) get(14);
     }
 
+    /**
+     * Setter for <code>cattle.volume_template.cluster_id</code>.
+     */
+    @Override
+    public void setClusterId(Long value) {
+        set(15, value);
+    }
+
+    /**
+     * Getter for <code>cattle.volume_template.cluster_id</code>.
+     */
+    @Column(name = "cluster_id", nullable = false, precision = 19)
+    @Override
+    public Long getClusterId() {
+        return (Long) get(15);
+    }
+
+    /**
+     * Setter for <code>cattle.volume_template.creator_id</code>.
+     */
+    @Override
+    public void setCreatorId(Long value) {
+        set(16, value);
+    }
+
+    /**
+     * Getter for <code>cattle.volume_template.creator_id</code>.
+     */
+    @Column(name = "creator_id", precision = 19)
+    @Override
+    public Long getCreatorId() {
+        return (Long) get(16);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -313,23 +347,23 @@ public class VolumeTemplateRecord extends UpdatableRecordImpl<VolumeTemplateReco
     }
 
     // -------------------------------------------------------------------------
-    // Record15 type implementation
+    // Record17 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row15<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Boolean, Boolean> fieldsRow() {
-        return (Row15) super.fieldsRow();
+    public Row17<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Boolean, Boolean, Long, Long> fieldsRow() {
+        return (Row17) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row15<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Boolean, Boolean> valuesRow() {
-        return (Row15) super.valuesRow();
+    public Row17<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Boolean, Boolean, Long, Long> valuesRow() {
+        return (Row17) super.valuesRow();
     }
 
     /**
@@ -456,6 +490,22 @@ public class VolumeTemplateRecord extends UpdatableRecordImpl<VolumeTemplateReco
      * {@inheritDoc}
      */
     @Override
+    public Field<Long> field16() {
+        return VolumeTemplateTable.VOLUME_TEMPLATE.CLUSTER_ID;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Field<Long> field17() {
+        return VolumeTemplateTable.VOLUME_TEMPLATE.CREATOR_ID;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Long value1() {
         return getId();
     }
@@ -570,6 +620,22 @@ public class VolumeTemplateRecord extends UpdatableRecordImpl<VolumeTemplateReco
     @Override
     public Boolean value15() {
         return getPerContainer();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Long value16() {
+        return getClusterId();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Long value17() {
+        return getCreatorId();
     }
 
     /**
@@ -711,7 +777,25 @@ public class VolumeTemplateRecord extends UpdatableRecordImpl<VolumeTemplateReco
      * {@inheritDoc}
      */
     @Override
-    public VolumeTemplateRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, String value12, Long value13, Boolean value14, Boolean value15) {
+    public VolumeTemplateRecord value16(Long value) {
+        setClusterId(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public VolumeTemplateRecord value17(Long value) {
+        setCreatorId(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public VolumeTemplateRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, String value12, Long value13, Boolean value14, Boolean value15, Long value16, Long value17) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -727,6 +811,8 @@ public class VolumeTemplateRecord extends UpdatableRecordImpl<VolumeTemplateReco
         value13(value13);
         value14(value14);
         value15(value15);
+        value16(value16);
+        value17(value17);
         return this;
     }
 
@@ -754,6 +840,8 @@ public class VolumeTemplateRecord extends UpdatableRecordImpl<VolumeTemplateReco
         setStackId(from.getStackId());
         setExternal(from.getExternal());
         setPerContainer(from.getPerContainer());
+        setClusterId(from.getClusterId());
+        setCreatorId(from.getCreatorId());
     }
 
     /**
@@ -779,7 +867,7 @@ public class VolumeTemplateRecord extends UpdatableRecordImpl<VolumeTemplateReco
     /**
      * Create a detached, initialised VolumeTemplateRecord
      */
-    public VolumeTemplateRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String driver, Long environmentId, Boolean external, Boolean perContainer) {
+    public VolumeTemplateRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String driver, Long environmentId, Boolean external, Boolean perContainer, Long clusterId, Long creatorId) {
         super(VolumeTemplateTable.VOLUME_TEMPLATE);
 
         set(0, id);
@@ -797,5 +885,7 @@ public class VolumeTemplateRecord extends UpdatableRecordImpl<VolumeTemplateReco
         set(12, environmentId);
         set(13, external);
         set(14, perContainer);
+        set(15, clusterId);
+        set(16, creatorId);
     }
 }

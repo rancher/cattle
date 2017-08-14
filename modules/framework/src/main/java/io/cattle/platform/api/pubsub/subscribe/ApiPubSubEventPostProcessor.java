@@ -4,6 +4,6 @@ import io.cattle.platform.eventing.model.EventVO;
 
 public interface ApiPubSubEventPostProcessor {
 
-    boolean processEvent(EventVO<Object> event);
+    boolean processEvent(EventVO<Object, Object> event);
 
 }

@@ -32,8 +32,10 @@ public class AccountFieldPostInitHandler implements ObjectPostInstantiationHandl
                 accountId = Long.parseLong(value);
             }
             ObjectUtils.setPropertyIgnoreErrors(obj, ObjectMetaDataManager.ACCOUNT_FIELD, accountId);
+            ObjectUtils.setPropertyIgnoreErrors(obj, ObjectMetaDataManager.CLUSTER_FIELD, policy.getClusterId());
         }
 
+        ObjectUtils.setPropertyIgnoreErrors(obj, ObjectMetaDataManager.CREATOR_FIELD, policy.getAuthenticatedAsAccountId());
         return obj;
     }
 

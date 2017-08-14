@@ -44,14 +44,19 @@ public class ObjectLaunchConfigurationUtils {
             priority += 1000;
         }
 
-        Object accountId = null;
+        Long accountId = null;
         if ("agent".equals(schema.getId())) {
-            accountId = ObjectUtils.getPropertyIgnoreErrors(resource, "resourceAgentId");
+            accountId = (Long) ObjectUtils.getPropertyIgnoreErrors(resource, "resourceAgentId");
         }
         if (accountId == null) {
             accountId = ObjectUtils.getAccountId(resource);
         }
-        return new LaunchConfiguration(processName, schema.getId(), id.toString(), accountId, priority,
+        return new LaunchConfiguration(processName,
+                schema.getId(),
+                id.toString(),
+                accountId,
+                ObjectUtils.getClusterId(resource),
+                priority,
                 data == null ? new HashMap<>() : data);
     }
 

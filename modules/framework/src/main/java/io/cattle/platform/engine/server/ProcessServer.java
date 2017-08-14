@@ -141,7 +141,7 @@ public class ProcessServer implements ProcessInstanceExecutor {
     }
 
     public boolean isInPartition(ProcessReference ref) {
-        return cluster.isInPartition(ref.getAccountId());
+        return cluster.isInPartition(ref.getAccountId(), ref.getClusterId());
     }
 
     @Override

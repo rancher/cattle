@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class HostTemplateTable extends TableImpl<HostTemplateRecord> {
 
-    private static final long serialVersionUID = 844075124;
+    private static final long serialVersionUID = -1310211111;
 
     /**
      * The reference instance of <code>cattle.host_template</code>
@@ -121,6 +121,16 @@ public class HostTemplateTable extends TableImpl<HostTemplateRecord> {
     public final TableField<HostTemplateRecord, String> FLAVOR_PREFIX = createField("flavor_prefix", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
     /**
+     * The column <code>cattle.host_template.cluster_id</code>.
+     */
+    public final TableField<HostTemplateRecord, Long> CLUSTER_ID = createField("cluster_id", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
+
+    /**
+     * The column <code>cattle.host_template.creator_id</code>.
+     */
+    public final TableField<HostTemplateRecord, Long> CREATOR_ID = createField("creator_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
      * Create a <code>cattle.host_template</code> table reference
      */
     public HostTemplateTable() {
@@ -179,7 +189,7 @@ public class HostTemplateTable extends TableImpl<HostTemplateRecord> {
      */
     @Override
     public List<ForeignKey<HostTemplateRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<HostTemplateRecord, ?>>asList(Keys.FK_HOST_TEMPLATE__ACCOUNT_ID);
+        return Arrays.<ForeignKey<HostTemplateRecord, ?>>asList(Keys.FK_HOST_TEMPLATE__CLUSTER_ID, Keys.FK_HOST_TEMPLATE__CREATOR_ID);
     }
 
     /**

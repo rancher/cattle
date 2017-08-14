@@ -46,7 +46,7 @@ public class VolumeProcessManager {
             return;
         }
 
-        List<? extends StoragePool> pools = storagePoolDao.findStoragePoolByDriverName(v.getAccountId(), driver);
+        List<? extends StoragePool> pools = storagePoolDao.findStoragePoolByDriverName(v.getClusterId(), driver);
         if (pools.size() == 0) {
             return;
         }
@@ -70,7 +70,7 @@ public class VolumeProcessManager {
 
         if (storageDriver == null && StringUtils.isNotBlank(driver)) {
             storageDriver = objectManager.findAny(StorageDriver.class,
-                    STORAGE_DRIVER.ACCOUNT_ID, volume.getAccountId(),
+                    STORAGE_DRIVER.CLUSTER_ID, volume.getClusterId(),
                     STORAGE_DRIVER.REMOVED, null,
                     STORAGE_DRIVER.NAME, driver);
         }

@@ -144,6 +144,28 @@ public interface ExternalEvent extends Serializable {
     @Column(name = "reported_account_id", precision = 19)
     public Long getReportedAccountId();
 
+    /**
+     * Setter for <code>cattle.external_event.creator_id</code>.
+     */
+    public void setCreatorId(Long value);
+
+    /**
+     * Getter for <code>cattle.external_event.creator_id</code>.
+     */
+    @Column(name = "creator_id", precision = 19)
+    public Long getCreatorId();
+
+    /**
+     * Setter for <code>cattle.external_event.cluster_id</code>.
+     */
+    public void setClusterId(Long value);
+
+    /**
+     * Getter for <code>cattle.external_event.cluster_id</code>.
+     */
+    @Column(name = "cluster_id", precision = 19)
+    public Long getClusterId();
+
     // -------------------------------------------------------------------------
     // FROM and INTO
     // -------------------------------------------------------------------------

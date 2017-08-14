@@ -1,7 +1,7 @@
 package io.cattle.platform.agent.util;
 
+import com.netflix.config.DynamicStringListProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.model.Account;
@@ -10,14 +10,11 @@ import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.framework.event.Ping;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.util.type.CollectionUtils;
-
-import java.io.UnsupportedEncodingException;
-import java.util.Map;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 
-import com.netflix.config.DynamicStringListProperty;
+import java.io.UnsupportedEncodingException;
+import java.util.Map;
 
 public class AgentUtils {
 
@@ -27,16 +24,9 @@ public class AgentUtils {
         if (agent == null) {
             return null;
         }
-        return newPing(agent.getId());
+        return new Ping(agent.getAccountId(), agent.getClusterId());
     }
 
-    public static Ping newPing(long agentId) {
-        Ping ping = new Ping();
-        ping.setResourceType(AgentConstants.TYPE);
-        ping.setResourceId(Long.toString(agentId));
-
-        return ping;
-    }
 
     public static Map<String, Object> getAccountScopedAuth(Account account, ObjectManager objectManager, String scope) {
         if (account == null) {

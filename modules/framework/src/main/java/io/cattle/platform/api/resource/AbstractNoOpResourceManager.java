@@ -15,17 +15,17 @@ public abstract class AbstractNoOpResourceManager implements ResourceManagerBase
     }
 
     @Override
-    public Object updateObject(String type, String id, Object obj, ApiRequest request) {
+    public Object updateObjectSupport(String type, String id, Object obj, ApiRequest request) {
         return null;
     }
 
     @Override
-    public Object list(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
+    public Object listSupport(SchemaFactory schemaFactory, String type, Map<Object, Object> criteria, ListOptions options) {
         return null;
     }
 
     @Override
-    public Object deleteObject(String type, String id, Object obj, ApiRequest request) {
+    public Object deleteObjectSupport(String type, String id, Object obj, ApiRequest request) {
         return null;
     }
 

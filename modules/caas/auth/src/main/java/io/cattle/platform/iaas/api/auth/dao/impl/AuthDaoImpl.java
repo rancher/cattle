@@ -1,9 +1,6 @@
 package io.cattle.platform.iaas.api.auth.dao.impl;
 
-import static io.cattle.platform.core.model.tables.AccountTable.*;
-import static io.cattle.platform.core.model.tables.CredentialTable.*;
-import static io.cattle.platform.core.model.tables.ProjectMemberTable.*;
-
+import com.netflix.config.DynamicStringListProperty;
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
@@ -34,14 +31,6 @@ import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.util.TransformationService;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.Condition;
 import org.jooq.Configuration;
@@ -51,7 +40,16 @@ import org.jooq.TableField;
 import org.jooq.exception.InvalidResultException;
 import org.jooq.impl.DSL;
 
-import com.netflix.config.DynamicStringListProperty;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static io.cattle.platform.core.model.tables.AccountTable.*;
+import static io.cattle.platform.core.model.tables.CredentialTable.*;
+import static io.cattle.platform.core.model.tables.ProjectMemberTable.*;
 
 public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
 
@@ -93,7 +91,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                         .and(CREDENTIAL.STATE.eq(CommonStatesConstants.ACTIVE))
                         .and(CREDENTIAL.PUBLIC_VALUE.contains(username))
                         .and(CREDENTIAL.KIND.eq(CredentialConstants.KIND_PASSWORD)))
-                .orderBy(ACCOUNT.ID.asc()).fetchInto(Account.class);
+                .orderBy(ACCOUNT.ID.asc()).fetchInto(AccountRecord.class);
     }
 
     @Override
