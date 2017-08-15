@@ -769,7 +769,8 @@
         "cluster" : "crud",
         "cluster.embedded" : "cr",
         "cluster.hostRemoveDelaySeconds" : "cru",
-        "cluster.k8sConfig" : "cru",
+        "cluster.k8sServerConfig" : "cru",
+        "cluster.k8sClientConfig" : "cru",
 
         "clusterIdentity" : "",
         "clusterIdentity.username" : "r",
@@ -777,10 +778,14 @@
         "clusterIdentity.groups" : "r",
         "clusterIdentity.attributes" : "r",
 
-        "k8sConfig" : "cru",
-        "k8sConfig.admissionControllers" : "cr",
-        "k8sConfig.serviceNetCidr" : "cr",
-        "k8sConfig.kubeConfig" : "cru",
+        "k8sServerConfig" : "cru",
+        "k8sServerConfig.admissionControllers" : "cr",
+        "k8sServerConfig.serviceNetCidr" : "cr",
+
+        "k8sClientConfig" : "cru",
+        "k8sClientConfig.bearerToken" : "cru",
+        "k8sClientConfig.address" : "cru",
+        "k8sClientConfig.caCert" : "cru",
 
         "launchConfig" : "cru",
         "launchConfig.completeUpdate" : "ru",

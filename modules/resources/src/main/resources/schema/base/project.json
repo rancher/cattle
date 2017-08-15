@@ -27,11 +27,6 @@
         "capability": "owner"
       }
     },
-    "delete": {
-      "attributes": {
-        "capability": "owner"
-      }
-    },
     "purge": {
       "attributes": {
         "capability": "owner"
@@ -44,11 +39,6 @@
     }
   },
   "resourceFields": {
-    "allowSystemRole": {
-      "type": "boolean",
-      "default": false,
-      "required": false
-    },
     "members": {
       "type": "array[projectMember]",
       "nullable": "true"

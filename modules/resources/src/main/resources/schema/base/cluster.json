@@ -14,8 +14,11 @@
     "identity": {
       "type": "clusterIdentity"
     },
-    "k8sConfig": {
-      "type": "k8sConfig"
+    "k8sServerConfig": {
+      "type": "k8sServerConfig"
+    },
+    "k8sClientConfig": {
+      "type": "k8sClientConfig"
     }
   }
 }

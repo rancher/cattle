@@ -7,5 +7,4 @@ public interface ResponseConverter {
 
     Resource convertResponse(Object obj, ApiRequest request);
 
-
 }

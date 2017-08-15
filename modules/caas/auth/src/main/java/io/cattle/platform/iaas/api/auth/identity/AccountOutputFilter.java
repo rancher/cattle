@@ -27,7 +27,7 @@ public class AccountOutputFilter implements ResourceOutputFilter {
         Account account = (Account) original;
 
         if (account.getClusterOwner()) {
-            converted.getActions().remove("delete");
+            converted.getActions().remove("remove");
         }
 
         if (request != null && AccountConstants.PROJECT_KIND.equalsIgnoreCase(account.getKind())) {

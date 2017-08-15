@@ -17,12 +17,10 @@ import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Volume;
-import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.server.context.ServerContext;
 import io.cattle.platform.service.launcher.ServiceAccountCreateStartup;
 import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
@@ -92,7 +90,6 @@ public class DeploymentSyncFactory {
 
             networkIds.addAll(DataAccessor.fieldLongList(instance, InstanceConstants.FIELD_NETWORK_IDS));
 
-            addSystemCredentials(instance);
             addRoleAccounts(instance);
         }
 
@@ -146,38 +143,6 @@ public class DeploymentSyncFactory {
         }
 
         return Hex.encodeHexString(digest.digest());
-    }
-
-    private void addSystemCredentials(Instance instance) {
-        boolean setCredentials = false;
-        Object value = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS).get(SystemLabels.LABEL_AGENT_ROLE);
-        if (AgentConstants.SYSTEM_ROLE.equals(value)) {
-            Account account = objectManager.loadResource(Account.class, instance.getAccountId());
-            if (DataAccessor.fieldBool(account, AccountConstants.FIELD_ALLOW_SYSTEM_ROLE)) {
-                setCredentials = true;
-            }
-        }
-
-        if (!setCredentials) {
-            return;
-        }
-
-        Credential cred = serviceAccount.getCredential();
-        if (cred == null) {
-            log.error("Failed to find credential for service account");
-            return;
-        }
-
-        Map<String, Object> fields = DataAccessor.getWritableFields(instance);
-        DataAccessor.fromMap(fields)
-                .withScopeKey(InstanceConstants.FIELD_ENVIRONMENT)
-                .withKey("CATTLE_ACCESS_KEY").set(cred.getPublicValue());
-        DataAccessor.fromMap(fields)
-                .withScopeKey(InstanceConstants.FIELD_ENVIRONMENT)
-                .withKey("CATTLE_SECRET_KEY").set(cred.getSecretValue());
-        DataAccessor.fromMap(fields)
-                .withScopeKey(InstanceConstants.FIELD_ENVIRONMENT)
-                .withKey("CATTLE_URL").set(ServerContext.getHostApiBaseUrl(ServerContext.BaseProtocol.HTTP));
     }
 
     private void addRoleAccounts(Instance instance) {

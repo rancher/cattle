@@ -17,7 +17,6 @@
         "machineDriver.resourceActions\\..*": "c",
         "machineDriver.resourceActions.create": "",
         "machineDriver.schemaVersion": "cru",
-        "project.allowSystemRole": "cru",
         "project": "cr",
         "project.description": "cr",
         "project.name": "cr",

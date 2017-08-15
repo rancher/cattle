@@ -77,6 +77,15 @@ public class ApiRouterImpl implements ResourceManagerLocator, ApiRouter {
     }
 
     private void forEach(Object obj, Consumer<String> consumer) {
+        if ("*".equals(obj)) {
+            for (Schema schema : schemaFactory.listSchemas()) {
+                if (schema.getParent() == null) {
+                    forEach(schema.getId(), consumer);
+                }
+            }
+            return;
+        }
+
         Schema schema = getSchema(obj);
         if (schema == null) {
             throw new IllegalArgumentException("Unknown schema type [" + obj + "]");

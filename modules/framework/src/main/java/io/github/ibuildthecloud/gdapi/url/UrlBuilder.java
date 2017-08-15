@@ -8,6 +8,8 @@ import java.net.URL;
 public interface UrlBuilder {
 
     String SELF = "self";
+    String UPDATE = "update";
+    String REMOVE = "remove";
     String COLLECTION = "collection";
     String LATEST = "latest";
 

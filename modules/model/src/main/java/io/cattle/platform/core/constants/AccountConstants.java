@@ -29,8 +29,6 @@ public class AccountConstants {
     public static final String OPTION_CREATE_APIKEY_KIND = "createApiKeyKind";
     public static final String OPTION_CREATE_OWNER_ACCESS = "ownerAccess";
 
-    public static final String FIELD_ALLOW_SYSTEM_ROLE = "allowSystemRole";
-
     public static final String DATA_ACT_AS_RESOURCE_ACCOUNT = "actAsResourceAccount";
     public static final String DATA_AGENT_OWNER_ID = "agentOwnerId";
 

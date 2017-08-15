@@ -10,11 +10,6 @@
         "scheduleUpdate": true
       }
     },
-    "allowSystemRole": {
-      "type": "boolean",
-      "default": false,
-      "required": false
-    },
     "answers": {
       "type": "map[json]"
     },

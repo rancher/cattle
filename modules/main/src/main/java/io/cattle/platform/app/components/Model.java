@@ -19,7 +19,8 @@ import io.cattle.platform.core.addon.HealthcheckState;
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.addon.InstanceStatus;
-import io.cattle.platform.core.addon.K8sConfig;
+import io.cattle.platform.core.addon.K8sClientConfig;
+import io.cattle.platform.core.addon.K8sServerConfig;
 import io.cattle.platform.core.addon.Link;
 import io.cattle.platform.core.addon.LoadBalancerCookieStickinessPolicy;
 import io.cattle.platform.core.addon.LogConfig;
@@ -293,7 +294,8 @@ public class Model {
                 InServiceUpgradeStrategy.class,
                 InstanceHealthCheck.class,
                 InstanceStatus.class,
-                K8sConfig.class,
+                K8sClientConfig.class,
+                K8sServerConfig.class,
                 Link.class,
                 LoadBalancerCookieStickinessPolicy.class,
                 LocalAuthConfig.class,

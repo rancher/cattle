@@ -10,6 +10,7 @@ import io.cattle.platform.api.certificate.CertificateCreateValidationFilter;
 import io.cattle.platform.api.certificate.LoadBalancerServiceCertificateRemoveFilter;
 import io.cattle.platform.api.change.impl.ResourceChangeEventProcessor;
 import io.cattle.platform.api.cluster.ClusterIdCommonFilter;
+import io.cattle.platform.api.common.CommonActionsOutputFilter;
 import io.cattle.platform.api.containerevent.ContainerEventFilter;
 import io.cattle.platform.api.credential.ApiKeyCertificateDownloadLinkHandler;
 import io.cattle.platform.api.credential.ApiKeyOutputFilter;
@@ -251,6 +252,8 @@ public class Api {
     private void addResourceOutputFilters() {
         ResourceIdOutputFilter resourceIdOutputFilter = new ResourceIdOutputFilter();
         StatsOutputFilter statsOutputFilter = new StatsOutputFilter();
+
+        c.router.outputFilter("*", new CommonActionsOutputFilter());
 
         c.router.outputFilter(Account.class, new AccountOutputFilter());
         c.router.outputFilter(AuditLog.class, new AuditLogOutputFilter());

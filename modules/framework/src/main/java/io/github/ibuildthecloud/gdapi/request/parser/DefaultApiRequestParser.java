@@ -90,7 +90,7 @@ public class DefaultApiRequestParser implements ApiRequestParser {
     protected String parseAction(ApiRequest apiRequest, HttpServletRequest request) {
         if ("POST".equals(apiRequest.getMethod())) {
             String action = request.getParameter(Resource.ACTION);
-            if ("delete".equalsIgnoreCase(action)) {
+            if ("remove".equalsIgnoreCase(action)) {
                 apiRequest.setMethod("DELETE");
                 return null;
             }
