@@ -21,8 +21,8 @@ import javax.persistence.Table;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record15;
-import org.jooq.Row15;
+import org.jooq.Record14;
+import org.jooq.Row14;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -39,9 +39,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "host_template", schema = "cattle")
-public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> implements TableRecordJaxb, Record15<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, Long, Long>, HostTemplate {
+public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> implements TableRecordJaxb, Record14<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, Long, Long>, HostTemplate {
 
-    private static final long serialVersionUID = 91235346;
+    private static final long serialVersionUID = 559922137;
 
     /**
      * Setter for <code>cattle.host_template.id</code>.
@@ -80,28 +80,11 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
     }
 
     /**
-     * Setter for <code>cattle.host_template.account_id</code>.
-     */
-    @Override
-    public void setAccountId(Long value) {
-        set(2, value);
-    }
-
-    /**
-     * Getter for <code>cattle.host_template.account_id</code>.
-     */
-    @Column(name = "account_id", precision = 19)
-    @Override
-    public Long getAccountId() {
-        return (Long) get(2);
-    }
-
-    /**
      * Setter for <code>cattle.host_template.kind</code>.
      */
     @Override
     public void setKind(String value) {
-        set(3, value);
+        set(2, value);
     }
 
     /**
@@ -110,7 +93,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
     @Column(name = "kind", nullable = false, length = 255)
     @Override
     public String getKind() {
-        return (String) get(3);
+        return (String) get(2);
     }
 
     /**
@@ -118,7 +101,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      */
     @Override
     public void setUuid(String value) {
-        set(4, value);
+        set(3, value);
     }
 
     /**
@@ -127,7 +110,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
     @Column(name = "uuid", unique = true, nullable = false, length = 128)
     @Override
     public String getUuid() {
-        return (String) get(4);
+        return (String) get(3);
     }
 
     /**
@@ -135,7 +118,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      */
     @Override
     public void setDescription(String value) {
-        set(5, value);
+        set(4, value);
     }
 
     /**
@@ -144,7 +127,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
     @Column(name = "description", length = 1024)
     @Override
     public String getDescription() {
-        return (String) get(5);
+        return (String) get(4);
     }
 
     /**
@@ -152,7 +135,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      */
     @Override
     public void setState(String value) {
-        set(6, value);
+        set(5, value);
     }
 
     /**
@@ -161,7 +144,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
     @Column(name = "state", nullable = false, length = 128)
     @Override
     public String getState() {
-        return (String) get(6);
+        return (String) get(5);
     }
 
     /**
@@ -169,7 +152,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      */
     @Override
     public void setCreated(Date value) {
-        set(7, value);
+        set(6, value);
     }
 
     /**
@@ -178,7 +161,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
     @Column(name = "created")
     @Override
     public Date getCreated() {
-        return (Date) get(7);
+        return (Date) get(6);
     }
 
     /**
@@ -186,7 +169,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      */
     @Override
     public void setRemoved(Date value) {
-        set(8, value);
+        set(7, value);
     }
 
     /**
@@ -195,7 +178,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
     @Column(name = "removed")
     @Override
     public Date getRemoved() {
-        return (Date) get(8);
+        return (Date) get(7);
     }
 
     /**
@@ -203,7 +186,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      */
     @Override
     public void setRemoveTime(Date value) {
-        set(9, value);
+        set(8, value);
     }
 
     /**
@@ -212,7 +195,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
     @Column(name = "remove_time")
     @Override
     public Date getRemoveTime() {
-        return (Date) get(9);
+        return (Date) get(8);
     }
 
     /**
@@ -220,7 +203,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      */
     @Override
     public void setData(Map<String,Object> value) {
-        set(10, value);
+        set(9, value);
     }
 
     /**
@@ -229,7 +212,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
     @Column(name = "data", length = 16777215)
     @Override
     public Map<String,Object> getData() {
-        return (Map<String,Object>) get(10);
+        return (Map<String,Object>) get(9);
     }
 
     /**
@@ -237,7 +220,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      */
     @Override
     public void setDriver(String value) {
-        set(11, value);
+        set(10, value);
     }
 
     /**
@@ -246,7 +229,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
     @Column(name = "driver", length = 255)
     @Override
     public String getDriver() {
-        return (String) get(11);
+        return (String) get(10);
     }
 
     /**
@@ -254,7 +237,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      */
     @Override
     public void setFlavorPrefix(String value) {
-        set(12, value);
+        set(11, value);
     }
 
     /**
@@ -263,7 +246,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
     @Column(name = "flavor_prefix", length = 255)
     @Override
     public String getFlavorPrefix() {
-        return (String) get(12);
+        return (String) get(11);
     }
 
     /**
@@ -271,7 +254,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      */
     @Override
     public void setClusterId(Long value) {
-        set(13, value);
+        set(12, value);
     }
 
     /**
@@ -280,7 +263,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
     @Column(name = "cluster_id", nullable = false, precision = 19)
     @Override
     public Long getClusterId() {
-        return (Long) get(13);
+        return (Long) get(12);
     }
 
     /**
@@ -288,7 +271,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      */
     @Override
     public void setCreatorId(Long value) {
-        set(14, value);
+        set(13, value);
     }
 
     /**
@@ -297,7 +280,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
     @Column(name = "creator_id", precision = 19)
     @Override
     public Long getCreatorId() {
-        return (Long) get(14);
+        return (Long) get(13);
     }
 
     // -------------------------------------------------------------------------
@@ -313,23 +296,23 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
     }
 
     // -------------------------------------------------------------------------
-    // Record15 type implementation
+    // Record14 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row15<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, Long, Long> fieldsRow() {
-        return (Row15) super.fieldsRow();
+    public Row14<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, Long, Long> fieldsRow() {
+        return (Row14) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row15<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, Long, Long> valuesRow() {
-        return (Row15) super.valuesRow();
+    public Row14<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, Long, Long> valuesRow() {
+        return (Row14) super.valuesRow();
     }
 
     /**
@@ -352,15 +335,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public Field<Long> field3() {
-        return HostTemplateTable.HOST_TEMPLATE.ACCOUNT_ID;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<String> field4() {
+    public Field<String> field3() {
         return HostTemplateTable.HOST_TEMPLATE.KIND;
     }
 
@@ -368,7 +343,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field5() {
+    public Field<String> field4() {
         return HostTemplateTable.HOST_TEMPLATE.UUID;
     }
 
@@ -376,7 +351,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field6() {
+    public Field<String> field5() {
         return HostTemplateTable.HOST_TEMPLATE.DESCRIPTION;
     }
 
@@ -384,7 +359,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field7() {
+    public Field<String> field6() {
         return HostTemplateTable.HOST_TEMPLATE.STATE;
     }
 
@@ -392,7 +367,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public Field<Date> field8() {
+    public Field<Date> field7() {
         return HostTemplateTable.HOST_TEMPLATE.CREATED;
     }
 
@@ -400,7 +375,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public Field<Date> field9() {
+    public Field<Date> field8() {
         return HostTemplateTable.HOST_TEMPLATE.REMOVED;
     }
 
@@ -408,7 +383,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public Field<Date> field10() {
+    public Field<Date> field9() {
         return HostTemplateTable.HOST_TEMPLATE.REMOVE_TIME;
     }
 
@@ -416,7 +391,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public Field<Map<String,Object>> field11() {
+    public Field<Map<String,Object>> field10() {
         return HostTemplateTable.HOST_TEMPLATE.DATA;
     }
 
@@ -424,7 +399,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field12() {
+    public Field<String> field11() {
         return HostTemplateTable.HOST_TEMPLATE.DRIVER;
     }
 
@@ -432,7 +407,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field13() {
+    public Field<String> field12() {
         return HostTemplateTable.HOST_TEMPLATE.FLAVOR_PREFIX;
     }
 
@@ -440,7 +415,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public Field<Long> field14() {
+    public Field<Long> field13() {
         return HostTemplateTable.HOST_TEMPLATE.CLUSTER_ID;
     }
 
@@ -448,7 +423,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public Field<Long> field15() {
+    public Field<Long> field14() {
         return HostTemplateTable.HOST_TEMPLATE.CREATOR_ID;
     }
 
@@ -472,15 +447,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public Long value3() {
-        return getAccountId();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String value4() {
+    public String value3() {
         return getKind();
     }
 
@@ -488,7 +455,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public String value5() {
+    public String value4() {
         return getUuid();
     }
 
@@ -496,7 +463,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public String value6() {
+    public String value5() {
         return getDescription();
     }
 
@@ -504,7 +471,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public String value7() {
+    public String value6() {
         return getState();
     }
 
@@ -512,7 +479,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public Date value8() {
+    public Date value7() {
         return getCreated();
     }
 
@@ -520,7 +487,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public Date value9() {
+    public Date value8() {
         return getRemoved();
     }
 
@@ -528,7 +495,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public Date value10() {
+    public Date value9() {
         return getRemoveTime();
     }
 
@@ -536,7 +503,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public Map<String,Object> value11() {
+    public Map<String,Object> value10() {
         return getData();
     }
 
@@ -544,7 +511,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public String value12() {
+    public String value11() {
         return getDriver();
     }
 
@@ -552,7 +519,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public String value13() {
+    public String value12() {
         return getFlavorPrefix();
     }
 
@@ -560,7 +527,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public Long value14() {
+    public Long value13() {
         return getClusterId();
     }
 
@@ -568,7 +535,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public Long value15() {
+    public Long value14() {
         return getCreatorId();
     }
 
@@ -594,16 +561,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public HostTemplateRecord value3(Long value) {
-        setAccountId(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public HostTemplateRecord value4(String value) {
+    public HostTemplateRecord value3(String value) {
         setKind(value);
         return this;
     }
@@ -612,7 +570,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public HostTemplateRecord value5(String value) {
+    public HostTemplateRecord value4(String value) {
         setUuid(value);
         return this;
     }
@@ -621,7 +579,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public HostTemplateRecord value6(String value) {
+    public HostTemplateRecord value5(String value) {
         setDescription(value);
         return this;
     }
@@ -630,7 +588,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public HostTemplateRecord value7(String value) {
+    public HostTemplateRecord value6(String value) {
         setState(value);
         return this;
     }
@@ -639,7 +597,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public HostTemplateRecord value8(Date value) {
+    public HostTemplateRecord value7(Date value) {
         setCreated(value);
         return this;
     }
@@ -648,7 +606,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public HostTemplateRecord value9(Date value) {
+    public HostTemplateRecord value8(Date value) {
         setRemoved(value);
         return this;
     }
@@ -657,7 +615,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public HostTemplateRecord value10(Date value) {
+    public HostTemplateRecord value9(Date value) {
         setRemoveTime(value);
         return this;
     }
@@ -666,7 +624,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public HostTemplateRecord value11(Map<String,Object> value) {
+    public HostTemplateRecord value10(Map<String,Object> value) {
         setData(value);
         return this;
     }
@@ -675,7 +633,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public HostTemplateRecord value12(String value) {
+    public HostTemplateRecord value11(String value) {
         setDriver(value);
         return this;
     }
@@ -684,7 +642,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public HostTemplateRecord value13(String value) {
+    public HostTemplateRecord value12(String value) {
         setFlavorPrefix(value);
         return this;
     }
@@ -693,7 +651,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public HostTemplateRecord value14(Long value) {
+    public HostTemplateRecord value13(Long value) {
         setClusterId(value);
         return this;
     }
@@ -702,7 +660,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public HostTemplateRecord value15(Long value) {
+    public HostTemplateRecord value14(Long value) {
         setCreatorId(value);
         return this;
     }
@@ -711,7 +669,7 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
      * {@inheritDoc}
      */
     @Override
-    public HostTemplateRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, String value12, String value13, Long value14, Long value15) {
+    public HostTemplateRecord values(Long value1, String value2, String value3, String value4, String value5, String value6, Date value7, Date value8, Date value9, Map<String,Object> value10, String value11, String value12, Long value13, Long value14) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -726,7 +684,6 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
         value12(value12);
         value13(value13);
         value14(value14);
-        value15(value15);
         return this;
     }
 
@@ -741,7 +698,6 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
     public void from(HostTemplate from) {
         setId(from.getId());
         setName(from.getName());
-        setAccountId(from.getAccountId());
         setKind(from.getKind());
         setUuid(from.getUuid());
         setDescription(from.getDescription());
@@ -779,23 +735,22 @@ public class HostTemplateRecord extends UpdatableRecordImpl<HostTemplateRecord> 
     /**
      * Create a detached, initialised HostTemplateRecord
      */
-    public HostTemplateRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String driver, String flavorPrefix, Long clusterId, Long creatorId) {
+    public HostTemplateRecord(Long id, String name, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String driver, String flavorPrefix, Long clusterId, Long creatorId) {
         super(HostTemplateTable.HOST_TEMPLATE);
 
         set(0, id);
         set(1, name);
-        set(2, accountId);
-        set(3, kind);
-        set(4, uuid);
-        set(5, description);
-        set(6, state);
-        set(7, created);
-        set(8, removed);
-        set(9, removeTime);
-        set(10, data);
-        set(11, driver);
-        set(12, flavorPrefix);
-        set(13, clusterId);
-        set(14, creatorId);
+        set(2, kind);
+        set(3, uuid);
+        set(4, description);
+        set(5, state);
+        set(6, created);
+        set(7, removed);
+        set(8, removeTime);
+        set(9, data);
+        set(10, driver);
+        set(11, flavorPrefix);
+        set(12, clusterId);
+        set(13, creatorId);
     }
 }

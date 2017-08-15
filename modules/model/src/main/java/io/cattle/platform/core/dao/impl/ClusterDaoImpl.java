@@ -42,7 +42,7 @@ public class ClusterDaoImpl extends AbstractJooqDao implements ClusterDao {
     public Account createOwnerAccount(Cluster cluster) {
         return transaction.doInTransactionResult(() -> {
             Account account = resourceDao.createAndSchedule(Account.class,
-                    ACCOUNT.NAME, cluster.getName() + " System",
+                    ACCOUNT.NAME, "System",
                     ACCOUNT.CLUSTER_OWNER, true,
                     ACCOUNT.CLUSTER_ID, cluster.getId(),
                     ACCOUNT.KIND, ProjectConstants.TYPE);

@@ -419,6 +419,8 @@
         "port.bindAddress" : "r",
 
         "project" : "crud",
+        "project.clusterId": "cru",
+        "project.clusterOwner": "r",
         "project.defaultNetworkId" : "r",
         "project.description" : "cru",
         "project.externalId" : "",
@@ -429,7 +431,6 @@
         "project.members" : "cr",
         "project.scheduledUpgradeDelay": "cru",
         "project.servicesPortRange": "cru",
-        "project.clusterId": "cru",
 
         "projectTemplate" : "crud",
         "projectTemplate.stacks" : "cru",

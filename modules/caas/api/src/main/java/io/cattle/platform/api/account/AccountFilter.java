@@ -65,6 +65,13 @@ public class AccountFilter extends AbstractValidationFilter {
             throw new ClientVisibleException(ResponseCodes.METHOD_NOT_ALLOWED, AccountConstants.LAST_ADMIN_ACCOUNT,
                     "Cannot delete the last admin account.", AccountConstants.ADMIN_REQUIRED_MESSAGE);
         }
+
+        Account account = objectManager.loadResource(Account.class, id);
+        if (account.getClusterOwner()) {
+            throw new ClientVisibleException(ResponseCodes.METHOD_NOT_ALLOWED, AccountConstants.CANT_DELETE_SYSTEM_ENVIRONMENT,
+                    "Cannot delete system environment, please delete cluster", null);
+
+        }
         return super.delete(type, id, request, next);
     }
 }

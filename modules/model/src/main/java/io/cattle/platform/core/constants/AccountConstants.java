@@ -40,6 +40,7 @@ public class AccountConstants {
     public static final String ACCOUNT_REMOVE = "account.remove";
 
     public static final String AUTH_TYPE = "authType";
+    public static final String CANT_DELETE_SYSTEM_ENVIRONMENT = "CantDeleteSystemEnvironment";
     public static final String LAST_ADMIN_ACCOUNT = "LastAdminAccount";
     public static final String CLUSTER_ALREADY_SET = "ClusterAlreadySet";
     public static final String ADMIN_REQUIRED_MESSAGE = "At least one admin account is required at all times";

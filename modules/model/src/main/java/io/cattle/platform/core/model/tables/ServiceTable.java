@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ServiceTable extends TableImpl<ServiceRecord> {
 
-    private static final long serialVersionUID = -678481768;
+    private static final long serialVersionUID = -1603759939;
 
     /**
      * The reference instance of <code>cattle.service</code>
@@ -229,7 +229,7 @@ public class ServiceTable extends TableImpl<ServiceRecord> {
      */
     @Override
     public List<ForeignKey<ServiceRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<ServiceRecord, ?>>asList(Keys.FK_SERVICE__ACCOUNT_ID, Keys.FK_SERVICE__ENVIRONMENT_ID, Keys.FK_SERVICE__PREVIOUS_REVISION_ID, Keys.FK_SERVICE__REVISION_ID, Keys.FK_SERVICE_CLUSTER_ID, Keys.FK_SERVICE__CLUSTER_ID, Keys.FK_SERVICE__CREATOR_ID);
+        return Arrays.<ForeignKey<ServiceRecord, ?>>asList(Keys.FK_SERVICE__ACCOUNT_ID, Keys.FK_SERVICE__ENVIRONMENT_ID, Keys.FK_SERVICE__PREVIOUS_REVISION_ID, Keys.FK_SERVICE__REVISION_ID, Keys.FK_SERVICE_CLUSTER_ID, Keys.FK_SERVICE__CREATOR_ID);
     }
 
     /**

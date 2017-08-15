@@ -89,7 +89,12 @@ public class DefaultApiRequestParser implements ApiRequestParser {
 
     protected String parseAction(ApiRequest apiRequest, HttpServletRequest request) {
         if ("POST".equals(apiRequest.getMethod())) {
-            return request.getParameter(Resource.ACTION);
+            String action = request.getParameter(Resource.ACTION);
+            if ("delete".equalsIgnoreCase(action)) {
+                apiRequest.setMethod("DELETE");
+                return null;
+            }
+            return action;
         }
         return null;
     }

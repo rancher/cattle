@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class HostTemplateTable extends TableImpl<HostTemplateRecord> {
 
-    private static final long serialVersionUID = -1310211111;
+    private static final long serialVersionUID = -493381245;
 
     /**
      * The reference instance of <code>cattle.host_template</code>
@@ -64,11 +64,6 @@ public class HostTemplateTable extends TableImpl<HostTemplateRecord> {
      * The column <code>cattle.host_template.name</code>.
      */
     public final TableField<HostTemplateRecord, String> NAME = createField("name", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
-
-    /**
-     * The column <code>cattle.host_template.account_id</code>.
-     */
-    public final TableField<HostTemplateRecord, Long> ACCOUNT_ID = createField("account_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
      * The column <code>cattle.host_template.kind</code>.

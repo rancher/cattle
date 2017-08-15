@@ -89,7 +89,7 @@ public class Model {
                     .to("active")
                     .ifProcessExistThenTo("activate", "inactive")
                 .template("activate")
-                    .from("inactive", "error", "paused")
+                    .from("inactive", "paused")
                     .transitioning("activating")
                     .to("active")
                 .template("deactivate")

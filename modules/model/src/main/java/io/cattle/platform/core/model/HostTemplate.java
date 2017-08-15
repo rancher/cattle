@@ -57,17 +57,6 @@ public interface HostTemplate extends Serializable {
     public String getName();
 
     /**
-     * Setter for <code>cattle.host_template.account_id</code>.
-     */
-    public void setAccountId(Long value);
-
-    /**
-     * Getter for <code>cattle.host_template.account_id</code>.
-     */
-    @Column(name = "account_id", precision = 19)
-    public Long getAccountId();
-
-    /**
      * Setter for <code>cattle.host_template.kind</code>.
      */
     public void setKind(String value);

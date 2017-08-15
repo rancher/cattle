@@ -19,23 +19,31 @@ public class AccountOutputFilter implements ResourceOutputFilter {
     public Resource filter(ApiRequest request, Object original, Resource converted) {
         IdFormatter idFormatter = ApiContext.getContext().getIdFormatter();
 
+        if (!(original instanceof Account)) {
+            return converted;
+        }
+
         Identity identity = null;
-        if (original instanceof Account) {
-            Account account = (Account) original;
-            if (request != null && AccountConstants.PROJECT_KIND.equalsIgnoreCase(account.getKind())) {
-                UrlBuilder urlBuilder = request.getUrlBuilder();
-                URL url = urlBuilder.resourceLink(converted, "schemas");
-                converted.getLinks().put("schemas", url);
-                return converted;
-            }
-            if (account.getExternalId() != null && account.getExternalIdType() != null) {
-                identity = new Identity(account.getExternalIdType(), account.getExternalId());
-            } else {
-                if (!AccountConstants.PROJECT_KIND.equalsIgnoreCase(account.getKind())) {
-                    identity = new Identity(ProjectConstants.RANCHER_ID, String.valueOf(account.getId()));
-                }
+        Account account = (Account) original;
+
+        if (account.getClusterOwner()) {
+            converted.getActions().remove("delete");
+        }
+
+        if (request != null && AccountConstants.PROJECT_KIND.equalsIgnoreCase(account.getKind())) {
+            UrlBuilder urlBuilder = request.getUrlBuilder();
+            URL url = urlBuilder.resourceLink(converted, "schemas");
+            converted.getLinks().put("schemas", url);
+        }
+
+        if (account.getExternalId() != null && account.getExternalIdType() != null) {
+            identity = new Identity(account.getExternalIdType(), account.getExternalId());
+        } else {
+            if (!AccountConstants.PROJECT_KIND.equalsIgnoreCase(account.getKind())) {
+                identity = new Identity(ProjectConstants.RANCHER_ID, String.valueOf(account.getId()));
             }
         }
+
         if (identity != null) {
             if (idFormatter != null) {
                 converted.getFields().put("identity", idFormatter.formatId("identity", identity.getId()));

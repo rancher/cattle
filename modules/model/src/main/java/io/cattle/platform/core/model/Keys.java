@@ -327,7 +327,6 @@ public class Keys {
     public static final ForeignKey<ServiceRecord, RevisionRecord> FK_SERVICE__PREVIOUS_REVISION_ID = ForeignKeys0.FK_SERVICE__PREVIOUS_REVISION_ID;
     public static final ForeignKey<ServiceRecord, RevisionRecord> FK_SERVICE__REVISION_ID = ForeignKeys0.FK_SERVICE__REVISION_ID;
     public static final ForeignKey<ServiceRecord, ClusterRecord> FK_SERVICE_CLUSTER_ID = ForeignKeys0.FK_SERVICE_CLUSTER_ID;
-    public static final ForeignKey<ServiceRecord, ClusterRecord> FK_SERVICE__CLUSTER_ID = ForeignKeys0.FK_SERVICE__CLUSTER_ID;
     public static final ForeignKey<ServiceRecord, AccountRecord> FK_SERVICE__CREATOR_ID = ForeignKeys0.FK_SERVICE__CREATOR_ID;
     public static final ForeignKey<ServiceEventRecord, AccountRecord> FK_SERVICE_EVENT__ACCOUNT_ID = ForeignKeys0.FK_SERVICE_EVENT__ACCOUNT_ID;
     public static final ForeignKey<ServiceEventRecord, HostRecord> FK_SERVICE_EVENT__HOST_ID = ForeignKeys0.FK_SERVICE_EVENT__HOST_ID;
@@ -578,7 +577,6 @@ public class Keys {
         public static final ForeignKey<ServiceRecord, RevisionRecord> FK_SERVICE__PREVIOUS_REVISION_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_REVISION_PRIMARY, ServiceTable.SERVICE, "fk_service__previous_revision_id", ServiceTable.SERVICE.PREVIOUS_REVISION_ID);
         public static final ForeignKey<ServiceRecord, RevisionRecord> FK_SERVICE__REVISION_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_REVISION_PRIMARY, ServiceTable.SERVICE, "fk_service__revision_id", ServiceTable.SERVICE.REVISION_ID);
         public static final ForeignKey<ServiceRecord, ClusterRecord> FK_SERVICE_CLUSTER_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_CLUSTER_PRIMARY, ServiceTable.SERVICE, "fk_service_cluster_id", ServiceTable.SERVICE.CLUSTER_ID);
-        public static final ForeignKey<ServiceRecord, ClusterRecord> FK_SERVICE__CLUSTER_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_CLUSTER_PRIMARY, ServiceTable.SERVICE, "fk_service__cluster_id", ServiceTable.SERVICE.CLUSTER_ID);
         public static final ForeignKey<ServiceRecord, AccountRecord> FK_SERVICE__CREATOR_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, ServiceTable.SERVICE, "fk_service__creator_id", ServiceTable.SERVICE.CREATOR_ID);
         public static final ForeignKey<ServiceEventRecord, AccountRecord> FK_SERVICE_EVENT__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, ServiceEventTable.SERVICE_EVENT, "fk_service_event__account_id", ServiceEventTable.SERVICE_EVENT.ACCOUNT_ID);
         public static final ForeignKey<ServiceEventRecord, HostRecord> FK_SERVICE_EVENT__HOST_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_HOST_PRIMARY, ServiceEventTable.SERVICE_EVENT, "fk_service_event__host_id", ServiceEventTable.SERVICE_EVENT.HOST_ID);
