@@ -106,7 +106,8 @@ set_up_agent() {
     ./test-warm
 
     AGENT_IMAGE=$(grep bootstrap.required.image ../resources/content/cattle-global.properties | cut -f2 -d=)
-    docker run --rm -v /var/run/docker.sock:/var/run/docker.sock ${AGENT_IMAGE} http://localhost:8081 >/tmp/register.log &
+    CONTAINER_IP=$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)
+    docker run --rm -v /var/run/docker.sock:/var/run/docker.sock ${AGENT_IMAGE} http://${CONTAINER_IP}:8081 >/tmp/register.log &
 
     ./wait-for-hosts
 }
