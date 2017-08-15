@@ -4,6 +4,7 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.util.SystemLabels;
+import io.cattle.platform.docker.constants.DockerInstanceConstants;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -15,6 +16,8 @@ import io.cattle.platform.util.type.Priority;
 import java.util.Map;
 
 import javax.inject.Named;
+
+import org.apache.commons.lang3.StringUtils;
 
 @Named
 public class K8sPreInstanceCreate extends AbstractObjectProcessLogic implements ProcessPreListener, Priority {
@@ -46,7 +49,9 @@ public class K8sPreInstanceCreate extends AbstractObjectProcessLogic implements 
         labels.put(ServiceConstants.LABEL_STACK_NAME, namespace);
 
         if (POD.equals(containerName)) {
-            labels.put(SystemLabels.LABEL_RANCHER_NETWORK, "true");
+            if (!isHostNetwork(instance)) {
+                labels.put(SystemLabels.LABEL_RANCHER_NETWORK, "true");
+            }
             labels.put(ServiceConstants.LABEL_SERVICE_LAUNCH_CONFIG, ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
             labels.put(SystemLabels.LABEL_DISPLAY_NAME, labels.get(POD_NAME));
         } else {
@@ -54,6 +59,12 @@ public class K8sPreInstanceCreate extends AbstractObjectProcessLogic implements 
         }
 
         return new HandlerResult(InstanceConstants.FIELD_LABELS, labels).withShouldContinue(true);
+    }
+
+
+    private boolean isHostNetwork(Instance instance) {
+        return StringUtils.equalsIgnoreCase("host", DataAccessor.fieldString(instance,
+                DockerInstanceConstants.FIELD_NETWORK_MODE));
     }
 
     @Override
