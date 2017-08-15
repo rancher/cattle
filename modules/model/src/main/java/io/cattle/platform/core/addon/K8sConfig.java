@@ -9,6 +9,7 @@ public class K8sConfig {
 
     List<String> admissionControllers;
     String serviceNetCidr;
+    String kubeConfig;
 
     public List<String> getAdmissionControllers() {
         return admissionControllers;
@@ -24,5 +25,13 @@ public class K8sConfig {
 
     public void setServiceNetCidr(String serviceNetCidr) {
         this.serviceNetCidr = serviceNetCidr;
+    }
+
+    public String getKubeConfig() {
+        return kubeConfig;
+    }
+
+    public void setKubeConfig(String kubeConfig) {
+        this.kubeConfig = kubeConfig;
     }
 }

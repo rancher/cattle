@@ -776,9 +776,10 @@
         "clusterIdentity.groups" : "r",
         "clusterIdentity.attributes" : "r",
 
-        "k8sConfig" : "cr",
+        "k8sConfig" : "cru",
         "k8sConfig.admissionControllers" : "cr",
         "k8sConfig.serviceNetCidr" : "cr",
+        "k8sConfig.kubeConfig" : "cru",
 
         "launchConfig" : "cru",
         "launchConfig.completeUpdate" : "ru",
