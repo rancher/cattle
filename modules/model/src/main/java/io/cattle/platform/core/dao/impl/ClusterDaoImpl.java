@@ -56,7 +56,7 @@ public class ClusterDaoImpl extends AbstractJooqDao implements ClusterDao {
     }
 
     protected void grantOwner(Object id, String idType, Account toProject) {
-        resourceDao.createAndSchedule(ProjectMember.class,
+        objectManager.create(ProjectMember.class,
                 PROJECT_MEMBER.ACCOUNT_ID, toProject.getId(),
                 PROJECT_MEMBER.PROJECT_ID, toProject.getId(),
                 PROJECT_MEMBER.STATE, CommonStatesConstants.ACTIVE,

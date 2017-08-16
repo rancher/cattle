@@ -93,7 +93,7 @@ public class HealthStateCalculateLoop implements Loop {
             } else if (InstanceConstants.STATE_STOPPED.equalsIgnoreCase(instanceInfo.getState())) {
                 if (instanceInfo.isShouldRestart()) {
                     instanceState = HEALTH_STATE_UNHEALTHY;
-                } else if (instanceInfo.getExitCode() == 0) {
+                } else if (instanceInfo.getExitCode() == null || instanceInfo.getExitCode() == 0) {
                     instanceState = HEALTH_STATE_HEALTHY;
                 } else {
                     instanceState = HEALTH_STATE_UNHEALTHY;

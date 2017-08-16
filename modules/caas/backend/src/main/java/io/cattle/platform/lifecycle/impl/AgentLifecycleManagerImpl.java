@@ -20,8 +20,9 @@ public class AgentLifecycleManagerImpl implements AgentLifecycleManager {
     AgentInstanceFactory agentInstanceFactory;
     ResourceMonitor resourceMonitor;
 
-    public AgentLifecycleManagerImpl(AgentInstanceFactory agentInstanceFactory) {
+    public AgentLifecycleManagerImpl(AgentInstanceFactory agentInstanceFactory, ResourceMonitor resourceMonitor) {
         this.agentInstanceFactory = agentInstanceFactory;
+        this.resourceMonitor = resourceMonitor;
     }
 
     @Override

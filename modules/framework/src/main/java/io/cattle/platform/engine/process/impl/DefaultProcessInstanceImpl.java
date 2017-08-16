@@ -419,9 +419,9 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             HandlerResult handlerResult = null;
 
             if (future == null) {
-                handlerResult = complete(handler, future, state, this);
-            } else {
                 handlerResult = handler.handle(state, this);
+            } else {
+                handlerResult = complete(handler, future, state, this);
             }
 
             log.debug("Finished handler [{}]", processNamed);

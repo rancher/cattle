@@ -219,7 +219,7 @@ public class Backend {
         virtualMachineLifecycleManager = new VirtualMachineLifecycleManagerImpl(d.volumeDao, d.storagePoolDao, d.serviceDao, f.jsonMapper, f.objectManager);
         volumeLifecycleManager = new VolumeLifecycleManagerImpl(f.objectManager, f.processManager, d.storagePoolDao, d.volumeDao, f.lockManager);
         networkLifecycleManager = new NetworkLifecycleManagerImpl(f.objectManager, networkService, f.resourcePoolManager);
-        agentLifecycleManager = new AgentLifecycleManagerImpl(agentInstanceFactory);
+        agentLifecycleManager = new AgentLifecycleManagerImpl(agentInstanceFactory, f.resourceMonitor);
         secretsLifecycleManager = new SecretsLifecycleManagerImpl(c.tokenService, d.storageDriverDao);
         loadBalancerService = new LoadBalancerServiceImpl(f.jsonMapper, f.lockManager, f.objectManager);
         serviceLifecycleManager = new ServiceLifecycleManagerImpl(f.objectManager, f.resourcePoolManager, networkService, d.serviceDao, c.revisionManager, loadBalancerService, f.processManager);
@@ -324,7 +324,10 @@ public class Backend {
 
         r.handle("externalevent.create", externalEventProcessManager::preCreate, externalEventProcessManager::create);
 
-        r.handle("genericobject.create", pullTaskCreate, registerCreateClusterCreate, registerProcessManager::genericObjectCreate);
+        r.handle("genericobject.create", pullTaskCreate,
+                registerCreateClusterCreate,
+                registerProcessManager::genericObjectCreate,
+                registerProcessManager::assignCredendtials);
 
         r.handle("host.create", hostProcessManager::create);
         r.handle("host.provision", goMachineService, hostProcessManager::provision);

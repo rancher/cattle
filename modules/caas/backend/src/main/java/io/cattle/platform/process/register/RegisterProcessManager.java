@@ -80,6 +80,10 @@ public class RegisterProcessManager {
                 RegisterConstants.FIELD_SECRET_KEY, cred.getSecretValue());
     }
 
+    public HandlerResult assignCredendtials(ProcessState state, ProcessInstance process) {
+        return genericObjectCreate(state, process);
+    }
+
     public HandlerResult agentRemove(ProcessState state, ProcessInstance process) {
         String key = DataAccessor.fromDataFieldOf(state.getResource())
                 .withKey(RegisterConstants.AGENT_DATA_REGISTRATION_KEY).as(String.class);
