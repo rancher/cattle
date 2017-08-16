@@ -47,6 +47,7 @@ public class ExternalServiceAuthProvider {
     private static final Logger log = LoggerFactory.getLogger(ExternalServiceAuthProvider.class);
     private static final String GENERIC_ERROR_MESSAGE = "Error communicating with authentication provider";
     private static final String UNAUTHORIZED_ERROR_MESSAGE = "Username or Password incorrect";
+    private static final String FORBIDDEN_ERROR_MESSAGE = "Your account does not have access";
 
     @Inject
     private JsonMapper jsonMapper;
@@ -93,6 +94,9 @@ public class ExternalServiceAuthProvider {
                             if(statusCode == 401) {
                                 throw new ClientVisibleException(statusCode, ServiceAuthConstants.AUTH_ERROR,
                                         UNAUTHORIZED_ERROR_MESSAGE, null);
+                            } else if (statusCode == 403) {
+                                throw new ClientVisibleException(statusCode, ServiceAuthConstants.AUTH_ERROR,
+                                        FORBIDDEN_ERROR_MESSAGE, null);
                             } else {
                                 throw new ClientVisibleException(statusCode, ServiceAuthConstants.AUTH_ERROR,
                                     GENERIC_ERROR_MESSAGE, null);
@@ -323,7 +327,6 @@ public class ExternalServiceAuthProvider {
         if (SecurityConstants.SECURITY.get() && !StringUtils.isBlank(accessToken)) {
                 AuthToken authToken = authTokenDao.getTokenByAccountId(account.getId());
                 if (authToken == null) {
-                    try {
                         //refresh token API.
                         Token token = refreshToken(accessToken);
                         if (token != null) {
@@ -332,10 +335,6 @@ public class ExternalServiceAuthProvider {
                             jwt = authToken.getKey();
                             accessToken = (String) DataAccessor.fields(account).withKey(ServiceAuthConstants.ACCESS_TOKEN).get();
                         }
-                    } catch (ClientVisibleException e) {
-                            log.error("Got error from Auth service.error", e);
-                            return Collections.emptySet();
-                    }
                 } else {
                     jwt = authToken.getKey();
                 }
