@@ -139,6 +139,14 @@ public class SystemConfig {
     }
 
     @Bean
+    NamedExecutorService blockingextraprocess(ExtensionManagerImpl em, @Qualifier("ProcessBlockingExtraExecutorService") ExecutorService es) {
+        NamedExecutorService nes = new NamedExecutorService();
+        nes.setName("blockingextraprocess");
+        nes.setExecutorService(es);
+        return nes;
+    }
+
+    @Bean
     ListeningExecutorService CoreListeningExecutorService(@Qualifier("CoreExecutorService") ExecutorService es) {
         return MoreExecutors.listeningDecorator(es);
     }
@@ -168,6 +176,11 @@ public class SystemConfig {
     @Bean
     SpringConfigurableExecutorService CoreExecutorService() throws MalformedObjectNameException {
         return SpringConfigurableExecutorService.byName("CoreExecutorService");
+    }
+
+    @Bean
+    SpringConfigurableExecutorService ProcessBlockingExtraExecutorService() throws MalformedObjectNameException {
+        return SpringConfigurableExecutorService.byName("ProcessBlockingExtraExecutorService", new ThreadPoolExecutor.DiscardPolicy());
     }
 
     @Bean
