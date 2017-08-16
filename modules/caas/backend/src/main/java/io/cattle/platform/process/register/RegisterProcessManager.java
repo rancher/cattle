@@ -1,12 +1,9 @@
 package io.cattle.platform.process.register;
 
-import com.netflix.config.DynamicStringListProperty;
-import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.constants.RegisterConstants;
 import io.cattle.platform.core.dao.AccountDao;
-import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.RegisterDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
@@ -19,31 +16,25 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.resource.ResourceMonitor;
-import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
 
-import static io.cattle.platform.core.model.tables.CredentialTable.*;
 import static io.cattle.platform.core.model.tables.GenericObjectTable.*;
 
 public class RegisterProcessManager {
 
-    public static final DynamicStringListProperty ACCOUNT_KINDS = ArchaiusUtil.getList("process.account.create.register.token.account.kinds");
-
-    RegisterDao registerDao;
-    ResourceMonitor resourceMonitor;
+    AccountDao accountDao;
     ObjectManager objectManager;
     ObjectProcessManager processManager;
-    GenericResourceDao resourceDao;
-    AccountDao accountDao;
+    RegisterDao registerDao;
+    ResourceMonitor resourceMonitor;
 
     public RegisterProcessManager(RegisterDao registerDao, ResourceMonitor resourceMonitor, ObjectManager objectManager, ObjectProcessManager processManager,
-            GenericResourceDao resourceDao, AccountDao accountDao) {
+            AccountDao accountDao) {
         super();
         this.registerDao = registerDao;
         this.resourceMonitor = resourceMonitor;
         this.objectManager = objectManager;
         this.processManager = processManager;
-        this.resourceDao = resourceDao;
         this.accountDao = accountDao;
     }
 
@@ -74,49 +65,19 @@ public class RegisterProcessManager {
         }
 
         final Agent agentFinal = agent;
-        DeferredUtils.nest(() -> processManager.createThenActivate(agentFinal, state.getData()));
-
-        agent = resourceMonitor.waitFor(agent, new ResourcePredicate<Agent>() {
-            @Override
-            public boolean evaluate(Agent obj) {
-                return getCredential(obj) != null;
-            }
-
-            @Override
-            public String getMessage() {
-                return "credentials assigned";
-            }
-        });
+        if (!CommonStatesConstants.ACTIVE.equalsIgnoreCase(agentFinal.getState())) {
+            DeferredUtils.nest(() -> processManager.createThenActivate(agentFinal, state.getData()));
+        }
 
         Credential cred = getCredential(agent);
+        if (cred == null) {
+            return new HandlerResult().withFuture(
+                    resourceMonitor.waitFor(agent, "credentials assigned", (checkAgent) -> getCredential(checkAgent) != null));
+        }
 
         return new HandlerResult(
                 RegisterConstants.FIELD_ACCESS_KEY, cred.getPublicValue(),
                 RegisterConstants.FIELD_SECRET_KEY, cred.getSecretValue());
-    }
-
-    public HandlerResult accountCreate(final ProcessState state, ProcessInstance process) {
-        Account account = (Account) state.getResource();
-
-        if (!ACCOUNT_KINDS.get().contains(account.getKind())) {
-            return null;
-        }
-
-        boolean found = false;
-        for (Credential cred : objectManager.children(account, Credential.class)) {
-            if (CredentialConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN.equals(cred.getKind())) {
-                found = true;
-                break;
-            }
-        }
-
-        if (!found) {
-            resourceDao.createAndSchedule(Credential.class,
-                    CREDENTIAL.ACCOUNT_ID, account.getId(),
-                    CREDENTIAL.KIND, CredentialConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN);
-        }
-
-        return null;
     }
 
     public HandlerResult agentRemove(ProcessState state, ProcessInstance process) {

@@ -77,18 +77,6 @@ public class ServiceConstants {
 
     public static final String LINK_COMPOSE_CONFIG = "composeConfig";
 
-    public static final String LABEL_SERVICE_DEPLOYMENT_UNIT = "io.rancher.service.deployment.unit";
-    public static final String LABEL_STACK_NAME = "io.rancher.stack.name";
-    public static final String LABEL_STACK_SERVICE_NAME = "io.rancher.stack_service.name";
-    public static final String LABEL_SERVICE_GLOBAL = "io.rancher.scheduler.global";
-    public static final String LABEL_SERVICE_REQUESTED_HOST_ID = "io.rancher.service.requested.host.id";
-    public static final String LABEL_SERVICE_LAUNCH_CONFIG = "io.rancher.service.launch.config";
-    public static final String LABEL_SIDEKICK = "io.rancher.sidekicks";
-    public static final String LABEL_OVERRIDE_HOSTNAME = "io.rancher.container.hostname_override";
-
-    public static final String LABEL_SELECTOR_CONTAINER = "io.rancher.service.selector.container";
-    public static final String LABEL_SERVICE_HASH = "io.rancher.service.hash";
-
     public static final String PRIMARY_LAUNCH_CONFIG_NAME = "io.rancher.service.primary.launch.config";
 
     public static final String STATE_UPGRADING = "upgrading";

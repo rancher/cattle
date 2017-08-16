@@ -1,6 +1,7 @@
 package io.cattle.platform.service.launcher;
 
 import com.netflix.config.DynamicStringProperty;
+import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.CredentialConstants;
@@ -136,7 +137,8 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
         }
 
         final Long accountId = account.getId();
-        account = resourceMonitor.waitForState(account, CommonStatesConstants.ACTIVE);
+        // NOTE: It is find to block here because this is during startup or other non-important threads
+        account = AsyncUtils.get(resourceMonitor.waitForState(account, CommonStatesConstants.ACTIVE));
         List<? extends Credential> creds = accountDao.getApiKeys(account, CredentialConstants.KIND_AGENT_API_KEY, false);
         Credential cred = creds.size() > 0 ? creds.get(0) : null;
 
@@ -156,7 +158,7 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
             });
         }
 
-        return resourceMonitor.waitForState(cred, CommonStatesConstants.ACTIVE);
+        return AsyncUtils.get(resourceMonitor.waitForState(cred, CommonStatesConstants.ACTIVE));
     }
 
     protected abstract boolean shouldRun();

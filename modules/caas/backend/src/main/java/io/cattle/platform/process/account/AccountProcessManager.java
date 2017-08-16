@@ -3,6 +3,7 @@ package io.cattle.platform.process.account;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicStringListProperty;
 import com.netflix.config.DynamicStringProperty;
+import io.cattle.platform.api.pubsub.manager.SubscribeManager;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.addon.ServicesPortRange;
 import io.cattle.platform.core.constants.AccountConstants;
@@ -19,7 +20,6 @@ import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Certificate;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.GenericObject;
-import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.ProjectMember;
@@ -28,9 +28,13 @@ import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.UserPreference;
 import io.cattle.platform.core.model.Volume;
+import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.eventing.EventService;
+import io.cattle.platform.eventing.model.EventVO;
+import io.cattle.platform.framework.event.FrameworkEvents;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
@@ -57,12 +61,10 @@ public class AccountProcessManager {
         Service.class,
         Stack.class,
         Agent.class,
-        Host.class,
         Certificate.class,
         Credential.class,
         StoragePool.class,
         Volume.class,
-        Network.class,
         GenericObject.class,
         UserPreference.class,
         Instance.class,
@@ -75,9 +77,10 @@ public class AccountProcessManager {
     InstanceDao instanceDao;
     AccountDao accountDao;
     ServiceDao serviceDao;
+    EventService eventService;
 
     public AccountProcessManager(NetworkDao networkDao, GenericResourceDao resourceDao, ObjectProcessManager processManager, ObjectManager objectManager,
-            InstanceDao instanceDao, AccountDao accountDao, ServiceDao serviceDao) {
+            InstanceDao instanceDao, AccountDao accountDao, ServiceDao serviceDao, EventService eventService) {
         super();
         this.networkDao = networkDao;
         this.resourceDao = resourceDao;
@@ -86,6 +89,7 @@ public class AccountProcessManager {
         this.instanceDao = instanceDao;
         this.accountDao = accountDao;
         this.serviceDao = serviceDao;
+        this.eventService = eventService;
     }
 
     public HandlerResult create(ProcessState state, ProcessInstance process) {
@@ -119,8 +123,32 @@ public class AccountProcessManager {
         }
 
         createOwnerAccess(state, account);
+        createDefaultStack(account);
 
         return setupNetworking(account);
+    }
+
+    public HandlerResult update(ProcessState state, ProcessInstance process) {
+        Account account = (Account)state.getResource();
+
+        createDefaultStack(account);
+        disconnectClients(account);
+
+        return null;
+    }
+
+    private void createDefaultStack(Account account) {
+        if (account.getClusterId() != null) {
+            serviceDao.getOrCreateDefaultStack(account.getId());
+        }
+    }
+
+    private void disconnectClients(Account account) {
+        /* Since the clusterId may have changed, we disconnect all clients because the cluster ID may have been
+         * cached in the connection as null
+         */
+        String event = FrameworkEvents.appendAccount(SubscribeManager.EVENT_DISCONNECT, account.getId());
+        eventService.publish(EventVO.newEvent(event));
     }
 
     private void createOwnerAccess(ProcessState state, Account account) {
@@ -170,6 +198,8 @@ public class AccountProcessManager {
 
     public HandlerResult remove(ProcessState state, ProcessInstance process) {
         Account account = (Account)state.getResource();
+
+        DeferredUtils.defer(() -> disconnectClients(account));
 
         // For agent accounts do purge logic in remove.
         if (AccountConstants.AGENT_KIND.equals(account.getKind()) ||
@@ -266,7 +296,6 @@ public class AccountProcessManager {
                 ObjectMetaDataManager.REMOVED_FIELD, null,
                 ObjectMetaDataManager.ACCOUNT_FIELD, account.getId());
     }
-
 
     protected void deleteAgentAccount(Long agentId, Map<String, Object> data) {
         if (agentId == null) {

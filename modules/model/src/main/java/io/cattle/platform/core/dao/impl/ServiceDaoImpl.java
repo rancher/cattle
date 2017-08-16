@@ -21,6 +21,7 @@ import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.core.model.tables.records.ServiceRecord;
 import io.cattle.platform.core.model.tables.records.StackRecord;
 import io.cattle.platform.core.model.tables.records.VolumeTemplateRecord;
+import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.db.jooq.mapper.MultiRecordMapper;
 import io.cattle.platform.engine.handler.ProcessHandler;
@@ -113,7 +114,7 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
         params.put(InstanceConstants.FIELD_REVISION_ID, revisionId);
         if (hostId != null) {
             params.put(InstanceConstants.FIELD_LABELS, CollectionUtils.asMap(
-                    ServiceConstants.LABEL_SERVICE_REQUESTED_HOST_ID, hostId));
+                    SystemLabels.LABEL_SERVICE_REQUESTED_HOST_ID, hostId));
         }
         if (active) {
             params.put(ServiceConstants.PROCESS_DU_CREATE + ProcessHandler.CHAIN_PROCESS, ServiceConstants.PROCESS_DU_ACTIVATE);

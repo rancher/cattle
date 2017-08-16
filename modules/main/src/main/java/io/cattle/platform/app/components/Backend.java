@@ -104,6 +104,7 @@ import io.cattle.platform.process.mount.MountRemove;
 import io.cattle.platform.process.network.NetworkProcessManager;
 import io.cattle.platform.process.progress.ProcessProgress;
 import io.cattle.platform.process.progress.ProcessProgressImpl;
+import io.cattle.platform.process.register.RegisterCreateClusterCreate;
 import io.cattle.platform.process.register.RegisterProcessManager;
 import io.cattle.platform.process.secret.SecretRemove;
 import io.cattle.platform.process.service.ServiceProcessManager;
@@ -258,10 +259,10 @@ public class Backend {
         ExternalProcessHandler composeExecutor = externalFactory.handler("rancher-compose-executor");
         ExternalProcessHandler goMachineService = externalFactory.handler("machine-service", "machine.execute");
 
-        AccountProcessManager account = new AccountProcessManager(d.networkDao, d.resourceDao, f.processManager, f.objectManager, d.instanceDao, d.accountDao, d.serviceDao);
+        AccountProcessManager account = new AccountProcessManager(d.networkDao, d.resourceDao, f.processManager, f.objectManager, d.instanceDao, d.accountDao, d.serviceDao, f.eventService);
         AgentActivateReconnect agentActivateReconnect = new AgentActivateReconnect(f.objectManager, c.agentLocator, pingMonitor, f.jsonMapper);
         AgentProcessManager agentProcessManager = new AgentProcessManager(d.accountDao, f.objectManager, f.processManager, c.agentLocator, f.eventService, f.coreSchemaFactory);
-        ClusterProcessManager clusterProcessManager = new ClusterProcessManager(f.processManager, d.clusterDao);
+        ClusterProcessManager clusterProcessManager = new ClusterProcessManager(f.objectManager, f.processManager, d.clusterDao);
         CredentialProcessManager credentialProcessManager = new CredentialProcessManager(f.objectManager, c.transformationService);
         DriverProcessManager driverProcessManager = new DriverProcessManager(f.jsonMapper, f.lockManager, f.objectManager, f.processManager, d.resourceDao, d.storagePoolDao, c.storageService);
         DynamicSchemaProcessManager dynamicSchemaProcessManager = new DynamicSchemaProcessManager(d.dynamicSchemaDao);
@@ -272,7 +273,7 @@ public class Backend {
         NetworkProcessManager networkProcessManager = new NetworkProcessManager(d.resourceDao, f.objectManager, f.processManager, d.networkDao, f.lockManager, f.jsonMapper, f.resourcePoolManager);
 
         MountProcessManager mountProcessManager = new MountProcessManager(f.lockManager, f.objectManager, f.processManager);
-        RegisterProcessManager registerProcessManager = new RegisterProcessManager(d.registerDao, f.resourceMonitor, f.objectManager, f.processManager, d.resourceDao, d.accountDao);
+        RegisterProcessManager registerProcessManager = new RegisterProcessManager(d.registerDao, f.resourceMonitor, f.objectManager, f.processManager, d.accountDao);
         ScheduledUpgradeProcessManager scheduledUpgradeProcessManager = new ScheduledUpgradeProcessManager(c.catalogService, upgradeManager, f.objectManager, f.processManager);
         ServiceProcessManager serviceProcessManager = new ServiceProcessManager(serviceLifecycleManager, f.objectManager, f.processManager, d.serviceDao);
         StackProcessManager stackProcessManager = new StackProcessManager(f.processManager, f.objectManager, c.catalogService);
@@ -290,14 +291,16 @@ public class Backend {
         K8sProviderLabels k8sProviderLabels = new K8sProviderLabels(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager, metadataManager);
         MountRemove mountRemove = new MountRemove(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager);
         PullTaskCreate pullTaskCreate = new PullTaskCreate(allocationHelper, c.agentLocator, progress, imageCredentialLookup, c.objectSerializer, f.objectManager);
+        RegisterCreateClusterCreate registerCreateClusterCreate = new RegisterCreateClusterCreate(f.lockManager, f.objectManager, d.clusterDao, f.resourceMonitor);
         SecretRemove secretRemove = new SecretRemove(c.secretsService);
         ServiceEventCreate serviceEventCreate = new ServiceEventCreate(f.objectManager, loopManager);
         SetRemovedFields setRemovedFields = new SetRemovedFields(f.objectManager);
         StoragePoolRemove storagePoolRemove = new StoragePoolRemove(f.objectManager, f.processManager, d.volumeDao);
         SubnetCreate subnetCreate = new SubnetCreate(f.jsonMapper);
 
-        r.handle("account.create", account::create, registerProcessManager::accountCreate);
+        r.handle("account.create", account::create);
         r.handle("account.remove", account::remove);
+        r.handle("account.update", account::update);
         r.handle("account.purge", account::purge);
 
         r.handle("agent.*", agentHostStateUpdate::preHandle);
@@ -321,7 +324,7 @@ public class Backend {
 
         r.handle("externalevent.create", externalEventProcessManager::preCreate, externalEventProcessManager::create);
 
-        r.handle("genericobject.create", pullTaskCreate, registerProcessManager::genericObjectCreate);
+        r.handle("genericobject.create", pullTaskCreate, registerCreateClusterCreate, registerProcessManager::genericObjectCreate);
 
         r.handle("host.create", hostProcessManager::create);
         r.handle("host.provision", goMachineService, hostProcessManager::provision);
@@ -330,7 +333,7 @@ public class Backend {
 
         r.handle("hosttemplate.remove", hosttemplateRemove);
 
-        r.handle("instance.create", instanceProcessManager::create);
+        r.handle("instance.create", instanceProcessManager::preCreate, instanceProcessManager::create);
         r.handle("instance.start", instanceProcessManager::preStart, instanceStart, instanceProcessManager::postStart, k8sProviderLabels);
         r.handle("instance.stop", instanceStop, instanceProcessManager::postStop);
         r.handle("instance.restart", instanceProcessManager::restart);

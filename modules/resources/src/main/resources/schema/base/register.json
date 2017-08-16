@@ -16,6 +16,10 @@
     },
     "secretKey": {
       "type": "string"
+    },
+    "k8sClientConfig": {
+      "type": "k8sClientConfig",
+      "nullable": true
     }
   },
   "resourceActions": {

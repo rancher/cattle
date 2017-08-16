@@ -1,7 +1,9 @@
 package io.cattle.platform.process.externalevent;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import io.cattle.platform.allocator.constraint.HostAffinityConstraint;
 import io.cattle.platform.allocator.service.AllocationHelper;
+import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ExternalEventConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -26,7 +28,6 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.resource.ResourceMonitor;
-import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.process.common.util.ProcessUtils;
@@ -40,15 +41,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 import static io.cattle.platform.core.constants.ExternalEventConstants.*;
 import static io.cattle.platform.core.model.Tables.*;
 import static io.cattle.platform.core.model.tables.AgentTable.AGENT;
 
 public class ExternalEventProcessManager {
-
-    public static final String FIELD_AGENT_ID = "agentId";
 
     private static final Logger log = LoggerFactory.getLogger(ExternalEventProcessManager.class);
 
@@ -114,22 +112,19 @@ public class ExternalEventProcessManager {
 
         switch (event.getKind()) {
         case ExternalEventConstants.KIND_EXTERNAL_DNS_EVENT:
-            handleExternalDnsEvent(event, state, process);
-            break;
+            handleExternalDnsEvent(event, process);
         case ExternalEventConstants.KIND_EXTERNAL_HOST_EVENT:
             if (ExternalEventConstants.TYPE_HOST_EVACUATE.equals(event.getEventType())) {
-                handleHostEvacuate(event);
+                return handleHostEvacuate(event);
             }
-            break;
         case ExternalEventConstants.KIND_SERVICE_EVENT:
-            handleServiceEvent(event);
-            break;
+            return handleServiceEvent(event);
         }
 
         return null;
     }
 
-    private void handleExternalDnsEvent(final ExternalEvent event, ProcessState state, ProcessInstance process) {
+    private void handleExternalDnsEvent(final ExternalEvent event, ProcessInstance process) {
         String fqdn = DataAccessor.fieldString(event, ExternalEventConstants.FIELD_FQDN);
         String serviceName = DataAccessor.fieldString(event, ExternalEventConstants.FIELD_SERVICE_NAME);
         String stackName = DataAccessor.fieldString(event, ExternalEventConstants.FIELD_STACK_NAME);
@@ -161,29 +156,29 @@ public class ExternalEventProcessManager {
                 ExternalEventConstants.FIELD_FQDN, fqdn);
     }
 
-    private void handleHostEvacuate(ExternalEvent event) {
+    private HandlerResult handleHostEvacuate(ExternalEvent event) {
         boolean delete = DataAccessor.fieldBool(event, ExternalEventConstants.FIELD_DELETE_HOST);
         List<Long> hosts = getHosts(event);
+        List<ListenableFuture<Host>> hostTasks = new ArrayList<>();
 
         for (long hostId : hosts) {
-            Host host = objectManager.loadResource(Host.class, hostId);
-            if (host == null) {
-                continue;
-            }
-
-            try {
-                deactivateHost(host);
-            } catch (ProcessCancelException e) {
-            }
+            ListenableFuture<Host> hostTask = deactivateHost(objectManager.loadResource(Host.class, hostId));
 
             if (delete) {
-                host = objectManager.reload(host);
-                try {
-                    processManager.remove(host, null);
-                } catch (ProcessCancelException e) {
-                }
+                hostTask = AsyncUtils.andThen(hostTask, (host) -> {
+                    host = objectManager.reload(host);
+                    try {
+                        processManager.remove(host, null);
+                    } catch (ProcessCancelException ignored) {
+                    }
+                    return host;
+                });
             }
+
+            hostTasks.add(hostTask);
         }
+
+        return new HandlerResult(AsyncUtils.afterAll(hostTasks));
     }
 
     private List<Long> getHosts(ExternalEvent event) {
@@ -204,7 +199,11 @@ public class ExternalEventProcessManager {
         return hosts;
     }
 
-    private void deactivateHost(Host host) {
+    private ListenableFuture<Host> deactivateHost(Host host) {
+        if (host == null) {
+            return AsyncUtils.done(null);
+        }
+
         processManager.executeDeactivate(host, null);
 
         List<? extends Instance> instances = instanceDao.getNonRemovedInstanceOn(host.getId());
@@ -217,29 +216,22 @@ public class ExternalEventProcessManager {
                 processManager.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP, instance,
                         ProcessUtils.chainInData(new HashMap<>(), InstanceConstants.PROCESS_STOP,
                                 InstanceConstants.PROCESS_REMOVE));
-            } catch (ProcessCancelException e) {
+            } catch (ProcessCancelException ignored) {
             }
 
             removed.add(instance);
         }
 
+        List<ListenableFuture<Instance>> futures = new ArrayList<>();
         for (Instance instance : removed) {
-            resourceMonitor.waitFor(instance, new ResourcePredicate<Instance>() {
-                @Override
-                public boolean evaluate(Instance obj) {
-                    return obj.getRemoved() != null;
-                }
-
-                @Override
-                public String getMessage() {
-                    return "removed";
-                }
-            });
+            futures.add(resourceMonitor.waitRemoved(instance));
         }
+
+        return AsyncUtils.andThen(AsyncUtils.afterAll(futures), (input) -> host);
     }
 
-    private void handleServiceEvent(ExternalEvent event) {
-        lockManager.lock(new ExternalEventLock(SERVICE_LOCK_NAME, event.getAccountId(), event.getExternalId()), () -> {
+    private HandlerResult handleServiceEvent(ExternalEvent event) {
+        ListenableFuture<?> future = lockManager.lock(new ExternalEventLock(SERVICE_LOCK_NAME, event.getAccountId(), event.getExternalId()), () -> {
             Map<String, Object> serviceData = CollectionUtils.toMap(DataAccessor.getFields(event).get(FIELD_SERVICE));
             if (serviceData.isEmpty()) {
                 log.warn("Empty service for externalServiceEvent: {}.", event);
@@ -253,50 +245,55 @@ public class ExternalEventProcessManager {
             }
 
             if (StringUtils.equals(event.getEventType(), TYPE_SERVICE_CREATE)) {
-                createService(event, serviceData);
+                return createService(event, serviceData);
             } else if (StringUtils.equals(event.getEventType(), TYPE_SERVICE_UPDATE)) {
                 updateService(event, serviceData);
             } else if (StringUtils.equals(event.getEventType(), TYPE_SERVICE_DELETE)) {
-                deleteService(event, serviceData);
+                deleteService(event);
             } else if (StringUtils.equals(event.getEventType(), TYPE_STACK_DELETE)) {
-                deleteStack(event, serviceData);
+                deleteStack(event);
+            }
+
+            return null;
+        });
+
+        return new HandlerResult(future);
+    }
+
+    private ListenableFuture<?> createService(ExternalEvent event, Map<String, Object> serviceData) {
+        Service svc = serviceDao.getServiceByExternalId(event.getAccountId(), event.getExternalId());
+        if (svc != null) {
+            return AsyncUtils.done();
+        }
+
+        return AsyncUtils.andThen(getStack(event), (stack) -> {
+            if (stack == null) {
+                log.info("Can't process service event. Could not get or create stack. Event: [{}]", event);
+                return null;
+            }
+
+            Map<String, Object> service = new HashMap<>();
+            if (serviceData != null) {
+                service.putAll(serviceData);
+            }
+            service.put(ObjectMetaDataManager.ACCOUNT_FIELD, event.getAccountId());
+            service.put(FIELD_STACK_ID, stack.getId());
+
+            try {
+                String create = processManager.getStandardProcessName(StandardProcess.CREATE, Service.class);
+                String activate = processManager.getStandardProcessName(StandardProcess.ACTIVATE, Service.class);
+                ProcessUtils.chainInData(service, create, activate);
+                resourceDao.createAndSchedule(Service.class, service);
+            } catch (ProcessCancelException e) {
+                log.info("Create and activate process cancelled for service with account id {}and external id {}",
+                        event.getAccountId(), event.getExternalId());
             }
 
             return null;
         });
     }
 
-    private void createService(ExternalEvent event, Map<String, Object> serviceData) {
-        Service svc = serviceDao.getServiceByExternalId(event.getAccountId(), event.getExternalId());
-        if (svc != null) {
-            return;
-        }
-
-        Stack stack = getStack(event);
-        if (stack == null) {
-            log.info("Can't process service event. Could not get or create stack. Event: [{}]", event);
-            return;
-        }
-
-        Map<String, Object> service = new HashMap<>();
-        if (serviceData != null) {
-            service.putAll(serviceData);
-        }
-        service.put(ObjectMetaDataManager.ACCOUNT_FIELD, event.getAccountId());
-        service.put(FIELD_STACK_ID, stack.getId());
-
-        try {
-            String create = processManager.getStandardProcessName(StandardProcess.CREATE, Service.class);
-            String activate = processManager.getStandardProcessName(StandardProcess.ACTIVATE, Service.class);
-            ProcessUtils.chainInData(service, create, activate);
-            resourceDao.createAndSchedule(Service.class, service);
-        } catch (ProcessCancelException e) {
-            log.info("Create and activate process cancelled for service with account id {}and external id {}",
-                    event.getAccountId(), event.getExternalId());
-        }
-    }
-
-    private Stack getStack(final ExternalEvent event) {
+    private ListenableFuture<Stack> getStack(final ExternalEvent event) {
         final Map<String, Object> env = CollectionUtils.castMap(DataAccessor.getFields(event).get(FIELD_ENVIRIONMENT));
         Object eId = CollectionUtils.getNestedValue(env, FIELD_EXTERNAL_ID);
         if (eId == null) {
@@ -315,26 +312,11 @@ public class ExternalEventProcessManager {
             String name = possibleName != null ? possibleName.toString() : envExtId;
             newEnv.setName(name);
 
-            stack = DeferredUtils.nest(new Callable<Stack>() {
-                @Override
-                public Stack call() {
-                    return resourceDao.createAndSchedule(newEnv);
-                }
-            });
+            stack = DeferredUtils.nest(() -> resourceDao.createAndSchedule(newEnv));
 
-            stack = resourceMonitor.waitFor(stack, new ResourcePredicate<Stack>() {
-                @Override
-                public boolean evaluate(Stack obj) {
-                    return obj != null && CommonStatesConstants.ACTIVE.equals(obj.getState());
-                }
-
-                @Override
-                public String getMessage() {
-                    return "active state";
-                }
-            });
+            return resourceMonitor.waitForState(stack, CommonStatesConstants.ACTIVE);
         }
-        return stack;
+        return AsyncUtils.done(stack);
     }
 
     private void updateService(ExternalEvent event, Map<String, Object> serviceData) {
@@ -367,14 +349,14 @@ public class ExternalEventProcessManager {
         }
     }
 
-    private void deleteService(ExternalEvent event, Map<String, Object> serviceData) {
+    private void deleteService(ExternalEvent event) {
         Service svc = serviceDao.getServiceByExternalId(event.getAccountId(), event.getExternalId());
         if (svc != null) {
             processManager.scheduleStandardProcess(StandardProcess.REMOVE, svc, null);
         }
     }
 
-    private void deleteStack(ExternalEvent event, Map<String, Object> stackData) {
+    private void deleteStack(ExternalEvent event) {
         Stack env = stackDao.getStackByExternalId(event.getAccountId(), event.getExternalId());
         if (env != null) {
             processManager.scheduleStandardProcess(StandardProcess.REMOVE, env, null);

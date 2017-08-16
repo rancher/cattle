@@ -26,8 +26,10 @@ public class InstanceInfo implements MetadataObject {
     String primaryIp;
     String primaryMacAddress;
     Integer serviceIndex;
+    Integer exitCode;
 
     boolean system;
+    boolean shouldRestart;
 
     Long agentId;
     Long serviceId;
@@ -48,34 +50,35 @@ public class InstanceInfo implements MetadataObject {
     HealthcheckInfo healthCheck;
 
     public InstanceInfo(Instance instance) {
-        this.id = instance.getId();
-        this.hostname = instance.getHostname();
-        this.name = instance.getName();
-        this.uuid = instance.getUuid();
-        this.healthState = instance.getHealthState();
-        this.state = instance.getState();
-        this.externalId = instance.getExternalId();
-        this.primaryIp = DataAccessor.fieldString(instance, InstanceConstants.FIELD_PRIMARY_IP_ADDRESS);
-        this.primaryMacAddress = DataAccessor.fieldString(instance, InstanceConstants.FIELD_PRIMARY_MAC_ADDRESSS);
-        this.serviceIndex = instance.getServiceIndex();
-        this.networkFromContainerId = instance.getNetworkContainerId();
-        this.system = instance.getSystem();
-        this.serviceId = instance.getServiceId();
-        this.stackId = instance.getStackId();
-        this.hostId = instance.getHostId();
-        this.memoryReservation = instance.getMemoryReservation();
-        this.milliCpuReservation = instance.getMilliCpuReservation();
-        this.networkId = instance.getNetworkId();
-        this.startCount = instance.getStartCount();
-        this.ports = new HashSet<>(DataAccessor.fieldObjectList(instance, InstanceConstants.FIELD_PORT_BINDINGS, PortInstance.class));
+        this.agentId = instance.getAgentId();
         this.dns = DataAccessor.fieldStringList(instance, InstanceConstants.FIELD_DNS);
         this.dnsSearch = DataAccessor.fieldStringList(instance, InstanceConstants.FIELD_DNS_SEARCH);
+        this.externalId = instance.getExternalId();
+        this.exitCode = DataAccessor.fieldInteger(instance, InstanceConstants.FIELD_EXIT_CODE);
+        this.healthCheckHosts = DataAccessor.fieldObjectList(instance, InstanceConstants.FIELD_HEALTHCHECK_STATES, HealthcheckState.class);
+        this.healthState = instance.getHealthState();
+        this.hostId = instance.getHostId();
+        this.hostname = instance.getHostname();
+        this.id = instance.getId();
         this.labels = DataAccessor.getLabels(instance);
-        this.healthCheckHosts = DataAccessor.fieldObjectList(instance,
-                InstanceConstants.FIELD_HEALTHCHECK_STATES, HealthcheckState.class);
         this.links = DataAccessor.fieldObjectList(instance, InstanceConstants.FIELD_LINKS, Link.class);
-        this.agentId = instance.getAgentId();
+        this.memoryReservation = instance.getMemoryReservation();
+        this.milliCpuReservation = instance.getMilliCpuReservation();
+        this.name = instance.getName();
+        this.networkFromContainerId = instance.getNetworkContainerId();
+        this.networkId = instance.getNetworkId();
+        this.ports = new HashSet<>(DataAccessor.fieldObjectList(instance, InstanceConstants.FIELD_PORT_BINDINGS, PortInstance.class));
+        this.primaryIp = DataAccessor.fieldString(instance, InstanceConstants.FIELD_PRIMARY_IP_ADDRESS);
+        this.primaryMacAddress = DataAccessor.fieldString(instance, InstanceConstants.FIELD_PRIMARY_MAC_ADDRESSS);
+        this.serviceId = instance.getServiceId();
         this.serviceIds = new HashSet<>(DataAccessor.fieldLongList(instance, InstanceConstants.FIELD_SERVICE_IDS));
+        this.serviceIndex = instance.getServiceIndex();
+        this.shouldRestart = DataAccessor.fieldBool(instance, InstanceConstants.FIELD_SHOULD_RESTART);
+        this.stackId = instance.getStackId();
+        this.startCount = instance.getStartCount();
+        this.state = instance.getState();
+        this.system = instance.getSystem();
+        this.uuid = instance.getUuid();
 
         InstanceHealthCheck hc = DataAccessor.field(instance, InstanceConstants.FIELD_HEALTH_CHECK, InstanceHealthCheck.class);
         if (hc != null) {
@@ -196,6 +199,14 @@ public class InstanceInfo implements MetadataObject {
         return serviceIds;
     }
 
+    public Integer getExitCode() {
+        return exitCode;
+    }
+
+    public boolean isShouldRestart() {
+        return shouldRestart;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -205,6 +216,7 @@ public class InstanceInfo implements MetadataObject {
 
         if (id != that.id) return false;
         if (system != that.system) return false;
+        if (shouldRestart != that.shouldRestart) return false;
         if (networkFromContainerId != null ? !networkFromContainerId.equals(that.networkFromContainerId) : that.networkFromContainerId != null)
             return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
@@ -217,6 +229,7 @@ public class InstanceInfo implements MetadataObject {
         if (primaryMacAddress != null ? !primaryMacAddress.equals(that.primaryMacAddress) : that.primaryMacAddress != null)
             return false;
         if (serviceIndex != null ? !serviceIndex.equals(that.serviceIndex) : that.serviceIndex != null) return false;
+        if (exitCode != null ? !exitCode.equals(that.exitCode) : that.exitCode != null) return false;
         if (agentId != null ? !agentId.equals(that.agentId) : that.agentId != null) return false;
         if (serviceId != null ? !serviceId.equals(that.serviceId) : that.serviceId != null) return false;
         if (stackId != null ? !stackId.equals(that.stackId) : that.stackId != null) return false;
@@ -251,7 +264,9 @@ public class InstanceInfo implements MetadataObject {
         result = 31 * result + (primaryIp != null ? primaryIp.hashCode() : 0);
         result = 31 * result + (primaryMacAddress != null ? primaryMacAddress.hashCode() : 0);
         result = 31 * result + (serviceIndex != null ? serviceIndex.hashCode() : 0);
+        result = 31 * result + (exitCode != null ? exitCode.hashCode() : 0);
         result = 31 * result + (system ? 1 : 0);
+        result = 31 * result + (shouldRestart ? 1 : 0);
         result = 31 * result + (agentId != null ? agentId.hashCode() : 0);
         result = 31 * result + (serviceId != null ? serviceId.hashCode() : 0);
         result = 31 * result + (stackId != null ? stackId.hashCode() : 0);
@@ -270,6 +285,5 @@ public class InstanceInfo implements MetadataObject {
         result = 31 * result + (healthCheck != null ? healthCheck.hashCode() : 0);
         return result;
     }
-
 }
 

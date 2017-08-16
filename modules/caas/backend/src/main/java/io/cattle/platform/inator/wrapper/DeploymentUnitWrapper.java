@@ -8,6 +8,7 @@ import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.inator.Inator;
 import io.cattle.platform.inator.Inator.DesiredState;
 import io.cattle.platform.inator.Result;
@@ -145,7 +146,7 @@ public class DeploymentUnitWrapper implements BasicStateWrapper {
         }
 
         Map<String, Object> labels = DataAccessor.fieldMap(unit, InstanceConstants.FIELD_LABELS);
-        Object hostObj = labels.get(ServiceConstants.LABEL_SERVICE_REQUESTED_HOST_ID);
+        Object hostObj = labels.get(SystemLabels.LABEL_SERVICE_REQUESTED_HOST_ID);
         if (hostObj instanceof Number) {
             return ((Number) hostObj).longValue();
         }

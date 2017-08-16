@@ -16,8 +16,8 @@
         "account.projectId" : "r",
         "account.identity" : "r",
 
-        "HaMembership": "r",
-        "HaMembership\\..*": "r",
+        "haMembership": "r",
+        "haMembership\\..*": "r",
 
         "processSummary": "r",
         "processSummary\\..*": "r",

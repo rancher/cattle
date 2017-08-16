@@ -4,5 +4,4 @@ public interface ResourcePredicate<T> {
 
     boolean evaluate(T obj);
 
-    String getMessage();
 }

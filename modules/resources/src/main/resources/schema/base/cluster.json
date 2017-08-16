@@ -15,10 +15,12 @@
       "type": "clusterIdentity"
     },
     "k8sServerConfig": {
-      "type": "k8sServerConfig"
+      "type": "k8sServerConfig",
+      "nullable": true
     },
     "k8sClientConfig": {
-      "type": "k8sClientConfig"
+      "type": "k8sClientConfig",
+      "nullable": true
     }
   }
 }

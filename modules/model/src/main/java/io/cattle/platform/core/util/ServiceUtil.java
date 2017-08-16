@@ -263,7 +263,7 @@ public class ServiceUtil {
                 DataAccessor.FIELDS,
                 ServiceConstants.FIELD_LAUNCH_CONFIG,
                 InstanceConstants.FIELD_LABELS,
-                ServiceConstants.LABEL_SERVICE_GLOBAL));
+                SystemLabels.LABEL_SERVICE_GLOBAL));
         if (Boolean.valueOf(val)) {
             return true;
         }
@@ -274,7 +274,7 @@ public class ServiceUtil {
         for (Object map : secondaries) {
             val = ObjectUtils.toString(CollectionUtils.getNestedValue(map,
                 InstanceConstants.FIELD_LABELS,
-                ServiceConstants.LABEL_SERVICE_GLOBAL));
+                SystemLabels.LABEL_SERVICE_GLOBAL));
             if (Boolean.valueOf(val)) {
                 return true;
             }

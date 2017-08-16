@@ -3,6 +3,7 @@ package io.cattle.platform.engine.process.impl;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.netflix.config.DynamicLongProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.async.utils.TimeoutException;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.engine.context.EngineContext;
@@ -11,7 +12,6 @@ import io.cattle.platform.engine.handler.CompletableLogic;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessHandler;
 import io.cattle.platform.engine.idempotent.Idempotent;
-import io.cattle.platform.engine.idempotent.IdempotentExecution;
 import io.cattle.platform.engine.idempotent.IdempotentRetryException;
 import io.cattle.platform.engine.manager.ProcessManager;
 import io.cattle.platform.engine.manager.impl.ProcessRecord;
@@ -376,7 +376,10 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
                 continue;
             }
 
-            if (handler instanceof CompletableLogic && result.getFuture() != null) {
+            result = maybeShortCircuit(result, handler);
+
+            if (result.getFuture() != null) {
+                // Save and abort to resume later
                 future = result.getFuture();
                 throw new ProcessWaitException(future, this);
             }
@@ -396,14 +399,11 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
     protected HandlerResult idempotentRunHandler(ProcessDefinition processDefinition, ProcessState state, EngineContext context, ProcessHandler handler) {
         try {
-            return Idempotent.execute(new IdempotentExecution<HandlerResult>() {
-                @Override
-                public HandlerResult execute() {
-                    if (Idempotent.enabled()) {
-                        state.reload();
-                    }
-                    return runHandler(processDefinition, state, context, handler);
+            return Idempotent.execute(() -> {
+                if (Idempotent.enabled()) {
+                    state.reload();
                 }
+                return runHandler(processDefinition, state, context, handler);
             });
         } finally {
             future = null;
@@ -418,8 +418,8 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
             log.debug("Running handler [{}]", processNamed);
             HandlerResult handlerResult = null;
 
-            if (future != null && handler instanceof CompletableLogic) {
-                handlerResult = ((CompletableLogic) handler).complete(future, state, this);
+            if (future == null) {
+                handlerResult = complete(handler, future, state, this);
             } else {
                 handlerResult = handler.handle(state, this);
             }
@@ -608,6 +608,31 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         } catch (NullPointerException e) {
             return super.toString();
         }
+    }
+
+    private static HandlerResult maybeShortCircuit(HandlerResult result, ProcessHandler handler) {
+        if (handler instanceof CompletableLogic) {
+            return result;
+        }
+
+        ListenableFuture<?> future = result.getFuture();
+        if (future == null) {
+            return result;
+        }
+
+        if (future.isDone()) {
+            return result.withFuture(null);
+        }
+
+        return result;
+    }
+
+    public static HandlerResult complete(ProcessHandler handler, ListenableFuture<?> future, ProcessState state, ProcessInstance process) {
+        if (handler instanceof CompletableLogic) {
+            return ((CompletableLogic) handler).complete(future, state, process);
+        }
+        AsyncUtils.get(future);
+        return null;
     }
 
     @Override

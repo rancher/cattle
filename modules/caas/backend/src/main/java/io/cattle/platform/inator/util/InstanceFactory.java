@@ -41,7 +41,7 @@ public class InstanceFactory {
 
     private static void addHostnameOverride(String instanceName, Map<String, Object> fields) {
         Map<String, String> labels = getLabels(fields);
-        if (!"container_name".equalsIgnoreCase(labels.get(ServiceConstants.LABEL_OVERRIDE_HOSTNAME))) {
+        if (!"container_name".equalsIgnoreCase(labels.get(SystemLabels.LABEL_OVERRIDE_HOSTNAME))) {
             return;
         }
 
@@ -137,20 +137,20 @@ public class InstanceFactory {
         if (!ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME.equals(launchConfigName)) {
             serviceName = serviceName + '/' + launchConfigName;
         }
-        labels.put(ServiceConstants.LABEL_STACK_NAME, envName);
-        labels.put(ServiceConstants.LABEL_STACK_SERVICE_NAME, envName + "/" + serviceName);
+        labels.put(SystemLabels.LABEL_STACK_NAME, envName);
+        labels.put(SystemLabels.LABEL_STACK_SERVICE_NAME, envName + "/" + serviceName);
 
         /*
          * Put label 'io.rancher.deployment.unit=this.uuid' on each one. This way
          * we can reference a set of containers later.
          */
-        labels.put(ServiceConstants.LABEL_SERVICE_DEPLOYMENT_UNIT, unit.getUuid());
+        labels.put(SystemLabels.LABEL_SERVICE_DEPLOYMENT_UNIT, unit.getUuid());
 
         /*
          *
          * Put label with launch config name
          */
-        labels.put(ServiceConstants.LABEL_SERVICE_LAUNCH_CONFIG, launchConfigName);
+        labels.put(SystemLabels.LABEL_SERVICE_LAUNCH_CONFIG, launchConfigName);
 
 
         /*
@@ -160,7 +160,7 @@ public class InstanceFactory {
             if (!k.startsWith(ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL) ||
                     StringUtils.isBlank(labelValue) ||
                     labelValue.contains("/") ||
-                    !labelValue.startsWith(ServiceConstants.LABEL_STACK_SERVICE_NAME + "=")) {
+                    !labelValue.startsWith(SystemLabels.LABEL_STACK_SERVICE_NAME + "=")) {
                 return;
             }
 

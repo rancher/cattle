@@ -4,6 +4,7 @@ import io.cattle.platform.core.addon.PortInstance;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.ServiceUtil;
+import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.HashSet;
@@ -60,6 +61,10 @@ public class ServiceInfo implements MetadataObject  {
         this.system = service.getSystem();
         this.selector = service.getSelector();
         this.instances = new HashSet<>(DataAccessor.fieldLongList(service, ServiceConstants.FIELD_INSTANCE_IDS));
+    }
+
+    public boolean isGlobal() {
+        return "true".equalsIgnoreCase(labels.get(SystemLabels.LABEL_SERVICE_GLOBAL));
     }
 
     public long getId() {

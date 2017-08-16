@@ -1,5 +1,7 @@
 package io.cattle.platform.core.dao.impl;
 
+import io.cattle.platform.core.addon.K8sClientConfig;
+import io.cattle.platform.core.constants.ClusterConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.dao.ClusterDao;
@@ -46,14 +48,44 @@ public class ClusterDaoImpl extends AbstractJooqDao implements ClusterDao {
                     ACCOUNT.CLUSTER_OWNER, true,
                     ACCOUNT.CLUSTER_ID, cluster.getId(),
                     ACCOUNT.KIND, ProjectConstants.TYPE);
-            objectManager.create(ProjectMember.class,
-                    PROJECT_MEMBER.ACCOUNT_ID, account.getId(),
-                    PROJECT_MEMBER.PROJECT_ID, account.getId(),
-                    PROJECT_MEMBER.STATE, CommonStatesConstants.ACTIVE,
-                    PROJECT_MEMBER.EXTERNAL_ID, cluster.getCreatorId(),
-                    PROJECT_MEMBER.EXTERNAL_ID_TYPE, ProjectConstants.RANCHER_ID,
-                    PROJECT_MEMBER.ROLE, ProjectConstants.OWNER);
+            if (cluster.getCreatorId() != null) {
+                grantOwner(cluster.getCreatorId(), ProjectConstants.RANCHER_ID, account);
+            }
             return account;
+        });
+    }
+
+    protected void grantOwner(Object id, String idType, Account toProject) {
+        resourceDao.createAndSchedule(ProjectMember.class,
+                PROJECT_MEMBER.ACCOUNT_ID, toProject.getId(),
+                PROJECT_MEMBER.PROJECT_ID, toProject.getId(),
+                PROJECT_MEMBER.STATE, CommonStatesConstants.ACTIVE,
+                PROJECT_MEMBER.EXTERNAL_ID, id,
+                PROJECT_MEMBER.EXTERNAL_ID_TYPE, idType,
+                PROJECT_MEMBER.ROLE, ProjectConstants.OWNER);
+    }
+
+    @Override
+    public Cluster createClusterForAccount(Account account, K8sClientConfig clientConfig) {
+        return transaction.doInTransactionResult(() -> {
+            Cluster cluster = resourceDao.createAndSchedule(Cluster.class,
+                    CLUSTER.NAME, account.getName() + "-cluster",
+                    CLUSTER.EMBEDDED, clientConfig == null ? true : false,
+                    ClusterConstants.FIELD_K8S_CLIENT_CONFIG, clientConfig);
+
+            Account systemEnv = createOwnerAccount(cluster);
+
+            for (ProjectMember member : objectManager.find(ProjectMember.class,
+                    PROJECT_MEMBER.PROJECT_ID, account.getId(),
+                    PROJECT_MEMBER.ROLE, ProjectConstants.OWNER,
+                    PROJECT_MEMBER.STATE, CommonStatesConstants.ACTIVE)) {
+                grantOwner(member.getExternalId(), member.getExternalIdType(), systemEnv);
+            }
+
+            objectManager.setFields(account,
+                    ACCOUNT.CLUSTER_ID, cluster.getId());
+
+            return cluster;
         });
     }
 

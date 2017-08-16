@@ -28,9 +28,14 @@ public class InstanceProcessManager {
         this.processManager = processManager;
     }
 
-    public HandlerResult create(ProcessState state, ProcessInstance process) {
+    public HandlerResult preCreate(ProcessState state, ProcessInstance process) {
         setCreateStart(state);
 
+        Instance instance = (Instance) state.getResource();
+        return new HandlerResult(instanceLifecycle.preCreate(instance));
+    }
+
+    public HandlerResult create(ProcessState state, ProcessInstance process) {
         Instance instance = (Instance) state.getResource();
         try {
             instanceLifecycle.create(instance);

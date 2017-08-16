@@ -14,7 +14,12 @@ public class HandlerResult {
     ListenableFuture<?> future;
 
     public HandlerResult() {
-        this(null);
+        this((Map<?, Object>)null);
+    }
+
+    public HandlerResult(ListenableFuture<?> future) {
+        this((Map<?, Object>)null);
+        withFuture(future);
     }
 
     public HandlerResult(Object key, Object... values) {

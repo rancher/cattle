@@ -7,6 +7,8 @@ public interface AgentInstanceFactory {
 
     Agent createAgent(Instance instance);
 
+    boolean areAllCredentialsActive(Agent agent);
+
     void deleteAgent(Instance instance);
 
 }

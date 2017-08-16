@@ -17,7 +17,6 @@ import io.cattle.platform.docker.client.DockerImage;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.resource.ResourceMonitor;
-import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.DataAccessor;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -143,19 +142,12 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
             agent = createAgent(uri, builder);
         }
 
-        agent = resourceMonitor.waitFor(agent, new ResourcePredicate<Agent>() {
-            @Override
-            public boolean evaluate(Agent agent) {
-                return agentDao.areAllCredentialsActive(agent);
-            }
-
-            @Override
-            public String getMessage() {
-                return "active credentials";
-            }
-        });
-
         return agent;
+    }
+
+    @Override
+    public boolean areAllCredentialsActive(Agent agent) {
+        return agentDao.areAllCredentialsActive(agent);
     }
 
     protected Agent createAgent(final String uri, final AgentBuilderRequest builder) {

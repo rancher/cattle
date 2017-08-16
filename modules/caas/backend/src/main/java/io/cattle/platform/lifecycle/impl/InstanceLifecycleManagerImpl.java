@@ -1,5 +1,6 @@
 package io.cattle.platform.lifecycle.impl;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import io.cattle.platform.backpopulate.BackPopulater;
 import io.cattle.platform.core.addon.LogConfig;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -69,6 +70,11 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
     }
 
     @Override
+    public ListenableFuture<?> preCreate(Instance instance) {
+        return this.agentLifecycle.create(instance);
+    }
+
+    @Override
     public void create(Instance instance) throws LifecycleException {
         k8sLifecycle.instanceCreate(instance);
 
@@ -85,8 +91,6 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
         Object secretsOpaque = secretsLifecycle.create(instance);
 
         vmLifecycle.instanceCreate(instance);
-
-        agentLifecycle.create(instance);
 
         volumeLifecycle.create(instance);
 

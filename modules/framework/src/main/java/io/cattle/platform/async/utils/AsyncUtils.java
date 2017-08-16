@@ -11,6 +11,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
 
 public class AsyncUtils {
 
@@ -63,11 +64,12 @@ public class AsyncUtils {
         return future;
     }
 
-    public static void waitAll(List<ListenableFuture<?>> futures) {
-        AsyncUtils.get(Futures.allAsList(futures));
+    public static <T> ListenableFuture<List<T>> afterAll(List<ListenableFuture<T>> futures) {
+        return Futures.allAsList(futures);
     }
 
-    public static void waitAll(ListenableFuture<?>... futures) {
-        AsyncUtils.get(Futures.allAsList(futures));
+    public static <T, R> ListenableFuture<R> andThen(ListenableFuture<T> future, Function<T, R> func) {
+        return Futures.transform(future, func::apply);
     }
+
 }

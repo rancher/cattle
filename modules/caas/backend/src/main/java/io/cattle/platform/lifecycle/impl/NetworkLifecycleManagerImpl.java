@@ -119,10 +119,10 @@ public class NetworkLifecycleManagerImpl implements NetworkLifecycleManager {
 
     private void setupCNILabels(Instance instance, Network network) {
         if (NetworkConstants.KIND_CNI.equals(network.getKind())) {
-            String wait = getLabel(instance, SystemLabels.CNI_WAIT);
+            String wait = getLabel(instance, SystemLabels.LABEL_CNI_WAIT);
             String netName = getLabel(instance, SystemLabels.LABEL_CNI_NETWORK);
             if (StringUtils.isBlank(wait) || StringUtils.isBlank(netName)) {
-                setLabel(instance, SystemLabels.CNI_WAIT, "true");
+                setLabel(instance, SystemLabels.LABEL_CNI_WAIT, "true");
                 setLabel(instance, SystemLabels.LABEL_CNI_NETWORK, network.getName());
             }
         }
@@ -144,7 +144,7 @@ public class NetworkLifecycleManagerImpl implements NetworkLifecycleManager {
         }
 
         setField(instance, InstanceConstants.FIELD_PRIMARY_MAC_ADDRESSS, resource.getName());
-        setLabel(instance, SystemLabels.MAC_ADDRESS, resource.getName());
+        setLabel(instance, SystemLabels.LABEL_MAC_ADDRESS, resource.getName());
     }
 
     private void releaseIpAddress(Instance instance, Network network) {
@@ -161,7 +161,7 @@ public class NetworkLifecycleManagerImpl implements NetworkLifecycleManager {
         if (assignment != null) {
             setField(instance, InstanceConstants.FIELD_PRIMARY_IP_ADDRESS, assignment.getIpAddress());
             setField(instance, InstanceConstants.FIELD_MANAGED_IP, "true");
-            setLabel(instance, SystemLabels.IP_ADDRESS, assignment.getIpAddress());
+            setLabel(instance, SystemLabels.LABEL_IP_ADDRESS, assignment.getIpAddress());
         }
     }
 

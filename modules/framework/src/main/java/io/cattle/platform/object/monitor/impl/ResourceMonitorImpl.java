@@ -1,13 +1,15 @@
 package io.cattle.platform.object.monitor.impl;
 
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
 import com.netflix.config.DynamicLongProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.async.utils.ResourceTimeoutException;
 import io.cattle.platform.eventing.annotation.AnnotatedEventListener;
 import io.cattle.platform.eventing.annotation.EventHandler;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.ObjectUtils;
@@ -15,10 +17,8 @@ import io.cattle.platform.task.Task;
 import io.cattle.platform.task.TaskOptions;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -27,15 +27,12 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
     private static final DynamicLongProperty DEFAULT_WAIT = ArchaiusUtil.getLong("resource.monitor.default.wait.millis");
 
     ObjectManager objectManager;
-    ConcurrentMap<String, Object> waiters = new ConcurrentHashMap<>();
-    ObjectMetaDataManager objectMetaDataManger;
+    ConcurrentMap<String, Runnable> waiters = new ConcurrentHashMap<>();
     IdFormatter idFormatter;
-    Set<String> seen = new HashSet<>();
 
-    public ResourceMonitorImpl(ObjectManager objectManager, ObjectMetaDataManager objectMetaDataManger, IdFormatter idFormatter) {
+    public ResourceMonitorImpl(ObjectManager objectManager, IdFormatter idFormatter) {
         super();
         this.objectManager = objectManager;
-        this.objectMetaDataManger = objectMetaDataManger;
         this.idFormatter = idFormatter;
     }
 
@@ -47,13 +44,10 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
     @EventHandler
     public void resourceChange(Event event) {
         String key = key(event.getResourceType(), event.getResourceId());
-        Object wait = waiters.get(key);
-
-        if (wait != null) {
-            synchronized (wait) {
-                wait.notifyAll();
-            }
-        }
+        waiters.computeIfPresent(key, (waitKey, checker) -> {
+            checker.run();
+            return checker;
+        });
     }
 
     protected String key(Object resourceType, Object resourceId) {
@@ -62,17 +56,19 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
     }
 
     @Override
-    public <T> T waitFor(T obj, long timeout, ResourcePredicate<T> predicate) {
-        if (obj == null || predicate == null) {
-            return obj;
+    @SuppressWarnings("unchecked")
+    public <T> ListenableFuture<T> waitFor(T input, long timeout, String message, ResourcePredicate<T> predicate) {
+        if (input == null || predicate == null) {
+            return AsyncUtils.done(input);
         }
 
-        String type = objectManager.getType(obj);
-        String kind = ObjectUtils.getKind(obj);
+        SettableFuture<T> future = SettableFuture.create();
+        String type = objectManager.getType(input);
+        String kind = ObjectUtils.getKind(input);
         if (kind == null) {
             kind = type;
         }
-        Object id = ObjectUtils.getId(obj);
+        Object id = ObjectUtils.getId(input);
 
         if (type == null || id == null) {
             throw new IllegalArgumentException("Type and id are required got [" + type + "] [" + id + "]");
@@ -81,71 +77,50 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
         String printKey = key(kind, id);
         String key = key(type, id);
         long end = System.currentTimeMillis() + timeout;
-        Object wait = new Object();
-        Object oldValue = waiters.putIfAbsent(key, wait);
-        if (oldValue != null) {
-            wait = oldValue;
-        }
 
-        synchronized (wait) {
-            while (System.currentTimeMillis() < end) {
-                obj = objectManager.reload(obj);
-
-                if (predicate.evaluate(obj)) {
-                    return obj;
-                }
-
-                synchronized (wait) {
-                    try {
-                        wait.wait(5000L);
-                    } catch (InterruptedException e) {
-                        throw new IllegalStateException("Interrupted", e);
-                    }
-                }
+        Runnable checker = () -> {
+            T obj = objectManager.reload(input);
+            if (predicate.evaluate(obj)) {
+                future.set(obj);
+                waiters.remove(key);
+            } else if (System.currentTimeMillis() >= end) {
+                future.setException(new ResourceTimeoutException(obj, "Waiting: " + message + " [" + printKey + "]"));
+                waiters.remove(key);
             }
-        }
+        };
 
-        throw new ResourceTimeoutException(obj, "Waiting: " + predicate.getMessage() + " [" + printKey + "]");
+        try {
+            Runnable oldChecker = waiters.putIfAbsent(key, checker);
+            if (oldChecker != null) {
+                checker = oldChecker;
+            }
+
+            return future;
+        } finally {
+            checker.run();
+        }
     }
 
     @Override
-    public <T> T waitFor(T obj, ResourcePredicate<T> predicate) {
-        return waitFor(obj, DEFAULT_WAIT.get(), predicate);
+    public <T> ListenableFuture<T> waitFor(T obj, String message, ResourcePredicate<T> predicate) {
+        return waitFor(obj, DEFAULT_WAIT.get(), message, predicate);
     }
 
     @Override
     public void run() {
-        Set<String> previouslySeen = this.seen;
-        this.seen = new HashSet<>();
-        Map<String, Object> copy = new HashMap<>(waiters);
-
-        for (Map.Entry<String, Object> entry : copy.entrySet()) {
-            String key = entry.getKey();
-            Object value = entry.getValue();
-            seen.add(key);
-
-            if (previouslySeen.contains(key)) {
-                waiters.remove(entry.getKey(), entry.getValue());
-                synchronized (value) {
-                    value.notifyAll();
-                }
-            }
-        }
+        new ArrayList<>(waiters.values()).forEach(Runnable::run);
     }
 
     @Override
-    public <T> T waitForState(T obj, final String desiredState) {
-        return waitFor(obj, new ResourcePredicate<T>() {
-            @Override
-            public boolean evaluate(T obj) {
-                return desiredState.equals(ObjectUtils.getState(obj));
-            }
-
-            @Override
-            public String getMessage() {
-                return "state to equal " + desiredState;
-            }
+    public <T> ListenableFuture<T> waitForState(T obj, final String desiredState) {
+        return waitFor(obj, "state to equal " + desiredState, (testObject) -> {
+            return Objects.equals(desiredState, ObjectUtils.getState(testObject));
         });
+    }
+
+    @Override
+    public <T> ListenableFuture<T> waitRemoved(T obj) {
+        return waitFor(obj, "removed", (testObj) -> ObjectUtils.getRemoved(testObj) == null);
     }
 
     @Override

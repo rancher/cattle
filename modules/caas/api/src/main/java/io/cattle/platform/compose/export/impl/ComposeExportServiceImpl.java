@@ -12,6 +12,7 @@ import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.VolumeTemplate;
 import io.cattle.platform.core.util.LBMetadataUtil.LBConfigMetadataStyle;
 import io.cattle.platform.core.util.ServiceUtil;
+import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import org.apache.commons.lang3.StringUtils;
@@ -295,7 +296,7 @@ public class ComposeExportServiceImpl implements ComposeExportService {
         if (composeServiceData.get(InstanceConstants.FIELD_LABELS) != null) {
             labels.putAll((HashMap<String, String>) composeServiceData.get(InstanceConstants.FIELD_LABELS));
         }
-        labels.put(ServiceConstants.LABEL_SELECTOR_CONTAINER, selectorContainer);
+        labels.put(SystemLabels.LABEL_SELECTOR_CONTAINER, selectorContainer);
 
         if (!labels.isEmpty()) {
             composeServiceData.put(InstanceConstants.FIELD_LABELS, labels);
@@ -314,11 +315,11 @@ public class ComposeExportServiceImpl implements ComposeExportService {
         Map<String, String> labels = new HashMap<>();
         if (composeServiceData.get(InstanceConstants.FIELD_LABELS) != null) {
             labels.putAll((HashMap<String, String>) composeServiceData.get(InstanceConstants.FIELD_LABELS));
-            labels.remove(ServiceConstants.LABEL_SIDEKICK);
+            labels.remove(SystemLabels.LABEL_SIDEKICK);
         }
         if (!sidekicks.toString().isEmpty() && isPrimary) {
             String sidekicksFinal = sidekicks.toString().substring(0, sidekicks.length() - 1);
-            labels.put(ServiceConstants.LABEL_SIDEKICK, sidekicksFinal);
+            labels.put(SystemLabels.LABEL_SIDEKICK, sidekicksFinal);
         }
 
         if (!labels.isEmpty()) {
@@ -569,9 +570,9 @@ public class ComposeExportServiceImpl implements ComposeExportService {
         if (composeServiceData.get(InstanceConstants.FIELD_LABELS) != null) {
             Map<String, String> labels = new HashMap<>();
             labels.putAll((HashMap<String, String>) composeServiceData.get(InstanceConstants.FIELD_LABELS));
-            String serviceHash = labels.get(ServiceConstants.LABEL_SERVICE_HASH);
+            String serviceHash = labels.get(SystemLabels.LABEL_SERVICE_HASH);
             if (serviceHash != null) {
-                labels.remove(ServiceConstants.LABEL_SERVICE_HASH);
+                labels.remove(SystemLabels.LABEL_SERVICE_HASH);
                 composeServiceData.put(InstanceConstants.FIELD_LABELS, labels);
             }
         }
@@ -579,13 +580,12 @@ public class ComposeExportServiceImpl implements ComposeExportService {
         if (composeServiceData.get(InstanceConstants.FIELD_METADATA) != null) {
             Map<String, String> metadata = new HashMap<>();
             metadata.putAll((HashMap<String, String>) composeServiceData.get(InstanceConstants.FIELD_METADATA));
-            String serviceHash = metadata.get(ServiceConstants.LABEL_SERVICE_HASH);
+            String serviceHash = metadata.get(SystemLabels.LABEL_SERVICE_HASH);
             if (serviceHash != null) {
-                metadata.remove(ServiceConstants.LABEL_SERVICE_HASH);
+                metadata.remove(SystemLabels.LABEL_SERVICE_HASH);
                 composeServiceData.put(InstanceConstants.FIELD_METADATA, metadata);
             }
         }
-
     }
 
     @SuppressWarnings("unchecked")
@@ -593,7 +593,7 @@ public class ComposeExportServiceImpl implements ComposeExportService {
         if (composeServiceData.get(InstanceConstants.FIELD_LABELS) != null) {
             Map<String, String> labels = ((HashMap<String, String>) composeServiceData
                     .get(InstanceConstants.FIELD_LABELS));
-            String globalService = labels.get(ServiceConstants.LABEL_SERVICE_GLOBAL);
+            String globalService = labels.get(SystemLabels.LABEL_SERVICE_GLOBAL);
             if (Boolean.valueOf(globalService)) {
                 composeServiceData.remove(ServiceConstants.FIELD_SCALE);
             } else {

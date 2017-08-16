@@ -8,6 +8,7 @@ import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.GenericObject;
 import io.cattle.platform.core.model.Revision;
 import io.cattle.platform.core.model.Stack;
+import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.inator.Result;
 import io.cattle.platform.inator.Unit.UnitState;
 import io.cattle.platform.inator.factory.InatorServices;
@@ -17,13 +18,12 @@ import io.cattle.platform.inator.wrapper.ServiceWrapper;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class PullInator {
 
@@ -117,7 +117,7 @@ public class PullInator {
                 name += "/" + lcName;
             }
             labels = CollectionUtils.asMap(ContainerLabelAffinityConstraint.LABEL_HEADER_AFFINITY_CONTAINER_LABEL,
-                    ServiceConstants.LABEL_STACK_SERVICE_NAME + "=" + name);
+                    SystemLabels.LABEL_STACK_SERVICE_NAME + "=" + name);
         }
 
         return svc.resourceDao.createAndSchedule(GenericObject.class,

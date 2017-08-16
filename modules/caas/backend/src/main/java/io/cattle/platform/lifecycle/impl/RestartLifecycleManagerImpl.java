@@ -33,13 +33,20 @@ public class RestartLifecycleManagerImpl implements RestartLifecycleManager {
 
     @Override
     public void postStop(Instance instance, boolean stopOnly) {
-        updateStartRetryCount(instance, stopOnly);
+        int exitCode = updateExitCode(instance);
+        updateStartRetryCount(instance, stopOnly, exitCode);
     }
 
     @Override
     public void postStart(Instance instance) {
         updateStartCount(instance);
         updateFirstRunning(instance);
+    }
+
+    private int updateExitCode(Instance instance) {
+        int exitCode = backPopulator.getExitCode(instance);
+        DataAccessor.setField(instance, InstanceConstants.FIELD_EXIT_CODE, exitCode);
+        return exitCode;
     }
 
     private void updateFirstRunning(Instance instance) {
@@ -54,11 +61,11 @@ public class RestartLifecycleManagerImpl implements RestartLifecycleManager {
         setField(instance, InstanceConstants.FIELD_LAST_START, new Date());
     }
 
-    private void updateStartRetryCount(Instance instance, boolean stopOnly) {
+    private void updateStartRetryCount(Instance instance, boolean stopOnly, int exitCode) {
         int restartCount = getRestartCount(instance);
         boolean shouldRestart = stopOnly &&
                 !isUserStopped(instance) &&
-                shouldRestart(instance, restartCount);
+                shouldRestart(instance, restartCount, exitCode);
 
         if (shouldRestart) {
             restartCount++;
@@ -118,7 +125,7 @@ public class RestartLifecycleManagerImpl implements RestartLifecycleManager {
         return false;
     }
 
-    protected boolean shouldRestart(Instance instance, int restartCount) {
+    protected boolean shouldRestart(Instance instance, int restartCount, int exitCode) {
         RestartPolicy rp = DataAccessor.field(instance, InstanceConstants.FIELD_RESTART_POLICY, RestartPolicy.class);
         if (isStartOnce(instance)) {
             rp = new RestartPolicy();
@@ -129,7 +136,6 @@ public class RestartLifecycleManagerImpl implements RestartLifecycleManager {
             return instance.getServiceId() != null;
         }
 
-        int exitCode = backPopulator.getExitCode(instance);
         return checkRestartPolicy(rp, exitCode, restartCount);
     }
 

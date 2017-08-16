@@ -60,9 +60,17 @@ public class SubscribeManager extends AbstractNoOpResourceManager {
         }
 
         if (SubscriptionStyle.QUALIFIED.equals(style)) {
-                String value = "" + policy.getAuthenticatedAsAccountId();
-                String eventName = String.format("%s%s%s=%s", EVENT_DISCONNECT, FrameworkEvents.EVENT_SEP, FrameworkEvents.ACCOUNT_QUALIFIER, value);
+            // Subscribe as user
+            String eventName = String.format("%s%s%s=%d", EVENT_DISCONNECT, FrameworkEvents.EVENT_SEP,
+                    FrameworkEvents.ACCOUNT_QUALIFIER, policy.getAuthenticatedAsAccountId());
+            filteredEventNames.add(eventName);
+
+            // Subscribe as project
+            if (policy.getAccountId() != policy.getAuthenticatedAsAccountId()) {
+                eventName = String.format("%s%s%s=%d", EVENT_DISCONNECT, FrameworkEvents.EVENT_SEP,
+                        FrameworkEvents.ACCOUNT_QUALIFIER, policy.getAccountId());
                 filteredEventNames.add(eventName);
+            }
         }
         request.setResponseContentType("text/plain");
 
