@@ -163,6 +163,7 @@
         "container.startOnCreate" : "cr",
         "container.stdinOpen" : "cr",
         "container.stopSignal" : "cr",
+        "container.stopTimeout" : "cr",
         "container.storageOpt" : "cr",
         "container.subnetIds" : "cr",
         "container.sysctls" : "cr",
