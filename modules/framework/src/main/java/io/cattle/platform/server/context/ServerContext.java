@@ -65,6 +65,9 @@ public class ServerContext {
                 apiHost = "http://" + apiHost;
             }
             url = apiHost;
+            while (url.endsWith("/")) {
+                url = url.substring(0, url.length()-1);
+            }
         }
 
         if (url == null) {
