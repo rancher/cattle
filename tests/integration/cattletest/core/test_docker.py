@@ -692,6 +692,7 @@ def test_docker_newfields(docker_client, super_client):
     cpuPeriod = 100000
     cpuQuota = 50000
     cpuSetMems = "0"
+    cpuSetCpus = "0,1"
     kernelMemory = 10000000
     memory = 10000000
     groupAdd = ['root']
@@ -734,6 +735,7 @@ def test_docker_newfields(docker_client, super_client):
     assert c.data['dockerInspect']['HostConfig']['CpuPeriod'] == 100000
     assert c.data['dockerInspect']['HostConfig']['CpuQuota'] == 50000
     assert c.data['dockerInspect']['HostConfig']['CpusetMems'] == "0"
+    assert c.data['dockerInspect']['HostConfig']['CpusetCpus'] == "0,1"
     assert c.data['dockerInspect']['HostConfig']['KernelMemory'] == 10000000
     assert c.data['dockerInspect']['HostConfig']['Memory'] == 10000000
     assert c.data['dockerInspect']['HostConfig']['MemorySwappiness'] == 50

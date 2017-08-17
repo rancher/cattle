@@ -106,7 +106,7 @@ public class ServiceDiscoveryConfigItem {
     public static final ServiceDiscoveryConfigItem NETWORKMODE = new ServiceDiscoveryConfigItem(
             DockerInstanceConstants.FIELD_NETWORK_MODE,
             NamedUtils.toUnderscoreSeparated(DockerInstanceConstants.FIELD_NETWORK_MODE), false);
-    public static final ServiceDiscoveryConfigItem CPUSET = new ServiceDiscoveryConfigItem("cpuSet", "cpuset", false);
+    public static final ServiceDiscoveryConfigItem CPUSET = new ServiceDiscoveryConfigItem("cpuSetCpus", "cpuset", false);
 
     public static final ServiceDiscoveryConfigItem LABELS = new ServiceDiscoveryConfigItem(
             InstanceConstants.FIELD_LABELS, InstanceConstants.FIELD_LABELS, false);

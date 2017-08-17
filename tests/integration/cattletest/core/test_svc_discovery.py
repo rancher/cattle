@@ -1985,7 +1985,7 @@ def test_export_config(client, context):
                 "$bar": {"metadata": [{"$id$$foo$bar$$": "${HOSTNAME}"}]}}
     restart_policy = {"maximumRetryCount": 2, "name": "on-failure"}
     launch_config = {"imageUuid": image_uuid,
-                     "cpuSet": "0,1", "labels": labels,
+                     "cpuSetCpus": "0,1", "labels": labels,
                      "restartPolicy": restart_policy,
                      "startOnCreate": True,
                      "pidMode": "host",
