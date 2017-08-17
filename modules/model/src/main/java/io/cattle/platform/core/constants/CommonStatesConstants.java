@@ -13,6 +13,7 @@ public class CommonStatesConstants {
     public static final String REMOVING = StandardStates.REMOVING;
     public static final String REQUESTED = StandardStates.REQUESTED;
     public static final String REGISTERING = StandardStates.REGISTERING;
+    public static final String UPDATING = StandardStates.UPDATING;
     public static final String UPDATING_ACTIVE = StandardStates.UPDATING_ACTIVE;
     public static final String REMOVED = StandardStates.REMOVED;
     public static final String UPDATING_INACTIVE = StandardStates.UPDATING_INACTIVE;

@@ -30,6 +30,7 @@ public class AccountDaoImpl extends AbstractJooqDao implements AccountDao {
             CommonStatesConstants.REGISTERING,
             CommonStatesConstants.ACTIVATING,
             CommonStatesConstants.ACTIVE,
+            CommonStatesConstants.UPDATING,
             ServiceConstants.STATE_UPGRADING);
 
     ObjectManager objectManager;

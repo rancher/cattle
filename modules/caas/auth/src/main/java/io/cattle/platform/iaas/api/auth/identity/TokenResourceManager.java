@@ -25,12 +25,19 @@ import org.apache.commons.lang3.StringUtils;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class TokenResourceManager extends AbstractNoOpResourceManager {
 
     private static final DynamicBooleanProperty RESTRICT_CONCURRENT_SESSIONS = ArchaiusUtil.getBoolean("api.auth.restrict.concurrent.sessions");
+    private static final Map<String, Object> LOGOUT_MESSAGE = new HashMap<>();
+
+    static {
+        LOGOUT_MESSAGE.put("name", "logout");
+    }
+
 
     AuthTokenDao authTokenDao;
     IdentityManager identityManager;
@@ -97,7 +104,7 @@ public class TokenResourceManager extends AbstractNoOpResourceManager {
         if (RESTRICT_CONCURRENT_SESSIONS.get()) {
             authTokenDao.deletePreviousTokens(authenticatedAsAccountId, tokenAccountId);
             String event = FrameworkEvents.appendAccount(SubscribeManager.EVENT_DISCONNECT, authenticatedAsAccountId);
-            eventService.publish(EventVO.newEvent(event));
+            eventService.publish(EventVO.newEvent(event).withData(LOGOUT_MESSAGE));
         }
 
         token.setJwt(authTokenDao.createToken(token.getJwt(), token.getAuthProvider(),
