@@ -88,7 +88,7 @@ public class ActivityLogImpl implements ActivityLog {
                     } catch (DataChangedException e) {
                     }
                 }
-                ObjectUtils.publishChanged(eventService, accountId, entry.serviceId, ServiceConstants.KIND_SERVICE);
+                ObjectUtils.publishChanged(eventService, accountId, null, entry.serviceId, ServiceConstants.KIND_SERVICE);
             }
         }
     }

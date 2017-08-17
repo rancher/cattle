@@ -129,11 +129,6 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
     }
 
     @Override
-    public boolean isShouldRecord() {
-        return false;
-    }
-
-    @Override
     public boolean isShouldLock() {
         return false;
     }

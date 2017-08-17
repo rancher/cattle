@@ -104,6 +104,9 @@ public class HealthcheckScheduleLoop implements Loop {
         List<HealthcheckState> desired = Arrays.asList(new HealthcheckState(hostId, HealthcheckConstants.HEALTH_STATE_INITIALIZING));
 
         for (InstanceInfo instanceInfo : metadata.getInstances()) {
+            if (instanceInfo.getHealthCheck() == null) {
+                continue;
+            }
             List<HealthcheckState> hcs = instanceInfo.getHealthCheckHosts();
             if (hcs.size() != 1 || !hostId.equals(hcs.get(0).getHostId())) {
                 writeHcs(metadata, instanceInfo.getId(), desired);

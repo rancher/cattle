@@ -13,17 +13,19 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.task.Task;
 import io.cattle.platform.task.TaskOptions;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
+import io.cattle.platform.util.type.CollectionUtils;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static io.cattle.platform.core.model.tables.AgentTable.*;
 
 public class ResourceChangeEventListenerImpl implements ResourceChangeEventListener, Task, TaskOptions {
 
-    volatile Map<Pair<String, String>, Object> changed = new ConcurrentHashMap<>();
+    volatile Set<Change> changed = Collections.newSetFromMap(new ConcurrentHashMap<>());
     LockDelegator lockDelegator;
     EventService eventService;
     ObjectManager objectManager;
@@ -80,15 +82,12 @@ public class ResourceChangeEventListenerImpl implements ResourceChangeEventListe
     protected void add(Event event) {
         String id = event.getResourceId();
         String type = event.getResourceType();
-        @SuppressWarnings("unchecked")
-        Map<String, Object> data = (Map<String, Object>) event.getData();
-        Object accountId = data == null ? null : data.get(ObjectMetaDataManager.ACCOUNT_FIELD);
-        if (accountId == null) {
-            accountId = Boolean.TRUE;
-        }
+        Map<String, Object> data = CollectionUtils.toMap(event.getData());
+        Object accountId = data.get(ObjectMetaDataManager.ACCOUNT_FIELD);
+        Object clusterId = data.get(ObjectMetaDataManager.CLUSTER_FIELD);
 
         if (type != null && id != null) {
-            changed.put(new ImmutablePair<>(type, id), accountId);
+            changed.add(new Change(type, id, accountId, clusterId));
         }
     }
 
@@ -99,18 +98,24 @@ public class ResourceChangeEventListenerImpl implements ResourceChangeEventListe
             return;
         }
 
-        Map<Pair<String, String>, Object> changed = this.changed;
-        this.changed = new ConcurrentHashMap<>();
+        Set<Change> changed = this.changed;
+        this.changed = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
-        for (Map.Entry<Pair<String, String>, Object> entry : changed.entrySet()) {
-            Pair<String, String> pair = entry.getKey();
-            Object accountId = entry.getValue();
+        for (Change change : changed) {
+            eventService.publish(EventVO.newEvent(FrameworkEvents.RESOURCE_CHANGE)
+                    .withResourceType(change.type)
+                    .withResourceId(Objects.toString(change.id, null)));
 
-            eventService.publish(EventVO.newEvent(FrameworkEvents.RESOURCE_CHANGE).withResourceType(pair.getLeft()).withResourceId(pair.getRight()));
-
-            if (accountId instanceof Number) {
-                String event = FrameworkEvents.appendAccount(FrameworkEvents.RESOURCE_CHANGE, ((Number) accountId).longValue());
-                eventService.publish(EventVO.newEvent(event).withResourceType(pair.getLeft()).withResourceId(pair.getRight()));
+            if (change.accountId instanceof Number) {
+                String event = FrameworkEvents.appendAccount(FrameworkEvents.RESOURCE_CHANGE, ((Number) change.accountId).longValue());
+                eventService.publish(EventVO.newEvent(event)
+                        .withResourceType(change.type)
+                        .withResourceId(Objects.toString(change.id, null)));
+            } else if (change.clusterId instanceof Number) {
+                String event = FrameworkEvents.appendCluster(FrameworkEvents.RESOURCE_CHANGE, ((Number) change.clusterId).longValue());
+                eventService.publish(EventVO.newEvent(event)
+                        .withResourceType(change.type)
+                        .withResourceId(Objects.toString(change.id, null)));
             }
         }
     }
@@ -121,13 +126,44 @@ public class ResourceChangeEventListenerImpl implements ResourceChangeEventListe
     }
 
     @Override
-    public boolean isShouldRecord() {
+    public boolean isShouldLock() {
         return false;
     }
 
-    @Override
-    public boolean isShouldLock() {
-        return false;
+    private static class Change {
+        String type;
+        Object id;
+        Object accountId;
+        Object clusterId;
+
+        public Change(String type, Object id, Object accountId, Object clusterId) {
+            this.type = type;
+            this.id = id;
+            this.accountId = accountId;
+            this.clusterId = clusterId;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Change change = (Change) o;
+
+            if (type != null ? !type.equals(change.type) : change.type != null) return false;
+            if (id != null ? !id.equals(change.id) : change.id != null) return false;
+            if (accountId != null ? !accountId.equals(change.accountId) : change.accountId != null) return false;
+            return clusterId != null ? clusterId.equals(change.clusterId) : change.clusterId == null;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = type != null ? type.hashCode() : 0;
+            result = 31 * result + (id != null ? id.hashCode() : 0);
+            result = 31 * result + (accountId != null ? accountId.hashCode() : 0);
+            result = 31 * result + (clusterId != null ? clusterId.hashCode() : 0);
+            return result;
+        }
     }
 
 }

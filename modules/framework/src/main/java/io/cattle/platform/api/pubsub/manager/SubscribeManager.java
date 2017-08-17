@@ -57,6 +57,11 @@ public class SubscribeManager extends AbstractNoOpResourceManager {
             }
 
             filteredEventNames.add(eventName);
+
+            if (eventName.startsWith("resource.change;account=") && policy.getClusterId() != null) {
+                eventName = String.format("resource.change;cluster=%d", policy.getClusterId());
+                filteredEventNames.add(eventName);
+            }
         }
 
         if (SubscriptionStyle.QUALIFIED.equals(style)) {

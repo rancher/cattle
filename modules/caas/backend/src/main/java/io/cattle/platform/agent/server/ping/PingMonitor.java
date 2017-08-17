@@ -160,11 +160,6 @@ public class PingMonitor implements Task, TaskOptions {
     }
 
     @Override
-    public boolean isShouldRecord() {
-        return false;
-    }
-
-    @Override
     public boolean isShouldLock() {
         return false;
     }

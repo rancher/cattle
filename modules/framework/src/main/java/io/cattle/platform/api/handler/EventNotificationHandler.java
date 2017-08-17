@@ -1,5 +1,6 @@
 package io.cattle.platform.api.handler;
 
+import com.netflix.config.DynamicStringListProperty;
 import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.deferred.util.DeferredUtils;
@@ -12,15 +13,12 @@ import io.github.ibuildthecloud.gdapi.model.Schema.Method;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.handler.ApiRequestHandler;
 
+import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import javax.servlet.ServletException;
-
-import com.netflix.config.DynamicStringListProperty;
 
 public class EventNotificationHandler implements ApiRequestHandler {
 
@@ -53,9 +51,13 @@ public class EventNotificationHandler implements ApiRequestHandler {
         data.put("action", request.getAction());
         data.put("responseCode", request.getResponseCode());
         data.put("accountId", ApiUtils.getPolicy().getAccountId());
+        data.put("clusterId", ApiUtils.getPolicy().getClusterId());
 
-        DeferredUtils.deferPublish(eventService, EventVO.newEvent(FrameworkEvents.API_CHANGE).withResourceId(request.getId()).withResourceType(
-                type).withData(data));
+        DeferredUtils.deferPublish(eventService,
+                EventVO.newEvent(FrameworkEvents.API_CHANGE)
+                        .withResourceId(request.getId())
+                        .withResourceType(type)
+                        .withData(data));
     }
 
     @Override
@@ -73,7 +75,9 @@ public class EventNotificationHandler implements ApiRequestHandler {
         data.put("message", t.getMessage());
         data.put("stackTrace", ExceptionUtils.toString(t));
 
-        DeferredUtils.deferPublish(eventService, EventVO.newEvent(FrameworkEvents.API_EXCEPTION).withData(data));
+        DeferredUtils.deferPublish(eventService, EventVO
+                .newEvent(FrameworkEvents.API_EXCEPTION)
+                .withData(data));
 
         return false;
     }

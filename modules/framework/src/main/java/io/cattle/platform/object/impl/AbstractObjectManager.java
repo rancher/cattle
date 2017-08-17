@@ -2,8 +2,6 @@ package io.cattle.platform.object.impl;
 
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
-import io.cattle.platform.object.meta.Relationship;
-import io.cattle.platform.object.meta.Relationship.RelationshipType;
 import io.cattle.platform.object.postinit.ObjectPostInstantiationHandler;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -11,9 +9,7 @@ import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.Schema;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -85,7 +81,7 @@ public abstract class AbstractObjectManager implements ObjectManager {
             return null;
         }
 
-        Schema schema = null;
+        Schema schema;
         if (obj instanceof Class<?>) {
             schema = schemaFactory.getSchema((Class<?>) obj);
         } else if (obj instanceof String) {
@@ -127,55 +123,6 @@ public abstract class AbstractObjectManager implements ObjectManager {
 
         Map<Object, Object> values = CollectionUtils.asMap(key, valueKeyValue);
         return setFields(obj, convertToPropertiesFor(obj, values));
-    }
-
-    protected Map<Object, Object> toObjectsToWrite(Object obj, Map<String, Object> values) {
-        String type = getType(obj);
-        Map<String, Relationship> relationships = null;
-        Map<Object, Object> objValues = new LinkedHashMap<>();
-
-        for (Map.Entry<String, Object> entry : values.entrySet()) {
-            String key = entry.getKey();
-            Object value = entry.getValue();
-            if (value instanceof Map<?, ?>) {
-                if (relationships == null) {
-                    relationships = metaDataManager.getLinkRelationships(schemaFactory, type);
-                }
-                Relationship rel = relationships.get(key.toLowerCase());
-                if (rel != null && rel.getRelationshipType() != Relationship.RelationshipType.REFERENCE) {
-                    rel = null;
-                }
-
-                if (rel == null) {
-                    objValues.put(key, value);
-                } else {
-                    value = toObjectsToWrite(rel.getObjectType(), (Map<String, Object>) value);
-                    objValues.put(rel, value);
-                }
-            } else {
-                objValues.put(key, value);
-            }
-        }
-
-        return objValues;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T> List<T> getListByRelationship(Object obj, Relationship rel) {
-        if (rel == null || obj == null) {
-            return Collections.emptyList();
-        }
-
-        if (!rel.isListResult()) {
-            throw new IllegalArgumentException("Relationation arguement is not a listSupport result");
-        }
-
-        if (rel.getRelationshipType() == RelationshipType.CHILD) {
-            return (List<T>) children(obj, rel.getObjectType(), rel.getPropertyName());
-        }
-
-        return Collections.emptyList();
     }
 
     @Override

@@ -102,7 +102,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                         instance.setHostId(newHost);
                         updateInstancePorts(instance, attempt.getAllocatedIPs());
                         objectManager.persist(instance);
-                        ObjectUtils.publishChanged(eventService, instance.getAccountId(), newHost, HostConstants.TYPE);
+                        ObjectUtils.publishChanged(eventService, instance.getAccountId(), instance.getClusterId(), newHost, HostConstants.TYPE);
                     }
 
                     updateVolumeHostInfo(attempt, candidate, newHost);

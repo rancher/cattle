@@ -7,18 +7,13 @@ import io.cattle.platform.async.retry.RetryTimeoutService;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.json.JsonMapper;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
+import org.eclipse.jetty.websocket.server.WebSocketServerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.eclipse.jetty.websocket.server.WebSocketServerFactory;
-import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
-import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
-import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 public class JettyWebSocketSubcriptionHandler extends NonBlockingSubscriptionHandler {
 
@@ -34,12 +29,7 @@ public class JettyWebSocketSubcriptionHandler extends NonBlockingSubscriptionHan
         final WebSocketMessageWriter messageWriter = new WebSocketMessageWriter();
         WebSocketServerFactory factory = new WebSocketServerFactory();
         factory.getPolicy().setAsyncWriteTimeout(1000);
-        factory.setCreator(new WebSocketCreator() {
-            @Override
-            public Object createWebSocket(ServletUpgradeRequest req, ServletUpgradeResponse resp) {
-                return messageWriter;
-            }
-        });
+        factory.setCreator((servletReq, servletResp) -> messageWriter);
 
         if ("websocket".equalsIgnoreCase(req.getHeader("Upgrade")) && factory.acceptWebSocket(req, resp)) {
             apiRequest.setResponseCode(101);

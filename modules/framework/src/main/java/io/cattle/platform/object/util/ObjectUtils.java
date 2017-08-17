@@ -182,14 +182,16 @@ public class ObjectUtils {
         }
 
         Object accountId = getAccountId(obj);
+        Object clusterId = getClusterId(obj);
         Object resourceId = getId(obj);
         String type = objectManager.getType(obj);
-        publishChanged(eventService, accountId, resourceId, type);
+        publishChanged(eventService, accountId, clusterId, resourceId, type);
     }
 
-    public static void publishChanged(final EventService eventService, Object accountId, Object resourceId, String resourceType) {
+    public static void publishChanged(final EventService eventService, Object accountId, Object clusterId, Object resourceId, String resourceType) {
         Map<String, Object> data = new HashMap<>();
         data.put(ObjectMetaDataManager.ACCOUNT_FIELD, accountId);
+        data.put(ObjectMetaDataManager.CLUSTER_FIELD, clusterId);
 
         final Event event = EventVO.newEvent(FrameworkEvents.STATE_CHANGE)
                 .withData(data)
@@ -200,6 +202,8 @@ public class ObjectUtils {
     }
 
     public static boolean areObjectsEqual(Object a, Object b) {
+        //TODO: rewrite, not sure about this logic
+
         // covers both being nulls and primitives
         if (a == b) {
             return true;

@@ -1,6 +1,5 @@
 package io.cattle.platform.object;
 
-import io.cattle.platform.object.meta.Relationship;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.Schema;
 
@@ -58,8 +57,6 @@ public interface ObjectManager {
     <T> List<T> find(Class<T> clz, Map<Object, Object> values);
 
     <T> List<T> find(Class<T> clz, Object key, Object... valueKeyValue);
-
-    <T> List<T> getListByRelationship(Object obj, Relationship relationship);
 
     String getType(Object obj);
 
