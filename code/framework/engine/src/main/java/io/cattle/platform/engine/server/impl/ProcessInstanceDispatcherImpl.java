@@ -51,6 +51,12 @@ public class ProcessInstanceDispatcherImpl implements ProcessInstanceDispatcher,
     @Inject @Named("ProcessNonBlockingExecutorService")
     ExecutorService nonBlockingExecutor;
     @Inject
+    @Named("ProcessBlockingExtraExecutorService")
+    ExecutorService blockingExtraExecutor;
+    @Inject
+    @Named("ProcessBlockingSystemExecutorService")
+    ExecutorService blockingSystemExecutor;
+    @Inject
     ProcessRecordDao processRecordDao;
     @Inject
     LockManager lockManager;
@@ -79,11 +85,24 @@ public class ProcessInstanceDispatcherImpl implements ProcessInstanceDispatcher,
         }
         if (!submitted) {
             if (isBlocking(ref)) {
-                blockingExecutor.execute(ref);
-            } else {
+                if (ref.isSystem()) {
+                    blockingSystemExecutor.execute(ref);
+                } else {
+                    blockingExecutor.execute(ref);
+                }
+            } else if (isBlockingExtra(ref)) {
+                blockingExtraExecutor.execute(ref);
+            }else {
                 nonBlockingExecutor.execute(ref);
             }
         }
+    }
+
+    protected boolean isBlockingExtra(ProcessInstanceReference ref) {
+        if (ArchaiusUtil.getBoolean("process." + ref.getName().split("[.]")[0] + ".blockingextra").get()) {
+            return true;
+        }
+        return ArchaiusUtil.getBoolean("process." + ref.getName() + ".blockingextra").get();
     }
 
     protected boolean isBlocking(ProcessInstanceReference ref) {

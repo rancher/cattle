@@ -40,12 +40,20 @@ public class ObjectLaunchConfigurationUtils {
             priority = ArchaiusUtil.getInt("process." + parts[0] + ".priority").get();
         }
 
-        if (priority >= 0 && ObjectUtils.isSystem(resource)) {
+        boolean isSystem = ObjectUtils.isSystem(resource);
+
+        Map<String, Object> processData = new HashMap<>();
+        if (data != null) {
+            processData.putAll(data);
+        }
+
+        if (priority >= 0 && isSystem) {
             priority += 1000;
+            processData.put(ObjectMetaDataManager.SYSTEM_FIELD, true);
         }
 
         return new LaunchConfiguration(processName, schema.getId(), id.toString(), ObjectUtils.getAccountId(resource), priority,
-                data == null ? new HashMap<String, Object>() : data);
+                processData);
     }
 
 }
