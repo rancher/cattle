@@ -127,6 +127,11 @@
 
         "instanceLink.ports" : "r",
 
+        "k8sClientConfig" : "cru",
+        "k8sClientConfig.bearerToken" : "cru",
+        "k8sClientConfig.address" : "cru",
+        "k8sClientConfig.caCert" : "cru",
+
         "ldapconfig" : "cru",
         "ldapconfig.accessMode" : "cr",
         "ldapconfig.domain" : "cr",
@@ -253,6 +258,7 @@
         "genericObject" : "crd",
 
         "register.key" : "cr",
+        "register.k8sClientConfig" : "cr",
 
         "registrationToken.publicValue" : "",
         "registrationToken.secretValue" : "",
