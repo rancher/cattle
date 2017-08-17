@@ -16,6 +16,7 @@ import io.cattle.platform.engine.process.log.ProcessLog;
 import io.cattle.platform.engine.server.ProcessInstanceReference;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -267,6 +268,9 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
         ref.setName(record.getProcessName());
         ref.setPriority(record.getPriority() == null ? 0 : record.getPriority());
         ref.setProcessId(record.getId());
+        if (record.getData().containsKey(ObjectMetaDataManager.SYSTEM_FIELD)) {
+            ref.setSystem(Boolean.valueOf(record.getData().get(ObjectMetaDataManager.SYSTEM_FIELD).toString()));
+        }
 
         return ref;
     }

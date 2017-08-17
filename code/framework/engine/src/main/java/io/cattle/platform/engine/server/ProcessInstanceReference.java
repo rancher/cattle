@@ -9,6 +9,7 @@ public class ProcessInstanceReference extends NoExceptionRunnable implements Com
     String name;
     ProcessInstanceExecutor executor;
     boolean event;
+    boolean system;
 
     public long getProcessId() {
         return processId;
@@ -64,6 +65,14 @@ public class ProcessInstanceReference extends NoExceptionRunnable implements Com
 
     public void setEvent(boolean event) {
         this.event = event;
+    }
+
+    public boolean isSystem() {
+        return system;
+    }
+
+    public void setSystem(boolean system) {
+        this.system = system;
     }
 
 }

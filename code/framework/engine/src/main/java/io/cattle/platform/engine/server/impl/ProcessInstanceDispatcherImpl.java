@@ -54,6 +54,9 @@ public class ProcessInstanceDispatcherImpl implements ProcessInstanceDispatcher,
     @Named("ProcessBlockingExtraExecutorService")
     ExecutorService blockingExtraExecutor;
     @Inject
+    @Named("ProcessBlockingSystemExecutorService")
+    ExecutorService blockingSystemExecutor;
+    @Inject
     ProcessRecordDao processRecordDao;
     @Inject
     LockManager lockManager;
@@ -82,7 +85,11 @@ public class ProcessInstanceDispatcherImpl implements ProcessInstanceDispatcher,
         }
         if (!submitted) {
             if (isBlocking(ref)) {
-                blockingExecutor.execute(ref);
+                if (ref.isSystem()) {
+                    blockingSystemExecutor.execute(ref);
+                } else {
+                    blockingExecutor.execute(ref);
+                }
             } else if (isBlockingExtra(ref)) {
                 blockingExtraExecutor.execute(ref);
             }else {
