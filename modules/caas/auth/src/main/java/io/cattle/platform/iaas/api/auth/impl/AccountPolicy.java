@@ -1,6 +1,7 @@
 package io.cattle.platform.iaas.api.auth.impl;
 
 import io.cattle.platform.api.auth.Identity;
+import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.auth.impl.DefaultPolicy;
 import io.cattle.platform.api.auth.impl.PolicyOptions;
 import io.cattle.platform.core.model.Account;
@@ -22,8 +23,14 @@ public class AccountPolicy extends DefaultPolicy {
 
     private static final Logger log = LoggerFactory.getLogger(AccountPolicy.class);
 
+    Account account;
+
     public AccountPolicy(Account account, Account authenticatedAsAccount, Set<Identity> identities, PolicyOptions options) {
         super(account.getId(), authenticatedAsAccount.getId(), account.getClusterId(), account.getName(), identities, options);
+        this.account = account;
+        if (account.getClusterOwner()) {
+            options.setOption(Policy.CLUSTER_OWNER, "true");
+        }
     }
 
     @Override

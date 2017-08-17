@@ -147,6 +147,10 @@ public class AccountProcessManager {
         /* Since the clusterId may have changed, we disconnect all clients because the cluster ID may have been
          * cached in the connection as null
          */
+        disconnectClients(this.eventService, account);
+    }
+
+    public static void disconnectClients(EventService eventService, Account account) {
         String event = FrameworkEvents.appendAccount(SubscribeManager.EVENT_DISCONNECT, account.getId());
         eventService.publish(EventVO.newEvent(event));
     }

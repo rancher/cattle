@@ -20,6 +20,8 @@
         "error\\..*" : "r",
 
         "account": "r",
+        "account.clusterId": "r",
+        "account.clusterOwner": "r",
         "account.metadata": "r",
         "account.version": "r",
 

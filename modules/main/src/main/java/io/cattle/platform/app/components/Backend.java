@@ -291,7 +291,7 @@ public class Backend {
         K8sProviderLabels k8sProviderLabels = new K8sProviderLabels(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager, metadataManager);
         MountRemove mountRemove = new MountRemove(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager);
         PullTaskCreate pullTaskCreate = new PullTaskCreate(allocationHelper, c.agentLocator, progress, imageCredentialLookup, c.objectSerializer, f.objectManager);
-        RegisterCreateClusterCreate registerCreateClusterCreate = new RegisterCreateClusterCreate(f.lockManager, f.objectManager, d.clusterDao, f.resourceMonitor);
+        RegisterCreateClusterCreate registerCreateClusterCreate = new RegisterCreateClusterCreate(f.lockManager, f.objectManager, d.clusterDao, f.resourceMonitor, f.eventService);
         SecretRemove secretRemove = new SecretRemove(c.secretsService);
         ServiceEventCreate serviceEventCreate = new ServiceEventCreate(f.objectManager, loopManager);
         SetRemovedFields setRemovedFields = new SetRemovedFields(f.objectManager);
@@ -327,7 +327,7 @@ public class Backend {
         r.handle("genericobject.create", pullTaskCreate,
                 registerCreateClusterCreate,
                 registerProcessManager::genericObjectCreate,
-                registerProcessManager::assignCredendtials);
+                registerProcessManager::assignCredentials);
 
         r.handle("host.create", hostProcessManager::create);
         r.handle("host.provision", goMachineService, hostProcessManager::provision);
@@ -404,7 +404,7 @@ public class Backend {
                 new SimulatorPingProcessor(f.jsonMapper, f.objectManager),
                 new SimulatorStartStopProcessor(f.objectManager, f.jsonMapper, f.scheduledExecutorService));
         ProcessEventListener processEventListener = new ProcessEventListenerImpl(f.processServer);
-        resourceChangeEventListener = new ResourceChangeEventListenerImpl(f.lockDelegator, f.eventService, f.objectManager, f.jsonMapper);
+        resourceChangeEventListener = new ResourceChangeEventListenerImpl(f.lockDelegator, f.eventService, f.objectManager, f.jsonMapper, d.clusterDao);
         TaskManagerEventListener taskManagerEventListener = new TaskManagerEventListenerImpl(c.taskManager, f.lockManager);
 
         eventListeners.add(agentSimulator);

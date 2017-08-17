@@ -13,6 +13,7 @@ public interface Policy {
     String PLAIN_ID_OPTION = "plain.id.option";
     String ROLE_OPTION = "role.option";
     String ASSIGNED_ROLE = "assigned.role";
+    String CLUSTER_OWNER = "cluster.owner";
     long NO_ACCOUNT = -1L;
 
     boolean isOption(String optionName);

@@ -71,7 +71,7 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
 
         Metadata metadata = metadataManager.getMetadataForCluster(agent.getClusterId());
         HostInfo host = metadata.getHosts().stream()
-                .filter((x) -> Objects.equals(hostUuid, x.getUuid()) || Objects.equals(agent.getClusterId(), x.getClusterId()))
+                .filter((x) -> Objects.equals(hostUuid, x.getUuid()) || Objects.equals(agent.getId(), x.getAgentId()))
                 .findFirst().orElse(null);
         if (host == null) {
             return;

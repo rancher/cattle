@@ -80,7 +80,7 @@ public class RegisterProcessManager {
                 RegisterConstants.FIELD_SECRET_KEY, cred.getSecretValue());
     }
 
-    public HandlerResult assignCredendtials(ProcessState state, ProcessInstance process) {
+    public HandlerResult assignCredentials(ProcessState state, ProcessInstance process) {
         return genericObjectCreate(state, process);
     }
 

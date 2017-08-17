@@ -1,6 +1,7 @@
 package io.cattle.platform.api.change.impl;
 
 import io.cattle.platform.api.change.ResourceChangeEventListener;
+import io.cattle.platform.core.dao.ClusterDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.eventing.EventService;
@@ -30,13 +31,15 @@ public class ResourceChangeEventListenerImpl implements ResourceChangeEventListe
     EventService eventService;
     ObjectManager objectManager;
     JsonMapper jsonMapper;
+    ClusterDao clusterDao;
 
-    public ResourceChangeEventListenerImpl(LockDelegator lockDelegator, EventService eventService, ObjectManager objectManager, JsonMapper jsonMapper) {
+    public ResourceChangeEventListenerImpl(LockDelegator lockDelegator, EventService eventService, ObjectManager objectManager, JsonMapper jsonMapper, ClusterDao clusterDao) {
         super();
         this.lockDelegator = lockDelegator;
         this.eventService = eventService;
         this.objectManager = objectManager;
         this.jsonMapper = jsonMapper;
+        this.clusterDao = clusterDao;
     }
 
     @Override
@@ -83,12 +86,21 @@ public class ResourceChangeEventListenerImpl implements ResourceChangeEventListe
         String id = event.getResourceId();
         String type = event.getResourceType();
         Map<String, Object> data = CollectionUtils.toMap(event.getData());
-        Object accountId = data.get(ObjectMetaDataManager.ACCOUNT_FIELD);
-        Object clusterId = data.get(ObjectMetaDataManager.CLUSTER_FIELD);
+        Long accountId = toLong(data.get(ObjectMetaDataManager.ACCOUNT_FIELD));
+        Long clusterId = toLong(data.get(ObjectMetaDataManager.CLUSTER_FIELD));
 
         if (type != null && id != null) {
             changed.add(new Change(type, id, accountId, clusterId));
         }
+    }
+
+    private Long toLong(Object obj) {
+        if (obj instanceof Long) {
+            return (Long) obj;
+        } else if (obj instanceof Number) {
+            return ((Number) obj).longValue();
+        }
+        return null;
     }
 
     @Override
@@ -106,13 +118,21 @@ public class ResourceChangeEventListenerImpl implements ResourceChangeEventListe
                     .withResourceType(change.type)
                     .withResourceId(Objects.toString(change.id, null)));
 
-            if (change.accountId instanceof Number) {
-                String event = FrameworkEvents.appendAccount(FrameworkEvents.RESOURCE_CHANGE, ((Number) change.accountId).longValue());
+            if (change.accountId != null) {
+                String event = FrameworkEvents.appendAccount(FrameworkEvents.RESOURCE_CHANGE, change.accountId);
                 eventService.publish(EventVO.newEvent(event)
                         .withResourceType(change.type)
                         .withResourceId(Objects.toString(change.id, null)));
-            } else if (change.clusterId instanceof Number) {
-                String event = FrameworkEvents.appendCluster(FrameworkEvents.RESOURCE_CHANGE, ((Number) change.clusterId).longValue());
+
+                Long systemAccountId = clusterDao.getOwnerAcccountIdForCluster(change.clusterId);
+                if (systemAccountId != null && !Objects.equals(systemAccountId, change.accountId)) {
+                    event = FrameworkEvents.appendAccount(FrameworkEvents.RESOURCE_CHANGE, systemAccountId);
+                    eventService.publish(EventVO.newEvent(event)
+                            .withResourceType(change.type)
+                            .withResourceId(Objects.toString(change.id, null)));
+                }
+            } else if (change.clusterId != null) {
+                String event = FrameworkEvents.appendCluster(FrameworkEvents.RESOURCE_CHANGE, change.clusterId);
                 eventService.publish(EventVO.newEvent(event)
                         .withResourceType(change.type)
                         .withResourceId(Objects.toString(change.id, null)));
@@ -132,11 +152,11 @@ public class ResourceChangeEventListenerImpl implements ResourceChangeEventListe
 
     private static class Change {
         String type;
-        Object id;
-        Object accountId;
-        Object clusterId;
+        String id;
+        Long accountId;
+        Long clusterId;
 
-        public Change(String type, Object id, Object accountId, Object clusterId) {
+        public Change(String type, String id, Long accountId, Long clusterId) {
             this.type = type;
             this.id = id;
             this.accountId = accountId;
