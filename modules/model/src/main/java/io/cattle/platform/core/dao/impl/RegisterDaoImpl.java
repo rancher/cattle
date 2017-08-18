@@ -3,7 +3,9 @@ package io.cattle.platform.core.dao.impl;
 import com.netflix.config.DynamicStringListProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AccountConstants;
+import io.cattle.platform.core.constants.GenericObjectConstants;
 import io.cattle.platform.core.constants.RegisterConstants;
+import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.RegisterDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.GenericObject;
@@ -25,15 +27,19 @@ public class RegisterDaoImpl extends AbstractJooqDao implements RegisterDao {
 
     ObjectManager objectManager;
     TransactionDelegate transaction;
+    AccountDao accountDao;
 
-    public RegisterDaoImpl(Configuration configuration, ObjectManager objectManager, TransactionDelegate transaction) {
+    public RegisterDaoImpl(Configuration configuration, ObjectManager objectManager, TransactionDelegate transaction, AccountDao accountDao) {
         super(configuration);
         this.objectManager = objectManager;
         this.transaction = transaction;
+        this.accountDao = accountDao;
     }
 
     @Override
-    public Agent createAgentForRegistration(String key, long accountId, long clusterId, GenericObject obj) {
+    public Agent createAgentForRegistration(String key, long clusterId, GenericObject obj) {
+        long accountId = accountDao.getAccountIdForCluster(clusterId);
+
         return transaction.doInTransactionResult(() -> {
             Map<String,Object> data = CollectionUtils.asMap(
                     RegisterConstants.AGENT_DATA_REGISTRATION_KEY, key);
@@ -62,12 +68,7 @@ public class RegisterDaoImpl extends AbstractJooqDao implements RegisterDao {
                     AGENT.DATA, data,
                     AGENT.MANAGED_CONFIG, true);
 
-            DataAccessor.fromDataFieldOf(obj)
-                        .withKey(RegisterConstants.DATA_AGENT_ID)
-                        .set(agent.getId());
-
-            objectManager.persist(obj);
-
+            objectManager.setFields(obj, GenericObjectConstants.FIELD_AGENT_ID, agent.getId());
             return agent;
         });
     }

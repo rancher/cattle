@@ -354,17 +354,6 @@ public interface Instance extends Serializable {
     public Long getMilliCpuReservation();
 
     /**
-     * Setter for <code>cattle.instance.system</code>.
-     */
-    public void setSystem(Boolean value);
-
-    /**
-     * Getter for <code>cattle.instance.system</code>.
-     */
-    @Column(name = "system", nullable = false, precision = 1)
-    public Boolean getSystem();
-
-    /**
      * Setter for <code>cattle.instance.service_id</code>.
      */
     public void setServiceId(Long value);

@@ -107,7 +107,7 @@ CREATE TABLE `account` (
   KEY `idx_account_state` (`state`),
   KEY `idx_external_ids` (`external_id`,`external_id_type`),
   CONSTRAINT `fk_account__cluster_id` FOREIGN KEY (`cluster_id`) REFERENCES `cluster` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -197,7 +197,7 @@ CREATE TABLE `audit_log` (
   KEY `idx_audit_log_event_type` (`event_type`),
   CONSTRAINT `fk_audit_log__account_id` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_audit_log__authenticated_as_account_id` FOREIGN KEY (`authenticated_as_account_id`) REFERENCES `account` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -266,7 +266,7 @@ CREATE TABLE `catalog` (
   `kind` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_catalog_environment_id` (`environment_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -291,7 +291,7 @@ CREATE TABLE `catalog_category` (
   `updated_at` datetime DEFAULT NULL,
   `name` varchar(1024) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -320,7 +320,7 @@ CREATE TABLE `catalog_file` (
   PRIMARY KEY (`id`),
   KEY `fk_catalog_file__version_id` (`version_id`),
   CONSTRAINT `fk_catalog_file__version_id` FOREIGN KEY (`version_id`) REFERENCES `catalog_version` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=1157 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -349,7 +349,7 @@ CREATE TABLE `catalog_label` (
   PRIMARY KEY (`id`),
   KEY `fk_catalog_label__template_id` (`template_id`),
   CONSTRAINT `fk_catalog_label__template_id` FOREIGN KEY (`template_id`) REFERENCES `catalog_template` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -393,7 +393,7 @@ CREATE TABLE `catalog_template` (
   KEY `fk_catalog_template__catalog_id` (`catalog_id`),
   KEY `idx_catalog_template_environment_id` (`environment_id`),
   CONSTRAINT `fk_catalog_template__catalog_id` FOREIGN KEY (`catalog_id`) REFERENCES `catalog` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=199 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -423,7 +423,7 @@ CREATE TABLE `catalog_template_category` (
   KEY `fk_catalog_t_category__template_id` (`template_id`),
   CONSTRAINT `fk_catalog_t_catalog__category_id` FOREIGN KEY (`category_id`) REFERENCES `catalog_category` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
   CONSTRAINT `fk_catalog_t_category__template_id` FOREIGN KEY (`template_id`) REFERENCES `catalog_template` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=177 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -456,7 +456,7 @@ CREATE TABLE `catalog_version` (
   PRIMARY KEY (`id`),
   KEY `fk_catalog_template__template_id` (`template_id`),
   CONSTRAINT `fk_catalog_template__template_id` FOREIGN KEY (`template_id`) REFERENCES `catalog_template` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=448 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -617,7 +617,7 @@ CREATE TABLE `credential` (
   KEY `idx_credential_state` (`state`),
   CONSTRAINT `fk_credential__account_id` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_credential__registry_id` FOREIGN KEY (`registry_id`) REFERENCES `storage_pool` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -643,7 +643,7 @@ CREATE TABLE `data` (
   `value` text NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_data_name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -891,7 +891,7 @@ CREATE TABLE `ha_membership` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_cluster_membership_uuid` (`uuid`),
   KEY `idx_cluster_membership_name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1156,7 +1156,7 @@ CREATE TABLE `machine_driver` (
   KEY `idx_machine_driver_removed` (`removed`),
   KEY `idx_machine_driver_state` (`state`),
   CONSTRAINT `fk_machine_driver__creator_id` FOREIGN KEY (`creator_id`) REFERENCES `account` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1318,7 +1318,7 @@ CREATE TABLE `process_execution` (
   KEY `fk_process_execution_process_instance_id` (`process_instance_id`),
   KEY `idx_processs_execution_created_time` (`created`),
   CONSTRAINT `fk_process_execution_process_instance_id` FOREIGN KEY (`process_instance_id`) REFERENCES `process_instance` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1365,7 +1365,7 @@ CREATE TABLE `process_instance` (
   KEY `idx_process_instance_start_time` (`start_time`),
   CONSTRAINT `fk_process_instance__account_id` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_process_instance__cluster_id` FOREIGN KEY (`cluster_id`) REFERENCES `cluster` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1410,7 +1410,7 @@ CREATE TABLE `project_member` (
   KEY `idx_project_member_state` (`state`),
   CONSTRAINT `fk_project_member__account_id` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_project_member__project_id` FOREIGN KEY (`project_id`) REFERENCES `account` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class StackTable extends TableImpl<StackRecord> {
 
-    private static final long serialVersionUID = -1113359305;
+    private static final long serialVersionUID = 206637540;
 
     /**
      * The reference instance of <code>cattle.stack</code>
@@ -124,11 +124,6 @@ public class StackTable extends TableImpl<StackRecord> {
      * The column <code>cattle.stack.folder</code>.
      */
     public final TableField<StackRecord, String> GROUP = createField("folder", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
-
-    /**
-     * The column <code>cattle.stack.system</code>.
-     */
-    public final TableField<StackRecord, Boolean> SYSTEM = createField("system", org.jooq.impl.SQLDataType.BIT.nullable(false).defaultValue(org.jooq.impl.DSL.inline("b'0'", org.jooq.impl.SQLDataType.BIT)), this, "");
 
     /**
      * The column <code>cattle.stack.parent_environment_id</code>.

@@ -23,7 +23,6 @@ import io.cattle.platform.core.dao.SettingDao;
 import io.cattle.platform.core.dao.StackDao;
 import io.cattle.platform.core.dao.StorageDriverDao;
 import io.cattle.platform.core.dao.StoragePoolDao;
-import io.cattle.platform.core.dao.UserPreferenceDao;
 import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.dao.impl.AccountDaoImpl;
 import io.cattle.platform.core.dao.impl.AgentDaoImpl;
@@ -45,7 +44,6 @@ import io.cattle.platform.core.dao.impl.SettingDaoImpl;
 import io.cattle.platform.core.dao.impl.StackDaoImpl;
 import io.cattle.platform.core.dao.impl.StorageDriverDaoImpl;
 import io.cattle.platform.core.dao.impl.StoragePoolDaoImpl;
-import io.cattle.platform.core.dao.impl.UserPreferenceDaoImpl;
 import io.cattle.platform.core.dao.impl.VolumeDaoImpl;
 import io.cattle.platform.framework.encryption.handler.impl.TransformationServiceImpl;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
@@ -54,12 +52,7 @@ import io.cattle.platform.iaas.api.auth.dao.PasswordDao;
 import io.cattle.platform.iaas.api.auth.dao.impl.AuthDaoImpl;
 import io.cattle.platform.iaas.api.auth.dao.impl.AuthTokenDaoImpl;
 import io.cattle.platform.iaas.api.auth.dao.impl.PasswordDaoImpl;
-import io.cattle.platform.sample.data.AbstractSampleData;
-import io.cattle.platform.sample.data.SampleDataStartupV10;
-import io.cattle.platform.sample.data.SampleDataStartupV3;
-
-import java.util.ArrayList;
-import java.util.List;
+import io.cattle.platform.sample.data.InitialData;
 
 public class DataAccess {
 
@@ -75,6 +68,7 @@ public class DataAccess {
     DynamicSchemaDao dynamicSchemaDao;
     GenericResourceDao resourceDao;
     HostDao hostDao;
+    InitialData initialData;
     InstanceDao instanceDao;
     LoadBalancerInfoDao loadBalancerInfoDao;
     NetworkDao networkDao;
@@ -89,10 +83,7 @@ public class DataAccess {
     StoragePoolDao storagePoolDao;
     StorageDriverDao storageDriverDao;
     TransformationServiceImpl transformationService;
-    UserPreferenceDao userPreferenceDao;
     VolumeDao volumeDao;
-
-    List<AbstractSampleData> sampleDatas = new ArrayList<>();
 
     public DataAccess(Framework f) {
         this.resourceDao = new GenericResourceDaoImpl(f.objectManager, f.processManager, f.transaction);
@@ -109,12 +100,13 @@ public class DataAccess {
         this.dbCacheManager = new DBCacheManager();
         this.dynamicSchemaDao = new DynamicSchemaDaoImpl(f.jooqConfig, dbCacheManager);
         this.hostDao = new HostDaoImpl(f.jooqConfig);
+        this.initialData = new InitialData(f.objectManager, dataDao, resourceDao, f.lockManager, f.transaction);
         this.instanceDao = new InstanceDaoImpl(f.jooqConfig, f.objectManager, f.jsonMapper);
         this.loadBalancerInfoDao = new LoadBalancerInfoDaoImpl(f.jooqConfig);
         this.networkDao = new NetworkDaoImpl(f.jooqConfig, f.objectManager, resourceDao, f.lockManager);
         this.passwordDao = new PasswordDaoImpl(f.jooqConfig, f.objectManager, transformationService, accountDao);
         this.processSummaryDao = new ProcessSummaryDaoImpl(f.jooqConfig);
-        this.registerDao = new RegisterDaoImpl(f.jooqConfig, f.objectManager, f.transaction);
+        this.registerDao = new RegisterDaoImpl(f.jooqConfig, f.objectManager, f.transaction, accountDao);
         this.registrationTokenAuthDao = new RegistrationTokenAuthDaoImpl(f.jooqConfig);
         this.secretsDao = new SecretDaoImpl(f.jooqConfig);
         this.serviceDao = new ServiceDaoImpl(f.jooqConfig, f.objectManager, f.lockManager, resourceDao, f.transaction);
@@ -122,11 +114,7 @@ public class DataAccess {
         this.stackDao = new StackDaoImpl(f.jooqConfig);
         this.storagePoolDao = new StoragePoolDaoImpl(f.jooqConfig, resourceDao, f.objectManager, f.transaction);
         this.storageDriverDao = new StorageDriverDaoImpl(f.jooqConfig, f.objectManager, f.jsonMapper);
-        this.userPreferenceDao = new UserPreferenceDaoImpl(f.jooqConfig);
         this.volumeDao = new VolumeDaoImpl(f.jooqConfig, resourceDao, f.objectManager, f.transaction);
-
-        sampleDatas.add(new SampleDataStartupV3(f.objectManager, f.processManager, accountDao, f.jsonMapper, f.lockManager));
-        sampleDatas.add(new SampleDataStartupV10(f.objectManager, f.processManager, accountDao, f.jsonMapper, f.lockManager, f.jooqConfig));
     }
 
 }

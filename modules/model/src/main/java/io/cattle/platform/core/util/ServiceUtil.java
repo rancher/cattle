@@ -199,7 +199,7 @@ public class ServiceUtil {
 
     public static List<String> getServiceActiveStates() {
         return Arrays.asList(CommonStatesConstants.ACTIVATING,
-                CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE,
+                CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING,
                 ServiceConstants.STATE_UPGRADING, ServiceConstants.STATE_ROLLINGBACK,
                 ServiceConstants.STATE_PAUSING,
                 ServiceConstants.STATE_PAUSED,

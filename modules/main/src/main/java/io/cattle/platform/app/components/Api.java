@@ -10,6 +10,7 @@ import io.cattle.platform.api.certificate.CertificateCreateValidationFilter;
 import io.cattle.platform.api.certificate.LoadBalancerServiceCertificateRemoveFilter;
 import io.cattle.platform.api.change.impl.ResourceChangeEventProcessor;
 import io.cattle.platform.api.cluster.ClusterIdCommonFilter;
+import io.cattle.platform.api.cluster.ClusterOutputFilter;
 import io.cattle.platform.api.common.CommonActionsOutputFilter;
 import io.cattle.platform.api.containerevent.ContainerEventFilter;
 import io.cattle.platform.api.credential.ApiKeyCertificateDownloadLinkHandler;
@@ -66,7 +67,6 @@ import io.cattle.platform.api.pubsub.model.Subscribe;
 import io.cattle.platform.api.pubsub.subscribe.jetty.JettyWebSocketSubcriptionHandler;
 import io.cattle.platform.api.register.RegisterOutputFilter;
 import io.cattle.platform.api.register.RegisterScriptHandler;
-import io.cattle.platform.api.register.RegistrationTokenOutputFilter;
 import io.cattle.platform.api.registry.RegistryServerAddressFilter;
 import io.cattle.platform.api.requesthandler.BootstrapScriptsHandler;
 import io.cattle.platform.api.requesthandler.ConfigurableRequestOptionsParser;
@@ -105,7 +105,6 @@ import io.cattle.platform.api.stats.HostStatsLinkHandler;
 import io.cattle.platform.api.stats.ServiceContainerStatsLinkHandler;
 import io.cattle.platform.api.stats.StatsOutputFilter;
 import io.cattle.platform.api.storagepool.StoragePoolOutputFilter;
-import io.cattle.platform.api.userpreference.UserPreferenceFilter;
 import io.cattle.platform.api.volume.VolumeCreateValidationFilter;
 import io.cattle.platform.api.volume.VolumeManager;
 import io.cattle.platform.api.volume.VolumeOutputFilter;
@@ -124,6 +123,7 @@ import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.AuditLog;
 import io.cattle.platform.core.model.Certificate;
+import io.cattle.platform.core.model.Cluster;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.Data;
 import io.cattle.platform.core.model.DynamicSchema;
@@ -139,7 +139,6 @@ import io.cattle.platform.core.model.ServiceEvent;
 import io.cattle.platform.core.model.Setting;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.model.StoragePool;
-import io.cattle.platform.core.model.UserPreference;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.VolumeTemplate;
 import io.cattle.platform.docker.api.model.ServiceProxy;
@@ -258,8 +257,8 @@ public class Api {
         c.router.outputFilter(Account.class, new AccountOutputFilter());
         c.router.outputFilter(AuditLog.class, new AuditLogOutputFilter());
         c.router.outputFilter(AuditLog.class, resourceIdOutputFilter);
+        c.router.outputFilter(Cluster.class, new ClusterOutputFilter());
         c.router.outputFilter(Credential.class, new ApiKeyOutputFilter());
-        c.router.outputFilter(CredentialConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN, new RegistrationTokenOutputFilter());
         c.router.outputFilter(GenericObject.class, new RegisterOutputFilter());
         c.router.outputFilter(Host.class, new HostsOutputFilter(d.hostDao, c.secretsService));
         c.router.outputFilter(HostConstants.TYPE, statsOutputFilter);
@@ -290,7 +289,6 @@ public class Api {
         ServiceStackNetworkDriverFilter serviceStackNetworkDriverFilter = new ServiceStackNetworkDriverFilter(d.networkDao, f.objectManager);
         ServiceStackStorageDriverFilter serviceStackStorageDriverFilter = new ServiceStackStorageDriverFilter(d.storagePoolDao, f.objectManager);
         ServiceUpgradeValidationFilter serviceUpgradeValidationFilter = new ServiceUpgradeValidationFilter(f.objectManager, f.jsonMapper, c.revisionManager);
-        UserPreferenceFilter userPreferenceFilter = new UserPreferenceFilter(d.userPreferenceDao);
 
         // Assign clusterId first
         f.coreSchemaFactory.listSchemas().stream()
@@ -327,7 +325,6 @@ public class Api {
         c.router.validationFilter(ServiceEvent.class, new ServiceEventFilter(f.objectManager, d.agentDao, d.serviceDao));
         c.router.validationFilter(Stack.class, serviceStackNetworkDriverFilter);
         c.router.validationFilter(Stack.class, serviceStackStorageDriverFilter);
-        c.router.validationFilter(UserPreference.class, userPreferenceFilter);
         c.router.validationFilter(Volume.class, new VolumeCreateValidationFilter(f.objectManager));
         c.router.validationFilter(VolumeTemplate.class, new VolumeTemplateCreateValidationFilter(f.objectManager));
 

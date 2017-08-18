@@ -1,7 +1,6 @@
 package io.cattle.platform.iaas.api.auth.dao.impl;
 
-import static io.cattle.platform.core.model.tables.AuthTokenTable.*;
-
+import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.AuthToken;
 import io.cattle.platform.core.model.tables.records.AuthTokenRecord;
@@ -12,11 +11,12 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
+import org.apache.commons.lang3.StringUtils;
+import org.jooq.Configuration;
 
 import java.util.Date;
 
-import org.apache.commons.lang3.StringUtils;
-import org.jooq.Configuration;
+import static io.cattle.platform.core.model.tables.AuthTokenTable.*;
 
 
 public class AuthTokenDaoImpl extends AbstractJooqDao implements AuthTokenDao{
@@ -52,7 +52,7 @@ public class AuthTokenDaoImpl extends AbstractJooqDao implements AuthTokenDao{
         AuthTokenRecord authTokenRecord = new AuthTokenRecord();
         authTokenRecord.setAccountId(accountId);
         authTokenRecord.setValue(jwt);
-        authTokenRecord.setKey(SecurityConstants.generateKeys()[1]);
+        authTokenRecord.setKey(CredentialConstants.generateKeys()[1]);
         authTokenRecord.setVersion(SecurityConstants.TOKEN_VERSION);
         authTokenRecord.setProvider(provider);
         authTokenRecord.setAuthenticatedAsAccountId(authenticatedAsAccountId);

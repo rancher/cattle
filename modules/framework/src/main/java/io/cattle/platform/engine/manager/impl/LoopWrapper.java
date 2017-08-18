@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.netflix.config.DynamicLongProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.engine.model.Loop;
 import io.cattle.platform.engine.model.Loop.Result;
 import org.apache.cloudstack.managed.context.ManagedContextRunnable;
@@ -101,7 +102,7 @@ public class LoopWrapper {
                 long start = System.currentTimeMillis();
                 Loop.Result result = null;
                 try {
-                    result = inner.run(null);
+                    result = DeferredUtils.nest(() -> inner.run(null));
                 } finally {
                     log.info("Loop [{}] [{}] {}/{}/{} {}ms", name, result, requested, startValue, applied,
                             (System.currentTimeMillis()-start));
@@ -134,7 +135,6 @@ public class LoopWrapper {
             protected void runInContext() {
                 LoopWrapper.this.run(ignoreProcesses);
             }
-
         }, delay, TimeUnit.MILLISECONDS);
     }
 

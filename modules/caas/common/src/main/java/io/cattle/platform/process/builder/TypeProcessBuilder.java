@@ -29,6 +29,11 @@ public class TypeProcessBuilder {
         this.templates = templates;
     }
 
+    public TypeProcessBuilder removeProcess(String name) {
+        processes.remove(name);
+        return this;
+    }
+
     public ProcessTemplate process(String name) {
         ProcessTemplate template = new ProcessTemplate(builder, this, this.templates.get(name));
         processes.put(name, template);

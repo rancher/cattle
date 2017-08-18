@@ -1,6 +1,7 @@
 package io.cattle.platform.lifecycle.impl;
 
 import io.cattle.platform.core.addon.InstanceHealthCheck;
+import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
@@ -8,7 +9,6 @@ import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
-import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.cattle.platform.lifecycle.ServiceLifecycleManager;
 import io.cattle.platform.loadbalancer.LoadBalancerService;
 import io.cattle.platform.network.NetworkService;
@@ -66,7 +66,7 @@ public class ServiceLifecycleManagerImpl implements ServiceLifecycleManager {
     }
 
     protected void setToken(Service service) {
-        String token = SecurityConstants.generateKeys()[1];
+        String token = CredentialConstants.generateKeys()[1];
         DataAccessor.fields(service).withKey(ServiceConstants.FIELD_TOKEN).set(token);
     }
 

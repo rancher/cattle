@@ -30,7 +30,6 @@ public interface ObjectMetaDataManager {
     String NAME_FIELD = "name";
     String REMOVED_FIELD = "removed";
     String REMOVE_TIME_FIELD = "removeTime";
-    String SYSTEM_FIELD = "system";
     String TYPE_FIELD = "type";
     String UUID_FIELD = "uuid";
 

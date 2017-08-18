@@ -18,6 +18,4 @@ public class StandardStates {
     public static final String STARTING = "starting";
     public static final String STOPPING = "stopping";
     public static final String UPDATING = "updating";
-    public static final String UPDATING_ACTIVE = "updating-active";
-    public static final String UPDATING_INACTIVE = "updating-inactive";
 }

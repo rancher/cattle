@@ -101,17 +101,6 @@ public interface UserPreference extends Serializable {
     public String getDescription();
 
     /**
-     * Setter for <code>cattle.user_preference.state</code>.
-     */
-    public void setState(String value);
-
-    /**
-     * Getter for <code>cattle.user_preference.state</code>.
-     */
-    @Column(name = "state", nullable = false, length = 128)
-    public String getState();
-
-    /**
      * Setter for <code>cattle.user_preference.created</code>.
      */
     public void setCreated(Date value);
@@ -121,28 +110,6 @@ public interface UserPreference extends Serializable {
      */
     @Column(name = "created")
     public Date getCreated();
-
-    /**
-     * Setter for <code>cattle.user_preference.removed</code>.
-     */
-    public void setRemoved(Date value);
-
-    /**
-     * Getter for <code>cattle.user_preference.removed</code>.
-     */
-    @Column(name = "removed")
-    public Date getRemoved();
-
-    /**
-     * Setter for <code>cattle.user_preference.remove_time</code>.
-     */
-    public void setRemoveTime(Date value);
-
-    /**
-     * Getter for <code>cattle.user_preference.remove_time</code>.
-     */
-    @Column(name = "remove_time")
-    public Date getRemoveTime();
 
     /**
      * Setter for <code>cattle.user_preference.data</code>.

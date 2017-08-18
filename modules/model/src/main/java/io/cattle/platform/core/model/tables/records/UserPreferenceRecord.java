@@ -21,8 +21,8 @@ import javax.persistence.Table;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record12;
-import org.jooq.Row12;
+import org.jooq.Record9;
+import org.jooq.Row9;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -39,9 +39,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "user_preference", schema = "cattle")
-public class UserPreferenceRecord extends UpdatableRecordImpl<UserPreferenceRecord> implements TableRecordJaxb, Record12<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String>, UserPreference {
+public class UserPreferenceRecord extends UpdatableRecordImpl<UserPreferenceRecord> implements TableRecordJaxb, Record9<Long, String, Long, String, String, String, Date, Map<String,Object>, String>, UserPreference {
 
-    private static final long serialVersionUID = -1517006143;
+    private static final long serialVersionUID = -950305484;
 
     /**
      * Setter for <code>cattle.user_preference.id</code>.
@@ -148,28 +148,11 @@ public class UserPreferenceRecord extends UpdatableRecordImpl<UserPreferenceReco
     }
 
     /**
-     * Setter for <code>cattle.user_preference.state</code>.
-     */
-    @Override
-    public void setState(String value) {
-        set(6, value);
-    }
-
-    /**
-     * Getter for <code>cattle.user_preference.state</code>.
-     */
-    @Column(name = "state", nullable = false, length = 128)
-    @Override
-    public String getState() {
-        return (String) get(6);
-    }
-
-    /**
      * Setter for <code>cattle.user_preference.created</code>.
      */
     @Override
     public void setCreated(Date value) {
-        set(7, value);
+        set(6, value);
     }
 
     /**
@@ -178,41 +161,7 @@ public class UserPreferenceRecord extends UpdatableRecordImpl<UserPreferenceReco
     @Column(name = "created")
     @Override
     public Date getCreated() {
-        return (Date) get(7);
-    }
-
-    /**
-     * Setter for <code>cattle.user_preference.removed</code>.
-     */
-    @Override
-    public void setRemoved(Date value) {
-        set(8, value);
-    }
-
-    /**
-     * Getter for <code>cattle.user_preference.removed</code>.
-     */
-    @Column(name = "removed")
-    @Override
-    public Date getRemoved() {
-        return (Date) get(8);
-    }
-
-    /**
-     * Setter for <code>cattle.user_preference.remove_time</code>.
-     */
-    @Override
-    public void setRemoveTime(Date value) {
-        set(9, value);
-    }
-
-    /**
-     * Getter for <code>cattle.user_preference.remove_time</code>.
-     */
-    @Column(name = "remove_time")
-    @Override
-    public Date getRemoveTime() {
-        return (Date) get(9);
+        return (Date) get(6);
     }
 
     /**
@@ -220,7 +169,7 @@ public class UserPreferenceRecord extends UpdatableRecordImpl<UserPreferenceReco
      */
     @Override
     public void setData(Map<String,Object> value) {
-        set(10, value);
+        set(7, value);
     }
 
     /**
@@ -229,7 +178,7 @@ public class UserPreferenceRecord extends UpdatableRecordImpl<UserPreferenceReco
     @Column(name = "data", length = 16777215)
     @Override
     public Map<String,Object> getData() {
-        return (Map<String,Object>) get(10);
+        return (Map<String,Object>) get(7);
     }
 
     /**
@@ -237,7 +186,7 @@ public class UserPreferenceRecord extends UpdatableRecordImpl<UserPreferenceReco
      */
     @Override
     public void setValue(String value) {
-        set(11, value);
+        set(8, value);
     }
 
     /**
@@ -246,7 +195,7 @@ public class UserPreferenceRecord extends UpdatableRecordImpl<UserPreferenceReco
     @Column(name = "value", nullable = false, length = 16777215)
     @Override
     public String getValue() {
-        return (String) get(11);
+        return (String) get(8);
     }
 
     // -------------------------------------------------------------------------
@@ -262,23 +211,23 @@ public class UserPreferenceRecord extends UpdatableRecordImpl<UserPreferenceReco
     }
 
     // -------------------------------------------------------------------------
-    // Record12 type implementation
+    // Record9 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row12<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String> fieldsRow() {
-        return (Row12) super.fieldsRow();
+    public Row9<Long, String, Long, String, String, String, Date, Map<String,Object>, String> fieldsRow() {
+        return (Row9) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row12<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String> valuesRow() {
-        return (Row12) super.valuesRow();
+    public Row9<Long, String, Long, String, String, String, Date, Map<String,Object>, String> valuesRow() {
+        return (Row9) super.valuesRow();
     }
 
     /**
@@ -333,15 +282,7 @@ public class UserPreferenceRecord extends UpdatableRecordImpl<UserPreferenceReco
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field7() {
-        return UserPreferenceTable.USER_PREFERENCE.STATE;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Date> field8() {
+    public Field<Date> field7() {
         return UserPreferenceTable.USER_PREFERENCE.CREATED;
     }
 
@@ -349,23 +290,7 @@ public class UserPreferenceRecord extends UpdatableRecordImpl<UserPreferenceReco
      * {@inheritDoc}
      */
     @Override
-    public Field<Date> field9() {
-        return UserPreferenceTable.USER_PREFERENCE.REMOVED;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Date> field10() {
-        return UserPreferenceTable.USER_PREFERENCE.REMOVE_TIME;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Map<String,Object>> field11() {
+    public Field<Map<String,Object>> field8() {
         return UserPreferenceTable.USER_PREFERENCE.DATA;
     }
 
@@ -373,7 +298,7 @@ public class UserPreferenceRecord extends UpdatableRecordImpl<UserPreferenceReco
      * {@inheritDoc}
      */
     @Override
-    public Field<String> field12() {
+    public Field<String> field9() {
         return UserPreferenceTable.USER_PREFERENCE.VALUE;
     }
 
@@ -429,15 +354,7 @@ public class UserPreferenceRecord extends UpdatableRecordImpl<UserPreferenceReco
      * {@inheritDoc}
      */
     @Override
-    public String value7() {
-        return getState();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Date value8() {
+    public Date value7() {
         return getCreated();
     }
 
@@ -445,23 +362,7 @@ public class UserPreferenceRecord extends UpdatableRecordImpl<UserPreferenceReco
      * {@inheritDoc}
      */
     @Override
-    public Date value9() {
-        return getRemoved();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Date value10() {
-        return getRemoveTime();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Map<String,Object> value11() {
+    public Map<String,Object> value8() {
         return getData();
     }
 
@@ -469,7 +370,7 @@ public class UserPreferenceRecord extends UpdatableRecordImpl<UserPreferenceReco
      * {@inheritDoc}
      */
     @Override
-    public String value12() {
+    public String value9() {
         return getValue();
     }
 
@@ -531,16 +432,7 @@ public class UserPreferenceRecord extends UpdatableRecordImpl<UserPreferenceReco
      * {@inheritDoc}
      */
     @Override
-    public UserPreferenceRecord value7(String value) {
-        setState(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public UserPreferenceRecord value8(Date value) {
+    public UserPreferenceRecord value7(Date value) {
         setCreated(value);
         return this;
     }
@@ -549,25 +441,7 @@ public class UserPreferenceRecord extends UpdatableRecordImpl<UserPreferenceReco
      * {@inheritDoc}
      */
     @Override
-    public UserPreferenceRecord value9(Date value) {
-        setRemoved(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public UserPreferenceRecord value10(Date value) {
-        setRemoveTime(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public UserPreferenceRecord value11(Map<String,Object> value) {
+    public UserPreferenceRecord value8(Map<String,Object> value) {
         setData(value);
         return this;
     }
@@ -576,7 +450,7 @@ public class UserPreferenceRecord extends UpdatableRecordImpl<UserPreferenceReco
      * {@inheritDoc}
      */
     @Override
-    public UserPreferenceRecord value12(String value) {
+    public UserPreferenceRecord value9(String value) {
         setValue(value);
         return this;
     }
@@ -585,7 +459,7 @@ public class UserPreferenceRecord extends UpdatableRecordImpl<UserPreferenceReco
      * {@inheritDoc}
      */
     @Override
-    public UserPreferenceRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, String value12) {
+    public UserPreferenceRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, Date value7, Map<String,Object> value8, String value9) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -595,9 +469,6 @@ public class UserPreferenceRecord extends UpdatableRecordImpl<UserPreferenceReco
         value7(value7);
         value8(value8);
         value9(value9);
-        value10(value10);
-        value11(value11);
-        value12(value12);
         return this;
     }
 
@@ -616,10 +487,7 @@ public class UserPreferenceRecord extends UpdatableRecordImpl<UserPreferenceReco
         setKind(from.getKind());
         setUuid(from.getUuid());
         setDescription(from.getDescription());
-        setState(from.getState());
         setCreated(from.getCreated());
-        setRemoved(from.getRemoved());
-        setRemoveTime(from.getRemoveTime());
         setData(from.getData());
         setValue(from.getValue());
     }
@@ -647,7 +515,7 @@ public class UserPreferenceRecord extends UpdatableRecordImpl<UserPreferenceReco
     /**
      * Create a detached, initialised UserPreferenceRecord
      */
-    public UserPreferenceRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String value) {
+    public UserPreferenceRecord(Long id, String name, Long accountId, String kind, String uuid, String description, Date created, Map<String,Object> data, String value) {
         super(UserPreferenceTable.USER_PREFERENCE);
 
         set(0, id);
@@ -656,11 +524,8 @@ public class UserPreferenceRecord extends UpdatableRecordImpl<UserPreferenceReco
         set(3, kind);
         set(4, uuid);
         set(5, description);
-        set(6, state);
-        set(7, created);
-        set(8, removed);
-        set(9, removeTime);
-        set(10, data);
-        set(11, value);
+        set(6, created);
+        set(7, data);
+        set(8, value);
     }
 }

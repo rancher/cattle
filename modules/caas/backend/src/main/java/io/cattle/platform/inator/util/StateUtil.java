@@ -24,7 +24,7 @@ public class StateUtil {
     private static Set<String> INACTIVE_LIKE = set(
             CommonStatesConstants.INACTIVE,
             CommonStatesConstants.DEACTIVATING,
-            CommonStatesConstants.UPDATING_INACTIVE);
+            CommonStatesConstants.UPDATING);
     private static Set<String> REMOVED_LIKE = set(
             CommonStatesConstants.REMOVING,
             CommonStatesConstants.REMOVED);

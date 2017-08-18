@@ -222,17 +222,6 @@ public interface Service extends Serializable {
     public String getHealthState();
 
     /**
-     * Setter for <code>cattle.service.system</code>.
-     */
-    public void setSystem(Boolean value);
-
-    /**
-     * Getter for <code>cattle.service.system</code>.
-     */
-    @Column(name = "system", nullable = false, precision = 1)
-    public Boolean getSystem();
-
-    /**
      * Setter for <code>cattle.service.previous_revision_id</code>.
      */
     public void setPreviousRevisionId(Long value);

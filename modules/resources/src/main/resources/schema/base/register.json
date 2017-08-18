@@ -20,6 +20,14 @@
     "k8sClientConfig": {
       "type": "k8sClientConfig",
       "nullable": true
+    },
+    "clusterCreator": {
+      "type": "bool",
+      "nullable": true
+    },
+    "agentId": {
+      "type": "reference[agent]",
+      "nullable": true
     }
   },
   "resourceActions": {

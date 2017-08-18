@@ -7,8 +7,6 @@ import java.util.List;
 
 public interface AccountDao {
 
-    Account getSystemAccount();
-
     List<? extends Credential> getApiKeys(Account account, String kind, boolean requireActive);
 
     Account findByUuid(String uuid);

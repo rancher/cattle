@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ServiceTable extends TableImpl<ServiceRecord> {
 
-    private static final long serialVersionUID = -1603759939;
+    private static final long serialVersionUID = 725257226;
 
     /**
      * The reference instance of <code>cattle.service</code>
@@ -139,11 +139,6 @@ public class ServiceTable extends TableImpl<ServiceRecord> {
      * The column <code>cattle.service.health_state</code>.
      */
     public final TableField<ServiceRecord, String> HEALTH_STATE = createField("health_state", org.jooq.impl.SQLDataType.VARCHAR.length(128), this, "");
-
-    /**
-     * The column <code>cattle.service.system</code>.
-     */
-    public final TableField<ServiceRecord, Boolean> SYSTEM = createField("system", org.jooq.impl.SQLDataType.BIT.nullable(false).defaultValue(org.jooq.impl.DSL.inline("b'0'", org.jooq.impl.SQLDataType.BIT)), this, "");
 
     /**
      * The column <code>cattle.service.previous_revision_id</code>.

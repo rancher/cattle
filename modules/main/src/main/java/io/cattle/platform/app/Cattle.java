@@ -10,6 +10,7 @@ import io.cattle.platform.app.components.Model;
 import io.cattle.platform.util.exception.ExceptionUtils;
 import io.github.ibuildthecloud.gdapi.servlet.ApiRequestFilterDelegate;
 import io.github.ibuildthecloud.gdapi.version.Versions;
+import org.apache.cloudstack.managed.context.ManagedContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,16 +31,18 @@ public class Cattle {
 
     public Cattle() {
         long start = System.currentTimeMillis();
-        try {
-            init();
-            CONSOLE_LOG.info("[DONE ] [{}ms] App initialization succeeded", (System.currentTimeMillis() - start));
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to start applicaiton", e);
-        }
+        ManagedContext.run(() -> {
+            try {
+                init();
+                CONSOLE_LOG.info("[DONE ] [{}ms] App initialization succeeded", (System.currentTimeMillis() - start));
+            } catch (IOException e) {
+                throw new IllegalStateException("Failed to start applicaiton", e);
+            }
+        });
     }
 
     public void start() {
-        backend.start();
+        ManagedContext.run(backend::start);
     }
 
     private void init() throws IOException {

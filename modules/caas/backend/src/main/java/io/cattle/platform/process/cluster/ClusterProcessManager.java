@@ -1,9 +1,12 @@
 package io.cattle.platform.process.cluster;
 
+import io.cattle.platform.core.addon.RegistrationToken;
+import io.cattle.platform.core.constants.ClusterConstants;
 import io.cattle.platform.core.dao.ClusterDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Cluster;
+import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.GenericObject;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.HostTemplate;
@@ -19,6 +22,7 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.List;
 
@@ -48,7 +52,23 @@ public class ClusterProcessManager {
         this.clusterDao = clusterDao;
     }
 
-    public HandlerResult preCreate(ProcessState state, ProcessInstance process) {
+    public HandlerResult create(ProcessState state, ProcessInstance process) {
+        Cluster cluster = (Cluster) state.getResource();
+        cluster = clusterDao.assignTokens(cluster);
+        return new HandlerResult(
+                ClusterConstants.FIELD_REGISTRATION, registrationToken(cluster));
+    }
+
+    private RegistrationToken registrationToken(Cluster cluster) {
+        Credential cred = objectManager.loadResource(Credential.class, DataAccessor.fieldLong(cluster, ClusterConstants.FIELD_REGISTRATION_ID));
+        if (cred == null) {
+            return null;
+        }
+
+        return new RegistrationToken(cred);
+    }
+
+    public HandlerResult preActivate(ProcessState state, ProcessInstance process) {
         Cluster cluster = (Cluster)state.getResource();
         Account account = clusterDao.getOwnerAcccountForCluster(cluster);
         if (account == null) {
@@ -61,7 +81,16 @@ public class ClusterProcessManager {
     public HandlerResult postRemove(ProcessState state, ProcessInstance process) {
         Cluster cluster = (Cluster)state.getResource();
         removeClusterResources(cluster);
-        return null;
+        removeCredentials(cluster);
+        return new HandlerResult(ClusterConstants.FIELD_REGISTRATION, null);
+    }
+
+    protected void removeCredentials(Cluster cluster) {
+        Long credId = DataAccessor.fieldLong(cluster, ClusterConstants.FIELD_REGISTRATION_ID);
+        Credential cred = objectManager.loadResource(Credential.class, credId);
+        if (cred != null && cred.getRemoved() == null) {
+            processManager.remove(cred, null);
+        }
     }
 
     protected void removeClusterResources(Cluster cluster) {

@@ -186,7 +186,7 @@ public class NetworkProcessManager {
             }
 
             if ((CommonStatesConstants.ACTIVATING.equals(network.getState()) ||
-                    CommonStatesConstants.UPDATING_ACTIVE.equals(network.getState())) &&
+                    CommonStatesConstants.UPDATING.equals(network.getState())) &&
                     newDefaultNetworkId == null) {
                 newDefaultNetworkId = network.getId();
             } else if (CommonStatesConstants.ACTIVE.equals(network.getState())) {

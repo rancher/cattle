@@ -1,6 +1,9 @@
 package io.cattle.platform.core.constants;
 
 import io.cattle.platform.core.model.Agent;
+import io.cattle.platform.util.type.CollectionUtils;
+
+import java.util.Set;
 
 public class AgentConstants {
 
@@ -27,9 +30,13 @@ public class AgentConstants {
             "test://"
     };
 
+    public static final String AGENT_ROLE = "agent";
     public static final String ENVIRONMENT_ROLE = "environment";
     public static final String ENVIRONMENT_ADMIN_ROLE = "environmentAdmin";
-    public static final String SYSTEM_ROLE = "system";
+
+    public static final Set<String> CREATE_ROLES = CollectionUtils.set(AGENT_ROLE,
+            ENVIRONMENT_ROLE,
+            ENVIRONMENT_ADMIN_ROLE);
 
     public static final String REPORTED_UUID = "reportedUuid";
 

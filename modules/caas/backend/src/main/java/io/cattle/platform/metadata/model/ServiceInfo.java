@@ -38,7 +38,6 @@ public class ServiceInfo implements MetadataObject  {
     Map<String, String> labels;
     Map<String, Object> metadata;
 
-    boolean system;
     //LBConfigMetadataStyle lb_config;
 
     public ServiceInfo(Service service) {
@@ -58,7 +57,6 @@ public class ServiceInfo implements MetadataObject  {
         this.links = DataAccessor.fieldMapRO(service, ServiceConstants.FIELD_SERVICE_LINKS);
         this.labels = DataAccessor.getLabels(service);
         this.metadata = DataAccessor.fieldMapRO(service, ServiceConstants.FIELD_METADATA);
-        this.system = service.getSystem();
         this.selector = service.getSelector();
         this.instances = new HashSet<>(DataAccessor.fieldLongList(service, ServiceConstants.FIELD_INSTANCE_IDS));
     }
@@ -136,10 +134,6 @@ public class ServiceInfo implements MetadataObject  {
         return metadata;
     }
 
-    public boolean isSystem() {
-        return system;
-    }
-
     public Set<PortInstance> getPorts() {
         return ports;
     }
@@ -173,7 +167,6 @@ public class ServiceInfo implements MetadataObject  {
         result = prime * result + ((sidekicks == null) ? 0 : sidekicks.hashCode());
         result = prime * result + ((stackId == null) ? 0 : stackId.hashCode());
         result = prime * result + ((state == null) ? 0 : state.hashCode());
-        result = prime * result + (system ? 1231 : 1237);
         result = prime * result + ((token == null) ? 0 : token.hashCode());
         result = prime * result + ((uuid == null) ? 0 : uuid.hashCode());
         result = prime * result + ((vip == null) ? 0 : vip.hashCode());
@@ -270,8 +263,6 @@ public class ServiceInfo implements MetadataObject  {
             if (other.state != null)
                 return false;
         } else if (!state.equals(other.state))
-            return false;
-        if (system != other.system)
             return false;
         if (token == null) {
             if (other.token != null)

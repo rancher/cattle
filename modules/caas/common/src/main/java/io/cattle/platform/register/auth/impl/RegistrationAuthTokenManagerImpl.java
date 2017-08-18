@@ -1,12 +1,12 @@
 package io.cattle.platform.register.auth.impl;
 
+import io.cattle.platform.core.addon.RegistrationToken;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.RegistrationTokenAuthDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.register.auth.RegistrationAuthTokenManager;
-import io.cattle.platform.register.util.RegistrationToken;
 
 import java.util.Date;
 

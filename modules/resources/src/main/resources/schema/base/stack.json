@@ -29,11 +29,6 @@
       "type": "map[string]",
       "nullable": true
     },
-    "system": {
-      "type": "boolean",
-      "nullable": false,
-      "default": false
-    },
     "workingConfiguration": {
       "type": "stackConfiguration",
       "nullabled": true

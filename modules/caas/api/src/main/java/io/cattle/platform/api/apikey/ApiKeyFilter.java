@@ -1,7 +1,7 @@
 package io.cattle.platform.api.apikey;
 
+import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.model.Credential;
-import io.cattle.platform.iaas.api.auth.SecurityConstants;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
@@ -13,7 +13,7 @@ public class ApiKeyFilter extends AbstractValidationFilter {
     public Object create(String type, ApiRequest request, ResourceManager next) {
         Credential cred = request.proxyRequestObject(Credential.class);
         if (cred.getPublicValue() == null) {
-            String[] keys = SecurityConstants.generateKeys();
+            String[] keys = CredentialConstants.generateKeys();
             cred.setPublicValue(keys[0]);
             cred.setSecretValue(keys[1]);
         }

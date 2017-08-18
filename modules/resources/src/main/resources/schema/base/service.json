@@ -92,12 +92,6 @@
       "type": "array[reference[instance]]",
       "nullable": true
     },
-    "system": {
-      "type": "boolean",
-      "required": false,
-      "nullable": false,
-      "default": false
-    },
     "batchSize": {
       "type": "int",
       "nullable": true,

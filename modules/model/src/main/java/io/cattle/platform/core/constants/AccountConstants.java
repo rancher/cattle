@@ -23,8 +23,6 @@ public class AccountConstants {
     public static final String FIELD_PORT_RANGE = "servicesPortRange";
     public static final String FIELD_SCHEDULED_UPGRADE_DELAY = "scheduledUpgradeDelayMinutes";
 
-    public static final String SYSTEM_UUID = "system";
-
     public static final String OPTION_CREATE_APIKEY = "createApiKey";
     public static final String OPTION_CREATE_APIKEY_KIND = "createApiKeyKind";
     public static final String OPTION_CREATE_OWNER_ACCESS = "ownerAccess";

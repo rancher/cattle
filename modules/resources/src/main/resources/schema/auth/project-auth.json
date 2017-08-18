@@ -55,7 +55,6 @@
         "pullTask" : "cr",
         "recreateOnQuorumStrategyConfig" : "cr",
         "register": "cr",
-        "registrationToken" : "cr",
         "registryCredential": "crud",
         "registry": "crud",
         "restartPolicy" : "cr",

@@ -41,15 +41,17 @@ public class StackDeactivateServicesActionHandler implements ActionHandler {
     }
 
     private void deactivateServices(List<? extends Service> services) {
-        List<String> validStates = Arrays.asList(CommonStatesConstants.ACTIVE, CommonStatesConstants.ACTIVATING,
-                CommonStatesConstants.UPDATING_ACTIVE, CommonStatesConstants.UPDATING_INACTIVE,
+        List<String> validStates = Arrays.asList(CommonStatesConstants.ACTIVE,
+                CommonStatesConstants.ACTIVATING,
+                CommonStatesConstants.UPDATING,
                 ServiceConstants.STATE_RESTARTING);
-        List<String> statesToSkip = Arrays.asList(CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING,
-                CommonStatesConstants.INACTIVE, CommonStatesConstants.DEACTIVATING);
+        List<String> statesToSkip = Arrays.asList(CommonStatesConstants.REMOVED,
+                CommonStatesConstants.REMOVING,
+                CommonStatesConstants.INACTIVE,
+                CommonStatesConstants.DEACTIVATING);
         for (Service service : services) {
             if (validStates.contains(service.getState())) {
-                    objectProcessManager.scheduleProcessInstance(ServiceConstants.PROCESS_SERVICE_DEACTIVATE,
-                            service, null);
+                objectProcessManager.deactivate(service, null);
             } else if (statesToSkip.contains(service.getState())) {
                 continue;
             } else {

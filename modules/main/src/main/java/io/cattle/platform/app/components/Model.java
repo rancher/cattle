@@ -34,6 +34,7 @@ import io.cattle.platform.core.addon.PortInstance;
 import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.addon.ProcessPool;
 import io.cattle.platform.core.addon.ProcessSummary;
+import io.cattle.platform.core.addon.RegistrationToken;
 import io.cattle.platform.core.addon.RestartPolicy;
 import io.cattle.platform.core.addon.SecretReference;
 import io.cattle.platform.core.addon.ServiceRollback;
@@ -145,7 +146,7 @@ public class Model {
 
                 // Simple types
                 .type("certificate").processes("update")
-                .type("cluster").processes("error")
+                .type("cluster").processes("activate", "error")
                 .type("credential").processes("activate", "deactivate")
                 .type("deploymentUnit").processes("activate", "deactivate", "error", "update", "pause")
                 .type("dynamicSchema")
@@ -314,6 +315,7 @@ public class Model {
                 ProcessSummary.class,
                 Publish.class,
                 RestartPolicy.class,
+                RegistrationToken.class,
                 SecretReference.class,
                 ServiceProxy.class,
                 ServiceRollback.class,
@@ -358,7 +360,6 @@ public class Model {
                 "project,parent=account",
                 "pullTask,parent=genericObject",
                 "register,parent=genericObject",
-                "registrationToken,parent=credential",
                 "registryCredential,parent=credential",
                 "registry,parent=storagePool",
                 "scalingGroup,parent=service",

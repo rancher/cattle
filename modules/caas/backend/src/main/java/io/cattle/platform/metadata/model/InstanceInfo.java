@@ -28,7 +28,6 @@ public class InstanceInfo implements MetadataObject {
     Integer serviceIndex;
     Integer exitCode;
 
-    boolean system;
     boolean shouldRestart;
 
     Long agentId;
@@ -77,7 +76,6 @@ public class InstanceInfo implements MetadataObject {
         this.stackId = instance.getStackId();
         this.startCount = instance.getStartCount();
         this.state = instance.getState();
-        this.system = instance.getSystem();
         this.uuid = instance.getUuid();
 
         InstanceHealthCheck hc = DataAccessor.field(instance, InstanceConstants.FIELD_HEALTH_CHECK, InstanceHealthCheck.class);
@@ -129,10 +127,6 @@ public class InstanceInfo implements MetadataObject {
 
     public long getNetworkFromContainerId() {
         return networkFromContainerId;
-    }
-
-    public boolean isSystem() {
-        return system;
     }
 
     public Long getServiceId() {
@@ -215,7 +209,6 @@ public class InstanceInfo implements MetadataObject {
         InstanceInfo that = (InstanceInfo) o;
 
         if (id != that.id) return false;
-        if (system != that.system) return false;
         if (shouldRestart != that.shouldRestart) return false;
         if (networkFromContainerId != null ? !networkFromContainerId.equals(that.networkFromContainerId) : that.networkFromContainerId != null)
             return false;
@@ -265,7 +258,6 @@ public class InstanceInfo implements MetadataObject {
         result = 31 * result + (primaryMacAddress != null ? primaryMacAddress.hashCode() : 0);
         result = 31 * result + (serviceIndex != null ? serviceIndex.hashCode() : 0);
         result = 31 * result + (exitCode != null ? exitCode.hashCode() : 0);
-        result = 31 * result + (system ? 1 : 0);
         result = 31 * result + (shouldRestart ? 1 : 0);
         result = 31 * result + (agentId != null ? agentId.hashCode() : 0);
         result = 31 * result + (serviceId != null ? serviceId.hashCode() : 0);

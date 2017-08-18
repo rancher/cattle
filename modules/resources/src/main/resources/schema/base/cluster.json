@@ -21,6 +21,14 @@
     "k8sClientConfig": {
       "type": "k8sClientConfig",
       "nullable": true
+    },
+    "registrationTokenId": {
+      "type": "reference[credential]",
+      "nullable": true
+    },
+    "registrationToken": {
+      "type": "registrationToken",
+      "nullable": true
     }
   }
 }

@@ -40,10 +40,6 @@ public class ObjectLaunchConfigurationUtils {
             priority = ArchaiusUtil.getInt("process." + parts[0] + ".priority").get();
         }
 
-        if (priority >= 0 && ObjectUtils.isSystem(resource)) {
-            priority += 1000;
-        }
-
         Long accountId = null;
         if ("agent".equals(schema.getId())) {
             accountId = (Long) ObjectUtils.getPropertyIgnoreErrors(resource, "resourceAgentId");

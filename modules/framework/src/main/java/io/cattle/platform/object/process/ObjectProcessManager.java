@@ -85,8 +85,8 @@ public interface ObjectProcessManager {
     }
 
     default void update(Object resource, Map<String, Object> data) {
-        if (!StandardStates.UPDATING_ACTIVE.equals(ObjectUtils.getState(resource)) &&
-             !StandardStates.UPDATING_INACTIVE.equals(ObjectUtils.getState(resource))) {
+        if (!StandardStates.UPDATING.equals(ObjectUtils.getState(resource)) &&
+             !StandardStates.UPDATING.equals(ObjectUtils.getState(resource))) {
             scheduleStandardProcessAsync(StandardProcess.UPDATE, resource, data);
         }
     }

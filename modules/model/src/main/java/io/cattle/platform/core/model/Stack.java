@@ -189,17 +189,6 @@ public interface Stack extends Serializable {
     public String getGroup();
 
     /**
-     * Setter for <code>cattle.stack.system</code>.
-     */
-    public void setSystem(Boolean value);
-
-    /**
-     * Getter for <code>cattle.stack.system</code>.
-     */
-    @Column(name = "system", nullable = false, precision = 1)
-    public Boolean getSystem();
-
-    /**
      * Setter for <code>cattle.stack.parent_environment_id</code>.
      */
     public void setParentStackId(Long value);

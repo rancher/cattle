@@ -21,7 +21,6 @@
         "project.description": "cr",
         "project.name": "cr",
         "project.uuid": "cr",
-        "registrationToken.accountId" : "cr",
 
         "end" : ""
     }

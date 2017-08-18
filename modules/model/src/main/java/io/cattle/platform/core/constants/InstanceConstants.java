@@ -186,10 +186,6 @@ public class InstanceConstants {
             VOLUME_CLEANUP_STRATEGY_UNNAMED,
             VOLUME_CLEANUP_STRATEGY_ALL);
 
-    public static boolean isSystem(Instance instance) {
-        return instance.getSystem() || isRancherAgent(instance);
-    }
-
     public static boolean isRancherAgent(Instance instance) {
         Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
         return ("rancher-agent".equals(labels.get("io.rancher.container.system")) &&

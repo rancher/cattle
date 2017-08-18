@@ -41,24 +41,6 @@ public class AccountDaoImpl extends AbstractJooqDao implements AccountDao {
     }
 
     @Override
-    public Account getSystemAccount() {
-        Account system = objectManager.findOne(Account.class,
-                ACCOUNT.UUID, AccountConstants.SYSTEM_UUID);
-        if (system == null) {
-            for (String name : new String[] {"admin", "system", "superadmin"}) {
-                objectManager.create(Account.class,
-                        ACCOUNT.UUID, name,
-                        ACCOUNT.KIND, name,
-                        ACCOUNT.NAME, name,
-                        ACCOUNT.STATE, name.equals("admin") ? "active" : "inactive");
-            }
-            return getSystemAccount();
-        }
-
-        return system;
-    }
-
-    @Override
     public List<? extends Credential> getApiKeys(Account account, String kind, boolean active) {
         if (kind == null) {
             kind = CredentialConstants.KIND_API_KEY;

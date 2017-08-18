@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class InstanceTable extends TableImpl<InstanceRecord> {
 
-    private static final long serialVersionUID = 1985854694;
+    private static final long serialVersionUID = -802678105;
 
     /**
      * The reference instance of <code>cattle.instance</code>
@@ -199,11 +199,6 @@ public class InstanceTable extends TableImpl<InstanceRecord> {
      * The column <code>cattle.instance.milli_cpu_reservation</code>.
      */
     public final TableField<InstanceRecord, Long> MILLI_CPU_RESERVATION = createField("milli_cpu_reservation", org.jooq.impl.SQLDataType.BIGINT, this, "");
-
-    /**
-     * The column <code>cattle.instance.system</code>.
-     */
-    public final TableField<InstanceRecord, Boolean> SYSTEM = createField("system", org.jooq.impl.SQLDataType.BIT.nullable(false).defaultValue(org.jooq.impl.DSL.inline("b'0'", org.jooq.impl.SQLDataType.BIT)), this, "");
 
     /**
      * The column <code>cattle.instance.service_id</code>.

@@ -16,4 +16,6 @@ public interface ClusterDao {
 
     Cluster createClusterForAccount(Account account, K8sClientConfig clientConfig);
 
+    Cluster assignTokens(Cluster cluster);
+
 }

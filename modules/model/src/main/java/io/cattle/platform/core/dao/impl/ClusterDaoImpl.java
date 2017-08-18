@@ -3,15 +3,18 @@ package io.cattle.platform.core.dao.impl;
 import io.cattle.platform.core.addon.K8sClientConfig;
 import io.cattle.platform.core.constants.ClusterConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.dao.ClusterDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Cluster;
+import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.ProjectMember;
 import io.cattle.platform.core.model.tables.records.AccountRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 import org.jooq.Configuration;
 
@@ -99,4 +102,33 @@ public class ClusterDaoImpl extends AbstractJooqDao implements ClusterDao {
         });
     }
 
+    @Override
+    public Cluster assignTokens(Cluster cluster) {
+        return transaction.doInTransactionResult(() -> {
+            Long credId = DataAccessor.fieldLong(cluster, ClusterConstants.FIELD_REGISTRATION_ID);
+            credId = createRegistrationCred(cluster, credId);
+
+            return objectManager.setFields(cluster,
+                    ClusterConstants.FIELD_REGISTRATION_ID, credId);
+        });
+    }
+
+    private Long createRegistrationCred(Cluster cluster, Long existingId) {
+        if (existingId != null) {
+            return existingId;
+        }
+
+        Account account = objectManager.findOne(Account.class,
+                ACCOUNT.UUID, "register");
+
+        String[] keys = CredentialConstants.generateKeys();
+
+        return objectManager.create(Credential.class,
+                CREDENTIAL.PUBLIC_VALUE, keys[0],
+                CREDENTIAL.SECRET_VALUE, keys[1],
+                CREDENTIAL.KIND, CredentialConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN,
+                CREDENTIAL.STATE, CommonStatesConstants.ACTIVE,
+                CredentialConstants.FIELD_CLUSTER_ID, cluster.getId(),
+                CREDENTIAL.ACCOUNT_ID, account.getId()).getId();
+    }
 }

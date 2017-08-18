@@ -8,13 +8,11 @@ public class StackInfo implements MetadataObject {
     String name;
     String uuid;
     String healthState;
-    boolean system;
 
     public StackInfo(Stack stack) {
         this.id = stack.getId();
         this.name = stack.getName();
         this.uuid = stack.getUuid();
-        this.system = stack.getSystem();
         this.healthState = stack.getHealthState();
     }
 
@@ -31,10 +29,6 @@ public class StackInfo implements MetadataObject {
         return uuid;
     }
 
-    public boolean isSystem() {
-        return system;
-    }
-
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -42,7 +36,6 @@ public class StackInfo implements MetadataObject {
         result = prime * result + ((healthState == null) ? 0 : healthState.hashCode());
         result = prime * result + (int) (id ^ (id >>> 32));
         result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + (system ? 1231 : 1237);
         result = prime * result + ((uuid == null) ? 0 : uuid.hashCode());
         return result;
     }
@@ -67,8 +60,6 @@ public class StackInfo implements MetadataObject {
             if (other.name != null)
                 return false;
         } else if (!name.equals(other.name))
-            return false;
-        if (system != other.system)
             return false;
         if (uuid == null) {
             if (other.uuid != null)

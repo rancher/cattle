@@ -21,8 +21,8 @@ import javax.persistence.Table;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record18;
-import org.jooq.Row18;
+import org.jooq.Record17;
+import org.jooq.Row17;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -39,9 +39,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "stack", schema = "cattle")
-public class StackRecord extends UpdatableRecordImpl<StackRecord> implements TableRecordJaxb, Record18<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String, Boolean, Long, Long, Long>, Stack {
+public class StackRecord extends UpdatableRecordImpl<StackRecord> implements TableRecordJaxb, Record17<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String, Long, Long, Long>, Stack {
 
-    private static final long serialVersionUID = 788726830;
+    private static final long serialVersionUID = -1841071271;
 
     /**
      * Setter for <code>cattle.stack.id</code>.
@@ -284,28 +284,11 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     /**
-     * Setter for <code>cattle.stack.system</code>.
-     */
-    @Override
-    public void setSystem(Boolean value) {
-        set(14, value);
-    }
-
-    /**
-     * Getter for <code>cattle.stack.system</code>.
-     */
-    @Column(name = "system", nullable = false, precision = 1)
-    @Override
-    public Boolean getSystem() {
-        return (Boolean) get(14);
-    }
-
-    /**
      * Setter for <code>cattle.stack.parent_environment_id</code>.
      */
     @Override
     public void setParentStackId(Long value) {
-        set(15, value);
+        set(14, value);
     }
 
     /**
@@ -314,7 +297,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     @Column(name = "parent_environment_id", precision = 19)
     @Override
     public Long getParentStackId() {
-        return (Long) get(15);
+        return (Long) get(14);
     }
 
     /**
@@ -322,7 +305,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
      */
     @Override
     public void setClusterId(Long value) {
-        set(16, value);
+        set(15, value);
     }
 
     /**
@@ -331,7 +314,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     @Column(name = "cluster_id", nullable = false, precision = 19)
     @Override
     public Long getClusterId() {
-        return (Long) get(16);
+        return (Long) get(15);
     }
 
     /**
@@ -339,7 +322,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
      */
     @Override
     public void setCreatorId(Long value) {
-        set(17, value);
+        set(16, value);
     }
 
     /**
@@ -348,7 +331,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     @Column(name = "creator_id", precision = 19)
     @Override
     public Long getCreatorId() {
-        return (Long) get(17);
+        return (Long) get(16);
     }
 
     // -------------------------------------------------------------------------
@@ -364,23 +347,23 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     }
 
     // -------------------------------------------------------------------------
-    // Record18 type implementation
+    // Record17 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row18<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String, Boolean, Long, Long, Long> fieldsRow() {
-        return (Row18) super.fieldsRow();
+    public Row17<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String, Long, Long, Long> fieldsRow() {
+        return (Row17) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row18<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String, Boolean, Long, Long, Long> valuesRow() {
-        return (Row18) super.valuesRow();
+    public Row17<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, String, String, Long, Long, Long> valuesRow() {
+        return (Row17) super.valuesRow();
     }
 
     /**
@@ -499,15 +482,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
      * {@inheritDoc}
      */
     @Override
-    public Field<Boolean> field15() {
-        return StackTable.STACK.SYSTEM;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Long> field16() {
+    public Field<Long> field15() {
         return StackTable.STACK.PARENT_ENVIRONMENT_ID;
     }
 
@@ -515,7 +490,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
      * {@inheritDoc}
      */
     @Override
-    public Field<Long> field17() {
+    public Field<Long> field16() {
         return StackTable.STACK.CLUSTER_ID;
     }
 
@@ -523,7 +498,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
      * {@inheritDoc}
      */
     @Override
-    public Field<Long> field18() {
+    public Field<Long> field17() {
         return StackTable.STACK.CREATOR_ID;
     }
 
@@ -643,15 +618,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
      * {@inheritDoc}
      */
     @Override
-    public Boolean value15() {
-        return getSystem();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Long value16() {
+    public Long value15() {
         return getParentStackId();
     }
 
@@ -659,7 +626,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
      * {@inheritDoc}
      */
     @Override
-    public Long value17() {
+    public Long value16() {
         return getClusterId();
     }
 
@@ -667,7 +634,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
      * {@inheritDoc}
      */
     @Override
-    public Long value18() {
+    public Long value17() {
         return getCreatorId();
     }
 
@@ -801,16 +768,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
      * {@inheritDoc}
      */
     @Override
-    public StackRecord value15(Boolean value) {
-        setSystem(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public StackRecord value16(Long value) {
+    public StackRecord value15(Long value) {
         setParentStackId(value);
         return this;
     }
@@ -819,7 +777,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
      * {@inheritDoc}
      */
     @Override
-    public StackRecord value17(Long value) {
+    public StackRecord value16(Long value) {
         setClusterId(value);
         return this;
     }
@@ -828,7 +786,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
      * {@inheritDoc}
      */
     @Override
-    public StackRecord value18(Long value) {
+    public StackRecord value17(Long value) {
         setCreatorId(value);
         return this;
     }
@@ -837,7 +795,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
      * {@inheritDoc}
      */
     @Override
-    public StackRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, String value12, String value13, String value14, Boolean value15, Long value16, Long value17, Long value18) {
+    public StackRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, String value12, String value13, String value14, Long value15, Long value16, Long value17) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -855,7 +813,6 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
         value15(value15);
         value16(value16);
         value17(value17);
-        value18(value18);
         return this;
     }
 
@@ -882,7 +839,6 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
         setExternalId(from.getExternalId());
         setHealthState(from.getHealthState());
         setGroup(from.getGroup());
-        setSystem(from.getSystem());
         setParentStackId(from.getParentStackId());
         setClusterId(from.getClusterId());
         setCreatorId(from.getCreatorId());
@@ -911,7 +867,7 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
     /**
      * Create a detached, initialised StackRecord
      */
-    public StackRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String externalId, String healthState, String folder, Boolean system, Long parentEnvironmentId, Long clusterId, Long creatorId) {
+    public StackRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String externalId, String healthState, String folder, Long parentEnvironmentId, Long clusterId, Long creatorId) {
         super(StackTable.STACK);
 
         set(0, id);
@@ -928,9 +884,8 @@ public class StackRecord extends UpdatableRecordImpl<StackRecord> implements Tab
         set(11, externalId);
         set(12, healthState);
         set(13, folder);
-        set(14, system);
-        set(15, parentEnvironmentId);
-        set(16, clusterId);
-        set(17, creatorId);
+        set(14, parentEnvironmentId);
+        set(15, clusterId);
+        set(16, creatorId);
     }
 }

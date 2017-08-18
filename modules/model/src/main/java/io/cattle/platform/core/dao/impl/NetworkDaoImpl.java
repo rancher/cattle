@@ -117,7 +117,7 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
         return create().select(NETWORK.fields())
                 .from(NETWORK)
                 .where(NETWORK.CLUSTER_ID.eq(clusterId)
-                    .and(NETWORK.STATE.in(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE)))
+                    .and(NETWORK.STATE.in(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING)))
                 .fetchInto(NetworkRecord.class);
     }
 

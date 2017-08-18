@@ -5,6 +5,6 @@ import io.cattle.platform.core.model.GenericObject;
 
 public interface RegisterDao {
 
-    Agent createAgentForRegistration(String key, long accountId, long clusterId, GenericObject obj);
+    Agent createAgentForRegistration(String key, long clusterId, GenericObject obj);
 
 }

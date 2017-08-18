@@ -168,7 +168,6 @@
         "container.subnetIds" : "cr",
         "container.sysctls" : "cr",
         "container.systemContainer" : "r",
-        "container.system" : "r",
         "container.tmpfs" : "cr",
         "container.tty" : "cr",
         "container.ulimits" : "cr",
@@ -481,12 +480,9 @@
         "registryCredential.registryId": "cr",
 
         "registrationToken" : "r",
-        "registrationToken.publicValue" : "",
-        "registrationToken.secretValue" : "",
-        "registrationToken.command":"r",
+        "registrationToken.clusterCommand":"r",
+        "registrationToken.hostCommand":"r",
         "registrationToken.image":"r",
-        "registrationToken.registrationUrl" : "r",
-        "registrationToken.state":"r",
         "registrationToken.token":"r",
 
         "restartPolicy" : "r",
@@ -536,7 +532,6 @@
         "fieldDocumentation": "r",
 
         "userPreference" : "crud",
-        "userPreference.all" : "r",
         "userPreference.value" : "crud",
 
         "volume" : "r",
@@ -770,10 +765,11 @@
         "containerConfig.resourceActions.logs" : "",
 
         "cluster" : "crud",
-        "cluster.embedded" : "cr",
+        "cluster.embedded" : "r",
         "cluster.hostRemoveDelaySeconds" : "cru",
-        "cluster.k8sServerConfig" : "cru",
-        "cluster.k8sClientConfig" : "cru",
+        "cluster.k8sServerConfig" : "r",
+        "cluster.k8sClientConfig" : "r",
+        "cluster.registrationToken" : "r",
 
         "clusterIdentity" : "",
         "clusterIdentity.username" : "r",
@@ -786,7 +782,7 @@
         "k8sServerConfig.serviceNetCidr" : "cr",
 
         "k8sClientConfig" : "cru",
-        "k8sClientConfig.bearerToken" : "cru",
+        "k8sClientConfig.bearerToken" : "or",
         "k8sClientConfig.address" : "cru",
         "k8sClientConfig.caCert" : "cru",
 

@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class UserPreferenceTable extends TableImpl<UserPreferenceRecord> {
 
-    private static final long serialVersionUID = -680297266;
+    private static final long serialVersionUID = 1130704420;
 
     /**
      * The reference instance of <code>cattle.user_preference</code>
@@ -86,24 +86,9 @@ public class UserPreferenceTable extends TableImpl<UserPreferenceRecord> {
     public final TableField<UserPreferenceRecord, String> DESCRIPTION = createField("description", org.jooq.impl.SQLDataType.VARCHAR.length(1024), this, "");
 
     /**
-     * The column <code>cattle.user_preference.state</code>.
-     */
-    public final TableField<UserPreferenceRecord, String> STATE = createField("state", org.jooq.impl.SQLDataType.VARCHAR.length(128).nullable(false), this, "");
-
-    /**
      * The column <code>cattle.user_preference.created</code>.
      */
     public final TableField<UserPreferenceRecord, Date> CREATED = createField("created", org.jooq.impl.SQLDataType.TIMESTAMP, this, "", new DateConverter());
-
-    /**
-     * The column <code>cattle.user_preference.removed</code>.
-     */
-    public final TableField<UserPreferenceRecord, Date> REMOVED = createField("removed", org.jooq.impl.SQLDataType.TIMESTAMP, this, "", new DateConverter());
-
-    /**
-     * The column <code>cattle.user_preference.remove_time</code>.
-     */
-    public final TableField<UserPreferenceRecord, Date> REMOVE_TIME = createField("remove_time", org.jooq.impl.SQLDataType.TIMESTAMP, this, "", new DateConverter());
 
     /**
      * The column <code>cattle.user_preference.data</code>.

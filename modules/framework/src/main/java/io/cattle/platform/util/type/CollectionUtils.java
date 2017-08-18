@@ -86,7 +86,12 @@ public class CollectionUtils {
 
         Map<T, Object> result = new LinkedHashMap<>();
 
-        if (values == null || values.length % 2 == 0) {
+        if (values == null) {
+            result.put(key, null);
+            return result;
+        }
+
+        if (values.length % 2 == 0) {
             throw new IllegalArgumentException("value[] must be not null and an odd length");
         }
 

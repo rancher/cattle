@@ -1,9 +1,5 @@
 package io.cattle.platform.core.dao.impl;
 
-import static io.cattle.platform.core.model.tables.ScheduledUpgradeTable.*;
-import static io.cattle.platform.core.model.tables.ServiceTable.*;
-import static io.cattle.platform.core.model.tables.StackTable.*;
-
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.StackDao;
@@ -15,6 +11,10 @@ import io.cattle.platform.core.model.tables.records.ServiceRecord;
 import io.cattle.platform.core.model.tables.records.StackRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
+import org.jooq.Configuration;
+import org.jooq.Record2;
+import org.jooq.RecordHandler;
+import org.jooq.impl.DSL;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,10 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jooq.Configuration;
-import org.jooq.Record2;
-import org.jooq.RecordHandler;
-import org.jooq.impl.DSL;
+import static io.cattle.platform.core.model.tables.ScheduledUpgradeTable.*;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
+import static io.cattle.platform.core.model.tables.StackTable.*;
 
 public class StackDaoImpl extends AbstractJooqDao implements StackDao {
 
@@ -51,18 +50,15 @@ public class StackDaoImpl extends AbstractJooqDao implements StackDao {
             .from(SERVICE)
             .where(SERVICE.STACK_ID.in(ids)
                     .and(SERVICE.REMOVED.isNull()))
-            .fetchInto(new RecordHandler<Record2<Long, Long>>() {
-                @Override
-                public void next(Record2<Long, Long> record) {
-                    Long id = record.getValue(SERVICE.ID);
-                    Long stackId = record.getValue(SERVICE.STACK_ID);
-                    List<Object> list = result.get(stackId);
-                    if (list == null) {
-                        list = new ArrayList<>();
-                        result.put(stackId, list);
-                    }
-                    list.add(idFormatter.formatId(ServiceConstants.KIND_SERVICE, id));
+            .fetchInto((RecordHandler<Record2<Long, Long>>) record -> {
+                Long id = record.getValue(SERVICE.ID);
+                Long stackId = record.getValue(SERVICE.STACK_ID);
+                List<Object> list = result.get(stackId);
+                if (list == null) {
+                    list = new ArrayList<>();
+                    result.put(stackId, list);
                 }
+                list.add(idFormatter.formatId(ServiceConstants.KIND_SERVICE, id));
             });
         return result;
     }
@@ -76,7 +72,6 @@ public class StackDaoImpl extends AbstractJooqDao implements StackDao {
                         .and(SCHEDULED_UPGRADE.REMOVED.isNull())
                         .and(SCHEDULED_UPGRADE.FINISHED.isNull()))
             .where(STACK.REMOVED.isNull()
-                    .and(STACK.SYSTEM.isTrue())
                     .and(STACK.EXTERNAL_ID.in(currentIds))
                     .and(SCHEDULED_UPGRADE.ID.isNull()))
             .fetchInto(StackRecord.class);
@@ -91,7 +86,6 @@ public class StackDaoImpl extends AbstractJooqDao implements StackDao {
                         .and(SCHEDULED_UPGRADE.REMOVED.isNull())
                         .and(SCHEDULED_UPGRADE.FINISHED.isNull()))
             .where(STACK.REMOVED.isNull()
-                    .and(STACK.SYSTEM.isTrue())
                     .and(STACK.EXTERNAL_ID.notIn(currentIds))
                     .and(SCHEDULED_UPGRADE.ID.isNull()))
             .fetchInto(StackRecord.class);

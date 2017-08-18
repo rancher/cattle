@@ -28,4 +28,14 @@ public interface ManagedContext {
 
     <T> T callWithContext(Callable<T> callable) throws Exception;
 
+    static void run(Runnable run) {
+        new ManagedContextRunnable() {
+
+            @Override
+            protected void runInContext() {
+                run.run();
+            }
+        }.run();
+    }
+
 }

@@ -44,7 +44,7 @@ public class K8sProviderLabels extends AgentBasedProcessHandler {
         Long accountId = instance.getAccountId();
         List<Long> agentIds = metadataManager.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_LABELS_PROVIDER, accountId);
         Long agentId = agentIds.size() == 0 ? null : agentIds.get(0);
-        if (agentIds.contains(instance.getAgentId()) || instance.getSystem()) {
+        if (agentIds.contains(instance.getAgentId())) {
             return null;
         }
 

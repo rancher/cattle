@@ -113,10 +113,12 @@ public class ExternalEventProcessManager {
         switch (event.getKind()) {
         case ExternalEventConstants.KIND_EXTERNAL_DNS_EVENT:
             handleExternalDnsEvent(event, process);
+            break;
         case ExternalEventConstants.KIND_EXTERNAL_HOST_EVENT:
             if (ExternalEventConstants.TYPE_HOST_EVACUATE.equals(event.getEventType())) {
                 return handleHostEvacuate(event);
             }
+            break;
         case ExternalEventConstants.KIND_SERVICE_EVENT:
             return handleServiceEvent(event);
         }
@@ -209,13 +211,11 @@ public class ExternalEventProcessManager {
         List<? extends Instance> instances = instanceDao.getNonRemovedInstanceOn(host.getId());
         List<Instance> removed = new ArrayList<>();
         for (Instance instance : instances ) {
-            if (InstanceConstants.isSystem(instance)) {
+            if (InstanceConstants.isRancherAgent(instance)) {
                 continue;
             }
             try {
-                processManager.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP, instance,
-                        ProcessUtils.chainInData(new HashMap<>(), InstanceConstants.PROCESS_STOP,
-                                InstanceConstants.PROCESS_REMOVE));
+                processManager.stopThenRemove(instance, null);
             } catch (ProcessCancelException ignored) {
             }
 

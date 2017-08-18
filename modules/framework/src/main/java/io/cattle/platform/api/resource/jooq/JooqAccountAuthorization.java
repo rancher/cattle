@@ -39,6 +39,10 @@ public class JooqAccountAuthorization {
     }
 
     protected boolean shouldIncludeAccountCriteria(String type, Policy policy) {
+        //TODO: Need to think about creating resources that reference cross environments
+        if (true) {
+            return true;
+        }
         SchemaFactory schemaFactory = ApiContext.getSchemaFactory();
         if (schemaFactory != null && policy.isOption(Policy.CLUSTER_OWNER) && policy.getClusterId() != null) {
             Schema schema = schemaFactory.getSchema(type);
