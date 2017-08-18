@@ -1,9 +1,15 @@
 package io.cattle.platform.core.dao.impl;
 
+import com.netflix.config.DynamicBooleanProperty;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.addon.Register;
+import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.AgentDao;
+import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Credential;
@@ -11,10 +17,13 @@ import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.tables.records.AgentRecord;
+import io.cattle.platform.core.model.tables.records.CredentialRecord;
 import io.cattle.platform.core.model.tables.records.HostRecord;
 import io.cattle.platform.core.model.tables.records.StoragePoolRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.util.resource.UUID;
 import org.jooq.Condition;
 import org.jooq.Configuration;
 import org.jooq.Record1;
@@ -35,10 +44,18 @@ import static io.cattle.platform.core.model.tables.StoragePoolTable.*;
 
 public class AgentDaoImpl extends AbstractJooqDao implements AgentDao {
 
-    Long startTime = null;
+    public static final DynamicBooleanProperty ALLOW_SIMULATORS = ArchaiusUtil.getBoolean("allow.simulators");
 
-    public AgentDaoImpl(Configuration configuration) {
+    Long startTime = null;
+    AccountDao accountDao;
+    GenericResourceDao resourceDao;
+    ObjectManager objectManager;
+
+    public AgentDaoImpl(Configuration configuration, AccountDao accountDao, GenericResourceDao resourceDao, ObjectManager objectManager) {
         super(configuration);
+        this.accountDao = accountDao;
+        this.resourceDao = resourceDao;
+        this.objectManager = objectManager;
     }
 
     @Override
@@ -231,4 +248,55 @@ public class AgentDaoImpl extends AbstractJooqDao implements AgentDao {
                 .where(c)
                 .fetchInto(AgentRecord.class);
     }
+
+    @Override
+    public Agent findAgentByExternalId(String externalId, long clusterId) {
+        return create().select(AGENT.fields())
+                .from(AGENT)
+                .where(AGENT.CLUSTER_ID.eq(clusterId)
+                        .and(AGENT.EXTERNAL_ID.eq(externalId))
+                        .and(AGENT.REMOVED.isNull()))
+                .fetchAnyInto(AgentRecord.class);
+    }
+
+    @Override
+    public Credential findAgentCredentailByExternalId(String externalId, long clusterId) {
+        return create().select(CREDENTIAL.fields())
+                .from(CREDENTIAL)
+                .join(AGENT)
+                    .on(AGENT.ACCOUNT_ID.eq(CREDENTIAL.ACCOUNT_ID))
+                .where(CREDENTIAL.STATE.eq(CommonStatesConstants.ACTIVE)
+                    .and(AGENT.CLUSTER_ID.eq(clusterId))
+                    .and(AGENT.EXTERNAL_ID.eq(externalId))
+                    .and(AGENT.REMOVED.isNull()))
+                .fetchAnyInto(CredentialRecord.class);
+    }
+
+
+    @Override
+    public Agent createAgentForRegistration(Register register, long clusterId) {
+        Agent agent = objectManager.findAny(Agent.class,
+                AGENT.EXTERNAL_ID, register.getKey(),
+                AGENT.CLUSTER_ID, clusterId,
+                AGENT.REMOVED, null);
+
+        if (agent != null) {
+            return agent;
+        }
+
+        long accountId = accountDao.getAccountIdForCluster(clusterId);
+
+        String format = "event://%s";
+        if (register.isSimulated() && ALLOW_SIMULATORS.get()) {
+            format = "sim://%s";
+        }
+
+        return resourceDao.createAndSchedule(Agent.class,
+                AGENT.KIND, AccountConstants.REGISTERED_AGENT_KIND,
+                AGENT.URI, String.format(format, UUID.randomUUID().toString()),
+                AGENT.RESOURCE_ACCOUNT_ID, accountId,
+                AGENT.CLUSTER_ID, clusterId,
+                AGENT.EXTERNAL_ID, register.getKey());
+    }
+
 }

@@ -24,8 +24,7 @@ export JAVA_OPTS="
     -Didempotent.checks=true
     -Ddb.cattle.database=h2
     -Dlogback.log.dir=$RUNTIME_DIR/logs/
-    -Ddb.cattle.home=${RUNTIME_DIR}/db/
-    -Dallowed.user.agent.uri.prefix=sim://"
+    -Ddb.cattle.home=${RUNTIME_DIR}/db/"
 
 CMD="./modules/main/build/install/cattle/bin/cattle"
 

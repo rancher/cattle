@@ -50,7 +50,6 @@
         "haConfig.dbHost" : "r",
 
         "agent" : "r",
-        "agent.managedConfig" : "r",
         "agent.uri" : "r",
 
         "apiKey" : "crud",

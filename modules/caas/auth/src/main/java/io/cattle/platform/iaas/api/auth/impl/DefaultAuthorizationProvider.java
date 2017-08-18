@@ -22,6 +22,7 @@ import java.util.Set;
 public class DefaultAuthorizationProvider implements AuthorizationProvider {
 
     public static final String ACCOUNT_SCHEMA_FACTORY_NAME = "accountSchemaFactoryName";
+    public static final String ACCOUNT_CLUSTER_ID = "accountClusterId";
 
     private static final Logger log = LoggerFactory.getLogger(DefaultAuthorizationProvider.class);
 
@@ -116,6 +117,11 @@ public class DefaultAuthorizationProvider implements AuthorizationProvider {
         if (SubscriptionUtils.getSubscriptionStyle(policy) == SubscriptionStyle.QUALIFIED) {
             options.setOption(SubscriptionUtils.POLICY_SUBSCRIPTION_QUALIFIER, FrameworkEvents.ACCOUNT_QUALIFIER);
             options.setOption(SubscriptionUtils.POLICY_SUBSCRIPTION_QUALIFIER_VALUE, Long.toString(account.getId()));
+        }
+
+        Object clusterId = request.getAttribute(DefaultAuthorizationProvider.ACCOUNT_CLUSTER_ID);
+        if (clusterId instanceof Long) {
+            policy.setClusterId((Long) clusterId);
         }
 
         return policy;

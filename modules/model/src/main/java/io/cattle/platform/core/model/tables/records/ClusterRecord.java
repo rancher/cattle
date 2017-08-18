@@ -21,8 +21,8 @@ import javax.persistence.Table;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record13;
-import org.jooq.Row13;
+import org.jooq.Record14;
+import org.jooq.Row14;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -39,9 +39,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "cluster", schema = "cattle")
-public class ClusterRecord extends UpdatableRecordImpl<ClusterRecord> implements TableRecordJaxb, Record13<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, Boolean, Long, Long>, Cluster {
+public class ClusterRecord extends UpdatableRecordImpl<ClusterRecord> implements TableRecordJaxb, Record14<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, Boolean, Long, Long, String>, Cluster {
 
-    private static final long serialVersionUID = -1503080178;
+    private static final long serialVersionUID = 1137967872;
 
     /**
      * Setter for <code>cattle.cluster.id</code>.
@@ -266,6 +266,23 @@ public class ClusterRecord extends UpdatableRecordImpl<ClusterRecord> implements
         return (Long) get(12);
     }
 
+    /**
+     * Setter for <code>cattle.cluster.external_id</code>.
+     */
+    @Override
+    public void setExternalId(String value) {
+        set(13, value);
+    }
+
+    /**
+     * Getter for <code>cattle.cluster.external_id</code>.
+     */
+    @Column(name = "external_id", length = 255)
+    @Override
+    public String getExternalId() {
+        return (String) get(13);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -279,23 +296,23 @@ public class ClusterRecord extends UpdatableRecordImpl<ClusterRecord> implements
     }
 
     // -------------------------------------------------------------------------
-    // Record13 type implementation
+    // Record14 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row13<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, Boolean, Long, Long> fieldsRow() {
-        return (Row13) super.fieldsRow();
+    public Row14<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, Boolean, Long, Long, String> fieldsRow() {
+        return (Row14) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row13<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, Boolean, Long, Long> valuesRow() {
-        return (Row13) super.valuesRow();
+    public Row14<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, Boolean, Long, Long, String> valuesRow() {
+        return (Row14) super.valuesRow();
     }
 
     /**
@@ -406,6 +423,14 @@ public class ClusterRecord extends UpdatableRecordImpl<ClusterRecord> implements
      * {@inheritDoc}
      */
     @Override
+    public Field<String> field14() {
+        return ClusterTable.CLUSTER.EXTERNAL_ID;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Long value1() {
         return getId();
     }
@@ -504,6 +529,14 @@ public class ClusterRecord extends UpdatableRecordImpl<ClusterRecord> implements
     @Override
     public Long value13() {
         return getDefaultNetworkId();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String value14() {
+        return getExternalId();
     }
 
     /**
@@ -627,7 +660,16 @@ public class ClusterRecord extends UpdatableRecordImpl<ClusterRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public ClusterRecord values(Long value1, String value2, String value3, String value4, String value5, String value6, Date value7, Date value8, Date value9, Map<String,Object> value10, Boolean value11, Long value12, Long value13) {
+    public ClusterRecord value14(String value) {
+        setExternalId(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ClusterRecord values(Long value1, String value2, String value3, String value4, String value5, String value6, Date value7, Date value8, Date value9, Map<String,Object> value10, Boolean value11, Long value12, Long value13, String value14) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -641,6 +683,7 @@ public class ClusterRecord extends UpdatableRecordImpl<ClusterRecord> implements
         value11(value11);
         value12(value12);
         value13(value13);
+        value14(value14);
         return this;
     }
 
@@ -666,6 +709,7 @@ public class ClusterRecord extends UpdatableRecordImpl<ClusterRecord> implements
         setEmbedded(from.getEmbedded());
         setCreatorId(from.getCreatorId());
         setDefaultNetworkId(from.getDefaultNetworkId());
+        setExternalId(from.getExternalId());
     }
 
     /**
@@ -691,7 +735,7 @@ public class ClusterRecord extends UpdatableRecordImpl<ClusterRecord> implements
     /**
      * Create a detached, initialised ClusterRecord
      */
-    public ClusterRecord(Long id, String name, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Boolean embedded, Long creatorId, Long defaultNetworkId) {
+    public ClusterRecord(Long id, String name, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, Boolean embedded, Long creatorId, Long defaultNetworkId, String externalId) {
         super(ClusterTable.CLUSTER);
 
         set(0, id);
@@ -707,5 +751,6 @@ public class ClusterRecord extends UpdatableRecordImpl<ClusterRecord> implements
         set(10, embedded);
         set(11, creatorId);
         set(12, defaultNetworkId);
+        set(13, externalId);
     }
 }

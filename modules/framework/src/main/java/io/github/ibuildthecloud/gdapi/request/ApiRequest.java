@@ -1,5 +1,6 @@
 package io.github.ibuildthecloud.gdapi.request;
 
+import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.model.Pagination;
@@ -9,6 +10,7 @@ import io.github.ibuildthecloud.gdapi.url.UrlBuilder;
 import io.github.ibuildthecloud.gdapi.util.ProxyUtils;
 import io.github.ibuildthecloud.gdapi.util.RequestUtils;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -18,8 +20,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
-import javax.servlet.http.HttpServletResponse;
 
 public class ApiRequest {
 
@@ -141,7 +141,10 @@ public class ApiRequest {
 
     public <T> T proxyRequestObject(Class<T> type) {
         Map<String, Object> map = RequestUtils.toMap(requestObject);
-        return ProxyUtils.proxy(map, type);
+        if (type.isInterface()) {
+            return ProxyUtils.proxy(map, type);
+        }
+        return DataAccessor.toType(map, type);
     }
 
     public String getType() {

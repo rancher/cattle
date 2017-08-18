@@ -26,13 +26,17 @@ public class AccountFieldPostInitHandler implements ObjectPostInstantiationHandl
         }
 
         if (overwrite) {
-            long accountId = policy.getAccountId();
+            Long accountId = policy.getAccountId();
             String value = policy.getOption(Policy.RESOURCE_ACCOUNT_ID);
             if (value != null) {
                 accountId = Long.parseLong(value);
+            } else if (policy.isOption(Policy.OVERRIDE_ACCOUNT_ID)) {
+                accountId = null;
             }
             ObjectUtils.setPropertyIgnoreErrors(obj, ObjectMetaDataManager.ACCOUNT_FIELD, accountId);
-            ObjectUtils.setPropertyIgnoreErrors(obj, ObjectMetaDataManager.CLUSTER_FIELD, policy.getClusterId());
+            if (!properties.containsKey(ObjectMetaDataManager.CLUSTER_FIELD)) {
+                ObjectUtils.setPropertyIgnoreErrors(obj, ObjectMetaDataManager.CLUSTER_FIELD, policy.getClusterId());
+            }
         }
 
         ObjectUtils.setPropertyIgnoreErrors(obj, ObjectMetaDataManager.CREATOR_FIELD, policy.getAuthenticatedAsAccountId());

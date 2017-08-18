@@ -167,17 +167,6 @@ public interface Agent extends Serializable {
     public String getUri();
 
     /**
-     * Setter for <code>cattle.agent.managed_config</code>.
-     */
-    public void setManagedConfig(Boolean value);
-
-    /**
-     * Getter for <code>cattle.agent.managed_config</code>.
-     */
-    @Column(name = "managed_config", nullable = false, precision = 1)
-    public Boolean getManagedConfig();
-
-    /**
      * Setter for <code>cattle.agent.resource_account_id</code>.
      */
     public void setResourceAccountId(Long value);
@@ -198,6 +187,17 @@ public interface Agent extends Serializable {
      */
     @Column(name = "cluster_id", precision = 19)
     public Long getClusterId();
+
+    /**
+     * Setter for <code>cattle.agent.external_id</code>.
+     */
+    public void setExternalId(String value);
+
+    /**
+     * Getter for <code>cattle.agent.external_id</code>.
+     */
+    @Column(name = "external_id", length = 255)
+    public String getExternalId();
 
     // -------------------------------------------------------------------------
     // FROM and INTO

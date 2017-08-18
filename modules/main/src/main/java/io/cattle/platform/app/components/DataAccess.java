@@ -15,7 +15,6 @@ import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.LoadBalancerInfoDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.dao.ProcessSummaryDao;
-import io.cattle.platform.core.dao.RegisterDao;
 import io.cattle.platform.core.dao.RegistrationTokenAuthDao;
 import io.cattle.platform.core.dao.SecretDao;
 import io.cattle.platform.core.dao.ServiceDao;
@@ -36,7 +35,6 @@ import io.cattle.platform.core.dao.impl.InstanceDaoImpl;
 import io.cattle.platform.core.dao.impl.LoadBalancerInfoDaoImpl;
 import io.cattle.platform.core.dao.impl.NetworkDaoImpl;
 import io.cattle.platform.core.dao.impl.ProcessSummaryDaoImpl;
-import io.cattle.platform.core.dao.impl.RegisterDaoImpl;
 import io.cattle.platform.core.dao.impl.RegistrationTokenAuthDaoImpl;
 import io.cattle.platform.core.dao.impl.SecretDaoImpl;
 import io.cattle.platform.core.dao.impl.ServiceDaoImpl;
@@ -75,7 +73,6 @@ public class DataAccess {
     PasswordDao passwordDao;
     ProcessSummaryDao processSummaryDao;
     RegistrationTokenAuthDao registrationTokenAuthDao;
-    RegisterDao registerDao;
     SecretDao secretsDao;
     ServiceDao serviceDao;
     SettingDao settingDao;
@@ -90,7 +87,7 @@ public class DataAccess {
         this.transformationService = new TransformationServiceImpl();
 
         this.accountDao = new AccountDaoImpl(f.jooqConfig, f.objectManager);
-        this.agentDao = new AgentDaoImpl(f.jooqConfig);
+        this.agentDao = new AgentDaoImpl(f.jooqConfig, accountDao, resourceDao, f.objectManager);
         this.allocatorDao = new AllocatorDaoImpl(f.jooqConfig, f.objectManager, f.transaction, f.eventService);
         this.auditLogDao = new AuditLogDaoImpl(f.jooqConfig, f.objectManager);
         this.authDao = new AuthDaoImpl(f.jooqConfig, resourceDao, f.objectManager, f.processManager, f.lockManager, accountDao);
@@ -106,7 +103,6 @@ public class DataAccess {
         this.networkDao = new NetworkDaoImpl(f.jooqConfig, f.objectManager, resourceDao, f.lockManager);
         this.passwordDao = new PasswordDaoImpl(f.jooqConfig, f.objectManager, transformationService, accountDao);
         this.processSummaryDao = new ProcessSummaryDaoImpl(f.jooqConfig);
-        this.registerDao = new RegisterDaoImpl(f.jooqConfig, f.objectManager, f.transaction, accountDao);
         this.registrationTokenAuthDao = new RegistrationTokenAuthDaoImpl(f.jooqConfig);
         this.secretsDao = new SecretDaoImpl(f.jooqConfig);
         this.serviceDao = new ServiceDaoImpl(f.jooqConfig, f.objectManager, f.lockManager, resourceDao, f.transaction);

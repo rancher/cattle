@@ -16,6 +16,7 @@ import io.github.ibuildthecloud.gdapi.response.ResourceOutputFilter;
 public class ClusterOutputFilter implements ResourceOutputFilter {
 
     private static final DynamicStringProperty DOCKER_CMD = ArchaiusUtil.getString("docker.register.command");
+    private static final DynamicStringProperty WINDOWS_CMD = ArchaiusUtil.getString("windows.register.command");
     private static final DynamicStringProperty CLUSTER_CMD = ArchaiusUtil.getString("k8s.register.command");
     private static final DynamicStringProperty REQUIRED_IMAGE = ArchaiusUtil.getString("bootstrap.required.image");
 
@@ -36,11 +37,14 @@ public class ClusterOutputFilter implements ResourceOutputFilter {
 
         String hostCommand = String.format(DOCKER_CMD.get(), REQUIRED_IMAGE.get(), hostUrl);
         String clusterCommand = String.format(CLUSTER_CMD.get(), clusterUrl);
+        String windowsCommand = String.format(WINDOWS_CMD.get(), hostUrl);
 
         regToken.setClusterCommand(clusterCommand);
         regToken.setHostCommand(hostCommand);
+        regToken.setWindowsCommand(windowsCommand);
         regToken.setToken(token);
         regToken.setImage(REQUIRED_IMAGE.get());
+        regToken.setRegistrationUrl(hostUrl);
 
         converted.getFields().put(ClusterConstants.FIELD_REGISTRATION, regToken);
 

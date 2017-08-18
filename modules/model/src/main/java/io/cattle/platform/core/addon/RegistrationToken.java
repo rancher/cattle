@@ -21,7 +21,12 @@ public class RegistrationToken {
     public static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
     private static final DynamicLongProperty TOKEN_PERIOD = ArchaiusUtil.getLong("registration.token.period.millis");
 
-    String hostCommand, clusterCommand, image, token;
+    String hostCommand;
+    String clusterCommand;
+    String windowsCommand;
+    String image;
+    String token;
+    String registrationUrl;
 
     public RegistrationToken() {
     }
@@ -66,6 +71,22 @@ public class RegistrationToken {
         return TOKEN_PERIOD.get();
     }
 
+    public String getWindowsCommand() {
+        return windowsCommand;
+    }
+
+    public void setWindowsCommand(String windowsCommand) {
+        this.windowsCommand = windowsCommand;
+    }
+
+    public String getRegistrationUrl() {
+        return registrationUrl;
+    }
+
+    public void setRegistrationUrl(String registrationUrl) {
+        this.registrationUrl = registrationUrl;
+    }
+
     public static final String createToken(String accessKey, String secretKey) {
         Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -92,4 +113,5 @@ public class RegistrationToken {
             throw new IllegalStateException("Failed to generate signature key for [" + prefix + "]", e);
         }
     }
+
 }

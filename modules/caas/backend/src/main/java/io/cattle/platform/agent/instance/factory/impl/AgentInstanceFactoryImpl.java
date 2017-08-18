@@ -22,7 +22,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 import static io.cattle.platform.core.model.tables.AgentTable.*;
@@ -110,16 +109,10 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
             return agent;
         }
 
-        return DeferredUtils.nest(new Callable<Agent>() {
-            @Override
-            public Agent call() throws Exception {
-                return resourceDao.createAndSchedule(Agent.class,
-                        AGENT.DATA, data,
-                        AGENT.URI, uri,
-                        AGENT.RESOURCE_ACCOUNT_ID, builder.getResourceAccountId(),
-                        AGENT.MANAGED_CONFIG, false);
-            }
-        });
+        return DeferredUtils.nest(() -> resourceDao.createAndSchedule(Agent.class,
+                AGENT.DATA, data,
+                AGENT.URI, uri,
+                AGENT.RESOURCE_ACCOUNT_ID, builder.getResourceAccountId()));
     }
 
 }

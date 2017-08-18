@@ -104,7 +104,6 @@ import io.cattle.platform.process.mount.MountRemove;
 import io.cattle.platform.process.network.NetworkProcessManager;
 import io.cattle.platform.process.progress.ProcessProgress;
 import io.cattle.platform.process.progress.ProcessProgressImpl;
-import io.cattle.platform.process.register.RegisterProcessManager;
 import io.cattle.platform.process.secret.SecretRemove;
 import io.cattle.platform.process.service.ServiceProcessManager;
 import io.cattle.platform.process.stack.StackProcessManager;
@@ -267,7 +266,6 @@ public class Backend {
         NetworkProcessManager networkProcessManager = new NetworkProcessManager(d.resourceDao, f.objectManager, f.processManager, d.networkDao, f.lockManager, f.jsonMapper, f.resourcePoolManager);
 
         MountProcessManager mountProcessManager = new MountProcessManager(f.lockManager, f.objectManager, f.processManager);
-        RegisterProcessManager registerProcessManager = new RegisterProcessManager(d.registerDao, f.resourceMonitor, f.objectManager, f.processManager, d.accountDao, f.eventService, f.lockManager, d.clusterDao);
         ScheduledUpgradeProcessManager scheduledUpgradeProcessManager = new ScheduledUpgradeProcessManager(c.catalogService, upgradeManager, f.objectManager, f.processManager);
         ServiceProcessManager serviceProcessManager = new ServiceProcessManager(serviceLifecycleManager, f.objectManager, f.processManager, d.serviceDao);
         StackProcessManager stackProcessManager = new StackProcessManager(f.processManager, f.objectManager, c.catalogService);
@@ -300,10 +298,9 @@ public class Backend {
         r.handle("agent.activate", agentActivateReconnect);
         r.handle("agent.reconnect", agentActivateReconnect);
         r.handle("agent.create", agentProcessManager::create);
-        r.handle("agent.remove", agentProcessManager::remove, registerProcessManager::agentRemove);
+        r.handle("agent.remove", agentProcessManager::remove);
         r.handle("agent.*", agentHostStateUpdate::postHandle);
 
-        r.handle("cluster.activate", clusterProcessManager::preActivate);
         r.handle("cluster.create", clusterProcessManager::create);
         r.handle("cluster.remove", clusterProcessManager::postRemove);
 
@@ -318,10 +315,7 @@ public class Backend {
 
         r.handle("externalevent.create", externalEventProcessManager::preCreate, externalEventProcessManager::create);
 
-        r.handle("genericobject.create", pullTaskCreate,
-                registerProcessManager::genericObjectPreCreate,
-                registerProcessManager::genericObjectCreate,
-                registerProcessManager::genericObjectPostCreate);
+        r.handle("genericobject.create", pullTaskCreate);
 
         r.handle("host.create", hostProcessManager::create);
         r.handle("host.provision", goMachineService, hostProcessManager::provision);

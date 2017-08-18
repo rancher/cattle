@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ClusterTable extends TableImpl<ClusterRecord> {
 
-    private static final long serialVersionUID = 1306406104;
+    private static final long serialVersionUID = -915986125;
 
     /**
      * The reference instance of <code>cattle.cluster</code>
@@ -119,6 +119,11 @@ public class ClusterTable extends TableImpl<ClusterRecord> {
      * The column <code>cattle.cluster.default_network_id</code>.
      */
     public final TableField<ClusterRecord, Long> DEFAULT_NETWORK_ID = createField("default_network_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
+     * The column <code>cattle.cluster.external_id</code>.
+     */
+    public final TableField<ClusterRecord, String> EXTERNAL_ID = createField("external_id", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
     /**
      * Create a <code>cattle.cluster</code> table reference

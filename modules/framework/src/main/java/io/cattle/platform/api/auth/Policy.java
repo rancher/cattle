@@ -7,6 +7,7 @@ public interface Policy {
     String AGENT_ID = "agentId";
     String LIST_ALL_ACCOUNTS = "list.all.accounts";
     String AUTHORIZED_FOR_ALL_ACCOUNTS = "all.accounts";
+    String OVERRIDE_ACCOUNT_ID = "override.account.id";
     String RESOURCE_ACCOUNT_ID = "resource.account.id";
     String LIST_ALL_SETTINGS = "list.all.settings";
     String PLAIN_ID = "plain.id";

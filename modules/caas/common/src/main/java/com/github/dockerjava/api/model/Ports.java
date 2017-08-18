@@ -62,7 +62,7 @@ public class Ports {
     public void bind(ExposedPort exposedPort, Binding binding) {
         if (ports.containsKey(exposedPort)) {
             Binding[] bindings = ports.get(exposedPort);
-            ports.put(exposedPort, (Binding[]) ArrayUtils.add(bindings, binding));
+            ports.put(exposedPort, ArrayUtils.add(bindings, binding));
         } else {
             ports.put(exposedPort, new Binding[] { binding });
         }

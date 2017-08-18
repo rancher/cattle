@@ -1,6 +1,8 @@
 package io.cattle.platform.core.dao;
 
+import io.cattle.platform.core.addon.Register;
 import io.cattle.platform.core.model.Agent;
+import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.StoragePool;
@@ -30,4 +32,9 @@ public interface AgentDao {
 
     List<? extends Agent> findAgentsToPing();
 
+    Agent findAgentByExternalId(String externalId, long clusterId);
+
+    Credential findAgentCredentailByExternalId(String externalId, long clusterId);
+
+    Agent createAgentForRegistration(Register register, long clusterId);
 }

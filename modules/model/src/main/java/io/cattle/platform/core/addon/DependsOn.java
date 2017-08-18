@@ -9,7 +9,7 @@ public class DependsOn {
     public enum DependsOnCondition {
         running,
         healthy
-    };
+    }
 
     String service;
     String container;

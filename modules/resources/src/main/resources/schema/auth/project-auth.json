@@ -27,8 +27,6 @@
         "externalService" : "crud",
         "fieldDocumentation": "r",
         "genericObject" : "crd",
-        "host" : "crud",
-        "hostTemplate": "crud",
         "inServiceUpgradeStrategy" : "cr",
         "instanceLink" : "ru",
         "instanceRemove" : "cr",

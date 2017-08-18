@@ -54,6 +54,11 @@ public class ClusterProcessManager {
 
     public HandlerResult create(ProcessState state, ProcessInstance process) {
         Cluster cluster = (Cluster) state.getResource();
+        Account account = clusterDao.getOwnerAcccountForCluster(cluster);
+        if (account == null) {
+            clusterDao.createOwnerAccount(cluster);
+        }
+
         cluster = clusterDao.assignTokens(cluster);
         return new HandlerResult(
                 ClusterConstants.FIELD_REGISTRATION, registrationToken(cluster));
@@ -66,16 +71,6 @@ public class ClusterProcessManager {
         }
 
         return new RegistrationToken(cred);
-    }
-
-    public HandlerResult preActivate(ProcessState state, ProcessInstance process) {
-        Cluster cluster = (Cluster)state.getResource();
-        Account account = clusterDao.getOwnerAcccountForCluster(cluster);
-        if (account == null) {
-            clusterDao.createOwnerAccount(cluster);
-        }
-
-        return null;
     }
 
     public HandlerResult postRemove(ProcessState state, ProcessInstance process) {

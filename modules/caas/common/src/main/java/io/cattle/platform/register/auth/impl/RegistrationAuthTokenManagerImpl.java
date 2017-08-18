@@ -1,11 +1,13 @@
 package io.cattle.platform.register.auth.impl;
 
 import io.cattle.platform.core.addon.RegistrationToken;
+import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.RegistrationTokenAuthDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.register.auth.RegistrationAuthTokenManager;
 
 import java.util.Date;
@@ -23,7 +25,7 @@ public class RegistrationAuthTokenManagerImpl implements RegistrationAuthTokenMa
     }
 
     @Override
-    public Account validateToken(String password) {
+    public TokenAccount validateToken(String password) {
         String[] parts = password.split(":");
 
         if (parts.length != 3) {
@@ -62,7 +64,7 @@ public class RegistrationAuthTokenManagerImpl implements RegistrationAuthTokenMa
             return null;
         }
 
-        return account;
+        return new TokenAccount(account, DataAccessor.fieldLong(cred, CredentialConstants.FIELD_CLUSTER_ID));
     }
 
 }

@@ -34,6 +34,7 @@ import io.cattle.platform.core.addon.PortInstance;
 import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.addon.ProcessPool;
 import io.cattle.platform.core.addon.ProcessSummary;
+import io.cattle.platform.core.addon.Register;
 import io.cattle.platform.core.addon.RegistrationToken;
 import io.cattle.platform.core.addon.RestartPolicy;
 import io.cattle.platform.core.addon.SecretReference;
@@ -146,7 +147,7 @@ public class Model {
 
                 // Simple types
                 .type("certificate").processes("update")
-                .type("cluster").processes("activate", "error")
+                .type("cluster").processes("activate", "error", "update")
                 .type("credential").processes("activate", "deactivate")
                 .type("deploymentUnit").processes("activate", "deactivate", "error", "update", "pause")
                 .type("dynamicSchema")
@@ -157,6 +158,7 @@ public class Model {
                 .type("network")
                 .type("networkDriver").processes("activate", "deactivate", "update")
                 .type("projectMember").processes("activate", "deactivate")
+                .type("register")
                 .type("secret")
                 .type("serviceevent")
                 .type("stack").processes("error", "pause", "rollback", "update")
@@ -315,6 +317,7 @@ public class Model {
                 ProcessSummary.class,
                 Publish.class,
                 RestartPolicy.class,
+                Register.class,
                 RegistrationToken.class,
                 SecretReference.class,
                 ServiceProxy.class,
@@ -359,7 +362,6 @@ public class Model {
                 "password,parent=credential",
                 "project,parent=account",
                 "pullTask,parent=genericObject",
-                "register,parent=genericObject",
                 "registryCredential,parent=credential",
                 "registry,parent=storagePool",
                 "scalingGroup,parent=service",

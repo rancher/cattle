@@ -3,9 +3,6 @@
     "resourceFields": {
         "uri": {
             "create": true
-        },
-        "user": {
-            "create": true
         }
     }
 }

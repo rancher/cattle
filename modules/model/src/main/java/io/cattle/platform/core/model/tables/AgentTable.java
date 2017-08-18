@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AgentTable extends TableImpl<AgentRecord> {
 
-    private static final long serialVersionUID = 956344574;
+    private static final long serialVersionUID = -1644060156;
 
     /**
      * The reference instance of <code>cattle.agent</code>
@@ -116,11 +116,6 @@ public class AgentTable extends TableImpl<AgentRecord> {
     public final TableField<AgentRecord, String> URI = createField("uri", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
     /**
-     * The column <code>cattle.agent.managed_config</code>.
-     */
-    public final TableField<AgentRecord, Boolean> MANAGED_CONFIG = createField("managed_config", org.jooq.impl.SQLDataType.BIT.nullable(false).defaultValue(org.jooq.impl.DSL.inline("b'1'", org.jooq.impl.SQLDataType.BIT)), this, "");
-
-    /**
      * The column <code>cattle.agent.resource_account_id</code>.
      */
     public final TableField<AgentRecord, Long> RESOURCE_ACCOUNT_ID = createField("resource_account_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
@@ -129,6 +124,11 @@ public class AgentTable extends TableImpl<AgentRecord> {
      * The column <code>cattle.agent.cluster_id</code>.
      */
     public final TableField<AgentRecord, Long> CLUSTER_ID = createField("cluster_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
+     * The column <code>cattle.agent.external_id</code>.
+     */
+    public final TableField<AgentRecord, String> EXTERNAL_ID = createField("external_id", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
     /**
      * Create a <code>cattle.agent</code> table reference

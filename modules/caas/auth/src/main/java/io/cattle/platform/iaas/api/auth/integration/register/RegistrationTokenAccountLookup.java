@@ -33,15 +33,16 @@ public class RegistrationTokenAccountLookup implements AccountLookup {
             return null;
         }
 
-        Account account = tokenManager.validateToken(password);
+        RegistrationAuthTokenManager.TokenAccount account = tokenManager.validateToken(password);
 
         if (account == null) {
             return null;
         }
 
         request.setAttribute(DefaultAuthorizationProvider.ACCOUNT_SCHEMA_FACTORY_NAME, RegisterConstants.SCHEMA_NAME);
+        request.setAttribute(DefaultAuthorizationProvider.ACCOUNT_CLUSTER_ID, account.getClusterId());
 
-        return account;
+        return account.getAccount();
     }
 
     @Override

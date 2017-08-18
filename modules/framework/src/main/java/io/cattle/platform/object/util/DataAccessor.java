@@ -314,6 +314,10 @@ public class DataAccessor {
         return Collections.unmodifiableMap(fields);
     }
 
+    public static <T> T toType(Map<String, Object> data, Class<T> clz) {
+        return jsonMapper.convertValue(data, clz);
+    }
+
     @SuppressWarnings("unchecked")
     public static Map<String, Object> getWritableFields(Object obj) {
         Map<String, Object> data = DataAccessor.getData(obj, false);

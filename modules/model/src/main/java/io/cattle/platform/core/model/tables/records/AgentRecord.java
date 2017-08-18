@@ -39,9 +39,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "agent", schema = "cattle")
-public class AgentRecord extends UpdatableRecordImpl<AgentRecord> implements TableRecordJaxb, Record15<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Boolean, Long, Long>, Agent {
+public class AgentRecord extends UpdatableRecordImpl<AgentRecord> implements TableRecordJaxb, Record15<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long, String>, Agent {
 
-    private static final long serialVersionUID = 10619840;
+    private static final long serialVersionUID = -1080174959;
 
     /**
      * Setter for <code>cattle.agent.id</code>.
@@ -250,28 +250,11 @@ public class AgentRecord extends UpdatableRecordImpl<AgentRecord> implements Tab
     }
 
     /**
-     * Setter for <code>cattle.agent.managed_config</code>.
-     */
-    @Override
-    public void setManagedConfig(Boolean value) {
-        set(12, value);
-    }
-
-    /**
-     * Getter for <code>cattle.agent.managed_config</code>.
-     */
-    @Column(name = "managed_config", nullable = false, precision = 1)
-    @Override
-    public Boolean getManagedConfig() {
-        return (Boolean) get(12);
-    }
-
-    /**
      * Setter for <code>cattle.agent.resource_account_id</code>.
      */
     @Override
     public void setResourceAccountId(Long value) {
-        set(13, value);
+        set(12, value);
     }
 
     /**
@@ -280,7 +263,7 @@ public class AgentRecord extends UpdatableRecordImpl<AgentRecord> implements Tab
     @Column(name = "resource_account_id", precision = 19)
     @Override
     public Long getResourceAccountId() {
-        return (Long) get(13);
+        return (Long) get(12);
     }
 
     /**
@@ -288,7 +271,7 @@ public class AgentRecord extends UpdatableRecordImpl<AgentRecord> implements Tab
      */
     @Override
     public void setClusterId(Long value) {
-        set(14, value);
+        set(13, value);
     }
 
     /**
@@ -297,7 +280,24 @@ public class AgentRecord extends UpdatableRecordImpl<AgentRecord> implements Tab
     @Column(name = "cluster_id", precision = 19)
     @Override
     public Long getClusterId() {
-        return (Long) get(14);
+        return (Long) get(13);
+    }
+
+    /**
+     * Setter for <code>cattle.agent.external_id</code>.
+     */
+    @Override
+    public void setExternalId(String value) {
+        set(14, value);
+    }
+
+    /**
+     * Getter for <code>cattle.agent.external_id</code>.
+     */
+    @Column(name = "external_id", length = 255)
+    @Override
+    public String getExternalId() {
+        return (String) get(14);
     }
 
     // -------------------------------------------------------------------------
@@ -320,7 +320,7 @@ public class AgentRecord extends UpdatableRecordImpl<AgentRecord> implements Tab
      * {@inheritDoc}
      */
     @Override
-    public Row15<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Boolean, Long, Long> fieldsRow() {
+    public Row15<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long, String> fieldsRow() {
         return (Row15) super.fieldsRow();
     }
 
@@ -328,7 +328,7 @@ public class AgentRecord extends UpdatableRecordImpl<AgentRecord> implements Tab
      * {@inheritDoc}
      */
     @Override
-    public Row15<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Boolean, Long, Long> valuesRow() {
+    public Row15<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long, String> valuesRow() {
         return (Row15) super.valuesRow();
     }
 
@@ -432,15 +432,7 @@ public class AgentRecord extends UpdatableRecordImpl<AgentRecord> implements Tab
      * {@inheritDoc}
      */
     @Override
-    public Field<Boolean> field13() {
-        return AgentTable.AGENT.MANAGED_CONFIG;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Field<Long> field14() {
+    public Field<Long> field13() {
         return AgentTable.AGENT.RESOURCE_ACCOUNT_ID;
     }
 
@@ -448,8 +440,16 @@ public class AgentRecord extends UpdatableRecordImpl<AgentRecord> implements Tab
      * {@inheritDoc}
      */
     @Override
-    public Field<Long> field15() {
+    public Field<Long> field14() {
         return AgentTable.AGENT.CLUSTER_ID;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Field<String> field15() {
+        return AgentTable.AGENT.EXTERNAL_ID;
     }
 
     /**
@@ -552,15 +552,7 @@ public class AgentRecord extends UpdatableRecordImpl<AgentRecord> implements Tab
      * {@inheritDoc}
      */
     @Override
-    public Boolean value13() {
-        return getManagedConfig();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Long value14() {
+    public Long value13() {
         return getResourceAccountId();
     }
 
@@ -568,8 +560,16 @@ public class AgentRecord extends UpdatableRecordImpl<AgentRecord> implements Tab
      * {@inheritDoc}
      */
     @Override
-    public Long value15() {
+    public Long value14() {
         return getClusterId();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String value15() {
+        return getExternalId();
     }
 
     /**
@@ -684,16 +684,7 @@ public class AgentRecord extends UpdatableRecordImpl<AgentRecord> implements Tab
      * {@inheritDoc}
      */
     @Override
-    public AgentRecord value13(Boolean value) {
-        setManagedConfig(value);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public AgentRecord value14(Long value) {
+    public AgentRecord value13(Long value) {
         setResourceAccountId(value);
         return this;
     }
@@ -702,7 +693,7 @@ public class AgentRecord extends UpdatableRecordImpl<AgentRecord> implements Tab
      * {@inheritDoc}
      */
     @Override
-    public AgentRecord value15(Long value) {
+    public AgentRecord value14(Long value) {
         setClusterId(value);
         return this;
     }
@@ -711,7 +702,16 @@ public class AgentRecord extends UpdatableRecordImpl<AgentRecord> implements Tab
      * {@inheritDoc}
      */
     @Override
-    public AgentRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, String value12, Boolean value13, Long value14, Long value15) {
+    public AgentRecord value15(String value) {
+        setExternalId(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AgentRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, String value12, Long value13, Long value14, String value15) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -751,9 +751,9 @@ public class AgentRecord extends UpdatableRecordImpl<AgentRecord> implements Tab
         setRemoveTime(from.getRemoveTime());
         setData(from.getData());
         setUri(from.getUri());
-        setManagedConfig(from.getManagedConfig());
         setResourceAccountId(from.getResourceAccountId());
         setClusterId(from.getClusterId());
+        setExternalId(from.getExternalId());
     }
 
     /**
@@ -779,7 +779,7 @@ public class AgentRecord extends UpdatableRecordImpl<AgentRecord> implements Tab
     /**
      * Create a detached, initialised AgentRecord
      */
-    public AgentRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String uri, Boolean managedConfig, Long resourceAccountId, Long clusterId) {
+    public AgentRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String uri, Long resourceAccountId, Long clusterId, String externalId) {
         super(AgentTable.AGENT);
 
         set(0, id);
@@ -794,8 +794,8 @@ public class AgentRecord extends UpdatableRecordImpl<AgentRecord> implements Tab
         set(9, removeTime);
         set(10, data);
         set(11, uri);
-        set(12, managedConfig);
-        set(13, resourceAccountId);
-        set(14, clusterId);
+        set(12, resourceAccountId);
+        set(13, clusterId);
+        set(14, externalId);
     }
 }

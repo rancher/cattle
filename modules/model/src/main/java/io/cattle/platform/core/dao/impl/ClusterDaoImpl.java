@@ -1,6 +1,5 @@
 package io.cattle.platform.core.dao.impl;
 
-import io.cattle.platform.core.addon.K8sClientConfig;
 import io.cattle.platform.core.constants.ClusterConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.CredentialConstants;
@@ -76,30 +75,6 @@ public class ClusterDaoImpl extends AbstractJooqDao implements ClusterDao {
                 PROJECT_MEMBER.EXTERNAL_ID, id,
                 PROJECT_MEMBER.EXTERNAL_ID_TYPE, idType,
                 PROJECT_MEMBER.ROLE, ProjectConstants.OWNER);
-    }
-
-    @Override
-    public Cluster createClusterForAccount(Account account, K8sClientConfig clientConfig) {
-        return transaction.doInTransactionResult(() -> {
-            Cluster cluster = resourceDao.createAndSchedule(Cluster.class,
-                    CLUSTER.NAME, account.getName() + "-cluster",
-                    CLUSTER.EMBEDDED, clientConfig == null ? true : false,
-                    ClusterConstants.FIELD_K8S_CLIENT_CONFIG, clientConfig);
-
-            Account systemEnv = createOwnerAccount(cluster);
-
-            for (ProjectMember member : objectManager.find(ProjectMember.class,
-                    PROJECT_MEMBER.PROJECT_ID, account.getId(),
-                    PROJECT_MEMBER.ROLE, ProjectConstants.OWNER,
-                    PROJECT_MEMBER.STATE, CommonStatesConstants.ACTIVE)) {
-                grantOwner(member.getExternalId(), member.getExternalIdType(), systemEnv);
-            }
-
-            objectManager.setFields(account,
-                    ACCOUNT.CLUSTER_ID, cluster.getId());
-
-            return cluster;
-        });
     }
 
     @Override

@@ -24,6 +24,7 @@ public class AccountPolicy extends DefaultPolicy {
     private static final Logger log = LoggerFactory.getLogger(AccountPolicy.class);
 
     Account account;
+    Long clusterIdOverride;
 
     public AccountPolicy(Account account, Account authenticatedAsAccount, Set<Identity> identities, PolicyOptions options) {
         super(account.getId(), authenticatedAsAccount.getId(), account.getClusterId(), account.getName(), identities, options);
@@ -31,6 +32,15 @@ public class AccountPolicy extends DefaultPolicy {
         if (account.getClusterOwner()) {
             options.setOption(Policy.CLUSTER_OWNER, "true");
         }
+    }
+
+    public void setClusterId(Long clusterId) {
+        this.clusterIdOverride = clusterId;
+    }
+
+    @Override
+    public Long getClusterId() {
+        return clusterIdOverride == null ? super.getClusterId() : clusterIdOverride;
     }
 
     @Override

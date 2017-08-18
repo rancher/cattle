@@ -4,7 +4,6 @@ import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.api.requesthandler.ScriptsHandler;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CredentialConstants;
-import io.cattle.platform.core.model.Account;
 import io.cattle.platform.register.auth.RegistrationAuthTokenManager;
 import io.cattle.platform.server.context.ServerContext;
 import io.cattle.platform.server.context.ServerContext.BaseProtocol;
@@ -42,8 +41,7 @@ public class RegisterScriptHandler implements ScriptsHandler {
             return false;
         }
 
-        Account account = tokenManager.validateToken(id);
-
+        RegistrationAuthTokenManager.TokenAccount account = tokenManager.validateToken(id);
         if (account == null) {
             return false;
         }
