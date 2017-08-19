@@ -1,5 +1,6 @@
 package io.cattle.platform.api.host;
 
+import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.framework.secret.SecretsService;
 import io.cattle.platform.object.ObjectManager;
@@ -57,11 +58,16 @@ public class MachineConfigLinkHandler implements LinkHandler {
                 }
             }
             if (StringUtils.isNotEmpty(extractedConfig)) {
+                String filename = host.getName();
+                if (StringUtils.isBlank(filename)) {
+                    filename = DataAccessor.fieldString(host, HostConstants.FIELD_HOSTNAME);
+                }
+
                 byte[] content = writeZip(host, extractedConfig);
                 HttpServletResponse response = request.getServletContext().getResponse();
                 response.setContentLength(content.length);
                 response.setContentType("application/octet-stream");
-                response.setHeader("Content-Disposition", "attachment; filename=" + host.getName() + ".zip");
+                response.setHeader("Content-Disposition", "attachment; filename=" + filename + ".zip");
                 response.setHeader("Cache-Control", "private");
                 response.setHeader("Pragma", "private");
                 response.setHeader("Expires", "Wed 24 Feb 1982 18:42:00 GMT");
