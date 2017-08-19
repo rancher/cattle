@@ -1,7 +1,5 @@
 package io.cattle.platform.engine.manager.impl;
 
-import static io.cattle.platform.engine.process.ExitReason.*;
-
 import io.cattle.platform.engine.context.EngineContext;
 import io.cattle.platform.engine.manager.ProcessManager;
 import io.cattle.platform.engine.manager.ProcessNotFoundException;
@@ -20,10 +18,12 @@ import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.lock.LockManager;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
+import static io.cattle.platform.engine.process.ExitReason.*;
 
 public class DefaultProcessManager implements ProcessManager {
 
@@ -46,7 +46,7 @@ public class DefaultProcessManager implements ProcessManager {
         this.lockManager = lockManager;
         this.eventService = eventService;
         this.exceptionHandler = exceptionHandler;
-        this.changeMonitors = Arrays.asList(changeMonitor);
+        this.changeMonitors = Collections.singletonList(changeMonitor);
         this.definitions = definitions;
         this.triggers = triggers;
     }

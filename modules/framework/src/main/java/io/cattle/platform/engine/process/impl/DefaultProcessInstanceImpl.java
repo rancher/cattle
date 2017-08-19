@@ -36,6 +36,7 @@ import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.definition.LockDefinition;
 import io.cattle.platform.lock.definition.Namespace;
 import io.cattle.platform.lock.exception.FailedToAcquireLockException;
+import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.util.exception.ExceptionUtils;
 import io.cattle.platform.util.exception.ExecutionException;
 import io.cattle.platform.util.exception.LoggableException;
@@ -144,7 +145,6 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
     protected ExitReason executeWithProcessInstanceLock() {
         try {
             runAndHandleExceptions(EngineContext.getEngineContext());
-            trigger();
             return exit(ExitReason.DONE);
         } catch (ProcessExecutionExitException e) {
             exit(e.getExitReason());
@@ -164,10 +164,13 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
     }
 
     protected void trigger() {
+        Object resource = instanceContext.getState().getResource();
+        Long accountId = ObjectUtils.getAccountId(resource);
+        Long clusterId = ObjectUtils.getClusterId(resource);
+
         for (Trigger trigger : context.getTriggers()) {
             try {
-                trigger.trigger(record.getAccountId(), record.getClusterId(), instanceContext.getState().getResource(),
-                        instanceContext.getProcessDefinition().getName());
+                trigger.trigger(accountId, clusterId, resource, instanceContext.getProcessDefinition().getName());
             } catch (Throwable t) {
                 log.error("Exception while running trigger [{}] on [{}:{}]", trigger, getName(), getId(), t);
             }
@@ -568,6 +571,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
     }
 
     protected void publishChanged(String previousState, String newState, boolean defer) {
+        trigger();
         for (StateChangeMonitor monitor : context.getChangeMonitors()) {
             monitor.onChange(defer, previousState, newState, record, instanceContext.getState(), context);
         }

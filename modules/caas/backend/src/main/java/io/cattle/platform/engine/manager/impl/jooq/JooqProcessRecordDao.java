@@ -143,21 +143,22 @@ public class JooqProcessRecordDao extends AbstractJooqDao implements ProcessReco
     }
 
     protected void merge(ProcessInstanceRecord pi, ProcessRecord record) {
-        pi.setStartTime(toTimestamp(record.getStartTime()));
-        pi.setEndTime(toTimestamp(record.getEndTime()));
-        pi.setResult(Objects.toString(record.getResult(), null));
-        pi.setExitReason(Objects.toString(record.getExitReason(), null));
-        pi.setStartProcessServerId(record.getStartProcessServerId());
-        pi.setRunningProcessServerId(record.getRunningProcessServerId());
-        pi.setExecutionCount(record.getExecutionCount());
-        pi.setRunAfter(record.getRunAfter());
         pi.setAccountId(record.getAccountId());
-        pi.setPriority(record.getPriority());
-        pi.setResourceType(record.getResourceType());
-        pi.setResourceId(record.getResourceId());
-        pi.setProcessName(record.getProcessName());
+        pi.setClusterId(record.getClusterId());
         pi.setData(record.getData());
+        pi.setEndTime(toTimestamp(record.getEndTime()));
+        pi.setExecutionCount(record.getExecutionCount());
+        pi.setExitReason(Objects.toString(record.getExitReason(), null));
         pi.setPriority(record.getPriority());
+        pi.setPriority(record.getPriority());
+        pi.setProcessName(record.getProcessName());
+        pi.setResourceId(record.getResourceId());
+        pi.setResourceType(record.getResourceType());
+        pi.setResult(Objects.toString(record.getResult(), null));
+        pi.setRunAfter(record.getRunAfter());
+        pi.setRunningProcessServerId(record.getRunningProcessServerId());
+        pi.setStartProcessServerId(record.getStartProcessServerId());
+        pi.setStartTime(toTimestamp(record.getStartTime()));
 
         if (ExitReason.RETRY_EXCEPTION == record.getExitReason() || record.getRunAfter() == null) {
             pi.setRunAfter(new Date(System.currentTimeMillis()-300000));

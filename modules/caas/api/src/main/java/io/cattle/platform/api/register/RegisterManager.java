@@ -24,6 +24,8 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Collections;
 import java.util.Map;
 
+import static io.cattle.platform.core.model.Tables.*;
+
 public class RegisterManager extends AbstractNoOpResourceManager {
 
     AgentDao agentDao;
@@ -55,13 +57,13 @@ public class RegisterManager extends AbstractNoOpResourceManager {
 
     private void createOrUpdateCluster(K8sClientConfig clientConfig, long clusterId) {
         Cluster cluster = objectManager.loadResource(Cluster.class, clusterId);
-        Object existingConfig = DataAccessor.field(cluster, ClusterConstants.FIELD_K8S_CLIENT_CONFIG, Object.class);
+        K8sClientConfig existingConfig = DataAccessor.field(cluster, ClusterConstants.FIELD_K8S_CLIENT_CONFIG, K8sClientConfig.class);
 
         if (CommonStatesConstants.INACTIVE.equals(cluster.getState())) {
             objectManager.setFields(cluster,
                  ClusterConstants.FIELD_K8S_CLIENT_CONFIG, clientConfig);
             processManager.activate(cluster, null);
-        } else if (CommonStatesConstants.ACTIVE.equals(cluster.getState()) && existingConfig != null) {
+        } else if (CommonStatesConstants.ACTIVE.equals(cluster.getState()) && existingConfig != null && !existingConfig.equals(clientConfig)) {
             objectManager.setFields(cluster,
                     ClusterConstants.FIELD_K8S_CLIENT_CONFIG, clientConfig);
             processManager.update(cluster, null);
@@ -82,6 +84,8 @@ public class RegisterManager extends AbstractNoOpResourceManager {
             register.setId(register.getKey());
 
             if (CommonStatesConstants.INACTIVE.equals(cluster.getState())) {
+                objectManager.setFields(cluster,
+                        CLUSTER.EMBEDDED, true);
                 processManager.activate(cluster, null);
             }
 

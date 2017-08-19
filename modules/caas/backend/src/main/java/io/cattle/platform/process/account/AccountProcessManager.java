@@ -25,7 +25,6 @@ import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.ProjectMember;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
-import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.UserPreference;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.deferred.util.DeferredUtils;
@@ -63,7 +62,6 @@ public class AccountProcessManager {
         Agent.class,
         Certificate.class,
         Credential.class,
-        StoragePool.class,
         Volume.class,
         GenericObject.class,
         UserPreference.class,

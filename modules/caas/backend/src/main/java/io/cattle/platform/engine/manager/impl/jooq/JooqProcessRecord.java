@@ -5,12 +5,11 @@ import io.cattle.platform.engine.manager.impl.ProcessRecord;
 import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.ProcessResult;
 import io.cattle.platform.engine.process.log.ProcessLog;
+import org.apache.commons.lang3.EnumUtils;
 
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashMap;
-
-import org.apache.commons.lang3.EnumUtils;
 
 public class JooqProcessRecord extends ProcessRecord {
 
@@ -18,25 +17,24 @@ public class JooqProcessRecord extends ProcessRecord {
 
     public JooqProcessRecord(ProcessInstanceRecord record) {
         this.processInstance = record;
-
         id = record.getId();
-        startTime = toTimestamp(record.getStartTime());
-        endTime = toTimestamp(record.getEndTime());
-        processLog = new ProcessLog();
-        result = EnumUtils.getEnum(ProcessResult.class, record.getResult());
-        exitReason = EnumUtils.getEnum(ExitReason.class, record.getExitReason());
-        startProcessServerId = record.getStartProcessServerId();
-        runningProcessServerId = record.getRunningProcessServerId();
-        executionCount = record.getExecutionCount();
-        runAfter = record.getRunAfter();
 
         accountId = record.getAccountId();
-        priority = record.getPriority();
-        resourceType = record.getResourceType();
-        resourceId = record.getResourceId();
-        processName = record.getProcessName();
+        clusterId = record.getClusterId();
         data = new HashMap<>(record.getData());
-
+        endTime = toTimestamp(record.getEndTime());
+        executionCount = record.getExecutionCount();
+        exitReason = EnumUtils.getEnum(ExitReason.class, record.getExitReason());
+        priority = record.getPriority();
+        processLog = new ProcessLog();
+        processName = record.getProcessName();
+        resourceId = record.getResourceId();
+        resourceType = record.getResourceType();
+        result = EnumUtils.getEnum(ProcessResult.class, record.getResult());
+        runAfter = record.getRunAfter();
+        runningProcessServerId = record.getRunningProcessServerId();
+        startProcessServerId = record.getStartProcessServerId();
+        startTime = toTimestamp(record.getStartTime());
     }
 
     protected static Timestamp toTimestamp(Date date) {

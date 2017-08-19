@@ -4,6 +4,7 @@ import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.addon.RegistrationToken;
 import io.cattle.platform.core.constants.ClusterConstants;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Cluster;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.server.context.ServerContext;
@@ -26,6 +27,8 @@ public class ClusterOutputFilter implements ResourceOutputFilter {
             return converted;
         }
 
+        Cluster cluster = (Cluster) original;
+
         RegistrationToken regToken = DataAccessor.field(original, ClusterConstants.FIELD_REGISTRATION, RegistrationToken.class);
         if (regToken == null) {
             return converted;
@@ -39,8 +42,12 @@ public class ClusterOutputFilter implements ResourceOutputFilter {
         String clusterCommand = String.format(CLUSTER_CMD.get(), clusterUrl);
         String windowsCommand = String.format(WINDOWS_CMD.get(), hostUrl);
 
-        regToken.setClusterCommand(clusterCommand);
-        regToken.setHostCommand(hostCommand);
+        if (CommonStatesConstants.INACTIVE.equals(cluster.getState()) || cluster.getEmbedded()) {
+            regToken.setHostCommand(hostCommand);
+        }
+        if (CommonStatesConstants.INACTIVE.equals(cluster.getState())) {
+            regToken.setClusterCommand(clusterCommand);
+        }
         regToken.setWindowsCommand(windowsCommand);
         regToken.setToken(token);
         regToken.setImage(REQUIRED_IMAGE.get());
