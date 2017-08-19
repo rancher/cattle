@@ -4,6 +4,7 @@ import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.api.requesthandler.ScriptsHandler;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CredentialConstants;
+import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.register.auth.RegistrationAuthTokenManager;
 import io.cattle.platform.server.context.ServerContext;
 import io.cattle.platform.server.context.ServerContext.BaseProtocol;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,6 +27,7 @@ public class RegisterScriptHandler implements ScriptsHandler {
 
     private static final DynamicStringProperty IMAGE = ArchaiusUtil.getString("agent.image");
     private static final DynamicStringProperty SCRIPT = ArchaiusUtil.getString("agent.instance.register.script");
+    private static final DynamicStringProperty YAML = ArchaiusUtil.getString("agent.instance.register.yaml");
     private static final DynamicStringProperty URL = ArchaiusUtil.getString("agent.instance.register.url");
 
     RegistrationAuthTokenManager tokenManager;
@@ -41,6 +44,11 @@ public class RegisterScriptHandler implements ScriptsHandler {
             return false;
         }
 
+        boolean yaml = id.endsWith(".yaml");
+        if (yaml) {
+            id = id.substring(0, id.length()-5);
+        }
+
         RegistrationAuthTokenManager.TokenAccount account = tokenManager.validateToken(id);
         if (account == null) {
             return false;
@@ -53,7 +61,12 @@ public class RegisterScriptHandler implements ScriptsHandler {
         tokens.put("CATTLE_AGENT_IMAGE", IMAGE.get());
         tokens.put("CATTLE_AGENT_IP", request.getClientIp());
 
-        String script = getScript();
+        for (String key : new String[] {"CATTLE_URL", "CATTLE_REGISTRATION_ACCESS_KEY", "CATTLE_REGISTRATION_SECRET_KEY"}) {
+            String value = tokens.get(key);
+            tokens.put(key + "_ENCODED", Base64.getEncoder().encodeToString(value.getBytes(ObjectUtils.UTF8)));
+        }
+
+        String script = getScript(yaml);
 
         if (script == null) {
             return false;
@@ -79,18 +92,19 @@ public class RegisterScriptHandler implements ScriptsHandler {
         return request.getUrlBuilder().version(request.getVersion()).toExternalForm();
     }
 
-    protected String getScript() {
+    protected String getScript(boolean yaml) {
         InputStream is = null;
+        String file = yaml ? YAML.get() : SCRIPT.get();
 
         try {
-            is = getClass().getClassLoader().getResourceAsStream(SCRIPT.get());
+            is = getClass().getClassLoader().getResourceAsStream(file);
             if (is == null) {
                 return null;
             }
 
             return IOUtils.toString(is, "UTF-8");
         } catch (IOException e) {
-            log.error("Failed to read [{}]", SCRIPT.get(), e);
+            log.error("Failed to read [{}]", file, e);
             return null;
         } finally {
             IOUtils.closeQuietly(is);

@@ -31,7 +31,7 @@ public class InstanceConstants {
     public static final String FIELD_COUNT = "count";
     public static final String FIELD_CPU_PERIOD = "cpuPeriod";
     public static final String FIELD_CPU_QUOTA = "cpuQuota";
-    public static final String FIELD_CPU_SET = "cpuSet";
+    public static final String FIELD_CPU_SET = "cpuSetCpu";
     public static final String FIELD_CPUSET_MEMS = "cpuSetMems";
     public static final String FIELD_CPU_SHARES = "cpuShares";
     public static final String FIELD_CREATE_INDEX = "createIndex";

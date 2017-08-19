@@ -77,7 +77,7 @@
         "container.cpuPercent" : "cr",
         "container.cpuPeriod" : "cr",
         "container.cpuQuota" : "cr",
-        "container.cpuSet" : "cr",
+        "container.cpuSetCpu" : "cr",
         "container.cpuSetMems" : "cr",
         "container.cpuShares" : "cr",
         "container.createIndex" : "r",

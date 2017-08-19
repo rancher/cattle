@@ -156,7 +156,7 @@
       "type": "int",
       "nullable": true
     },
-    "cpuSet": {
+    "cpuSetCpu": {
       "type": "string",
       "nullable": true
     },

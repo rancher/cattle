@@ -111,7 +111,7 @@ public class ComposeExportConfigItem {
     public static final ComposeExportConfigItem NETWORKMODE = new ComposeExportConfigItem(
             InstanceConstants.FIELD_NETWORK_MODE,
             NamedUtils.toUnderscoreSeparated(InstanceConstants.FIELD_NETWORK_MODE), false);
-    public static final ComposeExportConfigItem CPUSET = new ComposeExportConfigItem("cpuSet", "cpuset", false);
+    public static final ComposeExportConfigItem CPUSET = new ComposeExportConfigItem("cpuSetCpu", "cpuset", false);
 
     public static final ComposeExportConfigItem LABELS = new ComposeExportConfigItem(
             InstanceConstants.FIELD_LABELS, InstanceConstants.FIELD_LABELS, false);

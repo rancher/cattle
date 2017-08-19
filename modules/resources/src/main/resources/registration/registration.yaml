@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: rancher
+  namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: rancher
+subjects:
+- kind: ServiceAccount
+  name: rancher
+  namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rancher-credentials
+type: Opaque
+data:
+  url: "${CATTLE_URL_ENCODED}"
+  access-key: "${CATTLE_REGISTRATION_ACCESS_KEY_ENCODED}"
+  secret-key: "${CATTLE_REGISTRATION_SECRET_KEY_ENCODED}"
+
+---
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: credential-reporter
+spec:
+  serviceAccountName: rancher
+  restartPolicy: Never
+  containers:
+    - name: credential-reporter
+      image: joshwget/credential-reporter
+      volumeMounts:
+      - name: rancher-credentials
+        mountPath: /rancher-credentials
+        readOnly: true
+  volumes:
+  - name: rancher-credentials
+    secret:
+      secretName: rancher-credentials

@@ -1,0 +1,9 @@
+{
+    "collectionFilters": {
+        "key": {
+            "modifiers": [
+                "eq"
+            ]
+        }
+    }
+}

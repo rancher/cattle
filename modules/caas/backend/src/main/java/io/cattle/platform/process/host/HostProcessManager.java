@@ -1,8 +1,10 @@
 package io.cattle.platform.process.host;
 
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.dao.InstanceDao;
+import io.cattle.platform.core.model.Cluster;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.HostTemplate;
 import io.cattle.platform.core.model.Instance;
@@ -63,10 +65,20 @@ public class HostProcessManager {
             chainProcess = HostConstants.PROCESS_ACTIVATE;
         }
 
+        activateCluster(host);
+
         return new HandlerResult(
                 HostConstants.FIELD_EXTERNAL_ID, externalId,
                 HostConstants.FIELD_DRIVER, driver)
                 .withChainProcessName(chainProcess);
+    }
+
+    private void activateCluster(Host host) {
+        Cluster cluster = objectManager.loadResource(Cluster.class, host.getClusterId());
+        if (cluster == null || CommonStatesConstants.INACTIVE.equals(host.getState())) {
+            return;
+        }
+        processManager.activate(cluster, null);
     }
 
     public static String getDriver(Object obj) {
