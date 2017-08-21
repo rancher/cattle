@@ -210,6 +210,8 @@ public class DockerTransformerImpl implements DockerTransformer {
             setField(instance, FIELD_CPU_PERIOD, fromInspect, HOST_CONFIG, "CpuPeriod");
             setField(instance, FIELD_CPU_QUOTA, fromInspect, HOST_CONFIG, "CpuQuota");
             setField(instance, FIELD_CPUSET_MEMS, fromInspect, HOST_CONFIG, "CpusetMems");
+            setField(instance, FIELD_CPU_REALTIME_PERIOD, fromInspect, HOST_CONFIG, "CpuRealtimePeriod");
+            setField(instance, FIELD_CPU_REALTIME_RUNTIME, fromInspect, HOST_CONFIG, "CpuRealtimeRuntime");
             setField(instance, FIELD_DNS_OPT, fromInspect, HOST_CONFIG, "DnsOptions");
             setField(instance, FIELD_GROUP_ADD, fromInspect, HOST_CONFIG, "GroupAdd");
             setField(instance, FIELD_KERNEL_MEMORY, fromInspect, HOST_CONFIG, "KernelMemory");

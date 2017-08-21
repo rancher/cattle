@@ -39,6 +39,8 @@ public class DockerInstanceConstants {
     public static final String FIELD_CPU_PERIOD = "cpuPeriod";
     public static final String FIELD_CPU_QUOTA = "cpuQuota";
     public static final String FIELD_CPUSET_MEMS = "cpuSetMems";
+    public static final String FIELD_CPU_REALTIME_PERIOD = "cpuRealtimePeriod";
+    public static final String FIELD_CPU_REALTIME_RUNTIME = "cpuRealtimeRuntime";
     public static final String FIELD_DNS_OPT = "dnsOpt";
     public static final String FIELD_GROUP_ADD = "groupAdd";
     public static final String FIELD_KERNEL_MEMORY = "kernelMemory";
