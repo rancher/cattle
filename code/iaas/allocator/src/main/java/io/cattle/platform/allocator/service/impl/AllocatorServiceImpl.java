@@ -435,9 +435,15 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
         List<Set<Constraint>> candidateFailedConstraintSets = new ArrayList<Set<Constraint>>();
         Iterator<AllocationCandidate> iter = getCandidates(attempt);
         try {
-            boolean foundOne = false;
+            if (!iter.hasNext()) {
+                if (attempt.getResourceRequests() != null && !attempt.getResourceRequests().isEmpty()) {
+                    throw new FailedToAllocate(String.format("No healthy hosts meet the resource constraints: %s.", attempt.getResourceRequests()));
+                } else {
+                    throw new FailedToAllocate("No healthy hosts with sufficient resources available");
+                }
+            }
+
             while (iter.hasNext()) {
-                foundOne = true;
                 AllocationCandidate candidate = iter.next();
                 Set<Constraint> failedConstraints = new HashSet<Constraint>();
                 attempt.getCandidates().add(candidate);
@@ -466,9 +472,6 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
                     }
                 }
                 candidateFailedConstraintSets.add(failedConstraints);
-            }
-            if (!foundOne) {
-                throw new FailedToAllocate("No healthy hosts with sufficient resources available");
             }
             return getWeakestConstraintSet(candidateFailedConstraintSets);
         } finally {
@@ -767,10 +770,6 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
                 } else {
                     List<String> newHosts = (List<String>) CollectionUtils.getNestedValue(eventResult.getData(), SCHEDULER_PRIORITIZE_RESPONSE);
                     hosts.retainAll(newHosts);
-                }
-
-                if (hosts.isEmpty()) {
-                    throw new FailedToAllocate(String.format("No healthy hosts meet the resource constraints: %s", extractResourceRequests(schedulerEvent)));
                 }
             }
         }
