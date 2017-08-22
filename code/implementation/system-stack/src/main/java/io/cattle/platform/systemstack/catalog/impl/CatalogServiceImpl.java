@@ -30,7 +30,8 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.fluent.Request;
-import org.apache.http.client.fluent.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
 import com.netflix.config.DynamicBooleanProperty;
@@ -42,6 +43,7 @@ public class CatalogServiceImpl implements CatalogService {
     private static DynamicStringProperty CATALOG_RESOURCE_URL = ArchaiusUtil.getString("system.stack.catalog.url");
     private static DynamicStringProperty CATALOG_RESOURCE_VERSION = ArchaiusUtil.getString("rancher.server.version");
     private static final DynamicBooleanProperty LAUNCH_CATALOG = ArchaiusUtil.getBoolean("catalog.execute");
+    private static final Logger log = LoggerFactory.getLogger(CatalogServiceImpl.class);
 
     @Inject
     JsonMapper jsonMapper;
@@ -247,13 +249,15 @@ public class CatalogServiceImpl implements CatalogService {
         if (firstCall) {
             String url = CATALOG_RESOURCE_URL.get();
             if (url.endsWith("/")) {
-                url = url.substring(0, url.length()-1);
+                url = url.substring(0, url.length() - 1);
             }
-            Response resp = Request.Post(String.format("%s?refresh&action=refresh", url)).execute();
-            int status = resp.returnResponse().getStatusLine().getStatusCode();
-            if (status >= 400) {
-                throw new IOException("Failed to reload got [" + status + "]");
-            }
+            Request.Post(String.format("%s?refresh&action=refresh", url)).execute().handleResponse((resp) -> {
+                int status = resp.getStatusLine().getStatusCode();
+                if (status >= 400) {
+                    log.warn("Skipping catalog refresh because it failed. Response code: {}, reason: {}", status, resp.getStatusLine().getReasonPhrase());
+                }
+                return null;
+            });
             firstCall = false;
         }
     }
