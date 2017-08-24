@@ -42,9 +42,9 @@ public class ClusterOutputFilter implements ResourceOutputFilter {
         String clusterCommand = String.format(CLUSTER_CMD.get(), clusterUrl);
         String windowsCommand = String.format(WINDOWS_CMD.get(), hostUrl);
 
-        if (CommonStatesConstants.INACTIVE.equals(cluster.getState()) || cluster.getEmbedded()) {
+        //if (CommonStatesConstants.INACTIVE.equals(cluster.getState()) || cluster.getEmbedded()) {
             regToken.setHostCommand(hostCommand);
-        }
+        //}
         if (CommonStatesConstants.INACTIVE.equals(cluster.getState())) {
             regToken.setClusterCommand(clusterCommand);
         }

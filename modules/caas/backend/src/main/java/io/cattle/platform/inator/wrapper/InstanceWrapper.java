@@ -4,6 +4,7 @@ import com.netflix.config.DynamicLongProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.engine.process.impl.ProcessDelayException;
 import io.cattle.platform.inator.factory.InatorServices;
 import io.cattle.platform.inator.launchconfig.LaunchConfig;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
@@ -76,9 +77,9 @@ public class InstanceWrapper implements BasicStateWrapper {
                 restartCount = MAX_BACKOFF.get();
             }
 
-            if (lastStop.getTime() + (long)(Math.pow(2, restartCount)*1000) > System.currentTimeMillis()) {
-                // Wait some more
-                return;
+            long runAfter = lastStop.getTime() + (long)(Math.pow(2, restartCount)*1000);
+            if (runAfter > System.currentTimeMillis()) {
+                throw new ProcessDelayException(new Date(runAfter));
             }
         }
         svc.processManager.start(instance, null);
