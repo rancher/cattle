@@ -45,23 +45,20 @@ public class RetryTimeoutServiceImpl implements RetryTimeoutService {
                 }
             } else {
                 try {
-                    executorService.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            Object cancel = queue(retry);
-                            final Runnable run = retry.getRunnable();
-                            if (run != null) {
-                                new NoExceptionRunnable() {
-                                    @Override
-                                    protected void doRun() throws Exception {
-                                        try {
-                                            run.run();
-                                        } catch (CancelRetryException e) {
-                                            completed(cancel);
-                                        }
+                    executorService.execute(() -> {
+                        Object cancel = queue(retry);
+                        final Runnable run = retry.getRunnable();
+                        if (run != null) {
+                            new NoExceptionRunnable() {
+                                @Override
+                                protected void doRun() throws Exception {
+                                    try {
+                                        run.run();
+                                    } catch (CancelRetryException e) {
+                                        completed(cancel);
                                     }
-                                }.run();
-                            }
+                                }
+                            }.run();
                         }
                     });
                 } catch (RejectedExecutionException e) {

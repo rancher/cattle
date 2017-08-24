@@ -14,10 +14,12 @@ public class FrameworkEvents {
     public static final String CLEAR_CACHE = "clear.cache";
     public static final String CLUSTER_QUALIFIER = "cluster";
     public static final String CLUSTER_SUFFIX = EVENT_SEP + CLUSTER_QUALIFIER + "=";
+
     public static final String CONSOLE_ACCESS = "console.access";
     public static final String CONTAINER_EVENT = "container.event";
     public static final String EXECUTE_TASK = "execute.task";
     public static final String INSPECT = "compute.instance.inspect";
+    public static final String METADATA_SYNC = "metadata.sync";
     public static final String PING = "ping";
     public static final String RESOURCE_CHANGE = "resource.change";
     public static final String RESOURCE_PROGRESS = "resource.progress";

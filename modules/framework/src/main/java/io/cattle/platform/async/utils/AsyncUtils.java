@@ -46,8 +46,8 @@ public class AsyncUtils {
         }
     }
 
-    public static ListenableFuture<?> done() {
-        return done(true);
+    public static <T> ListenableFuture<T> done() {
+        return done(null);
     }
 
     public static <T> ListenableFuture<T> done(T obj) {

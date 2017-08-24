@@ -27,7 +27,7 @@ public enum FieldType {
     BOOLEAN(VALUE_MODS, Boolean.class, Boolean.TYPE),
     ENUM(VALUE_MODS, String.class),
     REFERENCE(VALUE_MODS, IdRef.class),
-    ARRAY(List.class, Object[].class),
+    ARRAY(List.class, Set.class, Object[].class),
     MAP(Map.class),
     TYPE(Object.class),
     JSON(Object.class),

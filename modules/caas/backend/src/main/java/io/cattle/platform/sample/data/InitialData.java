@@ -67,10 +67,9 @@ public class InitialData extends ManagedContextRunnable {
     }
 
     private void accounts() {
-        Account admin = objectManager.create(Account.class,
+        Account admin = resourceDao.createAndSchedule(Account.class,
                 ACCOUNT.NAME, "admin",
                 ACCOUNT.KIND, "admin",
-                ACCOUNT.STATE, CommonStatesConstants.ACTIVE,
                 ACCOUNT.UUID, "admin");
 
         Cluster defaultCluster = DeferredUtils.nest(() -> resourceDao.createAndSchedule(Cluster.class,
@@ -92,11 +91,10 @@ public class InitialData extends ManagedContextRunnable {
                 ACCOUNT.KIND, "token",
                 ACCOUNT.STATE, CommonStatesConstants.ACTIVE,
                 ACCOUNT.UUID, "token");
-        Account defaultProject = objectManager.create(Account.class,
+        Account defaultProject = resourceDao.createAndSchedule(Account.class,
                 ACCOUNT.NAME, "Default",
                 ACCOUNT.CLUSTER_ID, defaultCluster.getId(),
                 ACCOUNT.KIND, "project",
-                ACCOUNT.STATE, CommonStatesConstants.ACTIVE,
                 ACCOUNT.UUID, "adminProject");
         objectManager.create(Account.class,
                 ACCOUNT.NAME, "System Service",

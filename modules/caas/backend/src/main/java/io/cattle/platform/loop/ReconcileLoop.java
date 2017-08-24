@@ -8,13 +8,12 @@ import io.cattle.platform.inator.Unit.UnitState;
 import io.cattle.platform.inator.unit.InstanceUnit;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class ReconcileLoop implements Loop {
 
@@ -43,7 +42,7 @@ public class ReconcileLoop implements Loop {
     }
 
     @Override
-    public Result run(Object input) {
+    public Result run(List<Object> input) {
         List<io.cattle.platform.inator.Result> result = new ArrayList<>();
         activityService.run(accountId, serviceId, deploymentUnitId, type, "Reconciling", () -> {
             result.add(reconcile());

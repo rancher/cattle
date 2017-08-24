@@ -84,15 +84,15 @@ public class DataAccess {
 
     public DataAccess(Framework f) {
         this.resourceDao = new GenericResourceDaoImpl(f.objectManager, f.processManager, f.transaction);
+        this.clusterDao = new ClusterDaoImpl(f.jooqConfig, f.transaction, f.objectManager, resourceDao);
         this.transformationService = new TransformationServiceImpl();
 
         this.accountDao = new AccountDaoImpl(f.jooqConfig, f.objectManager);
-        this.agentDao = new AgentDaoImpl(f.jooqConfig, accountDao, resourceDao, f.objectManager);
+        this.agentDao = new AgentDaoImpl(f.jooqConfig, clusterDao, resourceDao, f.objectManager);
         this.allocatorDao = new AllocatorDaoImpl(f.jooqConfig, f.objectManager, f.transaction, f.eventService);
         this.auditLogDao = new AuditLogDaoImpl(f.jooqConfig, f.objectManager);
         this.authDao = new AuthDaoImpl(f.jooqConfig, resourceDao, f.objectManager, f.processManager, f.lockManager, accountDao);
         this.authTokenDao = new AuthTokenDaoImpl(f.jooqConfig, resourceDao, f.objectManager, f.processManager);
-        this.clusterDao = new ClusterDaoImpl(f.jooqConfig, f.transaction, f.objectManager, resourceDao);
         this.dataDao = new DataDaoImpl(f.jooqConfig, f.lockManager, f.objectManager, f.newConnJooqConfig, f.newTransaction);
         this.dbCacheManager = new DBCacheManager();
         this.dynamicSchemaDao = new DynamicSchemaDaoImpl(f.jooqConfig, dbCacheManager);

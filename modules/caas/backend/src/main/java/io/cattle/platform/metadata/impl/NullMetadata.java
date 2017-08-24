@@ -1,17 +1,19 @@
 package io.cattle.platform.metadata.impl;
 
+import io.cattle.platform.core.addon.metadata.EnvironmentInfo;
+import io.cattle.platform.core.addon.metadata.HostInfo;
+import io.cattle.platform.core.addon.metadata.InstanceInfo;
+import io.cattle.platform.core.addon.metadata.MetadataObject;
+import io.cattle.platform.core.addon.metadata.NetworkInfo;
+import io.cattle.platform.core.addon.metadata.ServiceInfo;
+import io.cattle.platform.core.addon.metadata.StackInfo;
 import io.cattle.platform.metadata.Metadata;
 import io.cattle.platform.metadata.MetadataModOperation;
-import io.cattle.platform.metadata.model.EnvironmentInfo;
-import io.cattle.platform.metadata.model.HostInfo;
-import io.cattle.platform.metadata.model.InstanceInfo;
-import io.cattle.platform.metadata.model.NetworkInfo;
-import io.cattle.platform.metadata.model.ServiceInfo;
-import io.cattle.platform.metadata.model.StackInfo;
 import io.cattle.platform.object.ObjectManager;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 
 public class NullMetadata implements Metadata {
 
@@ -49,6 +51,11 @@ public class NullMetadata implements Metadata {
     @Override
     public Collection<NetworkInfo> getNetworks() {
         return Collections.emptyList();
+    }
+
+    @Override
+    public Map<String, MetadataObject> getAll() {
+        return Collections.emptyMap();
     }
 
     @Override

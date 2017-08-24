@@ -1,6 +1,8 @@
 package io.cattle.platform.loop;
 
 import io.cattle.platform.core.addon.HealthcheckState;
+import io.cattle.platform.core.addon.metadata.HostInfo;
+import io.cattle.platform.core.addon.metadata.InstanceInfo;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -8,8 +10,6 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.engine.model.Loop;
 import io.cattle.platform.metadata.Metadata;
 import io.cattle.platform.metadata.MetadataManager;
-import io.cattle.platform.metadata.model.HostInfo;
-import io.cattle.platform.metadata.model.InstanceInfo;
 import io.cattle.platform.object.ObjectManager;
 
 import java.util.ArrayList;
@@ -32,7 +32,7 @@ public class HealthcheckScheduleLoop implements Loop {
     }
 
     @Override
-    public Result run(Object input) {
+    public Result run(List<Object> input) {
         Metadata metadata = metadataManager.getMetadataForAccount(accountId);
 
         Set<Long> hostIds = validHostIds(metadata);

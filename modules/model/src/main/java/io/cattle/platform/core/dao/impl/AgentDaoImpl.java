@@ -7,8 +7,8 @@ import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.AgentDao;
+import io.cattle.platform.core.dao.ClusterDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.model.Agent;
@@ -47,13 +47,13 @@ public class AgentDaoImpl extends AbstractJooqDao implements AgentDao {
     public static final DynamicBooleanProperty ALLOW_SIMULATORS = ArchaiusUtil.getBoolean("allow.simulators");
 
     Long startTime = null;
-    AccountDao accountDao;
+    ClusterDao clusterDao;
     GenericResourceDao resourceDao;
     ObjectManager objectManager;
 
-    public AgentDaoImpl(Configuration configuration, AccountDao accountDao, GenericResourceDao resourceDao, ObjectManager objectManager) {
+    public AgentDaoImpl(Configuration configuration, ClusterDao clusterDao, GenericResourceDao resourceDao, ObjectManager objectManager) {
         super(configuration);
-        this.accountDao = accountDao;
+        this.clusterDao = clusterDao;
         this.resourceDao = resourceDao;
         this.objectManager = objectManager;
     }
@@ -284,7 +284,7 @@ public class AgentDaoImpl extends AbstractJooqDao implements AgentDao {
             return agent;
         }
 
-        long accountId = accountDao.getAccountIdForCluster(clusterId);
+        long accountId = clusterDao.getOwnerAcccountIdForCluster(clusterId);
 
         String format = "event://%s";
         if (register.isSimulated() && ALLOW_SIMULATORS.get()) {

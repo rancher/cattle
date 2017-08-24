@@ -18,7 +18,9 @@
  */
 package org.apache.cloudstack.managed.context;
 
+import io.cattle.platform.deferred.context.DeferredContextListener;
 import org.apache.cloudstack.managed.context.impl.DefaultManagedContext;
+import org.apache.cloudstack.managed.context.impl.MdcClearListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,23 +29,13 @@ public abstract class ManagedContextRunnable implements Runnable {
     private static final int SLEEP_COUNT = 120;
 
     private static final Logger log = LoggerFactory.getLogger(ManagedContextRunnable.class);
-    private static final ManagedContext DEFAULT_MANAGED_CONTEXT = new DefaultManagedContext();
-    private static ManagedContext context;
-    private static boolean managedContext = false;
-
-    /*
-     * This is slightly dirty, but the idea is that we only save the
-     * ManagedContext in a static global. Any ManagedContextListener can be a
-     * fully managed object and not have to rely on global statics
-     */
-    public static ManagedContext initializeGlobalContext(ManagedContext context) {
-        setManagedContext(true);
-        return ManagedContextRunnable.context = context;
-    }
+    private static ManagedContext context = new DefaultManagedContext(
+                new DeferredContextListener(),
+                new MdcClearListener());
 
     @Override
     final public void run() {
-        getContext().runWithContext(new Runnable() {
+        context.runWithContext(new Runnable() {
             @Override
             public void run() {
                 runInContext();
@@ -53,34 +45,8 @@ public abstract class ManagedContextRunnable implements Runnable {
 
     protected abstract void runInContext();
 
-    protected ManagedContext getContext() {
-        if (!managedContext)
-            return DEFAULT_MANAGED_CONTEXT;
-
-        for (int i = 0; i < SLEEP_COUNT; i++) {
-            if (context == null) {
-                try {
-                    Thread.sleep(1000);
-
-                    if (context == null)
-                        log.info("Sleeping until ManagedContext becomes available");
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            } else {
-                return context;
-            }
-        }
-
-        throw new RuntimeException("Failed to obtain ManagedContext");
-    }
-
-    public static boolean isManagedContext() {
-        return managedContext;
-    }
-
-    public static void setManagedContext(boolean managedContext) {
-        ManagedContextRunnable.managedContext = managedContext;
+    public ManagedContext getContext() {
+        return context;
     }
 
 }

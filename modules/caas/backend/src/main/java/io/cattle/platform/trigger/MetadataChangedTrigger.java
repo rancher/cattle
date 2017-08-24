@@ -1,7 +1,7 @@
 package io.cattle.platform.trigger;
 
 
-import io.cattle.platform.core.dao.AccountDao;
+import io.cattle.platform.core.dao.ClusterDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.engine.manager.LoopManager;
 import io.cattle.platform.engine.model.Trigger;
@@ -10,12 +10,12 @@ public class MetadataChangedTrigger implements Trigger {
 
     String[] loopNames;
     LoopManager loopManager;
-    AccountDao accountDao;
+    ClusterDao clusterDao;
 
-    public MetadataChangedTrigger(LoopManager loopManager, AccountDao accountDao, String... loopNames) {
+    public MetadataChangedTrigger(LoopManager loopManager, ClusterDao clusterDao, String... loopNames) {
         this.loopManager = loopManager;
         this.loopNames = loopNames;
-        this.accountDao = accountDao;
+        this.clusterDao = clusterDao;
     }
 
     @Override
@@ -24,7 +24,7 @@ public class MetadataChangedTrigger implements Trigger {
             return;
         }
         if (accountId == null) {
-            accountId = accountDao.getAccountIdForCluster(clusterId);
+            accountId = clusterDao.getOwnerAcccountIdForCluster(clusterId);
         }
 
         if (accountId == null) {
@@ -32,7 +32,7 @@ public class MetadataChangedTrigger implements Trigger {
         }
 
         for (String loop : loopNames) {
-            loopManager.kick(loop, Account.class, accountId, null);
+            loopManager.kick(loop, Account.class, accountId, resource);
         }
     }
 

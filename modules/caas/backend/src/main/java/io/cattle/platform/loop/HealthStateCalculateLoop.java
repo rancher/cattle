@@ -1,6 +1,9 @@
 package io.cattle.platform.loop;
 
 import io.cattle.platform.core.addon.HealthcheckState;
+import io.cattle.platform.core.addon.metadata.InstanceInfo;
+import io.cattle.platform.core.addon.metadata.ServiceInfo;
+import io.cattle.platform.core.addon.metadata.StackInfo;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
@@ -8,9 +11,6 @@ import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.engine.model.Loop;
 import io.cattle.platform.metadata.Metadata;
 import io.cattle.platform.metadata.MetadataManager;
-import io.cattle.platform.metadata.model.InstanceInfo;
-import io.cattle.platform.metadata.model.ServiceInfo;
-import io.cattle.platform.metadata.model.StackInfo;
 import io.cattle.platform.object.ObjectManager;
 import org.apache.commons.collections4.ListValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
@@ -37,7 +37,7 @@ public class HealthStateCalculateLoop implements Loop {
     }
 
     @Override
-    public Result run(Object input) {
+    public Result run(List<Object> input) {
         Metadata metadata = metadataManager.getMetadataForAccount(accountId);
 
         ListValuedMap<Long, String> serviceStates = calculateInstanceHealth(metadata);

@@ -1,5 +1,7 @@
 package io.cattle.platform.loop;
 
+import io.cattle.platform.core.addon.metadata.InstanceInfo;
+import io.cattle.platform.core.addon.metadata.ServiceInfo;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Instance;
@@ -7,8 +9,6 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.model.Loop;
 import io.cattle.platform.metadata.Metadata;
 import io.cattle.platform.metadata.MetadataManager;
-import io.cattle.platform.metadata.model.InstanceInfo;
-import io.cattle.platform.metadata.model.ServiceInfo;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.servicediscovery.api.util.selector.SelectorUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -36,7 +36,7 @@ public class ServiceMembershipLoop implements Loop {
     }
 
     @Override
-    public Result run(Object input) {
+    public Result run(List<Object> input) {
         Metadata metadata = metadataManager.getMetadataForAccount(accountId);
         Map<Long, Set<Long>> serviceToInstances = new HashMap<>();
         Map<String, List<ServiceInfo>> selectorServices = metadata.getServices().stream()

@@ -1,9 +1,10 @@
-package io.cattle.platform.metadata.model;
+package io.cattle.platform.core.addon.metadata;
 
 import io.cattle.platform.core.addon.PortInstance;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.object.util.DataAccessor;
+import io.github.ibuildthecloud.gdapi.annotation.Field;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -11,6 +12,7 @@ import java.util.Set;
 
 public class HostInfo implements MetadataObject {
     long id;
+    String environmentUuid;
     Long agentId;
     Long clusterId;
     String agentIp;
@@ -43,6 +45,21 @@ public class HostInfo implements MetadataObject {
 
     public long getId() {
         return id;
+    }
+
+    @Override
+    public String getEnvironmentUuid() {
+        return environmentUuid;
+    }
+
+    @Override
+    public String getInfoType() {
+        return "host";
+    }
+
+    @Override
+    public void setEnvironmentUuid(String environmentUuid) {
+        this.environmentUuid = environmentUuid;
     }
 
     public String getAgentIp() {
@@ -86,10 +103,12 @@ public class HostInfo implements MetadataObject {
         return ports;
     }
 
+    @Field(typeString = "reference[agent]")
     public Long getAgentId() {
         return agentId;
     }
 
+    @Field(typeString = "reference[cluster]")
     public Long getClusterId() {
         return clusterId;
     }
@@ -102,6 +121,9 @@ public class HostInfo implements MetadataObject {
         HostInfo hostInfo = (HostInfo) o;
 
         if (id != hostInfo.id) return false;
+        if (uuid != null ? !uuid.equals(hostInfo.uuid) : hostInfo.uuid != null) return false;
+        if (environmentUuid != null ? !environmentUuid.equals(hostInfo.environmentUuid) : hostInfo.environmentUuid != null)
+            return false;
         if (agentId != null ? !agentId.equals(hostInfo.agentId) : hostInfo.agentId != null) return false;
         if (clusterId != null ? !clusterId.equals(hostInfo.clusterId) : hostInfo.clusterId != null) return false;
         if (agentIp != null ? !agentIp.equals(hostInfo.agentIp) : hostInfo.agentIp != null) return false;
@@ -119,6 +141,8 @@ public class HostInfo implements MetadataObject {
     @Override
     public int hashCode() {
         int result = (int) (id ^ (id >>> 32));
+        result = 31 * result + (uuid != null ? uuid.hashCode() : 0);
+        result = 31 * result + (environmentUuid != null ? environmentUuid.hashCode() : 0);
         result = 31 * result + (agentId != null ? agentId.hashCode() : 0);
         result = 31 * result + (clusterId != null ? clusterId.hashCode() : 0);
         result = 31 * result + (agentIp != null ? agentIp.hashCode() : 0);

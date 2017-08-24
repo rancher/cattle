@@ -10,10 +10,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class IdFormatterUtils {
 
@@ -61,7 +63,10 @@ public class IdFormatterUtils {
 
         Map<Object, Object> result = new LinkedHashMap<>();
 
-        Schema fieldSchema = schemaFactory.getSchema(schemaType);
+        Schema fieldSchema = schemaFactory.getSchema(value.getClass());
+        if (fieldSchema == null) {
+            fieldSchema = schemaFactory.getSchema(schemaType);
+        }
         if (fieldSchema == null) {
             log.error("Failed to find schema for type [{}]", schemaType);
             return result;
@@ -111,11 +116,11 @@ public class IdFormatterUtils {
             return value;
         }
 
-        if (!(value instanceof List)) {
+        if (!(value instanceof List) && !(value instanceof Set)) {
             return value;
         }
 
-        List<?> inputs = (List<?>)value;
+        Collection<?> inputs = (Collection<?>)value;
         List<Object> result = new ArrayList<>(inputs.size());
         FieldType fieldType = subTypeEnums.get(0);
 

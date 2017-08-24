@@ -1,4 +1,4 @@
-package io.cattle.platform.metadata.model;
+package io.cattle.platform.core.addon.metadata;
 
 import io.cattle.platform.core.addon.HealthcheckState;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
@@ -7,6 +7,7 @@ import io.cattle.platform.core.addon.PortInstance;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.object.util.DataAccessor;
+import io.github.ibuildthecloud.gdapi.annotation.Field;
 
 import java.util.HashSet;
 import java.util.List;
@@ -15,11 +16,11 @@ import java.util.Set;
 
 public class InstanceInfo implements MetadataObject {
     long id;
-    Long networkFromContainerId;
+    String uuid;
+    String environmentUuid;
 
     String name;
     String hostname;
-    String uuid;
     String healthState;
     String state;
     String externalId;
@@ -29,13 +30,16 @@ public class InstanceInfo implements MetadataObject {
     Integer exitCode;
 
     boolean shouldRestart;
+    boolean nativeContainer;
 
+    long accountId;
     Long agentId;
     Long serviceId;
     Long stackId;
     Long hostId;
     Long memoryReservation;
     Long milliCpuReservation;
+    Long networkFromContainerId;
     Long networkId;
     Long startCount;
 
@@ -49,6 +53,7 @@ public class InstanceInfo implements MetadataObject {
     HealthcheckInfo healthCheck;
 
     public InstanceInfo(Instance instance) {
+        this.accountId = instance.getAccountId();
         this.agentId = instance.getAgentId();
         this.dns = DataAccessor.fieldStringList(instance, InstanceConstants.FIELD_DNS);
         this.dnsSearch = DataAccessor.fieldStringList(instance, InstanceConstants.FIELD_DNS_SEARCH);
@@ -64,6 +69,7 @@ public class InstanceInfo implements MetadataObject {
         this.memoryReservation = instance.getMemoryReservation();
         this.milliCpuReservation = instance.getMilliCpuReservation();
         this.name = instance.getName();
+        this.nativeContainer = instance.getNativeContainer();
         this.networkFromContainerId = instance.getNetworkContainerId();
         this.networkId = instance.getNetworkId();
         this.ports = new HashSet<>(DataAccessor.fieldObjectList(instance, InstanceConstants.FIELD_PORT_BINDINGS, PortInstance.class));
@@ -82,6 +88,30 @@ public class InstanceInfo implements MetadataObject {
         if (hc != null) {
             this.healthCheck = new HealthcheckInfo(hc);
         }
+    }
+
+    public boolean isNativeContainer() {
+        return nativeContainer;
+    }
+
+    @Override
+    public String getEnvironmentUuid() {
+        return environmentUuid;
+    }
+
+    @Override
+    public String getInfoType() {
+        return "instance";
+    }
+
+    @Override
+    public void setEnvironmentUuid(String environmentUuid) {
+        this.environmentUuid = environmentUuid;
+    }
+
+    @Field(typeString = "reference[account]")
+    public long getAccountId() {
+        return accountId;
     }
 
     public long getId() {
@@ -125,18 +155,22 @@ public class InstanceInfo implements MetadataObject {
         return serviceIndex;
     }
 
-    public long getNetworkFromContainerId() {
+    @Field(typeString = "reference[instance]")
+    public Long getNetworkFromContainerId() {
         return networkFromContainerId;
     }
 
+    @Field(typeString = "reference[service]")
     public Long getServiceId() {
         return serviceId;
     }
 
+    @Field(typeString = "reference[stack]")
     public Long getStackId() {
         return stackId;
     }
 
+    @Field(typeString = "reference[host]")
     public Long getHostId() {
         return hostId;
     }
@@ -149,6 +183,7 @@ public class InstanceInfo implements MetadataObject {
         return milliCpuReservation;
     }
 
+    @Field(typeString = "reference[network]")
     public Long getNetworkId() {
         return networkId;
     }
@@ -177,6 +212,7 @@ public class InstanceInfo implements MetadataObject {
         return links;
     }
 
+    @Field(typeString = "reference[agent]")
     public Long getAgentId() {
         return agentId;
     }
@@ -189,6 +225,7 @@ public class InstanceInfo implements MetadataObject {
         return ports;
     }
 
+    @Field(typeString = "array[reference[service]]")
     public Set<Long> getServiceIds() {
         return serviceIds;
     }
@@ -210,11 +247,13 @@ public class InstanceInfo implements MetadataObject {
 
         if (id != that.id) return false;
         if (shouldRestart != that.shouldRestart) return false;
-        if (networkFromContainerId != null ? !networkFromContainerId.equals(that.networkFromContainerId) : that.networkFromContainerId != null)
+        if (nativeContainer != that.nativeContainer) return false;
+        if (accountId != that.accountId) return false;
+        if (uuid != null ? !uuid.equals(that.uuid) : that.uuid != null) return false;
+        if (environmentUuid != null ? !environmentUuid.equals(that.environmentUuid) : that.environmentUuid != null)
             return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (hostname != null ? !hostname.equals(that.hostname) : that.hostname != null) return false;
-        if (uuid != null ? !uuid.equals(that.uuid) : that.uuid != null) return false;
         if (healthState != null ? !healthState.equals(that.healthState) : that.healthState != null) return false;
         if (state != null ? !state.equals(that.state) : that.state != null) return false;
         if (externalId != null ? !externalId.equals(that.externalId) : that.externalId != null) return false;
@@ -230,6 +269,8 @@ public class InstanceInfo implements MetadataObject {
         if (memoryReservation != null ? !memoryReservation.equals(that.memoryReservation) : that.memoryReservation != null)
             return false;
         if (milliCpuReservation != null ? !milliCpuReservation.equals(that.milliCpuReservation) : that.milliCpuReservation != null)
+            return false;
+        if (networkFromContainerId != null ? !networkFromContainerId.equals(that.networkFromContainerId) : that.networkFromContainerId != null)
             return false;
         if (networkId != null ? !networkId.equals(that.networkId) : that.networkId != null) return false;
         if (startCount != null ? !startCount.equals(that.startCount) : that.startCount != null) return false;
@@ -247,10 +288,10 @@ public class InstanceInfo implements MetadataObject {
     @Override
     public int hashCode() {
         int result = (int) (id ^ (id >>> 32));
-        result = 31 * result + (networkFromContainerId != null ? networkFromContainerId.hashCode() : 0);
+        result = 31 * result + (uuid != null ? uuid.hashCode() : 0);
+        result = 31 * result + (environmentUuid != null ? environmentUuid.hashCode() : 0);
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (hostname != null ? hostname.hashCode() : 0);
-        result = 31 * result + (uuid != null ? uuid.hashCode() : 0);
         result = 31 * result + (healthState != null ? healthState.hashCode() : 0);
         result = 31 * result + (state != null ? state.hashCode() : 0);
         result = 31 * result + (externalId != null ? externalId.hashCode() : 0);
@@ -259,12 +300,15 @@ public class InstanceInfo implements MetadataObject {
         result = 31 * result + (serviceIndex != null ? serviceIndex.hashCode() : 0);
         result = 31 * result + (exitCode != null ? exitCode.hashCode() : 0);
         result = 31 * result + (shouldRestart ? 1 : 0);
+        result = 31 * result + (nativeContainer ? 1 : 0);
+        result = 31 * result + (int) (accountId ^ (accountId >>> 32));
         result = 31 * result + (agentId != null ? agentId.hashCode() : 0);
         result = 31 * result + (serviceId != null ? serviceId.hashCode() : 0);
         result = 31 * result + (stackId != null ? stackId.hashCode() : 0);
         result = 31 * result + (hostId != null ? hostId.hashCode() : 0);
         result = 31 * result + (memoryReservation != null ? memoryReservation.hashCode() : 0);
         result = 31 * result + (milliCpuReservation != null ? milliCpuReservation.hashCode() : 0);
+        result = 31 * result + (networkFromContainerId != null ? networkFromContainerId.hashCode() : 0);
         result = 31 * result + (networkId != null ? networkId.hashCode() : 0);
         result = 31 * result + (startCount != null ? startCount.hashCode() : 0);
         result = 31 * result + (serviceIds != null ? serviceIds.hashCode() : 0);

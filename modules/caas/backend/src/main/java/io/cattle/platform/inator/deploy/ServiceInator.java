@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 public class ServiceInator implements Inator {
 
     ServiceWrapper service;
-    Set<UnitRef> desiredSet;
     InatorServices svc;
     UnitPlanner planner;
     UpgradeInator upgrade;

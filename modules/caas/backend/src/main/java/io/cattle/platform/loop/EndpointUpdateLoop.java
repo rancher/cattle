@@ -1,6 +1,9 @@
 package io.cattle.platform.loop;
 
 import io.cattle.platform.core.addon.PortInstance;
+import io.cattle.platform.core.addon.metadata.HostInfo;
+import io.cattle.platform.core.addon.metadata.InstanceInfo;
+import io.cattle.platform.core.addon.metadata.ServiceInfo;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
@@ -10,14 +13,12 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.engine.model.Loop;
 import io.cattle.platform.metadata.Metadata;
 import io.cattle.platform.metadata.MetadataManager;
-import io.cattle.platform.metadata.model.HostInfo;
-import io.cattle.platform.metadata.model.InstanceInfo;
-import io.cattle.platform.metadata.model.ServiceInfo;
 import io.cattle.platform.object.ObjectManager;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -36,7 +37,7 @@ public class EndpointUpdateLoop implements Loop {
     }
 
     @Override
-    public Result run(Object input) {
+    public Result run(List<Object> input) {
         Metadata metadata = metadataManager.getMetadataForAccount(accountId);
         Map<Long, String> agentIps = new HashMap<>();
         Map<Long, ServiceInfo> services = metadata.getServices().stream().collect(toMap(ServiceInfo::getId, (x) -> x));

@@ -18,7 +18,6 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.datasource.DataSourceFactory;
 import io.cattle.platform.datasource.JMXDataSourceFactoryImpl;
 import io.cattle.platform.db.jooq.logging.LoggerListener;
-import io.cattle.platform.deferred.context.DeferredContextListener;
 import io.cattle.platform.hazelcast.membership.ClusterService;
 import io.cattle.platform.hazelcast.membership.DBDiscovery;
 import io.cattle.platform.hazelcast.membership.dao.HaMembershipDAO;
@@ -33,9 +32,6 @@ import io.github.ibuildthecloud.gdapi.json.JacksonMapper;
 import io.github.ibuildthecloud.gdapi.model.Resource;
 import io.github.ibuildthecloud.gdapi.model.SchemaCollection;
 import io.github.ibuildthecloud.gdapi.model.impl.SchemaImpl;
-import org.apache.cloudstack.managed.context.ManagedContextRunnable;
-import org.apache.cloudstack.managed.context.impl.DefaultManagedContext;
-import org.apache.cloudstack.managed.context.impl.MdcClearListener;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.jooq.Configuration;
 import org.jooq.ExecuteListener;
@@ -80,20 +76,12 @@ public class Bootstrap {
     public Bootstrap() throws IOException {
         setTz();
         setHomeAndEnv();
-        setupManagedContext();
         setupArchaius();
         setupLogging();
         setupDatabase();
         setupJson();
         migrateSchema();
         setupCluster();
-    }
-
-    private void setupManagedContext() {
-        ManagedContextRunnable.initializeGlobalContext(new DefaultManagedContext(
-                new DeferredContextListener(),
-                new MdcClearListener()
-        ));
     }
 
     private void setTz() {

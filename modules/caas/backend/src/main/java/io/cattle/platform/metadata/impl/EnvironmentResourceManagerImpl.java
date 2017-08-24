@@ -3,9 +3,12 @@ package io.cattle.platform.metadata.impl;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import io.cattle.platform.core.addon.metadata.InstanceInfo;
+import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
-import io.cattle.platform.core.dao.AccountDao;
+import io.cattle.platform.core.constants.ProjectConstants;
+import io.cattle.platform.core.dao.ClusterDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -18,10 +21,10 @@ import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.metadata.Metadata;
 import io.cattle.platform.metadata.MetadataManager;
-import io.cattle.platform.metadata.model.InstanceInfo;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.condition.Condition;
 
 import java.util.Collections;
 import java.util.List;
@@ -47,7 +50,7 @@ public class EnvironmentResourceManagerImpl implements MetadataManager {
         Network.class
     );
 
-    AccountDao accountDao;
+    ClusterDao clusterDao;
     MetadataObjectFactory factory = new MetadataObjectFactory();
     LoopManager loopManager;
     LockManager lockManager;
@@ -66,13 +69,13 @@ public class EnvironmentResourceManagerImpl implements MetadataManager {
             });
 
     public EnvironmentResourceManagerImpl(MetadataObjectFactory factory, LoopManager loopManager, LockManager lockManager, ObjectManager objectManager,
-                                          EventService eventService, AccountDao accountDao, List<Trigger> triggers) {
+                                          EventService eventService, ClusterDao clusterDao, List<Trigger> triggers) {
         this.factory = factory;
         this.loopManager = loopManager;
         this.lockManager = lockManager;
         this.objectManager = objectManager;
         this.eventService = eventService;
-        this.accountDao = accountDao;
+        this.clusterDao = clusterDao;
         this.triggers = triggers;
 
         this.nullMetadata = new NullMetadata(objectManager);
@@ -80,14 +83,21 @@ public class EnvironmentResourceManagerImpl implements MetadataManager {
 
     private Metadata buildMetadata(long accountId) {
         Account account = objectManager.loadResource(Account.class, accountId);
-        MetadataImpl metadata = new MetadataImpl(accountId, eventService, factory, loopManager, lockManager, objectManager, triggers);
+        MetadataImpl metadata = new MetadataImpl(account, eventService, factory, loopManager, lockManager, objectManager, triggers);
         for (Class<?> clz : LOAD_TYPES) {
             List<?> objectList = Collections.emptyList();
             if (CLUSTER_TYPES.contains(clz)) {
                 if (account.getClusterOwner()) {
-                    objectList = objectManager.find(clz,
-                            ObjectMetaDataManager.CLUSTER_FIELD, account.getClusterId(),
-                            ObjectMetaDataManager.REMOVED_FIELD, null);
+                    if (clz == Account.class) {
+                        objectList = objectManager.find(clz,
+                                ObjectMetaDataManager.CLUSTER_FIELD, account.getClusterId(),
+                                ObjectMetaDataManager.KIND_FIELD, Condition.in(AccountConstants.TYPE, ProjectConstants.TYPE),
+                                ObjectMetaDataManager.REMOVED_FIELD, null);
+                    } else {
+                        objectList = objectManager.find(clz,
+                                ObjectMetaDataManager.CLUSTER_FIELD, account.getClusterId(),
+                                ObjectMetaDataManager.REMOVED_FIELD, null);
+                    }
                 }
             } else {
                 objectList = objectManager.find(clz,
@@ -103,7 +113,7 @@ public class EnvironmentResourceManagerImpl implements MetadataManager {
 
     @Override
     public Metadata getMetadataForCluster(long clusterId) {
-        Long clusterAccountId = accountDao.getAccountIdForCluster(clusterId);
+        Long clusterAccountId = clusterDao.getOwnerAcccountIdForCluster(clusterId);
         if (clusterAccountId == null) {
             return nullMetadata;
         }

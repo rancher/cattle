@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 
 public class DeploymentUnitInator implements Inator {
 
-    Map<Long, Integer> indexes = new HashMap<>();
     Map<Long, RevisionWrapper> revisions = new HashMap<>();
     DeploymentUnitWrapper unit;
     StackWrapper stack;

@@ -11,6 +11,8 @@ public interface LoopFactory {
     String HEALTHCHECK_CLEANUP = "healthcheck-cleanup";
     String ENDPOINT_UPDATE = "endpoint-update";
     String SERVICE_MEMBERSHIP = "service-membership";
+    String METADATA_CLIENT = "metadata-client";
+    String METADATA_SYNC = "metadata-sync";
 
     Loop buildLoop(String name, String type, Long id);
 

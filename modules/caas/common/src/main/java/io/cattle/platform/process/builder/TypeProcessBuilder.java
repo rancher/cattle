@@ -122,6 +122,10 @@ public class TypeProcessBuilder {
                 startStates.remove(notFrom);
             }
 
+            for (String alsoFrom : template.alsoFrom) {
+                startStates.add(alsoFrom);
+            }
+
             GenericResourceProcessDefinitionBuilder processDefBuilder =
                     new GenericResourceProcessDefinitionBuilder(builder.objectManager,
                             builder.jsonMapper,

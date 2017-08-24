@@ -7,28 +7,25 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.engine.model.Loop;
 import io.cattle.platform.engine.model.Loop.Result;
-import org.apache.cloudstack.managed.context.ManagedContextRunnable;
-import org.apache.cloudstack.managed.context.NoExceptionRunnable;
+import org.apache.cloudstack.managed.context.InContext;
+import org.apache.cloudstack.managed.context.NoException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 public class LoopWrapper {
 
-    enum State { SLEEPING, BACKOFF, PROCESS_WAIT, ERROR, RUNNING }
+    enum State { SLEEPING, BACKOFF, ERROR, RUNNING }
 
     private static final DynamicLongProperty DEFAULT_TOKEN_INTERVAL = ArchaiusUtil.getLong("loop.default.execution.token.every.millis");
     private static final DynamicLongProperty DEFAULT_TOKENS_MAX = ArchaiusUtil.getLong("loop.default.execution.tokens.max");
-    private static final DynamicLongProperty LOOP_PROCESS_WAIT = ArchaiusUtil.getLong("loop.process.wait.delay.millis");
     private static final Logger log = LoggerFactory.getLogger(LoopWrapper.class);
 
     ExecutorService executor;
@@ -37,14 +34,16 @@ public class LoopWrapper {
     long lastRun = 0;
     long tokens = 0;
 
-    Set<Long> waitProcesses = Collections.synchronizedSet(new HashSet<>());
     String name;
     Loop inner;
+    Object collectionLock = new Object();
     int requested = 1, applied;
     State state = State.SLEEPING;
     DynamicLongProperty tokenInterval = ArchaiusUtil.getLong("execution.token.every.millis");
     DynamicLongProperty tokensMax = ArchaiusUtil.getLong("execution.tokens.max");
     List<Waiter> waiters = new ArrayList<>();
+    List<Object> inputs = new ArrayList<>();
+    Throwable lastError;
 
     public LoopWrapper(String name, Loop inner, ExecutorService executor, ScheduledExecutorService scheduledExecutor) {
         super();
@@ -58,30 +57,29 @@ public class LoopWrapper {
 
     public synchronized ListenableFuture<?> kick(Object input) {
         Waiter w = new Waiter(++requested);
-        waiters.add(w);
+
+        synchronized (collectionLock) {
+            waiters.add(w);
+            scheduledExecutor.schedule(() -> w.future.setException(new TimeoutException()), 30, TimeUnit.SECONDS);
+
+            if (input instanceof List<?>) {
+                inputs.addAll((List<?>) input);
+            } else {
+                inputs.add(input);
+            }
+        }
+
         if (state == State.SLEEPING) {
-            run(false);
+            scheduleRun();
         }
         return w.future;
     }
 
-    public synchronized void processDone(Long id) {
-        if (waitProcesses.remove(id) && waitProcesses.size() == 0) {
-            kick(null);
-        }
-    }
-
-    protected void setState(State state) {
+    private synchronized void setState(State state) {
         this.state = state;
     }
 
-    protected synchronized void run(boolean ignoreProcesses) {
-        if (!ignoreProcesses && waitProcesses.size() > 0) {
-            setState(State.PROCESS_WAIT);
-            runAfter(true, LOOP_PROCESS_WAIT.get());
-            return;
-        }
-
+    private synchronized void scheduleRun() {
         if (requested == applied) {
             setState(State.SLEEPING);
             return;
@@ -90,55 +88,78 @@ public class LoopWrapper {
         long delay = getRunDelay();
         if (delay > 0) {
             setState(State.BACKOFF);
-            runAfter(false, delay);
+            runAfter(delay);
             return;
         }
 
         setState(State.RUNNING);
-        executor.execute(new NoExceptionRunnable() {
-            @Override
-            protected void doRun() throws Exception {
-                int startValue = requested;
-                long start = System.currentTimeMillis();
-                Loop.Result result = null;
-                try {
-                    result = DeferredUtils.nest(() -> inner.run(null));
-                } finally {
-                    log.info("Loop [{}] [{}] {}/{}/{} {}ms", name, result, requested, startValue, applied,
-                            (System.currentTimeMillis()-start));
-                    synchronized (LoopWrapper.this) {
-                        if (result == null) {
-                            setState(State.ERROR);
-                            runAfter(false, 2000L);
-                        } else {
-                            applied = startValue;
-                            if (result == Result.DONE) {
-                                waiters = waiters.stream().filter((w) -> {
-                                    if (w.requested <= applied) {
-                                        w.future.set(applied);
-                                        return false;
-                                    }
-                                    return true;
-                                }).collect(Collectors.toList());
-                            }
-                            runAfter(false, 0L);
-                        }
-                    }
+        executor.execute((NoException) this::executeLoop);
+    }
+
+    private void executeLoop() {
+        int startValue = requested;
+        long start = System.currentTimeMillis();
+        List<Object> inputs;
+        Loop.Result result = null;
+        try {
+            synchronized (collectionLock) {
+                inputs = this.inputs;
+                this.inputs = new ArrayList<>();
+            }
+            result = DeferredUtils.nest(() -> inner.run(inputs));
+        } catch (Throwable t) {
+            lastError = t;
+        } finally {
+            long delay = 0L;
+            if (result == null) {
+                // Loops should never return null, so a null result means we got here due to an exception being thrown
+                log.error("Loop [{}] [{}] {}/{}/{} {}ms", name, result, requested, startValue, applied,
+                        (System.currentTimeMillis()-start), lastError);
+                setState(State.ERROR);
+                delay = 2000L;
+            } else {
+                applied = startValue;
+                if (result == Result.DONE) {
+                    // Waiters are not notified if the loop returns WAITING
+                    notifyWaiters();
                 }
             }
-        });
+
+            // Continue loop
+            runAfter(delay);
+            log.info("Loop [{}] [{}] {}/{}/{} {}ms", name, result, requested, startValue, applied,
+                    (System.currentTimeMillis()-start));
+        }
     }
 
-    private void runAfter(boolean ignoreProcesses, long delay) {
-        scheduledExecutor.schedule(new ManagedContextRunnable() {
-            @Override
-            protected void runInContext() {
-                LoopWrapper.this.run(ignoreProcesses);
+    private void notifyWaiters() {
+        List<Waiter> toNotify = new ArrayList<>();
+
+        synchronized (collectionLock) {
+            waiters = waiters.stream().filter((w) -> {
+                if (w.requested <= applied) {
+                    toNotify.add(w);
+                    return false;
+                }
+                return true;
+            }).collect(Collectors.toList());
+        }
+
+        // Notify waiters w/o hold in the lock.  This is because some ListenableFutures do bad things and run long
+        for (Waiter w : toNotify) {
+            try {
+                w.future.set(applied);
+            } catch (Throwable t) {
+                log.error("Failed notifying waiter in loop [{}]", name, t);
             }
-        }, delay, TimeUnit.MILLISECONDS);
+        }
     }
 
-    protected long getRunDelay() {
+    private void runAfter(long delay) {
+        scheduledExecutor.schedule((InContext) LoopWrapper.this::scheduleRun, delay, TimeUnit.MILLISECONDS);
+    }
+
+    private long getRunDelay() {
         long interval = tokenInterval.get();
         if (interval <= 0) {
             interval = DEFAULT_TOKEN_INTERVAL.get();

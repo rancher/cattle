@@ -1,7 +1,6 @@
 {
     "authorize" : {
 
-        ".*\\.data" : "r",
         ".*\\.removeTime" : "r",
         ".*\\.resourceActions\\..*" : "c",
 

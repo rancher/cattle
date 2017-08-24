@@ -1,18 +1,20 @@
 package io.cattle.platform.metadata.impl;
 
+import io.cattle.platform.core.addon.Removed;
+import io.cattle.platform.core.addon.metadata.EnvironmentInfo;
+import io.cattle.platform.core.addon.metadata.HostInfo;
+import io.cattle.platform.core.addon.metadata.InstanceInfo;
+import io.cattle.platform.core.addon.metadata.MetadataObject;
+import io.cattle.platform.core.addon.metadata.NetworkInfo;
+import io.cattle.platform.core.addon.metadata.ServiceInfo;
+import io.cattle.platform.core.addon.metadata.StackInfo;
+import io.cattle.platform.core.model.Account;
 import io.cattle.platform.engine.manager.LoopManager;
 import io.cattle.platform.engine.model.Trigger;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.metadata.Metadata;
 import io.cattle.platform.metadata.MetadataModOperation;
-import io.cattle.platform.metadata.model.EnvironmentInfo;
-import io.cattle.platform.metadata.model.HostInfo;
-import io.cattle.platform.metadata.model.InstanceInfo;
-import io.cattle.platform.metadata.model.MetadataObject;
-import io.cattle.platform.metadata.model.NetworkInfo;
-import io.cattle.platform.metadata.model.ServiceInfo;
-import io.cattle.platform.metadata.model.StackInfo;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.process.common.lock.ResourceChangeLock;
@@ -26,6 +28,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MetadataImpl implements Metadata {
 
     long accountId;
+    String environmentUuid;
+    Long clusterId;
     EventService eventService;
     MetadataObjectFactory factory;
     LoopManager loopManager;
@@ -43,9 +47,11 @@ public class MetadataImpl implements Metadata {
     Map<Class<?>, Map<String, ?>> maps = new HashMap<>();
 
 
-    public MetadataImpl(long accountId, EventService eventService, MetadataObjectFactory factory, LoopManager loopManager, LockManager lockManager,
-            ObjectManager objectManager, List<Trigger> triggers) {
-        this.accountId = accountId;
+    public MetadataImpl(Account account, EventService eventService, MetadataObjectFactory factory, LoopManager loopManager, LockManager lockManager,
+                        ObjectManager objectManager, List<Trigger> triggers) {
+        this.accountId = account.getId();
+        this.clusterId = account.getClusterId();
+        this.environmentUuid = account.getUuid();
         this.eventService = eventService;
         this.factory = factory;
         this.loopManager = loopManager;
@@ -92,6 +98,11 @@ public class MetadataImpl implements Metadata {
     }
 
     @Override
+    public Map<String, MetadataObject> getAll() {
+        return all;
+    }
+
+    @Override
     public synchronized void remove(String uuid) {
         MetadataObject obj = all.remove(uuid);
         if (obj == null) {
@@ -102,7 +113,7 @@ public class MetadataImpl implements Metadata {
             map.remove(uuid);
         }
 
-        trigger(obj);
+        trigger(new Removed(obj));
     }
 
     @SuppressWarnings("unchecked")
@@ -112,6 +123,8 @@ public class MetadataImpl implements Metadata {
         if (metadataObject == null) {
             return;
         }
+
+        metadataObject.setEnvironmentUuid(environmentUuid);
 
         if (ObjectUtils.getRemoved(obj) != null) {
             remove(metadataObject.getUuid());
@@ -144,7 +157,7 @@ public class MetadataImpl implements Metadata {
 
     protected void trigger(Object resource) {
         for (Trigger trigger : triggers) {
-            trigger.trigger(accountId, null, resource, Trigger.METADATA_SOURCE);
+            trigger.trigger(accountId, clusterId, resource, Trigger.METADATA_SOURCE);
         }
     }
 

@@ -16,6 +16,7 @@ public class ProcessTemplate {
     List<String> during = new ArrayList<>();
     List<String> notAfter = new ArrayList<>();
     List<String> notFrom = new ArrayList<>();
+    List<String> alsoFrom = new ArrayList<>();
     Map<String, String> conditionalTo = new HashMap<>();
     String transitioning;
     String to;
@@ -33,6 +34,7 @@ public class ProcessTemplate {
             this.during = new ArrayList<>(other.during);
             this.notAfter = new ArrayList<>(other.notAfter);
             this.notFrom = new ArrayList<>(other.notFrom);
+            this.alsoFrom = new ArrayList<>(other.alsoFrom);
             this.conditionalTo = other.conditionalTo;
             this.transitioning = other.transitioning;
             this.to = other.to;
@@ -46,6 +48,7 @@ public class ProcessTemplate {
         during.clear();
         notAfter.clear();
         notFrom.clear();
+        alsoFrom.clear();
         conditionalTo.clear();
         transitioning = to = null;
         resting = self = false;
@@ -64,6 +67,11 @@ public class ProcessTemplate {
 
     public ProcessTemplate notFrom(String... froms) {
         Collections.addAll(this.notFrom, froms);
+        return this;
+    }
+
+    public ProcessTemplate alsoFrom(String... froms) {
+        Collections.addAll(this.alsoFrom, froms);
         return this;
     }
 

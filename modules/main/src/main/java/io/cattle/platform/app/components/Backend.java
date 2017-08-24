@@ -121,6 +121,7 @@ import io.cattle.platform.task.eventing.TaskManagerEventListener;
 import io.cattle.platform.task.eventing.impl.TaskManagerEventListenerImpl;
 import io.cattle.platform.trigger.DeploymentUnitReconcileTrigger;
 import io.cattle.platform.trigger.MetadataChangedTrigger;
+import io.cattle.platform.trigger.MetadataSyncTrigger;
 import io.cattle.platform.trigger.MetadataTrigger;
 import io.cattle.platform.trigger.ServiceReconcileTrigger;
 import io.cattle.platform.util.type.InitializationTask;
@@ -139,7 +140,7 @@ public class Backend {
         LoopFactory.HEALTHSTATE_CALCULATE,
         LoopFactory.HEALTHCHECK_CLEANUP,
         LoopFactory.ENDPOINT_UPDATE,
-        LoopFactory.SERVICE_MEMBERSHIP
+        LoopFactory.SERVICE_MEMBERSHIP,
     };
 
     Framework f;
@@ -239,10 +240,11 @@ public class Backend {
     }
 
     private void addTriggers() {
-        f.triggers.add(new MetadataChangedTrigger(loopManager, d.accountDao, METADATA_LOOPS));
+        f.triggers.add(new MetadataChangedTrigger(loopManager, d.clusterDao, METADATA_LOOPS));
         f.triggers.add(new DeploymentUnitReconcileTrigger(loopManager, d.serviceDao, d.volumeDao, f.objectManager));
         f.triggers.add(new ServiceReconcileTrigger(loopManager, f.objectManager));
         f.triggers.add(new MetadataTrigger(metadataManager));
+        f.triggers.add(new MetadataSyncTrigger(loopManager, d.clusterDao));
     }
 
     private void addProcessHandlers() {

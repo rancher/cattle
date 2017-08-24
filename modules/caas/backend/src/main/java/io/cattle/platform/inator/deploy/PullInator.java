@@ -54,7 +54,7 @@ public class PullInator {
 
             GenericObject pullTask = pullTasks.get(imageUuid);
             if (pullTask == null) {
-                pullTask = createPullTask(lcName, imageUuid, pullMode, lc);
+                pullTask = createPullTask(service.getClusterId(), lcName, imageUuid, pullMode, lc);
             }
 
             newPullTasks.put(imageUuid, pullTask);
@@ -107,7 +107,7 @@ public class PullInator {
         return result;
     }
 
-    private GenericObject createPullTask(String lcName, String imageUuid, String pullMode, LaunchConfig lc) {
+    private GenericObject createPullTask(long clusterId, String lcName, String imageUuid, String pullMode, LaunchConfig lc) {
         Map<String, Object> labels = lc.getLabels();
 
         if (InstanceConstants.PULL_EXISTING.equals(pullMode)) {
@@ -124,6 +124,7 @@ public class PullInator {
                 ObjectMetaDataManager.KIND_FIELD, GenericObjectConstants.KIND_PULL_TASK,
                 ObjectMetaDataManager.ACCOUNT_FIELD, service.getAccountId(),
                 ObjectMetaDataManager.NAME_FIELD, lcName,
+                ObjectMetaDataManager.CLUSTER_FIELD, clusterId,
                 "image", imageUuid,
                 InstanceConstants.FIELD_LABELS, labels,
                 "serviceId", service.getId());

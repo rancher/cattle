@@ -2,6 +2,7 @@ package io.cattle.platform.lifecycle.impl;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import io.cattle.platform.agent.instance.factory.AgentInstanceFactory;
+import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Agent;
@@ -27,6 +28,10 @@ public class AgentLifecycleManagerImpl implements AgentLifecycleManager {
 
     @Override
     public ListenableFuture<Agent> create(Instance instance) {
+        if (instance.getNativeContainer()) {
+            return AsyncUtils.done();
+        }
+
         Agent agent = agentInstanceFactory.createAgent(instance);
         if (agent != null) {
             instance.setAgentId(agent.getId());

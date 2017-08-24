@@ -24,6 +24,7 @@ import io.cattle.platform.core.addon.K8sServerConfig;
 import io.cattle.platform.core.addon.Link;
 import io.cattle.platform.core.addon.LoadBalancerCookieStickinessPolicy;
 import io.cattle.platform.core.addon.LogConfig;
+import io.cattle.platform.core.addon.MetadataSyncRequest;
 import io.cattle.platform.core.addon.MountEntry;
 import io.cattle.platform.core.addon.NetworkPolicyRule;
 import io.cattle.platform.core.addon.NetworkPolicyRule.NetworkPolicyRuleAction;
@@ -47,6 +48,14 @@ import io.cattle.platform.core.addon.TargetPortRule;
 import io.cattle.platform.core.addon.Ulimit;
 import io.cattle.platform.core.addon.VirtualMachineDisk;
 import io.cattle.platform.core.addon.VolumeActivateInput;
+import io.cattle.platform.core.addon.metadata.EnvironmentInfo;
+import io.cattle.platform.core.addon.metadata.HealthcheckInfo;
+import io.cattle.platform.core.addon.metadata.HostInfo;
+import io.cattle.platform.core.addon.metadata.InstanceInfo;
+import io.cattle.platform.core.addon.metadata.MetadataObject;
+import io.cattle.platform.core.addon.metadata.NetworkInfo;
+import io.cattle.platform.core.addon.metadata.ServiceInfo;
+import io.cattle.platform.core.addon.metadata.StackInfo;
 import io.cattle.platform.core.model.CattleTable;
 import io.cattle.platform.db.jooq.utils.SchemaRecordTypeListGenerator;
 import io.cattle.platform.docker.api.model.ContainerExec;
@@ -122,6 +131,7 @@ public class Model {
                     .to("active")
                 .template("rollback")
                     .transitioning("rolling-back")
+                    .alsoFrom("active")
                     .to("active")
                 .template("update")
                     .fromResting()
@@ -262,6 +272,7 @@ public class Model {
         f.metaDataManager.setTypeSets(Arrays.asList(
                 databaseObjects(),
                 addons(),
+                agentCommunication(),
                 named()));
     }
 
@@ -270,6 +281,23 @@ public class Model {
         generator.setSchemaClass(CattleTable.class);
 
         return TypeSet.ofClasses(generator.getRecordTypes());
+    }
+
+    private TypeSet agentCommunication() {
+        // These types are for communicating to agent
+        return TypeSet.ofClasses(
+                DeploymentSyncRequest.class,
+                DeploymentSyncResponse.class,
+                EnvironmentInfo.class,
+                HealthcheckInfo.class,
+                HostInfo.class,
+                InstanceInfo.class,
+                MetadataSyncRequest.class,
+                NetworkInfo.class,
+                StackInfo.class,
+                ServiceInfo.class,
+                // Must be last so that this interface get registered to this type and not a subtype
+                MetadataObject.class);
     }
 
     private TypeSet addons() {
@@ -286,8 +314,6 @@ public class Model {
                 ContainerProxy.class,
                 ContainerUpgrade.class,
                 DependsOn.class,
-                DeploymentSyncRequest.class,
-                DeploymentSyncResponse.class,
                 FieldDocumentation.class,
                 HaproxyConfig.class,
                 HealthcheckState.class,

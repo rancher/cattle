@@ -1,10 +1,10 @@
 package io.cattle.platform.allocator.service;
 
 import io.cattle.platform.allocator.constraint.Constraint;
+import io.cattle.platform.core.addon.metadata.HostInfo;
 import io.cattle.platform.core.cache.QueryOptions;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.lock.definition.LockDefinition;
-import io.cattle.platform.metadata.model.HostInfo;
 
 import java.util.Iterator;
 import java.util.List;

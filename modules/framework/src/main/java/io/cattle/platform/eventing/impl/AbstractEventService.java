@@ -295,33 +295,34 @@ public abstract class AbstractEventService implements EventService {
             listener.setRetry(retry);
         }
 
-        future.addListener(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    timeoutService.completed(cancel);
-                    future.get();
-                } catch (ExecutionException t) {
-                    if (t.getCause() instanceof TimeoutException) {
-                        // Ignore don't treat as a bad listener
-                    } else if (t.getCause() instanceof EventExecutionException) {
-                        // Ignore event errors
-                    } else {
-                        listener.setFailed(true);
-                    }
-                } catch (Throwable t) {
+        future.addListener(() -> {
+            try {
+                timeoutService.completed(cancel);
+                future.get();
+            } catch (ExecutionException t) {
+                if (t.getCause() instanceof TimeoutException) {
+                    // Ignore don't treat as a bad listener
+                } else if (t.getCause() instanceof EventExecutionException) {
+                    // Ignore event errors
+                } else {
                     listener.setFailed(true);
-                } finally {
-                    try {
-                        listenerPool.returnObject(listener);
-                    } catch (Exception e) {
-                        log.error("Failed to return object to pool [" + listener + "]", e);
-                    }
+                }
+            } catch (Throwable t) {
+                listener.setFailed(true);
+            } finally {
+                try {
+                    listenerPool.returnObject(listener);
+                } catch (Exception e) {
+                    log.error("Failed to return object to pool [" + listener + "]", e);
                 }
             }
         }, executorService);
 
-        publish(request, true);
+        try {
+            publish(request, true);
+        } catch (Throwable t) {
+            future.setException(t);
+        }
 
         return future;
     }

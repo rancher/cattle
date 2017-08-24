@@ -44,6 +44,7 @@ import io.cattle.platform.util.type.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -429,17 +430,13 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
 
             log.debug("Finished handler [{}]", processNamed);
 
-            if (handlerResult == null) {
-                return handlerResult;
+            Map<String, Object> resultData = Collections.emptyMap();
+            if (handlerResult != null) {
+                resultData = state.convertData(handlerResult.getData());
+                processExecution.setChainProcessName(handlerResult.getChainProcessName());
             }
 
-            Map<String, Object> resultData = state.convertData(handlerResult.getData());
-
-            processExecution.setChainProcessName(handlerResult.getChainProcessName());
-
-            if (resultData.size() > 0) {
-                state.applyData(resultData);
-            }
+            state.applyData(resultData);
 
             return handlerResult;
         } catch (ExecutionException e) {
@@ -571,7 +568,9 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
     }
 
     protected void publishChanged(String previousState, String newState, boolean defer) {
-        trigger();
+        if (!schedule) {
+            trigger();
+        }
         for (StateChangeMonitor monitor : context.getChangeMonitors()) {
             monitor.onChange(defer, previousState, newState, record, instanceContext.getState(), context);
         }

@@ -14,11 +14,11 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.util.DataAccessor;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -50,14 +50,17 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
             return null;
         }
 
-        Set<String> filteredRoles = new HashSet<>();
+        Set<String> filteredRoles;
 
         String rolesVal = DataAccessor.getLabel(instance, SystemLabels.LABEL_AGENT_ROLE);
-        if (rolesVal != null) {
-            filteredRoles = Arrays.stream(rolesVal.split(","))
-                    .filter(AgentConstants.CREATE_ROLES::contains)
-                    .collect(Collectors.toSet());
+        if (StringUtils.isBlank(rolesVal)) {
+            // Default to agent
+            rolesVal = AgentConstants.AGENT_ROLE;
         }
+
+        filteredRoles = Arrays.stream(rolesVal.split(","))
+                .filter(AgentConstants.CREATE_ROLES::contains)
+                .collect(Collectors.toSet());
 
         return getAgent(new AgentBuilderRequest(instance, filteredRoles));
     }
@@ -84,35 +87,24 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
     protected Agent getAgent(AgentBuilderRequest builder) {
         String uri = builder.getUri();
         Agent agent = agentDao.findNonRemovedByUri(uri);
-
-        if (agent == null) {
-            agent = createAgent(uri, builder);
-        }
-
-        return agent;
-    }
-
-    @Override
-    public boolean areAllCredentialsActive(Agent agent) {
-        return agentDao.areAllCredentialsActive(agent);
-    }
-
-    protected Agent createAgent(final String uri, final AgentBuilderRequest builder) {
-        Agent agent = agentDao.findNonRemovedByUri(uri);
-        Map<String, Object> data = new HashMap<>();
-
-        if (builder.getRequestedRoles() != null) {
-            data.put(AgentConstants.DATA_REQUESTED_ROLES, new ArrayList<>(builder.getRequestedRoles()));
-        }
-
         if (agent != null) {
             return agent;
+        }
+
+        Map<String, Object> data = new HashMap<>();
+        if (builder.getRequestedRoles() != null) {
+            data.put(AgentConstants.DATA_REQUESTED_ROLES, new ArrayList<>(builder.getRequestedRoles()));
         }
 
         return DeferredUtils.nest(() -> resourceDao.createAndSchedule(Agent.class,
                 AGENT.DATA, data,
                 AGENT.URI, uri,
                 AGENT.RESOURCE_ACCOUNT_ID, builder.getResourceAccountId()));
+    }
+
+    @Override
+    public boolean areAllCredentialsActive(Agent agent) {
+        return agentDao.areAllCredentialsActive(agent);
     }
 
 }

@@ -79,7 +79,7 @@ public class WrappedResource extends ResourceImpl implements Resource {
             if (StringUtils.isNotBlank(field.getTransform()) && StringUtils.isNotBlank((String) value)){
                 String decrypted;
                 try {
-                        decrypted = ApiContext.getContext().getTransformationService().untransform((String) value);
+                    decrypted = ApiContext.getContext().getTransformationService().untransform((String) value);
                 } catch (UnsupportedOperationException e) {
                     decrypted = "";
                 }

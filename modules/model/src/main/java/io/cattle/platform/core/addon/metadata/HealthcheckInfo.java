@@ -1,7 +1,9 @@
-package io.cattle.platform.metadata.model;
+package io.cattle.platform.core.addon.metadata;
 
 import io.cattle.platform.core.addon.InstanceHealthCheck;
+import io.github.ibuildthecloud.gdapi.annotation.Type;
 
+@Type(list = false)
 public class HealthcheckInfo {
     Integer responseTimeout;
     Integer interval;
