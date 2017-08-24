@@ -7,6 +7,7 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.engine.model.Loop;
 import io.cattle.platform.engine.model.Loop.Result;
+import io.cattle.platform.engine.process.impl.ProcessDelayException;
 import org.apache.cloudstack.managed.context.InContext;
 import org.apache.cloudstack.managed.context.NoException;
 import org.slf4j.Logger;
@@ -101,16 +102,23 @@ public class LoopWrapper {
         long start = System.currentTimeMillis();
         List<Object> inputs;
         Loop.Result result = null;
+        long delay = 0L;
         try {
             synchronized (collectionLock) {
                 inputs = this.inputs;
                 this.inputs = new ArrayList<>();
             }
             result = DeferredUtils.nest(() -> inner.run(inputs));
+        } catch (ProcessDelayException e) {
+            delay = e.getRunAfter().getTime()-System.currentTimeMillis();
+            if (delay > 0) {
+                result = Result.WAITING;
+            } else {
+                delay = 0L;
+            }
         } catch (Throwable t) {
             lastError = t;
         } finally {
-            long delay = 0L;
             if (result == null) {
                 // Loops should never return null, so a null result means we got here due to an exception being thrown
                 log.error("Loop [{}] [{}] {}/{}/{} {}ms", name, result, requested, startValue, applied,

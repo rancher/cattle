@@ -5,7 +5,6 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 
 public class StatsConstants {
 
-    public static final String LINK_STATS = "stats";
     public static final String CONTAINER_STATS = "containerStats";
     public static final String HOST_STATS = "hostStats";
 

@@ -115,6 +115,7 @@ public class InstanceConstants {
     public static final String FIELD_START_ON_CREATE = "startOnCreate";
     public static final String FIELD_START_RETRY_COUNT = "startRetryCount";
     public static final String FIELD_STDIN_OPEN = "stdinOpen";
+    public static final String FIELD_STOPPED = "stopped";
     public static final String FIELD_STOP_SIGNAL = "stopSignal";
     public static final String FIELD_STOP_SOURCE = "stopSource";
     public static final String FIELD_STORAGE_OPT = "storageOpt";

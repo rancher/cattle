@@ -1,5 +1,7 @@
 package io.cattle.platform.inator.wrapper;
 
+import com.netflix.config.DynamicLongProperty;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.inator.factory.InatorServices;
@@ -20,6 +22,8 @@ import java.util.Map;
 import java.util.Set;
 
 public class InstanceWrapper implements BasicStateWrapper {
+
+    private static DynamicLongProperty MAX_BACKOFF = ArchaiusUtil.getLong("instance.restart.max.backoff.exponent");
 
     private static final Logger log = LoggerFactory.getLogger(InstanceWrapper.class);
     private static Set<String> TO_STOP_STATES = CollectionUtils.set(
@@ -61,6 +65,22 @@ public class InstanceWrapper implements BasicStateWrapper {
 
     @Override
     public void activate() {
+        Long restartCount = DataAccessor.fieldLong(instance, InstanceConstants.FIELD_START_RETRY_COUNT);
+        Date lastStop = DataAccessor.fieldDate(instance, InstanceConstants.FIELD_STOPPED);
+        if (restartCount != null &&
+                lastStop != null &&
+                restartCount > 0 &&
+                InstanceConstants.STATE_STOPPED.equals(instance.getState()) &&
+                shouldRestart()) {
+            if (restartCount > MAX_BACKOFF.get()) {
+                restartCount = MAX_BACKOFF.get();
+            }
+
+            if (lastStop.getTime() + (long)(Math.pow(2, restartCount)*1000) > System.currentTimeMillis()) {
+                // Wait some more
+                return;
+            }
+        }
         svc.processManager.start(instance, null);
     }
 

@@ -34,7 +34,12 @@ public class RestartLifecycleManagerImpl implements RestartLifecycleManager {
     @Override
     public void postStop(Instance instance, boolean stopOnly) {
         int exitCode = updateExitCode(instance);
+        updateStopTime(instance);
         updateStartRetryCount(instance, stopOnly, exitCode);
+    }
+
+    private void updateStopTime(Instance instance) {
+        setField(instance, InstanceConstants.FIELD_STOPPED, new Date());
     }
 
     @Override

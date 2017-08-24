@@ -5,10 +5,12 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.UnmodifiableMap;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
+import io.github.ibuildthecloud.gdapi.util.DateUtils;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.ConvertUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -163,6 +165,11 @@ public class DataAccessor {
             return (Date)val;
         } else if (val instanceof Number) {
             return new Date(((Number) val).longValue());
+        } else if (val instanceof String) {
+            try {
+                return DateUtils.parse((String) val);
+            } catch (DateTimeParseException ignored) {
+            }
         }
         return null;
     }

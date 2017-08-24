@@ -50,7 +50,7 @@ public class ContainerStatsLinkHandler implements LinkHandler {
         }
 
         if (host == null) {
-            throw new IllegalStateException();
+            return null;
         }
 
         Agent agent = objectManager.loadResource(Agent.class, host.getAgentId());
@@ -97,6 +97,7 @@ public class ContainerStatsLinkHandler implements LinkHandler {
 
         StatsAccess statsAccess = new StatsAccess();
         statsAccess.setToken(apiAccess.getAuthenticationToken());
+        statsAccess.setAuthToken(apiAccess.getAuthenticationToken());
         statsAccess.setUrl(url);
 
         return statsAccess;

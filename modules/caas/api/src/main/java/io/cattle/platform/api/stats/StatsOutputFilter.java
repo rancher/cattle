@@ -16,18 +16,15 @@ public class StatsOutputFilter implements ResourceOutputFilter {
 
     @Override
     public Resource filter(ApiRequest request, Object original, Resource converted) {
-        boolean add = false;
         boolean hostStats = false;
         boolean containerStats = false;
         boolean project = false;
 
         if (original instanceof Host && DockerHostConstants.KIND_DOCKER.equals(((Host) original).getKind())) {
-            add = true;
             hostStats = true;
             containerStats = true;
         } else if (original instanceof Instance) {
             containerStats = true;
-            add = true;
         } else if (original instanceof Account && AccountConstants.PROJECT_KIND.equals(((Account) original).getKind())) {
             project = true;
         } else if (original instanceof Service) {
@@ -36,9 +33,6 @@ public class StatsOutputFilter implements ResourceOutputFilter {
             containerStats = true;
         }
 
-        if (add) {
-            converted.getLinks().put(StatsConstants.LINK_STATS, ApiContext.getUrlBuilder().resourceLink(converted, StatsConstants.LINK_STATS));
-        }
         if (hostStats) {
             converted.getLinks().put(StatsConstants.HOST_STATS, ApiContext.getUrlBuilder().resourceLink(converted, StatsConstants.HOST_STATS));
         }

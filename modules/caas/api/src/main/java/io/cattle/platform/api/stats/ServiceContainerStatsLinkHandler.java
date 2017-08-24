@@ -94,7 +94,7 @@ public class ServiceContainerStatsLinkHandler implements LinkHandler {
 
             StatsAccess statsAccess = new StatsAccess();
             statsAccess.setToken(apiAccess.getAuthenticationToken());
-            statsAccess.setUrl(apiAccess.getUrl().toString());
+            statsAccess.setUrl(apiAccess.getUrl());
             serviceStatsQuery.add(statsAccess);
         });
 

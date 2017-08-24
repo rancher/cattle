@@ -156,6 +156,7 @@
         "container.securityOpt" : "cr",
         "container.serviceId": "r",
         "container.serviceIds" : "r",
+        "container.shouldRestart" : "r",
         "container.shmSize" : "cr",
         "container.sidekickTo": "cr",
         "container.stackId": "cr",
@@ -574,6 +575,7 @@
         "composeConfigInput.serviceIds" : "cr",
 
         "stack" : "r",
+        "stack.name": "cr",
         "stack.answers": "cr",
         "stack.externalId": "cru",
         "stack.group": "cru",
