@@ -35,20 +35,21 @@ public class Reconcile {
     }
 
     protected void init() {
-        inatorServices.objectManager = f.objectManager;
-        inatorServices.serviceDao = d.serviceDao;
-        inatorServices.resourceDao = d.resourceDao;
-        inatorServices.processManager = f.processManager;
-        inatorServices.objectMetadataManager = f.metaDataManager;
-        inatorServices.jsonMapper = f.jsonMapper;
-        inatorServices.networkService = b.networkService;
-        inatorServices.idFormatter = f.idFormatter;
-        inatorServices.lockManager = f.lockManager;
         inatorServices.allocationHelper = b.allocationHelper;
-        inatorServices.poolManager = f.resourcePoolManager;
-        inatorServices.instanceDao = d.instanceDao;
-        inatorServices.hostDao = d.hostDao;
         inatorServices.dataDao = d.dataDao;
+        inatorServices.hostDao = d.hostDao;
+        inatorServices.idFormatter = f.idFormatter;
+        inatorServices.instanceDao = d.instanceDao;
+        inatorServices.jsonMapper = f.jsonMapper;
+        inatorServices.lockManager = f.lockManager;
+        inatorServices.networkService = b.networkService;
+        inatorServices.objectManager = f.objectManager;
+        inatorServices.objectMetadataManager = f.metaDataManager;
+        inatorServices.poolManager = f.resourcePoolManager;
+        inatorServices.processManager = f.processManager;
+        inatorServices.resourceDao = d.resourceDao;
+        inatorServices.serviceDao = d.serviceDao;
+        inatorServices.scheduledExecutorService = f.scheduledExecutorService;
 
         InatorFactoryinator inatorFactoryinator = new InatorFactoryinator(inatorServices);
         ActivityService activityService = new ActivityService(f.objectManager, f.eventService);

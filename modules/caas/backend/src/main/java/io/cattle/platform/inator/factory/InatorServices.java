@@ -19,6 +19,8 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.resource.pool.ResourcePoolManager;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
+import java.util.concurrent.ScheduledExecutorService;
+
 public class InatorServices {
 
     public ObjectManager objectManager;
@@ -37,6 +39,7 @@ public class InatorServices {
     public DataDao dataDao;
     public LoopManager loopManager;
     public MetadataManager metadataManager;
+    public ScheduledExecutorService scheduledExecutorService;
 
     public void triggerDeploymentUnitReconcile(Long id) {
         if (id == null) {

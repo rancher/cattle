@@ -157,7 +157,6 @@ public class Model {
 
                 // Simple types
                 .type("certificate").processes("update")
-                .type("cluster").processes("activate", "error", "update")
                 .type("credential").processes("activate", "deactivate")
                 .type("deploymentUnit").processes("activate", "deactivate", "error", "update", "pause")
                 .type("dynamicSchema")
@@ -203,6 +202,11 @@ public class Model {
                         .transitioning("disconnecting")
                         .to("disconnected")
 
+                .type("cluster")
+                    .process("activate")
+                    .process( "error")
+                    .process("update")
+                        .alsoFrom("creating")
                 .type("host")
                     .process("activate")
                     .process("update")

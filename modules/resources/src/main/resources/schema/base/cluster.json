@@ -29,6 +29,13 @@
     "registrationToken": {
       "type": "registrationToken",
       "nullable": true
+    },
+    "systemStacks": {
+      "type": "array[stack]",
+      "nullable": true,
+      "attributes": {
+        "scheduleUpdate": true
+      }
     }
   }
 }

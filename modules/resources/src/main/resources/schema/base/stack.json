@@ -2,7 +2,6 @@
   "resourceFields": {
     "name": {
       "required": true,
-      "unique": true,
       "validChars": "a-zA-Z0-9-",
       "minLength": 1,
       "maxLength": 63,

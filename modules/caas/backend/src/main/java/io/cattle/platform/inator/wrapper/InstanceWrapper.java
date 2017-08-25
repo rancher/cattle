@@ -4,14 +4,13 @@ import com.netflix.config.DynamicLongProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.engine.process.impl.ProcessDelayException;
 import io.cattle.platform.inator.factory.InatorServices;
-import io.cattle.platform.inator.launchconfig.LaunchConfig;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.TransitioningUtils;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.util.DateUtils;
+import org.apache.cloudstack.managed.context.NoException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 public class InstanceWrapper implements BasicStateWrapper {
 
@@ -32,7 +32,6 @@ public class InstanceWrapper implements BasicStateWrapper {
             InstanceConstants.STATE_RUNNING);
 
     Instance instance;
-    LaunchConfig launchConfig;
     InatorServices svc;
 
     public InstanceWrapper(Instance instance, InatorServices svc) {
@@ -79,7 +78,10 @@ public class InstanceWrapper implements BasicStateWrapper {
 
             long runAfter = lastStop.getTime() + (long)(Math.pow(2, restartCount)*1000);
             if (runAfter > System.currentTimeMillis()) {
-                throw new ProcessDelayException(new Date(runAfter));
+                svc.scheduledExecutorService.schedule((NoException)() -> {
+                    svc.triggerDeploymentUnitReconcile(instance.getDeploymentUnitId());
+                }, runAfter - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+                return;
             }
         }
         svc.processManager.start(instance, null);

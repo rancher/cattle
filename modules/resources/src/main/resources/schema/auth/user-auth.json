@@ -772,9 +772,10 @@
         "cluster" : "crud",
         "cluster.embedded" : "r",
         "cluster.hostRemoveDelaySeconds" : "cru",
-        "cluster.k8sServerConfig" : "r",
+        "cluster.k8sServerConfig" : "cru",
         "cluster.k8sClientConfig" : "r",
         "cluster.registrationToken" : "r",
+        "cluster.systemStacks" : "cru",
 
         "clusterIdentity" : "",
         "clusterIdentity.username" : "r",

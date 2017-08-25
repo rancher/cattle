@@ -257,7 +257,7 @@ public class Backend {
         AccountProcessManager account = new AccountProcessManager(d.networkDao, d.resourceDao, f.processManager, f.objectManager, d.instanceDao, d.accountDao, d.serviceDao, f.eventService);
         AgentActivateReconnect agentActivateReconnect = new AgentActivateReconnect(f.objectManager, c.agentLocator, pingMonitor, f.jsonMapper);
         AgentProcessManager agentProcessManager = new AgentProcessManager(d.accountDao, f.objectManager, f.processManager, c.agentLocator, f.eventService, f.coreSchemaFactory);
-        ClusterProcessManager clusterProcessManager = new ClusterProcessManager(f.objectManager, f.processManager, d.clusterDao);
+        ClusterProcessManager clusterProcessManager = new ClusterProcessManager(f.objectManager, f.processManager, d.clusterDao, f.jsonMapper, d.resourceDao, f.resourceMonitor);
         CredentialProcessManager credentialProcessManager = new CredentialProcessManager(f.objectManager, c.transformationService);
         DriverProcessManager driverProcessManager = new DriverProcessManager(f.jsonMapper, f.lockManager, f.objectManager, f.processManager, d.resourceDao, d.storagePoolDao, c.storageService);
         DynamicSchemaProcessManager dynamicSchemaProcessManager = new DynamicSchemaProcessManager(d.dynamicSchemaDao);
@@ -304,6 +304,7 @@ public class Backend {
         r.handle("agent.*", agentHostStateUpdate::postHandle);
 
         r.handle("cluster.create", clusterProcessManager::create);
+        r.handle("cluster.update", clusterProcessManager::update);
         r.handle("cluster.remove", clusterProcessManager::postRemove);
 
         r.handle("credential.create", credentialProcessManager::create);
