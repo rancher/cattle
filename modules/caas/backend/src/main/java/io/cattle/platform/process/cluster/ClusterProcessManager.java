@@ -117,7 +117,6 @@ public class ClusterProcessManager {
 
         List<Stack> toWait = new ArrayList<>();
         List<ListenableFuture<Stack>> futures = new ArrayList<>();
-
         Map<String, Stack> existingStacks = objectManager.find(Stack.class,
                 STACK.ACCOUNT_ID, account.getId(),
                 STACK.REMOVED, null).stream()
@@ -135,6 +134,8 @@ public class ClusterProcessManager {
                 stackMap.put(ObjectMetaDataManager.CLUSTER_FIELD, cluster.getId());
                 toWait.add(resourceDao.createAndSchedule(Stack.class, stackMap));
             } else {
+                setClusterErrorMessageIfNeeded(cluster, existing);
+
                 Map<String, Object> existingMap = stackToCompareMap(existing);
                 boolean changed = false;
                 for (String key : STACK_CHECK_FIELDS) {
@@ -155,6 +156,21 @@ public class ClusterProcessManager {
         }
 
         return futures.size() == 0 ? null : AsyncUtils.afterAll(futures);
+    }
+
+    private void setClusterErrorMessageIfNeeded(Cluster cluster, Stack existing) {
+        if (!CommonStatesConstants.ERROR.equals(existing.getState())) {
+            return;
+        }
+
+        String stackTransitioningMessage = DataAccessor.fieldString(existing, ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD);
+        if (StringUtils.isBlank(stackTransitioningMessage)) {
+            return;
+        }
+
+        DataAccessor.setField(cluster, ObjectMetaDataManager.TRANSITIONING_FIELD, ObjectMetaDataManager.TRANSITIONING_ERROR_OVERRIDE);
+        DataAccessor.setField(cluster, ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD,
+                "Stack error: " + existing.getName() + ": " + stackTransitioningMessage);
     }
 
     private Map<String, Object> stackToCompareMap(Stack stack) {
