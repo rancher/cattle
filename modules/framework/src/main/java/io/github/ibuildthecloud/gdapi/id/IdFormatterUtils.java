@@ -21,12 +21,12 @@ public class IdFormatterUtils {
 
     private static final Logger log = LoggerFactory.getLogger(IdFormatter.class);
 
-    public static Object formatReference(Field field, IdFormatter formatter, Object value, SchemaFactory schemaFactory) {
-        return formatReference(field.getTypeEnum(), field.getType(), field.getSubTypeEnums(), field.getSubTypes(), formatter,
+    public static Object formatReference(boolean dropNull, Field field, IdFormatter formatter, Object value, SchemaFactory schemaFactory) {
+        return formatReference(dropNull, field.getTypeEnum(), field.getType(), field.getSubTypeEnums(), field.getSubTypes(), formatter,
                 value, schemaFactory);
     }
 
-    private static Object formatReference(FieldType fieldType, String schemaType, List<FieldType> subTypeEnums,
+    private static Object formatReference(boolean dropNull, FieldType fieldType, String schemaType, List<FieldType> subTypeEnums,
             List<String> subTypes, IdFormatter formatter, Object value, SchemaFactory schemaFactory) {
         if (value == null) {
             return value;
@@ -37,21 +37,36 @@ public class IdFormatterUtils {
             String type = subTypes.get(0);
             return formatter.formatId(type, value);
         case ARRAY:
-            return formatList(subTypeEnums, subTypes, formatter, value, schemaFactory);
+            return formatList(dropNull, subTypeEnums, subTypes, formatter, value, schemaFactory);
         case MAP:
-            return formatMap(subTypeEnums, subTypes, formatter, value,  schemaFactory);
+            return formatMap(dropNull, subTypeEnums, subTypes, formatter, value,  schemaFactory);
         case TYPE:
             if (schemaType == null || schemaFactory == null) {
                 return value;
             }
-            return formatType(formatter, value, schemaFactory, schemaType);
+            return formatType(dropNull, formatter, value, schemaFactory, schemaType);
         default:
             return value;
         }
     }
 
+    private static Schema getMostSpecific(SchemaFactory schemaFactory, Schema left, Schema right) {
+        if (left == null) {
+            return right;
+        }
+        if (right == null) {
+            return left;
+        }
+        while (left != null && left.getParent() != null) {
+            if (right.getId().equals(left.getParent())) {
+                return left;
+            }
+            left = schemaFactory.getSchema(left.getParent());
+        }
+        return right;
+    }
 
-    private static Object formatType(IdFormatter formatter, Object value, SchemaFactory schemaFactory,
+    private static Object formatType(boolean dropNull, IdFormatter formatter, Object value, SchemaFactory schemaFactory,
             String schemaType) {
         if (value == null) {
             return value;
@@ -63,10 +78,8 @@ public class IdFormatterUtils {
 
         Map<Object, Object> result = new LinkedHashMap<>();
 
-        Schema fieldSchema = schemaFactory.getSchema(value.getClass());
-        if (fieldSchema == null) {
-            fieldSchema = schemaFactory.getSchema(schemaType);
-        }
+        Schema fieldSchema = getMostSpecific(schemaFactory,
+                schemaFactory.getSchema(schemaType), schemaFactory.getSchema(value.getClass()));
         if (fieldSchema == null) {
             log.error("Failed to find schema for type [{}]", schemaType);
             return result;
@@ -96,22 +109,29 @@ public class IdFormatterUtils {
                 Field subField = entry.getValue();
                 Object formattedValue = null;
                 if (TypeUtils.ID_FIELD.equals(subField.getName())) {
-                    formattedValue = formatReference(FieldType.REFERENCE, null, null,
+                    formattedValue = formatReference(dropNull, FieldType.REFERENCE, null, null,
                             Collections.singletonList(schemaType), formatter, subFieldValue, schemaFactory);
                 } else {
-                    formattedValue = formatReference(subField.getTypeEnum(), subField.getType(), subField.getSubTypeEnums(),
+                    formattedValue = formatReference(dropNull, subField.getTypeEnum(), subField.getType(), subField.getSubTypeEnums(),
                             subField.getSubTypes(), formatter, subFieldValue, schemaFactory);
                 }
-                result.put(fieldName, formattedValue);
+                addValue(dropNull, result, fieldName, formattedValue);
             } else {
-                result.put(fieldName, subFieldValue);
+                addValue(dropNull, result, fieldName, subFieldValue);
             }
         }
 
         return result;
     }
 
-    private static Object formatList(List<FieldType> subTypeEnums, List<String> subTypes, IdFormatter formatter, Object value, SchemaFactory schemaFactory) {
+    private static void addValue(boolean dropNull, Map<Object, Object> map, String fieldName, Object value) {
+        if (value == null && dropNull) {
+            return;
+        }
+        map.put(fieldName, value);
+    }
+
+    private static Object formatList(boolean dropNull, List<FieldType> subTypeEnums, List<String> subTypes, IdFormatter formatter, Object value, SchemaFactory schemaFactory) {
         if (value == null || subTypeEnums.size() == 0) {
             return value;
         }
@@ -134,14 +154,14 @@ public class IdFormatterUtils {
         subTypeEnums = subTypeEnums.subList(1, subTypeEnums.size());
         subTypes = subTypes.subList(1, subTypes.size());
         for (Object input : inputs) {
-            result.add(formatReference(fieldType, schemaType, subTypeEnums, subTypes, formatter, input,
+            result.add(formatReference(dropNull, fieldType, schemaType, subTypeEnums, subTypes, formatter, input,
                     schemaFactory));
         }
 
         return result;
     }
 
-    private static Object formatMap(List<FieldType> subTypeEnums, List<String> subTypes, IdFormatter formatter, Object value, SchemaFactory schemaFactory) {
+    private static Object formatMap(boolean dropNull, List<FieldType> subTypeEnums, List<String> subTypes, IdFormatter formatter, Object value, SchemaFactory schemaFactory) {
         if (value == null || subTypeEnums.size() == 0) {
             return value;
         }
@@ -165,7 +185,7 @@ public class IdFormatterUtils {
 
         for (Map.Entry<?, ?> entry : inputs.entrySet()) {
             result.put(entry.getKey(),
-                    formatReference(fieldType, schemaType, subTypeEnums, subTypes, formatter, entry.getValue(),
+                    formatReference(dropNull, fieldType, schemaType, subTypeEnums, subTypes, formatter, entry.getValue(),
                             schemaFactory));
         }
 

@@ -382,7 +382,7 @@ public class Api {
         c.router.resourceManager(Secret.class, new SecretManager(c.support, c.secretsService));
         c.router.resourceManager(ServiceProxy.class, new ServiceProxyManager(d.serviceDao, containerProxyActionHandler, f.objectManager));
         c.router.resourceManager(TypeDocumentation.class, new DocumentationHandler(f.jsonMapper, f.resourceLoader.getResources("schema/base/documentation.json")));
-        c.router.resourceManager(Volume.class, new VolumeManager(c.support));
+        c.router.resourceManager(Volume.class, new VolumeManager(c.support, d.storagePoolDao, f.eventService));
         c.router.resourceManager(Instance.class, new InstanceManager(c.support, c.revisionManager, referenceValidator));
         c.router.resourceManager(Setting.class, new SettingManager(d.settingDao));
     }

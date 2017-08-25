@@ -103,12 +103,14 @@ public class Common {
         this.certService = new CertificateServiceImpl(f.objectManager, keyProvider, d.dataDao);
         this.taskManager = new TaskManagerImpl(f.scheduledExecutorService, f.eventService, tasks);
         this.serviceAccountCreateStartup = new ServiceAccountCreateStartup(f.lockManager, f.lockDelegator, f.scheduledExecutorService, d.accountDao, d.resourceDao, f.resourceMonitor, f.processManager);
-        this.objectSerializer = new ObjectSerializerImpl(f.idFormatter, f.coreSchemaFactory);
+        this.objectSerializer = new ObjectSerializerImpl(f.idFormatter, schemaFactories, "service", "base");
         this.catalogService = new CatalogServiceImpl(f.jsonMapper, d.resourceDao, f.objectManager, f.processManager);
 
         ApiRouterImpl routerImpl = new ApiRouterImpl(f.coreSchemaFactory);
         router = routerImpl;
         locator = routerImpl;
+
+        schemaFactories.put(f.coreSchemaFactory.getId(), f.coreSchemaFactory);
 
         responseObjectConverter = new ResponseObjectConverter(f.metaDataManager, f.objectManager, locator);
         ObjectResourceManagerSupport objSupport = new ObjectResourceManagerSupport(f.objectManager, f.processManager, responseObjectConverter);

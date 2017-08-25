@@ -39,7 +39,7 @@ public class RegistrationTokenAccountLookup implements AccountLookup {
             return null;
         }
 
-        request.setAttribute(DefaultAuthorizationProvider.ACCOUNT_SCHEMA_FACTORY_NAME, RegisterConstants.SCHEMA_NAME);
+        request.setAttribute(DefaultAuthorizationProvider.ACCOUNT_SCHEMA_FACTORY_NAME, RegisterConstants.TYPE);
         request.setAttribute(DefaultAuthorizationProvider.ACCOUNT_CLUSTER_ID, account.getClusterId());
 
         return account.getAccount();

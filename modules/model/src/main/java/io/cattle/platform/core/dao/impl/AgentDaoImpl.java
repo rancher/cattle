@@ -6,7 +6,6 @@ import io.cattle.platform.core.addon.Register;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.AgentDao;
 import io.cattle.platform.core.dao.ClusterDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
@@ -68,7 +67,7 @@ public class AgentDaoImpl extends AbstractJooqDao implements AgentDao {
                 .selectFrom(INSTANCE)
                 .where(INSTANCE.AGENT_ID.eq(agentId)
                         .and(INSTANCE.REMOVED.isNull())
-                        .and(INSTANCE.STATE.notIn(InstanceConstants.STATE_ERROR, InstanceConstants.STATE_ERRORING,
+                        .and(INSTANCE.STATE.notIn(CommonStatesConstants.ERROR, CommonStatesConstants.ERRORING,
                                 CommonStatesConstants.REMOVING)))
                 .fetchAny();
     }

@@ -26,7 +26,6 @@ public class CredentialConstants {
 
     public static final String FIELD_CLUSTER_ID = "clusterId";
 
-    public static final String LINK_PEM_FILE = "pem";
     public static final String LINK_CERTIFICATE = "certificate";
 
     public static final String KIND_REGISTRY_CREDENTIAL = "registryCredential";

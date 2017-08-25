@@ -59,7 +59,7 @@ public class InstanceWrapper implements BasicStateWrapper {
     @Override
     public void create() {
         Map<String, Object> obj = new HashMap<>();
-        obj.put(InstanceConstants.FIELD_START_ON_CREATE, false);
+        obj.put(InstanceConstants.FIELD_CREATE_ONLY, true);
         svc.processManager.create(instance, obj);
     }
 
@@ -179,9 +179,9 @@ public class InstanceWrapper implements BasicStateWrapper {
         if (instance.getFirstRunning() == null) {
             if (isServiceManaged()) {
                 return false;
-            } else // For not service managed, never started, stopped and startOnCreate=False is considered active
+            } else // For not service managed, never started, stopped and createOnly=true is considered active
                 return InstanceConstants.STATE_STOPPED.equals(instance.getState()) &&
-                        !DataAccessor.fieldBool(instance, InstanceConstants.FIELD_START_ON_CREATE);
+                        DataAccessor.fieldBool(instance, InstanceConstants.FIELD_CREATE_ONLY);
         }
 
         return !shouldRestart();

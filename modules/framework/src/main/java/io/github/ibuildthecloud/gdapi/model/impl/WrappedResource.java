@@ -27,15 +27,16 @@ public class WrappedResource extends ResourceImpl implements Resource {
     Map<String, Object> priorityFields = new LinkedHashMap<>();
     Map<String, Object> additionalFields;
     Map<String, Field> resourceFields;
+    boolean dropNulls = false;
     boolean createTsFields = true;
     String method;
     Set<String> priorityFieldNames = null;
     IdFormatter idFormatter;
 
-    public WrappedResource(IdFormatter idFormatter, SchemaFactory schemaFactory,
+    public WrappedResource(boolean dropNulls, IdFormatter idFormatter, SchemaFactory schemaFactory,
             Schema schema, Object obj, Map<String, Object> additionalFields,
             Set<String> priorityFieldNames, String method) {
-        super();
+        this.dropNulls = dropNulls;
         this.schemaFactory = schemaFactory;
         this.schema = schema;
         this.resourceFields = schema.getResourceFields();
@@ -47,11 +48,21 @@ public class WrappedResource extends ResourceImpl implements Resource {
         init();
     }
 
+    public WrappedResource(IdFormatter idFormatter, SchemaFactory schemaFactory,
+                           Schema schema, Object obj, Map<String, Object> additionalFields,
+                           Set<String> priorityFieldNames, String method) {
+        this(false, idFormatter, schemaFactory, schema, obj, additionalFields, priorityFieldNames, method);
+    }
+
     public WrappedResource(IdFormatter idFormatter, SchemaFactory schemaFactory, Schema schema, Object obj) {
-        this(idFormatter, schemaFactory, schema, obj, new HashMap<>(), null, Schema.Method.GET.toString());
+        this(true, idFormatter, schemaFactory, schema, obj, new HashMap<>(), null, Schema.Method.GET.toString());
     }
 
     protected void addField(String key, Object value) {
+        if (dropNulls && value == null) {
+            return;
+        }
+
         if (priorityFieldNames != null && priorityFieldNames.contains(key)) {
             priorityFields.put(key, value);
         } else {
@@ -99,7 +110,7 @@ public class WrappedResource extends ResourceImpl implements Resource {
                 value = field.getDefault();
             }
 
-            addField(name, IdFormatterUtils.formatReference(field, idFormatter, value, schemaFactory));
+            addField(name, IdFormatterUtils.formatReference(dropNulls, field, idFormatter, value, schemaFactory));
             if (createTsFields && field.getTypeEnum() == FieldType.DATE && value instanceof Date) {
                 addField(name + "TS", ((Date)value).getTime());
             }

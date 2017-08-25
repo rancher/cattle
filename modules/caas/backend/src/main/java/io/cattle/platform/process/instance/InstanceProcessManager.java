@@ -18,6 +18,7 @@ import java.util.HashMap;
 public class InstanceProcessManager {
 
     private static final String START = "start";
+    private static final String CREATE_START = "createStart";
 
     InstanceLifecycleManager instanceLifecycle;
     ObjectProcessManager processManager;
@@ -125,36 +126,32 @@ public class InstanceProcessManager {
 
 
     private boolean shouldStart(ProcessState state, Instance instance) {
-        Boolean shouldStart = DataAccessor
+        Boolean createOnly = DataAccessor
                 .fromDataFieldOf(state)
-                .withKey(InstanceConstants.FIELD_START_ON_CREATE)
+                .withKey(InstanceConstants.FIELD_CREATE_ONLY)
                 .as(Boolean.class);
-        if (shouldStart != null) {
-            return shouldStart;
+        if (createOnly != null) {
+            return !createOnly;
         }
-        return DataAccessor.fields(instance)
-                .withKey(InstanceConstants.FIELD_START_ON_CREATE)
-                .withDefault(true)
-                .as(Boolean.class);
+        return !DataAccessor.fieldBool(instance, InstanceConstants.FIELD_CREATE_ONLY);
     }
 
     private static boolean isCreateStart(ProcessState state) {
-        Boolean startOnCreate = DataAccessor
+        Boolean createStart = DataAccessor
                 .fromMap(state.getData())
                 .withScope(InstanceProcessManager.class)
-                .withKey(InstanceConstants.FIELD_START_ON_CREATE)
+                .withKey(CREATE_START)
                 .as(Boolean.class);
 
-        return startOnCreate == null ? false : startOnCreate;
+        return createStart == null ? false : createStart;
     }
 
     private static void setCreateStart(ProcessState state) {
         DataAccessor
             .fromMap(state.getData())
             .withScope(InstanceProcessManager.class)
-            .withKey(InstanceConstants.FIELD_START_ON_CREATE)
+            .withKey(CREATE_START)
             .set(true);
     }
-
 
 }

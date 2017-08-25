@@ -339,7 +339,7 @@ public class RevisionManagerImpl implements RevisionManager {
         serviceData.put(ServiceConstants.FIELD_BATCHSIZE, 1);
         serviceData.put(ServiceConstants.FIELD_INTERVAL_MILLISEC, 2000L);
         serviceData.put(InstanceConstants.FIELD_STACK_ID, serviceInstance.getStackId());
-        serviceData.put(ServiceConstants.FIELD_START_ON_CREATE, true);
+        serviceData.put(ServiceConstants.FIELD_CREATE_ONLY, false);
 
         Service service = resourceDao.createAndSchedule(Service.class, serviceData);
         for (Instance instance : instances) {

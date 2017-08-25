@@ -32,7 +32,7 @@ public class ServiceProcessManager {
         Service service = (Service) state.getResource();
         serviceLifecycle.create(service);
 
-        if (DataAccessor.fieldBool(service, ServiceConstants.FIELD_START_ON_CREATE)) {
+        if (!DataAccessor.fieldBool(service, ServiceConstants.FIELD_CREATE_ONLY)) {
             return new HandlerResult()
                     .withChainProcessName(ServiceConstants.PROCESS_SERVICE_ACTIVATE);
         }

@@ -2,8 +2,6 @@ package io.cattle.platform.core.dao.impl;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.dao.SettingDao;
-import io.cattle.platform.core.model.Setting;
-import io.cattle.platform.core.model.tables.records.SettingRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.eventing.EventService;
@@ -36,18 +34,6 @@ public class SettingDaoImpl extends AbstractJooqDao implements SettingDao {
         this.transaction = transaction;
         this.objectManager = objectManager;
         this.eventService = eventService;
-    }
-
-    @Override
-    public Setting getSetting(String name) {
-        try {
-            return create().select(SETTING.fields())
-                    .from(SETTING)
-                    .where(SETTING.NAME.eq(name))
-                    .fetchAnyInto(SettingRecord.class);
-        } finally {
-            notifySettingsChanged();
-        }
     }
 
     @Override

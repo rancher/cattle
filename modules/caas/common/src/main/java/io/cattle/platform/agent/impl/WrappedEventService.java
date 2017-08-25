@@ -26,7 +26,6 @@ public class WrappedEventService implements EventService {
 
     long agentId;
     EventService eventService;
-    EventService agentRequestPublisher;
     JsonMapper jsonMapper;
     AgentDao agentDao;
 

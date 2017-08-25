@@ -295,7 +295,7 @@ public class ServiceCreateValidationFilter extends AbstractValidationFilter {
 
     protected void validateStack(Service service) {
         Stack env = objectManager.loadResource(Stack.class, service.getStackId());
-        List<String> invalidStates = Arrays.asList(InstanceConstants.STATE_ERROR, CommonStatesConstants.REMOVED,
+        List<String> invalidStates = Arrays.asList(CommonStatesConstants.ERROR, CommonStatesConstants.REMOVED,
                 CommonStatesConstants.REMOVING);
         if (env == null || invalidStates.contains(env.getState())) {
             throw new ValidationErrorException(ValidationErrorCodes.INVALID_STATE, InstanceConstants.FIELD_STACK_ID);

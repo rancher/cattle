@@ -79,9 +79,9 @@
         "scheduleUpdate": true
       }
     },
-    "startOnCreate": {
+    "createOnly": {
       "type": "boolean",
-      "nullable": true,
+      "create": true,
       "default": false
     },
     "links": {

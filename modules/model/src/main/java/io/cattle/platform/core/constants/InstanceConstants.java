@@ -23,7 +23,6 @@ public class InstanceConstants {
     public static final String FIELD_AGENT_INSTANCE = "agentInstance";
     public static final String FIELD_BLKIO_DEVICE_OPTIONS = "blkioDeviceOptions";
     public static final String FIELD_BLKIO_WEIGHT = "blkioWeight";
-    public static final String FIELD_BUILD = "build";
     public static final String FIELD_CAP_ADD = "capAdd";
     public static final String FIELD_CAP_DROP = "capDrop";
     public static final String FIELD_CGROUP_PARENT = "cgroupParent";
@@ -35,6 +34,7 @@ public class InstanceConstants {
     public static final String FIELD_CPUSET_MEMS = "cpuSetMems";
     public static final String FIELD_CPU_SHARES = "cpuShares";
     public static final String FIELD_CREATE_INDEX = "createIndex";
+    public static final String FIELD_CREATE_ONLY = "createOnly";
     public static final String FIELD_DATA_VOLUME_MOUNTS = "dataVolumeMounts";
     public static final String FIELD_DATA_VOLUMES = "dataVolumes";
     public static final String FIELD_DEPENDS_ON = "dependsOn";
@@ -62,7 +62,6 @@ public class InstanceConstants {
     @Deprecated
     public static final String FIELD_IMAGE_UUID = "imageUuid";
     public static final String FIELD_IMAGE = "image";
-    public static final String FIELD_INSTANCE_TRIGGERED_STOP = "instanceTriggeredStop";
     public static final String FIELD_IPC_CONTAINER_ID = "ipcContainerId";
     public static final String FIELD_IPC_MODE = "ipcMode";
     public static final String FIELD_ISOLATION = "isolation";
@@ -112,7 +111,6 @@ public class InstanceConstants {
     public static final String FIELD_SHOULD_RESTART = "shouldRestart";
     public static final String FIELD_SIDEKICK_TO = "sidekickTo";
     public static final String FIELD_STACK_ID = "stackId";
-    public static final String FIELD_START_ON_CREATE = "startOnCreate";
     public static final String FIELD_START_RETRY_COUNT = "startRetryCount";
     public static final String FIELD_STDIN_OPEN = "stdinOpen";
     public static final String FIELD_STOPPED = "stopped";
@@ -130,9 +128,6 @@ public class InstanceConstants {
     public static final String FIELD_VOLUME_DRIVER = "volumeDriver";
     public static final String FIELD_VOLUMES_FROM = "dataVolumesFrom";
     public static final String FIELD_WORKING_DIR = "workingDir";
-
-    public static final String EVENT_FIELD_VOLUMES_FROM = "dataVolumesFromContainers";
-    public static final String EVENT_FIELD_VOLUMES_FROM_DVM = "volumesFromDataVolumeMounts";
 
     public static final String DOCKER_ATTACH_STDIN = "AttachStdin";
     public static final String DOCKER_ATTACH_STDOUT = "AttachStdout";
@@ -153,27 +148,17 @@ public class InstanceConstants {
 
     public static final String PROCESS_ALLOCATE = "instance.allocate";
     public static final String PROCESS_DEALLOCATE = "instance.deallocate";
-    public static final String PROCESS_CREATE = "instance.create";
     public static final String PROCESS_START = "instance.start";
     public static final String PROCESS_STOP = "instance.stop";
-    public static final String PROCESS_RESTART = "instance.restart";
-    public static final String PROCESS_REMOVE = "instance.remove";
-    public static final String PROCESS_ERROR = "instance.error";
-
-    public static final String ACTION_CONVERT_TO_SERVICE = "instance.converttoservice";
 
     public static final String KIND_CONTAINER = "container";
     public static final String KIND_VIRTUAL_MACHINE = "virtualMachine";
 
-    public static final String STATE_CREATING = "creating";
-    public static final String STATE_CREATED = "created";
     public static final String STATE_RUNNING = "running";
     public static final String STATE_STOPPED = "stopped";
     public static final String STATE_STOPPING = "stopping";
     public static final String STATE_STARTING = "starting";
     public static final String STATE_RESTARTING = "restarting";
-    public static final String STATE_ERRORING = "erroring";
-    public static final String STATE_ERROR = "error";
 
     public static final String ON_STOP_REMOVE = "remove";
 
@@ -192,20 +177,6 @@ public class InstanceConstants {
         return ("rancher-agent".equals(labels.get("io.rancher.container.system")) &&
                 "rancher-agent".equals(instance.getName()));
 
-    }
-
-    public static List<Long> getInstanceDependencies(Instance instance) {
-        List<Long> instanceIds = new ArrayList<>();
-        Long networkFromContainerId = instance.getNetworkContainerId();
-        if (networkFromContainerId != null) {
-            instanceIds.add(networkFromContainerId);
-        }
-        Long sidekickTo = DataAccessor.fieldLong(instance, FIELD_SIDEKICK_TO);
-        if (sidekickTo != null) {
-            instanceIds.add(sidekickTo);
-        }
-        instanceIds.addAll(DataAccessor.fieldLongList(instance, "dataVolumesFrom"));
-        return instanceIds;
     }
 
     public static List<PortSpec> getPortSpecs(Instance instance) {

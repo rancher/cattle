@@ -50,7 +50,7 @@ public class AgentLifecycleManagerImpl implements AgentLifecycleManager {
                 InstanceConstants.FIELD_DATA_VOLUMES,
                 AgentConstants.AGENT_INSTANCE_BIND_MOUNT);
 
-        setField(instance, InstanceConstants.FIELD_DATA_VOLUME_MOUNTS, dataVolumes);
+        setField(instance, InstanceConstants.FIELD_DATA_VOLUMES, dataVolumes);
     }
 
     @Override

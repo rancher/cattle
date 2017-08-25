@@ -25,6 +25,7 @@ public class ServiceConstants {
     public static final String FIELD_BATCHSIZE = "batchSize";
     public static final String FIELD_BLKIOOPTIONS = "blkioDeviceOptions";
     public static final String FIELD_COMPLETE_UPDATE = "completeUpdate";
+    public static final String FIELD_CREATE_ONLY = "createOnly";
     public static final String FIELD_EXTERNALIPS = "externalIpAddresses";
     public static final String FIELD_FORCE_UPGRADE = "forceUpgrade";
     public static final String FIELD_FQDN = "fqdn";
@@ -49,7 +50,6 @@ public class ServiceConstants {
     public static final String FIELD_SERVICE_IDS = "serviceIds";
     public static final String FIELD_SERVICE_LINKS = "serviceLinks";
     public static final String FIELD_START_FIRST_ON_UPGRADE = "startFirst";
-    public static final String FIELD_START_ON_CREATE = "startOnCreate";
     public static final String FIELD_STORAGE_DRIVER = "storageDriver";
     public static final String FIELD_TMPFS= "tmpfs";
     public static final String FIELD_TOKEN = "token";
@@ -68,7 +68,6 @@ public class ServiceConstants {
     public static final String ACTION_SERVICE_RESTART = "restart";
 
     public static final String PROCESS_SERVICE_ACTIVATE = "service." + ACTION_SERVICE_ACTIVATE;
-    public static final String PROCESS_SERVICE_DEACTIVATE = "service.deactivate";
     public static final String PROCESS_STACK_FINISH_UPGRADE = "stack.finishupgrade";
     public static final String PROCESS_DU_CREATE = "deploymentunit.create";
     public static final String PROCESS_DU_ACTIVATE = "deploymentunit.activate";

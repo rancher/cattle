@@ -138,9 +138,6 @@ public class ComposeExportConfigItem {
             ServiceConstants.FIELD_SCALE_INCREMENT,
             NamedUtils.toUnderscoreSeparated(ServiceConstants.FIELD_SCALE_INCREMENT), false,
             false, false);
-    public static final ComposeExportConfigItem STARTONCREATE = new ComposeExportConfigItem(
-            ServiceConstants.FIELD_START_ON_CREATE,
-            NamedUtils.toUnderscoreSeparated(ServiceConstants.FIELD_START_ON_CREATE), true, false, false);
     public static final ComposeExportConfigItem HEALTHCHECK = new ComposeExportConfigItem(
             InstanceConstants.FIELD_HEALTH_CHECK,
             NamedUtils.toUnderscoreSeparated(InstanceConstants.FIELD_HEALTH_CHECK), true, false, false);

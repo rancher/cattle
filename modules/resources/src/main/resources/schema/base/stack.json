@@ -20,10 +20,6 @@
       "type": "map[string]",
       "nullable": true
     },
-    "startOnCreate": {
-      "type": "boolean",
-      "nullable": true
-    },
     "outputs": {
       "type": "map[string]",
       "nullable": true

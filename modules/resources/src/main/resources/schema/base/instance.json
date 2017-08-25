@@ -56,10 +56,10 @@
     "primaryIpAddress": {
       "type": "string"
     },
-    "startOnCreate": {
+    "createOnly": {
       "type": "boolean",
       "create": true,
-      "default": true
+      "default": false
     },
     "volumeDriver": {
       "type": "string",

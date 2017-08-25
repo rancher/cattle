@@ -18,8 +18,10 @@ public class VolumeManager extends DefaultResourceManager {
     StoragePoolDao storagePoolDao;
     EventService eventService;
 
-    public VolumeManager(DefaultResourceManagerSupport support) {
+    public VolumeManager(DefaultResourceManagerSupport support, StoragePoolDao storagePoolDao, EventService eventService) {
         super(support);
+        this.storagePoolDao = storagePoolDao;
+        this.eventService = eventService;
     }
 
     @Override

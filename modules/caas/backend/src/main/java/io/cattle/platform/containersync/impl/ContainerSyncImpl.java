@@ -137,7 +137,7 @@ public class ContainerSyncImpl implements ContainerSync {
         String state = instance.getState();
 
         if (EVENT_START.equals(status)) {
-            if (STATE_CREATING.equals(state) || STATE_RUNNING.equals(state) || STATE_STARTING.equals(state) || STATE_RESTARTING.equals(status))
+            if (CREATING.equals(state) || STATE_RUNNING.equals(state) || STATE_STARTING.equals(state) || STATE_RESTARTING.equals(status))
                 return;
 
             if (STATE_STOPPING.equals(state)) {

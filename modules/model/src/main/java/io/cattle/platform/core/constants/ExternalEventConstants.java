@@ -12,7 +12,6 @@ public class ExternalEventConstants {
     public static final String TYPE_SERVICE_DELETE = "service.remove";
     public static final String TYPE_STACK_DELETE = "stack.delete";
     public static final String TYPE_HOST_EVACUATE = "host.evacuate";
-    public static final String EXERNAL_DNS_LOCK_NAME = "EXTERNALDNS";
     public static final String SERVICE_LOCK_NAME = "SERVICE";
     public static final String FIELD_SERVICE = "service";
     public static final String FIELD_ENVIRIONMENT = "environment";

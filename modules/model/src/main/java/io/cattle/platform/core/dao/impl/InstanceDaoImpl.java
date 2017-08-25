@@ -1,7 +1,6 @@
 package io.cattle.platform.core.dao.impl;
 
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.GenericObject;
@@ -46,8 +45,8 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
                 .from(INSTANCE)
                 .where(INSTANCE.REMOVED.isNull()
                         .and(INSTANCE.HOST_ID.eq(hostId))
-                        .and(INSTANCE.STATE.notIn(InstanceConstants.STATE_ERROR,
-                                InstanceConstants.STATE_ERRORING,
+                        .and(INSTANCE.STATE.notIn(CommonStatesConstants.ERROR,
+                                CommonStatesConstants.ERRORING,
                                 CommonStatesConstants.REMOVING)))
                 .fetchInto(InstanceRecord.class);
     }
