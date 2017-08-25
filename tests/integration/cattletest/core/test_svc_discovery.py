@@ -3791,3 +3791,23 @@ def test_dns_priority_label(client, context):
     dns.append("169.254.169.250")
     assert all(item in dns for item in container.dns) is True
     assert set(search) == set(container.dnsSearch)
+
+
+def test_drain_timeout_launch_config(client, context, super_client):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid,
+                     "labels": {
+                         "io.rancher.sidekicks": "secondary"}}
+    secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
+
+    service = client.create_service(name=random_str(),
+                                    stackId=env.id,
+                                    launchConfig=launch_config,
+                                    scale=1,
+                                    secondaryLaunchConfigs=[secondary_lc])
+    service = client.wait_success(service)
+    assert len(service.secondaryLaunchConfigs) == 1
+    assert service.launchConfig.drainTimeoutMS is not None
+    assert service.secondaryLaunchConfigs[0].drainTimeoutMS is not None

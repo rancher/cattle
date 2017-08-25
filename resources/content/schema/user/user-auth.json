@@ -876,6 +876,7 @@
         "launchConfig.requestedIpAddress": "cr",
         "launchConfig.resourceActions.logs" : "",
         "launchConfig.ports" : "cru",
+        "launchConfig.drainTimeoutMS" : "cru",
 
         "secondaryLaunchConfig" : "cr",
         "secondaryLaunchConfig.name" : "cr",
