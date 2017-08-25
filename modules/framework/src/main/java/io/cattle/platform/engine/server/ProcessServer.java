@@ -5,6 +5,7 @@ import io.cattle.platform.engine.manager.ProcessManager;
 import io.cattle.platform.engine.model.ProcessInstanceWrapper;
 import io.cattle.platform.engine.model.ProcessReference;
 import io.cattle.platform.engine.model.Trigger;
+import io.cattle.platform.engine.process.ProcessInstance;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -71,12 +72,18 @@ public class ProcessServer implements ProcessInstanceExecutor {
         return 0;
     }
 
-    protected boolean isResourceInFlight(String resourceKey, ProcessInstanceWrapper ignore) {
+    protected boolean isResourceInFlight(String resourceKey, ProcessInstanceWrapper ignore, boolean cancel) {
         ProcessInstanceWrapper existing = inflightByResource.get(resourceKey);
         if (existing == null) {
             return false;
         }
-        return existing != ignore;
+
+        boolean result = existing != ignore;
+        if (result && cancel) {
+            existing.cancel();
+        }
+
+        return result;
     }
 
     protected void queueByResource(String resourceKey, ProcessReference ref) {
@@ -89,7 +96,7 @@ public class ProcessServer implements ProcessInstanceExecutor {
     }
 
     protected synchronized void submitToExecutor(String resourceKey, ProcessInstanceWrapper instance) {
-        if (isResourceInFlight(resourceKey, instance)) {
+        if (isResourceInFlight(resourceKey, instance, true)) {
             queueByResource(resourceKey, instance.getRef());
         } else if (isBlocking(instance)) {
             inflightByResource.put(resourceKey, instance);
@@ -152,6 +159,11 @@ public class ProcessServer implements ProcessInstanceExecutor {
     @Override
     public io.cattle.platform.engine.process.ProcessInstance resume(io.cattle.platform.engine.process.ProcessInstance instance) {
         return processInstanceExecutor.resume(instance);
+    }
+
+    @Override
+    public void cancel(ProcessInstance instance) {
+        processInstanceExecutor.cancel(instance);
     }
 
     public ExecutorService getExecutor() {

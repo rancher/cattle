@@ -48,6 +48,12 @@ public class ProcessInstanceWrapper extends NoExceptionRunnable implements Runna
         return priority;
     }
 
+    public void cancel() {
+        if (instance != null && future != null && waiting) {
+            processServer.cancel(instance);
+        }
+    }
+
     @Override
     public int compareTo(ProcessInstanceWrapper o) {
         int i = Integer.compare(priority, o.priority);
@@ -58,7 +64,7 @@ public class ProcessInstanceWrapper extends NoExceptionRunnable implements Runna
     }
 
     @Override
-    protected void doRun() {
+    protected synchronized void doRun() {
         boolean resume = instance != null && future != null && waiting;
         done = false;
         waiting = false;

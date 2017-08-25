@@ -17,6 +17,8 @@ public interface ProcessInstance {
 
     ExitReason resume();
 
+    void cancel();
+
     ProcessRecord getProcessRecord();
 
     ExitReason getExitReason();

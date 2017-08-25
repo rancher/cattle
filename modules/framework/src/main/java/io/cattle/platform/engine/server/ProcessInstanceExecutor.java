@@ -8,4 +8,6 @@ public interface ProcessInstanceExecutor {
 
     ProcessInstance resume(ProcessInstance instance);
 
+    void cancel(ProcessInstance instance);
+
 }

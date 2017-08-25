@@ -101,6 +101,15 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
     }
 
     @Override
+    public void cancel() {
+        if (!executed || future == null) {
+            throw new IllegalStateException("This process is not suspended");
+        }
+
+        future.cancel(false);
+    }
+
+    @Override
     public ExitReason execute() {
         synchronized (this) {
             if (executed) {

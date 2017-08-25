@@ -26,6 +26,7 @@ import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.engine.process.impl.ProcessDelayException;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
@@ -152,7 +153,18 @@ public class ClusterProcessManager {
         }
 
         for (Stack stack : toWait) {
-            futures.add(resourceMonitor.waitForState(stack, CommonStatesConstants.ACTIVE));
+            ListenableFuture<Stack> stackFuture = resourceMonitor.waitForState(stack,
+                    CommonStatesConstants.ACTIVE,
+                    CommonStatesConstants.ERROR);
+
+            stackFuture = AsyncUtils.andThen(stackFuture, (futureStack) -> {
+                if (CommonStatesConstants.ERROR.equals(futureStack.getState())) {
+                    throw new ProcessDelayException(null);
+                }
+                return futureStack;
+            });
+
+            futures.add(stackFuture);
         }
 
         return futures.size() == 0 ? null : AsyncUtils.afterAll(futures);

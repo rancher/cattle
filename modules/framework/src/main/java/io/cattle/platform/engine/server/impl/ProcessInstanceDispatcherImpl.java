@@ -10,7 +10,6 @@ import io.cattle.platform.engine.process.impl.ProcessWaitException;
 import io.cattle.platform.engine.server.ProcessInstanceExecutor;
 import io.cattle.platform.util.exception.ExceptionUtils;
 import io.cattle.platform.util.exception.LoggableException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,19 +26,26 @@ public class ProcessInstanceDispatcherImpl implements ProcessInstanceExecutor {
     @Override
     public ProcessInstance execute(final long processId) {
         ProcessInstance instance = processManager.loadProcess(processId);
-        return execute(processId, instance, false);
+        return execute(processId, instance, false, false);
     }
 
     @Override
     public ProcessInstance resume(ProcessInstance instance) {
-        return execute(instance.getId(), instance, true);
+        return execute(instance.getId(), instance, true, false);
     }
 
-    protected ProcessInstance execute(long processId, ProcessInstance instance, boolean resume) {
+    @Override
+    public void cancel(ProcessInstance instance) {
+        execute(instance.getId(), instance, false, true);
+    }
+
+    private ProcessInstance execute(long processId, ProcessInstance instance, boolean resume, boolean cancel) {
         try {
             if (instance != null) {
                 if (resume) {
                     instance.resume();
+                } else if (cancel) {
+                    instance.cancel();
                 } else {
                     instance.execute();
                 }

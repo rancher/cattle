@@ -15,10 +15,11 @@ import io.cattle.platform.object.resource.ResourcePredicate;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.task.Task;
 import io.cattle.platform.task.TaskOptions;
+import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.ArrayList;
-import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -112,9 +113,10 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
     }
 
     @Override
-    public <T> ListenableFuture<T> waitForState(T obj, final String desiredState) {
-        return waitFor(obj, "state to equal " + desiredState, (testObject) -> {
-            return Objects.equals(desiredState, ObjectUtils.getState(testObject));
+    public <T> ListenableFuture<T> waitForState(T obj, final String... desiredStates) {
+        Set<String> desiredStatesSet = CollectionUtils.set(desiredStates);
+        return waitFor(obj, "state " + desiredStatesSet, (testObject) -> {
+            return desiredStatesSet.contains(ObjectUtils.getState(testObject));
         });
     }
 
