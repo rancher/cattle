@@ -59,22 +59,7 @@ public class CatalogServiceImpl implements CatalogService {
             return null;
         }
 
-        String versionUrl = null;
-        String defaultVersionURL = template.getVersionLinks().get(template.getDefaultVersion());
-        if (StringUtils.isNotBlank(defaultVersionURL)) {
-            versionUrl = defaultVersionURL;
-        } else {
-            long maxVersion = 0;
-            for (String url : template.getVersionLinks().values()) {
-                long currentMaxVersion = Long.valueOf(url.substring(url.lastIndexOf(":") + 1, url.length()));
-                if (currentMaxVersion >= maxVersion) {
-                    maxVersion = currentMaxVersion;
-                    versionUrl = url;
-                }
-            }
-        }
-
-        return getTemplateAtURL(versionUrl);
+        return getTemplateVersionById(template.getDefaultTemplateVersionId());
     }
 
     protected Template getTemplateVersionById(String id) throws IOException {

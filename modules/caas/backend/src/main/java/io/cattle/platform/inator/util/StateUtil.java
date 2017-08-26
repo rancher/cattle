@@ -22,6 +22,7 @@ public class StateUtil {
             ServiceConstants.STATE_PAUSED,
             ServiceConstants.STATE_PAUSING);
     private static Set<String> INACTIVE_LIKE = set(
+            CommonStatesConstants.CREATING,
             CommonStatesConstants.INACTIVE,
             CommonStatesConstants.DEACTIVATING);
     private static Set<String> REMOVED_LIKE = set(

@@ -50,7 +50,7 @@ import static io.cattle.platform.core.model.Tables.*;
 
 public class ClusterProcessManager {
 
-    private static final DynamicStringProperty DEFAULT_CLUSTER = ArchaiusUtil.getString("default.cluster");
+    private static final DynamicStringProperty DEFAULT_CLUSTER = ArchaiusUtil.getString("default.cluster.template");
 
     private static final String[] STACK_CHECK_FIELDS = new String[] {
             "answers",
