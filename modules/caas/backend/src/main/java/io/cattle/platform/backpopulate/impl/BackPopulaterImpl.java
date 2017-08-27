@@ -84,7 +84,7 @@ public class BackPopulaterImpl implements BackPopulater {
     @SuppressWarnings({ "unchecked" })
     protected void processRemainingFields(Instance instance) {
         Map<String, Object> inspect = DataAccessor.fieldMapRO(instance, FIELD_DOCKER_INSPECT);
-        if (inspect == null || instance.getNativeContainer() == null || !instance.getNativeContainer().booleanValue() ||
+        if (inspect == null || instance.getNativeContainer() == null || !instance.getNativeContainer() ||
                 inspect.size() == 0) {
             return;
         }

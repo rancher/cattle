@@ -27,7 +27,7 @@ import static io.cattle.platform.core.model.tables.ProjectMemberTable.*;
 public class AccountDaoImpl extends AbstractJooqDao implements AccountDao {
 
     private static final Set<String> GOOD_STATES = CollectionUtils.set(
-            CommonStatesConstants.REGISTERING,
+            CommonStatesConstants.CREATING,
             CommonStatesConstants.ACTIVATING,
             CommonStatesConstants.ACTIVE,
             CommonStatesConstants.UPDATING,

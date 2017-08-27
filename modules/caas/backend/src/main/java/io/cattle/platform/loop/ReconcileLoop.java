@@ -67,8 +67,6 @@ public class ReconcileLoop implements Loop {
         }
         if ("error".equals(result.getLogLevel())) {
             activityService.error("Result: %s %s", result.getState(), result.getUnit() == null ? "" : result.getUnit().getDisplayName());
-        } else if (!result.isGood() || result.getUnit() != null) {
-            activityService.info("Result: %s %s", result.getState(), result.getUnit() == null ? "" : result.getUnit().getDisplayName());
         }
         return result;
     }

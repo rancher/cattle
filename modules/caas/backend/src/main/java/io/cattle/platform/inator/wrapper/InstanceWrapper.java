@@ -141,7 +141,7 @@ public class InstanceWrapper implements BasicStateWrapper {
     }
 
     public String getDisplayName() {
-        return String.format("%s(%s)", instance.getKind(),
+        return String.format("%s (%s)", instance.getKind(),
                 svc.idFormatter.formatId(instance.getKind(), instance.getId()));
     }
 

@@ -10,7 +10,6 @@ public class StandardStates {
     public static final String ERRORING = "erroring";
     public static final String INACTIVE = "inactive";
     public static final String PAUSING = "pausing";
-    public static final String REGISTERING = "registering";
     public static final String REMOVED = "removed";
     public static final String REMOVING = "removing";
     public static final String REQUESTED = "requested";

@@ -183,7 +183,7 @@ public class DeploymentUnitWrapper implements BasicStateWrapper {
     }
 
     public String getDisplayName() {
-        return String.format("%s(%s)", unit.getKind(), svc.idFormatter.formatId(unit.getKind(), unit.getId()));
+        return String.format("%s (%s)", unit.getKind(), svc.idFormatter.formatId(unit.getKind(), unit.getId()));
     }
 
     public Result pause() {

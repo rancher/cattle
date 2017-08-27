@@ -50,7 +50,7 @@ public class MountProcessManager {
         }
         if (!CommonStatesConstants.ACTIVE.equals(volume.getState()) && !CommonStatesConstants.ACTIVATING.equals(volume.getState())
                 && !CommonStatesConstants.RESTORING.equals(volume.getState())) {
-            if (CommonStatesConstants.REQUESTED.equals(volume.getState()) || CommonStatesConstants.REGISTERING.equals(volume.getState())) {
+            if (CommonStatesConstants.REQUESTED.equals(volume.getState()) || CommonStatesConstants.CREATING.equals(volume.getState())) {
                 processManager.scheduleStandardProcess(StandardProcess.CREATE, volume,
                         ProcessUtils.chainInData(state.getData(), VolumeConstants.PROCESS_CREATE, VolumeConstants.PROCESS_ACTIVATE));
             } else {

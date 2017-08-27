@@ -126,6 +126,10 @@ public class DeploymentSyncRequestHandler extends AgentBasedProcessHandler {
                         data.put(INSTANCE.HOST_ID, host.getId());
                     }
                 }
+
+                if (StringUtils.isNotBlank(status.getPrimaryIpAddress())) {
+                    data.put(InstanceConstants.FIELD_PRIMARY_IP_ADDRESS, status.getPrimaryIpAddress());
+                }
             }
         }
 

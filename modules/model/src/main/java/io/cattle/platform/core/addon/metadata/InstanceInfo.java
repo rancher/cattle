@@ -42,6 +42,7 @@ public class InstanceInfo implements MetadataObject {
     Long networkFromContainerId;
     Long networkId;
     Long startCount;
+    Long createIndex;
 
     Set<Long> serviceIds;
     Set<PortInstance> ports;
@@ -55,6 +56,7 @@ public class InstanceInfo implements MetadataObject {
     public InstanceInfo(Instance instance) {
         this.accountId = instance.getAccountId();
         this.agentId = instance.getAgentId();
+        this.createIndex = instance.getCreateIndex();
         this.dns = DataAccessor.fieldStringList(instance, InstanceConstants.FIELD_DNS);
         this.dnsSearch = DataAccessor.fieldStringList(instance, InstanceConstants.FIELD_DNS_SEARCH);
         this.externalId = instance.getExternalId();
@@ -88,6 +90,97 @@ public class InstanceInfo implements MetadataObject {
         if (hc != null) {
             this.healthCheck = new HealthcheckInfo(hc);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        InstanceInfo that = (InstanceInfo) o;
+
+        if (id != that.id) return false;
+        if (shouldRestart != that.shouldRestart) return false;
+        if (nativeContainer != that.nativeContainer) return false;
+        if (accountId != that.accountId) return false;
+        if (uuid != null ? !uuid.equals(that.uuid) : that.uuid != null) return false;
+        if (environmentUuid != null ? !environmentUuid.equals(that.environmentUuid) : that.environmentUuid != null)
+            return false;
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (hostname != null ? !hostname.equals(that.hostname) : that.hostname != null) return false;
+        if (healthState != null ? !healthState.equals(that.healthState) : that.healthState != null) return false;
+        if (state != null ? !state.equals(that.state) : that.state != null) return false;
+        if (externalId != null ? !externalId.equals(that.externalId) : that.externalId != null) return false;
+        if (primaryIp != null ? !primaryIp.equals(that.primaryIp) : that.primaryIp != null) return false;
+        if (primaryMacAddress != null ? !primaryMacAddress.equals(that.primaryMacAddress) : that.primaryMacAddress != null)
+            return false;
+        if (serviceIndex != null ? !serviceIndex.equals(that.serviceIndex) : that.serviceIndex != null) return false;
+        if (exitCode != null ? !exitCode.equals(that.exitCode) : that.exitCode != null) return false;
+        if (agentId != null ? !agentId.equals(that.agentId) : that.agentId != null) return false;
+        if (serviceId != null ? !serviceId.equals(that.serviceId) : that.serviceId != null) return false;
+        if (stackId != null ? !stackId.equals(that.stackId) : that.stackId != null) return false;
+        if (hostId != null ? !hostId.equals(that.hostId) : that.hostId != null) return false;
+        if (memoryReservation != null ? !memoryReservation.equals(that.memoryReservation) : that.memoryReservation != null)
+            return false;
+        if (milliCpuReservation != null ? !milliCpuReservation.equals(that.milliCpuReservation) : that.milliCpuReservation != null)
+            return false;
+        if (networkFromContainerId != null ? !networkFromContainerId.equals(that.networkFromContainerId) : that.networkFromContainerId != null)
+            return false;
+        if (networkId != null ? !networkId.equals(that.networkId) : that.networkId != null) return false;
+        if (startCount != null ? !startCount.equals(that.startCount) : that.startCount != null) return false;
+        if (createIndex != null ? !createIndex.equals(that.createIndex) : that.createIndex != null) return false;
+        if (serviceIds != null ? !serviceIds.equals(that.serviceIds) : that.serviceIds != null) return false;
+        if (ports != null ? !ports.equals(that.ports) : that.ports != null) return false;
+        if (dns != null ? !dns.equals(that.dns) : that.dns != null) return false;
+        if (dnsSearch != null ? !dnsSearch.equals(that.dnsSearch) : that.dnsSearch != null) return false;
+        if (labels != null ? !labels.equals(that.labels) : that.labels != null) return false;
+        if (links != null ? !links.equals(that.links) : that.links != null) return false;
+        if (healthCheckHosts != null ? !healthCheckHosts.equals(that.healthCheckHosts) : that.healthCheckHosts != null)
+            return false;
+        return healthCheck != null ? healthCheck.equals(that.healthCheck) : that.healthCheck == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (id ^ (id >>> 32));
+        result = 31 * result + (uuid != null ? uuid.hashCode() : 0);
+        result = 31 * result + (environmentUuid != null ? environmentUuid.hashCode() : 0);
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (hostname != null ? hostname.hashCode() : 0);
+        result = 31 * result + (healthState != null ? healthState.hashCode() : 0);
+        result = 31 * result + (state != null ? state.hashCode() : 0);
+        result = 31 * result + (externalId != null ? externalId.hashCode() : 0);
+        result = 31 * result + (primaryIp != null ? primaryIp.hashCode() : 0);
+        result = 31 * result + (primaryMacAddress != null ? primaryMacAddress.hashCode() : 0);
+        result = 31 * result + (serviceIndex != null ? serviceIndex.hashCode() : 0);
+        result = 31 * result + (exitCode != null ? exitCode.hashCode() : 0);
+        result = 31 * result + (shouldRestart ? 1 : 0);
+        result = 31 * result + (nativeContainer ? 1 : 0);
+        result = 31 * result + (int) (accountId ^ (accountId >>> 32));
+        result = 31 * result + (agentId != null ? agentId.hashCode() : 0);
+        result = 31 * result + (serviceId != null ? serviceId.hashCode() : 0);
+        result = 31 * result + (stackId != null ? stackId.hashCode() : 0);
+        result = 31 * result + (hostId != null ? hostId.hashCode() : 0);
+        result = 31 * result + (memoryReservation != null ? memoryReservation.hashCode() : 0);
+        result = 31 * result + (milliCpuReservation != null ? milliCpuReservation.hashCode() : 0);
+        result = 31 * result + (networkFromContainerId != null ? networkFromContainerId.hashCode() : 0);
+        result = 31 * result + (networkId != null ? networkId.hashCode() : 0);
+        result = 31 * result + (startCount != null ? startCount.hashCode() : 0);
+        result = 31 * result + (createIndex != null ? createIndex.hashCode() : 0);
+        result = 31 * result + (serviceIds != null ? serviceIds.hashCode() : 0);
+        result = 31 * result + (ports != null ? ports.hashCode() : 0);
+        result = 31 * result + (dns != null ? dns.hashCode() : 0);
+        result = 31 * result + (dnsSearch != null ? dnsSearch.hashCode() : 0);
+        result = 31 * result + (labels != null ? labels.hashCode() : 0);
+        result = 31 * result + (links != null ? links.hashCode() : 0);
+        result = 31 * result + (healthCheckHosts != null ? healthCheckHosts.hashCode() : 0);
+        result = 31 * result + (healthCheck != null ? healthCheck.hashCode() : 0);
+        return result;
+    }
+
+    public Long getCreateIndex() {
+
+        return createIndex;
     }
 
     public boolean isNativeContainer() {
@@ -238,88 +331,5 @@ public class InstanceInfo implements MetadataObject {
         return shouldRestart;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        InstanceInfo that = (InstanceInfo) o;
-
-        if (id != that.id) return false;
-        if (shouldRestart != that.shouldRestart) return false;
-        if (nativeContainer != that.nativeContainer) return false;
-        if (accountId != that.accountId) return false;
-        if (uuid != null ? !uuid.equals(that.uuid) : that.uuid != null) return false;
-        if (environmentUuid != null ? !environmentUuid.equals(that.environmentUuid) : that.environmentUuid != null)
-            return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (hostname != null ? !hostname.equals(that.hostname) : that.hostname != null) return false;
-        if (healthState != null ? !healthState.equals(that.healthState) : that.healthState != null) return false;
-        if (state != null ? !state.equals(that.state) : that.state != null) return false;
-        if (externalId != null ? !externalId.equals(that.externalId) : that.externalId != null) return false;
-        if (primaryIp != null ? !primaryIp.equals(that.primaryIp) : that.primaryIp != null) return false;
-        if (primaryMacAddress != null ? !primaryMacAddress.equals(that.primaryMacAddress) : that.primaryMacAddress != null)
-            return false;
-        if (serviceIndex != null ? !serviceIndex.equals(that.serviceIndex) : that.serviceIndex != null) return false;
-        if (exitCode != null ? !exitCode.equals(that.exitCode) : that.exitCode != null) return false;
-        if (agentId != null ? !agentId.equals(that.agentId) : that.agentId != null) return false;
-        if (serviceId != null ? !serviceId.equals(that.serviceId) : that.serviceId != null) return false;
-        if (stackId != null ? !stackId.equals(that.stackId) : that.stackId != null) return false;
-        if (hostId != null ? !hostId.equals(that.hostId) : that.hostId != null) return false;
-        if (memoryReservation != null ? !memoryReservation.equals(that.memoryReservation) : that.memoryReservation != null)
-            return false;
-        if (milliCpuReservation != null ? !milliCpuReservation.equals(that.milliCpuReservation) : that.milliCpuReservation != null)
-            return false;
-        if (networkFromContainerId != null ? !networkFromContainerId.equals(that.networkFromContainerId) : that.networkFromContainerId != null)
-            return false;
-        if (networkId != null ? !networkId.equals(that.networkId) : that.networkId != null) return false;
-        if (startCount != null ? !startCount.equals(that.startCount) : that.startCount != null) return false;
-        if (serviceIds != null ? !serviceIds.equals(that.serviceIds) : that.serviceIds != null) return false;
-        if (ports != null ? !ports.equals(that.ports) : that.ports != null) return false;
-        if (dns != null ? !dns.equals(that.dns) : that.dns != null) return false;
-        if (dnsSearch != null ? !dnsSearch.equals(that.dnsSearch) : that.dnsSearch != null) return false;
-        if (labels != null ? !labels.equals(that.labels) : that.labels != null) return false;
-        if (links != null ? !links.equals(that.links) : that.links != null) return false;
-        if (healthCheckHosts != null ? !healthCheckHosts.equals(that.healthCheckHosts) : that.healthCheckHosts != null)
-            return false;
-        return healthCheck != null ? healthCheck.equals(that.healthCheck) : that.healthCheck == null;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = (int) (id ^ (id >>> 32));
-        result = 31 * result + (uuid != null ? uuid.hashCode() : 0);
-        result = 31 * result + (environmentUuid != null ? environmentUuid.hashCode() : 0);
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (hostname != null ? hostname.hashCode() : 0);
-        result = 31 * result + (healthState != null ? healthState.hashCode() : 0);
-        result = 31 * result + (state != null ? state.hashCode() : 0);
-        result = 31 * result + (externalId != null ? externalId.hashCode() : 0);
-        result = 31 * result + (primaryIp != null ? primaryIp.hashCode() : 0);
-        result = 31 * result + (primaryMacAddress != null ? primaryMacAddress.hashCode() : 0);
-        result = 31 * result + (serviceIndex != null ? serviceIndex.hashCode() : 0);
-        result = 31 * result + (exitCode != null ? exitCode.hashCode() : 0);
-        result = 31 * result + (shouldRestart ? 1 : 0);
-        result = 31 * result + (nativeContainer ? 1 : 0);
-        result = 31 * result + (int) (accountId ^ (accountId >>> 32));
-        result = 31 * result + (agentId != null ? agentId.hashCode() : 0);
-        result = 31 * result + (serviceId != null ? serviceId.hashCode() : 0);
-        result = 31 * result + (stackId != null ? stackId.hashCode() : 0);
-        result = 31 * result + (hostId != null ? hostId.hashCode() : 0);
-        result = 31 * result + (memoryReservation != null ? memoryReservation.hashCode() : 0);
-        result = 31 * result + (milliCpuReservation != null ? milliCpuReservation.hashCode() : 0);
-        result = 31 * result + (networkFromContainerId != null ? networkFromContainerId.hashCode() : 0);
-        result = 31 * result + (networkId != null ? networkId.hashCode() : 0);
-        result = 31 * result + (startCount != null ? startCount.hashCode() : 0);
-        result = 31 * result + (serviceIds != null ? serviceIds.hashCode() : 0);
-        result = 31 * result + (ports != null ? ports.hashCode() : 0);
-        result = 31 * result + (dns != null ? dns.hashCode() : 0);
-        result = 31 * result + (dnsSearch != null ? dnsSearch.hashCode() : 0);
-        result = 31 * result + (labels != null ? labels.hashCode() : 0);
-        result = 31 * result + (links != null ? links.hashCode() : 0);
-        result = 31 * result + (healthCheckHosts != null ? healthCheckHosts.hashCode() : 0);
-        result = 31 * result + (healthCheck != null ? healthCheck.hashCode() : 0);
-        return result;
-    }
 }
 

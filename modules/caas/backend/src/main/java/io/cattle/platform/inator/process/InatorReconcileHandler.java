@@ -29,7 +29,7 @@ public class InatorReconcileHandler implements ProcessHandler, CompletableLogic 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         String resourceState = ObjectUtils.getState(state.getResource());
-        if (CommonStatesConstants.REGISTERING.equals(resourceState) || CommonStatesConstants.ERRORING.equals(resourceState)) {
+        if (CommonStatesConstants.CREATING.equals(resourceState) || CommonStatesConstants.ERRORING.equals(resourceState)) {
             return null;
         }
 
