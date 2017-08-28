@@ -407,7 +407,7 @@ public interface Instance extends java.io.Serializable {
 	/**
 	 * Getter for <code>cattle.instance.dns_search_internal</code>.
 	 */
-	@javax.persistence.Column(name = "dns_search_internal", length = 1024)
+	@javax.persistence.Column(name = "dns_search_internal", length = 255)
 	public java.lang.String getDnsSearchInternal();
 
 	/**
