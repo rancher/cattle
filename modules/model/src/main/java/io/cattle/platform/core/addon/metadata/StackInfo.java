@@ -1,6 +1,7 @@
 package io.cattle.platform.core.addon.metadata;
 
 import io.cattle.platform.core.model.Stack;
+import io.github.ibuildthecloud.gdapi.annotation.Field;
 
 public class StackInfo implements MetadataObject {
 
@@ -15,6 +16,11 @@ public class StackInfo implements MetadataObject {
         this.name = stack.getName();
         this.uuid = stack.getUuid();
         this.healthState = stack.getHealthState();
+    }
+
+    @Field(typeString = "reference[stack]")
+    public Long getInfoTypeId() {
+        return id;
     }
 
     @Override

@@ -1,6 +1,10 @@
 package io.cattle.platform.core.addon.metadata;
 
+import io.cattle.platform.core.addon.InstanceHealthCheck;
+import io.cattle.platform.core.addon.LbConfig;
+import io.cattle.platform.core.addon.Link;
 import io.cattle.platform.core.addon.PortInstance;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.ServiceUtil;
@@ -34,13 +38,13 @@ public class ServiceInfo implements MetadataObject {
 
     List<String> externalIps;
     List<String> sidekicks;
-    Set<Long> instances;
+    Set<Long> instanceIds;
     Set<PortInstance> ports;
-    Map<String, Object> links;
+    List<Link> links;
     Map<String, String> labels;
     Map<String, Object> metadata;
-
-    //LBConfigMetadataStyle lb_config;
+    HealthcheckInfo healthCheck;
+    LbConfig lbConfig;
 
     public ServiceInfo(Service service) {
         this.id = service.getId();
@@ -56,11 +60,29 @@ public class ServiceInfo implements MetadataObject {
         this.externalIps = DataAccessor.fieldStringList(service, ServiceConstants.FIELD_EXTERNALIPS);
         this.sidekicks = ServiceUtil.getSidekickNames(service);
         this.ports = new HashSet<>(DataAccessor.fieldObjectList(service, ServiceConstants.FIELD_PUBLIC_ENDPOINTS, PortInstance.class));
-        this.links = DataAccessor.fieldMapRO(service, ServiceConstants.FIELD_SERVICE_LINKS);
+        this.lbConfig = DataAccessor.field(service, ServiceConstants.FIELD_LB_CONFIG, LbConfig.class);
+        this.links = DataAccessor.fieldObjectList(service, ServiceConstants.FIELD_SERVICE_LINKS, Link.class);
         this.labels = DataAccessor.getLabels(service);
         this.metadata = DataAccessor.fieldMapRO(service, ServiceConstants.FIELD_METADATA);
         this.selector = service.getSelector();
-        this.instances = new HashSet<>(DataAccessor.fieldLongList(service, ServiceConstants.FIELD_INSTANCE_IDS));
+        this.instanceIds = new HashSet<>(DataAccessor.fieldLongList(service, ServiceConstants.FIELD_INSTANCE_IDS));
+        InstanceHealthCheck hc = DataAccessor.field(service, InstanceConstants.FIELD_HEALTH_CHECK, InstanceHealthCheck.class);
+        if (hc != null) {
+            this.healthCheck = new HealthcheckInfo(hc);
+        }
+    }
+
+    public LbConfig getLbConfig() {
+        return lbConfig;
+    }
+
+    public HealthcheckInfo getHealthCheck() {
+        return healthCheck;
+    }
+
+    @Field(typeString = "reference[service]")
+    public Long getInfoTypeId() {
+        return id;
     }
 
     @Override
@@ -140,7 +162,7 @@ public class ServiceInfo implements MetadataObject {
         return sidekicks;
     }
 
-    public Map<String, Object> getLinks() {
+    public List<Link> getLinks() {
         return links;
     }
 
@@ -160,8 +182,9 @@ public class ServiceInfo implements MetadataObject {
         return selector;
     }
 
-    public Set<Long> getInstances() {
-        return instances;
+    @Field(typeString = "array[reference[instance]]")
+    public Set<Long> getInstanceIds() {
+        return instanceIds;
     }
 
     @Override
@@ -188,11 +211,13 @@ public class ServiceInfo implements MetadataObject {
         if (selector != null ? !selector.equals(that.selector) : that.selector != null) return false;
         if (externalIps != null ? !externalIps.equals(that.externalIps) : that.externalIps != null) return false;
         if (sidekicks != null ? !sidekicks.equals(that.sidekicks) : that.sidekicks != null) return false;
-        if (instances != null ? !instances.equals(that.instances) : that.instances != null) return false;
+        if (instanceIds != null ? !instanceIds.equals(that.instanceIds) : that.instanceIds != null) return false;
         if (ports != null ? !ports.equals(that.ports) : that.ports != null) return false;
         if (links != null ? !links.equals(that.links) : that.links != null) return false;
         if (labels != null ? !labels.equals(that.labels) : that.labels != null) return false;
-        return metadata != null ? metadata.equals(that.metadata) : that.metadata == null;
+        if (metadata != null ? !metadata.equals(that.metadata) : that.metadata != null) return false;
+        if (healthCheck != null ? !healthCheck.equals(that.healthCheck) : that.healthCheck != null) return false;
+        return lbConfig != null ? lbConfig.equals(that.lbConfig) : that.lbConfig == null;
     }
 
     @Override
@@ -213,11 +238,13 @@ public class ServiceInfo implements MetadataObject {
         result = 31 * result + (selector != null ? selector.hashCode() : 0);
         result = 31 * result + (externalIps != null ? externalIps.hashCode() : 0);
         result = 31 * result + (sidekicks != null ? sidekicks.hashCode() : 0);
-        result = 31 * result + (instances != null ? instances.hashCode() : 0);
+        result = 31 * result + (instanceIds != null ? instanceIds.hashCode() : 0);
         result = 31 * result + (ports != null ? ports.hashCode() : 0);
         result = 31 * result + (links != null ? links.hashCode() : 0);
         result = 31 * result + (labels != null ? labels.hashCode() : 0);
         result = 31 * result + (metadata != null ? metadata.hashCode() : 0);
+        result = 31 * result + (healthCheck != null ? healthCheck.hashCode() : 0);
+        result = 31 * result + (lbConfig != null ? lbConfig.hashCode() : 0);
         return result;
     }
 }

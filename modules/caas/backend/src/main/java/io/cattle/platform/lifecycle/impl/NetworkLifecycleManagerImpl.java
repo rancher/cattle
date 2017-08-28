@@ -83,6 +83,7 @@ public class NetworkLifecycleManagerImpl implements NetworkLifecycleManager {
         }
 
         if (network != null) {
+            instance.setNetworkId(network.getId());
             setField(instance, InstanceConstants.FIELD_NETWORK_IDS, Arrays.asList(network.getId()));
             setField(instance, InstanceConstants.FIELD_PRIMARY_NETWORK_ID, network.getId());
         }

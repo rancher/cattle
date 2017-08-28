@@ -104,11 +104,6 @@ public class ClusterProcessManager {
                 .withFuture(future);
     }
 
-    public HandlerResult update(ProcessState state, ProcessInstance process) {
-        Cluster cluster = (Cluster) state.getResource();
-        return new HandlerResult(updateStack(cluster, clusterDao.getOwnerAcccountForCluster(cluster)));
-    }
-
     @SuppressWarnings({"unchecked", "rawtypes"})
     private ListenableFuture<?> updateStack(Cluster cluster, Account account) {
         List<Map> stacks = DataAccessor.fieldObjectList(cluster, ClusterConstants.FIELD_SYSTEM_STACK, Map.class);

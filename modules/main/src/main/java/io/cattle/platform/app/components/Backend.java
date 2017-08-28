@@ -304,7 +304,6 @@ public class Backend {
         r.handle("agent.*", agentHostStateUpdate::postHandle);
 
         r.handle("cluster.create", clusterProcessManager::create);
-        r.handle("cluster.update", clusterProcessManager::update);
         r.handle("cluster.remove", clusterProcessManager::postRemove);
 
         r.handle("credential.create", credentialProcessManager::create);

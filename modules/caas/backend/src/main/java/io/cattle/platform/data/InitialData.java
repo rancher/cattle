@@ -1,4 +1,4 @@
-package io.cattle.platform.sample.data;
+package io.cattle.platform.data;
 
 import com.netflix.config.DynamicStringListProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
@@ -11,11 +11,11 @@ import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Cluster;
 import io.cattle.platform.core.model.MachineDriver;
 import io.cattle.platform.core.model.ProjectMember;
+import io.cattle.platform.data.lock.InitialDataLock;
 import io.cattle.platform.deferred.util.DeferredUtils;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
-import io.cattle.platform.sample.lock.SampleDataLock;
 import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 import org.apache.cloudstack.managed.context.ManagedContextRunnable;
 import org.slf4j.Logger;
@@ -47,7 +47,7 @@ public class InitialData extends ManagedContextRunnable {
 
     @Override
     public void runInContext() {
-        lockManager.lock(new SampleDataLock(), () ->{
+        lockManager.lock(new InitialDataLock(), () ->{
             migrate("Accounts", this::accounts);
             migrate("Machine Drivers", this::machineDrivers);
             return null;

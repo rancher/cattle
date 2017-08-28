@@ -9,10 +9,16 @@ public class EnvironmentInfo implements MetadataObject {
     String uuid;
     String environmentUuid;
     String externalId;
+    String name;
     boolean system;
     long accountId;
 
     public EnvironmentInfo() {
+    }
+
+    @Field(typeString = "reference[account]")
+    public Long getInfoTypeId() {
+        return id;
     }
 
     public EnvironmentInfo(Account account) {
@@ -21,6 +27,11 @@ public class EnvironmentInfo implements MetadataObject {
         uuid = account.getUuid();
         externalId = account.getExternalId();
         system = account.getClusterOwner();
+        name = account.getName();
+    }
+
+    public String getName() {
+        return name;
     }
 
     public long getId() {
@@ -73,7 +84,8 @@ public class EnvironmentInfo implements MetadataObject {
         if (uuid != null ? !uuid.equals(that.uuid) : that.uuid != null) return false;
         if (environmentUuid != null ? !environmentUuid.equals(that.environmentUuid) : that.environmentUuid != null)
             return false;
-        return externalId != null ? externalId.equals(that.externalId) : that.externalId == null;
+        if (externalId != null ? !externalId.equals(that.externalId) : that.externalId != null) return false;
+        return name != null ? name.equals(that.name) : that.name == null;
     }
 
     @Override
@@ -82,9 +94,9 @@ public class EnvironmentInfo implements MetadataObject {
         result = 31 * result + (uuid != null ? uuid.hashCode() : 0);
         result = 31 * result + (environmentUuid != null ? environmentUuid.hashCode() : 0);
         result = 31 * result + (externalId != null ? externalId.hashCode() : 0);
+        result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (system ? 1 : 0);
         result = 31 * result + (int) (accountId ^ (accountId >>> 32));
         return result;
     }
-
 }

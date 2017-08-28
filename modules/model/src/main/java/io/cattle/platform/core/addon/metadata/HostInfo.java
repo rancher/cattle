@@ -47,6 +47,11 @@ public class HostInfo implements MetadataObject {
         return id;
     }
 
+    @Field(typeString = "reference[host]")
+    public Long getInfoTypeId() {
+        return id;
+    }
+
     @Override
     public String getEnvironmentUuid() {
         return environmentUuid;

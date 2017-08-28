@@ -67,7 +67,8 @@ public class HealthStateCalculateLoop implements Loop {
             }
 
             // Haven't met the scale yet
-            if (!serviceInfo.isGlobal() && serviceInfo.getScale() != null && healthStates.size() != serviceInfo.getScale()) {
+            if (!serviceInfo.isGlobal() && serviceInfo.getScale() != null &&
+                    healthStates.size() != (serviceInfo.getScale() * (1+serviceInfo.getSidekicks().size()))) {
                 healthStates.add(HEALTH_STATE_DEGRADED);
             }
 

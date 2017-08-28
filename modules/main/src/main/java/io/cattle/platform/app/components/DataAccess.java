@@ -43,6 +43,7 @@ import io.cattle.platform.core.dao.impl.StackDaoImpl;
 import io.cattle.platform.core.dao.impl.StorageDriverDaoImpl;
 import io.cattle.platform.core.dao.impl.StoragePoolDaoImpl;
 import io.cattle.platform.core.dao.impl.VolumeDaoImpl;
+import io.cattle.platform.data.InitialData;
 import io.cattle.platform.framework.encryption.handler.impl.TransformationServiceImpl;
 import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
@@ -50,7 +51,6 @@ import io.cattle.platform.iaas.api.auth.dao.PasswordDao;
 import io.cattle.platform.iaas.api.auth.dao.impl.AuthDaoImpl;
 import io.cattle.platform.iaas.api.auth.dao.impl.AuthTokenDaoImpl;
 import io.cattle.platform.iaas.api.auth.dao.impl.PasswordDaoImpl;
-import io.cattle.platform.sample.data.InitialData;
 
 public class DataAccess {
 

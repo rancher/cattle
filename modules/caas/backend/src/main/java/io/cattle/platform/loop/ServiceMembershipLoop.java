@@ -73,7 +73,7 @@ public class ServiceMembershipLoop implements Loop {
                 instanceIds = Collections.emptySet();
             }
 
-            if (!instanceIds.equals(serviceInfo.getInstances())) {
+            if (!instanceIds.equals(serviceInfo.getInstanceIds())) {
                 Set<Long> toSetInstanceIds = instanceIds;
                 metadata.modify(Service.class, serviceInfo.getId(), (service) -> {
                     return objectManager.setFields(service, ServiceConstants.FIELD_INSTANCE_IDS, toSetInstanceIds);

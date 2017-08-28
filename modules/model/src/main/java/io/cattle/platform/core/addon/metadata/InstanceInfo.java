@@ -92,6 +92,11 @@ public class InstanceInfo implements MetadataObject {
         }
     }
 
+    @Field(typeString = "reference[instance]")
+    public Long getInfoTypeId() {
+        return id;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

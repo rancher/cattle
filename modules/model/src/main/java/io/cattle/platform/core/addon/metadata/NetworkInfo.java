@@ -3,6 +3,7 @@ package io.cattle.platform.core.addon.metadata;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.object.util.DataAccessor;
+import io.github.ibuildthecloud.gdapi.annotation.Field;
 
 import java.util.Map;
 
@@ -11,6 +12,7 @@ public class NetworkInfo implements MetadataObject {
     Long id;
     String name;
     String uuid;
+    String kind;
     String environmentUuid;
     boolean hostPorts;
     Map<String, Object> metadata;
@@ -18,12 +20,22 @@ public class NetworkInfo implements MetadataObject {
     Object policy;
 
     public NetworkInfo(Network network) {
+        this.defaultPolicyAction = DataAccessor.fieldString(network, NetworkConstants.FIELD_DEFAULT_POLICY_ACTION);
         this.id = network.getId();
-        this.name = network.getName();
-        this.uuid = network.getUuid();
+        this.kind = network.getKind();
         this.metadata = DataAccessor.fieldMap(network, NetworkConstants.FIELD_METADATA);
-        this.defaultPolicyAction = DataAccessor.fieldString(network, NetworkConstants.FIELD_METADATA);
+        this.name = network.getName();
         this.policy = DataAccessor.fieldObject(network, NetworkConstants.FIELD_POLICY);
+        this.uuid = network.getUuid();
+    }
+
+    public String getKind() {
+        return kind;
+    }
+
+    @Field(typeString = "reference[network]")
+    public Long getInfoTypeId() {
+        return id;
     }
 
     public Long getId() {
@@ -81,6 +93,7 @@ public class NetworkInfo implements MetadataObject {
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (uuid != null ? !uuid.equals(that.uuid) : that.uuid != null) return false;
+        if (kind != null ? !kind.equals(that.kind) : that.kind != null) return false;
         if (environmentUuid != null ? !environmentUuid.equals(that.environmentUuid) : that.environmentUuid != null)
             return false;
         if (metadata != null ? !metadata.equals(that.metadata) : that.metadata != null) return false;
@@ -94,6 +107,7 @@ public class NetworkInfo implements MetadataObject {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (uuid != null ? uuid.hashCode() : 0);
+        result = 31 * result + (kind != null ? kind.hashCode() : 0);
         result = 31 * result + (environmentUuid != null ? environmentUuid.hashCode() : 0);
         result = 31 * result + (hostPorts ? 1 : 0);
         result = 31 * result + (metadata != null ? metadata.hashCode() : 0);

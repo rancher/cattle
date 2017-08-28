@@ -175,8 +175,7 @@ public class NetworkProcessManager {
         Long defaultNetworkId = cluster.getDefaultNetworkId();
         Long newDefaultNetworkId = null;
         for (Network network : networkDao.getActiveNetworks(cluster.getId())) {
-            if (network.getKind().startsWith(NetworkConstants.PREFIX_KIND_DOCKER) ||
-                    network.getKind().equals("hostOnlyNetwork")) {
+            if (NetworkConstants.NETWORK_BUILTIN.contains(network.getKind())) {
                 continue;
             }
 
