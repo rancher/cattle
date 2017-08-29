@@ -51,7 +51,7 @@ public class EnvironmentResourceManagerImpl implements MetadataManager {
     );
 
     ClusterDao clusterDao;
-    MetadataObjectFactory factory = new MetadataObjectFactory();
+    MetadataObjectFactory factory;
     LoopManager loopManager;
     LockManager lockManager;
     ObjectManager objectManager;

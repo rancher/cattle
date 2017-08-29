@@ -97,6 +97,7 @@ import io.cattle.platform.process.instance.DeploymentSyncFactory;
 import io.cattle.platform.process.instance.InstanceProcessManager;
 import io.cattle.platform.process.instance.InstanceRemove;
 import io.cattle.platform.process.instance.InstanceStart;
+import io.cattle.platform.process.instance.InstanceStartCheck;
 import io.cattle.platform.process.instance.InstanceStop;
 import io.cattle.platform.process.instance.K8sProviderLabels;
 import io.cattle.platform.process.mount.MountProcessManager;
@@ -265,7 +266,7 @@ public class Backend {
         HostProcessManager hostProcessManager = new HostProcessManager(d.instanceDao, f.resourceMonitor, f.eventService, d.hostDao, f.metaDataManager, f.objectManager, f.processManager);
         InatorReconcileHandler inatorReconcileHandler = new InatorReconcileHandler(f.objectManager, loopManager);
         InstanceProcessManager instanceProcessManager = new InstanceProcessManager(instanceLifecycleManager, f.processManager);
-        NetworkProcessManager networkProcessManager = new NetworkProcessManager(d.resourceDao, f.objectManager, f.processManager, d.networkDao, f.lockManager, f.jsonMapper, f.resourcePoolManager);
+        NetworkProcessManager networkProcessManager = new NetworkProcessManager(d.resourceDao, f.objectManager, f.processManager, d.networkDao, f.lockManager, f.jsonMapper, f.resourcePoolManager, f.resourceMonitor);
 
         MountProcessManager mountProcessManager = new MountProcessManager(f.lockManager, f.objectManager, f.processManager);
         ScheduledUpgradeProcessManager scheduledUpgradeProcessManager = new ScheduledUpgradeProcessManager(c.catalogService, upgradeManager, f.objectManager, f.processManager);
@@ -280,6 +281,7 @@ public class Backend {
         DeploymentUnitRemove deploymentUnitRemove = new DeploymentUnitRemove(f.resourcePoolManager);
         HosttemplateRemove hosttemplateRemove = new HosttemplateRemove(c.secretsService);
         InstanceRemove instanceRemove = new InstanceRemove(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager, deploymentSyncFactory, metadataManager);
+        InstanceStartCheck instanceStartCheck = new InstanceStartCheck(metadataManager, f.objectManager, f.resourceMonitor);
         InstanceStart instanceStart = new InstanceStart(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager, deploymentSyncFactory, metadataManager);
         InstanceStop instanceStop = new InstanceStop(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager, deploymentSyncFactory, metadataManager);
         K8sProviderLabels k8sProviderLabels = new K8sProviderLabels(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager, metadataManager);
@@ -304,6 +306,7 @@ public class Backend {
         r.handle("agent.*", agentHostStateUpdate::postHandle);
 
         r.handle("cluster.create", clusterProcessManager::create);
+        r.handle("cluster.activate", clusterProcessManager::activate);
         r.handle("cluster.remove", clusterProcessManager::postRemove);
 
         r.handle("credential.create", credentialProcessManager::create);
@@ -327,7 +330,7 @@ public class Backend {
         r.handle("hosttemplate.remove", hosttemplateRemove);
 
         r.handle("instance.create", instanceProcessManager::preCreate, instanceProcessManager::create);
-        r.handle("instance.start", instanceProcessManager::preStart, instanceStart, instanceProcessManager::postStart);//, k8sProviderLabels);
+        r.handle("instance.start", instanceProcessManager::preStart, instanceStartCheck, instanceStart, instanceProcessManager::postStart);//, k8sProviderLabels);
         r.handle("instance.stop", instanceStop, instanceProcessManager::postStop);
         r.handle("instance.restart", instanceProcessManager::restart);
         r.handle("instance.remove", instanceProcessManager::preRemove, instanceRemove, instanceProcessManager::postRemove);
@@ -347,7 +350,7 @@ public class Backend {
         r.handle("network.remove", networkProcessManager::remove);
         r.handle("network.*", networkProcessManager::updateDefaultNetwork);
 
-        r.handle("networkdriver.activate", networkProcessManager::networkDriverActivate);
+        r.handle("networkdriver.create", networkProcessManager::networkDriverCreate);
         r.handle("networkdriver.remove", networkProcessManager::networkDriverRemove);
 
         r.handle("scheduledupgrade.create", scheduledUpgradeProcessManager::create);
@@ -370,9 +373,8 @@ public class Backend {
         r.handle("stack.rollback", stackProcessManager::preRollback, composeExecutor, stackProcessManager::postRollback);
         r.handle("stack.update", composeExecutor, stackProcessManager::postUpdate);
 
-        r.handle("storagedriver.activate", driverProcessManager::storageDriverActivate, driverProcessManager::setupPools);
-        r.handle("storagedriver.deactivate", driverProcessManager::setupPools);
-        r.handle("storagedriver.remove", driverProcessManager::storageDriverRemove);
+        r.handle("storagedriver.create", driverProcessManager::storageDriverActivate, driverProcessManager::setupPools);
+        r.handle("storagedriver.remove", driverProcessManager::setupPools, driverProcessManager::storageDriverRemove);
 
         r.handle("storagepool.remove", agentResourceRemove, storagePoolRemove);
 

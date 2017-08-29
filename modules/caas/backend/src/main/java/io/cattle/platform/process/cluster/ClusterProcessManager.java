@@ -28,6 +28,7 @@ import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.engine.process.impl.ProcessDelayException;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.lifecycle.util.LifecycleException;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
@@ -96,16 +97,29 @@ public class ClusterProcessManager {
             account = clusterDao.createOwnerAccount(cluster);
         }
 
-        ListenableFuture<?> future = updateStack(cluster, account);
+        Account defaultProject = clusterDao.getDefaultProject(cluster);
+        if (defaultProject == null) {
+            clusterDao.createDefaultProject(cluster);
+        }
 
         cluster = clusterDao.assignTokens(cluster);
-        return new HandlerResult(
-                ClusterConstants.FIELD_REGISTRATION, registrationToken(cluster))
-                .withFuture(future);
+        return new HandlerResult(ClusterConstants.FIELD_REGISTRATION, registrationToken(cluster));
+    }
+
+    public HandlerResult activate(ProcessState state, ProcessInstance process) {
+        Cluster cluster = (Cluster) state.getResource();
+        Account account = clusterDao.getOwnerAcccountForCluster(cluster);
+
+        try {
+            new HandlerResult(updateStack(cluster, account));
+            return null;
+        } catch (LifecycleException e) {
+            return new HandlerResult().withChainProcessName(ClusterConstants.PROCESS_ERROR);
+        }
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private ListenableFuture<?> updateStack(Cluster cluster, Account account) {
+    private ListenableFuture<?> updateStack(Cluster cluster, Account account) throws LifecycleException {
         List<Map> stacks = DataAccessor.fieldObjectList(cluster, ClusterConstants.FIELD_SYSTEM_STACK, Map.class);
         if (stacks == null || stacks.size() == 0) {
             stacks = defaultStacks();
@@ -165,7 +179,7 @@ public class ClusterProcessManager {
         return futures.size() == 0 ? null : AsyncUtils.afterAll(futures);
     }
 
-    private void setClusterErrorMessageIfNeeded(Cluster cluster, Stack existing) {
+    private void setClusterErrorMessageIfNeeded(Cluster cluster, Stack existing) throws LifecycleException {
         if (!CommonStatesConstants.ERROR.equals(existing.getState())) {
             return;
         }
@@ -175,9 +189,11 @@ public class ClusterProcessManager {
             return;
         }
 
+        String message = "Stack error: " + existing.getName() + ": " + stackTransitioningMessage;
         DataAccessor.setField(cluster, ObjectMetaDataManager.TRANSITIONING_FIELD, ObjectMetaDataManager.TRANSITIONING_ERROR_OVERRIDE);
-        DataAccessor.setField(cluster, ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD,
-                "Stack error: " + existing.getName() + ": " + stackTransitioningMessage);
+        DataAccessor.setField(cluster, ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD, message);
+
+        throw new LifecycleException(message);
     }
 
     private Map<String, Object> stackToCompareMap(Stack stack) {

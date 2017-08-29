@@ -1,9 +1,11 @@
 package io.cattle.platform.core.dao.impl;
 
+import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.ClusterConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.CredentialConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ClusterDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Account;
@@ -14,8 +16,11 @@ import io.cattle.platform.core.model.tables.records.AccountRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 import org.jooq.Configuration;
+
+import java.util.Map;
 
 import static io.cattle.platform.core.model.Tables.*;
 
@@ -63,7 +68,31 @@ public class ClusterDaoImpl extends AbstractJooqDao implements ClusterDao {
             if (cluster.getCreatorId() != null) {
                 grantOwner(cluster.getCreatorId(), ProjectConstants.RANCHER_ID, account);
             }
+
             return account;
+        });
+    }
+
+    @Override
+    public Account getDefaultProject(Cluster cluster) {
+        return objectManager.findAny(Account.class,
+                ACCOUNT.CLUSTER_ID, cluster.getId(),
+                ACCOUNT.NAME, ServiceConstants.DEFAULT_STACK_NAME,
+                ACCOUNT.KIND, ProjectConstants.TYPE,
+                ACCOUNT.REMOVED, null);
+    }
+
+    @Override
+    public Account createDefaultProject(Cluster cluster) {
+        return transaction.doInTransactionResult(() -> {
+            Map<String, Object> data = objectManager.convertToPropertiesFor(Account.class,
+                    CollectionUtils.asMap(
+                        ACCOUNT.CLUSTER_ID, cluster.getId(),
+                        ACCOUNT.NAME, ServiceConstants.DEFAULT_STACK_NAME,
+                        ACCOUNT.KIND, ProjectConstants.TYPE));
+            data.put(AccountConstants.OPTION_CREATE_OWNER_ACCESS, true);
+
+            return resourceDao.createAndSchedule(Account.class, data);
         });
     }
 

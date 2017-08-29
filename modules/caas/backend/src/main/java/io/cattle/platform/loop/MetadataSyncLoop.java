@@ -2,6 +2,7 @@ package io.cattle.platform.loop;
 
 import io.cattle.platform.core.addon.Removed;
 import io.cattle.platform.core.addon.metadata.InstanceInfo;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.engine.manager.LoopFactory;
@@ -54,6 +55,10 @@ public class MetadataSyncLoop implements Loop {
         }
 
         if (instance.isNativeContainer()) {
+            return null;
+        }
+
+        if (!InstanceConstants.STATE_RUNNING.equals(instance.getState())) {
             return null;
         }
 

@@ -19,16 +19,20 @@ import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListener, Task, TaskOptions {
 
     private static final DynamicLongProperty DEFAULT_WAIT = ArchaiusUtil.getLong("resource.monitor.default.wait.millis");
 
     ObjectManager objectManager;
-    ConcurrentMap<String, Runnable> waiters = new ConcurrentHashMap<>();
+    ConcurrentMap<String, List<Runnable>> waiters = new ConcurrentHashMap<>();
     IdFormatter idFormatter;
 
     public ResourceMonitorImpl(ObjectManager objectManager, IdFormatter idFormatter) {
@@ -45,9 +49,9 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
     @EventHandler
     public void resourceChange(Event event) {
         String key = key(event.getResourceType(), event.getResourceId());
-        waiters.computeIfPresent(key, (waitKey, checker) -> {
-            checker.run();
-            return checker;
+        waiters.computeIfPresent(key, (waitKey, checkers) -> {
+            checkers.forEach(Runnable::run);
+            return checkers;
         });
     }
 
@@ -91,11 +95,13 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
         };
 
         try {
-            Runnable oldChecker = waiters.putIfAbsent(key, checker);
-            if (oldChecker != null) {
-                checker = oldChecker;
-            }
-
+            waiters.compute(key, (k, runnables) -> {
+                if (runnables == null) {
+                    return new CopyOnWriteArrayList<>(new Runnable[]{checker});
+                }
+                runnables.add(checker);
+                return runnables;
+            });
             return future;
         } finally {
             checker.run();
@@ -109,7 +115,7 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
 
     @Override
     public void run() {
-        new ArrayList<>(waiters.values()).forEach(Runnable::run);
+        new ArrayList<>(waiters.values()).forEach((list) -> list.forEach(Runnable::run));
     }
 
     @Override
@@ -118,6 +124,16 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
         return waitFor(obj, "state " + desiredStatesSet, (testObject) -> {
             return desiredStatesSet.contains(ObjectUtils.getState(testObject));
         });
+    }
+
+    @Override
+    public <T> ListenableFuture<List<T>> waitForState(Collection<T> objs, String... state) {
+        List<ListenableFuture<T>> futures = new ArrayList<>();
+        for (T obj : objs) {
+            futures.add(waitForState(obj, state));
+        }
+
+        return futures.size() == 0 ? AsyncUtils.done(Collections.emptyList()) : AsyncUtils.afterAll(futures);
     }
 
     @Override

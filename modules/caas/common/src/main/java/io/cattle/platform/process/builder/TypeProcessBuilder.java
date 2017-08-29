@@ -89,17 +89,17 @@ public class TypeProcessBuilder {
                 startStates.addAll(filterBlacklist(restingStates));
             }
 
+            if (startStates.size() == 0) {
+                // This means we want to allow starting from everything, except ourself
+                startStates.addAll(filterBlacklist(allStates));
+                startStates.remove(template.to);
+            }
+
             for (String processName : template.during) {
                 String state = processToTransitioning.get(processName);
                 if (state != null) {
                     startStates.add(state);
                 }
-            }
-
-            if (startStates.size() == 0) {
-                // This means we want to allow starting from everything, except ourself
-                startStates.addAll(filterBlacklist(allStates));
-                startStates.remove(template.to);
             }
 
             if (template.self) {

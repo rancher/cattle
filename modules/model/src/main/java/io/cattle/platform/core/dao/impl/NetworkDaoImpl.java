@@ -77,11 +77,11 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
     }
 
     @Override
-    public List<Long> findInstancesInUseByServiceDriver(Long serviceId) {
+    public List<Long> findInstancesInUseByServiceDriver(Collection<Long> serviceId) {
         Long[] ignore = create()
             .select(INSTANCE.ID)
             .from(INSTANCE)
-            .where(INSTANCE.SERVICE_ID.eq(serviceId)
+            .where(INSTANCE.SERVICE_ID.in(serviceId)
                     .and(INSTANCE.REMOVED.isNull()))
             .fetch().intoArray(INSTANCE.ID);
 
@@ -91,7 +91,7 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
                 .on(INSTANCE.NETWORK_ID.eq(NETWORK.ID))
             .join(NETWORK_DRIVER)
                 .on(NETWORK_DRIVER.ID.eq(NETWORK.NETWORK_DRIVER_ID))
-            .where(NETWORK_DRIVER.SERVICE_ID.eq(serviceId)
+            .where(NETWORK_DRIVER.SERVICE_ID.in(serviceId)
                     .and(INSTANCE.REMOVED.isNull())
                     .and(INSTANCE.ID.notIn(ignore)))
             .fetchInto(Long.class);
@@ -117,7 +117,7 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
         return create().select(NETWORK.fields())
                 .from(NETWORK)
                 .where(NETWORK.CLUSTER_ID.eq(clusterId)
-                    .and(NETWORK.STATE.in(CommonStatesConstants.ACTIVATING, CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING)))
+                    .and(NETWORK.STATE.in(CommonStatesConstants.CREATING, CommonStatesConstants.UPDATING)))
                 .fetchInto(NetworkRecord.class);
     }
 

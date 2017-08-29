@@ -43,7 +43,7 @@ public class DeploymentUnitInator implements Inator {
 
     @Override
     public List<Unit> collect() {
-        if (!unit.isDeployable()) {
+        if (getDesiredState() == DesiredState.ACTIVE && !unit.isDeployable()) {
             return Collections.emptyList();
         }
 

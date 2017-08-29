@@ -4,7 +4,6 @@ import io.cattle.platform.core.constants.ClusterConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.NetworkDriverConstants;
-import io.cattle.platform.core.dao.ClusterDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Cluster;
@@ -19,6 +18,7 @@ import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.lock.DefaultNetworkLock;
 import io.cattle.platform.resource.pool.PooledResource;
@@ -50,9 +50,10 @@ public class NetworkProcessManager {
     LockManager lockManager;
     JsonMapper jsonMapper;
     ResourcePoolManager resourcePoolManager;
-    ClusterDao clusterDao;
+    ResourceMonitor resourceMonitor;
 
-    public NetworkProcessManager(GenericResourceDao resourceDao, ObjectManager objectManager, ObjectProcessManager processManager, NetworkDao networkDao, LockManager lockManager, JsonMapper jsonMapper, ResourcePoolManager resourcePoolManager) {
+    public NetworkProcessManager(GenericResourceDao resourceDao, ObjectManager objectManager, ObjectProcessManager processManager, NetworkDao networkDao, LockManager lockManager, JsonMapper jsonMapper, ResourcePoolManager resourcePoolManager,
+                                 ResourceMonitor resourceMonitor) {
         this.resourceDao = resourceDao;
         this.objectManager = objectManager;
         this.processManager = processManager;
@@ -60,22 +61,28 @@ public class NetworkProcessManager {
         this.lockManager = lockManager;
         this.jsonMapper = jsonMapper;
         this.resourcePoolManager = resourcePoolManager;
+        this.resourceMonitor = resourceMonitor;
     }
 
     public HandlerResult create(ProcessState state, ProcessInstance process) {
         Network network = (Network)state.getResource();
+        Map<Long, Subnet> subnets = createSubnets(network);
 
-        createSubnets(network);
-
-        return new HandlerResult(
+        HandlerResult result = new HandlerResult(
                 NetworkConstants.FIELD_METADATA, getMetadata(network),
                 NetworkConstants.FIELD_MAC_PREFIX, getMacPrefix(network));
+
+        if (subnets != null) {
+            result.withFuture(resourceMonitor.waitForState(subnets.values(), CommonStatesConstants.ACTIVE));
+        }
+
+        return result;
     }
 
-    protected void createSubnets(Network network) {
+    protected Map<Long, Subnet> createSubnets(Network network) {
         Object obj = DataAccessor.field(network, NetworkConstants.FIELD_SUBNETS, Object.class);
         if (obj == null) {
-            return;
+            return null;
         }
 
         Map<Long, Subnet> existingSubnets = new HashMap<>();
@@ -94,7 +101,7 @@ public class NetworkProcessManager {
             }
 
             Subnet subnet = ProxyUtils.proxy(subnets.get(i), Subnet.class);
-            subnet = objectManager.create(Subnet.class,
+            subnet = resourceDao.createAndSchedule(Subnet.class,
                     SUBNET.NAME, subnet.getName(),
                     SUBNET.DESCRIPTION, subnet.getDescription(),
                     SUBNET.CIDR_SIZE, subnet.getCidrSize(),
@@ -109,9 +116,7 @@ public class NetworkProcessManager {
             existingSubnets.put(key, subnet);
         }
 
-        for (Subnet subnet : existingSubnets.values()) {
-            processManager.executeCreateThenActivate(subnet, null);
-        }
+        return existingSubnets;
     }
 
     protected Object getMetadata(Network network) {
@@ -184,7 +189,7 @@ public class NetworkProcessManager {
                 break;
             }
 
-            if ((CommonStatesConstants.ACTIVATING.equals(network.getState()) ||
+            if ((CommonStatesConstants.CREATING.equals(network.getState()) ||
                     CommonStatesConstants.UPDATING.equals(network.getState())) &&
                     newDefaultNetworkId == null) {
                 newDefaultNetworkId = network.getId();
@@ -198,7 +203,7 @@ public class NetworkProcessManager {
         }
     }
 
-    public HandlerResult networkDriverActivate(ProcessState state, ProcessInstance process) {
+    public HandlerResult networkDriverCreate(ProcessState state, ProcessInstance process) {
         NetworkDriver networkDriver = (NetworkDriver)state.getResource();
         List<Network> created = objectManager.children(networkDriver, Network.class);
         Map<String, Object> network = DataAccessor.fieldMap(networkDriver, NetworkDriverConstants.FIELD_DEFAULT_NETWORK);

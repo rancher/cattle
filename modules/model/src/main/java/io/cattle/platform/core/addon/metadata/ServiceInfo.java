@@ -10,8 +10,10 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -45,9 +47,12 @@ public class ServiceInfo implements MetadataObject {
     Map<String, Object> metadata;
     HealthcheckInfo healthCheck;
     LbConfig lbConfig;
+    boolean global;
 
     public ServiceInfo(Service service) {
         this.id = service.getId();
+        this.global = "true".equals(CollectionUtils.getNestedValue(service.getData(), "fields", "launchConfig", "labels",
+                SystemLabels.LABEL_SERVICE_GLOBAL));
         this.stackId = service.getStackId();
         this.scale = DataAccessor.fieldInteger(service, ServiceConstants.FIELD_SCALE);
         this.fqdn = DataAccessor.fieldString(service, ServiceConstants.FIELD_FQDN);
@@ -62,7 +67,7 @@ public class ServiceInfo implements MetadataObject {
         this.ports = new HashSet<>(DataAccessor.fieldObjectList(service, ServiceConstants.FIELD_PUBLIC_ENDPOINTS, PortInstance.class));
         this.lbConfig = DataAccessor.field(service, ServiceConstants.FIELD_LB_CONFIG, LbConfig.class);
         this.links = DataAccessor.fieldObjectList(service, ServiceConstants.FIELD_SERVICE_LINKS, Link.class);
-        this.labels = DataAccessor.getLabels(service);
+        this.labels = new HashMap<>();
         this.metadata = DataAccessor.fieldMapRO(service, ServiceConstants.FIELD_METADATA);
         this.selector = service.getSelector();
         this.instanceIds = new HashSet<>(DataAccessor.fieldLongList(service, ServiceConstants.FIELD_INSTANCE_IDS));
@@ -101,7 +106,7 @@ public class ServiceInfo implements MetadataObject {
     }
 
     public boolean isGlobal() {
-        return "true".equalsIgnoreCase(labels.get(SystemLabels.LABEL_SERVICE_GLOBAL));
+        return global;
     }
 
     public long getId() {
@@ -195,6 +200,7 @@ public class ServiceInfo implements MetadataObject {
         ServiceInfo that = (ServiceInfo) o;
 
         if (id != that.id) return false;
+        if (global != that.global) return false;
         if (stackId != null ? !stackId.equals(that.stackId) : that.stackId != null) return false;
         if (scale != null ? !scale.equals(that.scale) : that.scale != null) return false;
         if (environmentUuid != null ? !environmentUuid.equals(that.environmentUuid) : that.environmentUuid != null)
@@ -245,6 +251,7 @@ public class ServiceInfo implements MetadataObject {
         result = 31 * result + (metadata != null ? metadata.hashCode() : 0);
         result = 31 * result + (healthCheck != null ? healthCheck.hashCode() : 0);
         result = 31 * result + (lbConfig != null ? lbConfig.hashCode() : 0);
+        result = 31 * result + (global ? 1 : 0);
         return result;
     }
 }

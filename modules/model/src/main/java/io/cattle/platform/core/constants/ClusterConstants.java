@@ -9,5 +9,6 @@ public class ClusterConstants {
     public static final String FIELD_REGISTRATION_ID = "registrationTokenId";
     public static final String FIELD_REGISTRATION = "registrationToken";
     public static final String FIELD_SYSTEM_STACK = "systemStacks";
+    public static final String PROCESS_ERROR = "cluster.error";
 
 }

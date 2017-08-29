@@ -7,6 +7,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class CollectionUtils {
 
@@ -101,6 +103,10 @@ public class CollectionUtils {
         }
 
         return result;
+    }
+
+    public static <T, R> List<R> map(List<T> list, Function<T, R> fun) {
+        return list.stream().map(fun::apply).collect(Collectors.toList());
     }
 
     @SafeVarargs

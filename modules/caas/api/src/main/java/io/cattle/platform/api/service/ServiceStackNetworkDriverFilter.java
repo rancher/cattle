@@ -8,6 +8,7 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.StandardProcess;
+import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
@@ -61,11 +62,9 @@ public class ServiceStackNetworkDriverFilter extends AbstractValidationFilter {
                     SERVICE.REMOVED, null);
         }
 
-        for (Service service : services) {
-            List<Long> ids = networkDao.findInstancesInUseByServiceDriver(service.getId());
-            if (ids.size() > 0) {
-                throwException(ids);
-            }
+        List<Long> ids = networkDao.findInstancesInUseByServiceDriver(CollectionUtils.map(services, Service::getId));
+        if (ids.size() > 0) {
+            throwException(ids);
         }
     }
 

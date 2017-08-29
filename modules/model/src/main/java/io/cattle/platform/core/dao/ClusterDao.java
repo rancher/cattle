@@ -13,6 +13,10 @@ public interface ClusterDao {
 
     Account createOwnerAccount(Cluster cluster);
 
+    Account getDefaultProject(Cluster cluster);
+
+    Account createDefaultProject(Cluster cluster);
+
     Cluster assignTokens(Cluster cluster);
 
 }

@@ -56,7 +56,7 @@ public class Reconcile {
         Deployinator deployinator = new DeployinatorImpl(inatorFactoryinator, f.objectManager, f.lockManager, activityService, b.serviceLifecycleManager);
         LoopFactoryImpl loopFactory = new LoopFactoryImpl(activityService, c.catalogService, deployinator, f.eventService, d.hostDao, f.objectManager, f.processManager, f.scheduledExecutorService, b.serviceLifecycleManager, null, null, c.agentLocator, c.objectSerializer);
         loopManager = new LoopManagerImpl(loopFactory, f.executorService, f.objectManager, f.scheduledExecutorService);
-        metadataManager = new EnvironmentResourceManagerImpl(new MetadataObjectFactory(), loopManager, f.lockManager, f.objectManager, f.eventService, d.clusterDao, f.triggers);
+        metadataManager = new EnvironmentResourceManagerImpl(new MetadataObjectFactory(f.objectManager), loopManager, f.lockManager, f.objectManager, f.eventService, d.clusterDao, f.triggers);
 
         loopFactory.setEnvResourceManager(metadataManager);
         loopFactory.setLoopManager(loopManager);

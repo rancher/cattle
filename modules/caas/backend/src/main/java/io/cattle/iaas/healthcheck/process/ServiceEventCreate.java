@@ -58,12 +58,14 @@ public class ServiceEventCreate implements ProcessHandler {
                 continue;
             }
 
-            if (event.getExternalTimestamp() != null &&
-                    event.getExternalTimestamp().compareTo(hcState.getExternalTimestamp()) < 0) {
-                continue;
+            if (hcState.getExternalTimestamp() != null) {
+                if (event.getExternalTimestamp() != null &&
+                        event.getExternalTimestamp().compareTo(hcState.getExternalTimestamp()) < 0) {
+                    continue;
+                }
             }
 
-            if (!hcState.getHealthState().equals(health)) {
+            if (hcState.getHealthState().equals(health)) {
                 continue;
             }
 

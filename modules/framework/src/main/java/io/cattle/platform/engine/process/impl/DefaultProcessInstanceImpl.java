@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 
 import static io.cattle.platform.engine.process.ExitReason.*;
 import static io.cattle.platform.util.time.TimeUtils.*;
@@ -640,10 +641,14 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
     }
 
     public static HandlerResult complete(ProcessHandler handler, ListenableFuture<?> future, ProcessState state, ProcessInstance process) {
-        if (handler instanceof CompletableLogic) {
-            return ((CompletableLogic) handler).complete(future, state, process);
+        try {
+            if (handler instanceof CompletableLogic) {
+                return ((CompletableLogic) handler).complete(future, state, process);
+            }
+            AsyncUtils.get(future);
+        } catch (CancellationException e) {
+            throw new ProcessCancelException(e.getMessage());
         }
-        AsyncUtils.get(future);
         return null;
     }
 

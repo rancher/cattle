@@ -19,7 +19,7 @@ public interface NetworkDao {
 
     List<Subnet> getSubnets(Network network);
 
-    List<Long> findInstancesInUseByServiceDriver(Long id);
+    List<Long> findInstancesInUseByServiceDriver(Collection<Long> id);
 
     Collection<? extends Network> getNetworks(Set<Long> networkIds);
 }

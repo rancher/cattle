@@ -1,6 +1,5 @@
 package io.cattle.platform.process.driver;
 
-import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.StorageDriverConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
@@ -20,9 +19,7 @@ import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
-import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
-import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.process.lock.DriverLock;
 import io.cattle.platform.storage.service.StorageService;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -159,10 +156,7 @@ public class DriverProcessManager {
     protected void addDriver(String driverKey, Service service, Map<String, Object> fields) {
         Object driver = findDriver(driverKey, service, fields);
         if (driver == null) {
-            driver = createDriver(driverKey, service, fields);
-        }
-        if (!CommonStatesConstants.ACTIVE.equals(ObjectUtils.getState(driver))) {
-            processManager.scheduleStandardProcessAsync(StandardProcess.ACTIVATE, driver, null);
+            createDriver(driverKey, service, fields);
         }
     }
 
@@ -179,7 +173,7 @@ public class DriverProcessManager {
         }
 
         Map<String, Object> data = CollectionUtils.asMap("fields", fields);
-        return objectManager.create(driverClass,
+        return resourceDao.createAndSchedule(driverClass,
                 ObjectMetaDataManager.NAME_FIELD, name,
                 ObjectMetaDataManager.CLUSTER_FIELD, service.getClusterId(),
                 "serviceId", service.getId(),
