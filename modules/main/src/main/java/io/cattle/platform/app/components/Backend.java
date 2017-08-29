@@ -288,7 +288,7 @@ public class Backend {
         MountRemove mountRemove = new MountRemove(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager);
         PullTaskCreate pullTaskCreate = new PullTaskCreate(allocationHelper, c.agentLocator, progress, imageCredentialLookup, c.objectSerializer, f.objectManager);
         SecretRemove secretRemove = new SecretRemove(c.secretsService);
-        ServiceEventCreate serviceEventCreate = new ServiceEventCreate(f.objectManager, loopManager);
+        ServiceEventCreate serviceEventCreate = new ServiceEventCreate(f.objectManager, f.lockManager);
         SetRemovedFields setRemovedFields = new SetRemovedFields(f.objectManager);
         StoragePoolRemove storagePoolRemove = new StoragePoolRemove(f.objectManager, f.processManager, d.volumeDao);
         SubnetCreate subnetCreate = new SubnetCreate(f.jsonMapper);

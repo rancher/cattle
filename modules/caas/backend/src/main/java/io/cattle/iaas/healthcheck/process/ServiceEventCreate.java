@@ -1,17 +1,15 @@
 package io.cattle.iaas.healthcheck.process;
 
 import io.cattle.platform.core.addon.HealthcheckState;
-import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.ServiceEvent;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessHandler;
-import io.cattle.platform.engine.manager.LoopFactory;
-import io.cattle.platform.engine.manager.LoopManager;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 
@@ -20,16 +18,16 @@ import java.util.List;
 public class ServiceEventCreate implements ProcessHandler {
 
     ObjectManager objectManager;
-    LoopManager loopManager;
+    LockManager lockManager;
 
-    public ServiceEventCreate(ObjectManager objectManager, LoopManager loopManager) {
+    public ServiceEventCreate(ObjectManager objectManager, LockManager lockManager) {
         this.objectManager = objectManager;
-        this.loopManager = loopManager;
+        this.lockManager = lockManager;
     }
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        ServiceEvent event = (ServiceEvent)state.getResource();
+        ServiceEvent event = (ServiceEvent) state.getResource();
         if (event.getInstanceId() == null) {
             return null;
         }
@@ -43,9 +41,20 @@ public class ServiceEventCreate implements ProcessHandler {
             return null;
         }
 
+        if (event.getInstanceId() == null) {
+            return null;
+        }
+
+        return lockManager.lock(new HealthcheckChangeLock(event.getInstanceId()), () -> {
+            checkEvents(event);
+            return null;
+        });
+    }
+
+    private void checkEvents(ServiceEvent event) {
         Instance instance = objectManager.loadResource(Instance.class, event.getInstanceId());
         if (instance == null) {
-            return null;
+            return;
         }
 
         boolean changed = false;
@@ -76,10 +85,7 @@ public class ServiceEventCreate implements ProcessHandler {
 
         if (changed) {
             objectManager.setFields(instance, InstanceConstants.FIELD_HEALTHCHECK_STATES, hcStates);
-            loopManager.kick(LoopFactory.HEALTHSTATE_CALCULATE, AccountConstants.TYPE, instance.getAccountId(), null);
         }
-
-        return null;
     }
 
     protected String getHealthState(String reportedHealth) {

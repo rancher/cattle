@@ -67,7 +67,7 @@ public class ServiceEventFilter extends AbstractValidationFilter {
         }
 
         event.setInstanceId(instance.getId());
-        event.setHostId(instance.getHostId());
+        event.setHostId(host.getId());
 
         ApiUtils.getPolicy().setOption(Policy.RESOURCE_ACCOUNT_ID, agent.getResourceAccountId().toString());
 

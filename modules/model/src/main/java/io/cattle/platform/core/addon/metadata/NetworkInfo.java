@@ -27,6 +27,7 @@ public class NetworkInfo implements MetadataObject {
         this.name = network.getName();
         this.policy = DataAccessor.fieldObject(network, NetworkConstants.FIELD_POLICY);
         this.uuid = network.getUuid();
+        this.hostPorts = DataAccessor.fieldBool(network, NetworkConstants.FIELD_HOST_PORTS);
     }
 
     public String getKind() {

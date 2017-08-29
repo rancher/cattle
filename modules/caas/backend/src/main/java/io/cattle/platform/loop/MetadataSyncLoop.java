@@ -28,9 +28,9 @@ public class MetadataSyncLoop implements Loop {
     public Result run(List<Object> input) {
         for (Object obj : input) {
             if (obj instanceof Removed) {
-                agentIds.remove(getTargetAgentId(((Removed) obj).getRemoved()));
+                agentIds.remove(getTargetAgentId(((Removed) obj).getRemoved(), false));
             } else {
-                Long agentId = getTargetAgentId(obj);
+                Long agentId = getTargetAgentId(obj, true);
                 if (agentId != null) {
                     agentIds.add(agentId);
                 }
@@ -44,7 +44,7 @@ public class MetadataSyncLoop implements Loop {
         return Result.DONE;
     }
 
-    protected Long getTargetAgentId(Object obj) {
+    protected Long getTargetAgentId(Object obj, boolean checkState) {
         if (!(obj instanceof InstanceInfo)) {
             return null;
         }
@@ -58,7 +58,7 @@ public class MetadataSyncLoop implements Loop {
             return null;
         }
 
-        if (!InstanceConstants.STATE_RUNNING.equals(instance.getState())) {
+        if (checkState && !InstanceConstants.STATE_RUNNING.equals(instance.getState())) {
             return null;
         }
 
