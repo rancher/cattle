@@ -311,8 +311,8 @@ public class Backend {
 
         r.handle("credential.create", credentialProcessManager::create);
 
-        r.handle("deploymentunit.remove", deploymentUnitRemove);
         r.handle("deploymentunit.*", inatorReconcileHandler);
+        r.handle("deploymentunit.remove", deploymentUnitRemove);
 
         r.handle("dynamicschema.*", clearCacheHandler);
         r.handle("dynamicschema.create", dynamicSchemaProcessManager::create);

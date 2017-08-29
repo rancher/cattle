@@ -82,7 +82,7 @@ public class AgentResourcesMonitor {
             return;
         }
 
-        String hash = resources.getHash();
+        String hash = resources.getHash() + "-" + agent.getId();
         Boolean done = resourceCache.getIfPresent(hash);
 
         if (done != null && done) {
