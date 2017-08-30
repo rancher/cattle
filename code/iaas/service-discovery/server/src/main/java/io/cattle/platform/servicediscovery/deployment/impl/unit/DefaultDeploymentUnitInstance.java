@@ -353,6 +353,16 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
 
     @Override
     public List<String> getSearchDomains() {
+        Object serviceLabels = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
+                InstanceConstants.FIELD_LABELS);
+        if (serviceLabels != null) {
+            String setSearchDomain = ((Map<String, String>) serviceLabels)
+                    .get(SystemLabels.LABEL_RANCHER_CONTAINER_DNS_PRIORITY);
+            if (setSearchDomain != null && !setSearchDomain.isEmpty() && StringUtils.equalsIgnoreCase(setSearchDomain.trim(), "None")) {
+                return Arrays.asList();
+            }
+        }
+
         String stackNamespace = ServiceDiscoveryDnsUtil.getStackNamespace(this.stack, this.service);
         String serviceNamespace = ServiceDiscoveryDnsUtil
                 .getServiceNamespace(this.stack, this.service);

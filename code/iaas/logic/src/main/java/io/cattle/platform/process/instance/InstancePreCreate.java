@@ -149,14 +149,27 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
 
         for (Long networkId : networkIds) {
             Network network = objectManager.loadResource(Network.class, networkId);
+            Boolean setRancherSearchDomain = true;
             for (String dns : DataAccessor.fieldStringList(network, NetworkConstants.FIELD_DNS)) {
                 List<String> dnsList = DataAccessor.appendToFieldStringList(instance, DockerInstanceConstants.FIELD_DNS, dns);
                 data.put(DockerInstanceConstants.FIELD_DNS, dnsList);
                 data.put(InstanceConstants.FIELD_DNS_INTERNAL, Joiner.on(",").join(dnsList));
             }
-            for (String dnsSearch : DataAccessor.fieldStringList(network, NetworkConstants.FIELD_DNS_SEARCH)) {
-                List<String> dnsSearchList = DataAccessor.appendToFieldStringList(instance, DockerInstanceConstants.FIELD_DNS_SEARCH, dnsSearch);
-                data.put(DockerInstanceConstants.FIELD_DNS_SEARCH, dnsSearchList);
+            if (labels.containsKey(SystemLabels.LABEL_RANCHER_CONTAINER_DNS_PRIORITY)) {
+                String setSearchDomain = labels.get(SystemLabels.LABEL_RANCHER_CONTAINER_DNS_PRIORITY).toString();
+                if (setSearchDomain != null && !setSearchDomain.isEmpty() && StringUtils.equalsIgnoreCase(setSearchDomain.trim(), "None")) {
+                    setRancherSearchDomain = false;
+                }
+            }
+            if (setRancherSearchDomain) {
+                for (String dnsSearch : DataAccessor.fieldStringList(network, NetworkConstants.FIELD_DNS_SEARCH)) {
+                    List<String> dnsSearchList = DataAccessor.appendToFieldStringList(instance, DockerInstanceConstants.FIELD_DNS_SEARCH, dnsSearch);
+                    data.put(DockerInstanceConstants.FIELD_DNS_SEARCH, dnsSearchList);
+                    data.put(InstanceConstants.FIELD_DNS_SEARCH_INTERNAL, Joiner.on(",").join(dnsSearchList));
+                }
+            }
+            else {
+                List<String> dnsSearchList = DataAccessor.fieldStringList(instance, DockerInstanceConstants.FIELD_DNS_SEARCH);
                 data.put(InstanceConstants.FIELD_DNS_SEARCH_INTERNAL, Joiner.on(",").join(dnsSearchList));
             }
         }
