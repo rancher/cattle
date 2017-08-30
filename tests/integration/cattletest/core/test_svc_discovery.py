@@ -3748,3 +3748,46 @@ def test_requested_ip_address_by_labels(client, context, super_client):
     assert instances[1].primaryIpAddress not in ["10.42.100.100",
                                                  "10.42.100.101",
                                                  "10.42.100.102"]
+
+
+def test_dns_priority_label(client, context):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    labels = {'io.rancher.container.dns.priority': 'None'}
+
+    dns = ['8.8.8.8', '1.2.3.4']
+    search = ['foo', 'bar']
+
+    launch_config = {"imageUuid": image_uuid,
+                     "labels": labels,
+                     "dnsSearch": search,
+                     "dns": dns,
+                     }
+
+    svc = client.create_service(name=random_str(),
+                                stackId=env.id,
+                                launchConfig=launch_config)
+    svc = client.wait_success(svc)
+
+    assert svc.launchConfig.dns == dns
+    assert svc.launchConfig.dnsSearch == search
+
+    service = client.wait_success(svc.activate())
+    assert service.state == "active"
+    instance_service_map = client \
+        .list_serviceExposeMap(serviceId=service.id)
+
+    assert len(instance_service_map) == 1
+    wait_for_condition(
+        client, instance_service_map[0], _resource_is_active,
+        lambda x: 'State is: ' + x.state)
+
+    instances = client. \
+        list_container(name=env.name + "-" + service.name + "-" + "1")
+    assert len(instances) == 1
+    container = instances[0]
+    assert container.imageUuid == image_uuid
+    dns.append("169.254.169.250")
+    assert all(item in dns for item in container.dns) is True
+    assert set(search) == set(container.dnsSearch)
