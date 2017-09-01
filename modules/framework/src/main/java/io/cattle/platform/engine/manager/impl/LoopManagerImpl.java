@@ -29,7 +29,7 @@ public class LoopManagerImpl implements LoopManager {
     }
 
     @Override
-    public synchronized ListenableFuture<?> kick(String name, String type, Long id, Object input) {
+    public ListenableFuture<?> kick(String name, String type, Long id, Object input) {
         if (id == null) {
             return AsyncUtils.done();
         }
@@ -45,7 +45,12 @@ public class LoopManagerImpl implements LoopManager {
         return loop.kick(input);
     }
 
-    protected LoopWrapper buildLoop(String name, String resourceKey, String type, Long id) {
+    protected synchronized LoopWrapper buildLoop(String name, String resourceKey, String type, Long id) {
+        LoopWrapper check = getLoop(name, resourceKey);
+        if (check != null) {
+            return check;
+        }
+
         Loop inner = factory.buildLoop(name, type, id);
         if (inner == null) {
             return null;
@@ -60,7 +65,7 @@ public class LoopManagerImpl implements LoopManager {
         return loop;
     }
 
-    protected LoopWrapper getLoop(String name, String resourceKey) {
+    protected synchronized LoopWrapper getLoop(String name, String resourceKey) {
         Map<String, LoopWrapper> loops = this.loops.get(name);
         if (loops == null) {
             return null;

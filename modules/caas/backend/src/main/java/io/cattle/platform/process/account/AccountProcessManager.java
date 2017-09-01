@@ -130,7 +130,7 @@ public class AccountProcessManager {
 
     private void assignExternalId(Account account) {
         String id = account.getExternalId();
-        if (StringUtils.isBlank(id)) {
+        if (StringUtils.isBlank(id) && account.getUuid().length() > 8) {
             account.setExternalId((account.getName() + account.getUuid().substring(0,8)).toLowerCase());
         }
     }

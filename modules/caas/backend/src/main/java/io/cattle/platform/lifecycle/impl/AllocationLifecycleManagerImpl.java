@@ -56,11 +56,11 @@ public class AllocationLifecycleManagerImpl implements AllocationLifecycleManage
             return true;
         }
 
-        if (ClusterConstants.ORCH_CATTLE.equals(DataAccessor.getLabel(instance, SystemLabels.LABEL_ORCHESTRATION))) {
-            return true;
+        if (ClusterConstants.ORCH_KUBERNETES.equals(DataAccessor.getLabel(instance, SystemLabels.LABEL_ORCHESTRATION))) {
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     protected void assignUnmappedVolumes(Instance instance) {

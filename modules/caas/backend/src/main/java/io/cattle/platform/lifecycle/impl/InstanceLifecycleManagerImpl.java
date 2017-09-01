@@ -218,7 +218,12 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
         String orc = DataAccessor.getLabel(instance, SystemLabels.LABEL_ORCHESTRATION);
         if (StringUtils.isBlank(orc)) {
             Cluster cluster = objectManager.loadResource(Cluster.class, instance.getClusterId());
-            DataAccessor.setLabel(instance, SystemLabels.LABEL_ORCHESTRATION, DataAccessor.fieldString(cluster, ClusterConstants.FIELD_ORCHESTRATION));
+            String clusterOrchestration = DataAccessor.fieldString(cluster, ClusterConstants.FIELD_ORCHESTRATION);
+            if (StringUtils.isBlank(clusterOrchestration)) {
+                DataAccessor.setLabel(instance, SystemLabels.LABEL_ORCHESTRATION, ClusterConstants.ORCH_CATTLE);
+            } else {
+                DataAccessor.setLabel(instance, SystemLabels.LABEL_ORCHESTRATION, clusterOrchestration);
+            }
         }
     }
 
