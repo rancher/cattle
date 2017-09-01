@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListener, Task, TaskOptions {
 
@@ -83,28 +82,47 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
         String key = key(type, id);
         long end = System.currentTimeMillis() + timeout;
 
-        Runnable checker = () -> {
-            T obj = objectManager.reload(input);
-            if (predicate.evaluate(obj)) {
-                future.set(obj);
-                waiters.remove(key);
-            } else if (System.currentTimeMillis() >= end) {
-                future.setException(new ResourceTimeoutException(obj, "Waiting: " + message + " [" + printKey + "]"));
-                waiters.remove(key);
+        //NOTE: Using annoymous class so that "this" will work right
+        Runnable checker = new Runnable() {
+            @Override
+            public void run() {
+                T obj = objectManager.reload(input);
+                if (predicate.evaluate(obj)) {
+                    future.set(obj);
+                    removeWaiter(key, this);
+                } else if (System.currentTimeMillis() >= end) {
+                    future.setException(new ResourceTimeoutException(obj, "Waiting: " + message + " [" + printKey + "]"));
+                    removeWaiter(key, this);
+                }
             }
         };
 
         try {
-            waiters.compute(key, (k, runnables) -> {
-                if (runnables == null) {
-                    return new CopyOnWriteArrayList<>(new Runnable[]{checker});
-                }
-                runnables.add(checker);
-                return runnables;
-            });
+            addWaiter(key, checker);
             return future;
         } finally {
             checker.run();
+        }
+    }
+
+    private synchronized void addWaiter(String key, Runnable run) {
+        waiters.compute(key, (k, runnables) -> {
+            if (runnables == null) {
+                runnables = Collections.synchronizedList(new ArrayList<Runnable>());
+            }
+            runnables.add(run);
+            return runnables;
+        });
+    }
+
+    private synchronized void removeWaiter(String key, Runnable run) {
+        List<Runnable> list = waiters.get(key);
+        if (list == null) {
+            return;
+        }
+        list.remove(run);
+        if (list.size() == 0) {
+            waiters.remove(key);
         }
     }
 
