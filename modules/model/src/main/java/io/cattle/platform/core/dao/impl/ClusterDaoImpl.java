@@ -4,6 +4,7 @@ import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.ClusterConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.CredentialConstants;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ClusterDao;
@@ -11,8 +12,10 @@ import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Cluster;
 import io.cattle.platform.core.model.Credential;
+import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.ProjectMember;
 import io.cattle.platform.core.model.tables.records.AccountRecord;
+import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
@@ -62,6 +65,7 @@ public class ClusterDaoImpl extends AbstractJooqDao implements ClusterDao {
         return transaction.doInTransactionResult(() -> {
             Account account = resourceDao.createAndSchedule(Account.class,
                     ACCOUNT.NAME, "System",
+                    ACCOUNT.EXTERNAL_ID, ProjectConstants.SYSTEM_PROJECT_EXTERNAL_ID,
                     ACCOUNT.CLUSTER_OWNER, true,
                     ACCOUNT.CLUSTER_ID, cluster.getId(),
                     ACCOUNT.KIND, ProjectConstants.TYPE);
@@ -89,6 +93,7 @@ public class ClusterDaoImpl extends AbstractJooqDao implements ClusterDao {
                     CollectionUtils.asMap(
                         ACCOUNT.CLUSTER_ID, cluster.getId(),
                         ACCOUNT.NAME, ServiceConstants.DEFAULT_STACK_NAME,
+                        ACCOUNT.EXTERNAL_ID, ProjectConstants.DEFAULT_PROJECT_EXTERNAL_ID,
                         ACCOUNT.KIND, ProjectConstants.TYPE));
             data.put(AccountConstants.OPTION_CREATE_OWNER_ACCESS, true);
 
@@ -115,6 +120,25 @@ public class ClusterDaoImpl extends AbstractJooqDao implements ClusterDao {
             return objectManager.setFields(cluster,
                     ClusterConstants.FIELD_REGISTRATION_ID, credId);
         });
+    }
+
+    @Override
+    public Instance getAnyRancherAgent(Cluster cluster) {
+        return create().select(INSTANCE.fields())
+                .from(INSTANCE)
+                .join(HOST)
+                    .on(INSTANCE.HOST_ID.eq(HOST.ID))
+                .join(AGENT)
+                    .on(AGENT.ID.eq(HOST.AGENT_ID))
+                .join(ACCOUNT)
+                    .on(ACCOUNT.ID.eq(INSTANCE.ACCOUNT_ID))
+                .where(ACCOUNT.CLUSTER_OWNER.isTrue()
+                    .and(AGENT.STATE.eq(CommonStatesConstants.ACTIVE))
+                    .and(ACCOUNT.CLUSTER_ID.eq(cluster.getId()))
+                    .and(INSTANCE.STATE.eq(InstanceConstants.STATE_RUNNING))
+                    .and(INSTANCE.HOST_ID.isNotNull())
+                    .and(INSTANCE.NAME.eq("rancher-agent")))
+                .fetchAnyInto(InstanceRecord.class);
     }
 
     private Long createRegistrationCred(Cluster cluster, Long existingId) {

@@ -10,8 +10,6 @@ public class InstanceStatus {
     String instanceUuid;
     String externalId;
     String primaryIpAddress;
-    String hostUuid;
-    String state;
     Map<String, Object> dockerInspect;
 
     public InstanceStatus() {
@@ -46,28 +44,12 @@ public class InstanceStatus {
         this.primaryIpAddress = primaryIpAddress;
     }
 
-    public String getState() {
-        return state;
-    }
-
-    public void setState(String state) {
-        this.state = state;
-    }
-
     public Map<String, Object> getDockerInspect() {
         return dockerInspect;
     }
 
     public void setDockerInspect(Map<String, Object> dockerInspect) {
         this.dockerInspect = dockerInspect;
-    }
-
-    public String getHostUuid() {
-        return hostUuid;
-    }
-
-    public void setHostUuid(String hostUuid) {
-        this.hostUuid = hostUuid;
     }
 
 }

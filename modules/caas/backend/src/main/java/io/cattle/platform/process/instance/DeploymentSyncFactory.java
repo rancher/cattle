@@ -6,6 +6,7 @@ import io.cattle.platform.core.addon.DeploymentSyncResponse;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.dao.NetworkDao;
@@ -14,10 +15,10 @@ import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.DeploymentUnit;
+import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Volume;
-import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
@@ -56,8 +57,8 @@ public class DeploymentSyncFactory {
         this.networkDao = networkDao;
     }
 
-    public DeploymentSyncResponse getResponse(Event event) {
-        return jsonMapper.convertValue(DataAccessor.fromMap(event.getData()).withKey("deploymentSyncResponse").get(),
+    public DeploymentSyncResponse getResponse(Map<Object, Object> data) {
+        return jsonMapper.convertValue(DataAccessor.fromMap(data).withKey("deploymentSyncResponse").get(),
                 DeploymentSyncResponse.class);
     }
 
@@ -109,8 +110,12 @@ public class DeploymentSyncFactory {
         }
 
         DeploymentUnit unit = objectManager.loadResource(DeploymentUnit.class, resource.getDeploymentUnitId());
+        Account account = objectManager.loadResource(Account.class, resource.getAccountId());
+        Host host = objectManager.loadResource(Host.class, resource.getHostId());
 
         return new DeploymentSyncRequest(unit,
+                host == null ? null : DataAccessor.fieldString(host, HostConstants.FIELD_NODE_NAME),
+                account.getExternalId(),
                 getRevision(unit, instanceById),
                 instances,
                 volumes,

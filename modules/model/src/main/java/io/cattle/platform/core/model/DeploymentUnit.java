@@ -232,6 +232,17 @@ public interface DeploymentUnit extends Serializable {
     @Column(name = "cluster_id", precision = 19)
     public Long getClusterId();
 
+    /**
+     * Setter for <code>cattle.deployment_unit.external_id</code>.
+     */
+    public void setExternalId(String value);
+
+    /**
+     * Getter for <code>cattle.deployment_unit.external_id</code>.
+     */
+    @Column(name = "external_id", length = 255)
+    public String getExternalId();
+
     // -------------------------------------------------------------------------
     // FROM and INTO
     // -------------------------------------------------------------------------

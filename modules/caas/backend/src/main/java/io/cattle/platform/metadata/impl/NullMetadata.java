@@ -64,6 +64,11 @@ public class NullMetadata implements Metadata {
     }
 
     @Override
+    public HostInfo getHostByNodeName(String nodeName) {
+        return null;
+    }
+
+    @Override
     public void remove(String uuid) {
     }
 

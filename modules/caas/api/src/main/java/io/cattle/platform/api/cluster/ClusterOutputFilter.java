@@ -42,16 +42,21 @@ public class ClusterOutputFilter implements ResourceOutputFilter {
         String clusterCommand = String.format(CLUSTER_CMD.get(), clusterUrl);
         String windowsCommand = String.format(WINDOWS_CMD.get(), hostUrl);
 
-        //if (CommonStatesConstants.INACTIVE.equals(cluster.getState()) || cluster.getEmbedded()) {
-            regToken.setHostCommand(hostCommand);
-        //}
-        if (CommonStatesConstants.INACTIVE.equals(cluster.getState())) {
-            regToken.setClusterCommand(clusterCommand);
-        }
+        regToken.setClusterCommand(clusterCommand);
+        regToken.setHostCommand(hostCommand);
         regToken.setWindowsCommand(windowsCommand);
         regToken.setToken(token);
         regToken.setImage(REQUIRED_IMAGE.get());
         regToken.setRegistrationUrl(hostUrl);
+
+        if (!CommonStatesConstants.INACTIVE.equals(cluster.getState())) {
+            regToken.setClusterCommand(null);
+        }
+
+        if (DataAccessor.fieldObject(cluster, ClusterConstants.FIELD_K8S_CLIENT_CONFIG) != null) {
+            regToken.setHostCommand(null);
+            regToken.setWindowsCommand(null);
+        }
 
         converted.getFields().put(ClusterConstants.FIELD_REGISTRATION, regToken);
 

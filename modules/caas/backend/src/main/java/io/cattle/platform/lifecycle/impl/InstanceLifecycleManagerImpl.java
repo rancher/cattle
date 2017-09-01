@@ -3,8 +3,10 @@ package io.cattle.platform.lifecycle.impl;
 import com.google.common.util.concurrent.ListenableFuture;
 import io.cattle.platform.backpopulate.BackPopulater;
 import io.cattle.platform.core.addon.LogConfig;
+import io.cattle.platform.core.constants.ClusterConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.ServiceDao;
+import io.cattle.platform.core.model.Cluster;
 import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Stack;
@@ -95,6 +97,8 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
         volumeLifecycle.create(instance);
 
         networkLifecycle.assignNetworkResources(instance);
+
+        assignOrchestration(instance);
 
         saveCreate(instance, secretsOpaque);
     }
@@ -207,6 +211,14 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
         if (logConfig != null && !StringUtils.isEmpty(logConfig.getDriver()) && logConfig.getConfig() == null) {
             logConfig.setConfig(new HashMap<>());
             DataAccessor.setField(instance, InstanceConstants.FIELD_LOG_CONFIG, logConfig);
+        }
+    }
+
+    protected void assignOrchestration(Instance instance) {
+        String orc = DataAccessor.getLabel(instance, SystemLabels.LABEL_ORCHESTRATION);
+        if (StringUtils.isBlank(orc)) {
+            Cluster cluster = objectManager.loadResource(Cluster.class, instance.getClusterId());
+            DataAccessor.setLabel(instance, SystemLabels.LABEL_ORCHESTRATION, DataAccessor.fieldString(cluster, ClusterConstants.FIELD_ORCHESTRATION));
         }
     }
 

@@ -107,10 +107,6 @@
     "dependsOn": {
       "type": "array[dependsOn]",
       "nullable": true
-    },
-    "externalComputeAgent": {
-      "type": "boolean",
-      "nullable": true
     }
   },
   "resourceActions": {

@@ -26,9 +26,9 @@ import java.util.Set;
 
 public class ContainerProxyActionHandler implements ActionHandler {
 
-    private static final DynamicStringProperty HOST_PROXY_PATH = ArchaiusUtil.getString("host.proxy.path");
-    private static final DynamicLongProperty EXPIRE_SECONDS = ArchaiusUtil.getLong("host.proxy.jwt.expiration.seconds");
-    private static final Set<String> VALID_SCHEMES = CollectionUtils.set("http", "https");
+    public static final DynamicStringProperty HOST_PROXY_PATH = ArchaiusUtil.getString("host.proxy.path");
+    public static final DynamicLongProperty EXPIRE_SECONDS = ArchaiusUtil.getLong("host.proxy.jwt.expiration.seconds");
+    public static final Set<String> VALID_SCHEMES = CollectionUtils.set("http", "https");
 
     HostApiService apiService;
     ObjectManager objectManager;

@@ -25,6 +25,7 @@ public class HostInfo implements MetadataObject {
     String hostname;
     Long milliCpu;
     Long memory;
+    String nodeName;
 
     public HostInfo(Host host) {
         this.id = host.getId();
@@ -41,12 +42,14 @@ public class HostInfo implements MetadataObject {
         this.clusterId = host.getClusterId();
         this.ports = new HashSet<>(
                 DataAccessor.fieldObjectList(host, HostConstants.FIELD_PUBLIC_ENDPOINTS, PortInstance.class));
+        this.nodeName = DataAccessor.fieldString(host, HostConstants.FIELD_NODE_NAME);
     }
 
     public long getId() {
         return id;
     }
 
+    @Override
     @Field(typeString = "reference[host]")
     public Long getInfoTypeId() {
         return id;
@@ -118,6 +121,10 @@ public class HostInfo implements MetadataObject {
         return clusterId;
     }
 
+    public String getNodeName() {
+        return nodeName;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -126,7 +133,6 @@ public class HostInfo implements MetadataObject {
         HostInfo hostInfo = (HostInfo) o;
 
         if (id != hostInfo.id) return false;
-        if (uuid != null ? !uuid.equals(hostInfo.uuid) : hostInfo.uuid != null) return false;
         if (environmentUuid != null ? !environmentUuid.equals(hostInfo.environmentUuid) : hostInfo.environmentUuid != null)
             return false;
         if (agentId != null ? !agentId.equals(hostInfo.agentId) : hostInfo.agentId != null) return false;
@@ -140,13 +146,13 @@ public class HostInfo implements MetadataObject {
         if (uuid != null ? !uuid.equals(hostInfo.uuid) : hostInfo.uuid != null) return false;
         if (hostname != null ? !hostname.equals(hostInfo.hostname) : hostInfo.hostname != null) return false;
         if (milliCpu != null ? !milliCpu.equals(hostInfo.milliCpu) : hostInfo.milliCpu != null) return false;
-        return memory != null ? memory.equals(hostInfo.memory) : hostInfo.memory == null;
+        if (memory != null ? !memory.equals(hostInfo.memory) : hostInfo.memory != null) return false;
+        return nodeName != null ? nodeName.equals(hostInfo.nodeName) : hostInfo.nodeName == null;
     }
 
     @Override
     public int hashCode() {
         int result = (int) (id ^ (id >>> 32));
-        result = 31 * result + (uuid != null ? uuid.hashCode() : 0);
         result = 31 * result + (environmentUuid != null ? environmentUuid.hashCode() : 0);
         result = 31 * result + (agentId != null ? agentId.hashCode() : 0);
         result = 31 * result + (clusterId != null ? clusterId.hashCode() : 0);
@@ -160,6 +166,7 @@ public class HostInfo implements MetadataObject {
         result = 31 * result + (hostname != null ? hostname.hashCode() : 0);
         result = 31 * result + (milliCpu != null ? milliCpu.hashCode() : 0);
         result = 31 * result + (memory != null ? memory.hashCode() : 0);
+        result = 31 * result + (nodeName != null ? nodeName.hashCode() : 0);
         return result;
     }
 }

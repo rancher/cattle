@@ -38,6 +38,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -122,8 +123,16 @@ public class AccountProcessManager {
 
         createOwnerAccess(state, account);
         createDefaultStack(account);
+        assignExternalId(account);
 
         return setupNetworking(account);
+    }
+
+    private void assignExternalId(Account account) {
+        String id = account.getExternalId();
+        if (StringUtils.isBlank(id)) {
+            account.setExternalId((account.getName() + account.getUuid().substring(0,8)).toLowerCase());
+        }
     }
 
     public HandlerResult update(ProcessState state, ProcessInstance process) {

@@ -223,7 +223,6 @@ public class ContainerSyncImpl implements ContainerSync {
 
     private Long findBackpopulatedNamespace(long clusterId, String namespace) {
         Account other = objectManager.findAny(Account.class,
-                ACCOUNT.NAME, namespace,
                 ACCOUNT.EXTERNAL_ID, namespace,
                 ACCOUNT.CLUSTER_ID, clusterId,
                 ObjectMetaDataManager.REMOVED_FIELD, null);

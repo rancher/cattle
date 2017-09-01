@@ -21,6 +21,7 @@ public class HostConstants {
     public static final String FIELD_MACHINE_SERVICE_REGISTRATION_UUID = "machineServiceRegistrationUuid";
     public static final String FIELD_MEMORY = "memory";
     public static final String FIELD_MILLI_CPU = "milliCpu";
+    public static final String FIELD_NODE_NAME = "nodeName";
     public static final String FIELD_PUBLIC_ENDPOINTS = "publicEndpoints";
 
     public static final String PROCESS_ACTIVATE = "host.activate";

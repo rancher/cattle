@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class DeploymentUnitTable extends TableImpl<DeploymentUnitRecord> {
 
-    private static final long serialVersionUID = -1337182712;
+    private static final long serialVersionUID = 2095976178;
 
     /**
      * The reference instance of <code>cattle.deployment_unit</code>
@@ -144,6 +144,11 @@ public class DeploymentUnitTable extends TableImpl<DeploymentUnitRecord> {
      * The column <code>cattle.deployment_unit.cluster_id</code>.
      */
     public final TableField<DeploymentUnitRecord, Long> CLUSTER_ID = createField("cluster_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
+     * The column <code>cattle.deployment_unit.external_id</code>.
+     */
+    public final TableField<DeploymentUnitRecord, String> EXTERNAL_ID = createField("external_id", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
 
     /**
      * Create a <code>cattle.deployment_unit</code> table reference

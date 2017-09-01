@@ -29,6 +29,8 @@ public interface Metadata {
 
     HostInfo getHost(String uuid);
 
+    HostInfo getHostByNodeName(String nodeName);
+
     void remove(String uuid);
 
     void changed(Object obj);

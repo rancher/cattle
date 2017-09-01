@@ -12,7 +12,6 @@ public class InstanceRemove extends DeploymentSyncRequestHandler {
         super(agentLocator, serializer, objectManager, processManager, syncFactory, metadataManager);
         shortCircuitIfAgentRemoved = true;
         this.commandName = "compute.instance.remove";
-        this.externalAlways = true;
     }
 
 }

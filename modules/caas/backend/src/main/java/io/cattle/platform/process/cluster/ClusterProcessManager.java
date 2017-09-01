@@ -111,7 +111,7 @@ public class ClusterProcessManager {
         Account account = clusterDao.getOwnerAcccountForCluster(cluster);
 
         try {
-            new HandlerResult(updateStack(cluster, account));
+            updateStack(cluster, account);
             return null;
         } catch (LifecycleException e) {
             return new HandlerResult().withChainProcessName(ClusterConstants.PROCESS_ERROR);

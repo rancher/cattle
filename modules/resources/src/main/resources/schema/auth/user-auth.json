@@ -436,10 +436,6 @@
         "project.scheduledUpgradeDelay": "cru",
         "project.servicesPortRange": "cru",
 
-        "projectTemplate" : "crud",
-        "projectTemplate.stacks" : "cru",
-        "projectTemplate.externalId" : "cru",
-
         "projectMember" : "cr",
         "projectMember.accountId" : "",
         "projectMember.role" : "cr",
@@ -773,6 +769,7 @@
         "cluster" : "crud",
         "cluster.embedded" : "r",
         "cluster.hostRemoveDelaySeconds" : "cru",
+        "cluster.orchestration" : "r",
         "cluster.k8sServerConfig" : "cru",
         "cluster.k8sClientConfig" : "r",
         "cluster.registrationToken" : "r",
@@ -788,10 +785,9 @@
         "k8sServerConfig.admissionControllers" : "cr",
         "k8sServerConfig.serviceNetCidr" : "cr",
 
-        "k8sClientConfig" : "cru",
-        "k8sClientConfig.bearerToken" : "or",
-        "k8sClientConfig.address" : "cru",
-        "k8sClientConfig.caCert" : "cru",
+        "k8sClientConfig" : "r",
+        "k8sClientConfig.address" : "r",
+        "k8sClientConfig.caCert" : "r",
 
         "launchConfig" : "cru",
         "launchConfig.completeUpdate" : "ru",

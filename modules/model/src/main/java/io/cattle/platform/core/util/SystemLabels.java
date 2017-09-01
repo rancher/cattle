@@ -9,6 +9,7 @@ public class SystemLabels {
     public static final String LABEL_DISPLAY_NAME = "io.rancher.container.display_name";
     public static final String LABEL_IP_ADDRESS = "io.rancher.container.ip";
     public static final String LABEL_MAC_ADDRESS = "io.rancher.container.mac_address";
+    public static final String LABEL_ORCHESTRATION = "io.rancher.container.orchestration";
     public static final String LABEL_OVERRIDE_HOSTNAME = "io.rancher.container.hostname_override";
     public static final String LABEL_PRIMARY_LAUNCH_CONFIG_NAME = "io.rancher.service.primary.launch.config";
     public static final String LABEL_PROXY_PORT = "io.rancher.websocket.proxy.port";
@@ -35,7 +36,6 @@ public class SystemLabels {
      */
     public static final String LABEL_AGENT_SERVICE_LABELS_PROVIDER = "io.rancher.container.agent_service.labels_provider";
     public static final String LABEL_AGENT_SERVICE_SCHEDULING_PROVIDER = "io.rancher.container.agent_service.scheduling";
-    public static final String LABEL_AGENT_SERVICE_COMPUTE = "io.rancher.container.agent_service.compute";
     public static final String LABEL_AGENT_SERVICE_METADATA = "io.rancher.container.agent_service.metadata";
 
     public static final String LABEL_VM = "io.rancher.vm";

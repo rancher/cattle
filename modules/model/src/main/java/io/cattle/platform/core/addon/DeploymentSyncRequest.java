@@ -16,6 +16,11 @@ public class DeploymentSyncRequest {
     String deploymentUnitUuid;
     String revision;
 
+    Long clusterId;
+    String namespace;
+    String nodeName;
+
+    String externalId;
     List<Instance> containers;
     List<Volume> volumes;
     List<Credential> registryCredentials;
@@ -24,18 +29,42 @@ public class DeploymentSyncRequest {
     public DeploymentSyncRequest() {
     }
 
-    public DeploymentSyncRequest(DeploymentUnit unit, String revision, List<Instance> containers, List<Volume> volumes,
+    public DeploymentSyncRequest(DeploymentUnit unit, String nodeName, String namespace, String revision, List<Instance> containers, List<Volume> volumes,
                                  List<Credential> registryCredentials, List<Network> networks) {
         this.deploymentUnitUuid = unit == null ? null : unit.getUuid();
+        this.externalId = unit == null ? null : unit.getExternalId();
+        this.namespace = namespace;
+        this.nodeName = nodeName;
         this.revision = revision;
         this.containers = containers;
         this.volumes = volumes;
         this.registryCredentials = registryCredentials;
         this.networks = networks;
+
+        for (Instance instance : containers) {
+            this.clusterId = instance.getClusterId();
+            if (this.clusterId != null) {
+                break;
+            }
+        }
     }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public String getExternalId() {
+        return externalId;
+    }
+
 
     public String getDeploymentUnitUuid() {
         return deploymentUnitUuid;
+    }
+
+    @Field(typeString = "reference[cluster]")
+    public Long getClusterId() {
+        return clusterId;
     }
 
     public void setDeploymentUnitUuid(String deploymentUnitUuid) {
@@ -83,5 +112,8 @@ public class DeploymentSyncRequest {
         this.networks = networks;
     }
 
+    public String getNodeName() {
+        return nodeName;
+    }
 
 }

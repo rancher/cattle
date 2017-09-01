@@ -2,6 +2,7 @@ package io.cattle.platform.core.dao;
 
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Cluster;
+import io.cattle.platform.core.model.Instance;
 
 public interface ClusterDao {
 
@@ -19,4 +20,5 @@ public interface ClusterDao {
 
     Cluster assignTokens(Cluster cluster);
 
+    Instance getAnyRancherAgent(Cluster cluster);
 }

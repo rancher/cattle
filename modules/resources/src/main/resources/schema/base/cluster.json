@@ -6,6 +6,12 @@
       "minLength": 1,
       "maxLength": 63
     },
+    "orchestration": {
+      "type": "enum",
+      "options": [
+        "kubernetes"
+      ]
+    },
     "hostRemoveDelaySeconds": {
       "type": "int",
       "required": false,

@@ -93,6 +93,10 @@
     "engineEnv": {
       "type": "map[string]",
       "nullable": true
+    },
+    "nodeName": {
+      "type": "string",
+      "nullable": true
     }
   },
   "resourceActions": {

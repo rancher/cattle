@@ -21,8 +21,8 @@ import javax.persistence.Table;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record18;
-import org.jooq.Row18;
+import org.jooq.Record19;
+import org.jooq.Row19;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -39,9 +39,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "deployment_unit", schema = "cattle")
-public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitRecord> implements TableRecordJaxb, Record18<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long, Long, Long, Long, Long>, DeploymentUnit {
+public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitRecord> implements TableRecordJaxb, Record19<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long, Long, Long, Long, Long, String>, DeploymentUnit {
 
-    private static final long serialVersionUID = -139407290;
+    private static final long serialVersionUID = 367416981;
 
     /**
      * Setter for <code>cattle.deployment_unit.id</code>.
@@ -351,6 +351,23 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
         return (Long) get(17);
     }
 
+    /**
+     * Setter for <code>cattle.deployment_unit.external_id</code>.
+     */
+    @Override
+    public void setExternalId(String value) {
+        set(18, value);
+    }
+
+    /**
+     * Getter for <code>cattle.deployment_unit.external_id</code>.
+     */
+    @Column(name = "external_id", length = 255)
+    @Override
+    public String getExternalId() {
+        return (String) get(18);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -364,23 +381,23 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
     }
 
     // -------------------------------------------------------------------------
-    // Record18 type implementation
+    // Record19 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row18<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long, Long, Long, Long, Long> fieldsRow() {
-        return (Row18) super.fieldsRow();
+    public Row19<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long, Long, Long, Long, Long, String> fieldsRow() {
+        return (Row19) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row18<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long, Long, Long, Long, Long> valuesRow() {
-        return (Row18) super.valuesRow();
+    public Row19<Long, String, Long, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long, Long, Long, Long, Long, String> valuesRow() {
+        return (Row19) super.valuesRow();
     }
 
     /**
@@ -531,6 +548,14 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
      * {@inheritDoc}
      */
     @Override
+    public Field<String> field19() {
+        return DeploymentUnitTable.DEPLOYMENT_UNIT.EXTERNAL_ID;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Long value1() {
         return getId();
     }
@@ -669,6 +694,14 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
     @Override
     public Long value18() {
         return getClusterId();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String value19() {
+        return getExternalId();
     }
 
     /**
@@ -837,7 +870,16 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
      * {@inheritDoc}
      */
     @Override
-    public DeploymentUnitRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, String value12, Long value13, Long value14, Long value15, Long value16, Long value17, Long value18) {
+    public DeploymentUnitRecord value19(String value) {
+        setExternalId(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DeploymentUnitRecord values(Long value1, String value2, Long value3, String value4, String value5, String value6, String value7, Date value8, Date value9, Date value10, Map<String,Object> value11, String value12, Long value13, Long value14, Long value15, Long value16, Long value17, Long value18, String value19) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -856,6 +898,7 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
         value16(value16);
         value17(value17);
         value18(value18);
+        value19(value19);
         return this;
     }
 
@@ -886,6 +929,7 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
         setRequestedRevisionId(from.getRequestedRevisionId());
         setRevisionId(from.getRevisionId());
         setClusterId(from.getClusterId());
+        setExternalId(from.getExternalId());
     }
 
     /**
@@ -911,7 +955,7 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
     /**
      * Create a detached, initialised DeploymentUnitRecord
      */
-    public DeploymentUnitRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String serviceIndex, Long serviceId, Long environmentId, Long hostId, Long requestedRevisionId, Long revisionId, Long clusterId) {
+    public DeploymentUnitRecord(Long id, String name, Long accountId, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String serviceIndex, Long serviceId, Long environmentId, Long hostId, Long requestedRevisionId, Long revisionId, Long clusterId, String externalId) {
         super(DeploymentUnitTable.DEPLOYMENT_UNIT);
 
         set(0, id);
@@ -932,5 +976,6 @@ public class DeploymentUnitRecord extends UpdatableRecordImpl<DeploymentUnitReco
         set(15, requestedRevisionId);
         set(16, revisionId);
         set(17, clusterId);
+        set(18, externalId);
     }
 }

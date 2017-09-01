@@ -48,7 +48,6 @@
         "portRule": "cr",
         "projectMember" : "r",
         "project" : "r",
-        "projectTemplate" : "r",
         "publicEndpoint" : "r",
         "pullTask" : "cr",
         "recreateOnQuorumStrategyConfig" : "cr",

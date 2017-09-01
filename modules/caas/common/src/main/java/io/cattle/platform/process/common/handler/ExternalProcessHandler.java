@@ -16,6 +16,7 @@ import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.serialization.ObjectSerializer;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.util.exception.ExecutionException;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -35,18 +36,21 @@ public class ExternalProcessHandler implements ProcessHandler, CompletableLogic 
     ObjectProcessManager processManager;
     ObjectManager objectManager;
     ObjectMetaDataManager metaDataManager;
+    protected ObjectSerializer objectSerializer;
     DynamicBooleanProperty condition;
 
     public ExternalProcessHandler(String handler,
                                   EventService eventService,
                                   ObjectManager objectManager,
                                   ObjectProcessManager objectProcessManager,
-                                  ObjectMetaDataManager objectMetaDataManager) {
+                                  ObjectMetaDataManager objectMetaDataManager,
+                                  ObjectSerializer objectSerializer) {
         this.handler = handler;
         this.eventService = eventService;
         this.objectManager = objectManager;
         this.processManager = objectProcessManager;
         this.metaDataManager = objectMetaDataManager;
+        this.objectSerializer = objectSerializer;
     }
 
     @Override
@@ -71,7 +75,7 @@ public class ExternalProcessHandler implements ProcessHandler, CompletableLogic 
         Event request = EventVO.newEvent(process.getName() + ";handler=" + handler)
                 .withResourceId(idString)
                 .withResourceType(type)
-                .withData(state.getData());
+                .withData(getData(state, process));
 
         EventCallOptions options = new EventCallOptions(retry, timeoutMillis);
         options.setProgressIsKeepAlive(true);
@@ -103,6 +107,12 @@ public class ExternalProcessHandler implements ProcessHandler, CompletableLogic 
         });
 
         return new HandlerResult().withFuture(eventService.call(request, options));
+    }
+
+    protected Object getData(ProcessState state, ProcessInstance process) {
+        Map<String, Object> data = new HashMap<>(state.getData());
+        data.putAll(objectSerializer.serialize(state.getResource()));
+        return data;
     }
 
     protected HandlerResult postEvent(ProcessState state, ProcessInstance process, Map<Object, Object> data) {

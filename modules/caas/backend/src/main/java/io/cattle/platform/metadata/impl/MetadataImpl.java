@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MetadataImpl implements Metadata {
@@ -179,6 +180,11 @@ public class MetadataImpl implements Metadata {
     @Override
     public HostInfo getHost(String uuid) {
         return hosts.get(uuid);
+    }
+
+    @Override
+    public HostInfo getHostByNodeName(String nodeName) {
+        return hosts.values().stream().filter(h -> Objects.equals(nodeName, h.getNodeName())).findAny().orElse(null);
     }
 
 }

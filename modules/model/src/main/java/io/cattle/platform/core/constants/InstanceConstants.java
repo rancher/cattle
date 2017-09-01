@@ -3,6 +3,7 @@ package io.cattle.platform.core.constants;
 
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.util.PortSpec;
+import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
@@ -52,7 +53,6 @@ public class InstanceConstants {
     public static final String FIELD_ENVIRONMENT = "environment";
     public static final String FIELD_EXIT_CODE = "exitCode";
     public static final String FIELD_EXPOSE = "expose";
-    public static final String FIELD_EXTERNAL_COMPUTE_AGENT = "externalComputeAgent";
     public static final String FIELD_EXTRA_HOSTS = "extraHosts";
     public static final String FIELD_GROUP_ADD = "groupAdd";
     public static final String FIELD_HEALTH_CHECK = "healthCheck";
@@ -188,6 +188,13 @@ public class InstanceConstants {
             }
         }
         return result;
+    }
+
+    public static boolean isKubernetes(Instance instance) {
+        if (instance == null) {
+            return false;
+        }
+        return ClusterConstants.ORCH_KUBERNETES.equals(DataAccessor.getLabel(instance, SystemLabels.LABEL_ORCHESTRATION));
     }
 
 }

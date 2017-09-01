@@ -61,10 +61,12 @@ public class RegisterManager extends AbstractNoOpResourceManager {
 
         if (CommonStatesConstants.INACTIVE.equals(cluster.getState())) {
             objectManager.setFields(cluster,
+                 ClusterConstants.FIELD_ORCHESTRATION, ClusterConstants.ORCH_KUBERNETES,
                  ClusterConstants.FIELD_K8S_CLIENT_CONFIG, clientConfig);
             processManager.activate(cluster, null);
-        } else if (CommonStatesConstants.ACTIVE.equals(cluster.getState()) && existingConfig != null && !existingConfig.equals(clientConfig)) {
+        } else if (CommonStatesConstants.ACTIVE.equals(cluster.getState()) && clientConfig != null && existingConfig != null && !existingConfig.equals(clientConfig)) {
             objectManager.setFields(cluster,
+                    ClusterConstants.FIELD_ORCHESTRATION, ClusterConstants.ORCH_KUBERNETES,
                     ClusterConstants.FIELD_K8S_CLIENT_CONFIG, clientConfig);
             processManager.update(cluster, null);
         }

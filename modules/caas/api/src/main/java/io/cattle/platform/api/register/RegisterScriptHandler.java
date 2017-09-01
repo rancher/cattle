@@ -8,6 +8,7 @@ import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.register.auth.RegistrationAuthTokenManager;
 import io.cattle.platform.server.context.ServerContext;
 import io.cattle.platform.server.context.ServerContext.BaseProtocol;
+import io.cattle.platform.util.resource.UUID;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -60,6 +61,7 @@ public class RegisterScriptHandler implements ScriptsHandler {
         tokens.put("CATTLE_REGISTRATION_SECRET_KEY", id);
         tokens.put("CATTLE_AGENT_IMAGE", IMAGE.get());
         tokens.put("CATTLE_AGENT_IP", request.getClientIp());
+        tokens.put("RANDOM", UUID.randomUUID().toString().substring(0,8));
 
         for (String key : new String[] {"CATTLE_URL", "CATTLE_REGISTRATION_ACCESS_KEY", "CATTLE_REGISTRATION_SECRET_KEY"}) {
             String value = tokens.get(key);

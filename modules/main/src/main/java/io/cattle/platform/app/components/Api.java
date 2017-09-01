@@ -254,6 +254,7 @@ public class Api {
         c.router.outputFilter("*", new CommonActionsOutputFilter());
 
         c.router.outputFilter(Account.class, new AccountOutputFilter());
+        c.router.outputFilter(Account.class, new io.cattle.platform.api.account.AccountOutputFilter());
         c.router.outputFilter(AuditLog.class, new AuditLogOutputFilter());
         c.router.outputFilter(AuditLog.class, resourceIdOutputFilter);
         c.router.outputFilter(Cluster.class, new ClusterOutputFilter());
@@ -380,7 +381,7 @@ public class Api {
         c.router.resourceManager(ProcessPool.class, new ProcessPoolManager(f.executorService));
         c.router.resourceManager(ProcessSummary.class, new ProcessSummaryManager(d.processSummaryDao));
         c.router.resourceManager(Secret.class, new SecretManager(c.support, c.secretsService));
-        c.router.resourceManager(ServiceProxy.class, new ServiceProxyManager(d.serviceDao, containerProxyActionHandler, f.objectManager));
+        c.router.resourceManager(ServiceProxy.class, new ServiceProxyManager(d.serviceDao, d.clusterDao, containerProxyActionHandler, f.objectManager, referenceValidator, c.hostApiService));
         c.router.resourceManager(TypeDocumentation.class, new DocumentationHandler(f.jsonMapper, f.resourceLoader.getResources("schema/base/documentation.json")));
         c.router.resourceManager(Volume.class, new VolumeManager(c.support, d.storagePoolDao, f.eventService));
         c.router.resourceManager(Instance.class, new InstanceManager(c.support, c.revisionManager, referenceValidator));

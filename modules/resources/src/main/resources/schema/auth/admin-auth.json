@@ -234,6 +234,8 @@
         "resourceDefinition" : "r",
         "resourceDefinition.name" : "r",
 
+        "serviceProxy":"cr",
+
         "setting" : "crud",
         "setting.name" : "cr",
         "setting.source": "r",
@@ -250,8 +252,6 @@
         "taskInstance.taskId" : "r",
 
         "task" : "r",
-
-        "projectTemplate.isPublic" : "cru",
 
         "genericObject" : "crd",
 

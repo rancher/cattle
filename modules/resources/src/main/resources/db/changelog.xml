@@ -8,4 +8,5 @@
      <include file="db/core-201.xml"/>
      <include file="db/core-202.xml"/>
      <include file="db/core-203.xml"/>
+     <include file="db/core-204.xml"/>
 </databaseChangeLog>

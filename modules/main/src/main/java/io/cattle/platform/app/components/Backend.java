@@ -100,6 +100,8 @@ import io.cattle.platform.process.instance.InstanceStart;
 import io.cattle.platform.process.instance.InstanceStartCheck;
 import io.cattle.platform.process.instance.InstanceStop;
 import io.cattle.platform.process.instance.K8sProviderLabels;
+import io.cattle.platform.process.instance.PodCreate;
+import io.cattle.platform.process.instance.PodRemove;
 import io.cattle.platform.process.mount.MountProcessManager;
 import io.cattle.platform.process.mount.MountRemove;
 import io.cattle.platform.process.network.NetworkProcessManager;
@@ -250,10 +252,14 @@ public class Backend {
 
     private void addProcessHandlers() {
         ProcessRouter r = c.processes;
-        ExternalHandlerFactory externalFactory = new ExternalHandlerFactory(r, f.eventService, f.processManager, f.objectManager, f.metaDataManager);
+        ExternalHandlerFactory externalFactory = new ExternalHandlerFactory(r, f.eventService, f.processManager, f.objectManager, f.metaDataManager, c.objectSerializer);
 
         ExternalProcessHandler composeExecutor = externalFactory.handler("rancher-compose-executor");
         ExternalProcessHandler goMachineService = externalFactory.handler("machine-service", "machine.execute");
+        ExternalProcessHandler k8sClusterService = externalFactory.handler("k8s-cluster-service", "netes.agent.execute");
+
+        PodCreate podCreate = new PodCreate(f.eventService, f.objectManager, f.processManager, f.metaDataManager, deploymentSyncFactory, c.objectSerializer, metadataManager);
+        PodRemove podRemove = new PodRemove(f.eventService, f.objectManager, f.processManager, f.metaDataManager, deploymentSyncFactory, c.objectSerializer);
 
         AccountProcessManager account = new AccountProcessManager(d.networkDao, d.resourceDao, f.processManager, f.objectManager, d.instanceDao, d.accountDao, d.serviceDao, f.eventService);
         AgentActivateReconnect agentActivateReconnect = new AgentActivateReconnect(f.objectManager, c.agentLocator, pingMonitor, f.jsonMapper);
@@ -306,8 +312,9 @@ public class Backend {
         r.handle("agent.*", agentHostStateUpdate::postHandle);
 
         r.handle("cluster.create", clusterProcessManager::create);
-        r.handle("cluster.activate", clusterProcessManager::activate);
-        r.handle("cluster.remove", clusterProcessManager::postRemove);
+        r.handle("cluster.activate", k8sClusterService, clusterProcessManager::activate);
+        r.handle("cluster.update", k8sClusterService);
+        r.handle("cluster.remove", k8sClusterService, clusterProcessManager::postRemove);
 
         r.handle("credential.create", credentialProcessManager::create);
 
@@ -330,10 +337,10 @@ public class Backend {
         r.handle("hosttemplate.remove", hosttemplateRemove);
 
         r.handle("instance.create", instanceProcessManager::preCreate, instanceProcessManager::create);
-        r.handle("instance.start", instanceProcessManager::preStart, instanceStartCheck, instanceStart, instanceProcessManager::postStart);//, k8sProviderLabels);
+        r.handle("instance.start", instanceProcessManager::preStart, instanceStartCheck, instanceStart, podCreate, instanceProcessManager::postStart);//, k8sProviderLabels);
         r.handle("instance.stop", instanceStop, instanceProcessManager::postStop);
         r.handle("instance.restart", instanceProcessManager::restart);
-        r.handle("instance.remove", instanceProcessManager::preRemove, instanceRemove, instanceProcessManager::postRemove);
+        r.handle("instance.remove", instanceProcessManager::preRemove, podRemove, instanceRemove, instanceProcessManager::postRemove);
 
         r.handle("machinedriver.reactivate", goMachineService);
         r.handle("machinedriver.activate", goMachineService);

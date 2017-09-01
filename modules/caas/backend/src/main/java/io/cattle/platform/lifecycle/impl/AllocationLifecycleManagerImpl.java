@@ -1,9 +1,8 @@
 package io.cattle.platform.lifecycle.impl;
 
-import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.service.AllocatorService;
-import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.ClusterConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Instance;
@@ -22,8 +21,6 @@ import static io.cattle.platform.core.model.tables.VolumeTable.*;
 
 public class AllocationLifecycleManagerImpl implements AllocationLifecycleManager {
 
-    public static final DynamicStringProperty EXTERNAL_STYLE = ArchaiusUtil.getString("external.compute.event.target");
-
     AllocatorService allocatorService;
     VolumeDao volumeDao;
     ObjectManager objectManager;
@@ -39,17 +36,7 @@ public class AllocationLifecycleManagerImpl implements AllocationLifecycleManage
     @Override
     public void preStart(Instance instance) throws LifecycleException {
         try {
-            if (instance.getHostId() == null) {
-                if (!instance.getNativeContainer()) {
-                    /* Check if we should defer to external agent for schedule/create/delete.  This should use a different
-                       than checking for the agent.
-                     */
-                    if ("host".equals(EXTERNAL_STYLE.get()) || metadataManager.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_COMPUTE, instance.getAccountId()).size() > 0) {
-                        DataAccessor.setField(instance, InstanceConstants.FIELD_EXTERNAL_COMPUTE_AGENT, true);
-                        return;
-                    }
-                }
-
+            if (shouldAllocateAndSetOrchestration(instance)) {
                 allocatorService.instanceAllocate(instance);
             }
 
@@ -58,6 +45,22 @@ public class AllocationLifecycleManagerImpl implements AllocationLifecycleManage
         } catch (FailedToAllocate e) {
             throw new LifecycleException(e.getMessage());
         }
+    }
+
+    protected boolean shouldAllocateAndSetOrchestration(Instance instance) {
+        if (instance.getHostId() != null) {
+            return false;
+        }
+
+        if (DataAccessor.fieldLong(instance, InstanceConstants.FIELD_REQUESTED_HOST_ID) != null) {
+            return true;
+        }
+
+        if (ClusterConstants.ORCH_CATTLE.equals(DataAccessor.getLabel(instance, SystemLabels.LABEL_ORCHESTRATION))) {
+            return true;
+        }
+
+        return false;
     }
 
     protected void assignUnmappedVolumes(Instance instance) {

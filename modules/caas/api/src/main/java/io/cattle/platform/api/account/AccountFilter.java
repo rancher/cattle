@@ -69,7 +69,7 @@ public class AccountFilter extends AbstractValidationFilter {
         Account account = objectManager.loadResource(Account.class, id);
         if (account.getClusterOwner()) {
             throw new ClientVisibleException(ResponseCodes.METHOD_NOT_ALLOWED, AccountConstants.CANT_DELETE_SYSTEM_ENVIRONMENT,
-                    "Cannot delete system environment, please delete cluster", null);
+                    "Cannot delete system environment", null);
 
         }
         return super.delete(type, id, request, next);
