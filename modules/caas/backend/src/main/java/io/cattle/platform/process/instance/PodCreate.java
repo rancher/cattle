@@ -1,5 +1,7 @@
 package io.cattle.platform.process.instance;
 
+import io.cattle.platform.core.addon.DeploymentSyncResponse;
+import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -13,6 +15,8 @@ import io.cattle.platform.object.serialization.ObjectSerializer;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
+
+import static io.cattle.platform.core.model.Tables.*;
 
 public class PodCreate extends PodHandler
 {
@@ -34,6 +38,15 @@ public class PodCreate extends PodHandler
 
     @Override
     protected HandlerResult postEvent(ProcessState state, ProcessInstance process, Map<Object, Object> data) {
-        return new HandlerResult(DeploymentSyncRequestHandler.getResourceDataMap(metadataManager, syncFactory, (Instance)state.getResource(), data));
+        Instance instance = (Instance)state.getResource();
+        DeploymentUnit unit = objectManager.loadResource(DeploymentUnit.class, instance.getDeploymentUnitId());
+        DeploymentSyncResponse response = syncFactory.getResponse(data);
+
+        if (unit != null && StringUtils.isNotBlank(response.getExternalId())) {
+            objectManager.setFields(unit,
+                    DEPLOYMENT_UNIT.EXTERNAL_ID, response.getExternalId());
+        }
+
+        return new HandlerResult(DeploymentSyncRequestHandler.getResourceDataMap(metadataManager, response, instance));
     }
 }

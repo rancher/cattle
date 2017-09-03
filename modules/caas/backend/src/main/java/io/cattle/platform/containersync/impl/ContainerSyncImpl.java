@@ -31,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -112,8 +111,18 @@ public class ContainerSyncImpl implements ContainerSync {
             return uuid;
         }
 
-        return Objects.toString(CollectionUtils.getNestedValue(event.getDockerInspect(),
-                "Config", "Labels", SystemLabels.LABEL_RANCHER_UUID), null);
+        Map<String, Object> labels = CollectionUtils.toMap(CollectionUtils.getNestedValue(event.getDockerInspect(),
+                "Config", "Labels"));
+        Object name = labels.get(SystemLabels.LABEL_K8S_CONTAINER_NAME);
+        Object checkUuid = labels.get("annotation." + name + "/" + SystemLabels.LABEL_RANCHER_UUID);
+        if (checkUuid == null) {
+            checkUuid = labels.get("annotation." + SystemLabels.LABEL_RANCHER_UUID);
+        }
+        if (checkUuid == null) {
+            checkUuid = labels.get(SystemLabels.LABEL_RANCHER_UUID);
+        }
+
+        return checkUuid == null ? null : checkUuid.toString();
     }
 
     private void containerEventWithLock(ContainerEvent event) {

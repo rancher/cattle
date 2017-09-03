@@ -34,7 +34,7 @@ public class ExternalProcessHandler implements ProcessHandler, CompletableLogic 
     Long timeoutMillis;
     String onError;
     ObjectProcessManager processManager;
-    ObjectManager objectManager;
+    protected ObjectManager objectManager;
     ObjectMetaDataManager metaDataManager;
     protected ObjectSerializer objectSerializer;
     DynamicBooleanProperty condition;

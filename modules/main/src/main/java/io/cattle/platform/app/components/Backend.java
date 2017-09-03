@@ -99,7 +99,6 @@ import io.cattle.platform.process.instance.InstanceProcessManager;
 import io.cattle.platform.process.instance.InstanceRemove;
 import io.cattle.platform.process.instance.InstanceStart;
 import io.cattle.platform.process.instance.InstanceStop;
-import io.cattle.platform.process.instance.K8sProviderLabels;
 import io.cattle.platform.process.instance.PodCreate;
 import io.cattle.platform.process.instance.PodRemove;
 import io.cattle.platform.process.mount.MountProcessManager;
@@ -289,7 +288,6 @@ public class Backend {
         InstanceRemove instanceRemove = new InstanceRemove(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager, deploymentSyncFactory, metadataManager);
         InstanceStart instanceStart = new InstanceStart(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager, deploymentSyncFactory, metadataManager);
         InstanceStop instanceStop = new InstanceStop(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager, deploymentSyncFactory, metadataManager);
-        K8sProviderLabels k8sProviderLabels = new K8sProviderLabels(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager, metadataManager);
         MountRemove mountRemove = new MountRemove(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager);
         PullTaskCreate pullTaskCreate = new PullTaskCreate(allocationHelper, c.agentLocator, progress, imageCredentialLookup, c.objectSerializer, f.objectManager);
         SecretRemove secretRemove = new SecretRemove(c.secretsService);

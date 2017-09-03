@@ -80,6 +80,8 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
     public void create(Instance instance) throws LifecycleException {
         k8sLifecycle.instanceCreate(instance);
 
+        setLabels(instance);
+
         Stack stack = setStack(instance);
 
         networkLifecycle.create(instance, stack);
@@ -101,6 +103,12 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
         assignOrchestration(instance);
 
         saveCreate(instance, secretsOpaque);
+    }
+
+    private void setLabels(Instance instance) {
+        if (StringUtils.isBlank(getLabel(instance, SystemLabels.LABEL_RANCHER_UUID))) {
+            setLabel(instance, SystemLabels.LABEL_RANCHER_UUID, instance.getUuid());
+        }
     }
 
     @Override

@@ -1,8 +1,6 @@
 package io.cattle.platform.process.instance;
 
-import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.agent.AgentLocator;
-import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.addon.DeploymentSyncResponse;
 import io.cattle.platform.core.addon.InstanceStatus;
 import io.cattle.platform.core.addon.metadata.HostInfo;
@@ -26,8 +24,6 @@ import java.util.Map;
 import static io.cattle.platform.core.model.Tables.*;
 
 public class DeploymentSyncRequestHandler extends AgentBasedProcessHandler {
-
-    public static final DynamicStringProperty EXTERNAL_STYLE = ArchaiusUtil.getString("external.compute.event.target");
 
     DeploymentSyncFactory syncFactory;
     MetadataManager metadataManager;
@@ -53,38 +49,39 @@ public class DeploymentSyncRequestHandler extends AgentBasedProcessHandler {
 
     @Override
     protected Map<Object, Object> getResourceDataMap(EventVO<?, ?> event, Event reply, ProcessState state, ProcessInstance process, Object eventResource, Object dataResource, Object agentResource) {
-        return getResourceDataMap(metadataManager, syncFactory, (Instance)state.getResource(), CollectionUtils.toMap(reply.getData()));
+        return getResourceDataMap(metadataManager, syncFactory.getResponse(CollectionUtils.toMap(reply.getData())), (Instance)state.getResource());
 
     }
 
-    public static Map<Object, Object> getResourceDataMap(MetadataManager metadataManager, DeploymentSyncFactory syncFactory, Instance instance, Map<Object, Object> replyData) {
+    public static Map<Object, Object> getResourceDataMap(MetadataManager metadataManager, DeploymentSyncResponse response, Instance instance) {
         Map<Object, Object> data = new HashMap<>();
 
-        DeploymentSyncResponse response = syncFactory.getResponse(replyData);
-        if (response != null) {
-            for (InstanceStatus status : response.getInstanceStatus()) {
-                if (!instance.getUuid().equals(status.getInstanceUuid())) {
-                    continue;
-                }
+        if (response == null) {
+            return data;
+        }
 
-                if (StringUtils.isNotBlank(status.getExternalId())) {
-                    data.put(INSTANCE.EXTERNAL_ID, status.getExternalId());
-                }
+        for (InstanceStatus status : response.getInstanceStatus()) {
+            if (!instance.getUuid().equals(status.getInstanceUuid())) {
+                continue;
+            }
 
-                if (status.getDockerInspect() != null) {
-                    data.put(InstanceConstants.FIELD_DOCKER_INSPECT, status.getDockerInspect());
-                }
+            if (StringUtils.isNotBlank(status.getExternalId())) {
+                data.put(INSTANCE.EXTERNAL_ID, status.getExternalId());
+            }
 
-                if (instance.getHostId() == null && StringUtils.isNotBlank(response.getNodeName())) {
-                    HostInfo host = metadataManager.getMetadataForAccount(instance.getAccountId()).getHostByNodeName(response.getNodeName());
-                    if (host != null) {
-                        data.put(INSTANCE.HOST_ID, host.getId());
-                    }
-                }
+            if (status.getDockerInspect() != null) {
+                data.put(InstanceConstants.FIELD_DOCKER_INSPECT, status.getDockerInspect());
+            }
 
-                if (StringUtils.isNotBlank(status.getPrimaryIpAddress())) {
-                    data.put(InstanceConstants.FIELD_PRIMARY_IP_ADDRESS, status.getPrimaryIpAddress());
+            if (instance.getHostId() == null && StringUtils.isNotBlank(response.getNodeName())) {
+                HostInfo host = metadataManager.getMetadataForAccount(instance.getAccountId()).getHostByNodeName(response.getNodeName());
+                if (host != null) {
+                    data.put(INSTANCE.HOST_ID, host.getId());
                 }
+            }
+
+            if (StringUtils.isNotBlank(status.getPrimaryIpAddress())) {
+                data.put(InstanceConstants.FIELD_PRIMARY_IP_ADDRESS, status.getPrimaryIpAddress());
             }
         }
 

@@ -25,6 +25,7 @@ import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.server.context.ServerContext;
 import io.cattle.platform.service.launcher.ServiceAccountCreateStartup;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,7 +118,7 @@ public class DeploymentSyncFactory {
 
         return new DeploymentSyncRequest(unit,
                 host == null ? null : DataAccessor.fieldString(host, HostConstants.FIELD_NODE_NAME),
-                account.getExternalId(),
+                StringUtils.isBlank(account.getExternalId()) ? account.getName().toLowerCase() : account.getExternalId(),
                 getRevision(unit, instanceById),
                 instances,
                 volumes,
