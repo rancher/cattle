@@ -85,9 +85,4 @@ public class SecretsApiLauncher extends GenericServiceLauncher {
         return null;
     }
 
-    @Override
-    protected boolean isReady() {
-        return true;
-    }
-
 }

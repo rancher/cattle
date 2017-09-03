@@ -7,6 +7,7 @@ import io.cattle.platform.core.addon.K8sClientConfig;
 import io.cattle.platform.core.addon.Register;
 import io.cattle.platform.core.constants.ClusterConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.RegisterConstants;
 import io.cattle.platform.core.dao.AgentDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Cluster;
@@ -47,8 +48,8 @@ public class RegisterManager extends AbstractNoOpResourceManager {
         }
 
         K8sClientConfig config = register.getK8sClientConfig();
-        if (config == null) {
-            createAgent(register, clusterId);
+        if (config == null || StringUtils.isBlank(config.getBearerToken())) {
+            return createAgent(register, clusterId);
         }
 
         createOrUpdateCluster(config, clusterId);
@@ -86,9 +87,15 @@ public class RegisterManager extends AbstractNoOpResourceManager {
             register.setId(register.getKey());
 
             if (CommonStatesConstants.INACTIVE.equals(cluster.getState())) {
-                objectManager.setFields(cluster,
-                        CLUSTER.EMBEDDED, true);
-                processManager.activate(cluster, null);
+                String orc = DataAccessor.fieldString(register, RegisterConstants.FIELD_ORCHESTRATION);
+                if (ClusterConstants.ORCH_KUBERNETES.equals(orc)) {
+                    objectManager.setFields(cluster,
+                            ClusterConstants.FIELD_ORCHESTRATION, orc);
+                } else {
+                    objectManager.setFields(cluster,
+                            CLUSTER.EMBEDDED, true);
+                    processManager.activate(cluster, null);
+                }
             }
 
             return register;

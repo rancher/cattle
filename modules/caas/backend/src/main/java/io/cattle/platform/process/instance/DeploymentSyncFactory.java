@@ -22,6 +22,7 @@ import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.server.context.ServerContext;
 import io.cattle.platform.service.launcher.ServiceAccountCreateStartup;
 import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
@@ -111,7 +112,8 @@ public class DeploymentSyncFactory {
 
         DeploymentUnit unit = objectManager.loadResource(DeploymentUnit.class, resource.getDeploymentUnitId());
         Account account = objectManager.loadResource(Account.class, resource.getAccountId());
-        Host host = objectManager.loadResource(Host.class, resource.getHostId());
+        Host host = objectManager.loadResource(Host.class, resource.getHostId() == null ?
+                DataAccessor.fieldLong(resource, InstanceConstants.FIELD_REQUESTED_HOST_ID) : resource.getHostId());
 
         return new DeploymentSyncRequest(unit,
                 host == null ? null : DataAccessor.fieldString(host, HostConstants.FIELD_NODE_NAME),
@@ -185,6 +187,7 @@ public class DeploymentSyncFactory {
     }
 
     void setAuthEnvVars(Instance instance, Map<String, Object> auth) {
+        boolean urlSet = false;
         if (auth != null) {
             Map<String, Object> fields = DataAccessor.getWritableFields(instance);
             for (Map.Entry<String, Object> entry : auth.entrySet()) {
@@ -192,7 +195,14 @@ public class DeploymentSyncFactory {
                         .withScopeKey(InstanceConstants.FIELD_ENVIRONMENT)
                         .withKey(entry.getKey())
                         .set(entry.getValue());
+                if (!urlSet) {
+                    DataAccessor.fromMap(fields)
+                            .withScopeKey(InstanceConstants.FIELD_ENVIRONMENT)
+                            .withKey("CATTLE_URL")
+                            .set(ServerContext.getHostApiBaseUrl(ServerContext.BaseProtocol.HTTP));
+                }
             }
         }
+
     }
 }

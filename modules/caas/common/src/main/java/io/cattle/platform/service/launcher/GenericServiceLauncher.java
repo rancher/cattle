@@ -1,6 +1,8 @@
 package io.cattle.platform.service.launcher;
 
+import com.netflix.config.DynamicListProperty;
 import com.netflix.config.DynamicStringProperty;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -38,6 +40,7 @@ import static io.cattle.platform.core.model.tables.CredentialTable.*;
 
 public abstract class GenericServiceLauncher extends NoExceptionRunnable implements Runnable {
 
+    private static final DynamicListProperty IGNORE_LAUNCH = ArchaiusUtil.getList("no.launch");
     private static final String SERVICE_USER_UUID = "serviceAccount";
     private static final String SERVICE_USER_NAME = "System Service";
     private static final int WAIT = 2000;
@@ -53,6 +56,7 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
 
     Process process;
     ScheduledFuture<?> future;
+    boolean launchInfo;
 
     public GenericServiceLauncher(LockManager lockManager, LockDelegator lockDelegator, ScheduledExecutorService executor, AccountDao accountDao,
             GenericResourceDao resourceDao, ResourceMonitor resourceMonitor, ObjectProcessManager processManager) {
@@ -162,14 +166,21 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
     }
 
     protected abstract boolean shouldRun();
-    protected abstract boolean isReady();
     protected abstract String binaryPath();
     protected abstract void setEnvironment(Map<String, String> env);
     protected abstract LockDefinition getLock();
 
+    protected boolean isReady() {
+        return true;
+    }
+
     @Override
     protected synchronized void doRun() throws Exception {
         if (!ProcessEngineUtils.enabled() || !shouldRun() || !isReady()) {
+            if (!shouldRun() && !launchInfo) {
+                log.warn("Not running {}", binaryPath());
+                launchInfo = true;
+            }
             return;
         }
 
@@ -192,6 +203,20 @@ public abstract class GenericServiceLauncher extends NoExceptionRunnable impleme
             } catch (InterruptedException e) {
                 // ignore
             }
+        }
+
+        if (IGNORE_LAUNCH.get().contains(binaryPath())) {
+            if (!launchInfo) {
+                StringBuilder message = new StringBuilder("Not running {}.  To run externally use the following env vars\n");
+                Map<String, String> env = new HashMap<>();
+                setEnvironment(env);
+                env.forEach((k, v) -> {
+                    message.append("\t").append(k).append("=").append(v).append("\n");
+                });
+                log.warn(message.toString(), binaryPath());
+                launchInfo = true;
+            }
+            return;
         }
 
         if (!launch) {

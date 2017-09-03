@@ -3,7 +3,6 @@ package io.cattle.platform.lifecycle.impl;
 import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.core.constants.ClusterConstants;
-import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Volume;
@@ -52,7 +51,7 @@ public class AllocationLifecycleManagerImpl implements AllocationLifecycleManage
             return false;
         }
 
-        if (DataAccessor.fieldLong(instance, InstanceConstants.FIELD_REQUESTED_HOST_ID) != null) {
+        if (instance.getNativeContainer()) {
             return true;
         }
 

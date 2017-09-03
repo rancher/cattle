@@ -11,6 +11,7 @@ public class Register {
     String accessKey;
     String secretKey;
     String state;
+    String orchestration;
     K8sClientConfig k8sClientConfig;
 
     public Register() {
@@ -25,6 +26,14 @@ public class Register {
             this.accessKey = cred.getPublicValue();
             this.secretKey = cred.getSecretValue();
         }
+    }
+
+    public String getOrchestration() {
+        return orchestration;
+    }
+
+    public void setOrchestration(String orchestration) {
+        this.orchestration = orchestration;
     }
 
     public String getKey() {

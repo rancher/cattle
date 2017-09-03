@@ -63,7 +63,7 @@ public class ClusterOutputFilter implements ResourceOutputFilter {
         return converted;
     }
 
-    private static String regUrl(String token) {
+    public static String regUrl(String token) {
         if (ServerContext.isCustomApiHost()) {
             return ServerContext.getHostApiBaseUrl(BaseProtocol.HTTP) + "/scripts/" + token;
         } else {

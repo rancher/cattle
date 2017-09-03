@@ -65,7 +65,7 @@ public class AllocationHelperImpl implements AllocationHelper {
 
         List<Long> acceptableHostIds = new ArrayList<>();
         for (HostInfo host : hosts) {
-            if (hostSatisfiesHostAffinity(clusterId, host, hostAffinityConstraints)) {
+            if (host.getAgentId() != null && hostSatisfiesHostAffinity(clusterId, host, hostAffinityConstraints)) {
                 acceptableHostIds.add(host.getId());
             }
         }

@@ -19,6 +19,7 @@
         "register.key" : "cr",
         "register.agentUriFormat" : "cr",
         "register.k8sClientConfig" : "cr",
+        "register.orchestration" : "cr",
 
         "k8sClientConfig" : "cru",
         "k8sClientConfig.bearerToken" : "cru",

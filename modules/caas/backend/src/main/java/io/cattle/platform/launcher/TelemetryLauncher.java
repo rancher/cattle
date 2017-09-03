@@ -58,11 +58,6 @@ public class TelemetryLauncher extends GenericServiceLauncher {
     }
 
     @Override
-    protected boolean isReady() {
-        return true;
-    }
-
-    @Override
     protected void prepareProcess(ProcessBuilder pb) throws IOException {
         pb.command().add("client");
     }

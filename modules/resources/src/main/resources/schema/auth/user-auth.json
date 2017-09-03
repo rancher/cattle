@@ -465,6 +465,7 @@
         "register.key":"cr",
         "register.secretKey" : "r",
         "register.agentUriFormat" : "r",
+        "register.orchestration" : "r",
 
         "registry": "r",
         "registry.serverAddress": "cr",

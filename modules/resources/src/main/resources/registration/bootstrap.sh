@@ -90,6 +90,10 @@ print_config()
 
 upgrade()
 {
+    if [ "${CATTLE_SKIP_UPGRADE}" = "true" ]; then
+        return 0
+    fi
+
     if [[ -n "${REQUIRED_IMAGE}" && "${RANCHER_AGENT_IMAGE}" != "${REQUIRED_IMAGE}" ]]; then
         if [ -e /host/var/run/docker.sock ]; then
             # Upgrading from old image

@@ -1,5 +1,6 @@
 package io.cattle.platform.service.launcher;
 
+import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.core.dao.AccountDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.lock.LockDelegator;
@@ -12,8 +13,6 @@ import io.cattle.platform.util.type.InitializationTask;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
-
-import com.netflix.config.DynamicStringProperty;
 
 public class ServiceAccountCreateStartup extends GenericServiceLauncher implements InitializationTask {
 
@@ -54,11 +53,6 @@ public class ServiceAccountCreateStartup extends GenericServiceLauncher implemen
     @Override
     protected LockDefinition getLock() {
         return null;
-    }
-
-    @Override
-    protected boolean isReady() {
-        return true;
     }
 
 }

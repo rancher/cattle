@@ -91,11 +91,6 @@ public class AuthServiceLauncher extends GenericServiceLauncher {
         return null;
     }
 
-    @Override
-    protected boolean isReady() {
-        return true;
-    }
-
     public String getPublicKey() {
         for (Map.Entry<String, PublicKey> entry : keyProvider.getPublicKeys().entrySet()) {
             try {

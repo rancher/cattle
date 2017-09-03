@@ -19,27 +19,27 @@ import io.cattle.platform.service.launcher.GenericServiceLauncher;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 
-public class MachineLauncher extends GenericServiceLauncher {
+public class NetesAgentLauncher extends GenericServiceLauncher {
 
-    private static final DynamicStringProperty MACHINE_BINARY = ArchaiusUtil.getString("machine.service.executable");
-    private static final DynamicBooleanProperty LAUNCH_MACHINE = ArchaiusUtil.getBoolean("machine.execute");
+    private static final DynamicStringProperty NETES_AGENT_BINARY = ArchaiusUtil.getString("netes.agent.executable");
+    private static final DynamicBooleanProperty LAUNCH_NETES_AGENT = ArchaiusUtil.getBoolean("netes.agent.execute");
 
     ClusterService clusterService;
 
-    public MachineLauncher(LockManager lockManager, LockDelegator lockDelegator, ScheduledExecutorService executor, AccountDao accountDao,
-            GenericResourceDao resourceDao, ResourceMonitor resourceMonitor, ObjectProcessManager processManager, ClusterService clusterService) {
+    public NetesAgentLauncher(LockManager lockManager, LockDelegator lockDelegator, ScheduledExecutorService executor, AccountDao accountDao,
+                              GenericResourceDao resourceDao, ResourceMonitor resourceMonitor, ObjectProcessManager processManager, ClusterService clusterService) {
         super(lockManager, lockDelegator, executor, accountDao, resourceDao, resourceMonitor, processManager);
         this.clusterService = clusterService;
     }
 
     @Override
     protected boolean shouldRun() {
-        return LAUNCH_MACHINE.get() && clusterService.isMaster();
+        return LAUNCH_NETES_AGENT.get() && clusterService.isMaster();
     }
 
     @Override
     protected String binaryPath() {
-        return MACHINE_BINARY.get();
+        return NETES_AGENT_BINARY.get();
     }
 
     @Override

@@ -42,6 +42,7 @@ import io.cattle.platform.launcher.CatalogLauncher;
 import io.cattle.platform.launcher.ComposeExecutorLauncher;
 import io.cattle.platform.launcher.MachineDriverLoader;
 import io.cattle.platform.launcher.MachineLauncher;
+import io.cattle.platform.launcher.NetesAgentLauncher;
 import io.cattle.platform.launcher.SecretsApiLauncher;
 import io.cattle.platform.launcher.TelemetryLauncher;
 import io.cattle.platform.launcher.WebhookServiceLauncher;
@@ -97,7 +98,6 @@ import io.cattle.platform.process.instance.DeploymentSyncFactory;
 import io.cattle.platform.process.instance.InstanceProcessManager;
 import io.cattle.platform.process.instance.InstanceRemove;
 import io.cattle.platform.process.instance.InstanceStart;
-import io.cattle.platform.process.instance.InstanceStartCheck;
 import io.cattle.platform.process.instance.InstanceStop;
 import io.cattle.platform.process.instance.K8sProviderLabels;
 import io.cattle.platform.process.instance.PodCreate;
@@ -287,7 +287,6 @@ public class Backend {
         DeploymentUnitRemove deploymentUnitRemove = new DeploymentUnitRemove(f.resourcePoolManager);
         HosttemplateRemove hosttemplateRemove = new HosttemplateRemove(c.secretsService);
         InstanceRemove instanceRemove = new InstanceRemove(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager, deploymentSyncFactory, metadataManager);
-        InstanceStartCheck instanceStartCheck = new InstanceStartCheck(metadataManager, f.objectManager, f.resourceMonitor);
         InstanceStart instanceStart = new InstanceStart(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager, deploymentSyncFactory, metadataManager);
         InstanceStop instanceStop = new InstanceStop(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager, deploymentSyncFactory, metadataManager);
         K8sProviderLabels k8sProviderLabels = new K8sProviderLabels(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager, metadataManager);
@@ -337,7 +336,7 @@ public class Backend {
         r.handle("hosttemplate.remove", hosttemplateRemove);
 
         r.handle("instance.create", instanceProcessManager::preCreate, instanceProcessManager::create);
-        r.handle("instance.start", instanceProcessManager::preStart, instanceStartCheck, instanceStart, podCreate, instanceProcessManager::postStart);//, k8sProviderLabels);
+        r.handle("instance.start", instanceProcessManager::preStart, instanceStart, podCreate, instanceProcessManager::postStart);//, k8sProviderLabels);
         r.handle("instance.stop", instanceStop, instanceProcessManager::postStop);
         r.handle("instance.restart", instanceProcessManager::restart);
         r.handle("instance.remove", instanceProcessManager::preRemove, podRemove, instanceRemove, instanceProcessManager::postRemove);
@@ -444,19 +443,23 @@ public class Backend {
         CatalogLauncher catalogLauncher = new CatalogLauncher(f.lockManager, f.lockDelegator, f.scheduledExecutorService, d.accountDao, d.resourceDao, f.resourceMonitor, f.processManager, f.jsonMapper);
         ComposeExecutorLauncher composeExecutorLauncher = new ComposeExecutorLauncher(f.lockManager, f.lockDelegator, f.scheduledExecutorService, d.accountDao, d.resourceDao, f.resourceMonitor, f.processManager, f.cluster);
         MachineLauncher machineLauncher = new MachineLauncher(f.lockManager, f.lockDelegator, f.scheduledExecutorService, d.accountDao, d.resourceDao, f.resourceMonitor, f.processManager, f.cluster);
+        NetesAgentLauncher netesAgentLauncher = new NetesAgentLauncher(f.lockManager, f.lockDelegator, f.scheduledExecutorService, d.accountDao, d.resourceDao, f.resourceMonitor, f.processManager, f.cluster);
         SecretsApiLauncher secretsApiLauncher = new SecretsApiLauncher(f.lockManager, f.lockDelegator, f.scheduledExecutorService, d.accountDao, d.resourceDao, f.resourceMonitor, f.processManager, d.dataDao);
         TelemetryLauncher telemetryLauncher = new TelemetryLauncher(f.lockManager, f.lockDelegator, f.scheduledExecutorService, d.accountDao, d.resourceDao, f.resourceMonitor, f.processManager, f.cluster);
         WebhookServiceLauncher webhookServiceLauncher = new WebhookServiceLauncher(f.lockManager, f.lockDelegator, f.scheduledExecutorService, d.accountDao, d.resourceDao, f.resourceMonitor, f.processManager, c.keyProvider);
         WebsocketProxyLauncher websocketProxyLauncher = new WebsocketProxyLauncher(f.lockManager, f.lockDelegator, f.scheduledExecutorService, d.accountDao, d.resourceDao, f.resourceMonitor, f.processManager, f.cluster);
 
+        // First, a lot of these other services need wsp
+        launchers.add(websocketProxyLauncher);
+
         launchers.add(authService);
         launchers.add(catalogLauncher);
         launchers.add(composeExecutorLauncher);
         launchers.add(machineLauncher);
+        launchers.add(netesAgentLauncher);
         launchers.add(secretsApiLauncher);
         launchers.add(telemetryLauncher);
         launchers.add(webhookServiceLauncher);
-        launchers.add(websocketProxyLauncher);
     }
 
     private void addInitializationTasks() {

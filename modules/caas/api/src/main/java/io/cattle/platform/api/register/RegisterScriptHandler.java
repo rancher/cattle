@@ -1,6 +1,7 @@
 package io.cattle.platform.api.register;
 
 import com.netflix.config.DynamicStringProperty;
+import io.cattle.platform.api.cluster.ClusterOutputFilter;
 import io.cattle.platform.api.requesthandler.ScriptsHandler;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CredentialConstants;
@@ -26,7 +27,7 @@ public class RegisterScriptHandler implements ScriptsHandler {
 
     private static final Logger log = LoggerFactory.getLogger(RegisterScriptHandler.class);
 
-    private static final DynamicStringProperty IMAGE = ArchaiusUtil.getString("agent.image");
+    private static final DynamicStringProperty IMAGE = ArchaiusUtil.getString("bootstrap.required.image");
     private static final DynamicStringProperty SCRIPT = ArchaiusUtil.getString("agent.instance.register.script");
     private static final DynamicStringProperty YAML = ArchaiusUtil.getString("agent.instance.register.yaml");
     private static final DynamicStringProperty URL = ArchaiusUtil.getString("agent.instance.register.url");
@@ -57,6 +58,7 @@ public class RegisterScriptHandler implements ScriptsHandler {
 
         Map<String, String> tokens = new HashMap<>();
         tokens.put("CATTLE_URL", getUrl(request));
+        tokens.put("CATTLE_REGISTRATION_URL", ClusterOutputFilter.regUrl(id));
         tokens.put("CATTLE_REGISTRATION_ACCESS_KEY", CredentialConstants.KIND_CREDENTIAL_REGISTRATION_TOKEN);
         tokens.put("CATTLE_REGISTRATION_SECRET_KEY", id);
         tokens.put("CATTLE_AGENT_IMAGE", IMAGE.get());

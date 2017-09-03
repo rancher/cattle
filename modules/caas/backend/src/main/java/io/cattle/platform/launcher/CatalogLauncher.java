@@ -185,11 +185,6 @@ public class CatalogLauncher extends GenericServiceLauncher {
     }
 
     @Override
-    protected boolean isReady() {
-        return true;
-    }
-
-    @Override
     public void reload() {
         if (!shouldRun()) {
             return;
