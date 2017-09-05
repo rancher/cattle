@@ -455,6 +455,7 @@
         "pullTask.labels": "cr",
         "pullTask.mode": "cr",
         "pullTask.image": "cr",
+        "pullTask.hostIds": "cr",
         "pullTask.status": "r",
         "pullTask.kind": "r",
         "pullTask.key": "",
