@@ -7,7 +7,6 @@ import io.cattle.platform.core.addon.K8sClientConfig;
 import io.cattle.platform.core.addon.Register;
 import io.cattle.platform.core.constants.ClusterConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.constants.RegisterConstants;
 import io.cattle.platform.core.dao.AgentDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Cluster;
@@ -87,7 +86,7 @@ public class RegisterManager extends AbstractNoOpResourceManager {
             register.setId(register.getKey());
 
             if (CommonStatesConstants.INACTIVE.equals(cluster.getState())) {
-                String orc = DataAccessor.fieldString(register, RegisterConstants.FIELD_ORCHESTRATION);
+                String orc = register.getOrchestration();
                 if (ClusterConstants.ORCH_KUBERNETES.equals(orc)) {
                     objectManager.setFields(cluster,
                             ClusterConstants.FIELD_ORCHESTRATION, orc);
