@@ -94,6 +94,9 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
         if (!"true".equals(labels.get(SystemLabels.LABEL_AGENT_CREATE))) {
             return;
         }
+        if ("true".equals(labels.get(SystemLabels.LABEL_AGENT_SKIP_VOLUMES))) {
+            return;
+        }
 
         List<String> dataVolumes = DataAccessor.appendToFieldStringList(instance, InstanceConstants.FIELD_DATA_VOLUMES,
             AgentConstants.AGENT_INSTANCE_BIND_MOUNT);
