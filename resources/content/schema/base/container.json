@@ -409,6 +409,10 @@
         "name": {
             "type": "string",
             "unique": true
+        },
+        "exitCode": {
+            "type": "int",
+            "nullable": true
         }
     },
     "resourceActions": {

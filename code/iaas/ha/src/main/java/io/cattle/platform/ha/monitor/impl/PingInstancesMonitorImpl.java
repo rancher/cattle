@@ -267,6 +267,12 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
         }
 
         ContainerEvent ce = objectManager.newRecord(ContainerEvent.class);
+        Map<String, Object> dataField = new HashMap<>();
+        Map<String, Object> inspect = new HashMap<>();
+        Map<String, Object> state = new HashMap<>();
+        state.put("ExitCode", ri.exitCode);
+        DataAccessor.fromMap(inspect).withKey("State").set(state);
+        dataField.put("dockerInspect", inspect);
         ce.setAccountId(agentId);
         ce.setExternalFrom(ri.getImage());
         ce.setExternalId(ri.getExternalId());
@@ -274,6 +280,7 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
         ce.setExternalTimestamp(ri.getCreated());
         ce.setKind(CONTAINER_EVENT_KIND);
         ce.setHostId(hostId);
+        ce.setData(dataField);
         Map<String, Object> data = new HashMap<String, Object>();
         data.put(CONTAINER_EVENT_SYNC_NAME, ri.getUuid());
         data.put(CONTAINER_EVENT_SYNC_LABELS, ri.getLabels());

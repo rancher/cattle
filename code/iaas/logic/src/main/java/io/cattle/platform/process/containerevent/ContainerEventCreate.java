@@ -172,6 +172,7 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
 
                         objectProcessManager.scheduleProcessInstance(PROCESS_START, instance, makeData());
                     } else if (EVENT_STOP.equals(status) || EVENT_DIE.equals(status)) {
+                        setExitcode(inspect, instance, true);
                         if (STATE_STOPPED.equals(state) || STATE_STOPPING.equals(state))
                             return null;
 
@@ -218,6 +219,7 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         instance.setAccountId(accountId);
         instance.setExternalId(externalId);
         instance.setNativeContainer(true);
+        setExitcode(inspect, instance, false);
         setName(inspect, data, instance);
         setNetwork(inspect, data, instance);
         setImage(event, instance);
@@ -296,6 +298,16 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
         if (name != null)
             name = name.replaceFirst("/", "");
         instance.setName(name);
+    }
+
+    void setExitcode(Map<String, Object> inspect, Instance instance, boolean update) {
+    	    Object exitcode = CollectionUtils.getNestedValue(inspect, "State", "ExitCode");
+    	    if (exitcode != null) {
+    	    	    DataAccessor.fields(instance).withKey(FIELD_EXITCODE).set((Integer)exitcode);
+    	    	    if (update) {
+    	    	        objectManager.persist(instance);
+    	    	    }
+    	    }
     }
 
     void setNetwork(Map<String, Object> inspect, Map<String, Object> data, Instance instance) {

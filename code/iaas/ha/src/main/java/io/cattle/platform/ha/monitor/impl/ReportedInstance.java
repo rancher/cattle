@@ -17,6 +17,7 @@ class ReportedInstance {
     String state;
     String image;
     Long created;
+    Integer exitCode;
     Map<String, String> labels;
     KnownInstance instance;
 
@@ -33,6 +34,7 @@ class ReportedInstance {
         image = DataAccessor.fromMap(resource).withKey("image").as(String.class);
         created = DataAccessor.fromMap(resource).withKey("created").as(Long.class);
         labels = CollectionUtils.toMap(DataAccessor.fromMap(resource).withKey("labels").get());
+        exitCode = DataAccessor.fromMap(resource).withKey("exitCode").as(Integer.class);
     }
 
     public String getUuid() {

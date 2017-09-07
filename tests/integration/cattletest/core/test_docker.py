@@ -1121,6 +1121,17 @@ def test_blkio_device_options(super_client, docker_client):
     assert hc['BlkioDeviceReadBps'] == [{'Path': '/dev/null', 'Rate': 3000}]
 
 
+@if_docker
+def test_exit_code(super_client, docker_client):
+    # daishan1992/exitcode is a image which sleeps 5s then exit with 122
+    image = "docker:daishan1992/exitcode"
+    c = docker_client.create_container(imageUuid=image,
+                                       networkMode=None)
+    c = docker_client.wait_success(c)
+    c = super_client.reload(c)
+    wait_for_condition(super_client, c, lambda x: x.exitCode == 122, 60)
+
+
 @if_resource_scheduler
 def test_port_constraint(docker_client):
     # Tests with the above label can only be ran when the external scheduler is
@@ -1299,7 +1310,8 @@ def _check_path(volume, should_exist, client, super_client, extra_vols=None,
     c = super_client.wait_success(c.stop())
     assert c.state == 'stopped'
 
-    code = c.data.dockerInspect.State.ExitCode
+    wait_for_condition(super_client, c, lambda x: x.exitCode is not None, 60)
+    code = c.exitCode
 
     # Note that the test in the container is testing to see if the path is a
     # directory. Code for the test is here:

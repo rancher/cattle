@@ -1040,6 +1040,7 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'secrets': 'r',
         'serviceId': 'r',
         'stackId': 'r',
+        'exitCode': 'r',
     })
 
     auth_check(user_client.schema, 'container', 'r', {
@@ -1152,6 +1153,7 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'secrets': 'r',
         'serviceId': 'r',
         'stackId': 'r',
+        'exitCode': 'r',
     })
 
     auth_check(project_client.schema, 'container', 'crud', {
@@ -1264,6 +1266,7 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'secrets': 'cr',
         'serviceId': 'r',
         'stackId': 'cr',
+        'exitCode': 'r',
     })
 
     auth_check(environment_client.schema, 'container', 'crud', {
@@ -1375,6 +1378,7 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'primaryNetworkId': 'r',
         'serviceId': 'r',
         'stackId': 'cr',
+        'exitCode': 'r',
     })
 
     auth_check(project_admin_client.schema, 'container', 'crud', {
@@ -1486,6 +1490,7 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'primaryNetworkId': 'r',
         'serviceId': 'r',
         'stackId': 'cr',
+        'exitCode': 'r',
     })
 
     auth_check(project_client.schema, 'dockerBuild', 'cr', {
@@ -3181,6 +3186,7 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'primaryNetworkId': 'r',
         'serviceId': 'r',
         'stackId': 'r',
+        'exitCode': 'r',
     })
 
     auth_check(user_client.schema, 'virtualMachine', 'r', {
@@ -3277,6 +3283,7 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'primaryNetworkId': 'r',
         'serviceId': 'r',
         'stackId': 'r',
+        'exitCode': 'r',
     })
 
     auth_check(project_client.schema, 'virtualMachine', 'crud', {
@@ -3373,6 +3380,7 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'primaryNetworkId': 'r',
         'serviceId': 'r',
         'stackId': 'cr',
+        'exitCode': 'r',
     })
 
 

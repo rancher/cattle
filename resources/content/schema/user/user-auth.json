@@ -181,6 +181,7 @@
         "container.healthRetries" : "cr",
         "container.stackId" : "cr",
         "container.serviceId" : "r",
+        "container.exitCode": "r",
         
         "ulimit" : "r",
         "ulimit.name" : "cr",
