@@ -3,6 +3,7 @@ package io.cattle.platform.iaas.api.filter.instance;
 import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.core.addon.HealthcheckState;
 import io.cattle.platform.core.addon.MountEntry;
+import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.dao.ServiceDao;
@@ -30,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class InstanceOutputFilter extends CachedOutputFilter<Map<Long, Map<String, Object>>> {
     @Inject
@@ -106,7 +109,15 @@ public class InstanceOutputFilter extends CachedOutputFilter<Map<Long, Map<Strin
                 }
               }
         }
-
+        
+        if (original instanceof Instance) {
+            String state = ((Instance) original).getState();
+            Integer exitCode = DataAccessor.fieldInteger(original, InstanceConstants.FIELD_EXITCODE);
+            if (StringUtils.equals(state, InstanceConstants.STATE_STOPPED) && exitCode != null && exitCode != 0) {
+                    converted.getFields().put(InstanceConstants.FIELD_HEALTH_STATE, HealthcheckConstants.HEALTH_STATE_UNHEALTHY);
+            }
+        }
+        
         return converted;
     }
 
