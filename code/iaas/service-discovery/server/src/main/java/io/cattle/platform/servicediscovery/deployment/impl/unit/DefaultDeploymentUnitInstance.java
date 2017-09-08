@@ -168,6 +168,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
         launchConfigData.put(InstanceConstants.FIELD_SERVICE_INSTANCE_SERVICE_INDEX,
                 this.serviceIndex.getServiceIndex());
         launchConfigData.put(InstanceConstants.FIELD_ALLOCATED_IP_ADDRESS, serviceIndex.getAddress());
+        launchConfigData.put(InstanceConstants.FIELD_RETAIN_IP, DataAccessor.fieldBool(service, ServiceConstants.FIELD_SERVICE_RETAIN_IP));
         return launchConfigData;
     }
 

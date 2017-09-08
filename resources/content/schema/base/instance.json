@@ -65,6 +65,11 @@
             "type" : "string",
             "nullable" : true
         },
+        "retainIp" : {
+            "type" : "boolean",
+            "create" : false,
+            "default" : false
+        },
         "serviceIndex": {
             "type": "string",
             "nullable": true
