@@ -301,13 +301,13 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
     }
 
     void setExitcode(Map<String, Object> inspect, Instance instance, boolean update) {
-    	    Object exitcode = CollectionUtils.getNestedValue(inspect, "State", "ExitCode");
-    	    if (exitcode != null) {
-    	    	    DataAccessor.fields(instance).withKey(FIELD_EXITCODE).set((Integer)exitcode);
-    	    	    if (update) {
-    	    	        objectManager.persist(instance);
-    	    	    }
-    	    }
+        Object exitcode = CollectionUtils.getNestedValue(inspect, "State", "ExitCode");
+        if (exitcode != null) {
+            DataAccessor.fields(instance).withKey(FIELD_EXITCODE).set((Integer)exitcode);
+            if (update) {
+                objectManager.persist(instance);
+            }
+        }
     }
 
     void setNetwork(Map<String, Object> inspect, Map<String, Object> data, Instance instance) {
