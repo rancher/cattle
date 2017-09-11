@@ -6,7 +6,7 @@ import java.util.Set;
 
 public class NetworkConstants {
 
-    public static final String INTERNAL_DNS_SEARCH_DOMAIN = "rancher.internal";
+    public static final String INTERNAL_DNS_SEARCH_DOMAIN = "discover.internal";
 
     public static final String FIELD_DEFAULT_POLICY_ACTION = "defaultPolicyAction";
     public static final String FIELD_DNS = "dns";

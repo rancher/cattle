@@ -4,6 +4,7 @@ import io.cattle.platform.certificate.CertificateService;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.DataDao;
+import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.object.ObjectManager;
@@ -63,9 +64,11 @@ public class CertificateServiceImpl implements CertificateService {
             .withDefault(Collections.emptyList()).asList(String.class);
         List<String> sans = new ArrayList<>(configuredSans);
 
+        Account account = objectManager.loadResource(Account.class, service.getAccountId());
+
         sans.add(serviceName.toLowerCase());
-        sans.add(String.format("%s.%s", serviceName, stack.getName()).toLowerCase());
-        sans.add(String.format("%s.%s.%s", serviceName, stack.getName(), NetworkConstants.INTERNAL_DNS_SEARCH_DOMAIN)
+        sans.add(String.format("%s.%s.%", serviceName, stack.getName(), account.getName()).toLowerCase());
+        sans.add(String.format("%s.%s.%s.%", serviceName, stack.getName(), account.getName(), NetworkConstants.INTERNAL_DNS_SEARCH_DOMAIN)
                 .toLowerCase());
 
         CertSet certSet = keyProvider.generateCertificate(serviceName, sans.toArray(new String[sans.size()]));
