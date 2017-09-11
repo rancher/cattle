@@ -3,21 +3,20 @@ package io.cattle.platform.inator.util;
 import io.cattle.platform.allocator.constraint.ContainerLabelAffinityConstraint;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
-import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.inator.wrapper.DeploymentUnitWrapper;
 import io.cattle.platform.inator.wrapper.RevisionWrapper;
 import io.cattle.platform.inator.wrapper.StackWrapper;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.util.type.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class InstanceFactory {
 
@@ -64,18 +63,7 @@ public class InstanceFactory {
             return;
         }
         List<Object> dns = new ArrayList<>(CollectionUtils.toList(fields.get(InstanceConstants.FIELD_DNS_SEARCH)));
-        for (String entry : getSearchDomains(stack, service)) {
-            if (!dns.contains(entry)) {
-                dns.add(entry);
-            }
-        }
         fields.put(InstanceConstants.FIELD_DNS_SEARCH, dns);
-    }
-
-    protected static List<String> getSearchDomains(StackWrapper stack, RevisionWrapper service) {
-        String stackNamespace = ServiceUtil.getStackNamespace(stack.getName());
-        String serviceNamespace = ServiceUtil.getServiceNamespace(stack.getName(), service.getName());
-        return Arrays.asList(stackNamespace, serviceNamespace);
     }
 
     private static String getOverrideHostName(Object domainName, String instanceName) {

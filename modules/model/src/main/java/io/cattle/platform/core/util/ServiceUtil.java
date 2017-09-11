@@ -187,13 +187,8 @@ public class ServiceUtil {
         return NetworkConstants.INTERNAL_DNS_SEARCH_DOMAIN;
     }
 
-    public static String getServiceNamespace(String stackName, String serviceName) {
-        return new StringBuilder().append(serviceName).append(".").append(getStackNamespace(stackName))
-                .toString().toLowerCase();
-    }
-
-    public static String getStackNamespace(String stackName) {
-        return new StringBuilder().append(stackName).append(".")
+    public static String getContainerNamespace(Instance instance) {
+        return new StringBuilder().append("instance-").append(instance.getUuid()).append(".")
                 .append(getGlobalNamespace()).toString().toLowerCase();
     }
 
