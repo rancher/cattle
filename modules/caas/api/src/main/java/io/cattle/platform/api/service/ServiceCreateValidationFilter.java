@@ -168,8 +168,8 @@ public class ServiceCreateValidationFilter extends AbstractValidationFilter {
                     lbConfig.get(ServiceConstants.FIELD_PORT_RULES), List.class, PortRule.class);
             for (PortRule rule : portRules) {
                 // either serviceId or instanceId or selector are required
-                boolean emptyService = StringUtils.isEmpty(rule.getServiceId());
-                boolean emptyInstance = StringUtils.isEmpty(rule.getInstanceId());
+                boolean emptyService = rule.getServiceId() == null;
+                boolean emptyInstance = rule.getInstanceId() == null;
                 boolean emptySelector = StringUtils.isEmpty(rule.getSelector());
                 int count = 0;
                 count = !emptySelector ? ++count : count;

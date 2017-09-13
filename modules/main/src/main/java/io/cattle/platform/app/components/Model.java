@@ -21,6 +21,7 @@ import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.addon.InstanceStatus;
 import io.cattle.platform.core.addon.K8sClientConfig;
 import io.cattle.platform.core.addon.K8sServerConfig;
+import io.cattle.platform.core.addon.LbConfig;
 import io.cattle.platform.core.addon.Link;
 import io.cattle.platform.core.addon.LoadBalancerCookieStickinessPolicy;
 import io.cattle.platform.core.addon.LogConfig;
@@ -362,7 +363,8 @@ public class Model {
                 TypeDocumentation.class,
                 Ulimit.class,
                 VirtualMachineDisk.class,
-                VolumeActivateInput.class);
+                VolumeActivateInput.class,
+                LbConfig.class);
     }
 
     private TypeSet named() {
@@ -384,7 +386,6 @@ public class Model {
                 "instanceRemove",
                 "instanceStop",
                 "launchConfig,parent=container",
-                "lbConfig",
                 "lbTargetConfig",
                 "loadBalancerService,parent=service",
                 "networkDriverService,parent=service",
