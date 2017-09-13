@@ -36,9 +36,8 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
 
     @Override
     public void removeFromLoadBalancerServices(Service service) {
-        String serviceId = service.getId().toString();
         removeFromLoadBalancer(service.getAccountId(), (rule, balancer) -> {
-            if (serviceId.equals(rule.getServiceId())) {
+            if (service.getId().equals(rule.getServiceId())) {
                 return null;
             }
             return rule;
@@ -47,9 +46,8 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
 
     @Override
     public void removeFromLoadBalancerServices(Instance instance) {
-        String instanceId = instance.getId().toString();
         removeFromLoadBalancer(instance.getAccountId(), (rule, balancer) -> {
-            if (instanceId.equals(rule.getInstanceId())) {
+            if (instance.getId().equals(rule.getInstanceId())) {
                 if (instance.getServiceId() == null) {
                     Map<String, Object> portRules = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LB_RULES_ON_REMOVE);
                     PortRule newRule = new PortRule(rule);

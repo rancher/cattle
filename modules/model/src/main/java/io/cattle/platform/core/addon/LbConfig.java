@@ -1,5 +1,6 @@
 package io.cattle.platform.core.addon;
 
+import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
 
 import java.util.List;
@@ -41,6 +42,7 @@ public class LbConfig {
         this.portRules = portRules;
     }
 
+    @Field(typeString = "array[reference[certificate]]")
     public List<Long> getCertificateIds() {
         return certificateIds;
     }
@@ -49,6 +51,7 @@ public class LbConfig {
         this.certificateIds = certificateIds;
     }
 
+    @Field(typeString = "reference[certificate]")
     public Long getDefaultCertificateId() {
         return defaultCertificateId;
     }
