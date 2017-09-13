@@ -581,8 +581,9 @@
         "stack.parentStackId": "cr",
         "stack.serviceIds": "r",
         "stack.system": "r",
-        "stack.templates": "cr",
+        "stack.templates": "cru",
         "stack.workingConfiguration": "r",
+        "stack.prune": "cru",
 
         "stackConfiguration" : "cr",
         "stackConfiguration.answers": "cr",
