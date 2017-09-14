@@ -5,6 +5,14 @@
             "type": "array[reference[service]]",
             "required": false,
             "nullable": true
+        },
+        "format": {
+            "type": "enum",
+            "options" : [ "compose", "rancher-compose" ],
+            "create" : true,
+            "required": true,
+            "nullable" : false,
+            "default": "rancher-compose"
         }
     }
 }

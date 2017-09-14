@@ -2,6 +2,7 @@ package io.cattle.platform.servicediscovery.api.filter;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 
+import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -12,6 +13,7 @@ import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
+import io.cattle.platform.iaas.api.infrastructure.InfrastructureAccessManager;
 import io.cattle.platform.iaas.api.service.RevisionDiffomatic;
 import io.cattle.platform.iaas.api.service.RevisionManager;
 import io.cattle.platform.json.JsonMapper;
@@ -19,13 +21,16 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
+import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.servicediscovery.api.util.selector.SelectorUtils;
 import io.cattle.platform.storage.api.filter.ExternalTemplateInstanceFilter;
 import io.cattle.platform.storage.service.StorageService;
 import io.cattle.platform.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
+import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.io.IOException;
@@ -43,7 +48,7 @@ import javax.inject.Named;
 import org.apache.commons.lang3.StringUtils;
 
 @Named
-public class ServiceCreateValidationFilter extends AbstractDefaultResourceManagerFilter {
+public class ServiceValidationFilter extends AbstractDefaultResourceManagerFilter {
     @Inject
     ObjectManager objectManager;
     @Inject
@@ -56,6 +61,8 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     ServiceDao svcDao;
     @Inject
     RevisionManager revisionManager;
+    @Inject
+    InfrastructureAccessManager infraAccess;
 
     private static final int LB_HEALTH_CHECK_PORT = 42;
 
@@ -79,10 +86,13 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
         Service service = request.proxyRequestObject(Service.class);
+        Stack stack = objectManager.loadResource(Stack.class, service.getStackId());
 
         type = setKind(type, service, request);
 
-        validateStack(service);
+        validateInfraAccess(request, "create", stack, service);
+
+        validateStack(stack, service);
 
         validateSelector(request);
 
@@ -113,7 +123,9 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
     @Override
     public Object update(String type, String id, ApiRequest request, ResourceManager next) {
         Service service = objectManager.loadResource(Service.class, id);
+        Stack stack = objectManager.loadResource(Stack.class, service.getStackId());
 
+        validateInfraAccess(request, "update", stack, service);
         validateLaunchConfigs(service, request);
         validateSelector(request);
         validateLbConfig(request, type);
@@ -133,6 +145,14 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         }
 
         return result;
+    }
+
+    @Override
+    public Object delete(String type, String id, ApiRequest request, ResourceManager next) {
+        Service service = objectManager.loadResource(Service.class, id);
+        Stack stack = objectManager.loadResource(Stack.class, service.getStackId());
+        validateInfraAccess(request, "delete", stack, service);
+        return super.delete(type, id, request, next);
     }
 
     @SuppressWarnings("unchecked")
@@ -314,8 +334,7 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
         }
     }
 
-    protected void validateStack(Service service) {
-        Stack env = objectManager.loadResource(Stack.class, service.getStackId());
+    protected void validateStack(Stack env, Service service) {
         List<String> invalidStates = Arrays.asList(InstanceConstants.STATE_ERROR, CommonStatesConstants.REMOVED,
                 CommonStatesConstants.REMOVING);
         if (env == null || invalidStates.contains(env.getState())) {
@@ -543,5 +562,13 @@ public class ServiceCreateValidationFilter extends AbstractDefaultResourceManage
 
     protected void validateName(String name) {
        validateDNSPatternForName(name);
+    }
+
+    private Stack validateInfraAccess(ApiRequest request, String action, Stack stack, Service service) {
+        if (ObjectUtils.isSystem(stack) && !infraAccess.canModifyInfrastructure(ApiUtils.getPolicy())) {
+            String message = String.format("Cannot %s system service", action);
+            throw new ClientVisibleException(ResponseCodes.FORBIDDEN, "Forbidden", message, null);
+        }
+        return stack;
     }
 }

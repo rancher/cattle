@@ -30,7 +30,7 @@ public class SetProjectMembersActionHandler implements ActionHandler {
         }
         LinkedHashMap<String, Object> reqObj = (LinkedHashMap<String, Object>) request.getRequestObject();
         List<Map<String, String>> members = (List<Map<String, String>>) reqObj.get("members");
-        return projectMemberResourceManager.setMembers(project, members);
+        return projectMemberResourceManager.setMembers(project, members, false);
     }
 
     @Override

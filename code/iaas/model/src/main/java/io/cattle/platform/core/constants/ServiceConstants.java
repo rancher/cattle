@@ -195,6 +195,8 @@ public class ServiceConstants {
     public static final String PROCESS_DATA_SERVICE_RECONCILE = "reconcileState";
 
     public static final List<String> SERVICE_INSTANCE_NAME_DIVIDORS = Arrays.asList("-", "_");
+    
+    public static final String FORMAT = "format";
 
     public static final String[] NS_DEPS = new String[] {
             FIELD_IPC_LAUNCH_CONFIG,
