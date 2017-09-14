@@ -74,7 +74,7 @@ public class DeploymentSyncRequestHandler extends AgentBasedProcessHandler {
             }
 
             if (instance.getHostId() == null && StringUtils.isNotBlank(response.getNodeName())) {
-                HostInfo host = metadataManager.getMetadataForAccount(instance.getAccountId()).getHostByNodeName(response.getNodeName());
+                HostInfo host = metadataManager.getMetadataForCluster(instance.getClusterId()).getHostByNodeName(response.getNodeName());
                 if (host != null) {
                     data.put(INSTANCE.HOST_ID, host.getId());
                 }
