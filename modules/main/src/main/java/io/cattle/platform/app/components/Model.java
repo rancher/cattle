@@ -167,7 +167,6 @@ public class Model {
                 .type("machineDriver").processes("activate", "deactivate", "reactivate", "error", "update")
                 .type("network")
                 .type("networkDriver")
-                .type("projectMember").processes("activate", "deactivate")
                 .type("register")
                 .type("secret")
                 .type("serviceevent")

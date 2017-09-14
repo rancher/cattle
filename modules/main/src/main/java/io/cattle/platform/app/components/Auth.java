@@ -2,6 +2,7 @@ package io.cattle.platform.app.components;
 
 import io.cattle.platform.api.auth.Identity;
 import io.cattle.platform.api.schema.builder.SchemaFactoryBuilder;
+import io.cattle.platform.core.model.ProjectMember;
 import io.cattle.platform.iaas.api.auth.AbstractTokenUtil;
 import io.cattle.platform.iaas.api.auth.AchaiusPolicyOptionsFactory;
 import io.cattle.platform.iaas.api.auth.AuthorizationProvider;
@@ -232,7 +233,7 @@ public class Auth {
         router.resourceManager(Identity.class, identityManager);
 
         router.resourceManager("project", projectResourceManager);
-        router.resourceManager("projectMember", projectMemberResourceManager);
+        router.resourceManager(ProjectMember.class, projectMemberResourceManager);
 
         router.action("project", "setmembers", new SetProjectMembersActionHandler(d.authDao, projectMemberResourceManager));
 
