@@ -119,33 +119,16 @@ import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.constants.StoragePoolConstants;
-import io.cattle.platform.core.model.Account;
-import io.cattle.platform.core.model.Agent;
-import io.cattle.platform.core.model.AuditLog;
-import io.cattle.platform.core.model.Certificate;
-import io.cattle.platform.core.model.Cluster;
-import io.cattle.platform.core.model.Credential;
-import io.cattle.platform.core.model.Data;
-import io.cattle.platform.core.model.DynamicSchema;
-import io.cattle.platform.core.model.ExternalEvent;
-import io.cattle.platform.core.model.Host;
-import io.cattle.platform.core.model.HostTemplate;
-import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.ProcessInstance;
-import io.cattle.platform.core.model.Secret;
-import io.cattle.platform.core.model.Service;
-import io.cattle.platform.core.model.ServiceEvent;
-import io.cattle.platform.core.model.Setting;
-import io.cattle.platform.core.model.Stack;
-import io.cattle.platform.core.model.StoragePool;
-import io.cattle.platform.core.model.Volume;
-import io.cattle.platform.core.model.VolumeTemplate;
+import io.cattle.platform.core.model.*;
 import io.cattle.platform.docker.api.model.ServiceProxy;
 import io.cattle.platform.framework.encryption.request.handler.TransformationHandler;
 import io.cattle.platform.iaas.api.auth.dao.impl.CredentialUniqueFilter;
 import io.cattle.platform.iaas.api.auth.identity.AccountOutputFilter;
+import io.cattle.platform.iaas.api.auth.identity.IdentityManager;
 import io.cattle.platform.iaas.api.auth.impl.ApiAuthenticator;
 import io.cattle.platform.iaas.api.auth.integration.local.ChangeSecretActionHandler;
+import io.cattle.platform.iaas.api.auth.projects.ProjectMemberLinkHandler;
+import io.cattle.platform.iaas.api.auth.projects.ProjectMemberResourceManager;
 import io.github.ibuildthecloud.gdapi.doc.TypeDocumentation;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.json.JacksonMapper;
@@ -159,6 +142,7 @@ import io.github.ibuildthecloud.gdapi.request.handler.SchemasHandler;
 import io.github.ibuildthecloud.gdapi.request.handler.VersionHandler;
 import io.github.ibuildthecloud.gdapi.request.handler.VersionsHandler;
 import io.github.ibuildthecloud.gdapi.request.handler.write.ReadWriteApiHandler;
+import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.response.HtmlResponseWriter;
 import io.github.ibuildthecloud.gdapi.response.JsonResponseWriter;
 import io.github.ibuildthecloud.gdapi.servlet.ApiRequestFilterDelegate;
@@ -240,6 +224,7 @@ public class Api {
         c.router.link(HostTemplate.class, new HostTemplateLinkHandler(c.secretsService));
         c.router.link(Instance.class, new ContainerStatsLinkHandler(c.hostApiService, f.objectManager));
         c.router.link(ProjectConstants.TYPE, hostStatsLinkHandler);
+        c.router.link(ProjectConstants.TYPE, new ProjectMemberLinkHandler(c.locator));
         c.router.link(ServiceConstants.KIND_LOAD_BALANCER_SERVICE, serviceContainerStatsLinkHandler);
         c.router.link(ServiceConstants.KIND_SCALING_GROUP_SERVICE, serviceContainerStatsLinkHandler);
         c.router.link(ServiceConstants.KIND_SERVICE, serviceContainerStatsLinkHandler);
@@ -370,7 +355,6 @@ public class Api {
     }
 
     private void addResourceManagers() throws IOException {
-
         c.router.defaultResourceManager(new DefaultResourceManager(c.support));
         c.router.defaultActionHandler(new DefaultActionHandler(f.objectManager, f.processManager));
 

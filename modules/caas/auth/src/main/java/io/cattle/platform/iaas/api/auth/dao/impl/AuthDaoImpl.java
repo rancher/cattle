@@ -496,8 +496,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                 }
                 List<? extends ProjectMember> toDelete = create().selectFrom(PROJECT_MEMBER).where(allMembers).fetch();
                 for (ProjectMember member : toDelete) {
-                    objectProcessManager.executeStandardProcess(StandardProcess.DEACTIVATE, member, null);
-                    objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, member, null);
+                    objectManager.delete(member);
                 }
                 for (Member member : create) {
                     createProjectMember(project, member);
@@ -516,9 +515,8 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
         properties.put(PROJECT_MEMBER.EXTERNAL_ID, member.getExternalId());
         properties.put(PROJECT_MEMBER.EXTERNAL_ID_TYPE, member.getExternalIdType());
         properties.put(PROJECT_MEMBER.ROLE, member.getRole());
-        ProjectMember projectMember = resourceDao.create(ProjectMember.class, objectManager.convertToPropertiesFor(ProjectMember.class, properties));
-        objectProcessManager.executeStandardProcess(StandardProcess.ACTIVATE, projectMember, null);
-        return projectMember;
+        properties.put(PROJECT_MEMBER.STATE, "active");
+        return objectManager.create(ProjectMember.class, properties);
     }
 
     @Override
@@ -537,7 +535,7 @@ public class AuthDaoImpl extends AbstractJooqDao implements AuthDao {
                 if (!member.getExternalIdType().equalsIgnoreCase(ProjectConstants.RANCHER_ID)) {
                     hasNonRancherMember = true;
                 } else if (member.getExternalId().equals(String.valueOf(getAdminAccount().getId()))) {
-                    deactivateThenRemove(member);
+                    objectManager.delete(member);
                 } else {
                     hasNonRancherMember = true;
                 }

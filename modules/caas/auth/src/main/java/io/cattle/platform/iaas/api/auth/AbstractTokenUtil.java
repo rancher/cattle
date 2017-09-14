@@ -298,11 +298,6 @@ public abstract class AbstractTokenUtil implements TokenUtil {
                                 .getExternalId(),
                         user.getExternalIdType());
             }
-            Object hasLoggedIn = DataAccessor.fields(account).withKey(SecurityConstants.HAS_LOGGED_IN).get();
-            if ((hasLoggedIn == null || !((Boolean) hasLoggedIn)) &&
-                    !authDao.hasAccessToAnyProject(identities, false, null)) {
-                projectResourceManager.createProjectForUser(user);
-            }
         } else {
             if (account == null) {
                 account = authDao.getAccountByExternalId(user.getExternalId(), user.getExternalIdType());

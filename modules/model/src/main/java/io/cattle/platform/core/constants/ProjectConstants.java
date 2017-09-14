@@ -19,6 +19,7 @@ public class ProjectConstants {
     public static final String RANCHER_ID = "rancher_id";
     public static final String RANCHER_SEARCH_PROVIDER = "rancherIdentitySearchProvider";
     public static final String ROLES_HEADER = "X-API-Roles";
+    public static final String PROJECT_MEMBER = "projectmembers";
 
     public static final String DEFAULT_PROJECT_EXTERNAL_ID = "default";
     public static final String SYSTEM_PROJECT_EXTERNAL_ID = "cattle-system";
