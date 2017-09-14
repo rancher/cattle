@@ -34,8 +34,9 @@ public class HealthcheckScheduleLoop implements Loop {
     @Override
     public Result run(List<Object> input) {
         Metadata metadata = metadataManager.getMetadataForAccount(accountId);
+        Metadata clusterMetadata = metadataManager.getMetadataForCluster(metadata.getClusterId());
 
-        Set<Long> hostIds = validHostIds(metadata);
+        Set<Long> hostIds = validHostIds(clusterMetadata);
         if (hostIds.size() == 0) {
             return Result.DONE;
         }
@@ -44,7 +45,7 @@ public class HealthcheckScheduleLoop implements Loop {
             // Special case, every healthcheck should be on this one host.
             return handleSingleHost(metadata, hostIds.iterator().next());
         }
-
+        
         long[] hosts = hostIds.stream().mapToLong((x) -> x).toArray();
         for (InstanceInfo instanceInfo : metadata.getInstances()) {
             if (instanceInfo.getHealthCheck() == null || instanceInfo.getHostId() == null) {

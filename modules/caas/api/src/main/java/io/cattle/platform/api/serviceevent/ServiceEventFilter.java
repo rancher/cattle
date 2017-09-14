@@ -59,10 +59,7 @@ public class ServiceEventFilter extends AbstractValidationFilter {
         Instance instance = objectManager.findAny(Instance.class, ObjectMetaDataManager.UUID_FIELD, splitted[1]);
         Host host = objectManager.findAny(Host.class, ObjectMetaDataManager.UUID_FIELD, splitted[0]);
 
-
-        Long resourceAccId = agent.getResourceAccountId();
-
-        if (instance == null || host == null || !instance.getClusterId().equals(host.getClusterId()) || !instance.getAccountId().equals(resourceAccId)) {
+        if (instance == null || host == null || !instance.getClusterId().equals(host.getClusterId())) {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN, VERIFY_AGENT);
         }
 
