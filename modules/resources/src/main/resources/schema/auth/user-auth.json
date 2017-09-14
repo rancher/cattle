@@ -155,8 +155,6 @@
         "container.retainIp" : "cr",
         "container.secrets" : "cr",
         "container.securityOpt" : "cr",
-        "container.serviceId": "r",
-        "container.serviceIds" : "r",
         "container.shouldRestart" : "r",
         "container.shmSize" : "cr",
         "container.sidekickTo": "cr",
@@ -308,6 +306,8 @@
         "instance.revisionId": "r",
         "instance.desired": "r",
         "instance.dependsOn": "cr",
+        "instance.serviceId": "r",
+        "instance.serviceIds" : "r",
 
         "healthcheckState" : "r",
         "healthcheckState.hostId" : "r",
