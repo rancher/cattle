@@ -131,7 +131,6 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                 .and(targetInstance.REMOVED.isNull())
                 .and(SERVICE_EXPOSE_MAP.STATE.isNull().or(
                         SERVICE_EXPOSE_MAP.STATE.notIn(CommonStatesConstants.REMOVING, CommonStatesConstants.REMOVED)))
-                .and(SERVICE_EXPOSE_MAP.UPGRADE.isNull().or(SERVICE_EXPOSE_MAP.UPGRADE.eq(false)))
                 .and(condition)
                 .fetchInto(
                         new RecordHandler<Record21<Long, Long, String, String, Long, String, Long, String, String, String, String, Long, Long, Boolean, String, String, String, String, Long, String, String>>() {

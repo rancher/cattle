@@ -99,16 +99,16 @@ def test_settings_user_list(context):
     names = {x.name for x in settings}
 
     assert len(settings) != 0
-    assert len(settings) < 16
+    assert len(settings) < 17
     assert 'rancher.compose.linux.url' in names
 
     settings = user_client.list_setting(all=True)
     assert len(settings) != 0
-    assert len(settings) < 16
+    assert len(settings) < 17
 
     settings = user_client.list_setting(all=False)
     assert len(settings) != 0
-    assert len(settings) < 16
+    assert len(settings) < 17
 
 
 def test_settings_admin_user_list(admin_user_client):
@@ -124,5 +124,12 @@ def test_settings_admin_user_list(admin_user_client):
     names = {x.name for x in settings}
 
     assert len(settings) != 0
-    assert len(settings) < 16
+    assert len(settings) < 17
     assert 'rancher.compose.linux.url' in names
+
+
+def test_settings_list_install_uuid(admin_user_client):
+    id = 'install.uuid'
+    s = admin_user_client.by_id_setting(id)
+    assert s is not None
+    assert s.value

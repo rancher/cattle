@@ -467,7 +467,7 @@ def test_docker_volumes(docker_client, super_client):
     assert foo_vol is not None
     assert not foo_vol.isHostPath
 
-    c2 = docker_client.create_container(name="volumes_from_test",
+    c2 = docker_client.create_container(name="volumes-from-test",
                                         networkMode='bridge',
                                         imageUuid=uuid,
                                         startOnCreate=False,
@@ -502,7 +502,7 @@ def test_container_fields(docker_client, super_client):
             "NET_BIND_SERVICE", "NET_BROADCAST", "IPC_LOCK",
             "IPC_OWNER", "SYS_CHROOT", "SYS_PTRACE", "SYS_BOOT",
             "LEASE", "SETFCAP", "WAKE_ALARM", "BLOCK_SUSPEND", "ALL"]
-    test_name = 'container_test'
+    test_name = 'container-test'
     image_uuid = 'docker:ibuildthecloud/helloworld'
     restart_policy = {"maximumRetryCount": 2, "name": "on-failure"}
 
@@ -582,7 +582,7 @@ def volume_cleanup_setup(docker_client, uuid, strategy=None):
         labels[VOLUME_CLEANUP_LABEL] = strategy
 
     vol_name = random_str()
-    c = docker_client.create_container(name="volume_cleanup_test",
+    c = docker_client.create_container(name="volume-cleanup-test",
                                        imageUuid=uuid,
                                        networkMode='bridge',
                                        dataVolumes=['/tmp/foo',
@@ -679,7 +679,7 @@ def test_docker_labels(docker_client, super_client):
     # image_uuid = 'docker:ranchertest/labelled:v0.1.0'
     image_uuid = TEST_IMAGE_UUID
 
-    c = docker_client.create_container(name="labels_test",
+    c = docker_client.create_container(name="labels-test",
                                        imageUuid=image_uuid,
                                        networkMode='bridge',
                                        labels={'io.rancher.testlabel.'
@@ -863,7 +863,7 @@ def _check_path(volume, should_exist, client, super_client):
     path = _path_to_volume(volume)
     print 'Checking path [%s] for volume [%s].' % (path, volume)
     c = client. \
-        create_container(name="volume_check",
+        create_container(name="volume-check",
                          imageUuid="docker:ranchertest/volume-test:v0.1.0",
                          networkMode=None,
                          environment={'TEST_PATH': path},

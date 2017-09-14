@@ -1,10 +1,12 @@
 package io.cattle.platform.iaas.api.filter.instance;
 
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
-
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerFilter;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataUtils;
@@ -39,6 +41,7 @@ public class ContainerCreateValidationFilter extends AbstractDefaultResourceMana
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
         validateDeploymentUnit(request);
+        validateName(request);
 
         return super.create(type, request, next);
     }
@@ -74,6 +77,27 @@ public class ContainerCreateValidationFilter extends AbstractDefaultResourceMana
                         null);
             }
             duId = instance.getDeploymentUnitId();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public void validateName(ApiRequest request) {
+        Instance instance = request.proxyRequestObject(Instance.class);
+        if (instance.getName() != null) {
+            List<String> usedNames = new ArrayList<>();
+            List<? extends Service> existingSvcs = objMgr.find(Service.class, SERVICE.STACK_ID,
+                    instance.getStackId(), SERVICE.REMOVED, null);
+            for (Service existingSvc : existingSvcs) {
+                usedNames.add(existingSvc.getName().toLowerCase());
+                for (String usedLcName : ServiceUtil.getLaunchConfigNames(existingSvc)) {
+                    usedNames.add(usedLcName.toLowerCase());
+                }
+            }
+            if (usedNames.contains(instance.getName().toLowerCase())) {
+                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.NOT_UNIQUE,
+                        "name");
+            }
+            validateDNSPatternForName(instance.getName().toLowerCase());
         }
     }
 }

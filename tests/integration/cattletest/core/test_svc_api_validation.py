@@ -308,7 +308,7 @@ def test_validate_svc_name(client, context):
     assert e.value.error.status == 422
     assert e.value.error.code == 'InvalidCharacters'
 
-    # svc_name with more than 63 chars
+    # svc_name with more than 50 chars
     svc_name = random_str() + "myLinkTOOLONGtoolongtoolongtoolongmy" \
                               "LinkTOOLONGtoolongtoolongtoolong"
     with pytest.raises(ApiError) as e:
