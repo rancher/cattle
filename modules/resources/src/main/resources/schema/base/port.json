@@ -1,0 +1,13 @@
+{
+  "resourceFields": {
+    "publicPort": {
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "bindAddress": {
+      "type": "string",
+      "nullable": true
+    }
+  }
+}

@@ -1,0 +1,5 @@
+dependencies {
+  compile project(':cattle-framework')
+  compile project(':cattle-model')
+  compile group: 'com.hazelcast', name: 'hazelcast', version: '3.8'
+}

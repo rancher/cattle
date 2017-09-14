@@ -1,0 +1,20 @@
+{
+  "resourceFields": {
+    "launchConfig": {
+      "type": "launchConfig",
+      "nullable": true
+    },
+    "secondaryLaunchConfigs": {
+      "type": "array[secondaryLaunchConfig]",
+      "required": false
+    },
+    "previousLaunchConfig": {
+      "type": "launchConfig",
+      "nullable": true
+    },
+    "previousSecondaryLaunchConfigs": {
+      "type": "array[secondaryLaunchConfig]",
+      "required": false
+    }
+  }
+}

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.2.xsd">
+    <property name="mediumtext" value="TEXT" dbms="postgresql" />
+    <property name="mediumtext" value="MEDIUMTEXT" />
+    <property name="mediumtext" value="varchar" dbms="H2" />
+    <changeSet author="rancher (generated)" id="dump7">
+        <dropIndex indexName="idx_user_preference_remove_time" tableName="user_preference"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump8">
+        <dropIndex indexName="idx_user_preference_removed" tableName="user_preference"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump9">
+        <dropIndex indexName="idx_user_preference_state" tableName="user_preference"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump1">
+        <dropColumn columnName="remove_time" tableName="user_preference"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump2">
+        <dropColumn columnName="removed" tableName="user_preference"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump3">
+        <dropColumn columnName="state" tableName="user_preference"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump4">
+        <dropColumn columnName="system" tableName="instance"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump5">
+        <dropColumn columnName="system" tableName="service"/>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump6">
+        <dropColumn columnName="system" tableName="stack"/>
+    </changeSet>
+</databaseChangeLog>

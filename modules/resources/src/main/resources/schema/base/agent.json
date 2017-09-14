@@ -1,0 +1,23 @@
+{
+  "collectionMethods": [
+    "GET",
+    "POST"
+  ],
+  "resourceFields": {
+    "accountId": {
+      "defaultIsNull": true
+    },
+    "uri": {
+      "type": "string",
+      "unique": true
+    },
+    "authorizedRoleAccountIds": {
+      "type": "array[reference[account]]",
+      "nullable": true
+    }
+  },
+  "resourceActions": {
+    "activate": {
+    }
+  }
+}

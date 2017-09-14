@@ -1,0 +1,16 @@
+{
+  "resourceFields": {
+    "serviceName": {
+      "type": "string",
+      "create": true
+    },
+    "stackName": {
+      "type": "string",
+      "create": true
+    },
+    "fqdn": {
+      "type": "string",
+      "create": true
+    }
+  }
+}

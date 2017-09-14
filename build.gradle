@@ -1,0 +1,31 @@
+allprojects {
+    group = 'io.cattle'
+    version = '0.5.0-SNAPSHOT'
+}
+
+subprojects {
+    apply plugin: 'java'
+//    apply plugin: 'checkstyle'
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+//    tasks.withType(JavaCompile) {
+//        options.encoding = 'UTF-8'
+//        options.compilerArgs << "-Xlint:all"
+//        options.compilerArgs << "-Werror"
+//    }
+
+    dependencies {
+        testCompile group: 'junit', name: 'junit', version: '4.11'
+        testCompile group: 'org.mockito', name: 'mockito-all', version: '1.9.5'
+    }
+
+    repositories {
+        jcenter()
+    }
+
+//    checkstyle {
+//        configDir = "$rootDir/config/checkstyle" as File
+//    }
+}
+
+

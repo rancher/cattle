@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.2.xsd">
+    <property name="mediumtext" value="TEXT" dbms="postgresql" />
+    <property name="mediumtext" value="MEDIUMTEXT" />
+    <property name="mediumtext" value="varchar" dbms="H2" />
+    <changeSet author="rancher (generated)" id="dump1">
+        <addColumn tableName="deployment_unit">
+            <column name="external_id" type="VARCHAR(255)"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="rancher (generated)" id="dump2">
+        <createIndex indexName="idx_deployment_unit__external_id" tableName="deployment_unit" unique="false">
+            <column name="external_id"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

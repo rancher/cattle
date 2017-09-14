@@ -1,0 +1,36 @@
+{
+    "collectionMethods": ["POST"],
+    "resourceFields": {
+        "id": {
+            "create": true
+        },
+        "name": {
+            "create": true
+        },
+        "previousId": {
+            "create": true
+        },
+        "previousIds": {
+            "create": true
+        },
+        "resourceId": {
+            "create": true
+        },
+        "resourceType": {
+            "create": true
+        },
+        "time": {
+            "create": true
+        },
+        "data": {
+            "create": true
+        },
+        "transitioning": {
+            "create": true
+        },
+        "transitioningMessage": {
+            "create": true,
+            "nullable": true
+        }
+    }
+}

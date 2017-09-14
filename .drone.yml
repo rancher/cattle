@@ -1,8 +1,7 @@
 ---
 matrix:
   API_VERSION:
-  - v1
-  - v2
+  - v3
   ENVIRONMENTS:
   - ( [mysql]=full [h2]=lite )
   - ( [pgsql]=full )

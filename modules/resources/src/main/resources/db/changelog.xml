@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.2.xsd">
+     <include file="db/core-200.xml"/>
+     <include file="db/core-201.xml"/>
+     <include file="db/core-202.xml"/>
+     <include file="db/core-203.xml"/>
+     <include file="db/core-204.xml"/>
+</databaseChangeLog>

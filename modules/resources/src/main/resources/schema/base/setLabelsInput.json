@@ -1,0 +1,8 @@
+{
+  "collectionMethods": [],
+  "resourceFields": {
+    "labels": {
+      "type": "json"
+    }
+  }
+}

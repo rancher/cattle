@@ -77,25 +77,25 @@ def test_container_event_start_stop(client, host, agent_cli, user_id):
 
     create_event(host, external_id, agent_cli, client, user_id, 'stop')
     container = client.wait_success(container)
-    assert container.state == 'stopped'
+    wait_state(client, container, 'stopped')
 
     create_event(host, external_id, agent_cli, client, user_id, 'start')
     container = client.wait_success(container)
-    assert container.state == 'running'
+    wait_state(client, container, 'running')
 
     # Sending a start event on a running container should have no effect
     create_event(host, external_id, agent_cli, client, user_id, 'start')
     container = client.wait_success(container)
-    assert container.state == 'running'
+    wait_state(client, container, 'running')
 
     create_event(host, external_id, agent_cli, client, user_id, 'die')
     container = client.wait_success(container)
-    assert container.state == 'stopped'
+    wait_state(client, container, 'stopped')
 
     # Sending a stop event on a stopped container should have no effect
     create_event(host, external_id, agent_cli, client, user_id, 'stop')
     container = client.wait_success(container)
-    assert container.state == 'stopped'
+    wait_state(client, container, 'stopped')
 
 
 def test_container_event_start(client, host, agent_cli, user_id):
@@ -112,7 +112,7 @@ def test_container_event_start(client, host, agent_cli, user_id):
     containers = client.list_container(externalId=external_id)
     assert len(containers) == 1
     container = client.wait_success(containers[0])
-    assert container.state != 'removed'
+    wait_state(client, container, 'stopped')
 
 
 def test_container_event_remove_start(client, host, agent_cli, user_id):
@@ -125,13 +125,13 @@ def test_container_event_remove_start(client, host, agent_cli, user_id):
     assert container.state == 'running'
 
     container = client.wait_success(container.stop())
-    assert container.state == 'stopped'
+    wait_state(client, container, 'stopped')
     container = client.wait_success(container.remove())
-    assert container.state == 'removed'
+    wait_state(client, container, 'removed')
 
     create_event(host, external_id, agent_cli, client, user_id, 'start')
     container = client.wait_success(container)
-    assert container.state == 'removed'
+    wait_state(client, container, 'removed')
 
     containers = client.list_container(externalId=external_id)
     assert len(containers) == 0
@@ -149,12 +149,12 @@ def test_container_event_destroy(client, host, agent_cli, user_id):
     create_event(host, external_id, agent_cli, client, user_id, 'destroy')
 
     container = client.wait_success(container)
-    assert container.state == 'removed'
+    wait_state(client, container, 'removed')
 
     # Sending a destroy event to a removed container should have no effect
     create_event(host, external_id, agent_cli, client, user_id, 'destroy')
     container = client.wait_success(container)
-    assert container.state == 'removed'
+    wait_state(client, container, 'removed')
 
 
 def test_rancher_container_events(client, context, host, agent_cli, user_id):
@@ -171,18 +171,18 @@ def test_rancher_container_events(client, context, host, agent_cli, user_id):
     rand = random_str()
     create_event(host, rand, agent_cli, client, user_id, 'start', inspect)
     container = client.wait_success(container)
-    assert container.state == 'running'
+    wait_state(client, container, 'running')
 
     create_event(host, rand, agent_cli, client, user_id, 'stop', inspect)
     container = client.wait_success(container)
-    assert container.state == 'stopped'
+    wait_state(client, container, 'stopped')
 
     # Note that we don't pass inspect on destroy because it wont exist. In this
     # case, we have to pass the container's actual externalId
     ext_id = container.externalId
     create_event(host, ext_id, agent_cli, client, user_id, 'destroy')
     container = client.wait_success(container)
-    assert container.state == 'removed'
+    wait_state(client, container, 'removed')
 
 
 def test_bad_agent(super_client, new_context):
@@ -192,10 +192,8 @@ def test_bad_agent(super_client, new_context):
 
     def post():
         agent_client.create_container_event(
-            reportedHostUuid=host.data.fields['reportedUuid'],
+            reportedHostUuid=host.externalId,
             externalId=random_str(),
-            externalFrom='busybox:latest',
-            externalTimestamp=int(time.time()),
             externalStatus='start')
 
     # Test it works
@@ -224,28 +222,10 @@ def test_bad_host(host, new_context):
 
     with pytest.raises(ApiError) as e:
         agent_cli.create_container_event(
-            reportedHostUuid=host.data.fields['reportedUuid'],
+            reportedHostUuid=host.externalId,
             externalId=random_str(),
-            externalFrom='busybox:latest',
-            externalTimestamp=int(time.time()),
             externalStatus='start')
     assert e.value.error.code == 'InvalidReference'
-
-
-def test_container_event_null_inspect(client, host, agent_cli, user_id):
-    # Assert that the inspect can be null.
-    external_id = random_str()
-
-    create_event(host, external_id, agent_cli, client, user_id,
-                 'start', None)
-
-    def container_wait():
-        containers = client.list_container(externalId=external_id)
-        if len(containers) and containers[0].state != 'requested':
-            return containers[0]
-
-    container = wait_for(container_wait)
-    assert container is not None
 
 
 def test_requested_ip_address(super_client, client, host, agent_cli, user_id):
@@ -256,7 +236,8 @@ def test_requested_ip_address(super_client, client, host, agent_cli, user_id):
                                         agent_cli, user_id, inspect=inspect)
     container = super_client.reload(container)
     assert container['data']['fields']['requestedIpAddress'] == '10.42.0.240'
-    assert container.nics()[0].network().kind == 'dockerBridge'
+    network = client.by_id_network(container.primaryNetworkId)
+    assert network.kind == 'dockerBridge'
     assert container.primaryIpAddress is None
 
 
@@ -274,7 +255,7 @@ def test_requested_ip_address_with_managed(super_client, client, host,
                                         agent_cli, user_id, inspect=inspect)
     container = super_client.reload(container)
     assert container['data']['fields']['requestedIpAddress'] == '10.42.0.240'
-    assert container.nics()[0].network().kind == 'network'
+    assert client.by_id_network(container.primaryNetworkId).kind == 'network'
     assert container.primaryIpAddress == '10.42.0.240'
 
 
@@ -327,17 +308,6 @@ def test_container_event_net_container(client, host, agent_cli, user_id):
     assert container['networkContainerId'] == target.id
 
 
-def test_container_event_net_container_not_found(client, host, agent_cli,
-                                                 user_id):
-    external_id = random_str()
-    inspect = new_inspect(external_id)
-    inspect['HostConfig'] = {'NetworkMode': 'container:wont-be-found'}
-    container = create_native_container(client, host, external_id,
-                                        agent_cli, user_id, inspect=inspect)
-    assert container['networkMode'] == 'none'
-    assert container['networkContainerId'] is None
-
-
 def test_container_event_image_and_reg_cred(client, host, agent_cli, user_id,
                                             super_client):
     server = 'server{0}.io'.format(random_num())
@@ -350,10 +320,11 @@ def test_container_event_image_and_reg_cred(client, host, agent_cli, user_id,
         secretValue='rancher')
     registry_credential = client.wait_success(reg_cred)
     name = server + '/rancher/authorized:latest'
-    image_uuid = 'docker:' + name
     external_id = random_str()
     container = create_native_container(client, host, external_id,
-                                        agent_cli, user_id, image=image_uuid)
+                                        agent_cli, user_id,
+                                        inspect=new_inspect(random_str(),
+                                                            name))
     assert container.nativeContainer is True
     assert container.state == 'running'
     container = super_client.wait_success(container)
@@ -361,12 +332,12 @@ def test_container_event_image_and_reg_cred(client, host, agent_cli, user_id,
 
 
 def create_native_container(client, host, external_id, user_agent_cli,
-                            user_account_id, inspect=None, image=None):
+                            user_account_id, inspect=None):
     if not inspect:
         inspect = new_inspect(external_id)
 
     create_event(host, external_id, user_agent_cli, client, user_account_id,
-                 'start', inspect, image=image)
+                 'start', inspect)
 
     def container_wait():
         containers = client.list_container(externalId=external_id)
@@ -379,43 +350,23 @@ def create_native_container(client, host, external_id, user_agent_cli,
 
 
 def create_event(host, external_id, agent_cli, client, user_account_id, status,
-                 inspect=None, wait_and_assert=True,
-                 image=None):
-    timestamp = int(time.time())
-    if (image is None):
-        image = 'sim:busybox:latest'
+                 inspect=None, wait_and_assert=True):
     event = agent_cli.create_container_event(
-        reportedHostUuid=host.data.fields['reportedUuid'],
+        reportedHostUuid=host.externalId,
         externalId=external_id,
-        externalFrom=image,
-        externalTimestamp=timestamp,
         externalStatus=status,
         dockerInspect=inspect)
 
-    if wait_and_assert:
-        assert event.reportedHostUuid == host.data.fields['reportedUuid']
-        assert event.externalId == external_id
-        assert event.externalFrom == image
-        assert event.externalStatus == status
-        assert event.externalTimestamp == timestamp
-
-        def event_wait():
-            created = client.reload(event)
-            if created is not None and created.state == 'created':
-                return event
-
-        wait_for(event_wait)
-        event = client.reload(event)
-
-        assert host.id == event.hostId
-        assert user_account_id == event.accountId
-        assert event.state == 'created'
+    assert event.reportedHostUuid == host.externalId
+    assert event.externalId == external_id
+    assert event.externalStatus == status
+    assert host.id == event.hostId
 
     return event
 
 
-def new_inspect(rand):
-    return {'Name': 'name-%s' % rand, 'Config': {'Image': 'sim:fake/image'}}
+def new_inspect(rand, image='fake/image'):
+    return {'Name': 'name-%s' % rand, 'Config': {'Image': image}}
 
 
 def _client_for_agent(credentials):

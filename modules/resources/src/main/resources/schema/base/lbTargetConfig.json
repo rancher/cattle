@@ -1,0 +1,12 @@
+{
+  "collectionMethods": [],
+  "resourceFields": {
+    "portRules": {
+      "type": "array[targetPortRule]",
+      "nullable": false,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    }
+  }
+}

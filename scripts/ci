@@ -105,7 +105,7 @@ set_up_agent() {
     # Wait for completion now to ensure that images are pulled
     ./test-warm
 
-    AGENT_IMAGE=$(grep bootstrap.required.image ../resources/content/cattle-global.properties | cut -f2 -d=)
+    AGENT_IMAGE=$(grep bootstrap.required.image ../modules/resources/src/main/resources/cattle-global.properties | cut -f2 -d=)
     docker run --rm -v /var/run/docker.sock:/var/run/docker.sock ${AGENT_IMAGE} http://localhost:8081 >/tmp/register.log &
 
     ./wait-for-hosts
@@ -133,7 +133,7 @@ echo GIT COMMIT: $(git rev-parse HEAD)
 # Background to start the Docker pulls
 ./test-warm >/dev/null &
 
-CI=true MAVEN_ARGS='-B -q' run ./build
+./build
 
 threads=$(($(nproc) + 1))
 if [ $threads -gt 8 ]; then
@@ -170,7 +170,7 @@ do
                 -e MYSQL_USER=cattle \
                 -e MYSQL_PASSWORD=cattle \
                 -e MYSQL_ALLOW_EMPTY_PASSWORD=yes \
-                -v $(pwd)/../resources/content/db/mysql/mysql-dump.sql:/docker-entrypoint-initdb.d/mysql-dump.sql \
+                -v $(pwd)/../scripts/mysql/mysql-dump.sql:/docker-entrypoint-initdb.d/mysql-dump.sql \
                 -d mysql:$MYSQL_VERSION \
                 --innodb-flush-log-at-trx-commit=0 \
                 --max-connections=1000 \

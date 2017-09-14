@@ -60,7 +60,7 @@ def test_host_activate(super_client, new_context):
 
 def test_host_purge(super_client, new_context):
     account_id = new_context.project.id
-    image_uuid = 'sim:{}'.format(random_num())
+    image_uuid = '{}'.format(random_num())
     host = new_context.host
     phy_host = super_client.reload(host).physicalHost()
     agent = super_client.reload(host).agent()
