@@ -183,13 +183,9 @@ public class ServiceUtil {
         }
     }
 
-    private static String getGlobalNamespace() {
-        return NetworkConstants.INTERNAL_DNS_SEARCH_DOMAIN;
-    }
-
     public static String getContainerNamespace(Instance instance) {
         return new StringBuilder().append(instance.getUuid().substring(0, 12)).append(".")
-                .append(getGlobalNamespace()).toString().toLowerCase();
+                .append(NetworkConstants.INTERNAL_DNS_SEARCH_DOMAIN).toString().toLowerCase();
     }
 
     public static List<String> getServiceActiveStates() {

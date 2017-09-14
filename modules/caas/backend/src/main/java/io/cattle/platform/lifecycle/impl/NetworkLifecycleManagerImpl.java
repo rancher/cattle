@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static io.cattle.platform.object.util.DataAccessor.*;
 
@@ -107,6 +108,8 @@ public class NetworkLifecycleManagerImpl implements NetworkLifecycleManager {
 
         List<String> dnsSearchList = appendToFieldStringList(instance, InstanceConstants.FIELD_DNS_SEARCH, ServiceUtil.getContainerNamespace(instance));
         setField(instance, InstanceConstants.FIELD_DNS_SEARCH, dnsSearchList);
+        String searchLabel = dnsSearchList.stream().collect(Collectors.joining(","));
+        setLabel(instance, SystemLabels.LABEL_DNS_SEARCH, searchLabel);
     }
 
     private void setupCNILabels(Instance instance, Network network) {

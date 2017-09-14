@@ -29,7 +29,6 @@ public class InstanceFactory {
 
         Map<String, Object> fields = new HashMap<>(launchConfig);
         addAdditionalFields(fields, stack, service, unit, launchConfigName);
-        addDns(fields, stack, service);
         addHostnameOverride(instanceName, fields);
 
         fields.put(ObjectMetaDataManager.NAME_FIELD, instanceName);
@@ -57,14 +56,6 @@ public class InstanceFactory {
         fields.put(InstanceConstants.FIELD_LABELS, labels);
     }
 
-    protected static void addDns(Map<String, Object> fields, StackWrapper stack, RevisionWrapper service) {
-        Map<String, String> labels = CollectionUtils.toMap(fields.get(InstanceConstants.FIELD_LABELS));
-        if ("false".equalsIgnoreCase(labels.get(SystemLabels.LABEL_USE_RANCHER_DNS))) {
-            return;
-        }
-        List<Object> dns = new ArrayList<>(CollectionUtils.toList(fields.get(InstanceConstants.FIELD_DNS_SEARCH)));
-        fields.put(InstanceConstants.FIELD_DNS_SEARCH, dns);
-    }
 
     private static String getOverrideHostName(Object domainName, String instanceName) {
         if (instanceName == null || instanceName.length() <= 64) {
