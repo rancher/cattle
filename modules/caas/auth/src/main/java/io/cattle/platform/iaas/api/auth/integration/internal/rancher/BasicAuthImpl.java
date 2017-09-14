@@ -15,13 +15,12 @@ import io.cattle.platform.iaas.api.auth.dao.AuthDao;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.AccountLookup;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import io.github.ibuildthecloud.gdapi.condition.Condition;
-import io.github.ibuildthecloud.gdapi.condition.ConditionType;
+
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -105,13 +104,11 @@ public class BasicAuthImpl implements AccountLookup {
             if (agent != null) {
                 Long resourceAccId = agent.getResourceAccountId();
                 if (resourceAccId != null) {
-                    List<Object> activeStates = new ArrayList<>();
-                    activeStates.add(CommonStatesConstants.ACTIVE);
-                    activeStates.add(ServiceConstants.STATE_UPGRADING);
+                    List<String> activeStates = Arrays.asList(CommonStatesConstants.ACTIVE, ServiceConstants.STATE_UPGRADING);
                     Account resourceAccount = objectManager.findAny(Account.class,
                             ACCOUNT.ID, resourceAccId,
-                            ACCOUNT.STATE, new Condition(ConditionType.IN, activeStates));
-                    if (resourceAccount == null) {
+                            ACCOUNT.REMOVED, null);
+                    if (resourceAccount == null || !activeStates.contains(resourceAccount.getState())) {
                         return null;
                     }
                     if (projectAdmin) {

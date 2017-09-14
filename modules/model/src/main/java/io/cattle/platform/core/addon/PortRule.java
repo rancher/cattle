@@ -11,11 +11,11 @@ public class PortRule {
     Integer sourcePort;
     Integer priority;
     Protocol protocol;
-    String serviceId;
+    Long serviceId;
     Integer targetPort;
     String backendName;
     String selector;
-    String instanceId;
+    Long instanceId;
 
     public enum Protocol {
         http,
@@ -43,8 +43,8 @@ public class PortRule {
     }
 
     public PortRule(String hostname, String path, Integer sourcePort, Integer priority, Protocol protocol,
-            String serviceId,
-            Integer targetPort, String backendName, String selector, String instanceId) {
+            Long serviceId,
+            Integer targetPort, String backendName, String selector, Long instanceId) {
         super();
         this.hostname = hostname;
         this.path = path;
@@ -104,11 +104,11 @@ public class PortRule {
     }
 
     @Field(typeString = "reference[service]", nullable = true)
-    public String getServiceId() {
+    public Long getServiceId() {
         return serviceId;
     }
 
-    public void setServiceId(String serviceId) {
+    public void setServiceId(Long serviceId) {
         this.serviceId = serviceId;
     }
 
@@ -140,11 +140,11 @@ public class PortRule {
     }
 
     @Field(typeString = "reference[instance]", nullable = true)
-    public String getInstanceId() {
+    public Long getInstanceId() {
         return instanceId;
     }
 
-    public void setInstanceId(String instanceId) {
+    public void setInstanceId(Long instanceId) {
         this.instanceId = instanceId;
     }
 
