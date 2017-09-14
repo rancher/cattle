@@ -37,4 +37,6 @@ public interface Metadata {
 
     <T> T modify(Class<T> clz, long id, MetadataModOperation<T> operation);
 
+    Long getClusterId();
+
 }

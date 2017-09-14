@@ -108,7 +108,6 @@ public class ComposeExportServiceImpl implements ComposeExportService {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private Map<String, Object> createComposeData(List<? extends Service> servicesToExport, boolean forDockerCompose,
             List<? extends VolumeTemplate> volumes) {
         Map<String, Object> servicesData = new HashMap<>();

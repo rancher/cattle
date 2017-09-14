@@ -187,4 +187,9 @@ public class MetadataImpl implements Metadata {
         return hosts.values().stream().filter(h -> Objects.equals(nodeName, h.getNodeName())).findAny().orElse(null);
     }
 
+    @Override
+    public Long getClusterId() {
+        return clusterId;
+    }
+
 }

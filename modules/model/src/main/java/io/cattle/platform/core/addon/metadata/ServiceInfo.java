@@ -74,6 +74,13 @@ public class ServiceInfo implements MetadataObject {
         InstanceHealthCheck hc = DataAccessor.field(service, InstanceConstants.FIELD_HEALTH_CHECK, InstanceHealthCheck.class);
         if (hc != null) {
             this.healthCheck = new HealthcheckInfo(hc);
+        } else {
+            InstanceHealthCheck lcHc = DataAccessor.fromMap(ServiceUtil.getLaunchConfigDataAsMap(service, ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME))
+                    .withKey(InstanceConstants.FIELD_HEALTH_CHECK)
+                    .as(InstanceHealthCheck.class);
+            if (lcHc != null) {
+                this.healthCheck = new HealthcheckInfo(lcHc);
+            }
         }
     }
 

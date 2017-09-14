@@ -81,4 +81,9 @@ public class NullMetadata implements Metadata {
         return operation.modify(objectManager.loadResource(clz, id));
     }
 
+    @Override
+    public Long getClusterId() {
+        return null;
+    }
+
 }
