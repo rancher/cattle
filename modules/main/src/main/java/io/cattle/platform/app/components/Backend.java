@@ -309,8 +309,7 @@ public class Backend {
         r.handle("agent.*", agentHostStateUpdate::postHandle);
 
         r.handle("cluster.create", clusterProcessManager::create);
-        r.handle("cluster.activate", k8sClusterService, clusterProcessManager::activate);
-        r.handle("cluster.update", k8sClusterService);
+        r.handle("cluster.activate", clusterProcessManager::activate);
         r.handle("cluster.remove", k8sClusterService, clusterProcessManager::postRemove);
 
         r.handle("credential.create", credentialProcessManager::create);
