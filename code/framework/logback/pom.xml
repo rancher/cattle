@@ -30,9 +30,5 @@
             <groupId>org.codehaus.janino</groupId>
             <artifactId>janino</artifactId>
         </dependency>
-        <dependency>
-            <groupId>me.moocar</groupId>
-            <artifactId>logback-gelf</artifactId>
-        </dependency>
     </dependencies>
 </project>
