@@ -85,6 +85,7 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
                 .from(INSTANCE)
                 .where(INSTANCE.DEPLOYMENT_UNIT_ID.eq(instance.getDeploymentUnitId())
                     .and(INSTANCE.STATE.ne(CommonStatesConstants.REMOVING))
+                    .and(INSTANCE.DESIRED.isTrue())
                     .and(INSTANCE.REMOVED.isNull())
                     .and(INSTANCE.ID.ne(instance.getId())))
                 .fetchInto(InstanceRecord.class);
