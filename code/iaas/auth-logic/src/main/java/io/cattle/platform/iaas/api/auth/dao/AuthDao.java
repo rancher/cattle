@@ -63,4 +63,6 @@ public interface AuthDao {
     String getRole(Account account, Policy policy, Policy authenticatedAsPolicy);
 
     Account getAccountByAccessKey(String accessKey);
+
+    boolean canSetProjectMembers(long projectId, Long usingAccount, boolean isAdmin, Set<Identity> identities);
 }

@@ -558,3 +558,66 @@ def test_project_links(admin_user_client):
     a1 = admin_user_client.wait_success(a1.deactivate())
     admin_user_client.wait_success(a1.remove())
     wait_for(lambda: len(admin_user_client.reload(a3).projectLinks) == 0)
+
+
+@pytest.fixture()
+def set_member_roles_setting(admin_user_client):
+    yield
+    id = 'project.set.member.roles'
+    setting = admin_user_client.by_id_setting(id)
+    setting = admin_user_client.update(setting, value='owner')
+    wait_setting_active(admin_user_client, setting)
+
+
+@pytest.mark.nonparallel
+def test_set_member_roles(admin_user_client, set_member_roles_setting):
+    # Setting to allow member to add other members
+    id = 'project.set.member.roles'
+    setting = admin_user_client.by_id_setting(id)
+    setting = admin_user_client.update(setting, value='owner,member')
+    wait_setting_active(admin_user_client, setting)
+
+    # Create project
+    context1 = create_context(admin_user_client, create_project=True,
+                              add_host=True)
+    project = context1.user_client.reload(context1.project)
+
+    # Create a couple users for testing
+    context2 = create_context(admin_user_client)
+    user2_client = context2.user_client
+    context3 = create_context(admin_user_client)
+    user3_client = context3.user_client
+
+    # Add user2 to the project as a member
+    members = get_plain_members(context1.project.projectMembers())
+    members.append({
+        'role': 'member',
+        'externalId': acc_id(user2_client),
+        'externalIdType': 'rancher_id'
+    })
+    project.setmembers(members=members)
+
+    # Member can now add other members
+    project_member_scoped = user2_client.reload(context1.project)
+    members = get_plain_members(project_member_scoped.projectMembers())
+    assert len(members) == 2
+    members.append({
+        'role': 'restricted',
+        'externalId': acc_id(user3_client),
+        'externalIdType': 'rancher_id'
+    })
+    project_member_scoped.setmembers(members=members)
+    members = get_plain_members(project_member_scoped.projectMembers())
+    assert len(members) == 3
+
+    # Member cannot modify owners (Next line drops the owner)
+    members = [m for m in members if m['role'] != 'owner']
+    with pytest.raises(ApiError) as e:
+        project_member_scoped.setmembers(members=members)
+    assert e.value.error.status == 400
+
+    # Restricted cannot modify member
+    project_restricted_scoped = user3_client.reload(context1.project)
+    members = get_plain_members(project_restricted_scoped.projectMembers())
+    assert len(members) == 3
+    assert 'setmembers' not in project_restricted_scoped.actions

@@ -75,20 +75,22 @@ import io.cattle.platform.iaas.api.filter.dynamic.schema.DynamicSchemaFilter;
 import io.cattle.platform.iaas.api.filter.externalevent.ExternalEventFilter;
 import io.cattle.platform.iaas.api.filter.hosts.HostsFilter;
 import io.cattle.platform.iaas.api.filter.instance.ContainerCreateValidationFilter;
-import io.cattle.platform.iaas.api.filter.instance.InstanceAgentValidationFilter;
 import io.cattle.platform.iaas.api.filter.instance.InstanceImageValidationFilter;
 import io.cattle.platform.iaas.api.filter.instance.InstanceOutputFilter;
 import io.cattle.platform.iaas.api.filter.instance.InstancePortsValidationFilter;
+import io.cattle.platform.iaas.api.filter.instance.InstanceValidationFilter;
 import io.cattle.platform.iaas.api.filter.instance.InstanceVolumeCleanupStrategyValidationFilter;
 import io.cattle.platform.iaas.api.filter.machinedriver.MachineDriverFilter;
 import io.cattle.platform.iaas.api.filter.registry.RegistryServerAddressFilter;
 import io.cattle.platform.iaas.api.filter.secret.SecretValidationFilter;
-import io.cattle.platform.iaas.api.filter.service.ServiceMappingsOutputFilter;
+import io.cattle.platform.iaas.api.filter.service.ServiceOutputFilter;
 import io.cattle.platform.iaas.api.filter.serviceevent.ServiceEventFilter;
 import io.cattle.platform.iaas.api.filter.ssl.CertificateCreateValidationFilter;
 import io.cattle.platform.iaas.api.filter.stack.StackOutputFilter;
 import io.cattle.platform.iaas.api.filter.storagepool.StoragePoolOutputFilter;
 import io.cattle.platform.iaas.api.filter.volume.VolumeOutputFilter;
+import io.cattle.platform.iaas.api.infrastructure.InfrastructureAccessManager;
+import io.cattle.platform.iaas.api.infrastructure.InfrastructureAccessManagerImpl;
 import io.cattle.platform.iaas.api.manager.DataManager;
 import io.cattle.platform.iaas.api.manager.HostTemplateManager;
 import io.cattle.platform.iaas.api.manager.InstanceManager;
@@ -315,8 +317,8 @@ public class IaasApiConfig {
     }
 
     @Bean
-    InstanceAgentValidationFilter InstanceAgentValidationFilter() {
-        return new InstanceAgentValidationFilter();
+    InstanceValidationFilter InstanceAgentValidationFilter() {
+        return new InstanceValidationFilter();
     }
 
     @Bean
@@ -445,8 +447,8 @@ public class IaasApiConfig {
     }
 
     @Bean
-    ServiceMappingsOutputFilter ServiceMappingsOutputFilter() {
-        return new ServiceMappingsOutputFilter();
+    ServiceOutputFilter ServiceMappingsOutputFilter() {
+        return new ServiceOutputFilter();
     }
 
     @Bean
@@ -922,6 +924,11 @@ public class IaasApiConfig {
     @Bean
     VolumeCreateValidationFilter VolumeCreateValidationFilter() {
         return new VolumeCreateValidationFilter();
+    }
+
+    @Bean
+    InfrastructureAccessManager InfrastructureAccessManager() {
+        return new InfrastructureAccessManagerImpl();
     }
 
 }

@@ -32,6 +32,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class VolumeUnit implements Unit, BasicStateUnit, InstanceBindable {
 
     VolumeTemplate volumeTemplate;
@@ -96,14 +98,16 @@ public class VolumeUnit implements Unit, BasicStateUnit, InstanceBindable {
 
         name += UUID.randomUUID().toString().substring(0, 5);
 
+        String driver = StringUtils.isBlank(volumeTemplate.getDriver()) ? VolumeConstants.LOCAL_DRIVER : volumeTemplate.getDriver();
         Volume volume = svc.objectManager.create(Volume.class,
                 VOLUME.DEPLOYMENT_UNIT_ID, deploymentUnitId,
                 ObjectMetaDataManager.NAME_FIELD, name,
                 ObjectMetaDataManager.ACCOUNT_FIELD, volumeTemplate.getAccountId(),
                 VOLUME.STACK_ID, stack.getId(),
                 VOLUME.VOLUME_TEMPLATE_ID, volumeTemplate.getId(),
+                VolumeConstants.FIELD_DEVICE_NUM, -1,
                 VolumeConstants.FIELD_VOLUME_DRIVER_OPTS, DataAccessor.fieldMap(volumeTemplate, VolumeConstants.FIELD_VOLUME_DRIVER_OPTS),
-                VolumeConstants.FIELD_VOLUME_DRIVER, volumeTemplate.getDriver());
+                VolumeConstants.FIELD_VOLUME_DRIVER, driver);
         return new VolumeWrapper(volumeTemplate, volume, svc);
     }
 
