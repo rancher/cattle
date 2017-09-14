@@ -183,18 +183,9 @@ public class ServiceUtil {
         }
     }
 
-    private static String getGlobalNamespace() {
-        return NetworkConstants.INTERNAL_DNS_SEARCH_DOMAIN;
-    }
-
-    public static String getServiceNamespace(String stackName, String serviceName) {
-        return new StringBuilder().append(serviceName).append(".").append(getStackNamespace(stackName))
-                .toString().toLowerCase();
-    }
-
-    public static String getStackNamespace(String stackName) {
-        return new StringBuilder().append(stackName).append(".")
-                .append(getGlobalNamespace()).toString().toLowerCase();
+    public static String getContainerNamespace(Instance instance) {
+        return new StringBuilder().append(instance.getUuid().substring(0, 12)).append(".")
+                .append(NetworkConstants.INTERNAL_DNS_SEARCH_DOMAIN).toString().toLowerCase();
     }
 
     public static List<String> getServiceActiveStates() {

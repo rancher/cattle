@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static io.cattle.platform.object.util.DataAccessor.*;
 
@@ -105,17 +106,10 @@ public class NetworkLifecycleManagerImpl implements NetworkLifecycleManager {
             setField(instance, InstanceConstants.FIELD_DNS, dnsList);
         }
 
-        for (String dnsSearch : fieldStringList(network, NetworkConstants.FIELD_DNS_SEARCH)) {
-            List<String> dnsSearchList = appendToFieldStringList(instance, InstanceConstants.FIELD_DNS_SEARCH, dnsSearch);
-            String stackDns = null;
-            if (stack != null) {
-                stackDns = ServiceUtil.getStackNamespace(stack.getName());
-            }
-            if (!dnsSearchList.contains(stackDns)) {
-                dnsSearchList.add(stackDns);
-            }
-            setField(instance, InstanceConstants.FIELD_DNS_SEARCH, dnsSearchList);
-        }
+        List<String> dnsSearchList = appendToFieldStringList(instance, InstanceConstants.FIELD_DNS_SEARCH, ServiceUtil.getContainerNamespace(instance));
+        setField(instance, InstanceConstants.FIELD_DNS_SEARCH, dnsSearchList);
+        String searchLabel = dnsSearchList.stream().collect(Collectors.joining(","));
+        setLabel(instance, SystemLabels.LABEL_DNS_SEARCH, searchLabel);
     }
 
     private void setupCNILabels(Instance instance, Network network) {

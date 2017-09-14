@@ -29,6 +29,7 @@ public class SystemLabels {
     public static final String LABEL_STACK_SERVICE_NAME = "io.rancher.stack_service.name";
     public static final String LABEL_USE_RANCHER_DNS = "io.rancher.container.dns";
     public static final String LABEL_VOLUME_CLEANUP_STRATEGY = "io.rancher.container.volume_cleanup_strategy";
+    public static final String LABEL_DNS_SEARCH = "io.rancher.container.dnssearch";
 
     // K8s labels
     public static final String LABEL_K8S_POD_UID = "io.kubernetes.pod.uid";
