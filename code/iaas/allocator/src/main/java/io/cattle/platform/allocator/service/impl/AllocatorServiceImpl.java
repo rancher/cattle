@@ -381,8 +381,21 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
 
         if (attempt.getMatchedCandidate() == null) {
             if (finalFailedConstraints.size() > 0) {
-                throw new FailedToAllocate(String.format("%s and resource constraints: %s",
-                        toErrorMessage(finalFailedConstraints), attempt.getResourceRequests()));
+                String resourceMsg = "";
+                List<ResourceRequest> requests = attempt.getResourceRequests();
+                if (requests != null) {
+                    for(ResourceRequest r: requests) {
+                        if (INSTANCE_RESERVATION.equals(r.getResource())) {
+                            requests.remove(r);
+                            break;
+                        }
+                    }
+                    if (requests.size() > 0) {
+                        resourceMsg = String.format("Host must satisfy resource constraints: %s. ", requests.toString());
+                    }
+                }
+                throw new FailedToAllocate(String.format("%s%s", 
+                        resourceMsg, toErrorMessage(finalFailedConstraints)));
             }
             throw new FailedToAllocate("Failed to find placement");
         }

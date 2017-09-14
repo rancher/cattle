@@ -23,6 +23,7 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
+import io.cattle.platform.object.util.ObjectUtils;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -171,9 +172,7 @@ public class ComposeExportServiceImpl implements ComposeExportService {
                 translateRancherToCompose(forDockerCompose, cattleVolumeData, composeVolumeData, cattleVolume,
                         null, true);
             }
-            if (!composeVolumeData.isEmpty()) {
-                volumesData.put(volume.getName(), composeVolumeData);
-            }
+            volumesData.put(volume.getName(), composeVolumeData);
         }
 
         Map<String, Object> data = new HashMap<>();
@@ -501,9 +500,9 @@ public class ComposeExportServiceImpl implements ComposeExportService {
     private void translateV1VolumesToV2(Map<String, Object> cattleServiceData,
             Map<String, Object> composeServiceData, Map<String, Object> volumesData) {
         // volume driver presence defines the v1 format for the volumes
-        String volumeDriver = String.valueOf(cattleServiceData.get(ComposeExportConfigItem.VOLUME_DRIVER
-                .getCattleName()));
-        if (StringUtils.isEmpty(volumeDriver)) {
+        String volumeDriver = ObjectUtils.toString((cattleServiceData.get(ComposeExportConfigItem.VOLUME_DRIVER
+                .getCattleName())));
+        if (StringUtils.isBlank(volumeDriver)) {
             return;
         }
         composeServiceData.remove(ComposeExportConfigItem.VOLUME_DRIVER

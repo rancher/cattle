@@ -282,6 +282,8 @@ def test_agent_types(agent_client):
         'serviceEvent',
         'storagePool',
         'volume',
+        'setting',
+        'activeSetting',
     }
 
 
@@ -2910,13 +2912,13 @@ def test_pull_task(admin_user_client, user_client, project_client):
 
 
 def test_generic_object(admin_user_client, user_client, project_client):
-    auth_check(admin_user_client.schema, 'genericObject', 'crd', {
+    auth_check(admin_user_client.schema, 'genericObject', 'crud', {
         'name': 'cr',
         'kind': 'cr',
         'key': 'cr',
         'accountId': 'r',
         'data': 'r',
-        'resourceData': 'cr'
+        'resourceData': 'cru'
     })
 
     auth_check(user_client.schema, 'genericObject', 'r', {
@@ -2927,12 +2929,12 @@ def test_generic_object(admin_user_client, user_client, project_client):
         'resourceData': 'r'
     })
 
-    auth_check(project_client.schema, 'genericObject', 'crd', {
+    auth_check(project_client.schema, 'genericObject', 'crud', {
         'name': 'cr',
         'kind': 'cr',
         'key': 'cr',
         'accountId': 'r',
-        'resourceData': 'cr'
+        'resourceData': 'cru'
     })
 
 

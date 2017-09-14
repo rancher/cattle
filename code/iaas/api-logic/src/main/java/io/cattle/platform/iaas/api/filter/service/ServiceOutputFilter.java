@@ -1,11 +1,15 @@
 package io.cattle.platform.iaas.api.filter.service;
 
+import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.dao.ServiceDao.ServiceLink;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.iaas.api.filter.common.CachedOutputFilter;
+import io.cattle.platform.iaas.api.infrastructure.InfrastructureAccessManager;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
+import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.context.ApiContext;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.model.Resource;
@@ -19,12 +23,14 @@ import javax.inject.Inject;
 
 import com.google.common.base.Strings;
 
-public class ServiceMappingsOutputFilter extends CachedOutputFilter<Map<Long, ServiceMappingsOutputFilter.ServiceInfo>> {
+public class ServiceOutputFilter extends CachedOutputFilter<Map<Long, ServiceOutputFilter.ServiceInfo>> {
 
     @Inject
     ServiceDao serviceDao;
     @Inject
     ObjectManager objectManager;
+    @Inject
+    InfrastructureAccessManager infraAccess;
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -38,8 +44,18 @@ public class ServiceMappingsOutputFilter extends CachedOutputFilter<Map<Long, Se
 
     @Override
     public Resource filter(ApiRequest request, Object original, Resource converted) {
+        if (request == null) {
+            return converted;
+        }
+
         if (original instanceof Service) {
             Service service = (Service)original;
+
+            if (DataAccessor.fromMap(converted.getFields()).withKey(ObjectMetaDataManager.SYSTEM_FIELD).as(Boolean.class) &&
+                    !infraAccess.canModifyInfrastructure(ApiUtils.getPolicy())) {
+                converted.getActions().clear();
+            }
+
             Map<Long, ServiceInfo> data = getCached(request);
             if (data == null) {
                 return converted;

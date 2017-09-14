@@ -24,7 +24,7 @@
             "required": true,
             "validChars": "a-zA-Z0-9-",
             "minLength": 1,
-            "maxLength": 63
+            "maxLength": 50
         },
         "launchConfig": {
             "type": "launchConfig",

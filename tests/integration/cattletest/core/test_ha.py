@@ -47,7 +47,7 @@ def test_container_discovery(super_client, new_context):
     client = new_context.client
     container_id = random_str()
     new_context.create_container_no_success(
-        name='simCreateAnother_' + container_id,
+        name='simCreateAnother-' + container_id,
         imageUuid=new_context.image_uuid)
 
     def do_ping():

@@ -426,7 +426,7 @@ def test_docker_volumes(docker_client, super_client):
     assert foo_vol is not None
     assert not foo_vol.isHostPath
 
-    c2 = docker_client.create_container(name="volumes_from_test",
+    c2 = docker_client.create_container(name="volumes-from-test",
                                         networkMode='bridge',
                                         imageUuid=uuid,
                                         startOnCreate=False,
@@ -456,6 +456,45 @@ def test_docker_volumes(docker_client, super_client):
 
 
 @if_docker
+def test_stack_volume_delete(docker_client, super_client):
+    stack = docker_client.create_stack(name=random_str())
+    stack = docker_client.wait_success(stack)
+    docker_client.create_volumeTemplate(name="foo", stackId=stack.id)
+
+    # create service
+    launch_config = {"imageUuid": "docker:debian", "dataVolumes": "foo:/bar",
+                     "networkMode": "none",
+                     "labels": {"io.rancher.container.start_once": "true"},
+                     "command": ["mkdir", "/bar/touched"]}
+    svc1 = docker_client.create_service(name=random_str(), stackId=stack.id,
+                                        launchConfig=launch_config, scale=1)
+    svc1 = docker_client.wait_success(svc1)
+    docker_client.wait_success(svc1.activate())
+    c = _validate_compose_instance_stopped(docker_client, svc1, stack, "1")
+    mounts = check_mounts(docker_client, c, 1)
+    vol = mounts[0].volume()
+
+    # remove stack, validate its volume is removed on the host
+    docker_client.wait_success(stack.remove())
+    _check_path(vol, False, docker_client, super_client,
+                ["%s:/test" % vol.name], "/test/touched")
+
+
+def _validate_compose_instance_stopped(client, service, env,
+                                       number, launch_config_name=None):
+    cn = launch_config_name + "-" if launch_config_name is not None else ""
+    name = env.name + "-" + service.name + "-" + cn + number
+
+    def wait_for_map_count(service):
+        instances = client.list_container(name=name, state="stopped")
+        return len(instances) == 1
+
+    wait_for(lambda: wait_for_condition(client, service, wait_for_map_count))
+    instances = client.list_container(name=name, state="stopped")
+    return instances[0]
+
+
+@if_docker
 def test_container_fields(docker_client, super_client):
     caps = ["SYS_MODULE", "SYS_RAWIO", "SYS_PACCT", "SYS_ADMIN",
             "SYS_NICE", "SYS_RESOURCE", "SYS_TIME", "SYS_TTY_CONFIG",
@@ -466,7 +505,7 @@ def test_container_fields(docker_client, super_client):
             "NET_BIND_SERVICE", "NET_BROADCAST", "IPC_LOCK",
             "IPC_OWNER", "SYS_CHROOT", "SYS_PTRACE", "SYS_BOOT",
             "LEASE", "SETFCAP", "WAKE_ALARM", "BLOCK_SUSPEND", "ALL"]
-    test_name = 'container_test'
+    test_name = 'container-test'
     image_uuid = 'docker:ibuildthecloud/helloworld'
     restart_policy = {"maximumRetryCount": 2, "name": "on-failure"}
 
@@ -531,7 +570,7 @@ def test_container_fields(docker_client, super_client):
 
 @if_docker
 def test_docker_newfields(docker_client, super_client):
-    test_name = 'container_field_test'
+    test_name = 'container-field-test'
     image_uuid = 'docker:ibuildthecloud/helloworld'
     privileged = True
     blkioWeight = 100
@@ -595,7 +634,7 @@ def test_docker_newfields(docker_client, super_client):
 
 @if_docker_1_12
 def test_docker_extra_newfields(docker_client, super_client):
-    test_name = 'container_field_test'
+    test_name = 'container-field-test'
     image_uuid = 'docker:ibuildthecloud/helloworld'
     sysctls = {"net.ipv4.ip_forward": "1"}
 
@@ -627,7 +666,7 @@ def test_docker_extra_newfields(docker_client, super_client):
 
 @if_docker
 def test_container_milli_cpu_reservation(docker_client, super_client):
-    test_name = 'container_test'
+    test_name = 'container-test'
     image_uuid = 'docker:ibuildthecloud/helloworld'
 
     c = docker_client.create_container(name=test_name,
@@ -671,7 +710,7 @@ def volume_cleanup_setup(docker_client, uuid, strategy=None):
         labels[VOLUME_CLEANUP_LABEL] = strategy
 
     vol_name = random_str()
-    c = docker_client.create_container(name="volume_cleanup_test",
+    c = docker_client.create_container(name="volume-cleanup-test",
                                        imageUuid=uuid,
                                        networkMode='bridge',
                                        dataVolumes=['/tmp/foo',
@@ -785,7 +824,7 @@ def test_docker_labels(docker_client, super_client):
     # image_uuid = 'docker:ranchertest/labelled:v0.1.0'
     image_uuid = TEST_IMAGE_UUID
 
-    c = docker_client.create_container(name="labels_test",
+    c = docker_client.create_container(name="labels-test",
                                        imageUuid=image_uuid,
                                        networkMode='bridge',
                                        labels={'io.rancher.testlabel.'
@@ -1118,18 +1157,24 @@ def _wait_for_compose_instance_error(client, service, env):
     return container
 
 
-def _check_path(volume, should_exist, client, super_client):
-    path = _path_to_volume(volume)
+def _check_path(volume, should_exist, client, super_client, extra_vols=None,
+                path_to_check=None):
+    if path_to_check:
+        path = path_to_check
+    else:
+        path = _path_to_volume(volume)
     print 'Checking path [%s] for volume [%s].' % (path, volume)
+    data_vols = ['/var/lib/docker:/host/var/lib/docker', '/tmp:/host/tmp']
+    if extra_vols:
+        data_vols.extend(extra_vols)
+
     c = client. \
-        create_container(name="volume_check" + random_str(),
+        create_container(name="volume-check" + random_str(),
                          imageUuid="docker:ranchertest/volume-test:v0.1.0",
                          networkMode=None,
                          environment={'TEST_PATH': path},
                          command='/opt/tools/check_path_exists.sh',
-                         dataVolumes=[
-                             '/var/lib/docker:/host/var/lib/docker',
-                             '/tmp:/host/tmp'])
+                         dataVolumes=data_vols)
 
     c = super_client.wait_success(c)
     assert c.state == 'running'
@@ -1139,6 +1184,9 @@ def _check_path(volume, should_exist, client, super_client):
 
     code = c.data.dockerInspect.State.ExitCode
 
+    # Note that the test in the container is testing to see if the path is a
+    # directory. Code for the test is here:
+    # https://github.com/rancher/test-images/tree/master/images/volume-test
     if should_exist:
         # The exit code of the container should be a 10 if the path existed
         assert code == 10
