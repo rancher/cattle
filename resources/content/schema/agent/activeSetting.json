@@ -1,0 +1,24 @@
+{
+    "collectionMethods": ["GET"],
+    "resourceMethods" : ["GET"],
+    "resourceFields": {
+        "id": {
+            "create": false
+        },
+        "name": {
+            "create": false
+        },
+        "value": {
+            "create": false
+        },
+        "activeValue": {
+            "create": false
+        },
+        "source": {
+            "create": false
+        },
+        "inDb": {
+            "create": false
+        }
+    }
+}

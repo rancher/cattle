@@ -183,26 +183,50 @@ def test_external_dns_event(super_client, new_context):
 
     domain_name1 = "foo.com"
     create_dns_event(client, agent_client, super_client,
-                     new_context, svc1.name,
+                     new_context, svc1.name, None,
                      stack.name, domain_name1)
 
     # wait for dns name to be updated
     svc1 = client.reload(svc1)
     assert svc1.fqdn == domain_name1
 
+    # test the same for a standalone container
+    container1 = client.create_container(name=random_str(),
+                                         count=1, imageUuid=image_uuid,
+                                         stackId=stack.id)
+    container1 = client.wait_success(container1)
+    domain_name2 = "bar.com"
+    create_dns_event(client, agent_client, super_client,
+                     new_context, None, container1.name,
+                     stack.name, domain_name2)
+
+    # wait for dns name to be updated
+    container1 = client.reload(container1)
+    assert container1.fqdn == domain_name2
+
 
 def create_dns_event(client, agent_client, super_client,
-                     context, svc_name1,
+                     context, svc_name1, container_name1,
                      stack_name, domain_name):
     external_id = random_str()
     event_type = "externalDnsEvent"
-    dns_event = {
-        'externalId': external_id,
-        'eventType': event_type,
-        "stackName": stack_name,
-        "serviceName": svc_name1,
-        "fqdn": domain_name
-    }
+    dns_event = {}
+    if container_name1 is None:
+        dns_event = {
+            'externalId': external_id,
+            'eventType': event_type,
+            "stackName": stack_name,
+            "serviceName": svc_name1,
+            "fqdn": domain_name
+        }
+    else:
+        dns_event = {
+            'externalId': external_id,
+            'eventType': event_type,
+            "stackName": stack_name,
+            "containerName": container_name1,
+            "fqdn": domain_name
+        }
 
     event = agent_client.create_external_dns_event(dns_event)
     assert event.externalId == external_id

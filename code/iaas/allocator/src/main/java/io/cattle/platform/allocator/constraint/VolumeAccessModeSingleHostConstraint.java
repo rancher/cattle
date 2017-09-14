@@ -3,7 +3,6 @@ package io.cattle.platform.allocator.constraint;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 
 public class VolumeAccessModeSingleHostConstraint implements Constraint {
-
     Long hostId;
     Long volumeId;
     String volumeName;
@@ -21,7 +20,7 @@ public class VolumeAccessModeSingleHostConstraint implements Constraint {
 
     @Override
     public String toString() {
-        return String.format("Volume %s(%s) can only be used on host %s(%s)", volumeName, volumeId, hostName, hostId);
+        return String.format("Volume %s(id: %s) can only be used on host %s(id: %s)", volumeName, volumeId, hostName, hostId);
     }
 
     @Override

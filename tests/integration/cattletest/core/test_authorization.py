@@ -282,6 +282,8 @@ def test_agent_types(agent_client):
         'serviceEvent',
         'storagePool',
         'volume',
+        'setting',
+        'activeSetting',
     }
 
 
@@ -958,6 +960,7 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'workingDir': 'r',
         'dns': 'r',
         'dnsSearch': 'r',
+        'fqdn': 'r',
         'domainName': 'r',
         'entryPoint': 'r',
         'environment': 'r',
@@ -1075,6 +1078,7 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'workingDir': 'r',
         'dns': 'r',
         'dnsSearch': 'r',
+        'fqdn': 'r',
         'domainName': 'r',
         'entryPoint': 'r',
         'environment': 'r',
@@ -1190,6 +1194,7 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'workingDir': 'cr',
         'dns': 'cr',
         'dnsSearch': 'cr',
+        'fqdn': 'r',
         'domainName': 'cr',
         'entryPoint': 'cr',
         'environment': 'cr',
@@ -1305,6 +1310,7 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'workingDir': 'cr',
         'dns': 'cr',
         'dnsSearch': 'cr',
+        'fqdn': 'r',
         'domainName': 'cr',
         'entryPoint': 'cr',
         'environment': 'cr',
@@ -1419,6 +1425,7 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'workingDir': 'cr',
         'dns': 'cr',
         'dnsSearch': 'cr',
+        'fqdn': 'r',
         'domainName': 'cr',
         'entryPoint': 'cr',
         'environment': 'cr',
@@ -1542,6 +1549,7 @@ def test_container_auth(admin_user_client, user_client, project_client,
         'workingDir': 'cr',
         'dns': 'cr',
         'dnsSearch': 'cr',
+        'fqdn': 'r',
         'domainName': 'cr',
         'entryPoint': 'cr',
         'environment': 'cr',
@@ -2910,13 +2918,13 @@ def test_pull_task(admin_user_client, user_client, project_client):
 
 
 def test_generic_object(admin_user_client, user_client, project_client):
-    auth_check(admin_user_client.schema, 'genericObject', 'crd', {
+    auth_check(admin_user_client.schema, 'genericObject', 'crud', {
         'name': 'cr',
         'kind': 'cr',
         'key': 'cr',
         'accountId': 'r',
         'data': 'r',
-        'resourceData': 'cr'
+        'resourceData': 'cru'
     })
 
     auth_check(user_client.schema, 'genericObject', 'r', {
@@ -2927,12 +2935,12 @@ def test_generic_object(admin_user_client, user_client, project_client):
         'resourceData': 'r'
     })
 
-    auth_check(project_client.schema, 'genericObject', 'crd', {
+    auth_check(project_client.schema, 'genericObject', 'crud', {
         'name': 'cr',
         'kind': 'cr',
         'key': 'cr',
         'accountId': 'r',
-        'resourceData': 'cr'
+        'resourceData': 'cru'
     })
 
 
@@ -3054,6 +3062,7 @@ def test_external_dns_event(agent_client, admin_user_client, user_client,
         'reportedAccountId': 'r',
         'stackName': 'r',
         'serviceName': 'r',
+        'containerName': 'r',
         'fqdn': 'r'
     })
 
@@ -3064,6 +3073,7 @@ def test_external_dns_event(agent_client, admin_user_client, user_client,
         'reportedAccountId': 'r',
         'stackName': 'r',
         'serviceName': 'r',
+        'containerName': 'r',
         'fqdn': 'r'
     })
 
@@ -3074,6 +3084,7 @@ def test_external_dns_event(agent_client, admin_user_client, user_client,
         'reportedAccountId': 'r',
         'stackName': 'r',
         'serviceName': 'r',
+        'containerName': 'r',
         'fqdn': 'r'
     })
 
@@ -3082,6 +3093,7 @@ def test_external_dns_event(agent_client, admin_user_client, user_client,
         'eventType': 'cr',
         'stackName': 'cr',
         'serviceName': 'cr',
+        'containerName': 'cr',
         'fqdn': 'cr'
     })
 
@@ -3219,6 +3231,7 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'description': 'r',
         'dns': 'r',
         'dnsSearch': 'r',
+        'fqdn': 'r',
         'domainName': 'r',
         'firstRunning': 'r',
         'hostId': 'r',
@@ -3318,6 +3331,7 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'description': 'r',
         'dns': 'r',
         'dnsSearch': 'r',
+        'fqdn': 'r',
         'domainName': 'r',
         'firstRunning': 'r',
         'hostId': 'r',
@@ -3415,6 +3429,7 @@ def test_virtual_machine(admin_user_client, user_client, project_client):
         'description': 'cru',
         'dns': 'cr',
         'dnsSearch': 'cr',
+        'fqdn': 'r',
         'domainName': 'cr',
         'firstRunning': 'r',
         'hostId': 'r',

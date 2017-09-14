@@ -212,6 +212,86 @@ def test_container_name_unique_count(context, client):
     assert e.value.error.code == 'NotUnique'
 
 
+def _create_stack(client):
+    env = client.create_stack(name=random_str())
+    env = client.wait_success(env)
+    assert env.state == "active"
+    return env
+
+
+def test_container_service_name_unique_in_stack(context, client):
+    env = _create_stack(client)
+    container_name = random_str()
+
+    client.create_container(name=container_name, count=1,
+                            imageUuid=context.image_uuid,
+                            stackId=env.id)
+
+    # verify cannot create a service with same name in the same stack
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid}
+    service_name = container_name
+    with pytest.raises(ApiError) as e:
+        service1 = client.create_service(name=service_name,
+                                         stackId=env.id,
+                                         launchConfig=launch_config)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'NotUnique'
+    assert e.value.error.fieldName == 'name'
+
+    # create a new service in that stack
+    service_name = random_str()
+    service1 = client.create_service(name=service_name,
+                                     stackId=env.id,
+                                     launchConfig=launch_config)
+    client.wait_success(service1)
+    # verify cannot create a container with same name in the same stack
+    container_name = service_name
+    with pytest.raises(ApiError) as e:
+        client.create_container(name=container_name, count=1,
+                                imageUuid=context.image_uuid,
+                                stackId=env.id)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'NotUnique'
+    assert e.value.error.fieldName == 'name'
+
+
+def test_validate_container_name(context, client):
+    # container_name starting with hyphen
+    name = "-" + random_str()
+    with pytest.raises(ApiError) as e:
+        client.create_container(name=name, count=1,
+                                imageUuid=context.image_uuid)
+
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidCharacters'
+
+    # container_name ending in hyphen
+    name = random_str() + "-"
+    with pytest.raises(ApiError) as e:
+        client.create_container(name=name, count=1,
+                                imageUuid=context.image_uuid)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidCharacters'
+
+    # container_name with --
+    name = random_str() + "--end"
+    with pytest.raises(ApiError) as e:
+        client.create_container(name=name, count=1,
+                                imageUuid=context.image_uuid)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'InvalidCharacters'
+
+    # container_name with more than 50 chars
+    name = random_str() + "myLinkTOOLONGtoolongtoolongtoolongmy" \
+                          "LinkTOOLONGtoolongtoolongtoolong"
+    with pytest.raises(ApiError) as e:
+        client.create_container(name=name, count=1,
+                                imageUuid=context.image_uuid)
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'MaxLengthExceeded'
+
+
 def _assert_removed(container):
     assert_removed_fields(container)
     return container
@@ -296,8 +376,8 @@ def test_container_compute_fail(super_client, context):
     container = context.super_create_container_no_success(data=data)
 
     assert container.transitioning == 'error'
-    assert container.transitioningMessage == \
-        'Failing [compute.instance.activate]'
+    assert container.transitioningMessage == 'Failing ' \
+                                             '[compute.instance.activate]'
 
     _assert_error(super_client.reload(container))
 
