@@ -1,0 +1,77 @@
+{
+  "resourceActions": {
+    "setmembers": {
+      "input": "setProjectMembersInput",
+      "output": "setProjectMembersInput",
+      "attributes": {
+        "capability": "owner"
+      }
+    },
+    "deactivate": {
+      "attributes": {
+        "capability": "owner"
+      }
+    },
+    "activate": {
+      "attributes": {
+        "capability": "owner"
+      }
+    },
+    "update": {
+      "attributes": {
+        "capability": "owner"
+      }
+    },
+    "upgrade": {
+      "attributes": {
+        "capability": "owner"
+      }
+    },
+    "purge": {
+      "attributes": {
+        "capability": "owner"
+      }
+    },
+    "remove": {
+      "attributes": {
+        "capability": "owner"
+      }
+    }
+  },
+  "resourceFields": {
+    "members": {
+      "type": "array[projectMember]",
+      "nullable": "true"
+    },
+    "orchestration": {
+      "type": "string",
+      "nullable": false,
+      "default": "cattle"
+    },
+    "virtualMachine": {
+      "type": "boolean",
+      "nullable": false,
+      "default": false,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "servicesPortRange": {
+      "type": "servicesPortRange",
+      "nullable": true,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "projectLinks": {
+      "type": "array[reference[project]]",
+      "attributes": {
+        "scheduleUpdate": true
+      },
+      "nullable": true
+    },
+    "defaultNetworkId": {
+      "type": "reference[network]"
+    }
+  }
+}

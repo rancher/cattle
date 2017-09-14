@@ -1,0 +1,24 @@
+{
+  "resourceFields": {
+    "externalIpAddresses": {
+      "type": "array[string]",
+      "required": false,
+      "nullable": true,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "hostname": {
+      "type": "string",
+      "required": false,
+      "nullable": true,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "healthCheck": {
+      "type": "instanceHealthCheck",
+      "nullable": true
+    }
+  }
+}

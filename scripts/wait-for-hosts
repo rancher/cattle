@@ -10,7 +10,7 @@ wait_a_bit()
 
 for ((i=0;i<300;i++)); do
     if [[ "$(curl -s ${CATTLE_URL}/ping)" = "pong" ]]; then
-        host_count=$(curl -s ${CATTLE_URL}/v1/projects/1a5/hosts|python -mjson.tool|grep '"id"'|grep "1h.*"|wc -l)
+        host_count=$(curl -s ${CATTLE_URL}/v3/hosts|python -mjson.tool|grep '"id"'|grep "1h.*"|wc -l)
         if [ "$host_count" -ge "1" ]; then
             echo "OK"
             break
@@ -21,8 +21,8 @@ for ((i=0;i<300;i++)); do
         wait_a_bit
     fi
 
-    ### If we don't get a response after 30 mins... give up.
-    if [ "$i" -eq "299" ]; then
+    ### If we don't get a response after 2 mins... give up.
+    if [ "$i" -gt "20" ]; then
         echo "Failed to reach environment" 1>&2
         echo "Rancher latest environment failed to respond... no tests run." 1>&2
         exit 1

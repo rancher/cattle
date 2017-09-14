@@ -1,0 +1,33 @@
+{
+    "authorize" : {
+        ".*" : "",
+
+        ".*\\.created" : "r",
+        ".*\\.description" : "cru",
+        ".*\\.kind" : "r",
+        ".*\\.id" : "r",
+        ".*\\.name" : "cru",
+        ".*\\.uuid" : "r",
+        ".*\\.removed" : "r",
+        ".*\\.state" : "r",
+        ".*\\.transitioning": "r",
+        ".*\\.transitioningMessage": "r",
+
+        "register" : "crd",
+        "register.accessKey" : "r",
+        "register.secretKey" : "r",
+        "register.key" : "cr",
+        "register.agentUriFormat" : "cr",
+        "register.k8sClientConfig" : "cr",
+        "register.orchestration" : "cr",
+
+        "k8sClientConfig" : "cru",
+        "k8sClientConfig.bearerToken" : "cru",
+        "k8sClientConfig.address" : "cru",
+        "k8sClientConfig.caCert" : "cru",
+
+        "schema" : "r",
+
+        "end" : ""
+    }
+}

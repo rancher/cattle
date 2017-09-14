@@ -1,0 +1,13 @@
+{
+  "resourceFields": {
+    "defaultNetwork": {
+      "type": "defaultNetwork"
+    },
+    "cniConfig": {
+      "type": "map[json]"
+    },
+    "networkMetadata": {
+      "type": "map[json]"
+    }
+  }
+}

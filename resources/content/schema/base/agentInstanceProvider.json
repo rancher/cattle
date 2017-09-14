@@ -1,7 +1,0 @@
-{
-    "resourceFields": {
-        "agentInstanceImageUuid": {
-            "type" : "string"
-        }
-    }
-}

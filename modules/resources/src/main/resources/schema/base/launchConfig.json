@@ -1,0 +1,16 @@
+{
+  "resourceFields": {
+    "pidContainerId": {
+      "type": "string"
+    },
+    "ipcContainerId": {
+      "type": "string"
+    },
+    "networkContainerId": {
+      "type": "string"
+    },
+    "dataVolumesFrom": {
+      "type": "array[string]"
+    }
+  }
+}

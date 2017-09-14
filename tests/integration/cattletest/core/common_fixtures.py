@@ -11,8 +11,8 @@ import fcntl
 import logging
 
 NOT_NONE = object()
-DEFAULT_TIMEOUT = 150
-cattle.DEFAULT_TIMEOUT = 150
+DEFAULT_TIMEOUT = 15
+cattle.DEFAULT_TIMEOUT = 15
 _SUPER_CLIENT = None
 
 
@@ -103,18 +103,12 @@ class Context(object):
         self.agent_client = agent_client
         self.client = client
         self.host = host
-        self.image_uuid = 'sim:{}'.format(random_str())
-        self.lb_v1_image_uuid = 'sim:rancher/load-balancer-service'
-        self.host_ip = self._get_host_ip()
+        self.image_uuid = '{}'.format(random_str())
+        self.lb_v1_image_uuid = 'rancher/load-balancer-service'
+        self.host_ip = None
         self.owner_client = owner_client
-
-    def _get_host_ip(self):
-        if self.host is None:
-            return None
-
-        ips = self.host.ipAddresses()
-        assert len(ips) == 1
-        return ips[0]
+        if self.host is not None:
+            self.host_ip = self.host.agentIpAddress
 
     def create_container(self, *args, **kw):
         c = self.create_container_no_success(*args, **kw)
@@ -277,16 +271,11 @@ def register_simulated_host(client_or_context, return_agent=False):
     if isinstance(client_or_context, Context):
         client = client_or_context.client
 
-    def do_ping():
-        ping = one(super_client(None).list_task, name='agent.ping')
-        ping.execute()
-
     def check():
         hosts = super_client(None).list_host(agentId=agents[0].id)
         if len(hosts) > 0:
             assert len(hosts) == 1
             return hosts[0]
-        do_ping()
 
     token = client.wait_success(client.create_registration_token())
     c = api_client('registrationToken', token.token)
@@ -343,7 +332,8 @@ def _wait_for_pool(host):
 def _is_valid_super_client(client):
     try:
         # stupid test
-        return len(client.schema.types) > 180
+        identities = client.list_identity()
+        return len(identities) == 1 and identities[0].name == 'superadmin'
     except:
         return False
 

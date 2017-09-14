@@ -1,9 +1,0 @@
-{
-    "resourceFields": {
-        "id": null,
-        "name": null,
-        "user": {
-            "create": true
-        }
-    }
-}
