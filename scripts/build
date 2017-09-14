@@ -3,4 +3,14 @@ set -e
 
 cd $(dirname $0)/..
 
+source ./scripts/version
+
+export VERSION
+
 ./gradlew build installDist
+
+mkdir -p dist
+cp -f modules/main/build/distributions/* dist
+for i in dist/*.tar; do
+    gzip $i
+done
