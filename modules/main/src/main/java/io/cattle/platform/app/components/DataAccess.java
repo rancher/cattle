@@ -1,0 +1,116 @@
+package io.cattle.platform.app.components;
+
+import io.cattle.platform.allocator.dao.AllocatorDao;
+import io.cattle.platform.allocator.dao.impl.AllocatorDaoImpl;
+import io.cattle.platform.core.cache.DBCacheManager;
+import io.cattle.platform.core.dao.AccountDao;
+import io.cattle.platform.core.dao.AgentDao;
+import io.cattle.platform.core.dao.AuditLogDao;
+import io.cattle.platform.core.dao.ClusterDao;
+import io.cattle.platform.core.dao.DataDao;
+import io.cattle.platform.core.dao.DynamicSchemaDao;
+import io.cattle.platform.core.dao.GenericResourceDao;
+import io.cattle.platform.core.dao.HostDao;
+import io.cattle.platform.core.dao.InstanceDao;
+import io.cattle.platform.core.dao.LoadBalancerInfoDao;
+import io.cattle.platform.core.dao.NetworkDao;
+import io.cattle.platform.core.dao.ProcessSummaryDao;
+import io.cattle.platform.core.dao.RegistrationTokenAuthDao;
+import io.cattle.platform.core.dao.SecretDao;
+import io.cattle.platform.core.dao.ServiceDao;
+import io.cattle.platform.core.dao.SettingDao;
+import io.cattle.platform.core.dao.StackDao;
+import io.cattle.platform.core.dao.StorageDriverDao;
+import io.cattle.platform.core.dao.StoragePoolDao;
+import io.cattle.platform.core.dao.VolumeDao;
+import io.cattle.platform.core.dao.impl.AccountDaoImpl;
+import io.cattle.platform.core.dao.impl.AgentDaoImpl;
+import io.cattle.platform.core.dao.impl.AuditLogDaoImpl;
+import io.cattle.platform.core.dao.impl.ClusterDaoImpl;
+import io.cattle.platform.core.dao.impl.DataDaoImpl;
+import io.cattle.platform.core.dao.impl.DynamicSchemaDaoImpl;
+import io.cattle.platform.core.dao.impl.GenericResourceDaoImpl;
+import io.cattle.platform.core.dao.impl.HostDaoImpl;
+import io.cattle.platform.core.dao.impl.InstanceDaoImpl;
+import io.cattle.platform.core.dao.impl.LoadBalancerInfoDaoImpl;
+import io.cattle.platform.core.dao.impl.NetworkDaoImpl;
+import io.cattle.platform.core.dao.impl.ProcessSummaryDaoImpl;
+import io.cattle.platform.core.dao.impl.RegistrationTokenAuthDaoImpl;
+import io.cattle.platform.core.dao.impl.SecretDaoImpl;
+import io.cattle.platform.core.dao.impl.ServiceDaoImpl;
+import io.cattle.platform.core.dao.impl.SettingDaoImpl;
+import io.cattle.platform.core.dao.impl.StackDaoImpl;
+import io.cattle.platform.core.dao.impl.StorageDriverDaoImpl;
+import io.cattle.platform.core.dao.impl.StoragePoolDaoImpl;
+import io.cattle.platform.core.dao.impl.VolumeDaoImpl;
+import io.cattle.platform.data.InitialData;
+import io.cattle.platform.framework.encryption.handler.impl.TransformationServiceImpl;
+import io.cattle.platform.iaas.api.auth.dao.AuthDao;
+import io.cattle.platform.iaas.api.auth.dao.AuthTokenDao;
+import io.cattle.platform.iaas.api.auth.dao.PasswordDao;
+import io.cattle.platform.iaas.api.auth.dao.impl.AuthDaoImpl;
+import io.cattle.platform.iaas.api.auth.dao.impl.AuthTokenDaoImpl;
+import io.cattle.platform.iaas.api.auth.dao.impl.PasswordDaoImpl;
+
+public class DataAccess {
+
+    AccountDao accountDao;
+    AgentDao agentDao;
+    AllocatorDao allocatorDao;
+    AuditLogDao auditLogDao;
+    AuthDao authDao;
+    AuthTokenDao authTokenDao;
+    ClusterDao clusterDao;
+    DataDao dataDao;
+    DBCacheManager dbCacheManager;
+    DynamicSchemaDao dynamicSchemaDao;
+    GenericResourceDao resourceDao;
+    HostDao hostDao;
+    InitialData initialData;
+    InstanceDao instanceDao;
+    LoadBalancerInfoDao loadBalancerInfoDao;
+    NetworkDao networkDao;
+    PasswordDao passwordDao;
+    ProcessSummaryDao processSummaryDao;
+    RegistrationTokenAuthDao registrationTokenAuthDao;
+    SecretDao secretsDao;
+    ServiceDao serviceDao;
+    SettingDao settingDao;
+    StackDao stackDao;
+    StoragePoolDao storagePoolDao;
+    StorageDriverDao storageDriverDao;
+    TransformationServiceImpl transformationService;
+    VolumeDao volumeDao;
+
+    public DataAccess(Framework f) {
+        this.resourceDao = new GenericResourceDaoImpl(f.objectManager, f.processManager, f.transaction);
+        this.clusterDao = new ClusterDaoImpl(f.jooqConfig, f.transaction, f.objectManager, resourceDao);
+        this.transformationService = new TransformationServiceImpl();
+
+        this.accountDao = new AccountDaoImpl(f.jooqConfig, f.objectManager);
+        this.agentDao = new AgentDaoImpl(f.jooqConfig, clusterDao, resourceDao, f.objectManager);
+        this.allocatorDao = new AllocatorDaoImpl(f.jooqConfig, f.objectManager, f.transaction, f.eventService);
+        this.auditLogDao = new AuditLogDaoImpl(f.jooqConfig, f.objectManager);
+        this.authDao = new AuthDaoImpl(f.jooqConfig, resourceDao, f.objectManager, f.processManager, f.lockManager, accountDao);
+        this.authTokenDao = new AuthTokenDaoImpl(f.jooqConfig, resourceDao, f.objectManager, f.processManager);
+        this.dataDao = new DataDaoImpl(f.jooqConfig, f.lockManager, f.objectManager, f.newConnJooqConfig, f.newTransaction);
+        this.dbCacheManager = new DBCacheManager();
+        this.dynamicSchemaDao = new DynamicSchemaDaoImpl(f.jooqConfig, dbCacheManager);
+        this.hostDao = new HostDaoImpl(f.jooqConfig);
+        this.initialData = new InitialData(f.objectManager, dataDao, resourceDao, f.lockManager, f.transaction);
+        this.instanceDao = new InstanceDaoImpl(f.jooqConfig, f.objectManager, f.jsonMapper);
+        this.loadBalancerInfoDao = new LoadBalancerInfoDaoImpl(f.jooqConfig);
+        this.networkDao = new NetworkDaoImpl(f.jooqConfig, f.objectManager, resourceDao, f.lockManager);
+        this.passwordDao = new PasswordDaoImpl(f.jooqConfig, f.objectManager, transformationService, accountDao);
+        this.processSummaryDao = new ProcessSummaryDaoImpl(f.jooqConfig);
+        this.registrationTokenAuthDao = new RegistrationTokenAuthDaoImpl(f.jooqConfig);
+        this.secretsDao = new SecretDaoImpl(f.jooqConfig);
+        this.serviceDao = new ServiceDaoImpl(f.jooqConfig, f.objectManager, f.lockManager, resourceDao, f.transaction);
+        this.settingDao = new SettingDaoImpl(f.newConnJooqConfig, f.newTransaction, f.objectManager, f.eventService);
+        this.stackDao = new StackDaoImpl(f.jooqConfig);
+        this.storagePoolDao = new StoragePoolDaoImpl(f.jooqConfig, resourceDao, f.objectManager, f.transaction);
+        this.storageDriverDao = new StorageDriverDaoImpl(f.jooqConfig, f.objectManager, f.jsonMapper);
+        this.volumeDao = new VolumeDaoImpl(f.jooqConfig, resourceDao, f.objectManager, f.transaction);
+    }
+
+}

@@ -103,7 +103,7 @@ def test_account_purge(admin_user_client, super_client, new_context):
     account_id = new_context.project.id
     account = new_context.project
     client = new_context.client
-    image_uuid = 'sim:{}'.format(random_num())
+    image_uuid = '{}'.format(random_num())
     host = new_context.host
     assert host.state == 'active'
 

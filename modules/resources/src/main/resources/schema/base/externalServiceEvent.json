@@ -1,0 +1,11 @@
+{
+  "resourceFields": {
+    "service": {
+      "type": "json",
+      "required": true
+    },
+    "environment": {
+      "type": "json"
+    }
+  }
+}

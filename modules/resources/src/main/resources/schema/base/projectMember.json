@@ -1,0 +1,34 @@
+{
+  "collectionMethods": [
+    "GET"
+  ],
+  "pluralName": "projectMembers",
+  "resourceFields": {
+    "projectId": {
+      "type": "reference[project]"
+    },
+    "role": {
+      "type": "enum",
+      "default": "member",
+      "options": [
+        "member",
+        "owner",
+        "readonly",
+        "restricted"
+      ]
+    },
+    "externalIdType": {
+      "type": "enum",
+      "default": "rancher_id",
+      "options": [
+        "rancher_id",
+        "ldap_user",
+        "ldap_group",
+        "openldap_user",
+        "openldap_group",
+        "azuread_user",
+        "azuread_group"
+      ]
+    }
+  }
+}

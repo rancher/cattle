@@ -1,0 +1,15 @@
+dependencies {
+    compile project(':cattle-caas-auth')
+    compile project(':cattle-caas-api')
+    compile project(':cattle-caas-backend')
+    compile project(':cattle-resources')
+    compile group: 'org.eclipse.jetty', name: 'jetty-webapp', version: '9.2.11.v20150529'
+    compile group: 'org.eclipse.jetty', name: 'jetty-servlets', version: '9.2.11.v20150529'
+    compile group: 'org.eclipse.jetty', name: 'jetty-jmx', version: '9.2.11.v20150529'
+    compile group: 'org.eclipse.jetty.websocket', name: 'websocket-api', version: '9.2.11.v20150529'
+    compile group: 'org.eclipse.jetty.websocket', name: 'websocket-server', version: '9.2.11.v20150529'
+}
+
+apply plugin: 'application'
+mainClassName = 'io.cattle.platform.jetty.Main'
+applicationName = 'cattle'

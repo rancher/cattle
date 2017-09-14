@@ -1,0 +1,43 @@
+{
+  "resourceFields": {
+    "scheduledUpgradeDelayMinutes": {
+      "type": "int",
+      "nullable": true
+    },
+    "kind": {
+      "default": "user"
+    },
+    "identity": {
+      "type": "reference[identity]"
+    },
+    "defaultNetworkId": {
+      "type": "reference[network]",
+      "nullable": true
+    },
+    "name": {
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "clusterId": {
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    },
+    "metadata": {
+      "type": "map[json]",
+      "nullable": true
+    },
+    "createdStackIds": {
+      "type": "array[reference[stack]]"
+    },
+    "startedStackIds": {
+      "type": "array[reference[stack]]"
+    },
+    "version":  {
+      "type": "string",
+      "nullable": false,
+      "default": "2"
+    }
+  }
+}

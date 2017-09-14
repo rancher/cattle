@@ -1,0 +1,47 @@
+{
+  "resourceFields": {
+    "name": {
+      "required": true,
+      "validChars": "a-zA-Z0-9-",
+      "minLength": 1,
+      "maxLength": 63
+    },
+    "orchestration": {
+      "type": "enum",
+      "options": [
+        "kubernetes"
+      ]
+    },
+    "hostRemoveDelaySeconds": {
+      "type": "int",
+      "required": false,
+      "nullable": true
+    },
+    "identity": {
+      "type": "clusterIdentity"
+    },
+    "k8sServerConfig": {
+      "type": "k8sServerConfig",
+      "nullable": true
+    },
+    "k8sClientConfig": {
+      "type": "k8sClientConfig",
+      "nullable": true
+    },
+    "registrationTokenId": {
+      "type": "reference[credential]",
+      "nullable": true
+    },
+    "registrationToken": {
+      "type": "registrationToken",
+      "nullable": true
+    },
+    "systemStacks": {
+      "type": "array[stack]",
+      "nullable": true,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    }
+  }
+}

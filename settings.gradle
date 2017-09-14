@@ -1,0 +1,20 @@
+rootProject.name = 'cattle'
+include ':cattle-resources'
+include ':cattle-caas-api'
+include ':cattle-caas-auth'
+include ':cattle-caas-common'
+include ':cattle-caas-backend'
+include ':cattle-framework'
+include ':cattle-hazelcast'
+include ':cattle-main'
+include ':cattle-model'
+
+project(':cattle-resources').projectDir = "$rootDir/modules/resources" as File
+project(':cattle-caas-api').projectDir = "$rootDir/modules/caas/api" as File
+project(':cattle-caas-auth').projectDir = "$rootDir/modules/caas/auth" as File
+project(':cattle-caas-common').projectDir = "$rootDir/modules/caas/common" as File
+project(':cattle-caas-backend').projectDir = "$rootDir/modules/caas/backend" as File
+project(':cattle-framework').projectDir = "$rootDir/modules/framework" as File
+project(':cattle-hazelcast').projectDir = "$rootDir/modules/hazelcast" as File
+project(':cattle-main').projectDir = "$rootDir/modules/main" as File
+project(':cattle-model').projectDir = "$rootDir/modules/model" as File

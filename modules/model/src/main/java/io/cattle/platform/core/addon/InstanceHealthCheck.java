@@ -1,0 +1,93 @@
+package io.cattle.platform.core.addon;
+
+import io.github.ibuildthecloud.gdapi.annotation.Field;
+import io.github.ibuildthecloud.gdapi.annotation.Type;
+
+@Type(list = false)
+public class InstanceHealthCheck {
+    public enum Strategy {
+        none,
+        recreate,
+    }
+    Integer responseTimeout;
+    Integer interval;
+    Integer healthyThreshold;
+    Integer unhealthyThreshold;
+    String requestLine;
+    Integer port;
+    Strategy strategy;
+    Integer initializingTimeout;
+
+    @Field(defaultValue = "2000")
+    public Integer getResponseTimeout() {
+        return responseTimeout;
+    }
+
+    public void setResponseTimeout(Integer responseTimeout) {
+        this.responseTimeout = responseTimeout;
+    }
+
+    @Field(defaultValue = "2000")
+    public Integer getInterval() {
+        return interval;
+    }
+
+    public void setInterval(Integer interval) {
+        this.interval = interval;
+    }
+
+    @Field(defaultValue = "2")
+    public Integer getHealthyThreshold() {
+        return healthyThreshold;
+    }
+
+    public void setHealthyThreshold(Integer healthyThreshold) {
+        this.healthyThreshold = healthyThreshold;
+    }
+
+    @Field(defaultValue = "3")
+    public Integer getUnhealthyThreshold() {
+        return unhealthyThreshold;
+    }
+
+    public void setUnhealthyThreshold(Integer unhealthyThreshold) {
+        this.unhealthyThreshold = unhealthyThreshold;
+    }
+
+    @Field(nullable = true)
+    public String getRequestLine() {
+        return requestLine;
+    }
+
+    public void setRequestLine(String requestLine) {
+        this.requestLine = requestLine;
+    }
+
+    @Field(required = true, min = 1, max = 65535)
+    public Integer getPort() {
+        return port;
+    }
+
+    public void setPort(Integer port) {
+        this.port = port;
+    }
+
+    @Field(required = false, nullable = true, defaultValue = "recreate")
+    public Strategy getStrategy() {
+        return strategy;
+    }
+
+    public void setStrategy(Strategy strategy) {
+        this.strategy = strategy;
+    }
+
+    @Field(defaultValue = "120000")
+    public Integer getInitializingTimeout() {
+        return initializingTimeout;
+    }
+
+    public void setInitializingTimeout(Integer initializingTimeout) {
+        this.initializingTimeout = initializingTimeout;
+    }
+}
+

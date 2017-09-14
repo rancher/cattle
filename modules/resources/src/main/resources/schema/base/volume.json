@@ -1,0 +1,40 @@
+{
+  "resourceFields": {
+    "name": {
+      "required": true
+    },
+    "isHostPath": {
+      "type": "boolean",
+      "default": false
+    },
+    "isNative": {
+      "type": "boolean",
+      "default": false
+    },
+    "storageDriverId": {
+      "type": "reference[storageDriver]",
+      "nullable": false
+    },
+    "driver": {
+      "type": "string"
+    },
+    "driverOpts": {
+      "type": "map[string]",
+      "nullable": true
+    },
+    "capabilities": {
+      "type": "array[string]",
+      "nullable": true
+    },
+    "mounts": {
+      "type": "array[mountEntry]"
+    },
+    "hostId": {
+      "type": "reference[host]",
+      "nullable": true,
+      "attributes": {
+        "scheduleUpdate": true
+      }
+    }
+  }
+}

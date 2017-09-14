@@ -1,0 +1,130 @@
+{
+  "resourceFields": {
+    "requestedHostId": {
+      "type": "reference[host]",
+      "create": true,
+      "update": true,
+      "nullable": true
+    },
+    "imageUuid": {
+      "type": "string",
+      "nullable": true,
+      "create": true
+    },
+    "image": {
+      "type": "string",
+      "nullable": true,
+      "create": true
+    },
+    "networkIds": {
+      "type": "array[reference[network]]",
+      "nullable": true,
+      "includeInList": false
+    },
+    "hostId": {
+      "type": "reference[host]",
+      "nullable": true
+    },
+    "count": {
+      "type": "int",
+      "nullable": true,
+      "includeInList": false
+    },
+    "credentialIds": {
+      "type": "array[reference[credential]]",
+      "nullable": true,
+      "includeInList": false
+    },
+    "instanceTriggeredStop": {
+      "type": "enum",
+      "default": "stop",
+      "options": [
+        "stop",
+        "remove"
+      ]
+    },
+    "ports": {
+      "type": "array[string]",
+      "create": true,
+      "nullable": true
+    },
+    "portBindings": {
+      "type": "array[portBinding]",
+      "create": true,
+      "nullable": true
+    },
+    "primaryIpAddress": {
+      "type": "string"
+    },
+    "createOnly": {
+      "type": "boolean",
+      "create": true,
+      "default": false
+    },
+    "volumeDriver": {
+      "type": "string",
+      "nullable": true,
+      "create": true
+    },
+    "expose": {
+      "type": "array[string]",
+      "create": true,
+      "nullable": true
+    },
+    "requestedIpAddress": {
+      "type": "string",
+      "nullable": true
+    },
+    "serviceIndex": {
+      "type": "string",
+      "nullable": true
+    },
+    "serviceIds": {
+      "type": "array[reference[service]]",
+      "nullable": true
+    },
+    "mounts": {
+      "type": "array[mount]"
+    },
+    "shouldRestart": {
+      "type": "boolean"
+    },
+    "lastStart": {
+      "type": "date"
+    },
+    "stopped": {
+      "type": "date"
+    },
+    "desired": {
+      "type": "boolean"
+    },
+    "healthcheckStates": {
+      "type": "array[healthcheckState]"
+    },
+    "lbRulesOnRemove": {
+      "type": "map[json]"
+    },
+    "dependsOn": {
+      "type": "array[dependsOn]",
+      "nullable": true
+    }
+  },
+  "resourceActions": {
+    "console": {
+      "input": "instanceConsoleInput",
+      "output": "instanceConsole",
+      "attributes": {
+        "capability": "console",
+        "state": "running"
+      }
+    },
+    "stop": {
+      "input": "instanceStop",
+      "output": "instance"
+    },
+    "remove": {
+      "input": "instanceRemove",
+      "output": "instance"
+    }
+  }
+}
