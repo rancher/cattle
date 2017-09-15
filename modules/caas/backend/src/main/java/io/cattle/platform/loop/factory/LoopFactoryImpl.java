@@ -4,6 +4,7 @@ import io.cattle.platform.activity.ActivityService;
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
+import io.cattle.platform.core.dao.ClusterDao;
 import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Service;
@@ -17,6 +18,7 @@ import io.cattle.platform.loop.EndpointUpdateLoop;
 import io.cattle.platform.loop.HealthStateCalculateLoop;
 import io.cattle.platform.loop.HealthcheckCleanupMonitorImpl;
 import io.cattle.platform.loop.HealthcheckScheduleLoop;
+import io.cattle.platform.loop.HostEndpointUpdateLoop;
 import io.cattle.platform.loop.MetadataClientLoop;
 import io.cattle.platform.loop.MetadataSyncLoop;
 import io.cattle.platform.loop.ReconcileLoop;
@@ -26,9 +28,10 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.serialization.ObjectSerializer;
 import io.cattle.platform.systemstack.catalog.CatalogService;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.concurrent.ScheduledExecutorService;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class LoopFactoryImpl implements LoopFactory {
 
@@ -45,13 +48,14 @@ public class LoopFactoryImpl implements LoopFactory {
     ObjectSerializer objectSerializer;
     ScheduledExecutorService scheduledExecutorService;
     ServiceLifecycleManager sdService;
+    ClusterDao clusterDao;
 
     public LoopFactoryImpl(ActivityService activityService, CatalogService catalogService, Deployinator deployinator,
                            EventService eventService, HostDao hostDao, ObjectManager objectManager,
                            ObjectProcessManager processManager, ScheduledExecutorService scheduledExecutorService,
                            ServiceLifecycleManager sdService, LoopManager loopManager,
                            MetadataManager metadataManager, AgentLocator agentLocator,
-                           ObjectSerializer objectSerializer) {
+                           ObjectSerializer objectSerializer, ClusterDao clusterDao) {
         super();
         this.activityService = activityService;
         this.catalogService = catalogService;
@@ -66,6 +70,7 @@ public class LoopFactoryImpl implements LoopFactory {
         this.loopManager = loopManager;
         this.metadataManager = metadataManager;
         this.agentLocator = agentLocator;
+        this.clusterDao = clusterDao;
     }
 
     @Override
@@ -104,13 +109,15 @@ public class LoopFactoryImpl implements LoopFactory {
             case HEALTHCHECK_CLEANUP:
                 return new HealthcheckCleanupMonitorImpl(id, objectManager, loopManager, scheduledExecutorService, metadataManager);
             case ENDPOINT_UPDATE:
-                return new EndpointUpdateLoop(id, metadataManager, objectManager);
+                return new EndpointUpdateLoop(id, metadataManager, objectManager, clusterDao, loopManager);
             case SERVICE_MEMBERSHIP:
                 return new ServiceMembershipLoop(metadataManager, id, objectManager);
             case HEALTHSTATE_CALCULATE:
                 return new HealthStateCalculateLoop(id, metadataManager, objectManager);
             case METADATA_SYNC:
                 return new MetadataSyncLoop(id, loopManager);
+        case HOST_ENDPOINT_UPDATE:
+            return new HostEndpointUpdateLoop(id, metadataManager, objectManager);
         }
 
         throw new IllegalArgumentException("Unknown loop " + name);

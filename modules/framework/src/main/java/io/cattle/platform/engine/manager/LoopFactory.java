@@ -13,6 +13,7 @@ public interface LoopFactory {
     String SERVICE_MEMBERSHIP = "service-membership";
     String METADATA_CLIENT = "metadata-client";
     String METADATA_SYNC = "metadata-sync";
+    String HOST_ENDPOINT_UPDATE = "host-endpoint-update";
 
     Loop buildLoop(String name, String type, Long id);
 
