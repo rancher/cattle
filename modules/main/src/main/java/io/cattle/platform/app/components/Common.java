@@ -13,9 +13,6 @@ import io.cattle.platform.certificate.CertificateService;
 import io.cattle.platform.certificate.impl.CertificateServiceImpl;
 import io.cattle.platform.compose.export.ComposeExportService;
 import io.cattle.platform.compose.export.impl.ComposeExportServiceImpl;
-import io.cattle.platform.compose.export.impl.RancherCertificatesToComposeFormatter;
-import io.cattle.platform.compose.export.impl.RancherGenericMapToComposeFormatter;
-import io.cattle.platform.compose.export.impl.RancherImageToComposeFormatter;
 import io.cattle.platform.docker.transform.DockerTransformer;
 import io.cattle.platform.docker.transform.DockerTransformerImpl;
 import io.cattle.platform.engine.process.ProcessRouter;
@@ -48,7 +45,6 @@ import io.github.ibuildthecloud.gdapi.request.impl.ApiRouterImpl;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerLocator;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

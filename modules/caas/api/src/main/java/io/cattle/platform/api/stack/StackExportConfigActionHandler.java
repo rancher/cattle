@@ -1,4 +1,4 @@
-package io.cattle.platform.compose.api;
+package io.cattle.platform.api.stack;
 
 import io.cattle.platform.compose.export.ComposeExportService;
 import io.cattle.platform.core.addon.ComposeConfig;
@@ -54,6 +54,6 @@ public class StackExportConfigActionHandler implements ActionHandler {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return new ComposeConfig(composeConfig, "");
+        return new ComposeConfig(composeConfig);
     }
 }
