@@ -14,7 +14,10 @@
     },
     "templates": {
       "type": "map[string]",
-      "nullable": true
+      "nullable": true,
+      "attributes": {
+        "scheduleUpdate": true
+      }
     },
     "labels": {
       "type": "map[string]",
@@ -31,6 +34,10 @@
     "serviceIds": {
       "type": "array[reference[service]]",
       "nullable": true
+    },
+    "prune": {
+      "type": "boolean",
+      "default": false
     }
   },
   "resourceActions": {
