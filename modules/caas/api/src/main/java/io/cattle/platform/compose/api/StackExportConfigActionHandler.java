@@ -8,12 +8,14 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
+import io.github.ibuildthecloud.gdapi.id.TypeIdFormatter;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ActionHandler;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class StackExportConfigActionHandler implements ActionHandler {
 
@@ -45,9 +47,13 @@ public class StackExportConfigActionHandler implements ActionHandler {
                 }
             }
         }
-        Map.Entry<String, String> composeConfig = composeExportService.buildComposeConfig(toExport, stack);
-
-        return new ComposeConfig(composeConfig.getKey(), composeConfig.getValue());
-
+        String composeConfig = "";
+        try {
+            IdFormatter idFormatter = new TypeIdFormatter(request.getSchemaFactory());
+            composeConfig = composeExportService.buildComposeConfig(idFormatter.formatId(stack.getKind(), stack.getId()).toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new ComposeConfig(composeConfig, "");
     }
 }

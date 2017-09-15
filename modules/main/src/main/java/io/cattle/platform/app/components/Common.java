@@ -95,11 +95,7 @@ public class Common {
         this.storageService = new StorageServiceImpl(f.objectManager, d.resourceDao, f.lockManager, d.storagePoolDao);
         this.revisionManager = new RevisionManagerImpl(f.objectManager, f.processManager, d.serviceDao, d.resourceDao, f.coreSchemaFactory, storageService);
         this.dockerTransformer = new DockerTransformerImpl(f.jsonMapper);
-        this.composeExportService = new ComposeExportServiceImpl(f.objectManager, d.loadBalancerInfoDao,
-                Arrays.asList(
-                        new RancherCertificatesToComposeFormatter(f.jooqConfig, f.objectManager),
-                        new RancherImageToComposeFormatter(),
-                        new RancherGenericMapToComposeFormatter()));
+        this.composeExportService = new ComposeExportServiceImpl(f.jsonMapper);
         this.certService = new CertificateServiceImpl(f.objectManager, keyProvider, d.dataDao);
         this.taskManager = new TaskManagerImpl(f.scheduledExecutorService, f.eventService, tasks);
         this.serviceAccountCreateStartup = new ServiceAccountCreateStartup(f.lockManager, f.lockDelegator, f.scheduledExecutorService, d.accountDao, d.resourceDao, f.resourceMonitor, f.processManager);
