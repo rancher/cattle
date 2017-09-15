@@ -7,6 +7,9 @@
     "labels": {
       "type": "map[string]"
     },
+    "hostIds": {
+      "type": "array[reference[host]]"
+    },
     "mode": {
       "type": "enum",
       "options": [

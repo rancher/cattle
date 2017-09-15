@@ -27,6 +27,7 @@ import io.cattle.platform.process.progress.ProcessProgress;
 import io.cattle.platform.storage.ImageCredentialLookup;
 import io.cattle.platform.util.type.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,7 @@ public class PullTaskCreate implements ProcessHandler {
     public static final String COMPLETE = "complete";
     public static final String STATUS = "status";
     public static final String ERRORS = "errors";
+    public static final String HOSTIDS = "hostIds";
 
     AllocationHelper allocationHelper;
     AgentLocator agentLocator;
@@ -74,6 +76,7 @@ public class PullTaskCreate implements ProcessHandler {
         String tag = DataAccessor.fieldString(pullTask, TAG);
         String mode = DataAccessor.fieldString(pullTask, MODE);
         String image = DataAccessor.fieldString(pullTask, IMAGE);
+        List<String> hIds = DataAccessor.fieldStringList(pullTask, HOSTIDS);
         Credential cred = getCredential(image, pullTask.getAccountId());
         Map<String, String> labels = DataAccessor.field(pullTask, LABELS, Map.class);
         Map<String, String> status = new HashMap<>();
@@ -91,13 +94,22 @@ public class PullTaskCreate implements ProcessHandler {
         List<Long> hostIds = allocationHelper.getHostsSatisfyingHostAffinity(pullTask.getClusterId(), labels);
         Map<Host, ListenableFuture<? extends Event>> pullFutures = new HashMap<>();
         Map<Host, ListenableFuture<? extends Event>> cleanupFutures = new HashMap<>();
-
+        List<Host> hosts = new ArrayList<>();
         for (final long hostId : hostIds) {
             Host host = objectManager.loadResource(Host.class, hostId);
             if (host == null) {
                 return null;
             }
-
+            hosts.add(host);
+        }
+        for (final String hostId: hIds) {
+            Host host = objectManager.loadResource(Host.class, hostId);
+            if (host == null) {
+                return null;
+            }
+            hosts.add(host);
+        }
+        for (Host host: hosts) {
             ListenableFuture<? extends Event> future = pullImage(cred, host, mode, image, tag, false);
             if (future != null) {
                 pullFutures.put(host, future);
