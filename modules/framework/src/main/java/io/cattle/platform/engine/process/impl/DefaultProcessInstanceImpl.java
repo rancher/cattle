@@ -578,7 +578,9 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
     }
 
     protected void publishChanged(String previousState, String newState, boolean defer) {
-        if (!schedule) {
+        if (defer) {
+            DeferredUtils.defer(this::trigger);
+        } else {
             trigger();
         }
         for (StateChangeMonitor monitor : context.getChangeMonitors()) {
