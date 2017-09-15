@@ -86,8 +86,6 @@ spec:
         env:
         - name: CATTLE_ORCHESTRATION
           value: "kubernetes"
-        - name: CATTLE_SCRIPT_DEBUG
-          value: "true"
         - name: CATTLE_SKIP_UPGRADE
           value: "true"
         - name: CATTLE_REGISTRATION_URL
