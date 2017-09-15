@@ -111,12 +111,12 @@ public class InstanceProcessManager {
 
 
     public static HandlerResult handleStartError(ObjectProcessManager objectProcessManager, ProcessState state, Instance instance, ExecutionException e) {
-        if ((isCreateStart(state) || instance.getFirstRunning() == null) && !ContainerSync.isNativeDockerStart(state)) {
+        if (ContainerSync.isNativeDockerStart(state)) {
+            objectProcessManager.stop(instance, null);
+        } else {
             HashMap<String, Object> data = new HashMap<>();
             data.put(InstanceConstants.PROCESS_DATA_ERROR, true);
             objectProcessManager.scheduleStandardChainedProcess(StandardProcess.STOP, StandardProcess.ERROR, instance, data);
-        } else {
-            objectProcessManager.stop(instance, null);
         }
 
         e.setResources(state.getResource());
