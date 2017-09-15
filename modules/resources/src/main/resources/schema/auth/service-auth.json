@@ -2,6 +2,7 @@
     "authorize" : {
         "account.metadata": "cr",
         "certificate.accountId": "cr",
+        "containerEvent.*": "crud",
         "deploymentSync.*" : "r",
         "dynamicSchema": "crd",
         "dynamicSchema.accountId": "cr",

@@ -1,6 +1,7 @@
 package io.cattle.platform.core.addon;
 
 import io.cattle.platform.core.constants.ContainerEventConstants;
+import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
 
 import java.util.Map;
@@ -8,7 +9,7 @@ import java.util.Map;
 @Type(list = false)
 public class ContainerEvent {
 
-    String uuid;
+    String containerUuid;
     Map<String, Object> dockerInspect;
     String externalId;
     String externalStatus;
@@ -22,13 +23,13 @@ public class ContainerEvent {
     public ContainerEvent(String status, long clusterId, long hostId, String uuid, String externaId) {
         this.externalStatus = status;
         this.clusterId = clusterId;
-        this.uuid = uuid;
+        this.containerUuid = uuid;
         this.externalId = externaId;
         this.hostId = hostId;
     }
 
     public ContainerEvent(long clusterId, long hostId, String uuid, String externaId, Map<String, Object> inspect) {
-        this.uuid = uuid;
+        this.containerUuid = uuid;
         this.dockerInspect = inspect;
         this.externalId = externaId;
         this.externalStatus = ContainerEventConstants.EVENT_START;
@@ -60,6 +61,7 @@ public class ContainerEvent {
         this.reportedHostUuid = reportedHostUuid;
     }
 
+    @Field(typeString = "reference[host]")
     public Long getHostId() {
         return hostId;
     }
@@ -76,19 +78,19 @@ public class ContainerEvent {
         this.dockerInspect = dockerInspect;
     }
 
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
-
     public Long getClusterId() {
         return clusterId;
     }
 
     public void setClusterId(Long clusterId) {
         this.clusterId = clusterId;
+    }
+
+    public String getContainerUuid() {
+        return containerUuid;
+    }
+
+    public void setContainerUuid(String containerUuid) {
+        this.containerUuid = containerUuid;
     }
 }

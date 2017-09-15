@@ -9,6 +9,9 @@
         "reportedHostUuid": {
             "create": true
         },
+        "containerUuid": {
+            "create": true
+        },
         "externalId": {
             "create": true
         },

@@ -121,7 +121,7 @@ public class InstanceWrapper implements BasicStateWrapper {
     }
 
     public Date getStartTime() {
-        Object obj = CollectionUtils.getNestedValue(instance.getData(), "dockerInspect", "State", "StartedAt");
+        Object obj = CollectionUtils.getNestedValue(instance.getData(), "fields", "dockerInspect", "State", "StartedAt");
         if (obj == null) {
             obj = DataAccessor.fieldDate(instance, InstanceConstants.FIELD_LAST_START);
         }
