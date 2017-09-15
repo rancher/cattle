@@ -5,7 +5,6 @@ import io.cattle.platform.core.addon.DeploymentSyncRequest;
 import io.cattle.platform.core.addon.DeploymentSyncResponse;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.AgentConstants;
-import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.dao.InstanceDao;
@@ -64,7 +63,7 @@ public class DeploymentSyncFactory {
                 DeploymentSyncResponse.class);
     }
 
-    public DeploymentSyncRequest construct(Instance resource) {
+    public DeploymentSyncRequest  construct(Instance resource) {
         List<Instance> instances = new ArrayList<>();
         Map<Long, Instance> instanceById = new TreeMap<>();
         Set<Long> credentialIds = new HashSet<>();
@@ -76,9 +75,7 @@ public class DeploymentSyncFactory {
 
 
         for (Instance instance : instances) {
-            if (!CommonStatesConstants.REMOVING.equals(instance.getState())) {
-                instanceById.put(instance.getId(), instance);
-            }
+            instanceById.put(instance.getId(), instance);
 
             if (instance.getRegistryCredentialId() != null) {
                 credentialIds.add(instance.getRegistryCredentialId());
@@ -147,6 +144,7 @@ public class DeploymentSyncFactory {
         for (Instance instance : instances.values()) {
             if (instance.getVersion() != null) {
                 digest.update(instance.getVersion().getBytes());
+                digest.update(instance.getUuid().getBytes());
             }
         }
 
