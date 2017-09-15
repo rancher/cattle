@@ -15,7 +15,7 @@ public class SystemLabels {
     public static final String LABEL_RANCHER_UUID = "io.rancher.container.uuid";
     public static final String LABEL_RANCHER_NETWORK = "io.rancher.container.network";
     public static final String LABEL_DISPLAY_NAME = "io.rancher.container.display_name";
-    public static final String LABEL_HEALTHCHECK_SKIP = "io.rancher.host.healthcheck.skip";
+    public static final String LABEL_HEALTHCHECK_DEPLOY = "io.rancher.infra_service.healthcheck.deploy";
     public static final String LABEL_CONTAINER_SYSTEM = "io.rancher.container.system";
     public static final String LABEL_PROXY_PORT = "io.rancher.websocket.proxy.port";
     public static final String LABEL_PROXY_SCHEME = "io.rancher.websocket.proxy.scheme";
