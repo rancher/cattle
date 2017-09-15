@@ -105,28 +105,8 @@ public class ContainerSyncImpl implements ContainerSync {
         });
     }
 
-    private String getInstanceUuid(ContainerEvent event) {
-        String uuid = event.getUuid();
-        if (StringUtils.isNotBlank(uuid)) {
-            return uuid;
-        }
-
-        Map<String, Object> labels = CollectionUtils.toMap(CollectionUtils.getNestedValue(event.getDockerInspect(),
-                "Config", "Labels"));
-        Object name = labels.get(SystemLabels.LABEL_K8S_CONTAINER_NAME);
-        Object checkUuid = labels.get("annotation." + name + "/" + SystemLabels.LABEL_RANCHER_UUID);
-        if (checkUuid == null) {
-            checkUuid = labels.get("annotation." + SystemLabels.LABEL_RANCHER_UUID);
-        }
-        if (checkUuid == null) {
-            checkUuid = labels.get(SystemLabels.LABEL_RANCHER_UUID);
-        }
-
-        return checkUuid == null ? null : checkUuid.toString();
-    }
-
     private void containerEventWithLock(ContainerEvent event) {
-        String uuid = getInstanceUuid(event);
+        String uuid = event.getContainerUuid();
         Instance instance = instanceDao.getInstanceByUuidOrExternalId(event.getClusterId(), uuid, event.getExternalId());
 
         String status = event.getExternalStatus();
