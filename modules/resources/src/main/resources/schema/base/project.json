@@ -72,6 +72,16 @@
     },
     "defaultNetworkId": {
       "type": "reference[network]"
+    },
+    "clusterId": {
+      "type": "reference[cluster]",
+      "required": true,
+      "nullable": false
+    },
+    "name": {
+      "type": "string",
+      "required": true,
+      "nullable": false
     }
   }
 }
