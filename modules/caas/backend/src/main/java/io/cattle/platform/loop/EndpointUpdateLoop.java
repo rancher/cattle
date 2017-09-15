@@ -44,7 +44,7 @@ public class EndpointUpdateLoop implements Loop {
         Map<Long, Set<PortInstance>> servicePorts = new HashMap<>();
         Map<Long, Set<PortInstance>> hostPorts = new HashMap<>();
 
-        for (HostInfo hostInfo : metadata.getHosts()) {
+        for (HostInfo hostInfo : metadataManager.getMetadataForCluster(metadata.getClusterId()).getHosts()) {
             if (StringUtils.isNotBlank(hostInfo.getAgentIp())) {
                 agentIps.put(hostInfo.getId(), hostInfo.getAgentIp());
             }
