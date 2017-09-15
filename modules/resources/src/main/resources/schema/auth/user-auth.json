@@ -567,8 +567,7 @@
         "loadBalancerCookieStickinessPolicy.mode" : "cru",
 
         "composeConfig" : "r",
-        "composeConfig.dockerComposeConfig" : "r",
-        "composeConfig.rancherComposeConfig" : "r",
+        "composeConfig.templates" : "r",
         "composeConfigInput" : "cr",
         "composeConfigInput.serviceIds" : "cr",
 

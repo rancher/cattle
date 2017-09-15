@@ -2,33 +2,25 @@ package io.cattle.platform.core.addon;
 
 import io.github.ibuildthecloud.gdapi.annotation.Type;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Type(list = false)
 public class ComposeConfig {
-    String dockerComposeConfig;
-    String rancherComposeConfig;
+    Map<String, String> templates = new HashMap<>();
 
-    public ComposeConfig(String dockerComposeConfig, String rancherComposeConfig) {
-        super();
-        this.dockerComposeConfig = dockerComposeConfig;
-        this.rancherComposeConfig = rancherComposeConfig;
+    public ComposeConfig(String compose) {
+        this.templates.put("compose.yml", compose);
     }
 
     public ComposeConfig() {
     }
 
-    public String getDockerComposeConfig() {
-        return dockerComposeConfig;
+    public Map<String, String> getTemplates() {
+        return templates;
     }
 
-    public void setDockerComposeConfig(String dockerComposeConfig) {
-        this.dockerComposeConfig = dockerComposeConfig;
-    }
-
-    public String getRancherComposeConfig() {
-        return rancherComposeConfig;
-    }
-
-    public void setRancherComposeConfig(String rancherComposeConfig) {
-        this.rancherComposeConfig = rancherComposeConfig;
+    public void setTemplates(Map<String, String> templates) {
+        this.templates = templates;
     }
 }
