@@ -1,9 +1,12 @@
 package io.cattle.platform.api.instance;
 
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
+
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
@@ -14,8 +17,6 @@ import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
 
 public class ContainerCreateValidationFilter extends AbstractValidationFilter {
 
@@ -28,8 +29,18 @@ public class ContainerCreateValidationFilter extends AbstractValidationFilter {
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
         validateDeploymentUnit(request);
-
+        validateName(request);
         return super.create(type, request, next);
+    }
+
+    public void validateName(ApiRequest request) {
+        Long stackId = DataAccessor.getFieldFromRequest(request, InstanceConstants.FIELD_STACK_ID,
+                Long.class);
+        String name = DataAccessor.getFieldFromRequest(request, "name", String.class);
+        if (stackId != null && objectManager.findAny(Instance.class, INSTANCE.STACK_ID, stackId, INSTANCE.NAME, name, INSTANCE.REMOVED, null) != null) {
+            ValidationErrorCodes.throwValidationError(ValidationErrorCodes.NOT_UNIQUE,
+                    "name");
+        }
     }
 
     @SuppressWarnings("unchecked")
