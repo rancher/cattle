@@ -7,7 +7,7 @@ import io.cattle.platform.core.model.Instance;
 public interface ClusterDao {
 
     // TODO: Cache impl
-    Account getOwnerAcccountForCluster(Cluster cluster);
+    Account getOwnerAcccountForCluster(Long clusterId);
 
     // TODO: Cache impl
     Long getOwnerAcccountIdForCluster(Long clusterId);

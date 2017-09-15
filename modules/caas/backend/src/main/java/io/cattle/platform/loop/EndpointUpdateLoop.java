@@ -18,8 +18,8 @@ import io.cattle.platform.engine.model.Loop;
 import io.cattle.platform.metadata.Metadata;
 import io.cattle.platform.metadata.MetadataManager;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.util.type.CollectionUtils;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -29,6 +29,9 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 
 public class EndpointUpdateLoop implements Loop {
+
+    private static Set<String> validStates = CollectionUtils.set(InstanceConstants.STATE_RUNNING, InstanceConstants.STATE_STARTING,
+            InstanceConstants.STATE_RESTARTING);
 
     long accountId;
     MetadataManager metadataManager;
@@ -58,7 +61,6 @@ public class EndpointUpdateLoop implements Loop {
         }
 
         boolean updated = false;
-        List<String> validStates = Arrays.asList(InstanceConstants.STATE_RUNNING, InstanceConstants.STATE_STARTING, InstanceConstants.STATE_RESTARTING);
         for (InstanceInfo instanceInfo : metadata.getInstances()) {
             if (!validStates.contains(instanceInfo.getState())) {
                 continue;

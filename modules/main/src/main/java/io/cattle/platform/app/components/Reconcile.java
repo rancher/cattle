@@ -50,6 +50,7 @@ public class Reconcile {
         inatorServices.resourceDao = d.resourceDao;
         inatorServices.serviceDao = d.serviceDao;
         inatorServices.scheduledExecutorService = f.scheduledExecutorService;
+        inatorServices.clusterDao = d.clusterDao;
 
         InatorFactoryinator inatorFactoryinator = new InatorFactoryinator(inatorServices);
         ActivityService activityService = new ActivityService(f.objectManager, f.eventService);

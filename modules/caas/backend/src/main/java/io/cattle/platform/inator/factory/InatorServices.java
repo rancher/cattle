@@ -2,6 +2,7 @@ package io.cattle.platform.inator.factory;
 
 import io.cattle.platform.allocator.service.AllocationHelper;
 import io.cattle.platform.core.constants.ServiceConstants;
+import io.cattle.platform.core.dao.ClusterDao;
 import io.cattle.platform.core.dao.DataDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.HostDao;
@@ -17,6 +18,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.resource.pool.ResourcePoolManager;
+
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 
 import java.util.concurrent.ScheduledExecutorService;
@@ -40,6 +42,7 @@ public class InatorServices {
     public LoopManager loopManager;
     public MetadataManager metadataManager;
     public ScheduledExecutorService scheduledExecutorService;
+    public ClusterDao clusterDao;
 
     public void triggerDeploymentUnitReconcile(Long id) {
         if (id == null) {

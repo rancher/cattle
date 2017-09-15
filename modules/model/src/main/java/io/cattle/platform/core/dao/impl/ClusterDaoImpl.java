@@ -41,12 +41,12 @@ public class ClusterDaoImpl extends AbstractJooqDao implements ClusterDao {
     }
 
     @Override
-    public Account getOwnerAcccountForCluster(Cluster cluster) {
+    public Account getOwnerAcccountForCluster(Long clusterId) {
         return create()
                 .select(ACCOUNT.fields())
                     .from(ACCOUNT)
                 .where(ACCOUNT.CLUSTER_OWNER.isTrue()
-                    .and(ACCOUNT.CLUSTER_ID.eq(cluster.getId())))
+                        .and(ACCOUNT.CLUSTER_ID.eq(clusterId)))
                 .fetchAnyInto(AccountRecord.class);
     }
 
