@@ -1,5 +1,7 @@
 package io.cattle.platform.api.service;
 
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
+
 import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -17,12 +19,12 @@ import io.cattle.platform.revision.RevisionManager;
 import io.cattle.platform.servicediscovery.api.util.selector.SelectorUtils;
 import io.cattle.platform.storage.service.StorageService;
 import io.cattle.platform.util.type.CollectionUtils;
+
 import io.github.ibuildthecloud.gdapi.exception.ValidationErrorException;
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.AbstractValidationFilter;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static io.cattle.platform.core.model.tables.ServiceTable.*;
+import org.apache.commons.lang3.StringUtils;
 
 public class ServiceCreateValidationFilter extends AbstractValidationFilter {
 
@@ -44,6 +46,8 @@ public class ServiceCreateValidationFilter extends AbstractValidationFilter {
     RevisionManager revisionManager;
 
     private static final int LB_HEALTH_CHECK_PORT = 42;
+    private static final Set<String> DRIVER_TYPES = CollectionUtils.set(ServiceConstants.KIND_STORAGE_DRIVER_SERVICE,
+            ServiceConstants.KIND_NETWORK_DRIVER_SERVICE);
 
     public ServiceCreateValidationFilter(ObjectManager objectManager, ObjectProcessManager processManager, StorageService storageService, JsonMapper jsonMapper,
             RevisionManager revisionManager) {
@@ -306,8 +310,16 @@ public class ServiceCreateValidationFilter extends AbstractValidationFilter {
     protected ApiRequest validateAndSetImage(ApiRequest request, Service service, String type) {
         Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
         if (data.get(ServiceConstants.FIELD_LAUNCH_CONFIG) != null) {
-            Map<String, Object> launchConfig = (Map<String, Object>)data.get(ServiceConstants.FIELD_LAUNCH_CONFIG);
-            storageService.validateImageAndSetImage(launchConfig, true);
+            String image = DataAccessor.fromMap(data).withKey(InstanceConstants.FIELD_IMAGE).as(String.class);
+            if (image == null) {
+                // for storage driver and network driver services, set image to null
+                if (DRIVER_TYPES.contains(type)) {
+                    data.remove(ServiceConstants.FIELD_LAUNCH_CONFIG);
+                }
+            } else {
+                Map<String, Object> launchConfig = (Map<String, Object>) data.get(ServiceConstants.FIELD_LAUNCH_CONFIG);
+                storageService.validateImageAndSetImage(launchConfig, true);
+            }
         }
 
         List<Object> modifiedSlcs = new ArrayList<>();
