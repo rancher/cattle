@@ -139,3 +139,5 @@ spec:
       - name: dev
         hostPath:
           path: /dev
+  updateStrategy:
+    type: RollingUpdate
