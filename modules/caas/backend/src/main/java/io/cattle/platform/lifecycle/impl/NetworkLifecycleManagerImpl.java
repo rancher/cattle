@@ -110,6 +110,7 @@ public class NetworkLifecycleManagerImpl implements NetworkLifecycleManager {
         setField(instance, InstanceConstants.FIELD_DNS_SEARCH, dnsSearchList);
         String searchLabel = dnsSearchList.stream().collect(Collectors.joining(","));
         setLabel(instance, SystemLabels.LABEL_DNS_SEARCH, searchLabel);
+        setLabel(instance, SystemLabels.LABEL_USE_RANCHER_DNS, "true");
     }
 
     private void setupCNILabels(Instance instance, Network network) {
