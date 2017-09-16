@@ -5,6 +5,7 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.MachineDriverConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
+import io.cattle.platform.core.dao.ClusterDao;
 import io.cattle.platform.core.dao.DataDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.model.Account;
@@ -32,13 +33,15 @@ public class InitialData extends ManagedContextRunnable {
     private static final Logger CONSOLE_LOG = LoggerFactory.getLogger("ConsoleStatus");
 
     ObjectManager objectManager;
+    ClusterDao clusterDao;
     DataDao dataDao;
     GenericResourceDao resourceDao;
     LockManager lockManager;
     TransactionDelegate transaction;
 
-    public InitialData(ObjectManager objectManager, DataDao dataDao, GenericResourceDao resourceDao, LockManager lockManager, TransactionDelegate transaction) {
+    public InitialData(ObjectManager objectManager, DataDao dataDao, ClusterDao clusterDao, GenericResourceDao resourceDao, LockManager lockManager, TransactionDelegate transaction) {
         this.objectManager = objectManager;
+        this.clusterDao = clusterDao;
         this.dataDao = dataDao;
         this.resourceDao = resourceDao;
         this.lockManager = lockManager;
@@ -91,11 +94,11 @@ public class InitialData extends ManagedContextRunnable {
                 ACCOUNT.KIND, "token",
                 ACCOUNT.STATE, CommonStatesConstants.ACTIVE,
                 ACCOUNT.UUID, "token");
-        Account defaultProject = resourceDao.createAndSchedule(Account.class,
-                ACCOUNT.NAME, "Default",
-                ACCOUNT.CLUSTER_ID, defaultCluster.getId(),
-                ACCOUNT.KIND, "project",
-                ACCOUNT.UUID, "adminProject");
+
+        Account defaultProject = clusterDao.createDefaultProject(defaultCluster);
+        defaultProject.setUuid("adminProject");
+        objectManager.persist(defaultProject);
+
         objectManager.create(Account.class,
                 ACCOUNT.NAME, "System Service",
                 ACCOUNT.KIND, "service",

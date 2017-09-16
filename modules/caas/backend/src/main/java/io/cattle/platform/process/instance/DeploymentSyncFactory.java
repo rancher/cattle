@@ -63,7 +63,7 @@ public class DeploymentSyncFactory {
                 DeploymentSyncResponse.class);
     }
 
-    public DeploymentSyncRequest  construct(Instance resource) {
+    public DeploymentSyncRequest construct(Instance resource) {
         List<Instance> instances = new ArrayList<>();
         Map<Long, Instance> instanceById = new TreeMap<>();
         Set<Long> credentialIds = new HashSet<>();

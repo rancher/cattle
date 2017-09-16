@@ -97,7 +97,7 @@ public class DataAccess {
         this.dbCacheManager = new DBCacheManager();
         this.dynamicSchemaDao = new DynamicSchemaDaoImpl(f.jooqConfig, dbCacheManager);
         this.hostDao = new HostDaoImpl(f.jooqConfig);
-        this.initialData = new InitialData(f.objectManager, dataDao, resourceDao, f.lockManager, f.transaction);
+        this.initialData = new InitialData(f.objectManager, dataDao, clusterDao, resourceDao, f.lockManager, f.transaction);
         this.instanceDao = new InstanceDaoImpl(f.jooqConfig, f.objectManager, f.jsonMapper);
         this.loadBalancerInfoDao = new LoadBalancerInfoDaoImpl(f.jooqConfig);
         this.networkDao = new NetworkDaoImpl(f.jooqConfig, f.objectManager, resourceDao, f.lockManager);
