@@ -138,11 +138,12 @@ public class Backend {
     private static final Logger CONSOLE_LOG = LoggerFactory.getLogger("ConsoleStatus");
 
     private static final String[] METADATA_LOOPS = new String[] {
-        LoopFactory.HEALTHCHECK_SCHEDULE,
-        LoopFactory.HEALTHSTATE_CALCULATE,
-        LoopFactory.HEALTHCHECK_CLEANUP,
-        LoopFactory.ENDPOINT_UPDATE,
-        LoopFactory.SERVICE_MEMBERSHIP,
+            LoopFactory.HEALTHCHECK_SCHEDULE,
+            LoopFactory.HEALTHSTATE_CALCULATE,
+            LoopFactory.HEALTHCHECK_CLEANUP,
+            LoopFactory.ENDPOINT_UPDATE,
+            LoopFactory.SERVICE_MEMBERSHIP,
+            LoopFactory.HOST_ENDPOINT_UPDATE,
     };
 
     Framework f;

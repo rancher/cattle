@@ -20,10 +20,12 @@ import io.cattle.platform.resource.pool.PooledResourceOptions;
 import io.cattle.platform.resource.pool.util.ResourcePoolConstants;
 import io.cattle.platform.util.exception.ResourceExhaustionException;
 import io.cattle.platform.util.type.CollectionUtils;
+
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -72,7 +74,7 @@ public class PortUnit implements Unit, InstanceBindable {
     @Override
     public Result remove(InatorContext context) {
         Object owner = getOwner(getDeploymentUnit(context));
-        Account account = getAccount(owner);
+        Account account = getAccount(new HashMap<>(), owner);
         if (account == null) {
             return Result.good();
         }
@@ -86,9 +88,15 @@ public class PortUnit implements Unit, InstanceBindable {
         return name + "/" + portNum;
     }
 
-    protected Account getAccount(Object owner) {
+    protected Account getAccount(Map<Long, Account> accounts, Object owner) {
         Object accountId = ObjectUtils.getAccountId(owner);
-        return svc.objectManager.loadResource(Account.class, accountId == null ? null : accountId.toString());
+        if (accountId == null) {
+            return null;
+        }
+        if (!accounts.containsKey(accountId)) {
+            accounts.put(Long.valueOf(accountId.toString()), svc.objectManager.loadResource(Account.class, accountId.toString()));
+        }
+        return accounts.get(accountId);
     }
 
     protected Object getOwner(DeploymentUnitWrapper unit) {
@@ -104,21 +112,33 @@ public class PortUnit implements Unit, InstanceBindable {
         return String.format("randomport(%d)", getSubOwner());
     }
 
+    public Account getClusterAccount(Account account, Map<Long, Account> clusterAccounts, Long clusterId) {
+        if (!clusterAccounts.containsKey(clusterId)) {
+            Account clusterAccount = svc.clusterDao.getOwnerAcccountForCluster(account.getClusterId());
+            if (clusterAccount != null) {
+                clusterAccounts.put(account.getClusterId(), clusterAccount);
+            }
+        }
+        return clusterAccounts.get(account.getClusterId());
+    }
+
     @Override
     public void bind(InatorContext context, Map<String, Object> instanceData) {
         @SuppressWarnings("unchecked")
         List<String> ports = (List<String>)CollectionUtils.toList(instanceData.get(InstanceConstants.FIELD_PORTS));
         boolean changed = false;
         int port = Integer.parseInt(portNum);
-
+        Map<Long, Account> clusterAccounts = new HashMap<>();
+        Map<Long, Account> accounts = new HashMap<>();
         for (int i = 0 ; i < ports.size() ; i++) {
             try {
                 PortSpec spec = new PortSpec(ports.get(i));
                 if (spec.getPublicPort() == null && spec.getPrivatePort() == port) {
                     Object owner = getOwner(getDeploymentUnit(context));
-                    Account account = getAccount(owner);
-                    PooledResource resource = svc.lockManager.lock(new PortUnitLock(account, this), () -> {
-                        return svc.poolManager.allocateOneResource(account, owner,
+                    Account account = getAccount(accounts, owner);
+                    Account clusterAccount = getClusterAccount(account, clusterAccounts, account.getClusterId());
+                    PooledResource resource = svc.lockManager.lock(new PortUnitLock(account.getClusterId(), this), () -> {
+                        return svc.poolManager.allocateOneResource(clusterAccount, owner,
                                 new PooledResourceOptions()
                                     .withSubOwner(getSubOwner())
                                     .withQualifier(ResourcePoolConstants.ENVIRONMENT_PORT));

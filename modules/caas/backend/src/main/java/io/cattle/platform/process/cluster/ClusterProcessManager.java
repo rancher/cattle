@@ -1,7 +1,7 @@
 package io.cattle.platform.process.cluster;
 
-import com.google.common.util.concurrent.ListenableFuture;
-import com.netflix.config.DynamicStringProperty;
+import static io.cattle.platform.core.model.Tables.*;
+
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.core.addon.RegistrationToken;
@@ -35,8 +35,8 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
+
 import io.github.ibuildthecloud.gdapi.util.ProxyUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -47,7 +47,10 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static io.cattle.platform.core.model.Tables.*;
+import org.apache.commons.lang3.StringUtils;
+
+import com.google.common.util.concurrent.ListenableFuture;
+import com.netflix.config.DynamicStringProperty;
 
 public class ClusterProcessManager {
 
@@ -92,7 +95,7 @@ public class ClusterProcessManager {
 
     public HandlerResult create(ProcessState state, ProcessInstance process) {
         Cluster cluster = (Cluster) state.getResource();
-        Account account = clusterDao.getOwnerAcccountForCluster(cluster);
+        Account account = clusterDao.getOwnerAcccountForCluster(cluster.getId());
         if (account == null) {
             account = clusterDao.createOwnerAccount(cluster);
         }
@@ -108,7 +111,7 @@ public class ClusterProcessManager {
 
     public HandlerResult activate(ProcessState state, ProcessInstance process) {
         Cluster cluster = (Cluster) state.getResource();
-        Account account = clusterDao.getOwnerAcccountForCluster(cluster);
+        Account account = clusterDao.getOwnerAcccountForCluster(cluster.getId());
 
         try {
             updateStack(cluster, account);
