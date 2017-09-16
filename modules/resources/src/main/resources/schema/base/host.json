@@ -35,6 +35,11 @@
       "required": false,
       "nullable": true
     },
+    "portSpecs": {
+      "type": "array[string]",
+      "required": false,
+      "nullable": true
+    },
     "localStorageMb": {
       "attributes": {
         "scheduleUpdate": true

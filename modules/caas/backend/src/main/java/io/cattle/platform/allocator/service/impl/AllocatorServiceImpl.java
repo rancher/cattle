@@ -1,6 +1,5 @@
 package io.cattle.platform.allocator.service.impl;
 
-import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.allocator.constraint.Constraint;
@@ -22,10 +21,13 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.addon.PortInstance;
 import io.cattle.platform.core.addon.metadata.HostInfo;
 import io.cattle.platform.core.cache.QueryOptions;
+import io.cattle.platform.core.constants.ClusterConstants;
+import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.StorageDriverConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.dao.AgentDao;
+import io.cattle.platform.core.dao.ClusterDao;
 import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
@@ -42,15 +44,13 @@ import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.lock.definition.LockDefinition;
+import io.cattle.platform.metadata.Metadata;
 import io.cattle.platform.metadata.MetadataManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.util.type.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,6 +63,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.netflix.config.DynamicStringProperty;
 
 public class AllocatorServiceImpl implements AllocatorService {
 
@@ -97,11 +103,12 @@ public class AllocatorServiceImpl implements AllocatorService {
     MetadataManager metadataManager;
     EventService eventService;
     List<AllocationConstraintsProvider> allocationConstraintProviders;
+    ClusterDao clusterDao;
 
 
     public AllocatorServiceImpl(AgentDao agentDao, AgentLocator agentLocator, AllocatorDao allocatorDao, LockManager lockManager,
                                 ObjectManager objectManager, ObjectProcessManager processManager, AllocationHelper allocationHelper, VolumeDao volumeDao,
-                                MetadataManager metadataManager, EventService eventService, AllocationConstraintsProvider... allocationConstraintProviders) {
+            MetadataManager metadataManager, EventService eventService, ClusterDao clusterDao, AllocationConstraintsProvider... allocationConstraintProviders) {
         super();
         this.agentDao = agentDao;
         this.agentLocator = agentLocator;
@@ -114,15 +121,17 @@ public class AllocatorServiceImpl implements AllocatorService {
         this.metadataManager = metadataManager;
         this.eventService = eventService;
         this.allocationConstraintProviders = Arrays.asList(allocationConstraintProviders);
+        this.clusterDao = clusterDao;
     }
 
     @Override
     public void instanceAllocate(final Instance instance) {
         log.info("Allocating instance [{}]", instance.getId());
-        lockManager.lock(new AllocateResourceLock(instance.getId()), new LockCallbackNoReturn() {
+        lockManager.lock(getResourceLock(instance), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
                 allocateInstance(instance);
+                updatePorts(instance, true);
             }
         });
         log.info("Handled request for instance [{}]", instance.getId());
@@ -131,7 +140,7 @@ public class AllocatorServiceImpl implements AllocatorService {
     @Override
     public void instanceDeallocate(final Instance instance) {
         log.info("Deallocating instance [{}]", instance.getId());
-        lockManager.lock(new AllocateResourceLock(instance.getId()), new LockCallbackNoReturn() {
+        lockManager.lock(getResourceLock(instance), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
                 if (instance.getHostId() == null) {
@@ -144,8 +153,25 @@ public class AllocatorServiceImpl implements AllocatorService {
         log.info("Handled request for instance [{}]", instance.getId());
     }
 
+    private AllocateResourceLock getResourceLock(Instance instance) {
+        if (InstanceConstants.getPortSpecs(instance).isEmpty()) {
+            return new AllocateResourceLock(instance.getId(), InstanceConstants.TYPE);
+        }
+        return new AllocateResourceLock(instance.getClusterId(), ClusterConstants.TYPE);
+    }
+
     @Override
     public void ensureResourcesReservedForStart(Instance instance) {
+        allocateResources(instance);
+        lockManager.lock(getResourceLock(instance), new LockCallbackNoReturn() {
+            @Override
+            public void doWithLockNoResult() {
+                updatePorts(instance, true);
+            }
+        });
+    }
+
+    private void allocateResources(Instance instance) {
         List<Instance> instances = new ArrayList<>();
         instances.add(instance);
         List<Long> agentIds = getAgentResource(instance.getAccountId(), instances);
@@ -177,7 +203,43 @@ public class AllocatorServiceImpl implements AllocatorService {
         String hostUuid = getHostUuid(instance);
         if (hostUuid != null) {
             releaseResources(instance, hostUuid, InstanceConstants.PROCESS_STOP);
+            lockManager.lock(getResourceLock(instance), new LockCallbackNoReturn() {
+                @Override
+                public void doWithLockNoResult() {
+                    updatePorts(instance, false);
+                }
+            });
         }
+    }
+
+    private void updatePorts(Instance instance, boolean reserve) {
+        Set<PortSpec> ports = new HashSet<>(InstanceConstants.getPortSpecs(instance));
+        if (ports.isEmpty()) {
+            return;
+        }
+        Long clusterAccountId = clusterDao.getOwnerAcccountIdForCluster(instance.getClusterId());
+        Metadata metadata = metadataManager.getMetadataForAccount(clusterAccountId);
+        HostInfo hostInfo = metadata.getHost(getHostUuid(instance));
+
+        Set<String> hostSpecs = hostInfo.getPortSpecs();
+
+        for (PortSpec spec : ports) {
+            if (reserve) {
+                if (spec.getPublicPort() != null) {
+                    if (hostSpecs.contains(spec.toSpecConstraint())) {
+                        throw new FailedToAllocate(String.format("Port %s is already allocated on the host",
+                                spec.toSpecConstraint()));
+                    }
+                    hostSpecs.add(spec.toSpecConstraint());
+                }
+            } else {
+                hostSpecs.remove(spec.toSpecConstraint());
+            }
+        }
+
+        metadata.modify(Host.class, hostInfo.getId(), (host) -> {
+            return objectManager.setFields(host, HostConstants.FIELD_PORT_SPECS, hostSpecs);
+        });
     }
 
     @Override
@@ -300,7 +362,7 @@ public class AllocatorServiceImpl implements AllocatorService {
             instancesIds.add(networkFromId);
         }
         for (Long id : instancesIds) {
-            locks.add(new AllocateResourceLock(id));
+            locks.add(new AllocateResourceLock(id, InstanceConstants.TYPE));
         }
 
         for (Instance i : instances) {
@@ -542,7 +604,7 @@ public class AllocatorServiceImpl implements AllocatorService {
             @Override
             public AllocationCandidate next() {
                 HostInfo host = iter.next();
-                return new AllocationCandidate(host.getId(), host.getUuid(), host.getPorts(), options.getClusterId());
+                return new AllocationCandidate(host.getId(), host.getUuid(), host.getPortSpecs(), options.getClusterId());
             }
         };
     }

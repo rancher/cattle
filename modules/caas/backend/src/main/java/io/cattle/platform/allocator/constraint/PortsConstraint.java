@@ -1,11 +1,9 @@
 package io.cattle.platform.allocator.constraint;
 
 import io.cattle.platform.allocator.service.AllocationCandidate;
-import io.cattle.platform.core.addon.PortInstance;
 import io.cattle.platform.core.util.PortSpec;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 public class PortsConstraint extends HardConstraint implements Constraint {
@@ -26,25 +24,15 @@ public class PortsConstraint extends HardConstraint implements Constraint {
         }
 
         // TODO: Performance improvement. Move more of the filtering into the DB query itself
-        Set<PortInstance> portsUsedByHost = candidate.getUsedPorts();
-        for (PortInstance portUsed : portsUsedByHost) {
+        Set<String> portsUsedByHost = candidate.getUsedPorts();
+        for (String portUsed : portsUsedByHost) {
             for (PortSpec requestedPort : ports) {
-                if (requestedPort.getPublicPort() != null &&
-                        requestedPort.getPublicPort().equals(portUsed.getPublicPort()) &&
-                        publicIpTheSame(requestedPort, portUsed) &&
-                        requestedPort.getProtocol().equals(portUsed.getProtocol())) {
+                if (requestedPort.toSpecConstraint().equals(portUsed)) {
                     return false;
                 }
             }
         }
         return true;
-    }
-
-    private boolean publicIpTheSame(PortSpec requestedPort, PortInstance portUsed) {
-        if (portUsed.isBindAll()) {
-            return true;
-        }
-        return Objects.equals(requestedPort.getIpAddress(), portUsed.getBindIpAddress());
     }
 
     @Override
