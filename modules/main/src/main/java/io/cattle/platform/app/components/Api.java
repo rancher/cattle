@@ -82,7 +82,6 @@ import io.cattle.platform.api.resource.ResourceIdOutputFilter;
 import io.cattle.platform.api.secret.SecretManager;
 import io.cattle.platform.api.secret.SecretValidationFilter;
 import io.cattle.platform.api.service.CancelUpgradeActionHandler;
-import io.cattle.platform.api.service.SelectorServiceCreateValidationFilter;
 import io.cattle.platform.api.service.ServiceCertificateActionHandler;
 import io.cattle.platform.api.service.ServiceCreateValidationFilter;
 import io.cattle.platform.api.service.ServiceGarbageCollectActionHandler;
@@ -147,6 +146,7 @@ import io.cattle.platform.iaas.api.auth.identity.AccountOutputFilter;
 import io.cattle.platform.iaas.api.auth.impl.ApiAuthenticator;
 import io.cattle.platform.iaas.api.auth.integration.local.ChangeSecretActionHandler;
 import io.cattle.platform.iaas.api.auth.projects.ProjectMemberLinkHandler;
+
 import io.github.ibuildthecloud.gdapi.doc.TypeDocumentation;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.json.JacksonMapper;
@@ -282,7 +282,6 @@ public class Api {
         ResourceIdInputFilter resourceIdInputFilter = new ResourceIdInputFilter(f.idFormatter);
         CertificateCreateValidationFilter certificateCreateValidationFilter = new CertificateCreateValidationFilter();
         ClusterIdCommonFilter clusterIdCommonFilter = new ClusterIdCommonFilter(f.objectManager);
-        SelectorServiceCreateValidationFilter selectorServiceCreateValidationFilter = new SelectorServiceCreateValidationFilter(f.objectManager);
         ServiceCreateValidationFilter serviceCreateValidationFilter = new ServiceCreateValidationFilter(f.objectManager, f.processManager, c.storageService, f.jsonMapper, c.revisionManager);
         ServiceRestartValidationFilter serviceRestartValidationFilter = new ServiceRestartValidationFilter(f.objectManager);
         ServiceRollbackValidationFilter serviceRollbackValidationFilter = new ServiceRollbackValidationFilter(f.objectManager, c.revisionManager);
@@ -315,7 +314,6 @@ public class Api {
         c.router.validationFilter(Instance.class, new InstancePortsValidationFilter());
         c.router.validationFilter(ProcessInstance.class, resourceIdInputFilter);
         c.router.validationFilter(Secret.class, new SecretValidationFilter());
-        c.router.validationFilter(Service.class, selectorServiceCreateValidationFilter);
         c.router.validationFilter(Service.class, serviceCreateValidationFilter);
         c.router.validationFilter(Service.class, serviceRestartValidationFilter);
         c.router.validationFilter(Service.class, serviceRollbackValidationFilter);

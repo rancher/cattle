@@ -309,16 +309,27 @@ public class ServiceCreateValidationFilter extends AbstractValidationFilter {
     @SuppressWarnings("unchecked")
     protected ApiRequest validateAndSetImage(ApiRequest request, Service service, String type) {
         Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
+        String image = null;
         if (data.get(ServiceConstants.FIELD_LAUNCH_CONFIG) != null) {
-            String image = DataAccessor.fromMap(data).withKey(InstanceConstants.FIELD_IMAGE).as(String.class);
+            Map<String, Object> launchConfig = (Map<String, Object>) data.get(ServiceConstants.FIELD_LAUNCH_CONFIG);
+            image = DataAccessor.fromMap(launchConfig).withKey(InstanceConstants.FIELD_IMAGE).as(String.class);
             if (image == null) {
                 // for storage driver and network driver services, set image to null
                 if (DRIVER_TYPES.contains(type)) {
                     data.remove(ServiceConstants.FIELD_LAUNCH_CONFIG);
                 }
             } else {
-                Map<String, Object> launchConfig = (Map<String, Object>) data.get(ServiceConstants.FIELD_LAUNCH_CONFIG);
                 storageService.validateImageAndSetImage(launchConfig, true);
+            }
+        }
+
+        Object selector = data.get(ServiceConstants.FIELD_SELECTOR_CONTAINER);
+        boolean isSelector = selector != null && !selector.toString().isEmpty();
+        if (!isSelector && data.get(ServiceConstants.FIELD_LAUNCH_CONFIG) != null) {
+            if (image == null || image.toString().equalsIgnoreCase(ServiceConstants.IMAGE_NONE)) {
+                throw new ValidationErrorException(ValidationErrorCodes.INVALID_OPTION,
+                        "Image is required when " + ServiceConstants.FIELD_SELECTOR_CONTAINER
+                                + " is not passed in");
             }
         }
 
