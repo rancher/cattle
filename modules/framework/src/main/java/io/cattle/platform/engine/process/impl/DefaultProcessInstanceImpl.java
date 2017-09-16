@@ -583,6 +583,7 @@ public class DefaultProcessInstanceImpl implements ProcessInstance {
         } else {
             trigger();
         }
+
         for (StateChangeMonitor monitor : context.getChangeMonitors()) {
             monitor.onChange(defer, previousState, newState, record, instanceContext.getState(), context);
         }
