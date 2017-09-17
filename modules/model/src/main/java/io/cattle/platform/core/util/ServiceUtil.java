@@ -76,29 +76,6 @@ public class ServiceUtil {
         return launchConfigNames;
     }
 
-    public static Map<String, Object> getLaunchConfigWithServiceDataAsMap(Service service, String launchConfigName) {
-        Map<String, Object> data = new HashMap<>();
-        // 1) get service data
-        data.putAll(DataAccessor.getFields(service));
-
-        // 2) remove launchConfig/secondaryConfig data
-        Object launchConfig = data
-                .get(ServiceConstants.FIELD_LAUNCH_CONFIG);
-        if (launchConfig != null) {
-            data.remove(ServiceConstants.FIELD_LAUNCH_CONFIG);
-        }
-
-        Object secondaryLaunchConfigs = data
-                .get(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS);
-        if (secondaryLaunchConfigs != null) {
-            data.remove(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS);
-        }
-        // 3) populate launch config data
-        data.putAll(getLaunchConfigDataAsMap(service, launchConfigName));
-
-        return data;
-    }
-
     @SuppressWarnings("unchecked")
     public static Map<String, Object> getLaunchConfigDataAsMap(Service service, String launchConfigName) {
         if (launchConfigName == null) {
