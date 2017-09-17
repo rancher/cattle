@@ -270,7 +270,7 @@ public class ServiceLaunchConfig implements LaunchConfig {
 
     public String getInstanceName(StackWrapper stack, RevisionWrapper service, int index) {
         if (index <= 0) {
-            return name;
+            return service.getName();
         }
         return ServiceUtil.generateServiceInstanceName(stack.getName(), service.getName(), name, index);
     }
