@@ -20,6 +20,7 @@
         "error\\..*" : "r",
 
         "account": "r",
+        "account.externalId": "r",
         "account.clusterId": "r",
         "account.clusterOwner": "r",
         "account.metadata": "r",
@@ -427,7 +428,6 @@
         "project.clusterOwner": "r",
         "project.defaultNetworkId" : "r",
         "project.description" : "cru",
-        "project.externalId" : "",
         "project.externalIdType" : "",
         "project.healthState": "r",
         "project.hostRemoveDelaySeconds": "cru",
