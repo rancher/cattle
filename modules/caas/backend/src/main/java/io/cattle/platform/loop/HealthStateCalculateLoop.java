@@ -1,10 +1,14 @@
 package io.cattle.platform.loop;
 
+import static io.cattle.platform.core.constants.HealthcheckConstants.*;
+import static java.util.stream.Collectors.*;
+
 import io.cattle.platform.core.addon.HealthcheckState;
 import io.cattle.platform.core.addon.metadata.InstanceInfo;
 import io.cattle.platform.core.addon.metadata.ServiceInfo;
 import io.cattle.platform.core.addon.metadata.StackInfo;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
@@ -12,8 +16,7 @@ import io.cattle.platform.engine.model.Loop;
 import io.cattle.platform.metadata.Metadata;
 import io.cattle.platform.metadata.MetadataManager;
 import io.cattle.platform.object.ObjectManager;
-import org.apache.commons.collections4.ListValuedMap;
-import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -21,10 +24,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import static io.cattle.platform.core.constants.HealthcheckConstants.*;
-import static java.util.stream.Collectors.*;
+import org.apache.commons.collections4.ListValuedMap;
+import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 
 public class HealthStateCalculateLoop implements Loop {
+    private static final Set<String> SUPPORTED_SERVICE_KINDS = CollectionUtils.set(ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
+            ServiceConstants.KIND_SCALING_GROUP_SERVICE);
 
     long accountId;
     MetadataManager metadataManager;
@@ -50,7 +55,7 @@ public class HealthStateCalculateLoop implements Loop {
     private void calculateStackHealth(ListValuedMap<Long, String> stackStates, Metadata metadata) {
         for (StackInfo stackInfo : metadata.getStacks()) {
             String stackState = aggregate(stackStates.get(stackInfo.getId()));
-            if (Objects.equals(stackState, stackInfo.getHealthState())) {
+            if (!Objects.equals(stackState, stackInfo.getHealthState())) {
                 writeStackHealthState(metadata, stackInfo.getId(), stackState);
             }
         }
@@ -65,11 +70,14 @@ public class HealthStateCalculateLoop implements Loop {
             if (healthStates == null) {
                 healthStates = new ArrayList<>();
             }
-
-            // Haven't met the scale yet
-            if (!serviceInfo.isGlobal() && serviceInfo.getScale() != null &&
-                    healthStates.size() != (serviceInfo.getScale() * (1+serviceInfo.getSidekicks().size()))) {
-                healthStates.add(HEALTH_STATE_DEGRADED);
+            if (SUPPORTED_SERVICE_KINDS.contains(serviceInfo.getKind())) {
+                // Haven't met the scale yet
+                if (!serviceInfo.isGlobal() && serviceInfo.getScale() != null &&
+                        healthStates.size() != (serviceInfo.getScale() * (1 + serviceInfo.getSidekicks().size()))) {
+                    healthStates.add(HEALTH_STATE_DEGRADED);
+                }
+            } else {
+                healthStates.add(HEALTH_STATE_HEALTHY);
             }
 
             String serviceState = aggregate(healthStates);
