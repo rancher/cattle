@@ -169,6 +169,11 @@ public class InstanceWrapper implements BasicStateWrapper {
         }
     }
 
+    public void setRevisionId(Long revisionId) {
+        instance.setRevisionId(revisionId);
+        svc.objectManager.persist(instance);
+    }
+
     @Override
     public boolean isActive() {
         if (BasicStateWrapper.super.isActive()) {
@@ -210,5 +215,9 @@ public class InstanceWrapper implements BasicStateWrapper {
 
     public String getName() {
         return instance.getName();
+    }
+
+    public Long getRevisionId() {
+        return instance.getRevisionId();
     }
 }
