@@ -242,6 +242,11 @@ public class RevisionDiffomatic {
             }
         });
 
+        // To handle sidekick removal
+        if (!result.keySet().containsAll(currentLcs.keySet())) {
+            createRevision = true;
+        }
+
         return result;
     }
 
