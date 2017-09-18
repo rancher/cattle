@@ -140,7 +140,7 @@ public class NetworkLifecycleManagerImpl implements NetworkLifecycleManager {
         }
 
         setField(instance, InstanceConstants.FIELD_PRIMARY_MAC_ADDRESSS, resource.getName());
-        setLabel(instance, SystemLabels.LABEL_MAC_ADDRESS, resource.getName());
+        setLabel(instance, SystemLabels.LABEL_MAC_ADDRESS, resource.getName().replace(':', '-'));
     }
 
     private void releaseIpAddress(Instance instance, Network network) {

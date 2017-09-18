@@ -48,10 +48,10 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
     @EventHandler
     public void resourceChange(Event event) {
         String key = key(event.getResourceType(), event.getResourceId());
-        waiters.computeIfPresent(key, (waitKey, checkers) -> {
+        List<Runnable> checkers = waiters.get(key);
+        if (checkers != null) {
             checkers.forEach(Runnable::run);
-            return checkers;
-        });
+        }
     }
 
     protected String key(Object resourceType, Object resourceId) {

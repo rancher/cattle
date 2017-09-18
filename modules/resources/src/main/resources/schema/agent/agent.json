@@ -1,6 +1,8 @@
 {
     "resourceFields": {
         "id": null,
-        "name": null
+        "clusterId": {
+            "type": "reference[cluster]"
+        }
     }
 }

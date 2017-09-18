@@ -53,7 +53,7 @@ public class ClusterOutputFilter implements ResourceOutputFilter {
             regToken.setClusterCommand(null);
         }
 
-        if (DataAccessor.fieldObject(cluster, ClusterConstants.FIELD_K8S_CLIENT_CONFIG) != null) {
+        if (DataAccessor.fieldObject(cluster, ClusterConstants.FIELD_K8S_CLIENT_CONFIG) != null && !cluster.getEmbedded()) {
             regToken.setHostCommand(null);
             regToken.setWindowsCommand(null);
         }

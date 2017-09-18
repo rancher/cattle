@@ -99,6 +99,7 @@ public class AgentInstanceFactoryImpl implements AgentInstanceFactory {
         return DeferredUtils.nest(() -> resourceDao.createAndSchedule(Agent.class,
                 AGENT.DATA, data,
                 AGENT.URI, uri,
+                AGENT.CLUSTER_ID, builder.getClusterId(),
                 AGENT.RESOURCE_ACCOUNT_ID, builder.getResourceAccountId()));
     }
 
