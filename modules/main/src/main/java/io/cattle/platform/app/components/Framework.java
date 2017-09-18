@@ -229,7 +229,7 @@ public class Framework {
         mapping.put("secret", "se");
 
         idFormatter.setSchemaFactory(coreSchemaFactory);
-        idFormatter.setPlainTypes(new HashSet<>(Arrays.asList("typeDocumentation", "scripts", "identity")));
+        idFormatter.setPlainTypes(new HashSet<>(Arrays.asList("typeDocumentation", "scripts")));
         idFormatter.setTypeMappings(mapping);
 
         return idFormatter;
