@@ -7,6 +7,7 @@ import io.cattle.platform.core.addon.PortInstance;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.object.util.DataAccessor;
+
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 
 import java.util.HashSet;
@@ -43,6 +44,7 @@ public class InstanceInfo implements MetadataObject {
     Long networkId;
     Long startCount;
     Long createIndex;
+    Long revisionId;
 
     Set<Long> serviceIds;
     Set<PortInstance> ports;
@@ -90,6 +92,7 @@ public class InstanceInfo implements MetadataObject {
         if (hc != null) {
             this.healthCheck = new HealthcheckInfo(hc);
         }
+        this.revisionId = instance.getRevisionId();
     }
 
     @Field(typeString = "reference[instance]")
@@ -142,6 +145,8 @@ public class InstanceInfo implements MetadataObject {
         if (links != null ? !links.equals(that.links) : that.links != null) return false;
         if (healthCheckHosts != null ? !healthCheckHosts.equals(that.healthCheckHosts) : that.healthCheckHosts != null)
             return false;
+        if (revisionId != null ? !revisionId.equals(that.revisionId) : that.revisionId != null)
+            return false;
         return healthCheck != null ? healthCheck.equals(that.healthCheck) : that.healthCheck == null;
     }
 
@@ -180,6 +185,7 @@ public class InstanceInfo implements MetadataObject {
         result = 31 * result + (links != null ? links.hashCode() : 0);
         result = 31 * result + (healthCheckHosts != null ? healthCheckHosts.hashCode() : 0);
         result = 31 * result + (healthCheck != null ? healthCheck.hashCode() : 0);
+        result = 31 * result + (revisionId != null ? revisionId.hashCode() : 0);
         return result;
     }
 
@@ -334,6 +340,10 @@ public class InstanceInfo implements MetadataObject {
 
     public boolean isShouldRestart() {
         return shouldRestart;
+    }
+
+    public Long getRevisionId() {
+        return revisionId;
     }
 
 }

@@ -23,6 +23,7 @@ public class ServiceInfo implements MetadataObject {
 
     long id;
     Long stackId;
+    Long revisionId;
 
     Integer scale;
 
@@ -82,6 +83,7 @@ public class ServiceInfo implements MetadataObject {
                 this.healthCheck = new HealthcheckInfo(lcHc);
             }
         }
+        this.revisionId = service.getRevisionId();
     }
 
     public LbConfig getLbConfig() {
@@ -199,6 +201,10 @@ public class ServiceInfo implements MetadataObject {
         return instanceIds;
     }
 
+    public Long getRevisionId() {
+        return revisionId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -230,6 +236,8 @@ public class ServiceInfo implements MetadataObject {
         if (labels != null ? !labels.equals(that.labels) : that.labels != null) return false;
         if (metadata != null ? !metadata.equals(that.metadata) : that.metadata != null) return false;
         if (healthCheck != null ? !healthCheck.equals(that.healthCheck) : that.healthCheck != null) return false;
+        if (revisionId != null ? !revisionId.equals(that.revisionId) : that.revisionId != null)
+            return false;
         return lbConfig != null ? lbConfig.equals(that.lbConfig) : that.lbConfig == null;
     }
 
@@ -259,6 +267,7 @@ public class ServiceInfo implements MetadataObject {
         result = 31 * result + (healthCheck != null ? healthCheck.hashCode() : 0);
         result = 31 * result + (lbConfig != null ? lbConfig.hashCode() : 0);
         result = 31 * result + (global ? 1 : 0);
+        result = 31 * result + (revisionId != null ? revisionId.hashCode() : 0);
         return result;
     }
 }
