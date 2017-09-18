@@ -160,12 +160,7 @@ public class ProjectResourceManager extends DefaultResourceManager {
         }
         Account deletedProject = (Account) objectManager.reload(obj);
         for (ProjectMember member : authDao.getActiveProjectMembers(deletedProject.getId())) {
-            try {
-                objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, member, null);
-            } catch (ProcessCancelException e) {
-                objectProcessManager.scheduleStandardProcess(StandardProcess.DEACTIVATE, member,
-                        ProcessUtils.chainInData(new HashMap<>(), "projectmember.deactivate", "projectmember.remove"));
-            }
+            objectManager.delete(member);
         }
         policy.grantObjectAccess(deletedProject);
         return Arrays.asList(deletedProject);
