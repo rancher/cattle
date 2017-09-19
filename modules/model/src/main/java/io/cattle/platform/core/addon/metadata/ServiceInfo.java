@@ -83,6 +83,8 @@ public class ServiceInfo implements MetadataObject {
                 this.healthCheck = new HealthcheckInfo(lcHc);
             }
         }
+        this.state = service.getState();
+        this.vip = service.getVip();
     }
 
     public LbConfig getLbConfig() {
