@@ -126,33 +126,36 @@ public class MetadataImpl implements Metadata {
         }
 
         metadataObject.setEnvironmentUuid(environmentUuid);
-
-        if (ObjectUtils.getRemoved(obj) != null) {
-            remove(metadataObject.getUuid());
-            return;
-        }
-
-        Map<String, ?> map = maps.get(metadataObject.getClass());
-        if (map == null) {
-            return;
-        }
-
         boolean trigger = false;
-        synchronized (this) {
-            Object existing = map.get(metadataObject.getUuid());
-            if (existing == null) {
+        try {
+            if (ObjectUtils.getRemoved(obj) != null) {
+                remove(metadataObject.getUuid());
                 trigger = true;
-            } else if (!existing.equals(metadataObject)) {
-                trigger = true;
+                return;
             }
 
-            if (trigger) {
-                all.put(metadataObject.getUuid(), metadataObject);
-                ((Map<String, Object>) map).put(metadataObject.getUuid(), metadataObject);
+            Map<String, ?> map = maps.get(metadataObject.getClass());
+            if (map == null) {
+                return;
             }
-        }
-        if (trigger) {
-            trigger(metadataObject);
+
+            synchronized (this) {
+                Object existing = map.get(metadataObject.getUuid());
+                if (existing == null) {
+                    trigger = true;
+                } else if (!existing.equals(metadataObject)) {
+                    trigger = true;
+                }
+
+                if (trigger) {
+                    all.put(metadataObject.getUuid(), metadataObject);
+                    ((Map<String, Object>) map).put(metadataObject.getUuid(), metadataObject);
+                }
+            }
+        } finally {
+            if (trigger) {
+                trigger(metadataObject);
+            }
         }
     }
 
