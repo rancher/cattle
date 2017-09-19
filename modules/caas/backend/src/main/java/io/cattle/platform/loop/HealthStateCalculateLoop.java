@@ -19,16 +19,13 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.collections4.ListValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
-import org.apache.commons.lang.ObjectUtils;
 
 public class HealthStateCalculateLoop implements Loop {
     private static final Set<String> SUPPORTED_SERVICE_KINDS = CollectionUtils.set(ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
@@ -96,11 +93,6 @@ public class HealthStateCalculateLoop implements Loop {
     private ListValuedMap<Long, String> calculateInstanceHealth(Metadata metadata) {
         ListValuedMap<Long, String> serviceState = new ArrayListValuedHashMap<>();
 
-        Map<Long, Long> serviceIdToRevision = new HashMap<>();
-        for (ServiceInfo serviceInfo : metadata.getServices()) {
-            serviceIdToRevision.put(serviceInfo.getId(), serviceInfo.getRevisionId());
-        }
-
         for (InstanceInfo instanceInfo : metadata.getInstances()) {
             String instanceState = instanceInfo.getHealthState();
 
@@ -118,8 +110,7 @@ public class HealthStateCalculateLoop implements Loop {
 
             Long serviceId = instanceInfo.getServiceId();
             if (serviceId != null) {
-                Long serviceRevision = serviceIdToRevision.get(serviceId);
-                if (ObjectUtils.equals(serviceRevision, instanceInfo.getRevisionId())) {
+                if (instanceInfo.getDesired()) {
                     if (instanceState == null) {
                         serviceState.put(serviceId, HEALTH_STATE_HEALTHY);
                     } else {
