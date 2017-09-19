@@ -4,7 +4,6 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Account;
-import io.cattle.platform.core.model.Cluster;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.core.model.Subnet;
 import io.cattle.platform.core.model.tables.records.NetworkRecord;
@@ -68,12 +67,10 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
             return null;
         }
 
-        Cluster cluster = objectManager.loadResource(Cluster.class, account.getClusterId());
-        if (cluster == null) {
-            return null;
-        }
-
-        return objectManager.loadResource(Network.class, cluster.getDefaultNetworkId());
+        return objectManager.findAny(Network.class,
+                NETWORK.CLUSTER_ID, account.getClusterId(),
+                NETWORK.REMOVED, null,
+                NETWORK.IS_DEFAULT, true);
     }
 
     @Override
@@ -111,15 +108,6 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
         return objectManager.find(Subnet.class,
                 SUBNET.NETWORK_ID, network.getId(),
                 SUBNET.STATE, CommonStatesConstants.ACTIVE);
-    }
-
-    @Override
-    public List<? extends Network> getActiveNetworks(Long clusterId) {
-        return create().select(NETWORK.fields())
-                .from(NETWORK)
-                .where(NETWORK.CLUSTER_ID.eq(clusterId)
-                    .and(NETWORK.STATE.in(CommonStatesConstants.CREATING, CommonStatesConstants.UPDATING)))
-                .fetchInto(NetworkRecord.class);
     }
 
 }

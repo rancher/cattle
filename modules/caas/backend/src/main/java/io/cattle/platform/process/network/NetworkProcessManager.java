@@ -1,6 +1,5 @@
 package io.cattle.platform.process.network;
 
-import io.cattle.platform.core.constants.ClusterConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.NetworkDriverConstants;
@@ -16,6 +15,7 @@ import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockCallbackNoReturn;
 import io.cattle.platform.lock.LockManager;
+import io.cattle.platform.metadata.MetadataManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.resource.ResourceMonitor;
@@ -32,9 +32,11 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import static io.cattle.platform.core.model.tables.NetworkTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
@@ -51,9 +53,10 @@ public class NetworkProcessManager {
     JsonMapper jsonMapper;
     ResourcePoolManager resourcePoolManager;
     ResourceMonitor resourceMonitor;
+    MetadataManager metadataManager;
 
     public NetworkProcessManager(GenericResourceDao resourceDao, ObjectManager objectManager, ObjectProcessManager processManager, NetworkDao networkDao, LockManager lockManager, JsonMapper jsonMapper, ResourcePoolManager resourcePoolManager,
-                                 ResourceMonitor resourceMonitor) {
+                                 ResourceMonitor resourceMonitor, MetadataManager metadataManager) {
         this.resourceDao = resourceDao;
         this.objectManager = objectManager;
         this.processManager = processManager;
@@ -62,6 +65,7 @@ public class NetworkProcessManager {
         this.jsonMapper = jsonMapper;
         this.resourcePoolManager = resourcePoolManager;
         this.resourceMonitor = resourceMonitor;
+        this.metadataManager = metadataManager;
     }
 
     public HandlerResult create(ProcessState state, ProcessInstance process) {
@@ -177,15 +181,28 @@ public class NetworkProcessManager {
             return;
         }
 
-        Long defaultNetworkId = cluster.getDefaultNetworkId();
+        Map<Long, Network> networksById = new HashMap<>();
+        Set<Long> currentDefaults = new HashSet<>();
         Long newDefaultNetworkId = null;
-        for (Network network : networkDao.getActiveNetworks(cluster.getId())) {
+
+        List<Network> networks = objectManager.find(Network.class,
+                NETWORK.CLUSTER_ID, cluster.getId(),
+                NETWORK.REMOVED, null);
+
+        for (Network network : networks) {
+            networksById.put(network.getId(), network);
+            if (network.getIsDefault()) {
+                currentDefaults.add(network.getId());
+            }
+        }
+
+        for (Network network : networks) {
             if (NetworkConstants.NETWORK_BUILTIN.contains(network.getKind())) {
                 continue;
             }
 
-            if (network.getId().equals(defaultNetworkId)) {
-                newDefaultNetworkId = defaultNetworkId;
+            if (currentDefaults.contains(network.getId())) {
+                newDefaultNetworkId = network.getId();
                 break;
             }
 
@@ -198,8 +215,13 @@ public class NetworkProcessManager {
             }
         }
 
-        if (!Objects.equals(defaultNetworkId, newDefaultNetworkId)) {
-            objectManager.setFields(cluster, ClusterConstants.FIELD_DEFAULT_NETWORK_ID, newDefaultNetworkId);
+        for (Network n : networks) {
+            boolean expected = Objects.equals(newDefaultNetworkId, n.getId());
+            if (expected != n.getIsDefault()) {
+                metadataManager.getMetadataForCluster(n.getClusterId()).modify(Network.class, n.getId(), (network) -> {
+                    return objectManager.setFields(network, NETWORK.IS_DEFAULT, expected);
+                });
+            }
         }
     }
 

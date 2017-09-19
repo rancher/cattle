@@ -15,8 +15,6 @@ public interface NetworkDao {
 
     Network getDefaultNetwork(Long accountId);
 
-    List<? extends Network> getActiveNetworks(Long clusterId);
-
     List<Subnet> getSubnets(Network network);
 
     List<Long> findInstancesInUseByServiceDriver(Collection<Long> id);

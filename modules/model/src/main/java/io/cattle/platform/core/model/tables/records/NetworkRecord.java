@@ -21,8 +21,8 @@ import javax.persistence.Table;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record13;
-import org.jooq.Row13;
+import org.jooq.Record14;
+import org.jooq.Row14;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -39,9 +39,9 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "network", schema = "cattle")
-public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements TableRecordJaxb, Record13<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long>, Network {
+public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements TableRecordJaxb, Record14<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long, Boolean>, Network {
 
-    private static final long serialVersionUID = -1087786891;
+    private static final long serialVersionUID = 1510494168;
 
     /**
      * Setter for <code>cattle.network.id</code>.
@@ -266,6 +266,23 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
         return (Long) get(12);
     }
 
+    /**
+     * Setter for <code>cattle.network.is_default</code>.
+     */
+    @Override
+    public void setIsDefault(Boolean value) {
+        set(13, value);
+    }
+
+    /**
+     * Getter for <code>cattle.network.is_default</code>.
+     */
+    @Column(name = "is_default", nullable = false, precision = 1)
+    @Override
+    public Boolean getIsDefault() {
+        return (Boolean) get(13);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -279,23 +296,23 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
     }
 
     // -------------------------------------------------------------------------
-    // Record13 type implementation
+    // Record14 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row13<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long> fieldsRow() {
-        return (Row13) super.fieldsRow();
+    public Row14<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long, Boolean> fieldsRow() {
+        return (Row14) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row13<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long> valuesRow() {
-        return (Row13) super.valuesRow();
+    public Row14<Long, String, String, String, String, String, Date, Date, Date, Map<String,Object>, String, Long, Long, Boolean> valuesRow() {
+        return (Row14) super.valuesRow();
     }
 
     /**
@@ -406,6 +423,14 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
+    public Field<Boolean> field14() {
+        return NetworkTable.NETWORK.IS_DEFAULT;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Long value1() {
         return getId();
     }
@@ -504,6 +529,14 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
     @Override
     public Long value13() {
         return getClusterId();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Boolean value14() {
+        return getIsDefault();
     }
 
     /**
@@ -627,7 +660,16 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
      * {@inheritDoc}
      */
     @Override
-    public NetworkRecord values(Long value1, String value2, String value3, String value4, String value5, String value6, Date value7, Date value8, Date value9, Map<String,Object> value10, String value11, Long value12, Long value13) {
+    public NetworkRecord value14(Boolean value) {
+        setIsDefault(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public NetworkRecord values(Long value1, String value2, String value3, String value4, String value5, String value6, Date value7, Date value8, Date value9, Map<String,Object> value10, String value11, Long value12, Long value13, Boolean value14) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -641,6 +683,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
         value11(value11);
         value12(value12);
         value13(value13);
+        value14(value14);
         return this;
     }
 
@@ -666,6 +709,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
         setDomain(from.getDomain());
         setNetworkDriverId(from.getNetworkDriverId());
         setClusterId(from.getClusterId());
+        setIsDefault(from.getIsDefault());
     }
 
     /**
@@ -691,7 +735,7 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
     /**
      * Create a detached, initialised NetworkRecord
      */
-    public NetworkRecord(Long id, String name, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String domain, Long networkDriverId, Long clusterId) {
+    public NetworkRecord(Long id, String name, String kind, String uuid, String description, String state, Date created, Date removed, Date removeTime, Map<String,Object> data, String domain, Long networkDriverId, Long clusterId, Boolean isDefault) {
         super(NetworkTable.NETWORK);
 
         set(0, id);
@@ -707,5 +751,6 @@ public class NetworkRecord extends UpdatableRecordImpl<NetworkRecord> implements
         set(10, domain);
         set(11, networkDriverId);
         set(12, clusterId);
+        set(13, isDefault);
     }
 }

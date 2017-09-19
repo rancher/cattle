@@ -177,6 +177,17 @@ public interface Network extends Serializable {
     @Column(name = "cluster_id", nullable = false, precision = 19)
     public Long getClusterId();
 
+    /**
+     * Setter for <code>cattle.network.is_default</code>.
+     */
+    public void setIsDefault(Boolean value);
+
+    /**
+     * Getter for <code>cattle.network.is_default</code>.
+     */
+    @Column(name = "is_default", nullable = false, precision = 1)
+    public Boolean getIsDefault();
+
     // -------------------------------------------------------------------------
     // FROM and INTO
     // -------------------------------------------------------------------------

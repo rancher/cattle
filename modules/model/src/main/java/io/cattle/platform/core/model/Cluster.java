@@ -167,17 +167,6 @@ public interface Cluster extends Serializable {
     public Long getCreatorId();
 
     /**
-     * Setter for <code>cattle.cluster.default_network_id</code>.
-     */
-    public void setDefaultNetworkId(Long value);
-
-    /**
-     * Getter for <code>cattle.cluster.default_network_id</code>.
-     */
-    @Column(name = "default_network_id", precision = 19)
-    public Long getDefaultNetworkId();
-
-    /**
      * Setter for <code>cattle.cluster.external_id</code>.
      */
     public void setExternalId(String value);
