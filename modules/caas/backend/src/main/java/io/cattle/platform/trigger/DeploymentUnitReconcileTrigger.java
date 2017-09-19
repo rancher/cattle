@@ -1,5 +1,8 @@
 package io.cattle.platform.trigger;
 
+import static io.cattle.platform.core.model.tables.HostTable.*;
+
+import io.cattle.platform.core.addon.metadata.InstanceInfo;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.dao.VolumeDao;
@@ -16,8 +19,6 @@ import io.cattle.platform.object.ObjectManager;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-
-import static io.cattle.platform.core.model.tables.HostTable.*;
 
 public class DeploymentUnitReconcileTrigger implements Trigger {
 
@@ -58,6 +59,9 @@ public class DeploymentUnitReconcileTrigger implements Trigger {
         }
         if (obj instanceof Instance) {
             return Arrays.asList(((Instance) obj).getDeploymentUnitId());
+        }
+        if (obj instanceof InstanceInfo) {
+            return Arrays.asList(((InstanceInfo) obj).getDeploymentUnitId());
         }
         if (obj instanceof Volume) {
             Volume vol = (Volume) obj;

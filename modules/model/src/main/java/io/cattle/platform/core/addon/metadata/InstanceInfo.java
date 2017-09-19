@@ -45,6 +45,7 @@ public class InstanceInfo implements MetadataObject {
     Long networkId;
     Long startCount;
     Long createIndex;
+    Long deploymentUnitId;
 
     Set<Long> serviceIds;
     Set<PortInstance> ports;
@@ -93,6 +94,7 @@ public class InstanceInfo implements MetadataObject {
             this.healthCheck = new HealthcheckInfo(hc);
         }
         this.desired = instance.getDesired();
+        this.deploymentUnitId = instance.getDeploymentUnitId();
     }
 
     @Field(typeString = "reference[instance]")
@@ -147,6 +149,8 @@ public class InstanceInfo implements MetadataObject {
             return false;
         if (desired != that.desired)
             return false;
+        if (deploymentUnitId != null ? !deploymentUnitId.equals(that.deploymentUnitId) : that.deploymentUnitId != null)
+            return false;
         return healthCheck != null ? healthCheck.equals(that.healthCheck) : that.healthCheck == null;
     }
 
@@ -186,6 +190,7 @@ public class InstanceInfo implements MetadataObject {
         result = 31 * result + (healthCheckHosts != null ? healthCheckHosts.hashCode() : 0);
         result = 31 * result + (healthCheck != null ? healthCheck.hashCode() : 0);
         result = 31 * result + (desired ? 1 : 0);
+        result = 31 * result + (deploymentUnitId != null ? deploymentUnitId.hashCode() : 0);
         return result;
     }
 
@@ -346,5 +351,8 @@ public class InstanceInfo implements MetadataObject {
         return desired;
     }
 
+    public Long getDeploymentUnitId() {
+        return deploymentUnitId;
+    }
 }
 
