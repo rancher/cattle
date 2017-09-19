@@ -43,6 +43,7 @@ import io.cattle.platform.launcher.ComposeExecutorLauncher;
 import io.cattle.platform.launcher.MachineDriverLoader;
 import io.cattle.platform.launcher.MachineLauncher;
 import io.cattle.platform.launcher.NetesAgentLauncher;
+import io.cattle.platform.launcher.NetesLauncher;
 import io.cattle.platform.launcher.SecretsApiLauncher;
 import io.cattle.platform.launcher.TelemetryLauncher;
 import io.cattle.platform.launcher.WebhookServiceLauncher;
@@ -442,6 +443,7 @@ public class Backend {
         ComposeExecutorLauncher composeExecutorLauncher = new ComposeExecutorLauncher(f.lockManager, f.lockDelegator, f.scheduledExecutorService, d.accountDao, d.resourceDao, f.resourceMonitor, f.processManager, f.cluster);
         MachineLauncher machineLauncher = new MachineLauncher(f.lockManager, f.lockDelegator, f.scheduledExecutorService, d.accountDao, d.resourceDao, f.resourceMonitor, f.processManager, f.cluster);
         NetesAgentLauncher netesAgentLauncher = new NetesAgentLauncher(f.lockManager, f.lockDelegator, f.scheduledExecutorService, d.accountDao, d.resourceDao, f.resourceMonitor, f.processManager, f.cluster);
+        NetesLauncher netesLauncher = new NetesLauncher(f.lockManager, f.lockDelegator, f.scheduledExecutorService, d.accountDao, d.resourceDao, f.resourceMonitor, f.processManager, f.cluster);
         SecretsApiLauncher secretsApiLauncher = new SecretsApiLauncher(f.lockManager, f.lockDelegator, f.scheduledExecutorService, d.accountDao, d.resourceDao, f.resourceMonitor, f.processManager, d.dataDao);
         TelemetryLauncher telemetryLauncher = new TelemetryLauncher(f.lockManager, f.lockDelegator, f.scheduledExecutorService, d.accountDao, d.resourceDao, f.resourceMonitor, f.processManager, f.cluster);
         WebhookServiceLauncher webhookServiceLauncher = new WebhookServiceLauncher(f.lockManager, f.lockDelegator, f.scheduledExecutorService, d.accountDao, d.resourceDao, f.resourceMonitor, f.processManager, c.keyProvider);
@@ -455,6 +457,7 @@ public class Backend {
         launchers.add(composeExecutorLauncher);
         launchers.add(machineLauncher);
         launchers.add(netesAgentLauncher);
+        launchers.add(netesLauncher);
         launchers.add(secretsApiLauncher);
         launchers.add(telemetryLauncher);
         launchers.add(webhookServiceLauncher);
