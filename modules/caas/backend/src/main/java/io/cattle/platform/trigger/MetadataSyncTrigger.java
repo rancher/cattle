@@ -19,7 +19,7 @@ public class MetadataSyncTrigger implements Trigger {
     @Override
     public void trigger(Long accountId, Long clusterId, Object resource, String source) {
         if (METADATA_SOURCE.equals(source) && clusterId != null) {
-            long clusterAccountId = clusterDao.getOwnerAcccountIdForCluster(clusterId);
+            Long clusterAccountId = clusterDao.getOwnerAcccountIdForCluster(clusterId);
             loopManager.kick(LoopFactory.METADATA_SYNC, Account.class, clusterAccountId, resource);
         }
     }
