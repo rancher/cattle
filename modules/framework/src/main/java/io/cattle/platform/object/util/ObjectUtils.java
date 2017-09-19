@@ -189,7 +189,7 @@ public class ObjectUtils {
         data.put(ObjectMetaDataManager.ACCOUNT_FIELD, accountId);
         data.put(ObjectMetaDataManager.CLUSTER_FIELD, clusterId);
 
-        final Event event = EventVO.newEvent(FrameworkEvents.STATE_CHANGE)
+        final Event event = EventVO.newEvent(FrameworkEvents.RESOURCE_CHANGE)
                 .withData(data)
                 .withResourceType(resourceType)
                 .withResourceId(toString(resourceId));
