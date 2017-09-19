@@ -30,6 +30,9 @@ import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 public class HealthStateCalculateLoop implements Loop {
     private static final Set<String> SUPPORTED_SERVICE_KINDS = CollectionUtils.set(ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
             ServiceConstants.KIND_SCALING_GROUP_SERVICE);
+    private static final Set<String> RUNNING_STATES = CollectionUtils.set(InstanceConstants.STATE_RUNNING, InstanceConstants.STATE_STARTING);
+    private static final Set<String> STOP_STATES = CollectionUtils.set(InstanceConstants.STATE_STOPPING, InstanceConstants.STATE_STOPPED);
+
 
     long accountId;
     MetadataManager metadataManager;
@@ -95,17 +98,22 @@ public class HealthStateCalculateLoop implements Loop {
 
         for (InstanceInfo instanceInfo : metadata.getInstances()) {
             String instanceState = instanceInfo.getHealthState();
-
-            if (InstanceConstants.STATE_RUNNING.equals(instanceInfo.getState())) {
+            boolean updateHealth = false;
+            if (RUNNING_STATES.contains(instanceInfo.getState())) {
                 instanceState = aggregate(healthStates(instanceInfo));
-            } else if (InstanceConstants.STATE_STOPPED.equalsIgnoreCase(instanceInfo.getState())) {
-                if (instanceInfo.isShouldRestart()) {
-                    instanceState = HEALTH_STATE_UNHEALTHY;
-                } else if (instanceInfo.getExitCode() == null || instanceInfo.getExitCode() == 0) {
-                    instanceState = HEALTH_STATE_HEALTHY;
-                } else {
-                    instanceState = HEALTH_STATE_UNHEALTHY;
+                // update health state only for running/starting instances
+                // having not null health check set
+                if (instanceInfo.getHealthCheck() != null) {
+                    updateHealth = true;
                 }
+            } else if (STOP_STATES.contains(instanceInfo.getState())) {
+                if (instanceInfo.isShouldRestart()) {
+                    instanceState = HEALTH_STATE_DEGRADED;
+                } else if (instanceInfo.getExitCode() != null && !instanceInfo.getExitCode().equals(0)) {
+                    instanceState = HEALTH_STATE_DEGRADED;
+                }
+            } else {
+                instanceState = HEALTH_STATE_DEGRADED;
             }
 
             Long serviceId = instanceInfo.getServiceId();
@@ -119,7 +127,7 @@ public class HealthStateCalculateLoop implements Loop {
                 }
             }
 
-            if (!Objects.equals(instanceState, instanceInfo.getHealthState())) {
+            if (updateHealth && !Objects.equals(instanceState, instanceInfo.getHealthState())) {
                 writeInstanceHealthState(metadata, instanceInfo.getId(), instanceState);
             }
         }
