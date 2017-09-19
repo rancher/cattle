@@ -144,7 +144,7 @@ public class DeploymentUnitInator implements Inator {
         }
 
         InstanceWrapper instanceWrapper = new InstanceWrapper(instance, svc);
-        return new InstanceUnit(instanceWrapper, revisionWrapper.getLaunchConfig(instanceWrapper.getLaunchConfigName()));
+        return new InstanceUnit(instanceWrapper, revisionWrapper.getLaunchConfig(instanceWrapper.getLaunchConfigName()), unit.getRevisionId());
     }
 
     @Override

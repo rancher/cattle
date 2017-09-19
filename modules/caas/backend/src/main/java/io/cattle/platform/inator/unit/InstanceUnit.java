@@ -25,17 +25,19 @@ public class InstanceUnit implements Unit, BasicStateUnit {
     LaunchConfig lc;
     InstanceWrapper instance;
     UnitRef ref;
+    Long revisionId;
 
     // Needed for create only
     StackWrapper stack;
     DeploymentUnitWrapper unit;
 
-    public InstanceUnit(InstanceWrapper instance, LaunchConfig lc) {
+    public InstanceUnit(InstanceWrapper instance, LaunchConfig lc, Long revisionId) {
         super();
         this.instance = instance;
         this.lc = lc;
         this.name = this.lc.getName();
         this.ref = new UnitRef("instance/" + lc.getRevision() + "/" + name);
+        this.revisionId = revisionId;
     }
 
     public InstanceUnit(String name, LaunchConfig lc, StackWrapper stack, DeploymentUnitWrapper unit) {
@@ -44,6 +46,7 @@ public class InstanceUnit implements Unit, BasicStateUnit {
         this.stack = stack;
         this.unit = unit;
         this.ref = new UnitRef("instance/" + lc.getRevision() + "/" + name);
+        this.revisionId = unit.getRevisionId();
     }
 
     @Override
@@ -70,8 +73,15 @@ public class InstanceUnit implements Unit, BasicStateUnit {
 
         applyDynamic(context);
         instance.setDesired(true);
+        applyRevisionId();
 
         return Result.good();
+    }
+
+    protected void applyRevisionId() {
+        if (instance.getRevisionId() != null && !instance.getRevisionId().equals(revisionId)) {
+            instance.setRevisionId(revisionId);
+        }
     }
 
     protected void applyDynamic(InatorContext context) {
