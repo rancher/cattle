@@ -32,6 +32,7 @@ public class InstanceInfo implements MetadataObject {
 
     boolean shouldRestart;
     boolean nativeContainer;
+    boolean desired;
 
     long accountId;
     Long agentId;
@@ -44,7 +45,6 @@ public class InstanceInfo implements MetadataObject {
     Long networkId;
     Long startCount;
     Long createIndex;
-    Long revisionId;
 
     Set<Long> serviceIds;
     Set<PortInstance> ports;
@@ -92,7 +92,7 @@ public class InstanceInfo implements MetadataObject {
         if (hc != null) {
             this.healthCheck = new HealthcheckInfo(hc);
         }
-        this.revisionId = instance.getRevisionId();
+        this.desired = instance.getDesired();
     }
 
     @Field(typeString = "reference[instance]")
@@ -145,7 +145,7 @@ public class InstanceInfo implements MetadataObject {
         if (links != null ? !links.equals(that.links) : that.links != null) return false;
         if (healthCheckHosts != null ? !healthCheckHosts.equals(that.healthCheckHosts) : that.healthCheckHosts != null)
             return false;
-        if (revisionId != null ? !revisionId.equals(that.revisionId) : that.revisionId != null)
+        if (desired != that.desired)
             return false;
         return healthCheck != null ? healthCheck.equals(that.healthCheck) : that.healthCheck == null;
     }
@@ -185,7 +185,7 @@ public class InstanceInfo implements MetadataObject {
         result = 31 * result + (links != null ? links.hashCode() : 0);
         result = 31 * result + (healthCheckHosts != null ? healthCheckHosts.hashCode() : 0);
         result = 31 * result + (healthCheck != null ? healthCheck.hashCode() : 0);
-        result = 31 * result + (revisionId != null ? revisionId.hashCode() : 0);
+        result = 31 * result + (desired ? 1 : 0);
         return result;
     }
 
@@ -342,8 +342,8 @@ public class InstanceInfo implements MetadataObject {
         return shouldRestart;
     }
 
-    public Long getRevisionId() {
-        return revisionId;
+    public boolean getDesired() {
+        return desired;
     }
 
 }
