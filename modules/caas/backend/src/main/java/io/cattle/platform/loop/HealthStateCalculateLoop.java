@@ -7,6 +7,7 @@ import io.cattle.platform.core.addon.HealthcheckState;
 import io.cattle.platform.core.addon.metadata.InstanceInfo;
 import io.cattle.platform.core.addon.metadata.ServiceInfo;
 import io.cattle.platform.core.addon.metadata.StackInfo;
+import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Instance;
@@ -19,8 +20,11 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -32,7 +36,13 @@ public class HealthStateCalculateLoop implements Loop {
             ServiceConstants.KIND_SCALING_GROUP_SERVICE);
     private static final Set<String> RUNNING_STATES = CollectionUtils.set(InstanceConstants.STATE_RUNNING, InstanceConstants.STATE_STARTING);
     private static final Set<String> STOP_STATES = CollectionUtils.set(InstanceConstants.STATE_STOPPING, InstanceConstants.STATE_STOPPED);
-
+    private static final Map<String, List<String>> STATE_TRANSITIONS;
+    static {
+        STATE_TRANSITIONS = new HashMap<String, List<String>>();
+        STATE_TRANSITIONS.put(HealthcheckConstants.HEALTH_STATE_INITIALIZING, Arrays.asList(HealthcheckConstants.HEALTH_STATE_HEALTHY));
+        STATE_TRANSITIONS.put(HealthcheckConstants.HEALTH_STATE_HEALTHY, Arrays.asList(HealthcheckConstants.HEALTH_STATE_UNHEALTHY));
+        STATE_TRANSITIONS.put(HealthcheckConstants.HEALTH_STATE_UNHEALTHY, Arrays.asList(HealthcheckConstants.HEALTH_STATE_HEALTHY));
+    }
 
     long accountId;
     MetadataManager metadataManager;
@@ -113,7 +123,7 @@ public class HealthStateCalculateLoop implements Loop {
                     instanceState = HEALTH_STATE_DEGRADED;
                 }
             } else {
-                instanceState = HEALTH_STATE_DEGRADED;
+                continue;
             }
 
             Long serviceId = instanceInfo.getServiceId();
@@ -127,7 +137,8 @@ public class HealthStateCalculateLoop implements Loop {
                 }
             }
 
-            if (updateHealth && !Objects.equals(instanceState, instanceInfo.getHealthState())) {
+            if (updateHealth && !Objects.equals(instanceState, instanceInfo.getHealthState())
+                    && STATE_TRANSITIONS.get(instanceInfo.getHealthState()).contains(instanceState)) {
                 writeInstanceHealthState(metadata, instanceInfo.getId(), instanceState);
             }
         }
