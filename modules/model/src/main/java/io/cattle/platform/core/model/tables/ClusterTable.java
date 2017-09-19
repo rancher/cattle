@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ClusterTable extends TableImpl<ClusterRecord> {
 
-    private static final long serialVersionUID = -915986125;
+    private static final long serialVersionUID = -1722152395;
 
     /**
      * The reference instance of <code>cattle.cluster</code>
@@ -116,11 +116,6 @@ public class ClusterTable extends TableImpl<ClusterRecord> {
     public final TableField<ClusterRecord, Long> CREATOR_ID = createField("creator_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
 
     /**
-     * The column <code>cattle.cluster.default_network_id</code>.
-     */
-    public final TableField<ClusterRecord, Long> DEFAULT_NETWORK_ID = createField("default_network_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
-
-    /**
      * The column <code>cattle.cluster.external_id</code>.
      */
     public final TableField<ClusterRecord, String> EXTERNAL_ID = createField("external_id", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
@@ -184,7 +179,7 @@ public class ClusterTable extends TableImpl<ClusterRecord> {
      */
     @Override
     public List<ForeignKey<ClusterRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<ClusterRecord, ?>>asList(Keys.FK_CLUSTER__CREATOR_ID, Keys.FK_CLUSTER__NETWORK_ID);
+        return Arrays.<ForeignKey<ClusterRecord, ?>>asList(Keys.FK_CLUSTER__CREATOR_ID);
     }
 
     /**

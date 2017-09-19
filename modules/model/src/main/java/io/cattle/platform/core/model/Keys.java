@@ -260,7 +260,6 @@ public class Keys {
     public static final ForeignKey<CertificateRecord, AccountRecord> FK_CERT_DATA__ACCOUNT_ID = ForeignKeys0.FK_CERT_DATA__ACCOUNT_ID;
     public static final ForeignKey<CertificateRecord, AccountRecord> FK_CERTIFICATE__CREATOR_ID = ForeignKeys0.FK_CERTIFICATE__CREATOR_ID;
     public static final ForeignKey<ClusterRecord, AccountRecord> FK_CLUSTER__CREATOR_ID = ForeignKeys0.FK_CLUSTER__CREATOR_ID;
-    public static final ForeignKey<ClusterRecord, NetworkRecord> FK_CLUSTER__NETWORK_ID = ForeignKeys0.FK_CLUSTER__NETWORK_ID;
     public static final ForeignKey<CredentialRecord, AccountRecord> FK_CREDENTIAL__ACCOUNT_ID = ForeignKeys0.FK_CREDENTIAL__ACCOUNT_ID;
     public static final ForeignKey<CredentialRecord, StoragePoolRecord> FK_CREDENTIAL__REGISTRY_ID = ForeignKeys0.FK_CREDENTIAL__REGISTRY_ID;
     public static final ForeignKey<DeploymentUnitRecord, AccountRecord> FK_DEPLOYMENT_UNIT__ACCOUNT_ID = ForeignKeys0.FK_DEPLOYMENT_UNIT__ACCOUNT_ID;
@@ -510,7 +509,6 @@ public class Keys {
         public static final ForeignKey<CertificateRecord, AccountRecord> FK_CERT_DATA__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, CertificateTable.CERTIFICATE, "fk_cert_data__account_id", CertificateTable.CERTIFICATE.ACCOUNT_ID);
         public static final ForeignKey<CertificateRecord, AccountRecord> FK_CERTIFICATE__CREATOR_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, CertificateTable.CERTIFICATE, "fk_certificate__creator_id", CertificateTable.CERTIFICATE.CREATOR_ID);
         public static final ForeignKey<ClusterRecord, AccountRecord> FK_CLUSTER__CREATOR_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, ClusterTable.CLUSTER, "fk_cluster__creator_id", ClusterTable.CLUSTER.CREATOR_ID);
-        public static final ForeignKey<ClusterRecord, NetworkRecord> FK_CLUSTER__NETWORK_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_NETWORK_PRIMARY, ClusterTable.CLUSTER, "fk_cluster__network_id", ClusterTable.CLUSTER.DEFAULT_NETWORK_ID);
         public static final ForeignKey<CredentialRecord, AccountRecord> FK_CREDENTIAL__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, CredentialTable.CREDENTIAL, "fk_credential__account_id", CredentialTable.CREDENTIAL.ACCOUNT_ID);
         public static final ForeignKey<CredentialRecord, StoragePoolRecord> FK_CREDENTIAL__REGISTRY_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_STORAGE_POOL_PRIMARY, CredentialTable.CREDENTIAL, "fk_credential__registry_id", CredentialTable.CREDENTIAL.REGISTRY_ID);
         public static final ForeignKey<DeploymentUnitRecord, AccountRecord> FK_DEPLOYMENT_UNIT__ACCOUNT_ID = createForeignKey(io.cattle.platform.core.model.Keys.KEY_ACCOUNT_PRIMARY, DeploymentUnitTable.DEPLOYMENT_UNIT, "fk_deployment_unit__account_id", DeploymentUnitTable.DEPLOYMENT_UNIT.ACCOUNT_ID);

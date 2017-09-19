@@ -7,7 +7,6 @@ import io.cattle.platform.core.addon.PortInstance;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.object.util.DataAccessor;
-
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 
 import java.util.HashSet;
@@ -97,6 +96,7 @@ public class InstanceInfo implements MetadataObject {
         this.deploymentUnitId = instance.getDeploymentUnitId();
     }
 
+    @Override
     @Field(typeString = "reference[instance]")
     public Long getInfoTypeId() {
         return id;
@@ -351,6 +351,7 @@ public class InstanceInfo implements MetadataObject {
         return desired;
     }
 
+    @Field(typeString = "reference[deploymentUnit]")
     public Long getDeploymentUnitId() {
         return deploymentUnitId;
     }

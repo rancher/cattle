@@ -11,7 +11,6 @@ import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
-
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 
 import java.util.HashMap;
@@ -87,6 +86,7 @@ public class ServiceInfo implements MetadataObject {
         this.vip = service.getVip();
     }
 
+    @Field(nullable = true)
     public LbConfig getLbConfig() {
         return lbConfig;
     }
@@ -95,6 +95,7 @@ public class ServiceInfo implements MetadataObject {
         return healthCheck;
     }
 
+    @Override
     @Field(typeString = "reference[service]")
     public Long getInfoTypeId() {
         return id;

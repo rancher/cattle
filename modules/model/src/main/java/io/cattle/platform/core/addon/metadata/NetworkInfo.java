@@ -4,6 +4,8 @@ import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.model.Network;
 import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.Map;
 
@@ -18,6 +20,7 @@ public class NetworkInfo implements MetadataObject {
     Map<String, Object> metadata;
     String defaultPolicyAction;
     Object policy;
+    boolean isDefault;
 
     public NetworkInfo(Network network) {
         this.defaultPolicyAction = DataAccessor.fieldString(network, NetworkConstants.FIELD_DEFAULT_POLICY_ACTION);
@@ -27,6 +30,7 @@ public class NetworkInfo implements MetadataObject {
         this.name = network.getName();
         this.policy = DataAccessor.fieldObject(network, NetworkConstants.FIELD_POLICY);
         this.uuid = network.getUuid();
+        this.isDefault = network.getIsDefault();
         this.hostPorts = DataAccessor.fieldBool(network, NetworkConstants.FIELD_HOST_PORTS);
     }
 
@@ -34,6 +38,7 @@ public class NetworkInfo implements MetadataObject {
         return kind;
     }
 
+    @Override
     @Field(typeString = "reference[network]")
     public Long getInfoTypeId() {
         return id;
@@ -41,6 +46,10 @@ public class NetworkInfo implements MetadataObject {
 
     public Long getId() {
         return id;
+    }
+
+    public boolean isDefault() {
+        return isDefault;
     }
 
     @Override
@@ -86,34 +95,38 @@ public class NetworkInfo implements MetadataObject {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
+
         if (o == null || getClass() != o.getClass()) return false;
 
         NetworkInfo that = (NetworkInfo) o;
 
-        if (hostPorts != that.hostPorts) return false;
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (uuid != null ? !uuid.equals(that.uuid) : that.uuid != null) return false;
-        if (kind != null ? !kind.equals(that.kind) : that.kind != null) return false;
-        if (environmentUuid != null ? !environmentUuid.equals(that.environmentUuid) : that.environmentUuid != null)
-            return false;
-        if (metadata != null ? !metadata.equals(that.metadata) : that.metadata != null) return false;
-        if (defaultPolicyAction != null ? !defaultPolicyAction.equals(that.defaultPolicyAction) : that.defaultPolicyAction != null)
-            return false;
-        return policy != null ? policy.equals(that.policy) : that.policy == null;
+        return new EqualsBuilder()
+                .append(hostPorts, that.hostPorts)
+                .append(isDefault, that.isDefault)
+                .append(id, that.id)
+                .append(name, that.name)
+                .append(uuid, that.uuid)
+                .append(kind, that.kind)
+                .append(environmentUuid, that.environmentUuid)
+                .append(metadata, that.metadata)
+                .append(defaultPolicyAction, that.defaultPolicyAction)
+                .append(policy, that.policy)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (uuid != null ? uuid.hashCode() : 0);
-        result = 31 * result + (kind != null ? kind.hashCode() : 0);
-        result = 31 * result + (environmentUuid != null ? environmentUuid.hashCode() : 0);
-        result = 31 * result + (hostPorts ? 1 : 0);
-        result = 31 * result + (metadata != null ? metadata.hashCode() : 0);
-        result = 31 * result + (defaultPolicyAction != null ? defaultPolicyAction.hashCode() : 0);
-        result = 31 * result + (policy != null ? policy.hashCode() : 0);
-        return result;
+        return new HashCodeBuilder(17, 37)
+                .append(id)
+                .append(name)
+                .append(uuid)
+                .append(kind)
+                .append(environmentUuid)
+                .append(hostPorts)
+                .append(metadata)
+                .append(defaultPolicyAction)
+                .append(policy)
+                .append(isDefault)
+                .toHashCode();
     }
 }

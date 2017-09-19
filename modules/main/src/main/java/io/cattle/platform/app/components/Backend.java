@@ -273,7 +273,7 @@ public class Backend {
         HostProcessManager hostProcessManager = new HostProcessManager(d.instanceDao, f.resourceMonitor, f.eventService, d.hostDao, f.metaDataManager, f.objectManager, f.processManager);
         InatorReconcileHandler inatorReconcileHandler = new InatorReconcileHandler(f.objectManager, loopManager);
         InstanceProcessManager instanceProcessManager = new InstanceProcessManager(instanceLifecycleManager, f.processManager);
-        NetworkProcessManager networkProcessManager = new NetworkProcessManager(d.resourceDao, f.objectManager, f.processManager, d.networkDao, f.lockManager, f.jsonMapper, f.resourcePoolManager, f.resourceMonitor);
+        NetworkProcessManager networkProcessManager = new NetworkProcessManager(d.resourceDao, f.objectManager, f.processManager, d.networkDao, f.lockManager, f.jsonMapper, f.resourcePoolManager, f.resourceMonitor, metadataManager);
 
         MountProcessManager mountProcessManager = new MountProcessManager(f.lockManager, f.objectManager, f.processManager);
         ScheduledUpgradeProcessManager scheduledUpgradeProcessManager = new ScheduledUpgradeProcessManager(c.catalogService, upgradeManager, f.objectManager, f.processManager);
