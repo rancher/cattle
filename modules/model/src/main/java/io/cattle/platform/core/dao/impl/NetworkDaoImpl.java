@@ -93,6 +93,7 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
                 .on(NETWORK_DRIVER.ID.eq(NETWORK.NETWORK_DRIVER_ID))
             .where(NETWORK_DRIVER.SERVICE_ID.in(serviceId)
                     .and(INSTANCE.REMOVED.isNull())
+                    .and(INSTANCE.STATE.notEqual(CommonStatesConstants.REMOVING))
                     .and(INSTANCE.ID.notIn(ignore)))
             .fetchInto(Long.class);
     }

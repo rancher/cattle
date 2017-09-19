@@ -9,6 +9,13 @@ public class K8sClientConfig {
     String address;
     String caCert;
 
+    public K8sClientConfig() {
+    }
+
+    public K8sClientConfig(String address) {
+        this.address = address;
+    }
+
     public String getBearerToken() {
         return bearerToken;
     }

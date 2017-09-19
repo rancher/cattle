@@ -12,6 +12,7 @@ public class AgentBuilderRequest {
 
     Long resourceAccountId;
     String uri;
+    Long clusterId;
     Set<String> requestedRoles;
 
     public AgentBuilderRequest(Instance instance, Set<String> roles) {
@@ -24,6 +25,11 @@ public class AgentBuilderRequest {
         this.uri = uriPrefix + ":///instanceId=" + instance.getId();
         this.resourceAccountId = instance.getAccountId();
         this.requestedRoles = roles;
+        this.clusterId = instance.getClusterId();
+    }
+
+    public Long getClusterId() {
+        return clusterId;
     }
 
     public String getUri() {

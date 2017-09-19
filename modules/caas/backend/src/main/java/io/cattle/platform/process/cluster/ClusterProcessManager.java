@@ -1,9 +1,10 @@
 package io.cattle.platform.process.cluster;
 
-import static io.cattle.platform.core.model.Tables.*;
-
+import com.google.common.util.concurrent.ListenableFuture;
+import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.async.utils.AsyncUtils;
+import io.cattle.platform.core.addon.K8sClientConfig;
 import io.cattle.platform.core.addon.RegistrationToken;
 import io.cattle.platform.core.constants.ClusterConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -35,8 +36,9 @@ import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
-
+import io.github.ibuildthecloud.gdapi.id.IdFormatter;
 import io.github.ibuildthecloud.gdapi.util.ProxyUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -47,14 +49,12 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
-
-import com.google.common.util.concurrent.ListenableFuture;
-import com.netflix.config.DynamicStringProperty;
+import static io.cattle.platform.core.model.Tables.*;
 
 public class ClusterProcessManager {
 
     private static final DynamicStringProperty DEFAULT_CLUSTER = ArchaiusUtil.getString("default.cluster.template");
+    private static final DynamicStringProperty NETES_ADDRESS = ArchaiusUtil.getString("netes.address");
 
     private static final String[] STACK_CHECK_FIELDS = new String[] {
             "answers",
@@ -83,14 +83,16 @@ public class ClusterProcessManager {
     ClusterDao clusterDao;
     GenericResourceDao resourceDao;
     ResourceMonitor resourceMonitor;
+    IdFormatter idFormatter;
 
-    public ClusterProcessManager(ObjectManager objectManager, ObjectProcessManager processManager, ClusterDao clusterDao, JsonMapper jsonMapper, GenericResourceDao resourceDao, ResourceMonitor resourceMonitor) {
+    public ClusterProcessManager(ObjectManager objectManager, ObjectProcessManager processManager, ClusterDao clusterDao, JsonMapper jsonMapper, GenericResourceDao resourceDao, ResourceMonitor resourceMonitor, IdFormatter idFormatter) {
         this.jsonMapper = jsonMapper;
         this.objectManager = objectManager;
         this.processManager = processManager;
         this.clusterDao = clusterDao;
         this.resourceDao = resourceDao;
         this.resourceMonitor = resourceMonitor;
+        this.idFormatter = idFormatter;
     }
 
     public HandlerResult create(ProcessState state, ProcessInstance process) {
@@ -114,6 +116,7 @@ public class ClusterProcessManager {
         Account account = clusterDao.getOwnerAcccountForCluster(cluster.getId());
 
         try {
+            setClusterMode(cluster);
             updateStack(cluster, account);
             return null;
         } catch (LifecycleException e) {
@@ -121,12 +124,38 @@ public class ClusterProcessManager {
         }
     }
 
+    private void setClusterMode(Cluster cluster) {
+        String orchestration = DataAccessor.fieldString(cluster, ClusterConstants.FIELD_ORCHESTRATION);
+        if (StringUtils.isNotBlank(orchestration)) {
+            return;
+        }
+
+        for (Map<String, Object> stackMap : getStacks(cluster)) {
+            Stack stack = ProxyUtils.proxy(stackMap, Stack.class);
+            if ("kubernetes-support".equals(stack.getName())) {
+                String clusterId = idFormatter.formatId(ClusterConstants.TYPE, cluster.getId()).toString();
+                String address = String.format(NETES_ADDRESS.get(), clusterId);
+                objectManager.setFields(cluster,
+                        ClusterConstants.FIELD_K8S_CLIENT_CONFIG, new K8sClientConfig(address),
+                        ClusterConstants.FIELD_ORCHESTRATION, ClusterConstants.ORCH_KUBERNETES,
+                        CLUSTER.EMBEDDED, true);
+                break;
+            }
+        }
+    }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private ListenableFuture<?> updateStack(Cluster cluster, Account account) throws LifecycleException {
+    private List<Map<String, Object>> getStacks(Cluster cluster) {
         List<Map> stacks = DataAccessor.fieldObjectList(cluster, ClusterConstants.FIELD_SYSTEM_STACK, Map.class);
         if (stacks == null || stacks.size() == 0) {
             stacks = defaultStacks();
         }
+
+        return (List<Map<String, Object>>)(List)stacks;
+    }
+
+    private ListenableFuture<?> updateStack(Cluster cluster, Account account) throws LifecycleException {
+        List<Map<String, Object>> stacks = getStacks(cluster);
 
         List<Stack> toWait = new ArrayList<>();
         List<ListenableFuture<Stack>> futures = new ArrayList<>();
@@ -135,7 +164,7 @@ public class ClusterProcessManager {
                 STACK.REMOVED, null).stream()
                 .collect(Collectors.toMap(Stack::getName, Function.identity()));
 
-        for (Map stackMap : stacks) {
+        for (Map<String, Object> stackMap : stacks) {
             Stack stack = ProxyUtils.proxy(stackMap, Stack.class);
             if (StringUtils.isBlank(stack.getName())) {
                 continue;
