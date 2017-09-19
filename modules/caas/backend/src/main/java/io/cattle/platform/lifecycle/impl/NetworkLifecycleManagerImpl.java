@@ -157,7 +157,12 @@ public class NetworkLifecycleManagerImpl implements NetworkLifecycleManager {
         if (assignment != null) {
             setField(instance, InstanceConstants.FIELD_PRIMARY_IP_ADDRESS, assignment.getIpAddress());
             setField(instance, InstanceConstants.FIELD_MANAGED_IP, "true");
-            setLabel(instance, SystemLabels.LABEL_IP_ADDRESS, assignment.getIpAddress());
+            if (assignment.getSubnet() != null && assignment.getSubnet().getCidrSize() != null) {
+                setLabel(instance, SystemLabels.LABEL_IP_ADDRESS,
+                        String.format("%s/%d", assignment.getIpAddress(), assignment.getSubnet().getCidrSize()));
+            } else {
+                setLabel(instance, SystemLabels.LABEL_IP_ADDRESS, assignment.getIpAddress());
+            }
         }
     }
 
