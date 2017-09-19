@@ -23,10 +23,6 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.server.context.ServerContext;
 import io.cattle.platform.service.launcher.ServiceAccountCreateStartup;
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -36,6 +32,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DeploymentSyncFactory {
 
@@ -63,6 +64,19 @@ public class DeploymentSyncFactory {
                 DeploymentSyncResponse.class);
     }
 
+    public DeploymentSyncRequest construct(DeploymentUnit unit) {
+        Account account = objectManager.loadResource(Account.class, unit.getAccountId());
+        
+        return new DeploymentSyncRequest(unit,
+                null,
+                StringUtils.isBlank(account.getExternalId()) ? account.getName().toLowerCase() : account.getExternalId(),
+                        getRevision(unit, new TreeMap<Long, Instance>()),
+                new ArrayList<Instance>(),
+                new ArrayList<Volume>(),
+                new ArrayList<Credential>(),
+                new ArrayList<Network>(), account.getClusterId());
+    }
+
     public DeploymentSyncRequest construct(Instance resource) {
         List<Instance> instances = new ArrayList<>();
         Map<Long, Instance> instanceById = new TreeMap<>();
@@ -72,7 +86,6 @@ public class DeploymentSyncFactory {
 
         instances.add(resource);
         instances.addAll(instanceDao.getOtherDeploymentInstances(resource));
-
 
         for (Instance instance : instances) {
             instanceById.put(instance.getId(), instance);
@@ -120,7 +133,7 @@ public class DeploymentSyncFactory {
                 instances,
                 volumes,
                 credentials,
-                networks);
+                networks, account.getClusterId());
     }
 
     private String getRevision(DeploymentUnit unit, Map<Long, Instance> instances) {
