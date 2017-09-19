@@ -47,14 +47,14 @@ data:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: credential-reporter-${RANDOM}
+  name: cluster-register-${RANDOM}
   namespace: cattle-system
 spec:
   serviceAccountName: rancher
   restartPolicy: Never
   containers:
-    - name: credential-reporter
-      image: joshwget/credential-reporter
+    - name: cluster-register
+      image: rancher/cluster-register:v0.1.0
       volumeMounts:
       - name: rancher-credentials
         mountPath: /rancher-credentials
