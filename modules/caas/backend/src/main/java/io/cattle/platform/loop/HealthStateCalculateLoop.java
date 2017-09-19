@@ -123,7 +123,7 @@ public class HealthStateCalculateLoop implements Loop {
                     instanceState = HEALTH_STATE_DEGRADED;
                 }
             } else {
-                instanceState = HEALTH_STATE_DEGRADED;
+                continue;
             }
 
             Long serviceId = instanceInfo.getServiceId();
