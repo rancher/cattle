@@ -247,7 +247,7 @@ public class Backend {
         f.triggers.add(new MetadataChangedTrigger(loopManager, d.clusterDao, METADATA_LOOPS));
         f.triggers.add(new DeploymentUnitReconcileTrigger(loopManager, d.serviceDao, d.volumeDao, f.objectManager));
         f.triggers.add(new ServiceReconcileTrigger(loopManager, f.objectManager));
-        f.triggers.add(new MetadataTrigger(metadataManager));
+        f.triggers.add(new MetadataTrigger(metadataManager, f.objectManager));
         f.triggers.add(new MetadataSyncTrigger(loopManager, d.clusterDao));
     }
 
