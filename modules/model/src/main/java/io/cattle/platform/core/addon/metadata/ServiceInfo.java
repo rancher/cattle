@@ -11,6 +11,7 @@ import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
+
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 
 import java.util.HashMap;
@@ -49,6 +50,7 @@ public class ServiceInfo implements MetadataObject {
     LbConfig lbConfig;
     boolean global;
 
+    @SuppressWarnings("unchecked")
     public ServiceInfo(Service service) {
         this.id = service.getId();
         this.global = "true".equals(CollectionUtils.getNestedValue(service.getData(), "fields", "launchConfig", "labels",
@@ -67,7 +69,12 @@ public class ServiceInfo implements MetadataObject {
         this.ports = new HashSet<>(DataAccessor.fieldObjectList(service, ServiceConstants.FIELD_PUBLIC_ENDPOINTS, PortInstance.class));
         this.lbConfig = DataAccessor.field(service, ServiceConstants.FIELD_LB_CONFIG, LbConfig.class);
         this.links = DataAccessor.fieldObjectList(service, ServiceConstants.FIELD_SERVICE_LINKS, Link.class);
-        this.labels = new HashMap<>();
+        Map<String, Object> lcData = ServiceUtil.getLaunchConfigDataAsMap(service, ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME);
+        if (lcData.containsKey(InstanceConstants.FIELD_LABELS)) {
+            this.labels = (HashMap<String, String>) lcData.get(InstanceConstants.FIELD_LABELS);
+        } else {
+            this.labels = new HashMap<String, String>();
+        }
         this.metadata = DataAccessor.fieldMapRO(service, ServiceConstants.FIELD_METADATA);
         this.selector = service.getSelector();
         this.instanceIds = new HashSet<>(DataAccessor.fieldLongList(service, ServiceConstants.FIELD_INSTANCE_IDS));
