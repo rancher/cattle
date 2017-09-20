@@ -133,6 +133,15 @@ public class PortSpec {
         return bindIP + publicPort + privatePortProto;
     }
 
+    public String toSpecConstraint() {
+        String publicPort = this.publicPort != null ? this.publicPort.toString() + ":" : "";
+        String bindIP = "";
+        if (StringUtils.isNotBlank(this.ipAddress)) {
+            bindIP = this.ipAddress + ":";
+        }
+        return bindIP + publicPort + this.protocol;
+    }
+
     @Override
     public String toString() {
         return toSpec();

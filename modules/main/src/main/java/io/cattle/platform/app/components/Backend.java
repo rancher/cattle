@@ -230,6 +230,7 @@ public class Backend {
         allocationHelper = reconcile.allocationHelper;
 
         allocatorService = new AllocatorServiceImpl(d.agentDao, c.agentLocator, d.allocatorDao, f.lockManager, f.objectManager,f. processManager, allocationHelper, d.volumeDao, metadataManager, f.eventService,
+                d.clusterDao,
                 new ClusterConstraintsProvider(),
                 new BaseConstraintsProvider(d.allocatorDao),
                 new AffinityConstraintsProvider(allocationHelper),

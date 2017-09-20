@@ -4,6 +4,7 @@ import io.cattle.platform.core.addon.PortInstance;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.object.util.DataAccessor;
+
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 
 import java.util.HashSet;
@@ -26,6 +27,7 @@ public class HostInfo implements MetadataObject {
     Long milliCpu;
     Long memory;
     String nodeName;
+    Set<String> portSpecs;
 
     public HostInfo(Host host) {
         this.id = host.getId();
@@ -43,6 +45,7 @@ public class HostInfo implements MetadataObject {
         this.ports = new HashSet<>(
                 DataAccessor.fieldObjectList(host, HostConstants.FIELD_PUBLIC_ENDPOINTS, PortInstance.class));
         this.nodeName = DataAccessor.fieldString(host, HostConstants.FIELD_NODE_NAME);
+        this.portSpecs = new HashSet<>(DataAccessor.fieldStringList(host, HostConstants.FIELD_PORT_SPECS));
     }
 
     public long getId() {
@@ -125,6 +128,10 @@ public class HostInfo implements MetadataObject {
         return nodeName;
     }
 
+    public Set<String> getPortSpecs() {
+        return portSpecs;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -147,6 +154,8 @@ public class HostInfo implements MetadataObject {
         if (hostname != null ? !hostname.equals(hostInfo.hostname) : hostInfo.hostname != null) return false;
         if (milliCpu != null ? !milliCpu.equals(hostInfo.milliCpu) : hostInfo.milliCpu != null) return false;
         if (memory != null ? !memory.equals(hostInfo.memory) : hostInfo.memory != null) return false;
+        if (portSpecs != null ? !portSpecs.equals(hostInfo.portSpecs) : hostInfo.portSpecs != null)
+            return false;
         return nodeName != null ? nodeName.equals(hostInfo.nodeName) : hostInfo.nodeName == null;
     }
 
@@ -167,6 +176,7 @@ public class HostInfo implements MetadataObject {
         result = 31 * result + (milliCpu != null ? milliCpu.hashCode() : 0);
         result = 31 * result + (memory != null ? memory.hashCode() : 0);
         result = 31 * result + (nodeName != null ? nodeName.hashCode() : 0);
+        result = 31 * result + (portSpecs != null ? portSpecs.hashCode() : 0);
         return result;
     }
 }
