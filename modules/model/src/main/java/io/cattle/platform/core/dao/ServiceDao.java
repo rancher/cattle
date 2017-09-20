@@ -44,4 +44,6 @@ public interface ServiceDao {
         public Volume volume;
         public VolumeTemplate template;
     }
+
+    Stack getDefaultStack(long accountId);
 }
