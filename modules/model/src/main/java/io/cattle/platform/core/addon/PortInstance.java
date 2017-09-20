@@ -3,6 +3,8 @@ package io.cattle.platform.core.addon;
 import io.cattle.platform.core.util.PortSpec;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.weakref.jmx.com.google.common.base.Objects;
 
 @Type(list = false, name = "publicEndpoint")
@@ -31,7 +33,7 @@ public class PortInstance {
     }
 
     public boolean isBindAll() {
-        return "0.0.0.0".equals(bindIpAddress);
+        return "0.0.0.0".equals(getBindIpAddress());
     }
 
     public PortInstance(Integer privatePort, String procotol) {
@@ -143,82 +145,40 @@ public class PortInstance {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((agentIpAddress == null) ? 0 : agentIpAddress.hashCode());
-        result = prime * result + ((bindIpAddress == null) ? 0 : bindIpAddress.hashCode());
-        result = prime * result + ((fqdn == null) ? 0 : fqdn.hashCode());
-        result = prime * result + ((hostId == null) ? 0 : hostId.hashCode());
-        result = prime * result + ((instanceId == null) ? 0 : instanceId.hashCode());
-        result = prime * result + ((ipAddress == null) ? 0 : ipAddress.hashCode());
-        result = prime * result + ((privatePort == null) ? 0 : privatePort.hashCode());
-        result = prime * result + ((protocol == null) ? 0 : protocol.hashCode());
-        result = prime * result + ((publicPort == null) ? 0 : publicPort.hashCode());
-        result = prime * result + ((serviceId == null) ? 0 : serviceId.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o == null || getClass() != o.getClass()) return false;
+
+        PortInstance that = (PortInstance) o;
+
+        return new EqualsBuilder()
+                .append(ipAddress, that.ipAddress)
+                .append(agentIpAddress, that.agentIpAddress)
+                .append(bindIpAddress, that.bindIpAddress)
+                .append(protocol, that.protocol)
+                .append(fqdn, that.fqdn)
+                .append(publicPort, that.publicPort)
+                .append(privatePort, that.privatePort)
+                .append(serviceId, that.serviceId)
+                .append(hostId, that.hostId)
+                .append(instanceId, that.instanceId)
+                .isEquals();
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        PortInstance other = (PortInstance) obj;
-        if (agentIpAddress == null) {
-            if (other.agentIpAddress != null)
-                return false;
-        } else if (!agentIpAddress.equals(other.agentIpAddress))
-            return false;
-        if (bindIpAddress == null) {
-            if (other.bindIpAddress != null)
-                return false;
-        } else if (!bindIpAddress.equals(other.bindIpAddress))
-            return false;
-        if (fqdn == null) {
-            if (other.fqdn != null)
-                return false;
-        } else if (!fqdn.equals(other.fqdn))
-            return false;
-        if (hostId == null) {
-            if (other.hostId != null)
-                return false;
-        } else if (!hostId.equals(other.hostId))
-            return false;
-        if (instanceId == null) {
-            if (other.instanceId != null)
-                return false;
-        } else if (!instanceId.equals(other.instanceId))
-            return false;
-        if (ipAddress == null) {
-            if (other.ipAddress != null)
-                return false;
-        } else if (!ipAddress.equals(other.ipAddress))
-            return false;
-        if (privatePort == null) {
-            if (other.privatePort != null)
-                return false;
-        } else if (!privatePort.equals(other.privatePort))
-            return false;
-        if (protocol == null) {
-            if (other.protocol != null)
-                return false;
-        } else if (!protocol.equals(other.protocol))
-            return false;
-        if (publicPort == null) {
-            if (other.publicPort != null)
-                return false;
-        } else if (!publicPort.equals(other.publicPort))
-            return false;
-        if (serviceId == null) {
-            if (other.serviceId != null)
-                return false;
-        } else if (!serviceId.equals(other.serviceId))
-            return false;
-        return true;
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(ipAddress)
+                .append(agentIpAddress)
+                .append(bindIpAddress)
+                .append(protocol)
+                .append(fqdn)
+                .append(publicPort)
+                .append(privatePort)
+                .append(serviceId)
+                .append(hostId)
+                .append(instanceId)
+                .toHashCode();
     }
-
 }

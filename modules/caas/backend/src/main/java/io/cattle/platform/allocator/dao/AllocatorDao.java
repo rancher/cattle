@@ -1,5 +1,6 @@
 package io.cattle.platform.allocator.dao;
 
+import io.cattle.platform.allocator.port.PortManager;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.core.model.Host;
@@ -15,7 +16,7 @@ public interface AllocatorDao {
 
     List<? extends Host> getHosts(Collection<? extends StoragePool> storagePoolsIds);
 
-    boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate);
+    boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate, PortManager portManager);
 
     void releaseAllocation(Instance instance);
 

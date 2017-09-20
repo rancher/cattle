@@ -13,6 +13,7 @@ import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.lock.AllocateConstraintLock;
 import io.cattle.platform.allocator.lock.AllocateResourceLock;
 import io.cattle.platform.allocator.lock.AllocationBlockingMultiLock;
+import io.cattle.platform.allocator.port.PortManager;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.allocator.service.AllocationHelper;
@@ -96,12 +97,13 @@ public class AllocatorServiceImpl implements AllocatorService {
     VolumeDao volumeDao;
     MetadataManager metadataManager;
     EventService eventService;
+    PortManager portManager;
     List<AllocationConstraintsProvider> allocationConstraintProviders;
-
 
     public AllocatorServiceImpl(AgentDao agentDao, AgentLocator agentLocator, AllocatorDao allocatorDao, LockManager lockManager,
                                 ObjectManager objectManager, ObjectProcessManager processManager, AllocationHelper allocationHelper, VolumeDao volumeDao,
-                                MetadataManager metadataManager, EventService eventService, AllocationConstraintsProvider... allocationConstraintProviders) {
+                                MetadataManager metadataManager, EventService eventService, PortManager portManager,
+                                AllocationConstraintsProvider... allocationConstraintProviders) {
         super();
         this.agentDao = agentDao;
         this.agentLocator = agentLocator;
@@ -113,6 +115,7 @@ public class AllocatorServiceImpl implements AllocatorService {
         this.volumeDao = volumeDao;
         this.metadataManager = metadataManager;
         this.eventService = eventService;
+        this.portManager = portManager;
         this.allocationConstraintProviders = Arrays.asList(allocationConstraintProviders);
     }
 
@@ -170,6 +173,29 @@ public class AllocatorServiceImpl implements AllocatorService {
                 }
             }
         }
+
+        if (instance.getHostId() != null) {
+            if (!portManager.optionallyAssignPorts(instance.getClusterId(), instance.getHostId(), instance.getId(), getPorts(instance))) {
+                throw new FailedToAllocate(String.format("Error reserving ports: %s", extractPorts(instance)));
+            }
+        }
+    }
+
+    private String extractPorts(Instance instance) {
+        List<String> ports = new ArrayList<>();
+        for (PortInstance port : getPorts(instance)) {
+            if (StringUtils.isBlank(port.getIpAddress())) {
+                ports.add(String.format("%d", port.getPublicPort()));
+            } else {
+                ports.add(String.format("%s:%s", port.getIpAddress(), port.getPublicPort()));
+            }
+        }
+
+        return StringUtils.join(ports, ", ");
+    }
+
+    private List<PortInstance> getPorts(Instance instance) {
+        return DataAccessor.fieldObjectList(instance, InstanceConstants.FIELD_PORT_BINDINGS, PortInstance.class);
     }
 
     @Override
@@ -563,7 +589,7 @@ public class AllocatorServiceImpl implements AllocatorService {
         if (newHost != null) {
             callExternalSchedulerToReserve(attempt, candidate);
         }
-        return allocatorDao.recordCandidate(attempt, candidate);
+        return allocatorDao.recordCandidate(attempt, candidate, portManager);
     }
 
     private String getHostUuid(Instance instance) {
@@ -614,6 +640,11 @@ public class AllocatorServiceImpl implements AllocatorService {
                 RemoteAgent agent = agentLocator.lookupAgent(agentId);
                 callScheduler("Error releasing resources: %s", schedulerEvent, agent);
             }
+        }
+
+        if (instance.getHostId() != null) {
+            portManager.releasePorts(instance.getClusterId(), instance.getHostId(),
+                    DataAccessor.fieldObjectList(instance, InstanceConstants.FIELD_PORT_BINDINGS, PortInstance.class));
         }
     }
 

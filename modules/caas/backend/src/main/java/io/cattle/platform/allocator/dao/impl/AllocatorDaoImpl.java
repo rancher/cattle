@@ -1,6 +1,7 @@
 package io.cattle.platform.allocator.dao.impl;
 
 import io.cattle.platform.allocator.dao.AllocatorDao;
+import io.cattle.platform.allocator.port.PortManager;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.core.addon.PortInstance;
@@ -91,25 +92,33 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     }
 
     @Override
+    public boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate, PortManager portManager) {
+        Set<PortInstance> ports = new HashSet<>();
+        boolean result = false;
+        try {
+            result =  DeferredUtils.nest(() -> {
+                transaction.doInTransaction(() -> {
+                    Long newHost = candidate.getHost();
+                    if (newHost != null) {
+                        for (Instance instance : attempt.getInstances()) {
+                            log.info("Associating instance [{}] to host [{}]", instance.getId(), newHost);
+                            instance.setHostId(newHost);
+                            ports.addAll(updateInstancePorts(instance, attempt.getAllocatedIPs()));
+                            objectManager.persist(instance);
+                            ObjectUtils.publishChanged(eventService, instance.getAccountId(), instance.getClusterId(), newHost, HostConstants.TYPE);
+                        }
 
-    public boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate) {
-        return DeferredUtils.nest(() -> {
-            transaction.doInTransaction(() -> {
-                Long newHost = candidate.getHost();
-                if (newHost != null) {
-                    for (Instance instance : attempt.getInstances()) {
-                        log.info("Associating instance [{}] to host [{}]", instance.getId(), newHost);
-                        instance.setHostId(newHost);
-                        updateInstancePorts(instance, attempt.getAllocatedIPs());
-                        objectManager.persist(instance);
-                        ObjectUtils.publishChanged(eventService, instance.getAccountId(), instance.getClusterId(), newHost, HostConstants.TYPE);
+                        updateVolumeHostInfo(attempt, candidate, newHost);
                     }
-
-                    updateVolumeHostInfo(attempt, candidate, newHost);
-                }
+                });
+                return true;
             });
-            return true;
-        });
+            return result;
+        } finally {
+            if (result && candidate.getHost() != null && ports.size() > 0) {
+                portManager.assignPorts(candidate.getClusterId(), candidate.getHost(), ports);
+            }
+        }
     }
 
     void updateVolumeHostInfo(AllocationAttempt attempt, AllocationCandidate candidate, Long newHost) {
@@ -225,13 +234,16 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
      *
      * Then update instance ports with the bind address if needed.
      */
-    private void updateInstancePorts(Instance instance, List<Map<String, Object>> dataList) {
+    private List<PortInstance> updateInstancePorts(Instance instance, List<Map<String, Object>> dataList) {
         List<PortAssignment> portAssignments = getPortAssignments(instance, dataList);
         List<PortSpec> portSpecs = InstanceConstants.getPortSpecs(instance);
         List<PortInstance> portBindings = new ArrayList<>();
 
         for (PortSpec spec : portSpecs) {
             PortInstance binding = new PortInstance(spec);
+            binding.setHostId(instance.getHostId());
+            binding.setInstanceId(instance.getId());
+
             for (PortAssignment assignment : portAssignments) {
                 if (matches(spec, assignment)) {
                     binding.setBindIpAddress(assignment.getAllocatedIP());
@@ -242,6 +254,8 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
 
         DataAccessor.setField(instance, InstanceConstants.FIELD_PORT_BINDINGS, portBindings);
+
+        return portBindings;
     }
 
     private List<PortAssignment> getPortAssignments(Instance instance, List<Map<String, Object>> dataList) {
