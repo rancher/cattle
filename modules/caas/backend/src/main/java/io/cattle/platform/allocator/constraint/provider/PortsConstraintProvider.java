@@ -3,6 +3,7 @@ package io.cattle.platform.allocator.constraint.provider;
 import io.cattle.platform.allocator.constraint.Constraint;
 import io.cattle.platform.allocator.constraint.PortsConstraint;
 import io.cattle.platform.allocator.exception.FailedToAllocate;
+import io.cattle.platform.allocator.port.PortManager;
 import io.cattle.platform.allocator.service.AllocationAttempt;
 import io.cattle.platform.allocator.service.AllocationLog;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -17,9 +18,11 @@ import java.util.Set;
 public class PortsConstraintProvider implements AllocationConstraintsProvider {
 
     ObjectManager objectManager;
+    PortManager portManager;
 
-    public PortsConstraintProvider(ObjectManager objectManager) {
+    public PortsConstraintProvider(ObjectManager objectManager, PortManager portManager) {
         this.objectManager = objectManager;
+        this.portManager = portManager;
     }
 
     @Override
@@ -37,7 +40,7 @@ public class PortsConstraintProvider implements AllocationConstraintsProvider {
                 }
             }
             if (ports.size() > 0) {
-                constraints.add(new PortsConstraint(instance.getId(), ports));
+                constraints.add(new PortsConstraint(instance.getId(), ports, portManager));
             }
         }
     }

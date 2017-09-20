@@ -73,10 +73,10 @@ public class NetworkProcessManager {
         Map<Long, Subnet> subnets = createSubnets(network);
 
         HandlerResult result = new HandlerResult(
-                NetworkConstants.FIELD_METADATA, getMetadata(network),
-                NetworkConstants.FIELD_MAC_PREFIX, getMacPrefix(network));
+                NetworkConstants.FIELD_METADATA, getMetadata(network));
 
         if (subnets != null) {
+            result.getData().put(NetworkConstants.FIELD_MAC_PREFIX, getMacPrefix(network));
             result.withFuture(resourceMonitor.waitForState(subnets.values(), CommonStatesConstants.ACTIVE));
         }
 

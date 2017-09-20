@@ -2,17 +2,14 @@ package io.cattle.platform.lifecycle.impl;
 
 import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.service.AllocatorService;
-import io.cattle.platform.core.constants.ClusterConstants;
 import io.cattle.platform.core.dao.VolumeDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.util.InstanceHelpers;
-import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.lifecycle.AllocationLifecycleManager;
 import io.cattle.platform.lifecycle.util.LifecycleException;
 import io.cattle.platform.metadata.MetadataManager;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.List;
 
@@ -55,9 +52,10 @@ public class AllocationLifecycleManagerImpl implements AllocationLifecycleManage
             return true;
         }
 
-        if (ClusterConstants.ORCH_KUBERNETES.equals(DataAccessor.getLabel(instance, SystemLabels.LABEL_ORCHESTRATION))) {
-            return false;
-        }
+//        // For now we will schedule everything in cattle
+//        if (ClusterConstants.ORCH_KUBERNETES.equals(DataAccessor.getLabel(instance, SystemLabels.LABEL_ORCHESTRATION))) {
+//            return false;
+//        }
 
         return true;
     }

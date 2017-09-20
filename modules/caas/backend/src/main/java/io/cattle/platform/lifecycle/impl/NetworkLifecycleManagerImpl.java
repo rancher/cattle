@@ -19,7 +19,7 @@ import io.cattle.platform.resource.pool.ResourcePoolManager;
 import io.cattle.platform.resource.pool.util.ResourcePoolConstants;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,7 +42,7 @@ public class NetworkLifecycleManagerImpl implements NetworkLifecycleManager {
     public void create(Instance instance, Stack stack) throws LifecycleException {
         setupRequestedIp(instance);
         Network network = resolveNetworkMode(instance);
-        setDns(instance, stack, network);
+        setDns(instance, network);
     }
 
     @Override
@@ -85,14 +85,14 @@ public class NetworkLifecycleManagerImpl implements NetworkLifecycleManager {
 
         if (network != null) {
             instance.setNetworkId(network.getId());
-            setField(instance, InstanceConstants.FIELD_NETWORK_IDS, Arrays.asList(network.getId()));
+            setField(instance, InstanceConstants.FIELD_NETWORK_IDS, Collections.singletonList(network.getId()));
             setField(instance, InstanceConstants.FIELD_PRIMARY_NETWORK_ID, network.getId());
         }
 
         return network;
     }
 
-    protected void setDns(Instance instance, Stack stack, Network network) {
+    protected void setDns(Instance instance, Network network) {
         boolean addDns = DataAccessor.fromMap(DataAccessor.fieldMapRO(instance, InstanceConstants.FIELD_LABELS))
                 .withKey(SystemLabels.LABEL_USE_RANCHER_DNS)
                 .withDefault(true)
@@ -131,6 +131,11 @@ public class NetworkLifecycleManagerImpl implements NetworkLifecycleManager {
     private void assignMacAddress(Instance instance, Network network) throws LifecycleException {
         String mac = fieldString(instance, InstanceConstants.FIELD_PRIMARY_MAC_ADDRESSS);
         if (StringUtils.isNotBlank(mac)) {
+            return;
+        }
+
+        String prefix = DataAccessor.field(network, NetworkConstants.FIELD_MAC_PREFIX, String.class);
+        if (prefix == null) {
             return;
         }
 

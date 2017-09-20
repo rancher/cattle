@@ -17,6 +17,8 @@ import io.cattle.platform.allocator.constraint.provider.BaseConstraintsProvider;
 import io.cattle.platform.allocator.constraint.provider.ClusterConstraintsProvider;
 import io.cattle.platform.allocator.constraint.provider.PortsConstraintProvider;
 import io.cattle.platform.allocator.constraint.provider.VolumeAccessModeConstraintProvider;
+import io.cattle.platform.allocator.port.PortManager;
+import io.cattle.platform.allocator.port.PortManagerImpl;
 import io.cattle.platform.allocator.service.AllocationHelperImpl;
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.allocator.service.impl.AllocatorServiceImpl;
@@ -168,6 +170,7 @@ public class Backend {
     LoopManager loopManager;
     NetworkLifecycleManager networkLifecycleManager;
     NetworkService networkService;
+    PortManager portManager;
     PingInstancesMonitor pingInstancesMonitor;
     PingMonitor pingMonitor;
     ProcessProgress progress;
@@ -228,12 +231,13 @@ public class Backend {
         loopManager = reconcile.loopManager;
         metadataManager = reconcile.metadataManager;
         allocationHelper = reconcile.allocationHelper;
+        portManager = new PortManagerImpl(metadataManager);
 
-        allocatorService = new AllocatorServiceImpl(d.agentDao, c.agentLocator, d.allocatorDao, f.lockManager, f.objectManager,f. processManager, allocationHelper, d.volumeDao, metadataManager, f.eventService,
+        allocatorService = new AllocatorServiceImpl(d.agentDao, c.agentLocator, d.allocatorDao, f.lockManager, f.objectManager,f. processManager, allocationHelper, d.volumeDao, metadataManager, f.eventService, portManager,
                 new ClusterConstraintsProvider(),
                 new BaseConstraintsProvider(d.allocatorDao),
                 new AffinityConstraintsProvider(allocationHelper),
-                new PortsConstraintProvider(f.objectManager),
+                new PortsConstraintProvider(f.objectManager, portManager),
                 new VolumeAccessModeConstraintProvider(d.allocatorDao, f.objectManager));
         allocationLifecycleManager = new AllocationLifecycleManagerImpl(allocatorService, d.volumeDao, f.objectManager, metadataManager);
         pingInstancesMonitor = new PingInstancesMonitorImpl(f.objectManager, metadataManager, f.eventService, c.agentLocator);
