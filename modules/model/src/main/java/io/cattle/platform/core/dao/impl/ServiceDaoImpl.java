@@ -125,15 +125,9 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
 
     @Override
     public Stack getOrCreateDefaultStack(final long accountId) {
-        List<? extends Stack> stacks = create()
-                .select(STACK.fields())
-                .from(STACK)
-                .where(STACK.ACCOUNT_ID.eq(accountId)
-                        .and(STACK.REMOVED.isNull())
-                        .and(STACK.NAME.equalIgnoreCase(ServiceConstants.DEFAULT_STACK_NAME)))
-                .fetchInto(StackRecord.class);
-        if (stacks.size() > 0) {
-            return stacks.get(0);
+        Stack stack = getDefaultStack(accountId);
+        if (stack != null) {
+            return stack;
         }
 
         return lockManager.lock(new StackCreateLock(accountId), new LockCallback<Stack>() {
@@ -158,6 +152,21 @@ public class ServiceDaoImpl extends AbstractJooqDao implements ServiceDao {
                         STACK.HEALTH_STATE, HealthcheckConstants.HEALTH_STATE_HEALTHY);
             }
         });
+    }
+
+    @Override
+    public Stack getDefaultStack(long accountId) {
+        List<? extends Stack> stacks = create()
+                .select(STACK.fields())
+                .from(STACK)
+                .where(STACK.ACCOUNT_ID.eq(accountId)
+                        .and(STACK.REMOVED.isNull())
+                        .and(STACK.NAME.equalIgnoreCase(ServiceConstants.DEFAULT_STACK_NAME)))
+                .fetchInto(StackRecord.class);
+        if (stacks.size() > 0) {
+            return stacks.get(0);
+        }
+        return null;
     }
 
 

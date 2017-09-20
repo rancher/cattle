@@ -2,8 +2,11 @@ package io.cattle.platform.api.instance;
 
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 
+import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 
@@ -21,9 +24,11 @@ import java.util.List;
 public class ContainerCreateValidationFilter extends AbstractValidationFilter {
 
     ObjectManager objectManager;
+    ServiceDao serviceDao;
 
-    public ContainerCreateValidationFilter(ObjectManager objectManager) {
+    public ContainerCreateValidationFilter(ObjectManager objectManager, ServiceDao serviceDao) {
         this.objectManager = objectManager;
+        this.serviceDao = serviceDao;
     }
 
     @Override
@@ -36,6 +41,13 @@ public class ContainerCreateValidationFilter extends AbstractValidationFilter {
     public void validateName(ApiRequest request) {
         Long stackId = DataAccessor.getFieldFromRequest(request, InstanceConstants.FIELD_STACK_ID,
                 Long.class);
+        if (stackId == null) {
+            long accountId = ApiUtils.getPolicy().getAccountId();
+            Stack defaultStack = serviceDao.getDefaultStack(accountId);
+            if (defaultStack != null) {
+                stackId = defaultStack.getId();
+            }
+        }
         String name = DataAccessor.getFieldFromRequest(request, "name", String.class);
         if (stackId != null && objectManager.findAny(Instance.class, INSTANCE.STACK_ID, stackId, INSTANCE.NAME, name, INSTANCE.REMOVED, null) != null) {
             ValidationErrorCodes.throwValidationError(ValidationErrorCodes.NOT_UNIQUE,

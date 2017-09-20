@@ -306,7 +306,7 @@ public class Api {
         c.router.validationFilter(Host.class, new MachineDriverFilter(f.objectManager));
         c.router.validationFilter(Host.class, new MachineValidationFilter(c.secretsService));
         c.router.validationFilter(HostTemplate.class, new HostTemplateValidationFilter());
-        c.router.validationFilter(Instance.class, new ContainerCreateValidationFilter(f.objectManager));
+        c.router.validationFilter(Instance.class, new ContainerCreateValidationFilter(f.objectManager, d.serviceDao));
         c.router.validationFilter(Instance.class, new InstanceAgentValidationFilter(f.objectManager));
         c.router.validationFilter(Instance.class, new InstanceImageValidationFilter(c.storageService));
         c.router.validationFilter(Instance.class, new InstanceStopRemoveValidationFilter(f.objectManager));
