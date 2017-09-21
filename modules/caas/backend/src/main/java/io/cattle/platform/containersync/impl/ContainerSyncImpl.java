@@ -289,7 +289,7 @@ public class ContainerSyncImpl implements ContainerSync {
         }
 
         if (networkMode == null) {
-            networkMode = checkContainerNetwork(inspectNetMode, instance);
+            networkMode = checkContainerNetwork(getLabels(event), inspectNetMode, instance);
         }
 
         if (networkMode == null) {
@@ -330,7 +330,8 @@ public class ContainerSyncImpl implements ContainerSync {
      * If mode is container, will attempt to look up the corresponding container in rancher. If it is found, will also have the side effect of setting
      * networkContainerId on the instance.
      */
-    private String checkContainerNetwork(String inspectNetMode, Instance instance) {
+    private String checkContainerNetwork(Map<String, Object> labels, String inspectNetMode, Instance instance) {
+        boolean isK8s = labels.containsKey(SystemLabels.LABEL_K8S_POD_NAME);
         if (!StringUtils.startsWith(inspectNetMode, NetworkConstants.NETWORK_MODE_CONTAINER))
             return null;
 
@@ -339,7 +340,7 @@ public class ContainerSyncImpl implements ContainerSync {
         if (parts.length == 2) {
             targetContainer = parts[1];
             Instance netFromInstance = instanceDao.getInstanceByUuidOrExternalId(instance.getClusterId(), targetContainer, targetContainer);
-            if (netFromInstance == null) {
+            if (netFromInstance == null && !isK8s) {
                 throw new RetryLater();
             }
 

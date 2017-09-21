@@ -61,6 +61,7 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
                     .selectFrom(INSTANCE)
                     .where(condition
                     .and(INSTANCE.UUID.eq(uuid)))
+                    .and(INSTANCE.REMOVED.isNull())
                     .fetchAny();
         }
 
@@ -69,6 +70,7 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
                     .selectFrom(INSTANCE)
                     .where(condition
                     .and(INSTANCE.EXTERNAL_ID.eq(externalId)))
+                    .and(INSTANCE.REMOVED.isNull())
                     .fetchAny();
         }
 
