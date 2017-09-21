@@ -80,6 +80,7 @@ public class AllocationLifecycleManagerImpl implements AllocationLifecycleManage
 
     @Override
     public void postRemove(Instance instance) {
+        allocatorService.ensureResourcesReleasedForStop(instance);
         allocatorService.instanceDeallocate(instance);
     }
 

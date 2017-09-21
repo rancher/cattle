@@ -3,6 +3,7 @@ package io.cattle.platform.allocator.port;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import io.cattle.platform.core.addon.PortInstance;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.metadata.MetadataManager;
 
@@ -98,7 +99,8 @@ public class PortManagerImpl implements PortManager {
             return cache.get(hostId, () ->
                 metadataManager.getMetadataForCluster(clusterId)
                         .getInstances().stream()
-                        .filter(instance -> Objects.equals(hostId, instance.getHostId()))
+                        .filter(instance -> Objects.equals(hostId, instance.getHostId()) &&
+                                InstanceConstants.STATE_RUNNING.equals(instance.getState()))
                         .flatMap(instanceInfo -> instanceInfo.getPorts().stream())
                         .collect(toSet()));
         } catch (ExecutionException e) {
