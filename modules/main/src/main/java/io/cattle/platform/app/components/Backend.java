@@ -339,7 +339,7 @@ public class Backend {
         r.handle("hosttemplate.remove", hosttemplateRemove);
 
         r.handle("instance.create", instanceProcessManager::preCreate, instanceProcessManager::create);
-        r.handle("instance.start", instanceProcessManager::preStart, instanceStart, podCreate, instanceProcessManager::postStart);//, k8sProviderLabels);
+        r.handle("instance.start", instanceProcessManager::preStart, podCreate, instanceStart, instanceProcessManager::postStart);//, k8sProviderLabels);
         r.handle("instance.stop", instanceStop, instanceProcessManager::postStop);
         r.handle("instance.restart", instanceProcessManager::restart);
         r.handle("instance.remove", instanceProcessManager::preRemove, instanceRemove, instanceProcessManager::postRemove);
