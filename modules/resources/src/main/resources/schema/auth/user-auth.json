@@ -371,6 +371,7 @@
         "mountEntry.volumeId" : "r",
 
         "network" : "r",
+        "network.isDefault": "r",
         "network.metadata": "cru",
         "network.subnets": "cr",
         "network.networkDriverId": "cr",
@@ -426,7 +427,6 @@
         "project" : "crud",
         "project.clusterId": "cru",
         "project.clusterOwner": "r",
-        "project.defaultNetworkId" : "r",
         "project.description" : "cru",
         "project.externalIdType" : "",
         "project.healthState": "r",
