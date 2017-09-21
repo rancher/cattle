@@ -72,11 +72,12 @@ public class NetworkProcessManager {
         Network network = (Network)state.getResource();
         Map<Long, Subnet> subnets = createSubnets(network);
 
-        HandlerResult result = new HandlerResult(
+        Map<String, Object> data = CollectionUtils.asMap(
                 NetworkConstants.FIELD_METADATA, getMetadata(network));
+        HandlerResult result = new HandlerResult(data);
 
         if (subnets != null) {
-            result.getData().put(NetworkConstants.FIELD_MAC_PREFIX, getMacPrefix(network));
+            data.put(NetworkConstants.FIELD_MAC_PREFIX, getMacPrefix(network));
             result.withFuture(resourceMonitor.waitForState(subnets.values(), CommonStatesConstants.ACTIVE));
         }
 
