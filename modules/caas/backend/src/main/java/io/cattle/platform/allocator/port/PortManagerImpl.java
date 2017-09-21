@@ -96,7 +96,11 @@ public class PortManagerImpl implements PortManager {
     public void releasePorts(long clusterId, long hostId, Collection<PortInstance> ports) {
         Map<String, PortInstance> portMap = getPorts(clusterId, hostId);
         for (PortInstance port : ports) {
-            portMap.remove(toKey(port));
+            String key = toKey(port);
+            PortInstance existing = portMap.get(key);
+            if (existing != null && Objects.equals(port.getInstanceId(), existing.getInstanceId())) {
+                portMap.remove(key);
+            }
         }
     }
 
