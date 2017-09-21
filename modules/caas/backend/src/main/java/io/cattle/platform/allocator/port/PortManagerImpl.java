@@ -9,16 +9,18 @@ import io.cattle.platform.metadata.MetadataManager;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.*;
 
 public class PortManagerImpl implements PortManager {
 
-    Cache<Long, Set<PortInstance>> cache = CacheBuilder.newBuilder()
+    Cache<Long, Map<String, PortInstance>> cache = CacheBuilder.newBuilder()
             .expireAfterAccess(5, TimeUnit.MINUTES)
             .build();
     MetadataManager metadataManager;
@@ -33,12 +35,12 @@ public class PortManagerImpl implements PortManager {
     }
 
     private boolean portsFree(long clusterId, long hostId, Long instanceId, Collection<PortSpec> ports) {
-        Set<PortInstance> portsUsedByHost = getPorts(clusterId, hostId);
+        Map<String, PortInstance> portsUsedByHost = getPorts(clusterId, hostId);
         if (portsUsedByHost == null || portsUsedByHost.size() == 0) {
             return true;
         }
 
-        for (PortInstance portUsed : portsUsedByHost) {
+        for (PortInstance portUsed : portsUsedByHost.values()) {
             for (PortSpec requestedPort : ports) {
                 if (requestedPort.getPublicPort() != null &&
                         requestedPort.getPublicPort().equals(portUsed.getPublicPort()) &&
@@ -66,8 +68,10 @@ public class PortManagerImpl implements PortManager {
 
     @Override
     public void assignPorts(long clusterId, long hostId, Collection<PortInstance> ports) {
-        Set<PortInstance> portMap = getPorts(clusterId, hostId);
-        portMap.addAll(ports);
+        Map<String, PortInstance> portMap = getPorts(clusterId, hostId);
+        for (PortInstance port : ports) {
+            portMap.put(toKey(port), port);
+        }
     }
 
     @Override
@@ -90,11 +94,13 @@ public class PortManagerImpl implements PortManager {
 
     @Override
     public void releasePorts(long clusterId, long hostId, Collection<PortInstance> ports) {
-        Set<PortInstance> portMap = getPorts(clusterId, hostId);
-        portMap.removeAll(ports);
+        Map<String, PortInstance> portMap = getPorts(clusterId, hostId);
+        for (PortInstance port : ports) {
+            portMap.remove(toKey(port));
+        }
     }
 
-    private Set<PortInstance> getPorts(long clusterId, long hostId) {
+    private Map<String, PortInstance> getPorts(long clusterId, long hostId) {
         try {
             return cache.get(hostId, () ->
                 metadataManager.getMetadataForCluster(clusterId)
@@ -102,10 +108,16 @@ public class PortManagerImpl implements PortManager {
                         .filter(instance -> Objects.equals(hostId, instance.getHostId()) &&
                                 InstanceConstants.STATE_RUNNING.equals(instance.getState()))
                         .flatMap(instanceInfo -> instanceInfo.getPorts().stream())
-                        .collect(toSet()));
+                        .collect(Collectors.toConcurrentMap(
+                                this::toKey,
+                                Function.identity())));
         } catch (ExecutionException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    private String toKey(PortInstance port) {
+        return String.format("%s:%s/%s", port.getBindIpAddress(), port.getPublicPort(), port.getProtocol());
     }
 
 }
