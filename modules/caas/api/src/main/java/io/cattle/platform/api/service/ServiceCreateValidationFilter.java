@@ -5,6 +5,7 @@ import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
@@ -73,6 +74,8 @@ public class ServiceCreateValidationFilter extends AbstractValidationFilter {
 
         validateLaunchConfigs(service, request);
 
+        validateNetworMode(service, request);
+
         validateIpsHostName(request);
 
         request = validateAndSetImage(request, service, type);
@@ -98,6 +101,7 @@ public class ServiceCreateValidationFilter extends AbstractValidationFilter {
         Service service = objectManager.loadResource(Service.class, id);
 
         validateLaunchConfigs(service, request);
+        validateNetworMode(service, request);
         validateSelector(request);
         validateLbConfig(request, type);
         validatePorts(service, type, request);
@@ -364,6 +368,40 @@ public class ServiceCreateValidationFilter extends AbstractValidationFilter {
             ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_OPTION,
                     ServiceConstants.FIELD_EXTERNALIPS + " and "
                             + ServiceConstants.FIELD_HOSTNAME + " are mutually exclusive");
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void validateNetworMode(Service service, ApiRequest request) {
+        Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
+
+        Object primaryLaunchConfigObj = data.get(ServiceConstants.FIELD_LAUNCH_CONFIG);
+        if (primaryLaunchConfigObj == null) {
+            return;
+        }
+        String primaryNetworkMode = NetworkConstants.NETWORK_MODE_MANAGED;
+        Map<String, Object> primaryLC = (Map<String, Object>) primaryLaunchConfigObj;
+        if (primaryLC.get(InstanceConstants.FIELD_NETWORK_MODE) != null) {
+            primaryNetworkMode = primaryLC.get(InstanceConstants.FIELD_NETWORK_MODE).toString();
+        }
+
+        List<Object> modifiedSlcs = new ArrayList<>();
+        if (data.get(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS) != null) {
+            List<Object> slcs = (List<Object>) data.get(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS);
+            for (Object slcObj : slcs) {
+                Map<String, Object> slc = (Map<String, Object>) slcObj;
+                String secondaryNetworkMode = NetworkConstants.NETWORK_MODE_CONTAINER;
+                if (primaryNetworkMode.equalsIgnoreCase(NetworkConstants.NETWORK_MODE_HOST)
+                        || primaryNetworkMode.equalsIgnoreCase(NetworkConstants.NETWORK_MODE_NONE)) {
+                    secondaryNetworkMode = primaryNetworkMode;
+                } else {
+                    slc.put(InstanceConstants.FIELD_NETWORK_CONTAINER_ID, service.getName());
+                }
+                slc.put(InstanceConstants.FIELD_NETWORK_MODE, secondaryNetworkMode);
+                modifiedSlcs.add(slc);
+            }
+            data.put(ServiceConstants.FIELD_SECONDARY_LAUNCH_CONFIGS, modifiedSlcs);
+            request.setRequestObject(data);
         }
     }
 

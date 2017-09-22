@@ -803,6 +803,8 @@
 
         "secondaryLaunchConfig" : "cr",
         "secondaryLaunchConfig.name" : "cr",
+        "secondaryLaunchConfig.networkMode" : "r",
+        "secondaryLaunchConfig.requestedIpAddress" : "",
 
         "serviceLink" : "cr",
         "serviceLink.serviceId" : "cr",
