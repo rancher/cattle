@@ -23,6 +23,7 @@ import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.resource.UUID;
+import org.apache.commons.lang3.StringUtils;
 import org.jooq.Condition;
 import org.jooq.Configuration;
 import org.jooq.Record1;
@@ -128,14 +129,10 @@ public class AgentDaoImpl extends AbstractJooqDao implements AgentDao {
         Map<String,Host> hosts = new HashMap<>();
 
         for ( Host host : hostList ) {
-            String uuid = host.getExternalId();
-            if ( uuid == null ) {
-                uuid = host.getUuid();
-            }
-
-            if (uuid != null) {
-                hosts.put(uuid, host);
-                if (uuid.equals(AgentConstants.defaultUuid(agent, Host.class))) {
+            hosts.put(host.getUuid(), host);
+            if (StringUtils.isNotBlank(host.getExternalId())) {
+                hosts.put(host.getExternalId(), host);
+                if (host.getExternalId().equals(AgentConstants.defaultUuid(agent, Host.class))) {
                     hosts.put("DEFAULT", host);
                 }
             }
