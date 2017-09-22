@@ -30,7 +30,7 @@ public class HostAffinityConstraint implements Constraint {
 
         if (op == AffinityOps.SOFT_EQ || op == AffinityOps.EQ) {
             Map<String, String> labelsForHost = allocationHelper.getLabelsForHost(candidate.getClusterId(), candidate.getHostUuid());
-            String value = labelsForHost.get(labelsForHost);
+            String value = labelsForHost.get(labelKey);
             if (value == null) { // key doesn't exist
                 return false;
             }
