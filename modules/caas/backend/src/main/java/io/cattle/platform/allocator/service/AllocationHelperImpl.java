@@ -1,5 +1,7 @@
 package io.cattle.platform.allocator.service;
 
+import static java.util.stream.Collectors.*;
+
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition;
 import io.cattle.platform.allocator.constraint.AffinityConstraintDefinition.AffinityOps;
 import io.cattle.platform.allocator.constraint.Constraint;
@@ -19,7 +21,6 @@ import io.cattle.platform.metadata.Metadata;
 import io.cattle.platform.metadata.MetadataManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
-import org.jooq.tools.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,8 +31,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 
-import static java.util.stream.Collectors.*;
+import org.jooq.tools.StringUtils;
 
 public class AllocationHelperImpl implements AllocationHelper {
 
@@ -342,13 +344,25 @@ public class AllocationHelperImpl implements AllocationHelper {
     }
 
     @Override
-    public boolean hostHasContainerLabel(long clusterId, String hostUuid, String labelKey, String labelValue) {
-        HostInfo host = metadataManager.getMetadataForCluster(clusterId).getHost(hostUuid);
-        if (host == null) {
-            return false;
+    public boolean hostHasContainerLabel(Long hostId, String labelKey, String labelValue) {
+        List<? extends Instance> instances = instanceDao.getNonRemovedInstanceOn(hostId);
+        boolean found = false;
+        for (Instance instance : instances) {
+            Map<String, Object> labels = DataAccessor.fieldMapRO(instance, InstanceConstants.FIELD_LABELS);
+            Map<String, Object> labelsLowerCased = new TreeMap<String, Object>(String.CASE_INSENSITIVE_ORDER);
+            labelsLowerCased.putAll(labels);
+            if (labelsLowerCased.containsKey(labelKey)) {
+                Object value = labelsLowerCased.get(labelKey);
+                if (value == null) {
+                    continue;
+                }
+                if (StringUtils.equals(labelValue.toLowerCase(), value.toString().toLowerCase())) {
+                    found = true;
+                    break;
+                }
+            }
         }
-
-        return Objects.equals(labelValue, host.getLabels().get(labelKey));
+        return found;
     }
 
     private List<HostInfo> getActiveHosts(long clusterId) {
