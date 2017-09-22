@@ -17,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
@@ -76,6 +77,13 @@ public class HostsOutputFilter extends CachedOutputFilter<HostsOutputFilter.Data
             }
             if (!add && StringUtils.isNotEmpty((String) converted.getFields().get(FIELD_DRIVER))) {
                 add = canAccessConfig();
+            }
+            boolean imported = DataAccessor.fieldBool(original, HostConstants.FIELD_IMPORTED);
+            if (imported) {
+                Map<String, URL> links = converted.getLinks();
+                if (links != null) {
+                    links.remove("remove");
+                }
             }
         }
 
