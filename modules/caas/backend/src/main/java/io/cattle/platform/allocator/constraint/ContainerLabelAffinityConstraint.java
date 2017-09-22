@@ -29,10 +29,10 @@ public class ContainerLabelAffinityConstraint implements Constraint {
         }
 
         if (op == AffinityOps.SOFT_EQ || op == AffinityOps.EQ) {
-            return allocationHelper.hostHasContainerLabel(candidate.getClusterId(), candidate.getHostUuid(), labelKey, labelValue);
+            return allocationHelper.hostHasContainerLabel(candidate.getHost(), labelKey, labelValue);
         } else {
             // Anti-affinity
-            return !allocationHelper.hostHasContainerLabel(candidate.getClusterId(), candidate.getHostUuid(), labelKey, labelValue);
+            return !allocationHelper.hostHasContainerLabel(candidate.getHost(), labelKey, labelValue);
         }
     }
 

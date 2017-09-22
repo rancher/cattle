@@ -22,7 +22,7 @@ public interface AllocationHelper {
 
     List<LockDefinition> extractAllocationLockDefinitions(Instance instance, List<Instance> instances);
 
-    boolean hostHasContainerLabel(long clusterId, String hostUuid, String labelKey, String labelValue);
+    boolean hostHasContainerLabel(Long hostId, String labelKey, String labelValue);
 
     Map<String, String> getLabelsForHost(long clusterId, String hostUuid);
 

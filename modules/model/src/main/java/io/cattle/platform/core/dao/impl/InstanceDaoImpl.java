@@ -131,5 +131,4 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
             return String.format("%d:%s:%s", accountId, image);
         }
     }
-
 }
