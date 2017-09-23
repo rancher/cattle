@@ -22,6 +22,7 @@ import io.cattle.platform.lifecycle.ServiceLifecycleManager;
 import io.cattle.platform.lifecycle.VirtualMachineLifecycleManager;
 import io.cattle.platform.lifecycle.VolumeLifecycleManager;
 import io.cattle.platform.lifecycle.util.LifecycleException;
+import io.cattle.platform.metadata.MetadataManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.storage.ImageCredentialLookup;
@@ -30,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 
+import static io.cattle.platform.core.model.Tables.*;
 import static io.cattle.platform.object.util.DataAccessor.*;
 
 public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
@@ -48,12 +50,13 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
     SecretsLifecycleManager secretsLifecycle;
     AllocationLifecycleManager allocationLifecycle;
     ServiceLifecycleManager serviceLifecycle;
+    MetadataManager metadataManager;
 
     public InstanceLifecycleManagerImpl(K8sLifecycleManager k8sLifecycle, VirtualMachineLifecycleManager vmLifecycle, VolumeLifecycleManager volumeLifecycle,
             ObjectManager objectManager, ImageCredentialLookup credLookup, ServiceDao svcDao, TransactionDelegate transaction,
             NetworkLifecycleManager networkLifecycle, AgentLifecycleManager agentLifecycle, BackPopulater backPopulator,
             RestartLifecycleManager restartLifecycle, SecretsLifecycleManager secretsLifecycle, AllocationLifecycleManager allocationLifecycle,
-            ServiceLifecycleManager serviceLifecycle) {
+            ServiceLifecycleManager serviceLifecycle, MetadataManager metadataManager) {
         super();
         this.k8sLifecycle = k8sLifecycle;
         this.vmLifecycle = vmLifecycle;
@@ -69,6 +72,7 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
         this.secretsLifecycle = secretsLifecycle;
         this.allocationLifecycle = allocationLifecycle;
         this.serviceLifecycle = serviceLifecycle;
+        this.metadataManager = metadataManager;
     }
 
     @Override
@@ -108,6 +112,9 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
     private void setLabels(Instance instance) {
         if (StringUtils.isBlank(getLabel(instance, SystemLabels.LABEL_RANCHER_UUID))) {
             setLabel(instance, SystemLabels.LABEL_RANCHER_UUID, instance.getUuid());
+        }
+        if (StringUtils.isBlank(getLabel(instance, SystemLabels.LABEL_CONTAINER_NAME))) {
+            setLabel(instance, SystemLabels.LABEL_CONTAINER_NAME, instance.getName());
         }
     }
 
@@ -164,6 +171,16 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
         objectManager.persist(instance);
     }
 
+    @Override
+    public void moveInstance(Instance instance, String externalId, long hostId, Object inspect) {
+        metadataManager.getMetadataForAccount(instance.getAccountId()).modify(Instance.class, instance.getId(), (i) -> {
+            return objectManager.setFields(i,
+                    INSTANCE.EXTERNAL_ID, externalId,
+                    INSTANCE.HOST_ID, hostId,
+                    InstanceConstants.FIELD_DOCKER_INSPECT, inspect);
+        });
+    }
+
     protected void saveCreate(Instance instance, Object secretsOpaque) {
         if (secretsOpaque == null) {
             objectManager.persist(instance);
@@ -191,7 +208,7 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
 
     protected Stack setStack(Instance instance) {
         Long stackId = instance.getStackId();
-        if (stackId != null) {
+        if (stackId != null || instance.getHidden()) {
             return objectManager.loadResource(Stack.class, stackId);
         }
         Stack stack = svcDao.getOrCreateDefaultStack(instance.getAccountId());

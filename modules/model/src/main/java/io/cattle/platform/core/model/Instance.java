@@ -485,6 +485,17 @@ public interface Instance extends Serializable {
     @Column(name = "creator_id", precision = 19)
     public Long getCreatorId();
 
+    /**
+     * Setter for <code>cattle.instance.hidden</code>.
+     */
+    public void setHidden(Boolean value);
+
+    /**
+     * Getter for <code>cattle.instance.hidden</code>.
+     */
+    @Column(name = "hidden", nullable = false, precision = 1)
+    public Boolean getHidden();
+
     // -------------------------------------------------------------------------
     // FROM and INTO
     // -------------------------------------------------------------------------

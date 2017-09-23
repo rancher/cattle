@@ -2,22 +2,16 @@ package io.cattle.platform.core.dao.impl;
 
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.dao.InstanceDao;
-import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.model.tables.records.CredentialRecord;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
-import org.apache.commons.lang3.StringUtils;
-import org.jooq.Condition;
 import org.jooq.Configuration;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
-import static io.cattle.platform.core.model.tables.CredentialTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 
 
@@ -46,30 +40,6 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
     }
 
     @Override
-    public Instance getInstanceByUuidOrExternalId(Long clusterId, String uuid, String externalId) {
-        Instance instance = null;
-        Condition condition = INSTANCE.CLUSTER_ID.eq(clusterId);
-
-        if(StringUtils.isNotEmpty(uuid)) {
-            instance = create()
-                    .selectFrom(INSTANCE)
-                    .where(condition
-                    .and(INSTANCE.UUID.eq(uuid)))
-                    .fetchAny();
-        }
-
-        if (instance == null && StringUtils.isNotEmpty(externalId)) {
-            instance = create()
-                    .selectFrom(INSTANCE)
-                    .where(condition
-                    .and(INSTANCE.EXTERNAL_ID.eq(externalId)))
-                    .fetchAny();
-        }
-
-        return instance;
-    }
-
-    @Override
     public List<? extends Instance> getOtherDeploymentInstances(Instance instance) {
         if (instance.getDeploymentUnitId() == null) {
             return Collections.emptyList();
@@ -83,14 +53,6 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao {
                     .and(INSTANCE.REMOVED.isNull())
                     .and(INSTANCE.ID.ne(instance.getId())))
                 .fetchInto(InstanceRecord.class);
-    }
-
-    @Override
-    public List<? extends Credential> getCredentials(Set<Long> credentialIds) {
-        return create().select(CREDENTIAL.fields())
-                .from(CREDENTIAL)
-                .where(CREDENTIAL.ID.in(credentialIds))
-                .fetchInto(CredentialRecord.class);
     }
 
 }

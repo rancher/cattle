@@ -5,8 +5,10 @@ import io.github.ibuildthecloud.gdapi.annotation.Type;
 
 @Type(list=false)
 public class StackConfiguration {
+    String name;
     Object templates;
     String externalId;
+    String project;
     Object answers;
 
     public StackConfiguration() {
@@ -42,5 +44,21 @@ public class StackConfiguration {
 
     public void setAnswers(Object answers) {
         this.answers = answers;
+    }
+
+    public String getProject() {
+        return project;
+    }
+
+    public void setProject(String project) {
+        this.project = project;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

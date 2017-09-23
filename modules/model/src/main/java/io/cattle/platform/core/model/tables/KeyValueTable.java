@@ -34,7 +34,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class KeyValueTable extends TableImpl<KeyValueRecord> {
 
-    private static final long serialVersionUID = 339648916;
+    private static final long serialVersionUID = 1335513035;
 
     /**
      * The reference instance of <code>cattle.key_value</code>
@@ -63,6 +63,11 @@ public class KeyValueTable extends TableImpl<KeyValueRecord> {
      * The column <code>cattle.key_value.revision</code>.
      */
     public final TableField<KeyValueRecord, Long> REVISION = createField("revision", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
+     * The column <code>cattle.key_value.ttl</code>.
+     */
+    public final TableField<KeyValueRecord, Long> TTL = createField("ttl", org.jooq.impl.SQLDataType.BIGINT.nullable(false).defaultValue(org.jooq.impl.DSL.inline("0", org.jooq.impl.SQLDataType.BIGINT)), this, "");
 
     /**
      * Create a <code>cattle.key_value</code> table reference

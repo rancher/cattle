@@ -40,7 +40,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class InstanceTable extends TableImpl<InstanceRecord> {
 
-    private static final long serialVersionUID = -802678105;
+    private static final long serialVersionUID = -1540666731;
 
     /**
      * The reference instance of <code>cattle.instance</code>
@@ -259,6 +259,11 @@ public class InstanceTable extends TableImpl<InstanceRecord> {
      * The column <code>cattle.instance.creator_id</code>.
      */
     public final TableField<InstanceRecord, Long> CREATOR_ID = createField("creator_id", org.jooq.impl.SQLDataType.BIGINT, this, "");
+
+    /**
+     * The column <code>cattle.instance.hidden</code>.
+     */
+    public final TableField<InstanceRecord, Boolean> HIDDEN = createField("hidden", org.jooq.impl.SQLDataType.BIT.nullable(false).defaultValue(org.jooq.impl.DSL.inline("b'0'", org.jooq.impl.SQLDataType.BIT)), this, "");
 
     /**
      * Create a <code>cattle.instance</code> table reference

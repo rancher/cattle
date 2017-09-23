@@ -118,6 +118,8 @@ public interface ResourceManagerBaseSupport extends ResourceManager {
 
             /* remove_time is null or remove_time > NOW() */
             criteria.put(ObjectMetaDataManager.REMOVE_TIME_FIELD, isNull().or(gt(new Date())));
+
+            criteria.put("hidden", false);
         }
 
         return criteria;

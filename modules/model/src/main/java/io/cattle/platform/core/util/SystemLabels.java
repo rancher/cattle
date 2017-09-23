@@ -4,6 +4,7 @@ public class SystemLabels {
     public static final String LABEL_AGENT_CREATE = "io.rancher.container.create_agent";
     public static final String LABEL_AGENT_ROLE = "io.rancher.container.agent.role";
     public static final String LABEL_AGENT_URI_PREFIX = "io.rancher.container.agent.uri.prefix";
+    public static final String LABEL_CONTAINER_NAME = "io.rancher.container.name";
     public static final String LABEL_CNI_NETWORK = "io.rancher.cni.network";
     public static final String LABEL_CNI_WAIT = "io.rancher.cni.wait";
     public static final String LABEL_DISPLAY_NAME = "io.rancher.container.display_name";
@@ -21,7 +22,6 @@ public class SystemLabels {
     public static final String LABEL_SERVICE_CONTAINER_START_ONCE = "io.rancher.container.start_once";
     public static final String LABEL_SERVICE_DEPLOYMENT_UNIT = "io.rancher.service.deployment.unit";
     public static final String LABEL_SERVICE_GLOBAL = "io.rancher.scheduler.global";
-    public static final String LABEL_SERVICE_HASH = "io.rancher.service.hash";
     public static final String LABEL_SERVICE_LAUNCH_CONFIG = "io.rancher.service.launch.config";
     public static final String LABEL_SERVICE_REQUESTED_HOST_ID = "io.rancher.service.requested.host.id";
     public static final String LABEL_SIDEKICK = "io.rancher.sidekicks";
@@ -42,7 +42,6 @@ public class SystemLabels {
     /**
      * Indicates an instance runs an agent that provides the labels provider service
      */
-    public static final String LABEL_AGENT_SERVICE_LABELS_PROVIDER = "io.rancher.container.agent_service.labels_provider";
     public static final String LABEL_AGENT_SERVICE_SCHEDULING_PROVIDER = "io.rancher.container.agent_service.scheduling";
     public static final String LABEL_AGENT_SERVICE_METADATA = "io.rancher.container.agent_service.metadata";
 

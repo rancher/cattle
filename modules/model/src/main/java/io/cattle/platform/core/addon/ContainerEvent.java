@@ -9,7 +9,6 @@ import java.util.Map;
 @Type(list = false)
 public class ContainerEvent {
 
-    String containerUuid;
     Map<String, Object> dockerInspect;
     String externalId;
     String externalStatus;
@@ -20,16 +19,14 @@ public class ContainerEvent {
     public ContainerEvent() {
     }
 
-    public ContainerEvent(String status, long clusterId, long hostId, String uuid, String externaId) {
+    public ContainerEvent(String status, long clusterId, long hostId, String externaId) {
         this.externalStatus = status;
         this.clusterId = clusterId;
-        this.containerUuid = uuid;
         this.externalId = externaId;
         this.hostId = hostId;
     }
 
-    public ContainerEvent(long clusterId, long hostId, String uuid, String externaId, Map<String, Object> inspect) {
-        this.containerUuid = uuid;
+    public ContainerEvent(long clusterId, long hostId, String externaId, Map<String, Object> inspect) {
         this.dockerInspect = inspect;
         this.externalId = externaId;
         this.externalStatus = ContainerEventConstants.EVENT_START;
@@ -86,11 +83,4 @@ public class ContainerEvent {
         this.clusterId = clusterId;
     }
 
-    public String getContainerUuid() {
-        return containerUuid;
-    }
-
-    public void setContainerUuid(String containerUuid) {
-        this.containerUuid = containerUuid;
-    }
 }

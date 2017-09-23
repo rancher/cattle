@@ -8,6 +8,7 @@ import io.cattle.platform.core.addon.K8sClientConfig;
 import io.cattle.platform.core.addon.RegistrationToken;
 import io.cattle.platform.core.constants.ClusterConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.constants.StackConstants;
 import io.cattle.platform.core.dao.ClusterDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
@@ -27,7 +28,6 @@ import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
-import io.cattle.platform.engine.process.impl.ProcessDelayException;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lifecycle.util.LifecycleException;
 import io.cattle.platform.object.ObjectManager;
@@ -46,8 +46,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static io.cattle.platform.core.model.Tables.*;
 
@@ -55,13 +53,6 @@ public class ClusterProcessManager {
 
     private static final DynamicStringProperty DEFAULT_CLUSTER = ArchaiusUtil.getString("default.cluster.template");
     private static final DynamicStringProperty NETES_ADDRESS = ArchaiusUtil.getString("netes.address");
-
-    private static final String[] STACK_CHECK_FIELDS = new String[] {
-            "answers",
-            "externalId",
-            "labels",
-            "templates",
-    };
 
     private static final Class<?>[] REMOVE_TYPES = new Class<?>[]{
             Account.class,
@@ -113,15 +104,40 @@ public class ClusterProcessManager {
 
     public HandlerResult activate(ProcessState state, ProcessInstance process) {
         Cluster cluster = (Cluster) state.getResource();
+
+        setClusterMode(cluster);
+        ListenableFuture<?> future = createEnvironments(cluster);
+
+        return new HandlerResult(future);
+    }
+
+    public HandlerResult deployStack(ProcessState state, ProcessInstance process) {
+        Cluster cluster = (Cluster) state.getResource();
         Account account = clusterDao.getOwnerAcccountForCluster(cluster.getId());
 
         try {
-            setClusterMode(cluster);
             updateStack(cluster, account);
             return null;
         } catch (LifecycleException e) {
             return new HandlerResult().withChainProcessName(ClusterConstants.PROCESS_ERROR);
         }
+    }
+
+    private ListenableFuture<?> createEnvironments(Cluster cluster) {
+        List<ListenableFuture<Account>> futures = new ArrayList<>();
+        for (Map<String, Object> stack : getStacks(cluster)) {
+            String project = Objects.toString(stack.get(ProjectConstants.TYPE), null);
+            if (StringUtils.isBlank(project)) {
+                continue;
+            }
+
+            Account account = clusterDao.createOrGetProjectByName(cluster, project, null);
+            futures.add(resourceMonitor.waitForState(account, CommonStatesConstants.ACTIVE, CommonStatesConstants.INACTIVE,
+                    CommonStatesConstants.REMOVED));
+        }
+
+        return AsyncUtils.afterAll(futures);
+
     }
 
     private void setClusterMode(Cluster cluster) {
@@ -154,78 +170,30 @@ public class ClusterProcessManager {
         return (List<Map<String, Object>>)(List)stacks;
     }
 
-    private ListenableFuture<?> updateStack(Cluster cluster, Account account) throws LifecycleException {
-        List<Map<String, Object>> stacks = getStacks(cluster);
+    private void updateStack(Cluster cluster, Account account) throws LifecycleException {
+        for (Map<String, Object> stackMap : getStacks(cluster)) {
+            Account projectAccount = account;
+            String project = Objects.toString(stackMap.get(ProjectConstants.TYPE), null);
+            if (StringUtils.isNotBlank(project)) {
+                projectAccount = clusterDao.createOrGetProjectByName(cluster, project, null);
+            }
 
-        List<Stack> toWait = new ArrayList<>();
-        List<ListenableFuture<Stack>> futures = new ArrayList<>();
-        Map<String, Stack> existingStacks = objectManager.find(Stack.class,
-                STACK.ACCOUNT_ID, account.getId(),
-                STACK.REMOVED, null).stream()
-                .collect(Collectors.toMap(Stack::getName, Function.identity()));
-
-        for (Map<String, Object> stackMap : stacks) {
             Stack stack = ProxyUtils.proxy(stackMap, Stack.class);
             if (StringUtils.isBlank(stack.getName())) {
                 continue;
             }
 
-            Stack existing = existingStacks.get(stack.getName());
-            if (existing == null) {
-                stackMap.put(ObjectMetaDataManager.ACCOUNT_FIELD, account.getId());
+            Stack existingStack = objectManager.findAny(Stack.class,
+                    STACK.ACCOUNT_ID, projectAccount.getId(),
+                    STACK.NAME, stack.getName(),
+                    STACK.REMOVED, null);
+
+            if (existingStack == null) {
+                stackMap.put(ObjectMetaDataManager.ACCOUNT_FIELD, projectAccount.getId());
                 stackMap.put(ObjectMetaDataManager.CLUSTER_FIELD, cluster.getId());
-                toWait.add(resourceDao.createAndSchedule(Stack.class, stackMap));
-            } else {
-                setClusterErrorMessageIfNeeded(cluster, existing);
-
-                Map<String, Object> existingMap = stackToCompareMap(existing);
-                boolean changed = false;
-                for (String key : STACK_CHECK_FIELDS) {
-                    if (!Objects.equals(stackMap.get(key), existingMap.get(key))) {
-                        changed = true;
-                        break;
-                    }
-                }
-
-                if (changed) {
-                    toWait.add(resourceDao.updateAndSchedule(existing, stackMap));
-                }
+                resourceDao.createAndSchedule(Stack.class, stackMap);
             }
         }
-
-        for (Stack stack : toWait) {
-            ListenableFuture<Stack> stackFuture = resourceMonitor.waitForState(stack,
-                    CommonStatesConstants.ACTIVE,
-                    CommonStatesConstants.ERROR);
-
-            stackFuture = AsyncUtils.andThen(stackFuture, (futureStack) -> {
-                if (CommonStatesConstants.ERROR.equals(futureStack.getState())) {
-                    throw new ProcessDelayException(null);
-                }
-                return futureStack;
-            });
-
-            futures.add(stackFuture);
-        }
-
-        return futures.size() == 0 ? null : AsyncUtils.afterAll(futures);
-    }
-
-    private void setClusterErrorMessageIfNeeded(Cluster cluster, Stack existing) throws LifecycleException {
-        if (!CommonStatesConstants.ERROR.equals(existing.getState())) {
-            return;
-        }
-
-        String stackTransitioningMessage = DataAccessor.fieldString(existing, ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD);
-        if (StringUtils.isBlank(stackTransitioningMessage)) {
-            return;
-        }
-
-        String message = "Stack error: " + existing.getName() + ": " + stackTransitioningMessage;
-        DataAccessor.setField(cluster, ObjectMetaDataManager.TRANSITIONING_FIELD, ObjectMetaDataManager.TRANSITIONING_ERROR_OVERRIDE);
-        DataAccessor.setField(cluster, ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD, message);
-
-        throw new LifecycleException(message);
     }
 
     private Map<String, Object> stackToCompareMap(Stack stack) {

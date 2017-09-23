@@ -14,8 +14,8 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 import org.jooq.Field;
-import org.jooq.Record3;
-import org.jooq.Row3;
+import org.jooq.Record4;
+import org.jooq.Row4;
 import org.jooq.impl.TableRecordImpl;
 
 
@@ -32,9 +32,9 @@ import org.jooq.impl.TableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 @Entity
 @Table(name = "key_value", schema = "cattle")
-public class KeyValueRecord extends TableRecordImpl<KeyValueRecord> implements TableRecordJaxb, Record3<String, byte[], Long>, KeyValue {
+public class KeyValueRecord extends TableRecordImpl<KeyValueRecord> implements TableRecordJaxb, Record4<String, byte[], Long, Long>, KeyValue {
 
-    private static final long serialVersionUID = -1541679965;
+    private static final long serialVersionUID = 888656141;
 
     /**
      * Setter for <code>cattle.key_value.name</code>.
@@ -87,24 +87,41 @@ public class KeyValueRecord extends TableRecordImpl<KeyValueRecord> implements T
         return (Long) get(2);
     }
 
+    /**
+     * Setter for <code>cattle.key_value.ttl</code>.
+     */
+    @Override
+    public void setTtl(Long value) {
+        set(3, value);
+    }
+
+    /**
+     * Getter for <code>cattle.key_value.ttl</code>.
+     */
+    @Column(name = "ttl", nullable = false, precision = 19)
+    @Override
+    public Long getTtl() {
+        return (Long) get(3);
+    }
+
     // -------------------------------------------------------------------------
-    // Record3 type implementation
+    // Record4 type implementation
     // -------------------------------------------------------------------------
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row3<String, byte[], Long> fieldsRow() {
-        return (Row3) super.fieldsRow();
+    public Row4<String, byte[], Long, Long> fieldsRow() {
+        return (Row4) super.fieldsRow();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Row3<String, byte[], Long> valuesRow() {
-        return (Row3) super.valuesRow();
+    public Row4<String, byte[], Long, Long> valuesRow() {
+        return (Row4) super.valuesRow();
     }
 
     /**
@@ -135,6 +152,14 @@ public class KeyValueRecord extends TableRecordImpl<KeyValueRecord> implements T
      * {@inheritDoc}
      */
     @Override
+    public Field<Long> field4() {
+        return KeyValueTable.KEY_VALUE.TTL;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public String value1() {
         return getName();
     }
@@ -153,6 +178,14 @@ public class KeyValueRecord extends TableRecordImpl<KeyValueRecord> implements T
     @Override
     public Long value3() {
         return getRevision();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Long value4() {
+        return getTtl();
     }
 
     /**
@@ -186,10 +219,20 @@ public class KeyValueRecord extends TableRecordImpl<KeyValueRecord> implements T
      * {@inheritDoc}
      */
     @Override
-    public KeyValueRecord values(String value1, byte[] value2, Long value3) {
+    public KeyValueRecord value4(Long value) {
+        setTtl(value);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public KeyValueRecord values(String value1, byte[] value2, Long value3, Long value4) {
         value1(value1);
         value2(value2);
         value3(value3);
+        value4(value4);
         return this;
     }
 
@@ -205,6 +248,7 @@ public class KeyValueRecord extends TableRecordImpl<KeyValueRecord> implements T
         setName(from.getName());
         setValue(from.getValue());
         setRevision(from.getRevision());
+        setTtl(from.getTtl());
     }
 
     /**
@@ -230,11 +274,12 @@ public class KeyValueRecord extends TableRecordImpl<KeyValueRecord> implements T
     /**
      * Create a detached, initialised KeyValueRecord
      */
-    public KeyValueRecord(String name, byte[] value, Long revision) {
+    public KeyValueRecord(String name, byte[] value, Long revision, Long ttl) {
         super(KeyValueTable.KEY_VALUE);
 
         set(0, name);
         set(1, value);
         set(2, revision);
+        set(3, ttl);
     }
 }

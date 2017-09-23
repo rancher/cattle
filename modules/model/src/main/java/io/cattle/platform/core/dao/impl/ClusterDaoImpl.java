@@ -9,6 +9,7 @@ import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ClusterDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
+import io.cattle.platform.core.dao.ProjectCreateLock;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Cluster;
 import io.cattle.platform.core.model.Credential;
@@ -17,6 +18,7 @@ import io.cattle.platform.core.model.ProjectMember;
 import io.cattle.platform.core.model.tables.records.AccountRecord;
 import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
@@ -32,12 +34,14 @@ public class ClusterDaoImpl extends AbstractJooqDao implements ClusterDao {
     TransactionDelegate transaction;
     ObjectManager objectManager;
     GenericResourceDao resourceDao;
+    LockManager lockManager;
 
-    public ClusterDaoImpl(Configuration configuration, TransactionDelegate transaction, ObjectManager objectManager, GenericResourceDao resourceDao) {
+    public ClusterDaoImpl(Configuration configuration, TransactionDelegate transaction, ObjectManager objectManager, GenericResourceDao resourceDao, LockManager lockManager) {
         super(configuration);
         this.transaction = transaction;
         this.objectManager = objectManager;
         this.resourceDao = resourceDao;
+        this.lockManager = lockManager;
     }
 
     @Override
@@ -62,19 +66,48 @@ public class ClusterDaoImpl extends AbstractJooqDao implements ClusterDao {
 
     @Override
     public Account createOwnerAccount(Cluster cluster) {
-        return transaction.doInTransactionResult(() -> {
-            Account account = resourceDao.createAndSchedule(Account.class,
-                    ACCOUNT.NAME, "System",
-                    ACCOUNT.EXTERNAL_ID, ProjectConstants.SYSTEM_PROJECT_EXTERNAL_ID,
-                    ACCOUNT.CLUSTER_OWNER, true,
-                    ACCOUNT.CLUSTER_ID, cluster.getId(),
-                    ACCOUNT.KIND, ProjectConstants.TYPE);
-            if (cluster.getCreatorId() != null) {
-                grantOwner(cluster.getCreatorId(), ProjectConstants.RANCHER_ID, account);
-            }
+        return createProject(cluster, true,"System", ProjectConstants.SYSTEM_PROJECT_EXTERNAL_ID);
+    }
 
-            return account;
+    private Account createProject(Cluster cluster, boolean owner, String name, String externalId) {
+        return lockManager.lock(new ProjectCreateLock(cluster.getId(), name), () -> {
+            return transaction.doInTransactionResult(() -> {
+                Account account = getProjectByName(cluster, name);
+                if (account != null) {
+                    return account;
+                }
+
+                account = resourceDao.createAndSchedule(Account.class,
+                        ACCOUNT.NAME, name,
+                        ACCOUNT.EXTERNAL_ID, externalId,
+                        ACCOUNT.CLUSTER_OWNER, owner,
+                        ACCOUNT.CLUSTER_ID, cluster.getId(),
+                        ACCOUNT.KIND, ProjectConstants.TYPE);
+                if (cluster.getCreatorId() != null) {
+                    grantOwner(cluster.getCreatorId(), ProjectConstants.RANCHER_ID, account);
+                }
+
+                return account;
+            });
         });
+    }
+
+    @Override
+    public Account createOrGetProjectByName(Cluster cluster, String name, String externalId) {
+        Account account = getProjectByName(cluster, name);
+        if (account != null) {
+            return account;
+        }
+
+        return createProject(cluster, false, name, externalId);
+    }
+
+    private Account getProjectByName(Cluster cluster, String name) {
+        return objectManager.findAny(Account.class,
+                ACCOUNT.NAME, name,
+                ACCOUNT.KIND, ProjectConstants.TYPE,
+                ACCOUNT.CLUSTER_ID, cluster.getId(),
+                ACCOUNT.REMOVED, null);
     }
 
     @Override

@@ -1,6 +1,5 @@
 package io.cattle.platform.process.instance;
 
-import io.cattle.platform.containersync.ContainerSync;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.engine.handler.HandlerResult;
@@ -111,7 +110,7 @@ public class InstanceProcessManager {
 
 
     public static HandlerResult handleStartError(ObjectProcessManager objectProcessManager, ProcessState state, Instance instance, ExecutionException e) {
-        if (ContainerSync.isNativeDockerStart(state)) {
+        if (isNativeDockerStart(state)) {
             objectProcessManager.stop(instance, null);
         } else {
             HashMap<String, Object> data = new HashMap<>();
@@ -123,6 +122,12 @@ public class InstanceProcessManager {
         throw e;
     }
 
+    private static boolean isNativeDockerStart(ProcessState state) {
+        return DataAccessor.fromMap(state.getData())
+                .withKey(InstanceConstants.PROCESS_DATA_NO_OP)
+                .withDefault(false)
+                .as(Boolean.class);
+    }
 
 
     private boolean shouldStart(ProcessState state, Instance instance) {

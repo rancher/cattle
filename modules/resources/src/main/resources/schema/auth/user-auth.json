@@ -587,9 +587,11 @@
         "stack.prune": "cru",
 
         "stackConfiguration" : "cr",
+        "stackConfiguration.name": "cr",
         "stackConfiguration.answers": "cr",
         "stackConfiguration.externalId": "cr",
         "stackConfiguration.templates": "cr",
+        "stackConfiguration.project": "cr",
 
         "link" : "cr",
         "link.name" : "cr",

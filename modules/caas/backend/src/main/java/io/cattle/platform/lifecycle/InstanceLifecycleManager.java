@@ -20,4 +20,6 @@ public interface InstanceLifecycleManager {
 
     void postRemove(Instance instance);
 
+    void moveInstance(Instance instance, String externalId, long hostId, Object inspect);
+
 }

@@ -9,19 +9,16 @@ import io.github.ibuildthecloud.gdapi.model.ListOptions;
 import io.github.ibuildthecloud.gdapi.model.Pagination;
 import io.github.ibuildthecloud.gdapi.model.Schema;
 import io.github.ibuildthecloud.gdapi.model.Sort;
-
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.lang3.StringUtils;
-import org.jooq.Condition;
 import org.jooq.Configuration;
 import org.jooq.DSLContext;
-import org.jooq.JoinType;
 import org.jooq.SelectQuery;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.impl.DefaultDSLContext;
+
+import java.util.List;
+import java.util.Map;
 
 public class JooqResourceListSupport {
 
@@ -66,16 +63,6 @@ public class JooqResourceListSupport {
         processPaginationResult(result, pagination);
 
         return result;
-    }
-
-    protected void addJoins(SelectQuery<?> query, Map<Table<?>, Condition> joins) {
-        if (joins == null) {
-            return;
-        }
-
-        for (Map.Entry<Table<?>, Condition> entry : joins.entrySet()) {
-            query.addJoin(entry.getKey(), JoinType.LEFT_OUTER_JOIN, entry.getValue());
-        }
     }
 
     protected void processPaginationResult(List<?> result, Pagination pagination) {

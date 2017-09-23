@@ -84,7 +84,7 @@ public class DataAccess {
 
     public DataAccess(Framework f) {
         this.resourceDao = new GenericResourceDaoImpl(f.objectManager, f.processManager, f.transaction);
-        this.clusterDao = new ClusterDaoImpl(f.jooqConfig, f.transaction, f.objectManager, resourceDao);
+        this.clusterDao = new ClusterDaoImpl(f.jooqConfig, f.transaction, f.objectManager, resourceDao, f.lockManager);
         this.transformationService = new TransformationServiceImpl();
 
         this.accountDao = new AccountDaoImpl(f.jooqConfig, f.objectManager);
