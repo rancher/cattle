@@ -333,7 +333,7 @@ public class AllocatorServiceImpl implements AllocatorService {
             List<PortSpec> ports = InstanceConstants.getPortSpecs(i);
             for (PortSpec port : ports) {
                 locks.add(new AllocateConstraintLock(AllocateConstraintLock.Type.PORT,
-                        String.format("%s.%s", port.getProtocol(), port.getPublicPort())));
+                        String.format("%s.%s.%s", origInstance.getClusterId(), port.getProtocol(), port.getPublicPort())));
             }
         }
 
