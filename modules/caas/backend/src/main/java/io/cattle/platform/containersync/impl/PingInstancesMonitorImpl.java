@@ -93,15 +93,15 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
             if (expectedState == null) {
                 importInstance(agent.getClusterId(), host.getId(), agent.getId(), ri);
             } else if (STATE_RUNNING.equals(expectedState) && STATE_STOPPED.equals(ri.getState())) {
-                sendSimpleEvent(EVENT_STOP, host, ri.getUuid(), ri.getExternalId());
+                sendSimpleEvent(EVENT_STOP, host, ri.getExternalId());
             } else if (STATE_STOPPED.equals(expectedState) && STATE_RUNNING.equals(ri.getState())) {
-                sendSimpleEvent(EVENT_START, host, ri.getUuid(), ri.getExternalId());
+                sendSimpleEvent(EVENT_START, host, ri.getExternalId());
             }
         }
 
         knownExternalIdToState.forEach((externalId, state) -> {
             if (STATE_RUNNING.equals(state) || STATE_STOPPED.equals(state)) {
-                sendSimpleEvent(EVENT_DESTROY, host, null, externalId);
+                sendSimpleEvent(EVENT_DESTROY, host, externalId);
             }
         });
     }
@@ -113,7 +113,7 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
             @Override
             public void onSuccess(Event result) {
                 Map<String, Object> inspect = CollectionUtils.toMap(CollectionUtils.getNestedValue(result.getData(), "instanceInspect"));
-                ContainerEvent data = new ContainerEvent(clusterId, hostId, ri.getUuid(), ri.getExternalId(), inspect);
+                ContainerEvent data = new ContainerEvent(clusterId, hostId, ri.getExternalId(), inspect);
                 eventService.publish(new ContainerEventEvent(data));
             }
 
@@ -123,8 +123,8 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
         });
     }
 
-    private void sendSimpleEvent(String status, HostInfo host, String uuid, String externalId) {
-        ContainerEvent data = new ContainerEvent(status, host.getClusterId(), host.getId(), uuid, externalId);
+    private void sendSimpleEvent(String status, HostInfo host, String externalId) {
+        ContainerEvent data = new ContainerEvent(status, host.getClusterId(), host.getId(), externalId);
         eventService.publish(new ContainerEventEvent(data));
     }
 

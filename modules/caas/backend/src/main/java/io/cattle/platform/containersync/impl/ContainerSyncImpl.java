@@ -1,12 +1,15 @@
 package io.cattle.platform.containersync.impl;
 
+import io.cattle.platform.agent.AgentLocator;
+import io.cattle.platform.agent.RemoteAgent;
 import io.cattle.platform.containersync.ContainerSync;
 import io.cattle.platform.containersync.model.ContainerEventEvent;
 import io.cattle.platform.core.addon.ContainerEvent;
-import io.cattle.platform.core.constants.AccountConstants;
+import io.cattle.platform.core.addon.DeploymentSyncRequest;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
+import io.cattle.platform.core.dao.ClusterDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Account;
@@ -15,22 +18,29 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.engine.server.Cluster;
+import io.cattle.platform.eventing.model.EventVO;
+import io.cattle.platform.lifecycle.InstanceLifecycleManager;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
+import io.cattle.platform.object.serialization.ObjectSerializer;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.containerevent.ContainerEventInstanceLock;
-import io.cattle.platform.process.containerevent.NamespaceCreateLock;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
+import io.github.ibuildthecloud.gdapi.util.DateUtils;
 import org.apache.cloudstack.managed.context.NoExceptionRunnable;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
+import java.util.Date;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -50,6 +60,7 @@ public class ContainerSyncImpl implements ContainerSync {
 
     private static final Logger log = LoggerFactory.getLogger(ContainerSyncImpl.class);
     private static Pattern NAMESPACE = Pattern.compile("^.*-([0-9a-f]{7})$");
+    private static Set<String> HIDDEN_NAMES = CollectionUtils.set("dns-init", "rancher-pause", "POD");
 
     ObjectManager objectManager;
     ObjectProcessManager processManager;
@@ -58,9 +69,14 @@ public class ContainerSyncImpl implements ContainerSync {
     GenericResourceDao resourceDao;
     ScheduledExecutorService scheduledExecutorService;
     Cluster cluster;
+    ClusterDao clusterDao;
+    InstanceLifecycleManager instanceLifecycleManager;
+    AgentLocator agentLocator;
+    ObjectSerializer objectSerializer;
 
     public ContainerSyncImpl(ObjectManager objectManager, ObjectProcessManager processManager, InstanceDao instanceDao, LockManager lockManager,
-            GenericResourceDao resourceDao, ScheduledExecutorService scheduledExecutorService, Cluster cluster) {
+                             GenericResourceDao resourceDao, ScheduledExecutorService scheduledExecutorService, Cluster cluster, ClusterDao clusterDao,
+                             InstanceLifecycleManager instanceLifecycleManager, AgentLocator agentLocator, ObjectSerializer objectSerializer) {
         this.objectManager = objectManager;
         this.processManager = processManager;
         this.instanceDao = instanceDao;
@@ -68,6 +84,10 @@ public class ContainerSyncImpl implements ContainerSync {
         this.resourceDao = resourceDao;
         this.scheduledExecutorService = scheduledExecutorService;
         this.cluster = cluster;
+        this.clusterDao = clusterDao;
+        this.instanceLifecycleManager = instanceLifecycleManager;
+        this.agentLocator = agentLocator;
+        this.objectSerializer = objectSerializer;
     }
 
     @Override
@@ -99,6 +119,9 @@ public class ContainerSyncImpl implements ContainerSync {
                             containerEvent(eventEvent, retry+1);
                         }
                     }, 3, TimeUnit.SECONDS);
+                } else {
+                    log.warn("Giving up trying to process container event for clusterId [{}] hostUuid [{}] externalId [{}]", event.getClusterId(),
+                            event.getReportedHostUuid(), event.getExternalId());
                 }
             }
             return null;
@@ -106,9 +129,7 @@ public class ContainerSyncImpl implements ContainerSync {
     }
 
     private void containerEventWithLock(ContainerEvent event) {
-        String uuid = event.getContainerUuid();
-        Instance instance = instanceDao.getInstanceByUuidOrExternalId(event.getClusterId(), uuid, event.getExternalId());
-
+        Instance instance = findInstance(event.getClusterId(), event.getExternalId());
         String status = event.getExternalStatus();
         if (status.equals(EVENT_START) && instance == null && event.getDockerInspect() != null) {
             scheduleInstance(event);
@@ -120,6 +141,13 @@ public class ContainerSyncImpl implements ContainerSync {
         }
 
         sync(event.getExternalStatus(), instance);
+    }
+
+    private Instance findInstance(Long clusterId, String externalId) {
+        return objectManager.findAny(Instance.class,
+                INSTANCE.CLUSTER_ID, clusterId,
+                INSTANCE.EXTERNAL_ID, externalId,
+                INSTANCE.REMOVED, null);
     }
 
     private void sync(String status, Instance instance) {
@@ -186,28 +214,9 @@ public class ContainerSyncImpl implements ContainerSync {
             return accountId;
         }
 
-        return createNamespace(clusterId, namespace);
-    }
-
-    private Long createNamespace(long clusterId, String namespace) {
-        return lockManager.lock(new NamespaceCreateLock(clusterId, namespace), () -> {
-            Long accountId = findBackpopulatedNamespace(clusterId, namespace);
-            if (accountId != null) {
-                return accountId;
-            }
-
-            Account account = objectManager.newRecord(Account.class);
-            account.setKind(AccountConstants.PROJECT_KIND);
-            account.setName(namespace);
-            account.setExternalId(namespace);
-            account.setClusterId(clusterId);
-
-            resourceDao.createAndSchedule(account,
-                    CollectionUtils.asMap(
-                    AccountConstants.OPTION_CREATE_OWNER_ACCESS, true));
-
-            return account.getId();
-        });
+        Account account = clusterDao.createOrGetProjectByName(objectManager.loadResource(io.cattle.platform.core.model.Cluster.class, clusterId),
+                namespace, namespace);
+        return account.getId();
     }
 
     private Long findBackpopulatedNamespace(long clusterId, String namespace) {
@@ -246,6 +255,8 @@ public class ContainerSyncImpl implements ContainerSync {
         setImage(event, instance);
         setHost(event, instance);
         setLabels(event, instance);
+        setInspect(instance, inspect);
+        setHidden(instance);
 
         Long accountId = getAccountId(event.getClusterId(), instance);
         if (accountId == null) {
@@ -253,7 +264,98 @@ public class ContainerSyncImpl implements ContainerSync {
         }
 
         instance.setAccountId(accountId);
-        resourceDao.createAndSchedule(instance, noOpProcessData());
+        createAndSchedule(instance, inspect);
+    }
+
+    private void setHidden(Instance instance) {
+        String podContainerName = DataAccessor.getLabel(instance, SystemLabels.LABEL_K8S_CONTAINER_NAME);
+        if (StringUtils.isBlank(podContainerName)) {
+            return;
+        }
+
+        if (HIDDEN_NAMES.contains(podContainerName)) {
+            instance.setHidden(true);
+        }
+    }
+
+    private void createAndSchedule(Instance instance, Object inspect) {
+        String uuid = lookupUuid(instance);
+        if (StringUtils.isBlank(uuid)) {
+            resourceDao.createAndSchedule(instance, noOpProcessData());
+        } else {
+            associate(instance, inspect, uuid);
+        }
+    }
+
+    private void associate(Instance instance, Object inspect, String uuid) {
+        Instance existing = objectManager.findAny(Instance.class,
+                INSTANCE.REMOVED, null,
+                INSTANCE.CLUSTER_ID, instance.getClusterId(),
+                INSTANCE.UUID, uuid);
+        if (existing == null) {
+            sendRemove(instance);
+        } else if (isNewer(instance, existing)) {
+            instanceLifecycleManager.moveInstance(existing, instance.getExternalId(), instance.getHostId(), inspect);
+        } else {
+            sendRemove(instance);
+        }
+    }
+
+    private boolean isNewer(Instance instance, Instance existing) {
+        Date created = getCreated(instance);
+        if (created == null) {
+            return true;
+        }
+
+        return created.after(getCreated(existing));
+    }
+
+    private Date getCreated(Instance instance) {
+        Date created = null;
+        Object existingData = CollectionUtils.getNestedValue(instance.getData(), "fields", "dockerInspect", "Created");
+        if (existingData != null) {
+            try {
+                return DateUtils.parse(existingData.toString());
+            } catch (Exception ignored) {
+            }
+        }
+
+        return instance.getCreated();
+    }
+
+    private void sendRemove(Instance instance) {
+        Long hostId = DataAccessor.fieldLong(instance, FIELD_REQUESTED_HOST_ID);
+        instance.setHostId(hostId);
+
+        RemoteAgent agent = agentLocator.lookupAgent(instance);
+        DeploymentSyncRequest request = new DeploymentSyncRequest();
+        request.setContainers(Collections.singletonList(instance));
+        agent.call(EventVO.newEvent("compute.instance.remove")
+            .withData(objectSerializer.serialize(request)));
+    }
+
+    private String lookupUuid(Instance instance) {
+        String uuid = DataAccessor.getLabel(instance, SystemLabels.LABEL_RANCHER_UUID);
+        if (StringUtils.isNotBlank(uuid)) {
+            return uuid;
+        }
+
+        String podContainerName = DataAccessor.getLabel(instance, SystemLabels.LABEL_K8S_CONTAINER_NAME);
+        if (StringUtils.isBlank(podContainerName) || podContainerName.length() < 36) {
+            return null;
+        }
+
+        uuid = podContainerName.substring(podContainerName.length() - 36);
+        try {
+            UUID.fromString(uuid);
+            return uuid;
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private void setInspect(Instance instance, Object inspect) {
+        DataAccessor.setField(instance, InstanceConstants.FIELD_DOCKER_INSPECT, inspect);
     }
 
     private void setLabels(ContainerEvent event, Instance instance) {
@@ -335,24 +437,18 @@ public class ContainerSyncImpl implements ContainerSync {
             return null;
 
         String[] parts = StringUtils.split(inspectNetMode, ":", 2);
-        String targetContainer = null;
-        if (parts.length == 2) {
-            targetContainer = parts[1];
-            Instance netFromInstance = instanceDao.getInstanceByUuidOrExternalId(instance.getClusterId(), targetContainer, targetContainer);
-            if (netFromInstance == null) {
-                throw new RetryLater();
-            }
-
-            if (netFromInstance != null) {
-                DataAccessor.fields(instance).withKey(FIELD_NETWORK_CONTAINER_ID).set(netFromInstance.getId());
-                return NetworkConstants.NETWORK_MODE_CONTAINER;
-            }
+        if (parts.length != 2) {
+            return null;
         }
 
-        log.warn("Problem configuring container networking for container [externalId: {}]. Could not find target container: [{}].", instance.getExternalId(),
-                targetContainer);
-
-        return NetworkConstants.NETWORK_MODE_NONE;
+        String targetContainer = parts[1];
+        Instance netFromInstance = findInstance(instance.getClusterId(), targetContainer);
+        if (netFromInstance == null) {
+            throw new RetryLater();
+        } else {
+            DataAccessor.fields(instance).withKey(FIELD_NETWORK_CONTAINER_ID).set(netFromInstance.getId());
+            return NetworkConstants.NETWORK_MODE_CONTAINER;
+        }
     }
 
     private String getDockerIp(Map<String, Object> inspect) {

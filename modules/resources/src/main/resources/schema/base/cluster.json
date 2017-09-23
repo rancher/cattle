@@ -37,7 +37,7 @@
       "nullable": true
     },
     "systemStacks": {
-      "type": "array[stack]",
+      "type": "array[stackConfiguration]",
       "nullable": true,
       "attributes": {
         "scheduleUpdate": true

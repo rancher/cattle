@@ -14,6 +14,8 @@ public interface ClusterDao {
 
     Account createOwnerAccount(Cluster cluster);
 
+    Account createOrGetProjectByName(Cluster cluster, String name, String externalId);
+
     Account getDefaultProject(Cluster cluster);
 
     Account createDefaultProject(Cluster cluster);

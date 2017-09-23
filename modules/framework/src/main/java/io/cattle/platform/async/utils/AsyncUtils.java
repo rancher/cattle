@@ -6,6 +6,7 @@ import com.google.common.util.concurrent.SettableFuture;
 import io.cattle.platform.util.exception.ExceptionUtils;
 import io.cattle.platform.util.exception.UnreachableException;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -65,6 +66,9 @@ public class AsyncUtils {
     }
 
     public static <T> ListenableFuture<List<T>> afterAll(List<ListenableFuture<T>> futures) {
+        if (futures.size() == 0) {
+            return done(Collections.emptyList());
+        }
         return Futures.allAsList(futures);
     }
 

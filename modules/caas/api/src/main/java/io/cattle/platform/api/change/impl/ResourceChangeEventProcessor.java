@@ -2,6 +2,7 @@ package io.cattle.platform.api.change.impl;
 
 import io.cattle.platform.api.pubsub.subscribe.ApiPubSubEventPostProcessor;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.framework.event.FrameworkEvents;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
@@ -56,7 +57,7 @@ public class ResourceChangeEventProcessor implements ApiPubSubEventPostProcessor
 
             Object obj = rm.getById(type, id, new ListOptions(request));
 
-            if (obj == null) {
+            if (obj == null || ((obj instanceof Instance) && ((Instance)obj).getHidden())) {
                 return false;
             }
 

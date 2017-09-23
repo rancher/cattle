@@ -23,6 +23,9 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.server.context.ServerContext;
 import io.cattle.platform.service.launcher.ServiceAccountCreateStartup;
+import io.github.ibuildthecloud.gdapi.condition.Condition;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang3.StringUtils;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -33,14 +36,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static io.cattle.platform.core.model.Tables.*;
 
 public class DeploymentSyncFactory {
-
-    private static final Logger log = LoggerFactory.getLogger(DeploymentSyncRequest.class);
 
     InstanceDao instanceDao;
     VolumeDao volumeDao;
@@ -70,11 +68,11 @@ public class DeploymentSyncFactory {
         return new DeploymentSyncRequest(unit,
                 null,
                 StringUtils.isBlank(account.getExternalId()) ? account.getName().toLowerCase() : account.getExternalId(),
-                        getRevision(unit, new TreeMap<Long, Instance>()),
-                new ArrayList<Instance>(),
-                new ArrayList<Volume>(),
-                new ArrayList<Credential>(),
-                new ArrayList<Network>(), account.getClusterId());
+                        getRevision(unit, new TreeMap<>()),
+                new ArrayList<>(),
+                new ArrayList<>(),
+                new ArrayList<>(),
+                new ArrayList<>(), account.getClusterId());
     }
 
     public DeploymentSyncRequest construct(Instance resource) {
@@ -113,7 +111,9 @@ public class DeploymentSyncFactory {
 
         List<Credential> credentials = new ArrayList<>();
         if (credentialIds.size() > 0) {
-            credentials.addAll(instanceDao.getCredentials(credentialIds));
+            List<Credential> creds = objectManager.find(Credential.class,
+                    CREDENTIAL.ID, Condition.in(credentialIds));
+            credentials.addAll(creds);
         }
 
         List<Network> networks = new ArrayList<>();
@@ -199,22 +199,20 @@ public class DeploymentSyncFactory {
     }
 
     void setAuthEnvVars(Instance instance, Map<String, Object> auth) {
-        boolean urlSet = false;
-        if (auth != null) {
-            Map<String, Object> fields = DataAccessor.getWritableFields(instance);
-            for (Map.Entry<String, Object> entry : auth.entrySet()) {
-                DataAccessor.fromMap(fields)
-                        .withScopeKey(InstanceConstants.FIELD_ENVIRONMENT)
-                        .withKey(entry.getKey())
-                        .set(entry.getValue());
-                if (!urlSet) {
-                    DataAccessor.fromMap(fields)
-                            .withScopeKey(InstanceConstants.FIELD_ENVIRONMENT)
-                            .withKey("CATTLE_URL")
-                            .set(ServerContext.getHostApiBaseUrl(ServerContext.BaseProtocol.HTTP));
-                }
-            }
+        if (auth == null) {
+            return;
         }
 
+        Map<String, Object> fields = DataAccessor.getWritableFields(instance);
+        for (Map.Entry<String, Object> entry : auth.entrySet()) {
+            DataAccessor.fromMap(fields)
+                    .withScopeKey(InstanceConstants.FIELD_ENVIRONMENT)
+                    .withKey(entry.getKey())
+                    .set(entry.getValue());
+        }
+        DataAccessor.fromMap(fields)
+                .withScopeKey(InstanceConstants.FIELD_ENVIRONMENT)
+                .withKey("CATTLE_URL")
+                .set(ServerContext.getHostApiBaseUrl(ServerContext.BaseProtocol.HTTP));
     }
 }

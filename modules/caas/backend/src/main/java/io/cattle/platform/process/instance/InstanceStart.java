@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.netflix.config.DynamicIntProperty;
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.archaius.util.ArchaiusUtil;
+import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -17,7 +18,7 @@ import io.cattle.platform.util.exception.ExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
+import java.util.Collections;
 
 public class InstanceStart extends DeploymentSyncRequestHandler {
 
@@ -28,7 +29,7 @@ public class InstanceStart extends DeploymentSyncRequestHandler {
         super(agentLocator, serializer, objectManager, processManager, syncFactory, metadataManager);
         sendNoOp = true;
         commandName = "compute.instance.activate";
-        processDataKeys = Arrays.asList("containerNoOpEvent");
+        processDataKeys = Collections.singletonList(InstanceConstants.PROCESS_DATA_NO_OP);
     }
 
     @Override

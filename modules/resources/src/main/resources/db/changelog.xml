@@ -6,4 +6,5 @@
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.2.xsd">
      <include file="db/core-200.xml"/>
      <include file="db/core-201.xml"/>
+     <include file="db/core-202.xml"/>
 </databaseChangeLog>

@@ -60,6 +60,17 @@ public interface KeyValue extends Serializable {
     @Column(name = "revision", precision = 19)
     public Long getRevision();
 
+    /**
+     * Setter for <code>cattle.key_value.ttl</code>.
+     */
+    public void setTtl(Long value);
+
+    /**
+     * Getter for <code>cattle.key_value.ttl</code>.
+     */
+    @Column(name = "ttl", nullable = false, precision = 19)
+    public Long getTtl();
+
     // -------------------------------------------------------------------------
     // FROM and INTO
     // -------------------------------------------------------------------------
