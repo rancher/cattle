@@ -398,7 +398,8 @@ public class Model {
                 "setProjectMembersInput",
                 "stackUpgrade",
                 "storageDriverService,parent=service",
-                "virtualMachine,parent=container");
+                "virtualMachine,parent=container",
+                "secondaryLaunchConfig,parent=launchConfig");
     }
 
 }
