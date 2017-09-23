@@ -9,6 +9,7 @@ import io.cattle.platform.inator.Inator;
 import io.cattle.platform.inator.deploy.DeploymentUnitInator;
 import io.cattle.platform.inator.deploy.ServiceInator;
 import io.cattle.platform.inator.planner.impl.GlobalServicePlanner;
+import io.cattle.platform.inator.planner.impl.NoOpServicePlanner;
 import io.cattle.platform.inator.planner.impl.ScaleServicePlanner;
 import io.cattle.platform.inator.wrapper.DeploymentUnitWrapper;
 import io.cattle.platform.inator.wrapper.StackWrapper;
@@ -36,6 +37,10 @@ public class InatorFactoryinator {
         Service service = svc.objectManager.loadResource(Service.class, id);
         if (service == null) {
             return null;
+        }
+
+        if (ServiceUtil.isNoOpService(service)) {
+            return new ServiceInator(service, new NoOpServicePlanner(service, svc), svc);
         }
 
         if (ServiceUtil.isGlobalService(service)) {

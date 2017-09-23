@@ -263,4 +263,19 @@ public class ServiceUtil {
         }
     }
 
+    public static boolean isNoOpService(Service service) {
+        boolean noOp = false;
+        Object config = DataAccessor.fieldObject(service, ServiceConstants.FIELD_LAUNCH_CONFIG);
+        if (config == null) {
+            noOp = true;
+        } else {
+            Map<String, Object> data = CollectionUtils.toMap(config);
+            Object image = data.get(InstanceConstants.FIELD_IMAGE);
+            if (image == null || StringUtils.equals(image.toString(), ServiceConstants.IMAGE_DNS)|| StringUtils.equals(image.toString(), ServiceConstants.IMAGE_NONE) ) {
+                noOp = true;
+            }
+        }
+        return noOp;
+    }
+
 }
