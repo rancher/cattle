@@ -113,7 +113,7 @@ public class HealthStateCalculateLoop implements Loop {
                 instanceState = aggregate(healthStates(instanceInfo));
                 // update health state only for running/starting instances
                 // having not null health check set
-                if (instanceInfo.getHealthCheck() != null) {
+                if (instanceInfo.getHealthState() != null) {
                     updateHealth = true;
                 }
             } else if (STOP_STATES.contains(instanceInfo.getState())) {
