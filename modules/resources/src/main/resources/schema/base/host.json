@@ -20,6 +20,10 @@
     "instanceIds": {
       "type": "array[reference[instance]]"
     },
+    "imported": {
+      "type": "boolean",
+      "default": false
+    },
     "reportedUuid": {
       "type": "string"
     },

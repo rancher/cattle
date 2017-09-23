@@ -8,10 +8,12 @@ import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.IpAddressConstants;
 import io.cattle.platform.core.constants.StoragePoolConstants;
+import io.cattle.platform.core.constants.ClusterConstants;
 import io.cattle.platform.core.dao.AgentDao;
 import io.cattle.platform.core.dao.GenericResourceDao;
 import io.cattle.platform.core.dao.StoragePoolDao;
 import io.cattle.platform.core.model.Agent;
+import io.cattle.platform.core.model.Cluster;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.eventing.EventService;
@@ -251,7 +253,10 @@ public class AgentResourcesMonitor {
                 Map<String, Object> labels = CollectionUtils.toMap(data.get(HostConstants.FIELD_LABELS));
                 labels.putAll(CollectionUtils.toMap(data.get(HostConstants.FIELD_CREATE_LABELS)));
                 data.put(HostConstants.FIELD_LABELS, labels);
-
+                Cluster cluster = objectManager.loadResource(Cluster.class, agent.getClusterId());
+                if (cluster != null && ClusterConstants.ORCH_KUBERNETES.equals(DataAccessor.fieldString(cluster, ClusterConstants.FIELD_ORCHESTRATION)) && !cluster.getEmbedded()) {
+                    DataAccessor.setField(data, HostConstants.FIELD_IMPORTED, true);
+                }
                 hosts.put(uuid, resourceDao.createAndSchedule(Host.class, data));
             } else {
                 /* Machine registration */

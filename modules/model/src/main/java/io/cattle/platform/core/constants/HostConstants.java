@@ -14,6 +14,7 @@ public class HostConstants {
     public static final String FIELD_HOST_TEMPLATE_ID = "hostTemplateId";
     public static final String FIELD_HOST_UUID = "hostUuid";
     public static final String FIELD_INFO = "info";
+    public static final String FIELD_IMPORTED = "imported";
     public static final String FIELD_INSTANCE_IDS = "instanceIds";
     public static final String FIELD_IP_ADDRESS = "agentIpAddress";
     public static final String FIELD_LABELS = "labels";
