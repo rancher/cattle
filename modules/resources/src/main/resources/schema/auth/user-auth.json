@@ -256,7 +256,7 @@
         "host.hostTemplateId" : "cr",
         "host.info" : "r",
         "host.instanceIds" : "r",
-        "host.labels": "cr",
+        "host.labels": "cru",
         "host.localStorageMb" : "cru",
         "host.memory" : "cru",
         "host.milliCpu" : "cru",
