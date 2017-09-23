@@ -105,7 +105,14 @@ public class NetworkLifecycleManagerImpl implements NetworkLifecycleManager {
             List<String> dnsList = appendToFieldStringList(instance, InstanceConstants.FIELD_DNS, dns);
             setField(instance, InstanceConstants.FIELD_DNS, dnsList);
         }
+        if (DataAccessor.fieldStringList(network, NetworkConstants.FIELD_DNS).isEmpty() || instance.getNativeContainer()) {
+            if (DataAccessor.fromMap(DataAccessor.fieldMapRO(instance, InstanceConstants.FIELD_LABELS))
+                    .withKey(SystemLabels.LABEL_USE_RANCHER_DNS).as(Boolean.class) == null) {
+                return;
+            }
+        }
 
+        // append Rancher search domains and corresponding labels
         List<String> dnsSearchList = appendToFieldStringList(instance, InstanceConstants.FIELD_DNS_SEARCH, ServiceUtil.getContainerNamespace(instance));
         setField(instance, InstanceConstants.FIELD_DNS_SEARCH, dnsSearchList);
         String searchLabel = dnsSearchList.stream().collect(Collectors.joining(","));
