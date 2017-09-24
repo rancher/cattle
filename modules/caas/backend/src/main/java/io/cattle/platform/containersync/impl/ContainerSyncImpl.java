@@ -288,6 +288,10 @@ public class ContainerSyncImpl implements ContainerSync {
     }
 
     private void associate(Instance instance, Object inspect, String uuid) {
+        // Move host ID from requested to actual
+        Long hostId = DataAccessor.fieldLong(instance, FIELD_REQUESTED_HOST_ID);
+        instance.setHostId(hostId);
+
         Instance existing = objectManager.findAny(Instance.class,
                 INSTANCE.REMOVED, null,
                 INSTANCE.CLUSTER_ID, instance.getClusterId(),
@@ -324,9 +328,6 @@ public class ContainerSyncImpl implements ContainerSync {
     }
 
     private void sendRemove(Instance instance) {
-        Long hostId = DataAccessor.fieldLong(instance, FIELD_REQUESTED_HOST_ID);
-        instance.setHostId(hostId);
-
         RemoteAgent agent = agentLocator.lookupAgent(instance);
         DeploymentSyncRequest request = new DeploymentSyncRequest();
         request.setContainers(Collections.singletonList(instance));
