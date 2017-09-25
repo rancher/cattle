@@ -80,7 +80,7 @@ public class DeploymentSyncRequestHandler extends AgentBasedProcessHandler {
                 }
             }
 
-            if (StringUtils.isNotBlank(status.getPrimaryIpAddress())) {
+            if (StringUtils.isNotBlank(status.getPrimaryIpAddress()) && instance.getNetworkContainerId() == null) {
                 data.put(InstanceConstants.FIELD_PRIMARY_IP_ADDRESS, status.getPrimaryIpAddress());
             }
         }
