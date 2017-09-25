@@ -86,4 +86,9 @@ public class NullMetadata implements Metadata {
         return null;
     }
 
+    @Override
+    public boolean isClusterOwner() {
+        return false;
+    }
+
 }

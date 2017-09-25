@@ -21,14 +21,9 @@ package org.apache.cloudstack.managed.context;
 import io.cattle.platform.deferred.context.DeferredContextListener;
 import org.apache.cloudstack.managed.context.impl.DefaultManagedContext;
 import org.apache.cloudstack.managed.context.impl.MdcClearListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class ManagedContextRunnable implements Runnable {
 
-    private static final int SLEEP_COUNT = 120;
-
-    private static final Logger log = LoggerFactory.getLogger(ManagedContextRunnable.class);
     private static ManagedContext context = new DefaultManagedContext(
                 new DeferredContextListener(),
                 new MdcClearListener());

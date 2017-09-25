@@ -26,6 +26,8 @@ import io.cattle.platform.api.change.impl.ResourceChangeEventListenerImpl;
 import io.cattle.platform.archaius.eventing.ArchaiusEventListener;
 import io.cattle.platform.backpopulate.BackPopulater;
 import io.cattle.platform.backpopulate.impl.BackPopulaterImpl;
+import io.cattle.platform.condition.deployment.DeploymentConditions;
+import io.cattle.platform.condition.deployment.impl.HealthyHostsImpl;
 import io.cattle.platform.containersync.PingInstancesMonitor;
 import io.cattle.platform.containersync.impl.ContainerSyncImpl;
 import io.cattle.platform.containersync.impl.PingInstancesMonitorImpl;
@@ -147,6 +149,7 @@ public class Backend {
             LoopFactory.ENDPOINT_UPDATE,
             LoopFactory.SERVICE_MEMBERSHIP,
             LoopFactory.HOST_ENDPOINT_UPDATE,
+            LoopFactory.CONDITIONS_LOOP,
     };
 
     Framework f;
@@ -161,6 +164,7 @@ public class Backend {
     AllocatorService allocatorService;
     BackPopulater backPopulater;
     ContainerSyncImpl containerSync;
+    DeploymentConditions deploymentConditions;
     DeploymentSyncFactory deploymentSyncFactory;
     MetadataManager metadataManager;
     ImageCredentialLookup imageCredentialLookup;
@@ -192,6 +196,7 @@ public class Backend {
         this.c = c;
         this.d = d;
 
+        setupConditions();
         setupBackendService();
         addProcessHandlers();
         addTriggers();
@@ -207,6 +212,11 @@ public class Backend {
             task.start();
             CONSOLE_LOG.info("Started {} {}ms", task.getClass().getName(), (System.currentTimeMillis()-start));
         }
+    }
+
+    private void setupConditions() {
+        deploymentConditions = new DeploymentConditions();
+        deploymentConditions.healthHosts = new HealthyHostsImpl(f.executorService);
     }
 
     private void setupBackendService() {

@@ -6,9 +6,9 @@ import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.DeploymentUnit;
-import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.util.SystemLabels;
+import io.cattle.platform.engine.manager.LoopFactory;
 import io.cattle.platform.inator.Inator;
 import io.cattle.platform.inator.Inator.DesiredState;
 import io.cattle.platform.inator.Result;
@@ -18,7 +18,6 @@ import io.cattle.platform.inator.util.StateUtil;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.TransitioningUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.Date;
 import java.util.Map;
@@ -28,7 +27,6 @@ public class DeploymentUnitWrapper implements BasicStateWrapper {
     DeploymentUnit unit;
     Service service;
     InatorServices svc;
-    Host host;
 
     public DeploymentUnitWrapper(DeploymentUnit unit, Service service, InatorServices svc) {
         super();
@@ -38,19 +36,8 @@ public class DeploymentUnitWrapper implements BasicStateWrapper {
     }
 
     public boolean isDeployable() {
-        if (host == null && unit.getHostId() != null) {
-            host = svc.objectManager.loadResource(Host.class, unit.getHostId());
-        }
-        if (host == null) {
-            return hasActiveHosts(unit.getClusterId());
-        }
-        return StringUtils.isBlank(host.getAgentState()) || CommonStatesConstants.ACTIVE.equals(host.getAgentState());
-    }
-
-    private boolean hasActiveHosts(Long clusterId) {
-        return svc.metadataManager.getMetadataForCluster(clusterId).getHosts().stream()
-                .anyMatch(host -> CommonStatesConstants.ACTIVE.equals(host.getAgentState())
-                        && CommonStatesConstants.ACTIVE.equals(host.getState()));
+        return svc.deploymentConditions.healthHosts.hostIsHealthy(unit, () ->
+            svc.loopManager.kick(LoopFactory.DU_RECONCILE, DeploymentUnit.class, unit.getId(), null));
     }
 
     public Inator.DesiredState getDesiredState() {

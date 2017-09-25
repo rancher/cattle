@@ -2,6 +2,7 @@ package io.cattle.platform.loop.factory;
 
 import io.cattle.platform.activity.ActivityService;
 import io.cattle.platform.agent.AgentLocator;
+import io.cattle.platform.condition.deployment.DeploymentConditions;
 import io.cattle.platform.core.constants.AccountConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ClusterDao;
@@ -14,6 +15,7 @@ import io.cattle.platform.engine.model.Loop;
 import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.inator.Deployinator;
 import io.cattle.platform.lifecycle.ServiceLifecycleManager;
+import io.cattle.platform.loop.ConditionsLoop;
 import io.cattle.platform.loop.EndpointUpdateLoop;
 import io.cattle.platform.loop.HealthStateCalculateLoop;
 import io.cattle.platform.loop.HealthcheckCleanupMonitorImpl;
@@ -28,10 +30,9 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.serialization.ObjectSerializer;
 import io.cattle.platform.systemstack.catalog.CatalogService;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.concurrent.ScheduledExecutorService;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class LoopFactoryImpl implements LoopFactory {
 
@@ -39,6 +40,7 @@ public class LoopFactoryImpl implements LoopFactory {
     ActivityService activityService;
     CatalogService catalogService;
     Deployinator deployinator;
+    DeploymentConditions deploymentConditions;
     MetadataManager metadataManager;
     EventService eventService;
     HostDao hostDao;
@@ -55,11 +57,12 @@ public class LoopFactoryImpl implements LoopFactory {
                            ObjectProcessManager processManager, ScheduledExecutorService scheduledExecutorService,
                            ServiceLifecycleManager sdService, LoopManager loopManager,
                            MetadataManager metadataManager, AgentLocator agentLocator,
-                           ObjectSerializer objectSerializer, ClusterDao clusterDao) {
+                           ObjectSerializer objectSerializer, ClusterDao clusterDao, DeploymentConditions deploymentConditions) {
         super();
         this.activityService = activityService;
         this.catalogService = catalogService;
         this.deployinator = deployinator;
+        this.deploymentConditions = deploymentConditions;
         this.eventService = eventService;
         this.hostDao = hostDao;
         this.objectManager = objectManager;
@@ -104,6 +107,8 @@ public class LoopFactoryImpl implements LoopFactory {
         }
 
         switch (name) {
+            case CONDITIONS_LOOP:
+                return new ConditionsLoop(id, metadataManager, deploymentConditions);
             case HEALTHCHECK_SCHEDULE:
                 return new HealthcheckScheduleLoop(id, metadataManager, objectManager);
             case HEALTHCHECK_CLEANUP:

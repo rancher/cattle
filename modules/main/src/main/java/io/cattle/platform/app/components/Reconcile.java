@@ -37,6 +37,7 @@ public class Reconcile {
     protected void init() {
         inatorServices.allocationHelper = b.allocationHelper;
         inatorServices.dataDao = d.dataDao;
+        inatorServices.deploymentConditions = b.deploymentConditions;
         inatorServices.hostDao = d.hostDao;
         inatorServices.idFormatter = f.idFormatter;
         inatorServices.instanceDao = d.instanceDao;
@@ -56,7 +57,8 @@ public class Reconcile {
         ActivityService activityService = new ActivityService(f.objectManager, f.eventService);
         Deployinator deployinator = new DeployinatorImpl(inatorFactoryinator, f.objectManager, f.lockManager, activityService, b.serviceLifecycleManager);
         LoopFactoryImpl loopFactory = new LoopFactoryImpl(activityService, c.catalogService, deployinator, f.eventService, d.hostDao, f.objectManager,
-                f.processManager, f.scheduledExecutorService, b.serviceLifecycleManager, null, null, c.agentLocator, c.objectSerializer, d.clusterDao);
+                f.processManager, f.scheduledExecutorService, b.serviceLifecycleManager, null, null, c.agentLocator, c.objectSerializer, d.clusterDao,
+                b.deploymentConditions);
         loopManager = new LoopManagerImpl(loopFactory, f.executorService, f.objectManager, f.scheduledExecutorService);
         metadataManager = new EnvironmentResourceManagerImpl(new MetadataObjectFactory(f.objectManager), loopManager, f.lockManager, f.objectManager, f.eventService, d.clusterDao, f.triggers);
 

@@ -14,6 +14,7 @@ public interface LoopFactory {
     String METADATA_CLIENT = "metadata-client";
     String METADATA_SYNC = "metadata-sync";
     String HOST_ENDPOINT_UPDATE = "host-endpoint-update";
+    String CONDITIONS_LOOP = "conditions-loop";
 
     Loop buildLoop(String name, String type, Long id);
 
