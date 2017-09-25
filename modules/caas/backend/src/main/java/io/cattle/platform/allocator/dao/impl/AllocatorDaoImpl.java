@@ -23,7 +23,6 @@ import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.ObjectUtils;
-import io.github.ibuildthecloud.gdapi.util.ProxyUtils;
 import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
 import org.jooq.Configuration;
 import org.jooq.Record1;
@@ -34,14 +33,11 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static io.cattle.platform.core.model.tables.HostTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
@@ -94,9 +90,9 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     @Override
     public boolean recordCandidate(AllocationAttempt attempt, AllocationCandidate candidate, PortManager portManager) {
         Set<PortInstance> ports = new HashSet<>();
-        boolean result = false;
+        Boolean result = false;
         try {
-            result =  DeferredUtils.nest(() -> {
+            result = DeferredUtils.nest(() -> {
                 transaction.doInTransaction(() -> {
                     Long newHost = candidate.getHost();
                     if (newHost != null) {
@@ -211,31 +207,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
         return instances;
     }
 
-    /* (non-Java doc)
-     * @see io.cattle.platform.allocator.dao.AllocatorDao#updateInstancePorts(java.util.Map)
-     * Scheduler will return a listSupport of map showing the allocated result in the following format:
-     * {
-     *      "instanceID" : "xx",
-     *      "allocatedIPs" : {
-     *                              [
-     *                                  {
-     *                                      "allocatedIP" : "xxx.xxx.xxx.xxx",
-     *                                      "publicPort" : "xxx",
-     *                                      "privatePort" :  "xxx",
-     *                                  },
-     *                                  {
-     *                                      "allocatedIP" : "xxx.xxx.xxx.xxx",
-     *                                      "publicPort" : "xxx",
-     *                                      "privatePort" :  "xxx",
-     *                                  }
-     *                              ]
-     *                          }
-     * }
-     *
-     * Then update instance ports with the bind address if needed.
-     */
     private List<PortInstance> updateInstancePorts(Instance instance, List<Map<String, Object>> dataList) {
-        List<PortAssignment> portAssignments = getPortAssignments(instance, dataList);
         List<PortSpec> portSpecs = InstanceConstants.getPortSpecs(instance);
         List<PortInstance> portBindings = new ArrayList<>();
 
@@ -243,52 +215,13 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
             PortInstance binding = new PortInstance(spec);
             binding.setHostId(instance.getHostId());
             binding.setInstanceId(instance.getId());
-
-            for (PortAssignment assignment : portAssignments) {
-                if (matches(spec, assignment)) {
-                    binding.setBindIpAddress(assignment.getAllocatedIP());
-                }
-            }
             portBindings.add(binding);
         }
-
 
         DataAccessor.setField(instance, InstanceConstants.FIELD_PORT_BINDINGS, portBindings);
 
         return portBindings;
     }
-
-    private List<PortAssignment> getPortAssignments(Instance instance, List<Map<String, Object>> dataList) {
-        if (dataList == null) {
-            return Collections.emptyList();
-        }
-
-        for (Map<String, Object> data : dataList) {
-            String instanceId = (String) data.get(INSTANCE_ID);
-            if (!Objects.equals(instanceId, instance.getId().toString())) {
-                continue;
-            }
-
-            @SuppressWarnings("unchecked")
-            List<Map<String, Object>> allocatedIPList = (List<Map<String, Object>>) data.get(ALLOCATED_IPS);
-            if (allocatedIPList == null) {
-                continue;
-            }
-            return allocatedIPList.stream()
-                    .map((x) -> ProxyUtils.proxy(x, PortAssignment.class))
-                    .collect(Collectors.toList());
-        }
-
-        return Collections.emptyList();
-    }
-
-    private boolean matches(PortSpec spec, PortAssignment assignment) {
-        return spec.getIpAddress() == null &&
-                Objects.equals(spec.getPublicPort(), assignment.getPublicPort()) &&
-                Objects.equals(spec.getPrivatePort(), assignment.getPrivatePort()) &&
-                Objects.equals(spec.getProtocol(), assignment.getProtocol());
-    }
-
 
     @Override
     public Long getHostAffinityForVolume(Volume volume) {
@@ -302,13 +235,6 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
             .fetch();
 
         return result.size() == 1 ? result.get(0).getValue(STORAGE_POOL_HOST_MAP.HOST_ID) : null;
-    }
-
-    private interface PortAssignment {
-        String getAllocatedIP();
-        String getProtocol();
-        Integer getPrivatePort();
-        Integer getPublicPort();
     }
 
 }
