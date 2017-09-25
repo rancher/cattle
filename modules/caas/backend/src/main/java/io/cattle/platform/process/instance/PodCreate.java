@@ -16,6 +16,7 @@ import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.serialization.ObjectSerializer;
 import io.cattle.platform.process.common.handler.ExternalProcessHandler;
+import io.cattle.platform.util.exception.ExecutionException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
@@ -49,10 +50,14 @@ public class PodCreate extends ExternalProcessHandler
 
     @Override
     public HandlerResult complete(ListenableFuture<?> future, ProcessState state, ProcessInstance process) {
-        AsyncUtils.get(future);
-        // This ensure that InstancStart handler doesn't actually do anything but collect the docker inspect
-        state.getData().put(InstanceConstants.PROCESS_DATA_NO_OP, true);
-        return super.complete(future, state, process);
+        try {
+            AsyncUtils.get(future);
+            // This ensure that InstancStart handler doesn't actually do anything but collect the docker inspect
+            state.getData().put(InstanceConstants.PROCESS_DATA_NO_OP, true);
+            return super.complete(future, state, process);
+        } catch (ExecutionException e) {
+            return InstanceProcessManager.handleStartError(processManager, state, (Instance)state.getResource(), e);
+        }
     }
 
     @Override
