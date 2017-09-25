@@ -34,7 +34,7 @@ import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 public class HealthStateCalculateLoop implements Loop {
     private static final Set<String> SUPPORTED_SERVICE_KINDS = CollectionUtils.set(ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
             ServiceConstants.KIND_SCALING_GROUP_SERVICE);
-    private static final Set<String> RUNNING_STATES = CollectionUtils.set(InstanceConstants.STATE_RUNNING, InstanceConstants.STATE_STARTING);
+    private static final Set<String> RUNNING_STATES = CollectionUtils.set(InstanceConstants.STATE_RUNNING);
     private static final Set<String> STOP_STATES = CollectionUtils.set(InstanceConstants.STATE_STOPPING, InstanceConstants.STATE_STOPPED);
     private static final Map<String, List<String>> STATE_TRANSITIONS;
     static {
@@ -122,6 +122,8 @@ public class HealthStateCalculateLoop implements Loop {
                 } else if (instanceInfo.getExitCode() != null && !instanceInfo.getExitCode().equals(0)) {
                     instanceState = HEALTH_STATE_DEGRADED;
                 }
+            } else if (instanceInfo.getState().equalsIgnoreCase(InstanceConstants.STATE_STARTING)) {
+                instanceState = HEALTH_STATE_DEGRADED;
             } else {
                 continue;
             }
