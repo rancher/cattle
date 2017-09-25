@@ -28,14 +28,14 @@ import java.util.Map;
 
 public class ExternalProcessHandler implements ProcessHandler, CompletableLogic {
 
-    EventService eventService;
+    protected EventService eventService;
     String handler;
     Integer retry;
     Long timeoutMillis;
     String onError;
-    ObjectProcessManager processManager;
+    protected ObjectProcessManager processManager;
     protected ObjectManager objectManager;
-    ObjectMetaDataManager metaDataManager;
+    protected ObjectMetaDataManager metaDataManager;
     protected ObjectSerializer objectSerializer;
     DynamicBooleanProperty condition;
 

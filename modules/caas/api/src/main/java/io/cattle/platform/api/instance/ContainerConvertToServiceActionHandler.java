@@ -47,8 +47,11 @@ public class ContainerConvertToServiceActionHandler implements ActionHandler {
             ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_ACTION,
                     "Container is not qualified for the conversion; stackId is null");
         }
-        if (!objMgr.find(Service.class, SERVICE.ACCOUNT_ID, instance.getAccountId(), SERVICE.NAME, instance.getName(),
-                SERVICE.STACK_ID, stackId).isEmpty()) {
+        if (!objMgr.find(Service.class,
+                SERVICE.ACCOUNT_ID, instance.getAccountId(),
+                SERVICE.NAME, instance.getName(),
+                SERVICE.STACK_ID, stackId,
+                SERVICE.REMOVED, null).isEmpty()) {
             ValidationErrorCodes.throwValidationError(ValidationErrorCodes.NOT_UNIQUE,
                     "Service name " + instance.getName() + " already exists in the stack");
         }
