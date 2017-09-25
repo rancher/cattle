@@ -16,6 +16,7 @@ import io.cattle.platform.api.containerevent.ContainerEventFilter;
 import io.cattle.platform.api.credential.ApiKeyCertificateDownloadLinkHandler;
 import io.cattle.platform.api.credential.ApiKeyOutputFilter;
 import io.cattle.platform.api.data.DataManager;
+import io.cattle.platform.api.dial.DialManager;
 import io.cattle.platform.api.doc.DocumentationHandler;
 import io.cattle.platform.api.dynamicschema.DynamicSchemaFilter;
 import io.cattle.platform.api.externalevent.ExternalEventFilter;
@@ -110,6 +111,7 @@ import io.cattle.platform.api.volume.VolumeCreateValidationFilter;
 import io.cattle.platform.api.volume.VolumeManager;
 import io.cattle.platform.api.volume.VolumeOutputFilter;
 import io.cattle.platform.core.addon.ContainerEvent;
+import io.cattle.platform.core.addon.Dial;
 import io.cattle.platform.core.addon.ProcessPool;
 import io.cattle.platform.core.addon.ProcessSummary;
 import io.cattle.platform.core.addon.Register;
@@ -146,7 +148,6 @@ import io.cattle.platform.iaas.api.auth.identity.AccountOutputFilter;
 import io.cattle.platform.iaas.api.auth.impl.ApiAuthenticator;
 import io.cattle.platform.iaas.api.auth.integration.local.ChangeSecretActionHandler;
 import io.cattle.platform.iaas.api.auth.projects.ProjectMemberLinkHandler;
-
 import io.github.ibuildthecloud.gdapi.doc.TypeDocumentation;
 import io.github.ibuildthecloud.gdapi.factory.SchemaFactory;
 import io.github.ibuildthecloud.gdapi.json.JacksonMapper;
@@ -375,6 +376,7 @@ public class Api {
 
         c.router.resourceManager(Register.class, new RegisterManager(d.agentDao, f.objectManager, f.processManager));
         c.router.resourceManager(Data.class, new DataManager(c.support));
+        c.router.resourceManager(Dial.class, new DialManager(c.hostApiService, f.objectManager));
         c.router.resourceManager(HostApiProxyTokenImpl.class, new HostApiProxyTokenManager(c.tokenService, d.agentDao, f.objectManager));
         c.router.resourceManager(HostTemplate.class, new HostTemplateManager(c.support, c.secretsService, f.jsonMapper));
         c.router.resourceManager(ProcessPool.class, new ProcessPoolManager(f.executorService));

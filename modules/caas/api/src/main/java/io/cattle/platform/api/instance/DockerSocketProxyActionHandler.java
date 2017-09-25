@@ -14,7 +14,7 @@ import java.util.HashMap;
 
 public class DockerSocketProxyActionHandler implements ActionHandler {
 
-    private static final DynamicStringProperty SOCKET_PROXY_PATH = ArchaiusUtil.getString("host.socketproxy.path");
+    public static final DynamicStringProperty SOCKET_PROXY_PATH = ArchaiusUtil.getString("host.socketproxy.path");
 
     HostApiService apiService;
     ObjectManager objectManager;
