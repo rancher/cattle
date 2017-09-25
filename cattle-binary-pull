@@ -1,0 +1,80 @@
+#!/bin/bash
+set -e
+
+CATTLE_GLOBAL_PROPERTY=${1:-"./resources/content/cattle-global.properties"}
+DEST=${2:-"/usr/bin"}
+PACKAGES=${3:-"service"}
+
+get_file()
+{
+    local src="${1}"
+
+    #deletes the longest possible match from the left
+    file=$(echo ${src##*/})
+
+    curl -sSL -o "${file}" "${src}"
+    echo "${file}"
+}
+
+
+
+install_binary()
+{
+    local src="${1}"
+    local dest="${2}"
+
+    pushd /tmp
+
+    file=$(get_file "${src}")
+    binary=${3:-$(echo "${file}"|cut -d'.' -f1)}
+
+    case "${file}" in
+        *.tar.xz)
+            tar -xpJf "${file}" -C "${dest}"
+            ;;
+        *.tar.gz)
+            tar -xzvf "${file}" -C "${dest}"
+            ;;
+        *.xz)
+            xz -c -d "${file}" > "${dest}/${binary}"
+            ;;
+        *.gz)
+            gzip -dcf "${file}" > "${dest}/${binary}"
+            ;;
+        *.tar)
+            tar -xvf "${file}" -C "${dest}"
+            ;;
+         *)
+            ;;
+    esac
+
+    if [ "${file}" == "${binary}" ]; then
+        cp ${binary} ${dest}
+    fi
+
+    chmod +x "${dest}/${binary}"
+    rm -f "${file}"
+    popd
+}
+
+copy_agent()
+{
+    local src=${1}
+    local dest=${2}
+
+    pushd ${dest}
+    downloaded_file=$(get_file ${src})
+    popd
+}
+
+if [ -f "${CATTLE_GLOBAL_PROPERTY}" ]; then
+
+    cmd=install_binary
+    if [ "${PACKAGES}" == "agent" ]; then
+        cmd=copy_agent
+    fi
+
+    for i in $(grep ${PACKAGES}\.package\.*\.url "${CATTLE_GLOBAL_PROPERTY}"|cut -d"=" -f2); do
+        $cmd $(echo "${i}"|cut -d',' -f1) "${DEST}" $(echo "${i}"|cut -d',' -s -f2)
+    done
+fi

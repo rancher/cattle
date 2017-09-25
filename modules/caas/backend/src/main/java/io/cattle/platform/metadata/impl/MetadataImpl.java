@@ -31,6 +31,7 @@ public class MetadataImpl implements Metadata {
     long accountId;
     String environmentUuid;
     Long clusterId;
+    boolean clusterOwner;
     EventService eventService;
     MetadataObjectFactory factory;
     LoopManager loopManager;
@@ -51,6 +52,7 @@ public class MetadataImpl implements Metadata {
     public MetadataImpl(Account account, EventService eventService, MetadataObjectFactory factory, LoopManager loopManager, LockManager lockManager,
                         ObjectManager objectManager, List<Trigger> triggers) {
         this.accountId = account.getId();
+        this.clusterOwner = account.getClusterOwner();
         this.clusterId = account.getClusterId();
         this.environmentUuid = account.getUuid();
         this.eventService = eventService;
@@ -193,6 +195,11 @@ public class MetadataImpl implements Metadata {
     @Override
     public Long getClusterId() {
         return clusterId;
+    }
+
+    @Override
+    public boolean isClusterOwner() {
+        return clusterOwner;
     }
 
 }

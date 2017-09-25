@@ -39,4 +39,6 @@ public interface Metadata {
 
     Long getClusterId();
 
+    boolean isClusterOwner();
+
 }
