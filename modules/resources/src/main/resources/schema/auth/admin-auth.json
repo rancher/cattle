@@ -15,6 +15,11 @@
         "account.projectId" : "r",
         "account.identity" : "r",
 
+        "dial" : "cr",
+        "dial.address" : "cr",
+        "dial.protocol" : "cr",
+        "dial.clusterId" : "cr",
+
         "haMembership": "r",
         "haMembership\\..*": "r",
 

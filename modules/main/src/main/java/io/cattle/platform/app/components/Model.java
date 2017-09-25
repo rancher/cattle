@@ -14,6 +14,7 @@ import io.cattle.platform.core.addon.ContainerUpgrade;
 import io.cattle.platform.core.addon.DependsOn;
 import io.cattle.platform.core.addon.DeploymentSyncRequest;
 import io.cattle.platform.core.addon.DeploymentSyncResponse;
+import io.cattle.platform.core.addon.Dial;
 import io.cattle.platform.core.addon.HaproxyConfig;
 import io.cattle.platform.core.addon.HealthcheckState;
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
@@ -317,6 +318,7 @@ public class Model {
                 ContainerProxy.class,
                 ContainerUpgrade.class,
                 DependsOn.class,
+                Dial.class,
                 FieldDocumentation.class,
                 HaproxyConfig.class,
                 HealthcheckState.class,

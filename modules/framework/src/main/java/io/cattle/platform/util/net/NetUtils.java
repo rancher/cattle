@@ -1,7 +1,5 @@
 package io.cattle.platform.util.net;
 
-import org.apache.commons.lang3.tuple.Pair;
-
 public class NetUtils {
 
     public static long ip2Long(String ipAddress) {
@@ -15,6 +13,41 @@ public class NetUtils {
         }
 
         return result;
+    }
+
+    public static boolean isIpPort(String ipAddress) {
+        int i = ipAddress.lastIndexOf(":");
+        if (i > 0) {
+            String port = ipAddress.substring(i+1);
+            ipAddress = ipAddress.substring(0, i);
+            try {
+                Integer.parseInt(port);
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+
+        return isIp(ipAddress);
+    }
+
+    public static boolean isIp(String ipAddress) {
+        String[] ipAddressInArray = ipAddress.split("[.]");
+        if (ipAddressInArray.length != 4) {
+            return false;
+        }
+
+        for (String part : ipAddressInArray) {
+            try {
+                int i = Integer.parseInt(part);
+                if (i < 0 || i > 255) {
+                    return false;
+                }
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public static String long2Ip(long ip) {
@@ -46,22 +79,6 @@ public class NetUtils {
         long end = (ip & ~mask) + (long) Math.pow(2, 32 - cidrSize) - 6;
 
         return long2Ip(end);
-    }
-
-    public static boolean isIpInSubnet(String cidr, String ipAddress) {
-        Pair<String, Integer> cidrPair = getCidrAndSize(cidr);
-        String startIp = NetUtils.getDefaultStartAddress(cidrPair.getLeft(), cidrPair.getRight());
-        long start = NetUtils.ip2Long(startIp);
-        String endIp = NetUtils.getDefaultEndAddress(cidrPair.getLeft(), cidrPair.getRight());
-        long end = NetUtils.ip2Long(endIp);
-        long ip = NetUtils.ip2Long(ipAddress);
-        return start <= ip && ip <= end;
-
-    }
-
-    public static Pair<String, Integer> getCidrAndSize(String cidrInput) {
-        String[] cidrAndSize = cidrInput.split("/");
-        return Pair.of(cidrAndSize[0], Integer.valueOf(cidrAndSize[1]));
     }
 
 }
