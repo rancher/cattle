@@ -7,6 +7,7 @@ import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -188,6 +189,13 @@ public class InstanceConstants {
             }
         }
         return result;
+    }
+
+    public static boolean isNativeKubernetesPOD(Instance instance) {
+        return instance.getHidden() &&
+                instance.getNativeContainer() &&
+                "POD".equals(DataAccessor.getLabel(instance, SystemLabels.LABEL_K8S_CONTAINER_NAME)) &&
+                StringUtils.isBlank(DataAccessor.getLabel(instance, "annotation." + SystemLabels.LABEL_RANCHER_UUID));
     }
 
     public static boolean isKubernetes(Instance instance) {
