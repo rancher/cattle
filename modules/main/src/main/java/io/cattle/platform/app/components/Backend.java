@@ -241,6 +241,7 @@ public class Backend {
         metadataManager = reconcile.metadataManager;
         allocationHelper = reconcile.allocationHelper;
         portManager = new PortManagerImpl(metadataManager);
+        reconcile.inatorServices.portManager = portManager;
 
         allocatorService = new AllocatorServiceImpl(d.agentDao, c.agentLocator, d.allocatorDao, f.lockManager, f.objectManager,f. processManager, allocationHelper, d.volumeDao, metadataManager, f.eventService, portManager,
                 new ClusterConstraintsProvider(),

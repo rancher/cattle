@@ -74,14 +74,15 @@ public class InstanceUnit implements Unit, BasicStateUnit {
         return Result.good();
     }
 
-    protected void applyDynamic(InatorContext context) {
+    protected Result applyDynamic(InatorContext context) {
         Inator inator = context.getInator();
         if (inator instanceof DeploymentUnitInator) {
             LaunchConfig currentLc = ((DeploymentUnitInator) inator).getRevision().getLaunchConfig(name);
             if (currentLc != null) {
-                currentLc.applyDynamic(instance, context);
+                return currentLc.applyDynamic(instance, context);
             }
         }
+        return Result.good();
     }
 
     @Override

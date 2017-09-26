@@ -1,5 +1,6 @@
 package io.cattle.platform.inator.factory;
 
+import io.cattle.platform.allocator.port.PortManager;
 import io.cattle.platform.allocator.service.AllocationHelper;
 import io.cattle.platform.condition.deployment.DeploymentConditions;
 import io.cattle.platform.core.constants.ServiceConstants;
@@ -44,6 +45,7 @@ public class InatorServices {
     public ScheduledExecutorService scheduledExecutorService;
     public ClusterDao clusterDao;
     public DeploymentConditions deploymentConditions;
+    public PortManager portManager;
 
     public void triggerDeploymentUnitReconcile(Long id) {
         if (id == null) {

@@ -88,11 +88,4 @@ public class AllocationAttempt {
         this.allocatedIPs = allocatedIPs;
     }
 
-    public List<ResourceRequest> getResourceRequests() {
-        return resourceRequests;
-    }
-
-    public void setResourceRequests(List<ResourceRequest> resourceRequests) {
-        this.resourceRequests = resourceRequests;
-    }
 }

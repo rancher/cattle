@@ -493,7 +493,6 @@ public class DockerTransformerImpl implements DockerTransformer {
                     }
                     if (StringUtils.isNotBlank(b.getHostIp())) {
                         portInstance.setIpAddress(b.getHostIp());
-                        portInstance.setBindIpAddress(b.getHostIp());
                     }
                     containerPortInstances.add(portInstance);
                 }
@@ -519,28 +518,6 @@ public class DockerTransformerImpl implements DockerTransformer {
             }
         }
         setField(instance, FIELD_PORTS, portSpecs);
-
-        boolean changed = false;
-        List<PortInstance> portInstances = DataAccessor.fieldObjectList(instance, FIELD_PORT_BINDINGS, PortInstance.class);
-        for (PortInstance containerPortInstance : portInstances) {
-            PortSpec spec = new PortSpec(containerPortInstance);
-            boolean found = false;
-            for (PortInstance portInstance : portInstances) {
-                if (portInstance.matches(spec)) {
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found) {
-                portInstances.add(containerPortInstance);
-                changed = true;
-            }
-        }
-
-        if (changed) {
-            setField(instance, FIELD_PORT_BINDINGS, ports);
-        }
     }
 
     private PortInstance newPortInstance(ExposedPort ep) {

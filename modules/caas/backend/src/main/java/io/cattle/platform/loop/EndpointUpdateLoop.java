@@ -1,7 +1,5 @@
 package io.cattle.platform.loop;
 
-import static java.util.stream.Collectors.*;
-
 import io.cattle.platform.core.addon.PortInstance;
 import io.cattle.platform.core.addon.metadata.HostInfo;
 import io.cattle.platform.core.addon.metadata.InstanceInfo;
@@ -12,13 +10,15 @@ import io.cattle.platform.core.dao.ClusterDao;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.engine.manager.LoopFactory;
 import io.cattle.platform.engine.manager.LoopManager;
 import io.cattle.platform.engine.model.Loop;
 import io.cattle.platform.metadata.Metadata;
 import io.cattle.platform.metadata.MetadataManager;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,12 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
+import static java.util.stream.Collectors.*;
 
 public class EndpointUpdateLoop implements Loop {
-
-    private static Set<String> validStates = CollectionUtils.set(InstanceConstants.STATE_RUNNING, InstanceConstants.STATE_STARTING,
-            InstanceConstants.STATE_RESTARTING);
 
     long accountId;
     MetadataManager metadataManager;
@@ -62,25 +59,8 @@ public class EndpointUpdateLoop implements Loop {
 
         boolean updated = false;
         for (InstanceInfo instanceInfo : metadata.getInstances()) {
-            if (!validStates.contains(instanceInfo.getState())) {
-                continue;
-            }
             ServiceInfo serviceInfo = services.get(instanceInfo.getServiceId());
-            Set<PortInstance> ports = new HashSet<>();
-
-            for (PortInstance port : instanceInfo.getPorts()) {
-                port.setAgentIpAddress(agentIps.get(instanceInfo.getHostId()));
-                port.setFqdn(serviceInfo == null ? null : serviceInfo.getFqdn());
-                port.setHostId(instanceInfo.getHostId());
-                port.setInstanceId(instanceInfo.getId());
-                port.setServiceId(instanceInfo.getServiceId());
-
-                ports.add(port);
-
-                if (serviceInfo != null) {
-                    add(servicePorts, serviceInfo.getId(), port);
-                }
-            }
+            Set<PortInstance> ports = getPortInstances(agentIps, servicePorts, instanceInfo, serviceInfo);
 
             if (!instanceInfo.getPorts().equals(ports)) {
                 updated = true;
@@ -110,6 +90,31 @@ public class EndpointUpdateLoop implements Loop {
         }
 
         return Result.DONE;
+    }
+
+    private Set<PortInstance> getPortInstances(Map<Long, String> agentIps, Map<Long, Set<PortInstance>> servicePorts, InstanceInfo instanceInfo, ServiceInfo serviceInfo) {
+        Set<PortInstance> ports = new HashSet<>();
+
+        if (!InstanceConstants.STATE_RUNNING.equals(instanceInfo.getState())) {
+            return ports;
+        }
+
+        for (String portSpecString : instanceInfo.getPortSpecs()) {
+            try {
+                PortInstance port = new PortInstance(new PortSpec(portSpecString), instanceInfo);
+                port.setAgentIpAddress(agentIps.get(instanceInfo.getHostId()));
+                port.setFqdn(serviceInfo == null ? null : serviceInfo.getFqdn());
+                port.setServiceId(instanceInfo.getServiceId());
+
+                ports.add(port);
+
+                if (serviceInfo != null) {
+                    add(servicePorts, serviceInfo.getId(), port);
+                }
+            } catch (ClientVisibleException ignored) {
+            }
+        }
+        return ports;
     }
 
     private void add(Map<Long, Set<PortInstance>> map, Long id, PortInstance port) {

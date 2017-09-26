@@ -2,9 +2,6 @@ package io.cattle.platform.allocator.service;
 
 import io.cattle.platform.core.model.Instance;
 
-import java.util.List;
-import java.util.Map;
-
 
 public interface AllocatorService {
 
@@ -16,5 +13,4 @@ public interface AllocatorService {
 
     void ensureResourcesReservedForStart(Instance instance);
 
-    List<String> callExternalSchedulerForHostsSatisfyingLabels(Long accountId, Map<String, String> labels);
 }
