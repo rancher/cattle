@@ -31,7 +31,7 @@ public class CatalogLauncher extends GenericServiceLauncher {
     private static final DynamicStringProperty CATALOG_URL = ArchaiusUtil.getString("catalog.url");
     private static final DynamicStringProperty CATALOG_REFRESH_INTERVAL = ArchaiusUtil.getString("catalog.refresh.interval.seconds");
     private static final DynamicStringProperty CATALOG_BINARY = ArchaiusUtil.getString("catalog.service.executable");
-    private static final DynamicStringProperty DB_PARAMS = ArchaiusUtil.getString("db.cattle.go.params");
+    public static final DynamicStringProperty DB_PARAMS = ArchaiusUtil.getString("db.cattle.go.params");
     private static final DynamicBooleanProperty LAUNCH_CATALOG = ArchaiusUtil.getBoolean("catalog.execute");
     private static final DynamicStringProperty RANCHER_SERVER_VERSION = ArchaiusUtil.getString("rancher.server.version");
 
