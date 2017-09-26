@@ -149,7 +149,7 @@ public class LoadBalancerServiceInstanceStopPreListener extends AgentBasedProces
                 Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
                 String launchConfigName = labels.get(LABEL_SERVICE_LAUNCH_CONFIG) != null ? labels.get(LABEL_SERVICE_LAUNCH_CONFIG).toString() : null;
                 Object drainTimeout = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
-                        InstanceConstants.FIELD_DRAIN_TIMEOUT);
+                        ServiceConstants.FIELD_DRAIN_TIMEOUT);
                 if (drainTimeout != null)
                     data.put("drainTimeout", drainTimeout.toString());
             }

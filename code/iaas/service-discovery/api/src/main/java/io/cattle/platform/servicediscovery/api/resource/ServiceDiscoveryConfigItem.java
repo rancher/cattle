@@ -174,6 +174,9 @@ public class ServiceDiscoveryConfigItem {
             ServiceConstants.FIELD_VOLUME_PER_CONTAINER,
             NamedUtils.toUnderscoreSeparated(ServiceConstants.FIELD_VOLUME_PER_CONTAINER), true);
 
+    public static final ServiceDiscoveryConfigItem DRAINTIMEOUT = new ServiceDiscoveryConfigItem(ServiceConstants.FIELD_DRAIN_TIMEOUT,
+            NamedUtils.toUnderscoreSeparated(ServiceConstants.FIELD_DRAIN_TIMEOUT), true, false, false);
+
     /**
      * Name as it appears in docker-compose file
      */

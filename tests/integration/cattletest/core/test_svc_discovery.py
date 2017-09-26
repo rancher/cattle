@@ -2030,6 +2030,7 @@ def test_export_config(client, context):
                      "tmpfs": {"/run": "rw"},
                      "sysctls": {"net.ipv4.ip_forward": "1"},
                      "runInit": True,
+                     "drainTimeoutMS": 15000,
                      "ulimits": [{"name": "cpu", "soft": 1234, "hard": 1234},
                                  {"name": "nporc", "soft": 1234}]
                      }
@@ -2092,6 +2093,7 @@ def test_export_config(client, context):
                               "nporc": 1234}
     assert svc["sysctls"] == {"net.ipv4.ip_forward": "1"}
     assert svc["init"] is True
+    assert svc["drain_timeout_ms"] == 15000
 
     rancher_yml = yaml.load(compose_config.rancherComposeConfig)
     svc = rancher_yml['services'][service.name]
