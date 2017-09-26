@@ -14,6 +14,10 @@ public class K8sLifecycleManagerImpl implements K8sLifecycleManager {
 
     @Override
     public void instanceCreate(Instance instance) {
+        if (!instance.getNativeContainer()) {
+            return;
+        }
+
         Map<String, Object> labels = DataAccessor.fieldMapRO(instance, InstanceConstants.FIELD_LABELS);
 
         Object namespace = labels.get(SystemLabels.LABEL_K8S_POD_NAMESPACE);
