@@ -41,6 +41,9 @@ public class MetadataObjectFactory {
         if (obj instanceof Host) {
             return new HostInfo((Host) obj);
         } else if (obj instanceof Instance) {
+            if (((Instance) obj).getHidden()) {
+                return null;
+            }
             return new InstanceInfo((Instance) obj);
         } else if (obj instanceof Stack) {
             return new StackInfo(((Stack)obj));
