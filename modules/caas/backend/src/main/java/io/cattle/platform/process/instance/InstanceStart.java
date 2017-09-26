@@ -9,6 +9,7 @@ import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.metadata.MetadataManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
@@ -25,8 +26,8 @@ public class InstanceStart extends DeploymentSyncRequestHandler {
     private static final DynamicIntProperty COMPUTE_TRIES = ArchaiusUtil.getInt("instance.compute.tries");
     private static final Logger log = LoggerFactory.getLogger(InstanceStart.class);
 
-    public InstanceStart(AgentLocator agentLocator, ObjectSerializer serializer, ObjectManager objectManager, ObjectProcessManager processManager, DeploymentSyncFactory syncFactory, MetadataManager metadataManager) {
-        super(agentLocator, serializer, objectManager, processManager, syncFactory, metadataManager);
+    public InstanceStart(AgentLocator agentLocator, ObjectSerializer serializer, ObjectManager objectManager, ObjectProcessManager processManager, DeploymentSyncFactory syncFactory, MetadataManager metadataManager, EventService eventService) {
+        super(agentLocator, serializer, objectManager, processManager, syncFactory, metadataManager, eventService);
         sendNoOp = true;
         commandName = "compute.instance.activate";
         processDataKeys = Collections.singletonList(InstanceConstants.PROCESS_DATA_NO_OP);

@@ -10,6 +10,7 @@ import io.cattle.platform.util.type.CollectionUtils;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jooq.exception.DataChangedException;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
@@ -262,6 +263,33 @@ public class ObjectUtils {
             }
         }
         return true;
+    }
+
+    public static void publishTransitioningMessage(ObjectManager objectManager, EventService eventService, Event event, Object resource) {
+        Map<String, Object> data = new HashMap<>();
+        String transitioning = event.getTransitioningMessage();
+
+        if (transitioning != null) {
+            data.put(ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD, transitioning);
+        }
+
+        if (data.size() > 0) {
+            DataChangedException dce = null;
+            for (int i = 0; i < 3 ; i++) {
+                try {
+                    Object reloaded = objectManager.reload(resource);
+                    objectManager.setFields(reloaded, data);
+                    dce = null;
+                    ObjectUtils.publishChanged(eventService, objectManager, reloaded);
+                    break;
+                } catch (DataChangedException e) {
+                    dce = e;
+                }
+            }
+            if (dce != null) {
+                throw dce;
+            }
+        }
     }
 
     private static boolean compareMaps(Map<Object, Object> a, Map<Object, Object> b) {
