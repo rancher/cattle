@@ -249,21 +249,23 @@ public class ServiceLaunchConfig implements LaunchConfig {
             return Result.good();
         }
 
-        Instance removed = svc.metadataManager.getMetadataForAccount(instance.getInternal().getAccountId()).modify(Instance.class, instance.getId(), (i) -> {
+        boolean removed[] = new boolean[]{false};
+        svc.metadataManager.getMetadataForAccount(instance.getInternal().getAccountId()).modify(Instance.class, instance.getId(), (i) -> {
             DataAccessor.setField(i, InstanceConstants.FIELD_PORTS, new ArrayList<>(newPorts));
 
             if (InstanceConstants.STATE_RUNNING.equals(i.getState())) {
                 if (!svc.portManager.optionallyAssignPorts(i.getClusterId(), i.getHostId(), i.getId(), PortSpec.getPorts(i))) {
+                    removed[0] = true;
                     svc.processManager.stopThenRemove(i, null);
                     return i;
                 }
             }
 
             svc.objectManager.persist(i);
-            return null;
+            return i;
         });
 
-        if (removed != null) {
+        if (removed[0]) {
             return new Result(Unit.UnitState.WAITING, null, "Recreating instance due to port scheduling");
         }
 
