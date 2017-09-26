@@ -19,6 +19,8 @@ import io.cattle.platform.service.launcher.GenericServiceLauncher;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 
+import static io.cattle.platform.launcher.CatalogLauncher.*;
+
 public class NetesLauncher extends GenericServiceLauncher {
 
     private static final DynamicStringProperty NETES_BINARY = ArchaiusUtil.getString("netes.executable");
@@ -48,6 +50,12 @@ public class NetesLauncher extends GenericServiceLauncher {
         env.put("CATTLE_ACCESS_KEY", cred.getPublicValue());
         env.put("CATTLE_SECRET_KEY", cred.getSecretValue());
         env.put("CATTLE_URL", ServerContext.getLocalhostUrl(BaseProtocol.HTTP));
+
+        env.put("NETES_MYSQL_ADDRESS", String.format("%s:%s", DBSettings.DB_HOST.get(), DBSettings.DB_PORT.get()));
+        env.put("NETES_MYSQL_DBNAME", DBSettings.DB_NAME.get());
+        env.put("NETES_MYSQL_USER", DBSettings.DB_USER.get());
+        env.put("NETES_MYSQL_PASSWORD", DBSettings.DB_PASS.get());
+        env.put("NETES_MYSQL_PARAMS", DB_PARAMS.get() == null ? "" : DB_PARAMS.get());
     }
 
     @Override

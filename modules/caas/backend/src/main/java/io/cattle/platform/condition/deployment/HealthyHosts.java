@@ -6,8 +6,6 @@ public interface HealthyHosts {
 
     boolean hostIsHealthy(DeploymentUnit unit, Runnable callback);
 
-    boolean hostIsHealthy(long hostId, Runnable callback);
-
     void setHostHealth(long hostId, boolean good);
 
     void setClusterHealth(long clusterId, boolean good);
