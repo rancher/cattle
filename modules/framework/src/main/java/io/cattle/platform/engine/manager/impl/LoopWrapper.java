@@ -10,6 +10,7 @@ import io.cattle.platform.engine.model.Loop.Result;
 import io.cattle.platform.engine.process.impl.ProcessDelayException;
 import org.apache.cloudstack.managed.context.InContext;
 import org.apache.cloudstack.managed.context.NoException;
+import org.jooq.exception.DataChangedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,12 +111,13 @@ public class LoopWrapper {
             }
             result = DeferredUtils.nest(() -> inner.run(inputs));
         } catch (ProcessDelayException e) {
-            delay = e.getRunAfter().getTime()-System.currentTimeMillis();
+            delay = e.getRunAfter().getTime() - System.currentTimeMillis();
             if (delay > 0) {
                 result = Result.WAITING;
             } else {
                 delay = 0L;
             }
+        } catch (DataChangedException ignored) {
         } catch (Throwable t) {
             lastError = t;
         } finally {
