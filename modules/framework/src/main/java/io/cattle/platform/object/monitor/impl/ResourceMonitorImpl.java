@@ -17,6 +17,7 @@ import io.cattle.platform.task.Task;
 import io.cattle.platform.task.TaskOptions;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.id.IdFormatter;
+import org.apache.cloudstack.managed.context.NoException;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
 
 public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListener, Task, TaskOptions {
 
@@ -33,11 +35,13 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
     ObjectManager objectManager;
     ConcurrentMap<String, List<Runnable>> waiters = new ConcurrentHashMap<>();
     IdFormatter idFormatter;
+    ExecutorService executorService;
 
-    public ResourceMonitorImpl(ObjectManager objectManager, IdFormatter idFormatter) {
+    public ResourceMonitorImpl(ExecutorService executorService, ObjectManager objectManager, IdFormatter idFormatter) {
         super();
         this.objectManager = objectManager;
         this.idFormatter = idFormatter;
+        this.executorService = executorService;
     }
 
     @EventHandler
@@ -50,7 +54,9 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
         String key = key(event.getResourceType(), event.getResourceId());
         List<Runnable> checkers = waiters.get(key);
         if (checkers != null) {
-            checkers.forEach(Runnable::run);
+            synchronized (checkers) {
+                checkers.forEach((c) -> executorService.submit((NoException)c::run));
+            }
         }
     }
 

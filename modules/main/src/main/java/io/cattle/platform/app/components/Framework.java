@@ -163,7 +163,7 @@ public class Framework {
         processInstanceExecutor = new ProcessInstanceDispatcherImpl(defaultProcessManager);
         processManager = new DefaultObjectProcessManager(defaultProcessManager, coreSchemaFactory, objectManager);
         idFormatter = buildIdFormatter();
-        resourceMonitor = new ResourceMonitorImpl(objectManager, idFormatter);
+        resourceMonitor = new ResourceMonitorImpl(executorService, objectManager, idFormatter);
         resourcePoolManager = new ResourcePoolManagerImpl(objectManager,
                 new MacAddressGeneratorFactory(),
                 new MacAddressPrefixGeneratorFactory(),
