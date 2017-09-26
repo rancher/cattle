@@ -258,6 +258,8 @@ public class ServiceLaunchConfig implements LaunchConfig {
                     return i;
                 }
             }
+
+            svc.objectManager.persist(i);
             return null;
         });
 
