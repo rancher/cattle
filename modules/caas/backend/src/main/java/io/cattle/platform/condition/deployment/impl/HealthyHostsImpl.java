@@ -25,11 +25,6 @@ public class HealthyHostsImpl implements HealthyHosts, ConditionValues<HealthyHo
     }
 
     @Override
-    public boolean hostIsHealthy(long hostId, Runnable callback) {
-        return condition.check(new HostCluster(hostId), callback);
-    }
-
-    @Override
     public void setHostHealth(long hostId, boolean good) {
         this.setters.forEach(consumer -> consumer.accept("host/" + hostId, good));
     }
