@@ -27,6 +27,7 @@ import io.cattle.platform.resource.pool.ResourcePoolManager;
 import io.cattle.platform.resource.pool.util.ResourcePoolConstants;
 import io.cattle.platform.util.exception.ExecutionException;
 import io.cattle.platform.util.type.CollectionUtils;
+import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.util.ProxyUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -188,6 +189,7 @@ public class NetworkProcessManager {
 
         List<Network> networks = objectManager.find(Network.class,
                 NETWORK.CLUSTER_ID, cluster.getId(),
+                NETWORK.STATE, Condition.ne(CommonStatesConstants.REMOVING),
                 NETWORK.REMOVED, null);
 
         for (Network network : networks) {
