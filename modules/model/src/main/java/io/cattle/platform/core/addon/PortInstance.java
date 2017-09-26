@@ -1,5 +1,7 @@
 package io.cattle.platform.core.addon;
 
+import io.cattle.platform.core.addon.metadata.InstanceInfo;
+import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.util.PortSpec;
 import io.github.ibuildthecloud.gdapi.annotation.Field;
 import io.github.ibuildthecloud.gdapi.annotation.Type;
@@ -17,10 +19,6 @@ public class PortInstance {
      * The agent IP of the host.  In the situation that bindIpAddress is 0.0.0.0, agentIp helps the UI/CLI show something more useful.
      */
     String agentIpAddress;
-    /**
-     * The IP the port was scheduled to.  This is in the situation of hosts w/ multiple public IP addresses
-     */
-    String bindIpAddress;
     String protocol;
     String fqdn;
     Integer publicPort;
@@ -41,14 +39,23 @@ public class PortInstance {
         this.protocol = procotol;
     }
 
-    public PortInstance(PortSpec spec) {
+    public PortInstance(PortSpec spec, Long instanceId, Long hostId) {
         this.ipAddress = spec.getIpAddress();
-        this.bindIpAddress = spec.getIpAddress();
         this.publicPort = spec.getPublicPort();
         this.privatePort = spec.getPrivatePort();
         this.protocol = spec.getProtocol();
+        this.instanceId = instanceId;
+        this.hostId = hostId;
     }
 
+    public PortInstance(PortSpec spec, Instance instance) {
+        this(spec, instance.getId(), instance.getHostId());
+    }
+
+    public PortInstance(PortSpec spec, InstanceInfo instance) {
+        this(spec, instance.getId(), instance.getHostId());
+
+    }
     public boolean matches(PortSpec spec) {
         if (spec == null) {
             return false;
@@ -134,14 +141,10 @@ public class PortInstance {
     }
 
     public String getBindIpAddress() {
-        if (bindIpAddress == null) {
+        if (ipAddress == null) {
             return "0.0.0.0";
         }
-        return bindIpAddress;
-    }
-
-    public void setBindIpAddress(String bindIpAddress) {
-        this.bindIpAddress = bindIpAddress;
+        return ipAddress;
     }
 
     @Override
@@ -155,7 +158,6 @@ public class PortInstance {
         return new EqualsBuilder()
                 .append(ipAddress, that.ipAddress)
                 .append(agentIpAddress, that.agentIpAddress)
-                .append(bindIpAddress, that.bindIpAddress)
                 .append(protocol, that.protocol)
                 .append(fqdn, that.fqdn)
                 .append(publicPort, that.publicPort)
@@ -171,7 +173,6 @@ public class PortInstance {
         return new HashCodeBuilder(17, 37)
                 .append(ipAddress)
                 .append(agentIpAddress)
-                .append(bindIpAddress)
                 .append(protocol)
                 .append(fqdn)
                 .append(publicPort)

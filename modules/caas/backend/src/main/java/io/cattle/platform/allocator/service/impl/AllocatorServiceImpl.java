@@ -1,6 +1,5 @@
 package io.cattle.platform.allocator.service.impl;
 
-import com.netflix.config.DynamicStringProperty;
 import io.cattle.platform.agent.AgentLocator;
 import io.cattle.platform.allocator.constraint.Constraint;
 import io.cattle.platform.allocator.constraint.PortsConstraint;
@@ -17,8 +16,6 @@ import io.cattle.platform.allocator.service.AllocationCandidate;
 import io.cattle.platform.allocator.service.AllocationHelper;
 import io.cattle.platform.allocator.service.AllocationLog;
 import io.cattle.platform.allocator.service.AllocatorService;
-import io.cattle.platform.archaius.util.ArchaiusUtil;
-import io.cattle.platform.core.addon.PortInstance;
 import io.cattle.platform.core.addon.metadata.HostInfo;
 import io.cattle.platform.core.cache.QueryOptions;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -53,24 +50,12 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.*;
 
 public class AllocatorServiceImpl implements AllocatorService {
 
     private static final Logger log = LoggerFactory.getLogger(AllocatorServiceImpl.class);
-    private static final DynamicStringProperty PORT_SCHEDULER_IMAGE_VERSION = ArchaiusUtil.getString("port.scheduler.image.version");
-    private static final String FORCE_RESERVE = "force";
-    private static final String HOST_ID = "hostID";
-    private static final String RESOURCE_REQUESTS = "resourceRequests";
-    private static final String CONTEXT = "context";
-    private static final String INSTANCE_RESERVATION = "instanceReservation";
-    private static final String MEMORY_RESERVATION = "memoryReservation";
-    private static final String CPU_RESERVATION = "cpuReservation";
-    private static final String STORAGE_SIZE = "storageSize";
-    private static final String PORT_RESERVATION = "portReservation";
-    private static final String COMPUTE_POOL = "computePool";
-    private static final String PORT_POOL = "portPool";
-    private static final String PHASE = "phase";
 
     AgentDao agentDao;
     AgentLocator agentLocator;
@@ -135,7 +120,7 @@ public class AllocatorServiceImpl implements AllocatorService {
     @Override
     public void ensureResourcesReservedForStart(Instance instance) {
         if (instance.getHostId() != null) {
-            if (!portManager.optionallyAssignPorts(instance.getClusterId(), instance.getHostId(), instance.getId(), getPorts(instance))) {
+            if (!portManager.optionallyAssignPorts(instance.getClusterId(), instance.getHostId(), instance.getId(), PortSpec.getPorts(instance))) {
                 throw new FailedToAllocate(String.format("Error reserving ports: %s", extractPorts(instance)));
             }
         }
@@ -143,7 +128,7 @@ public class AllocatorServiceImpl implements AllocatorService {
 
     private String extractPorts(Instance instance) {
         List<String> ports = new ArrayList<>();
-        for (PortInstance port : getPorts(instance)) {
+        for (PortSpec port : PortSpec.getPorts(instance)) {
             if (StringUtils.isBlank(port.getIpAddress())) {
                 ports.add(String.format("%d", port.getPublicPort()));
             } else {
@@ -152,10 +137,6 @@ public class AllocatorServiceImpl implements AllocatorService {
         }
 
         return StringUtils.join(ports, ", ");
-    }
-
-    private List<PortInstance> getPorts(Instance instance) {
-        return DataAccessor.fieldObjectList(instance, InstanceConstants.FIELD_PORT_BINDINGS, PortInstance.class);
     }
 
     @Override
@@ -176,7 +157,7 @@ public class AllocatorServiceImpl implements AllocatorService {
                             return instance;
                         }
                         return i;
-                    }).collect(Collectors.toList());
+                    }).collect(toList());
         } else {
             List<Instance> instances = new ArrayList<>();
             instances.add(instance);
@@ -305,8 +286,7 @@ public class AllocatorServiceImpl implements AllocatorService {
 
         if (attempt.getMatchedCandidate() == null) {
             if (finalFailedConstraints.size() > 0) {
-                throw new FailedToAllocate(String.format("%s and resource constraints: %s",
-                        toErrorMessage(finalFailedConstraints), attempt.getResourceRequests()));
+                throw new FailedToAllocate(String.format("%s", toErrorMessage(finalFailedConstraints)));
             }
             throw new FailedToAllocate("Failed to find placement");
         }
@@ -452,11 +432,6 @@ public class AllocatorServiceImpl implements AllocatorService {
     }
 
     protected Iterator<AllocationCandidate> getCandidates(AllocationAttempt attempt) {
-        List<Long> volumeIds = new ArrayList<>();
-        for (Volume v : attempt.getVolumes()) {
-            volumeIds.add(v.getId());
-        }
-
         QueryOptions options = new QueryOptions();
         options.setClusterId(attempt.getClusterId());
         options.setRequestedHostId(attempt.getRequestedHostId());
@@ -481,7 +456,7 @@ public class AllocatorServiceImpl implements AllocatorService {
             @Override
             public AllocationCandidate next() {
                 HostInfo host = iter.next();
-                return new AllocationCandidate(host.getId(), host.getUuid(), host.getPorts(), options.getClusterId());
+                return new AllocationCandidate(host.getId(), host.getUuid(), options.getClusterId());
             }
         };
     }
@@ -502,8 +477,7 @@ public class AllocatorServiceImpl implements AllocatorService {
 
     private void releaseResources(Instance instance) {
         if (instance.getHostId() != null) {
-            portManager.releasePorts(instance.getClusterId(), instance.getHostId(),
-                    DataAccessor.fieldObjectList(instance, InstanceConstants.FIELD_PORT_BINDINGS, PortInstance.class));
+            portManager.releasePorts(instance.getClusterId(), instance.getHostId(), instance.getId(), PortSpec.getPorts(instance));
         }
     }
 

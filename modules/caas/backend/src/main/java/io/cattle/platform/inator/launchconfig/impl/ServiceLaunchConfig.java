@@ -9,9 +9,11 @@ import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Volume;
 import io.cattle.platform.core.model.VolumeTemplate;
+import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.core.util.ServiceUtil;
 import io.cattle.platform.inator.InatorContext;
 import io.cattle.platform.inator.InstanceBindable;
+import io.cattle.platform.inator.Result;
 import io.cattle.platform.inator.Unit;
 import io.cattle.platform.inator.UnitRef;
 import io.cattle.platform.inator.factory.InatorServices;
@@ -215,10 +217,11 @@ public class ServiceLaunchConfig implements LaunchConfig {
     }
 
     @Override
-    public void applyDynamic(InstanceWrapper instance, InatorContext context) {
+    public Result applyDynamic(InstanceWrapper instance, InatorContext context) {
         if (this.ports != null) {
-            processDynamicPorts(instance, context);
+            return processDynamicPorts(instance, context);
         }
+        return Result.good();
     }
 
     @Override
@@ -226,7 +229,7 @@ public class ServiceLaunchConfig implements LaunchConfig {
         return name.equals(ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME) ? currentService.getName() : name;
     }
 
-    protected void processDynamicPorts(InstanceWrapper instance, InatorContext context) {
+    protected Result processDynamicPorts(InstanceWrapper instance, InatorContext context) {
         Map<String, Object> testData = new HashMap<>();
         testData.put(InstanceConstants.FIELD_PORTS, lc.get(InstanceConstants.FIELD_PORTS));
 
@@ -243,12 +246,26 @@ public class ServiceLaunchConfig implements LaunchConfig {
         Set<String> newPorts = new HashSet<>(newPortList);
 
         if (currentPorts.equals(newPorts)) {
-            return;
+            return Result.good();
         }
 
-        svc.metadataManager.getMetadataForAccount(instance.getInternal().getAccountId()).modify(Instance.class, instance.getId(), (i) -> {
-            return svc.objectManager.setFields(i, InstanceConstants.FIELD_PORTS, newPorts);
+        Instance removed = svc.metadataManager.getMetadataForAccount(instance.getInternal().getAccountId()).modify(Instance.class, instance.getId(), (i) -> {
+            DataAccessor.setField(i, InstanceConstants.FIELD_PORTS, new ArrayList<>(newPorts));
+
+            if (InstanceConstants.STATE_RUNNING.equals(i.getState())) {
+                if (!svc.portManager.optionallyAssignPorts(i.getClusterId(), i.getHostId(), i.getId(), PortSpec.getPorts(i))) {
+                    svc.processManager.stopThenRemove(i, null);
+                    return i;
+                }
+            }
+            return null;
         });
+
+        if (removed != null) {
+            return new Result(Unit.UnitState.WAITING, null, "Recreating instance due to port scheduling");
+        }
+
+        return Result.good();
     }
 
     protected Object convertUnitRefsToInstanceIds(Map<UnitRef, Unit> units, UnitRefList refOrList) {

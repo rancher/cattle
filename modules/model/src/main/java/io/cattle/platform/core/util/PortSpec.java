@@ -1,15 +1,21 @@
 package io.cattle.platform.core.util;
 
 import io.cattle.platform.core.addon.PortInstance;
+import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.model.Instance;
+import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
+import static java.util.stream.Collectors.*;
 
 public class PortSpec {
 
@@ -136,5 +142,37 @@ public class PortSpec {
     @Override
     public String toString() {
         return toSpec();
+    }
+
+    public static List<PortSpec> getPorts(Instance instance) {
+        return DataAccessor.fieldStringList(instance, InstanceConstants.FIELD_PORTS).stream()
+                .map(PortSpec::new)
+                .collect(toList());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o == null || getClass() != o.getClass()) return false;
+
+        PortSpec portSpec = (PortSpec) o;
+
+        return new EqualsBuilder()
+                .append(privatePort, portSpec.privatePort)
+                .append(ipAddress, portSpec.ipAddress)
+                .append(publicPort, portSpec.publicPort)
+                .append(protocol, portSpec.protocol)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(privatePort)
+                .append(ipAddress)
+                .append(publicPort)
+                .append(protocol)
+                .toHashCode();
     }
 }

@@ -3,20 +3,20 @@ package io.cattle.platform.allocator.port;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import io.cattle.platform.core.addon.PortInstance;
+import io.cattle.platform.core.addon.metadata.EnvironmentInfo;
+import io.cattle.platform.core.addon.metadata.InstanceInfo;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.util.PortSpec;
+import io.cattle.platform.metadata.Metadata;
 import io.cattle.platform.metadata.MetadataManager;
+import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.*;
 
 public class PortManagerImpl implements PortManager {
 
@@ -67,19 +67,16 @@ public class PortManagerImpl implements PortManager {
     }
 
     @Override
-    public void assignPorts(long clusterId, long hostId, Collection<PortInstance> ports) {
+    public void assignPorts(long clusterId, long hostId, long instanceId, Collection<PortSpec> ports) {
         Map<String, PortInstance> portMap = getPorts(clusterId, hostId);
-        for (PortInstance port : ports) {
-            portMap.put(toKey(port), port);
+        for (PortSpec port : ports) {
+            PortInstance instance = new PortInstance(port, instanceId, hostId);
+            portMap.put(toKey(instance), instance);
         }
     }
 
     @Override
-    public boolean optionallyAssignPorts(long clusterId, long hostId, long instanceId, Collection<PortInstance> ports) {
-        List<PortSpec> specs = ports.stream()
-                .map(PortSpec::new)
-                .collect(toList());
-
+    public boolean optionallyAssignPorts(long clusterId, long hostId, long instanceId, Collection<PortSpec> specs) {
         if (specs.size() == 0) {
             return true;
         }
@@ -88,14 +85,15 @@ public class PortManagerImpl implements PortManager {
             return false;
         }
 
-        assignPorts(clusterId, hostId, ports);
+        assignPorts(clusterId, hostId, instanceId, specs);
         return true;
     }
 
     @Override
-    public void releasePorts(long clusterId, long hostId, Collection<PortInstance> ports) {
+    public void releasePorts(long clusterId, long hostId, long instanceId, Collection<PortSpec> specs) {
         Map<String, PortInstance> portMap = getPorts(clusterId, hostId);
-        for (PortInstance port : ports) {
+        for (PortSpec spec : specs) {
+            PortInstance port = new PortInstance(spec, instanceId, hostId);
             String key = toKey(port);
             PortInstance existing = portMap.get(key);
             if (existing != null && Objects.equals(port.getInstanceId(), existing.getInstanceId())) {
@@ -106,18 +104,41 @@ public class PortManagerImpl implements PortManager {
 
     private Map<String, PortInstance> getPorts(long clusterId, long hostId) {
         try {
-            return cache.get(hostId, () ->
-                metadataManager.getMetadataForCluster(clusterId)
-                        .getInstances().stream()
-                        .filter(instance -> Objects.equals(hostId, instance.getHostId()) &&
-                                InstanceConstants.STATE_RUNNING.equals(instance.getState()))
-                        .flatMap(instanceInfo -> instanceInfo.getPorts().stream())
-                        .collect(Collectors.toConcurrentMap(
-                                this::toKey,
-                                Function.identity())));
+            return cache.get(hostId, () -> {
+                Metadata metadata = metadataManager.getMetadataForCluster(clusterId);
+                Map<String, PortInstance> portSet = getPortSet(metadata.getInstances(), hostId);
+
+                for (EnvironmentInfo info : metadata.getEnvironments()) {
+                    metadata = metadataManager.getMetadataForAccount(info.getAccountId());
+                    portSet.putAll(getPortSet(metadata.getInstances(), hostId));
+                }
+
+                return portSet;
+            });
         } catch (ExecutionException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    private Map<String, PortInstance> getPortSet(Collection<InstanceInfo> instanceInfos, long hostId) {
+        Map<String, PortInstance> result = new HashMap<>();
+
+        for (InstanceInfo instanceInfo : instanceInfos) {
+            if (!Objects.equals(hostId, instanceInfo.getHostId()) ||
+                !InstanceConstants.STATE_RUNNING.equals(instanceInfo.getState())) {
+                continue;
+            }
+
+            for (String spec : instanceInfo.getPortSpecs()) {
+                try {
+                    PortInstance port = new PortInstance(new PortSpec(spec), instanceInfo.getId(), instanceInfo.getHostId());
+                    result.put(toKey(port), port);
+                } catch (ClientVisibleException ignored) {
+                }
+            }
+        }
+
+        return result;
     }
 
     private String toKey(PortInstance port) {

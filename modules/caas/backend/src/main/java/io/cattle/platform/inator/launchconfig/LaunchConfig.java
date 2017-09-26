@@ -1,6 +1,7 @@
 package io.cattle.platform.inator.launchconfig;
 
 import io.cattle.platform.inator.InatorContext;
+import io.cattle.platform.inator.Result;
 import io.cattle.platform.inator.Unit;
 import io.cattle.platform.inator.UnitRef;
 import io.cattle.platform.inator.wrapper.DeploymentUnitWrapper;
@@ -31,7 +32,7 @@ public interface LaunchConfig {
 
     String getPullMode();
 
-    void applyDynamic(InstanceWrapper instance, InatorContext context);
+    Result applyDynamic(InstanceWrapper instance, InatorContext context);
 
     String getServiceName();
 }

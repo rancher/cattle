@@ -61,7 +61,7 @@ public class LoopWrapper {
 
         synchronized (collectionLock) {
             waiters.add(w);
-            scheduledExecutor.schedule(() -> w.future.setException(new TimeoutException()), 30, TimeUnit.SECONDS);
+            scheduledExecutor.schedule(() -> w.future.setException(new TimeoutException()), 2, TimeUnit.MINUTES);
 
             if (input instanceof List<?>) {
                 inputs.addAll((List<?>) input);
