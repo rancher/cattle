@@ -712,7 +712,7 @@
         "externalService.createIndex" : "",
         "externalService.currentScale" : "",
         "externalService.externalIpAddresses" : "cru",
-        "externalService.healthCheck" : "cr",
+        "externalService.healthCheck" : "cru",
         "externalService.hostname" : "cru",
         "externalService.intervalMillis" : "",
         "externalService.lbConfig" : "",
