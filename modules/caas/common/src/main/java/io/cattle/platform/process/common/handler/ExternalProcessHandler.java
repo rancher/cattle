@@ -118,4 +118,21 @@ public class ExternalProcessHandler implements ProcessHandler, CompletableLogic 
             this.condition = ArchaiusUtil.getBoolean(condition);
         }
     }
+
+    public Integer getRetry() {
+        return retry;
+    }
+
+    public void setRetry(Integer retry) {
+        this.retry = retry;
+    }
+
+    public Long getTimeoutMillis() {
+        return timeoutMillis;
+    }
+
+    public void setTimeoutMillis(Long timeoutMillis) {
+        this.timeoutMillis = timeoutMillis;
+    }
+
 }
