@@ -1,5 +1,7 @@
 package io.cattle.platform.lifecycle.impl;
 
+import static io.cattle.platform.object.util.DataAccessor.*;
+
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.model.Instance;
@@ -17,13 +19,13 @@ import io.cattle.platform.resource.pool.PooledResource;
 import io.cattle.platform.resource.pool.PooledResourceOptions;
 import io.cattle.platform.resource.pool.ResourcePoolManager;
 import io.cattle.platform.resource.pool.util.ResourcePoolConstants;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static io.cattle.platform.object.util.DataAccessor.*;
+import org.apache.commons.lang3.StringUtils;
 
 public class NetworkLifecycleManagerImpl implements NetworkLifecycleManager {
 
@@ -113,7 +115,16 @@ public class NetworkLifecycleManagerImpl implements NetworkLifecycleManager {
         }
 
         // append Rancher search domains and corresponding labels
-        List<String> dnsSearchList = appendToFieldStringList(instance, InstanceConstants.FIELD_DNS_SEARCH, ServiceUtil.getContainerNamespace(instance));
+        List<String> dnsSearchList = DataAccessor.fieldStringList(instance, InstanceConstants.FIELD_DNS_SEARCH);
+        Iterator<String> it = dnsSearchList.iterator();
+        while (it.hasNext()) {
+            String search = it.next();
+            if (search.endsWith(String.format(".%s", NetworkConstants.INTERNAL_DNS_SEARCH_DOMAIN))) {
+                it.remove();
+            }
+        }
+        String rancherSearchDomain =  ServiceUtil.getContainerNamespace(instance);
+        dnsSearchList.add(rancherSearchDomain);
         setField(instance, InstanceConstants.FIELD_DNS_SEARCH, dnsSearchList);
         String searchLabel = dnsSearchList.stream().collect(Collectors.joining(","));
         setLabel(instance, SystemLabels.LABEL_DNS_SEARCH, searchLabel);
