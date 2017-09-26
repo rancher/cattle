@@ -15,6 +15,7 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.eventing.EventCallOptions;
+import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.exception.AgentRemovedException;
 import io.cattle.platform.eventing.exception.EventExecutionException;
 import io.cattle.platform.eventing.model.Event;
@@ -23,8 +24,6 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.serialization.ObjectSerializer;
 import io.cattle.platform.object.util.ObjectUtils;
-import io.cattle.platform.process.progress.ProcessProgress;
-import io.cattle.platform.process.progress.ProcessProgressInstance;
 import io.cattle.platform.util.exception.ExecutionException;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.Named;
@@ -41,7 +40,7 @@ public class AgentBasedProcessHandler implements CompletableLogic, Named {
     protected ObjectSerializer serializer;
     protected ObjectManager objectManager;
     protected ObjectProcessManager processManager;
-    protected ProcessProgress progress;
+    protected EventService eventService;
 
     protected boolean sendNoOp;
     protected String name;
@@ -55,12 +54,13 @@ public class AgentBasedProcessHandler implements CompletableLogic, Named {
     protected List<String> processDataKeys = new ArrayList<>();
 
     public AgentBasedProcessHandler(AgentLocator agentLocator, ObjectSerializer serializer, ObjectManager objectManager,
-            ObjectProcessManager processManager) {
+            ObjectProcessManager processManager, EventService eventService) {
         this.agentLocator = agentLocator;
         this.serializer = serializer;
         this.objectManager = objectManager;
         this.processManager = processManager;
         this.name = getClass().getSimpleName();
+        this.eventService = eventService;
     }
 
     @Override
@@ -160,14 +160,9 @@ public class AgentBasedProcessHandler implements CompletableLogic, Named {
         EventCallOptions options = new EventCallOptions();
         options.setRetry(eventRetry);
 
-        if (progress != null) {
-            final ProcessProgressInstance progressInstance = progress.get();
-            progressInstance.init(state);
+        if (eventService != null) {
             options.withProgressIsKeepAlive(true).withProgress(event1 -> {
-                String message = event1.getTransitioningMessage();
-                if (message != null) {
-                    progressInstance.messsage(message);
-                }
+                ObjectUtils.publishTransitioningMessage(objectManager, eventService, event1, eventResource);
             });
         }
 

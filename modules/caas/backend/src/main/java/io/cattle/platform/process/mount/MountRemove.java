@@ -16,7 +16,7 @@ import io.cattle.platform.process.common.handler.AgentBasedProcessHandler;
 public class MountRemove extends AgentBasedProcessHandler {
 
     public MountRemove(AgentLocator agentLocator, ObjectSerializer serializer, ObjectManager objectManager, ObjectProcessManager processManager) {
-        super(agentLocator, serializer, objectManager, processManager);
+        super(agentLocator, serializer, objectManager, processManager, null);
         ignoreReconnecting = true;
         commandName = "storage.volume.remove";
         shortCircuitIfAgentRemoved = true;

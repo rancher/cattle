@@ -21,7 +21,6 @@ import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.util.exception.ExecutionException;
 import io.cattle.platform.util.type.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jooq.exception.DataChangedException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -80,30 +79,7 @@ public class ExternalProcessHandler implements ProcessHandler, CompletableLogic 
         EventCallOptions options = new EventCallOptions(retry, timeoutMillis);
         options.setProgressIsKeepAlive(true);
         options.setProgress(event -> {
-            Map<String, Object> data = new HashMap<>();
-            String transitioning = event.getTransitioningMessage();
-
-            if (transitioning != null) {
-                data.put(ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD, transitioning);
-            }
-
-            if (data.size() > 0) {
-                DataChangedException dce = null;
-                for (int i = 0; i < 3 ; i++) {
-                    try {
-                        Object reloaded = objectManager.reload(resource);
-                        objectManager.setFields(reloaded, data);
-                        dce = null;
-                        ObjectUtils.publishChanged(eventService, objectManager, reloaded);
-                        break;
-                    } catch (DataChangedException e) {
-                        dce = e;
-                    }
-                }
-                if (dce != null) {
-                    throw dce;
-                }
-            }
+            ObjectUtils.publishTransitioningMessage(objectManager, eventService, event, resource);
         });
 
         return new HandlerResult().withFuture(eventService.call(request, options));

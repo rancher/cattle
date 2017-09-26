@@ -8,6 +8,7 @@ import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.metadata.MetadataManager;
@@ -31,8 +32,8 @@ public class DeploymentSyncRequestHandler extends AgentBasedProcessHandler {
     public DeploymentSyncRequestHandler(AgentLocator agentLocator, ObjectSerializer serializer,
                                         ObjectManager objectManager, ObjectProcessManager processManager,
                                         DeploymentSyncFactory syncFactory,
-                                        MetadataManager metadataManager) {
-        super(agentLocator, serializer, objectManager, processManager);
+                                        MetadataManager metadataManager, EventService eventService) {
+        super(agentLocator, serializer, objectManager, processManager, eventService);
         this.syncFactory = syncFactory;
         this.metadataManager = metadataManager;
     }
