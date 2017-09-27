@@ -3,6 +3,7 @@ package io.cattle.platform.servicediscovery.process;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.agent.RemoteAgent;
+import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.core.addon.LbConfig;
 import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -16,17 +17,22 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
+import io.cattle.platform.eventing.exception.EventExecutionException;
+import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
+import io.cattle.platform.object.util.ObjectUtils;
 import io.cattle.platform.process.common.handler.AgentBasedProcessHandler;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
+import io.cattle.platform.util.exception.ExecutionException;
 import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.Priority;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +41,8 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.util.concurrent.ListenableFuture;
 
 public class LoadBalancerServiceInstanceStopPreListener extends AgentBasedProcessHandler implements ProcessPreListener, Priority {
 
@@ -72,49 +80,53 @@ public class LoadBalancerServiceInstanceStopPreListener extends AgentBasedProces
         if (!lbInstances.isEmpty()) {
             objectManager.setFields(instance, ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD, "Draining...");
         }
+
+        String targetIpAddress = DataAccessor.fieldString(instance, InstanceConstants.FIELD_PRIMARY_IP_ADDRESS);
+        // read the launchConfigLabel on the container
+        Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
+        String launchConfigName = labels.get(LABEL_SERVICE_LAUNCH_CONFIG) != null ? labels.get(LABEL_SERVICE_LAUNCH_CONFIG).toString() : null;
+        Object drainTimeout = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
+                ServiceConstants.FIELD_DRAIN_TIMEOUT);
+
+        Map<Instance, ListenableFuture<? extends Event>> drainFutures = new HashMap<>();
+
         for (Instance lbInstance : lbInstances) {
+            ListenableFuture<? extends Event> future = drainBackend(lbInstance, instance, targetIpAddress, drainTimeout);
+            if (future != null) {
+                drainFutures.put(lbInstance, future);
+            }
+        }
+
+        for (Map.Entry<Instance, ListenableFuture<? extends Event>> entry : drainFutures.entrySet()) {
+            Instance lbInstance = entry.getKey();
             RemoteAgent agent = agentLocator.lookupAgent(lbInstance);
-            if (agent == null)
-                continue;
-            log.debug("Sending event to AgentId for the target: " + agent.getAgentId());
-
-            handleEvent(state, process, instance, instance, lbInstance, agent);
-
-            log.debug("Got reply to event from AgentId for the target: " + agent.getAgentId());
-
-            /*
-             * Instead of the sync call above, do we do this? How to wait for all futures to finish, the below will just
-             * finish the for loop and exit:
-             * 
-             * ObjectSerializer serializer = getObjectSerializer(instance);
-             * Map<String, Object> data = serializer == null ? null : serializer.serialize(instance);
-             * EventVO<Object> event = EventVO.newEvent(getCommandName() == null ? process.getName() : getCommandName())
-             * .withData(data)
-             * .withResourceType(getObjectManager().getType(instance))
-             * .withResourceId(ObjectUtils.getId(instance).toString());
-             * 
-             * final ListenableFuture<? extends Event> future = agent.call(event, new EventCallOptions(new Integer(0),
-             * new Long(5000)));
-             * 
-             * future.addListener(new NoExceptionRunnable() {
-             * 
-             * @Override
-             * protected void doRun() {
-             * try {
-             * Event resp = future.get();
-             * String id = resp.getId();
-             * } catch (AgentRemovedException e) {
-             * // ignore this?
-             * } catch (TimeoutException e) {
-             * throw new ProcessDelayException(new Date(System.currentTimeMillis() + 15000));
-             * } catch (Exception e) {
-             * // do nothing or throw processDelay?
-             * }
-             * }
-             * }, MoreExecutors.sameThreadExecutor());
-             */
+            ListenableFuture<? extends Event> future = entry.getValue();
+            try {
+                AsyncUtils.get(future);
+                log.debug("Got reply to event from AgentId for the target: " + agent.getAgentId());
+            } catch (EventExecutionException e) {
+                log.debug("Got error: {}, to event from LB Agent: {} ", e, agent.getAgentId());
+                throw new ExecutionException(e);
+            }
         }
         return null;
+    }
+
+    protected ListenableFuture<? extends Event> drainBackend(Instance lbInstance, Instance targetInstance, String targetIpAddress, Object drainTimeout) {
+        RemoteAgent agent = agentLocator.lookupAgent(lbInstance);
+        if (agent == null) {
+            return null;
+        }
+        Map<String, Object> drainInfo = new HashMap<>();
+        drainInfo.put("targetIPaddress", targetIpAddress);
+        if (drainTimeout != null)
+            drainInfo.put("drainTimeout", drainTimeout.toString());
+
+        Event event = new EventVO<>("target.drain").withData(drainInfo).withResourceType(getObjectManager().getType(targetInstance))
+                .withResourceId(ObjectUtils.getId(targetInstance).toString());
+
+        log.debug("Sending event to AgentId for the target: " + agent.getAgentId());
+        return agent.call(event);
     }
 
     private Service loadService(Instance instance) {
