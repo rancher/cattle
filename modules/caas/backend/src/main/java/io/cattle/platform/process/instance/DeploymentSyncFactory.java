@@ -112,7 +112,7 @@ public class DeploymentSyncFactory {
         List<Credential> credentials = new ArrayList<>();
         if (credentialIds.size() > 0) {
             List<Credential> creds = objectManager.find(Credential.class,
-                    CREDENTIAL.ID, Condition.in(credentialIds));
+                    CREDENTIAL.ID, Condition.in(new ArrayList<>(credentialIds)));
             credentials.addAll(creds);
         }
 
