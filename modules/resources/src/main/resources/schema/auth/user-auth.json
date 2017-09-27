@@ -751,6 +751,16 @@
         "dnsService.storageDriver" : "",
         "dnsService.vip" : "",
 
+        "kubernetesService" : "r",
+        "kubernetesService.externalIpAddresses" : "",
+        "kubernetesService.healthCheck" : "",
+        "kubernetesService.hostname" : "",
+        "kubernetesService.name" : "cru",
+        "kubernetesService.networkDriver" : "",
+        "kubernetesService.storageDriver" : "",
+        "kubernetesService.launchConfig" : "",
+        "kubernetesService.secondaryLaunchConfigs" : "",
+
         "genericObject" : "r",
         "genericObject.name" : "cr",
         "genericObject.key" : "cr",
@@ -985,6 +995,8 @@
         "selectorService.name" : "cru",
         "selectorService.networkDriver" : "",
         "selectorService.storageDriver" : "",
+        "selectorService.launchConfig" : "",
+        "selectorService.secondaryLaunchConfigs" : "",
 
         "scalingGroup": "r",
         "scalingGroup.externalIpAddresses" : "",

@@ -401,7 +401,8 @@ public class Model {
                 "stackUpgrade",
                 "storageDriverService,parent=service",
                 "virtualMachine,parent=container",
-                "secondaryLaunchConfig,parent=launchConfig");
+                "secondaryLaunchConfig,parent=launchConfig",
+                "kubernetesService,parent=service");
     }
 
 }
