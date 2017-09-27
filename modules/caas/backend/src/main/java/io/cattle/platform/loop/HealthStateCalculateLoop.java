@@ -33,7 +33,7 @@ import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 
 public class HealthStateCalculateLoop implements Loop {
     private static final Set<String> SUPPORTED_SERVICE_KINDS = CollectionUtils.set(ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
-            ServiceConstants.KIND_SCALING_GROUP_SERVICE);
+            ServiceConstants.KIND_SCALING_GROUP_SERVICE, ServiceConstants.KIND_SELECTOR_SERVICE);
     private static final Set<String> RUNNING_STATES = CollectionUtils.set(InstanceConstants.STATE_RUNNING);
     private static final Set<String> STOP_STATES = CollectionUtils.set(InstanceConstants.STATE_STOPPING, InstanceConstants.STATE_STOPPED);
     private static final Map<String, List<String>> STATE_TRANSITIONS;
@@ -84,8 +84,9 @@ public class HealthStateCalculateLoop implements Loop {
             }
             if (SUPPORTED_SERVICE_KINDS.contains(serviceInfo.getKind())) {
                 // Haven't met the scale yet
-                if (!serviceInfo.isGlobal() && serviceInfo.getScale() != null &&
-                        healthStates.size() != (serviceInfo.getScale() * (1 + serviceInfo.getSidekicks().size()))) {
+                boolean scaleNotMet = !serviceInfo.isGlobal() && serviceInfo.getScale() != null &&
+                        healthStates.size() != (serviceInfo.getScale() * (1 + serviceInfo.getSidekicks().size()));
+                if (healthStates.isEmpty() || scaleNotMet) {
                     healthStates.add(HEALTH_STATE_DEGRADED);
                 }
             } else {
@@ -128,8 +129,8 @@ public class HealthStateCalculateLoop implements Loop {
                 continue;
             }
 
-            Long serviceId = instanceInfo.getServiceId();
-            if (serviceId != null) {
+            Set<Long> serviceIds = instanceInfo.getServiceIds();
+            for (Long serviceId : serviceIds) {
                 if (instanceInfo.getDesired()) {
                     if (instanceState == null) {
                         serviceState.put(serviceId, HEALTH_STATE_HEALTHY);
@@ -176,6 +177,9 @@ public class HealthStateCalculateLoop implements Loop {
         }
 
         if (allSame) {
+            if (statesSeen.contains(HEALTH_STATE_DEGRADED)) {
+                return HEALTH_STATE_UNHEALTHY;
+            }
             // If all are the same that is the state
             return result;
         }
