@@ -87,6 +87,7 @@
         "volumeActivateInput" : "cr",
         "volume" : "crud",
         "volumeTemplate" : "cr",
+        "kubernetesService" : "crud",
 
         "end" : ""
     }
