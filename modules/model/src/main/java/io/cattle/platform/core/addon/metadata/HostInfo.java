@@ -25,6 +25,7 @@ public class HostInfo implements MetadataObject {
     String hostname;
     Long milliCpu;
     Long memory;
+    Long localStorageMb;
     String nodeName;
 
     public HostInfo(Host host) {
@@ -43,6 +44,7 @@ public class HostInfo implements MetadataObject {
         this.ports = new HashSet<>(
                 DataAccessor.fieldObjectList(host, HostConstants.FIELD_PUBLIC_ENDPOINTS, PortInstance.class));
         this.nodeName = DataAccessor.fieldString(host, HostConstants.FIELD_NODE_NAME);
+        this.localStorageMb = host.getLocalStorageMb();
     }
 
     public long getId() {
@@ -125,6 +127,9 @@ public class HostInfo implements MetadataObject {
         return nodeName;
     }
 
+    public Long getLocalStorageMb() { return localStorageMb; }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -147,6 +152,7 @@ public class HostInfo implements MetadataObject {
         if (hostname != null ? !hostname.equals(hostInfo.hostname) : hostInfo.hostname != null) return false;
         if (milliCpu != null ? !milliCpu.equals(hostInfo.milliCpu) : hostInfo.milliCpu != null) return false;
         if (memory != null ? !memory.equals(hostInfo.memory) : hostInfo.memory != null) return false;
+        if (localStorageMb != null ? !localStorageMb.equals(hostInfo.localStorageMb) : hostInfo.localStorageMb != null) return false;
         return nodeName != null ? nodeName.equals(hostInfo.nodeName) : hostInfo.nodeName == null;
     }
 
@@ -167,6 +173,7 @@ public class HostInfo implements MetadataObject {
         result = 31 * result + (milliCpu != null ? milliCpu.hashCode() : 0);
         result = 31 * result + (memory != null ? memory.hashCode() : 0);
         result = 31 * result + (nodeName != null ? nodeName.hashCode() : 0);
+        result = 31 * result + (localStorageMb != null ? localStorageMb.hashCode() : 0);
         return result;
     }
 }
