@@ -77,7 +77,7 @@ public class PullTaskCreate implements ProcessHandler {
         String mode = DataAccessor.fieldString(pullTask, MODE);
         String image = DataAccessor.fieldString(pullTask, IMAGE);
         List<String> hIds = DataAccessor.fieldStringList(pullTask, HOSTIDS);
-        Credential cred = getCredential(image, pullTask.getAccountId());
+        Credential cred = getCredential(image, pullTask.getClusterId());
         Map<String, String> labels = DataAccessor.field(pullTask, LABELS, Map.class);
         Map<String, String> status = new HashMap<>();
         Map<String, String> errors = new HashMap<>();
@@ -148,8 +148,8 @@ public class PullTaskCreate implements ProcessHandler {
         return null;
     }
 
-    protected Credential getCredential(String uuid, long accountId) {
-        return imageCredentialLookup.getDefaultCredential(uuid, accountId);
+    protected Credential getCredential(String uuid, long clusterId) {
+        return imageCredentialLookup.getDefaultCredential(uuid, clusterId);
     }
 
     protected GenericObject setStatus(GenericObject object, Map<String, String> status, Map<String, String> errors, Host host, String message, boolean error) {

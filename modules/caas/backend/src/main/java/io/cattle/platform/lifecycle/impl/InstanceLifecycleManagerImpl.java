@@ -199,7 +199,7 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
     private void lookupRegistryCredential(Instance instance) {
         if (instance.getRegistryCredentialId() == null) {
             String uuid = fieldString(instance, InstanceConstants.FIELD_IMAGE);
-            Credential cred = credLookup.getDefaultCredential(uuid, instance.getAccountId());
+            Credential cred = credLookup.getDefaultCredential(uuid, instance.getClusterId());
             if (cred != null && cred.getId() != null){
                 instance.setRegistryCredentialId(cred.getId());
             }
