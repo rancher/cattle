@@ -278,6 +278,7 @@ public class ExternalEventProcessManager {
             }
             service.put(ObjectMetaDataManager.ACCOUNT_FIELD, event.getAccountId());
             service.put(FIELD_STACK_ID, stack.getId());
+            service.put(ObjectMetaDataManager.CLUSTER_FIELD, event.getClusterId());
 
             try {
                 String create = processManager.getStandardProcessName(StandardProcess.CREATE, Service.class);
@@ -309,6 +310,7 @@ public class ExternalEventProcessManager {
             Object possibleName = CollectionUtils.getNestedValue(env, "name");
             newEnv.setExternalId(envExtId);
             newEnv.setAccountId(event.getAccountId());
+            newEnv.setClusterId(event.getClusterId());
             String name = possibleName != null ? possibleName.toString() : envExtId;
             newEnv.setName(name);
 
