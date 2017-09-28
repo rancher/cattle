@@ -760,6 +760,11 @@
         "kubernetesService.storageDriver" : "",
         "kubernetesService.launchConfig" : "",
         "kubernetesService.secondaryLaunchConfigs" : "",
+        "kubernetesService.scale" : "",
+        "kubernetesService.scaleIncrement" : "",
+        "kubernetesService.scaleMax" : "",
+        "kubernetesService.scaleMin" : "",
+
 
         "genericObject" : "r",
         "genericObject.name" : "cr",
@@ -997,6 +1002,10 @@
         "selectorService.storageDriver" : "",
         "selectorService.launchConfig" : "",
         "selectorService.secondaryLaunchConfigs" : "",
+        "selectorService.scale" : "",
+        "selectorService.scaleIncrement" : "",
+        "selectorService.scaleMax" : "",
+        "selectorService.scaleMin" : "",
 
         "scalingGroup": "r",
         "scalingGroup.externalIpAddresses" : "",
