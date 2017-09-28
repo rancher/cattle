@@ -9,10 +9,7 @@ import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class InstanceConstants {
 
@@ -172,6 +169,17 @@ public class InstanceConstants {
             VOLUME_CLEANUP_STRATEGY_NONE,
             VOLUME_CLEANUP_STRATEGY_UNNAMED,
             VOLUME_CLEANUP_STRATEGY_ALL);
+    public static final List<String> validStatesForStop = Arrays.asList(InstanceConstants.STATE_RUNNING,
+            InstanceConstants.STATE_STARTING);
+    public static final List<String> skipStatesForStop = Arrays.asList(CommonStatesConstants.REMOVED,
+            CommonStatesConstants.REMOVING,
+            InstanceConstants.STATE_STOPPED,
+            InstanceConstants.STATE_STOPPING);
+    public static final List<String> validStatesForStart = Arrays.asList(InstanceConstants.STATE_STOPPED);
+    public static final List<String> skipStatesForStart = Arrays.asList(CommonStatesConstants.REMOVED,
+            CommonStatesConstants.REMOVING,
+            InstanceConstants.STATE_RUNNING,
+            InstanceConstants.STATE_STARTING);
 
     public static boolean isRancherAgent(Instance instance) {
         Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);

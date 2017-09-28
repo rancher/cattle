@@ -33,7 +33,8 @@ public class ServiceStackNetworkDriverFilter extends AbstractValidationFilter {
     private static final Set<String> ACTIONS = new HashSet<>(Arrays.asList(
             StandardProcess.REMOVE.toString().toLowerCase(),
             StandardProcess.DEACTIVATE.toString().toLowerCase(),
-            ServiceConstants.ACTION_STACK_DEACTIVATE_SERVICES
+            ServiceConstants.ACTION_STACK_DEACTIVATE_SERVICES,
+            ServiceConstants.ACTION_STACK_STOP_ALL
             ));
 
     NetworkDao networkDao;

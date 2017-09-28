@@ -41,24 +41,11 @@ public class StackDeactivateServicesActionHandler implements ActionHandler {
     }
 
     private void deactivateServices(List<? extends Service> services) {
-        List<String> validStates = Arrays.asList(CommonStatesConstants.ACTIVE,
-                CommonStatesConstants.ACTIVATING,
-                CommonStatesConstants.UPDATING,
-                ServiceConstants.STATE_RESTARTING);
-        List<String> statesToSkip = Arrays.asList(CommonStatesConstants.REMOVED,
-                CommonStatesConstants.REMOVING,
-                CommonStatesConstants.INACTIVE,
-                CommonStatesConstants.DEACTIVATING);
         for (Service service : services) {
-            if (validStates.contains(service.getState())) {
-                objectProcessManager.deactivate(service, null);
-            } else if (statesToSkip.contains(service.getState())) {
+            if (ServiceConstants.skipStatesForDeactivate.contains(service.getState())) {
                 continue;
-            } else {
-                throw new ValidationErrorException(ValidationErrorCodes.INVALID_STATE,
-                        "Service " + service.getName() + " is not in valid state to be deactivated: "
-                                + service.getState());
             }
+            objectProcessManager.deactivate(service, null);
         }
     }
 }
