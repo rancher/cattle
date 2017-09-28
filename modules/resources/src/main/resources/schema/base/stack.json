@@ -54,6 +54,12 @@
     },
     "deactivateservices": {
       "output": "stack"
+    },
+    "startall": {
+      "output": "stack"
+    },
+    "stopall": {
+      "output": "stack"
     }
   }
 }

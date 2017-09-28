@@ -66,6 +66,8 @@ public class ServiceConstants {
     public static final String ACTION_SERVICE_UPGRADE = "upgrade";
     public static final String ACTION_SERVICE_ROLLBACK = "rollback";
     public static final String ACTION_SERVICE_RESTART = "restart";
+    public static final String ACTION_STACK_START_ALL = "startall";
+    public static final String ACTION_STACK_STOP_ALL = "stopall";
 
     public static final String PROCESS_SERVICE_ACTIVATE = "service." + ACTION_SERVICE_ACTIVATE;
     public static final String PROCESS_STACK_FINISH_UPGRADE = "stack.finishupgrade";
@@ -90,6 +92,16 @@ public class ServiceConstants {
     public final static String IMAGE_DNS = "rancher/dns-service";
 
     public static final List<String> SERVICE_INSTANCE_NAME_DIVIDORS = Arrays.asList("-", "_");
+    public static final List<String> skipStatesForDeactivate = Arrays.asList(CommonStatesConstants.REMOVED,
+            CommonStatesConstants.REMOVING,
+            CommonStatesConstants.INACTIVE,
+            CommonStatesConstants.DEACTIVATING);
+    public static final List<String> validStatesForActivate = Arrays.asList(CommonStatesConstants.INACTIVE, ServiceConstants.STATE_PAUSED);
+    public static final List<String> skipStatesForActivate = Arrays.asList(CommonStatesConstants.REMOVED,
+            CommonStatesConstants.REMOVING,
+            CommonStatesConstants.ACTIVE,
+            CommonStatesConstants.ACTIVATING);
+
 
     public static final String[] NS_DEPS = new String[] {
             InstanceConstants.FIELD_IPC_CONTAINER_ID,
