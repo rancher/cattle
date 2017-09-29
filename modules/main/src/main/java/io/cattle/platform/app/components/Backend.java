@@ -97,6 +97,7 @@ import io.cattle.platform.process.dynamicschema.DynamicSchemaProcessManager;
 import io.cattle.platform.process.externalevent.ExternalEventProcessManager;
 import io.cattle.platform.process.generic.ActivateByDefault;
 import io.cattle.platform.process.generic.SetRemovedFields;
+import io.cattle.platform.process.host.NodeHandler;
 import io.cattle.platform.process.host.HostProcessManager;
 import io.cattle.platform.process.host.HostRemoveMonitorImpl;
 import io.cattle.platform.process.hosttemplate.HosttemplateRemove;
@@ -133,11 +134,12 @@ import io.cattle.platform.trigger.MetadataSyncTrigger;
 import io.cattle.platform.trigger.MetadataTrigger;
 import io.cattle.platform.trigger.ServiceReconcileTrigger;
 import io.cattle.platform.util.type.InitializationTask;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Backend {
 
@@ -314,6 +316,7 @@ public class Backend {
         SetRemovedFields setRemovedFields = new SetRemovedFields(f.objectManager);
         StoragePoolRemove storagePoolRemove = new StoragePoolRemove(f.objectManager, f.processManager, d.volumeDao);
         SubnetCreate subnetCreate = new SubnetCreate(f.jsonMapper);
+        NodeHandler nodeHandler = new NodeHandler(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager, metadataManager);
 
         r.handle("account.create", account::create);
         r.handle("account.remove", account::remove);
@@ -346,8 +349,9 @@ public class Backend {
 
         r.handle("host.create", hostProcessManager::create);
         r.handle("host.provision", goMachineService, hostProcessManager::provision);
-        r.handle("host.activate", driverProcessManager::setupPools);
+        r.handle("host.activate", nodeHandler, driverProcessManager::setupPools);
         r.handle("host.remove", goMachineService, hostProcessManager::remove, agentResourceRemove);
+        r.handle("host.deactivate", nodeHandler);
 
         r.handle("hosttemplate.remove", hosttemplateRemove);
 

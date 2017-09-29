@@ -36,6 +36,7 @@ public class SystemLabels {
     public static final String LABEL_K8S_POD_NAME = "io.kubernetes.pod.name";
     public static final String LABEL_K8S_POD_NAMESPACE = "io.kubernetes.pod.namespace";
     public static final String LABEL_K8S_CONTAINER_NAME = "io.kubernetes.container.name";
+    public static final String LABEL_K8S_AGENT = "io.rancher.k8s.agent";
 
     public static final String POD_VALUE = "POD";
 
