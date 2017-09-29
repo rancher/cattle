@@ -139,7 +139,11 @@ public class ResourceMonitorImpl implements ResourceMonitor, AnnotatedEventListe
 
     @Override
     public void run() {
-        new ArrayList<>(waiters.values()).forEach((list) -> list.forEach(Runnable::run));
+        new ArrayList<>(waiters.values()).forEach((list) -> {
+            synchronized(list) {
+                list.forEach(Runnable::run);
+            }
+        });
     }
 
     @Override
