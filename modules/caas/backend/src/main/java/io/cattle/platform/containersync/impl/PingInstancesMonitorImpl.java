@@ -113,8 +113,10 @@ public class PingInstancesMonitorImpl implements PingInstancesMonitor {
             @Override
             public void onSuccess(Event result) {
                 Map<String, Object> inspect = CollectionUtils.toMap(CollectionUtils.getNestedValue(result.getData(), "instanceInspect"));
-                ContainerEvent data = new ContainerEvent(clusterId, hostId, ri.getExternalId(), inspect);
-                eventService.publish(new ContainerEventEvent(data));
+                if (inspect.size() > 0 && inspect.containsKey("Id")) {
+                    ContainerEvent data = new ContainerEvent(clusterId, hostId, ri.getExternalId(), inspect);
+                    eventService.publish(new ContainerEventEvent(data));
+                }
             }
 
             @Override

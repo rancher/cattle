@@ -64,6 +64,7 @@ public class ContainerSyncImpl implements ContainerSync {
 
     ObjectManager objectManager;
     ObjectProcessManager processManager;
+    ObjectMetaDataManager objectMetaDataManager;
     InstanceDao instanceDao;
     LockManager lockManager;
     GenericResourceDao resourceDao;
@@ -76,7 +77,8 @@ public class ContainerSyncImpl implements ContainerSync {
 
     public ContainerSyncImpl(ObjectManager objectManager, ObjectProcessManager processManager, InstanceDao instanceDao, LockManager lockManager,
                              GenericResourceDao resourceDao, ScheduledExecutorService scheduledExecutorService, Cluster cluster, ClusterDao clusterDao,
-                             InstanceLifecycleManager instanceLifecycleManager, AgentLocator agentLocator, ObjectSerializer objectSerializer) {
+                             InstanceLifecycleManager instanceLifecycleManager, AgentLocator agentLocator, ObjectSerializer objectSerializer,
+                             ObjectMetaDataManager objectMetaDataManager) {
         this.objectManager = objectManager;
         this.processManager = processManager;
         this.instanceDao = instanceDao;
@@ -88,6 +90,7 @@ public class ContainerSyncImpl implements ContainerSync {
         this.instanceLifecycleManager = instanceLifecycleManager;
         this.agentLocator = agentLocator;
         this.objectSerializer = objectSerializer;
+        this.objectMetaDataManager = objectMetaDataManager;
     }
 
     @Override
@@ -298,6 +301,9 @@ public class ContainerSyncImpl implements ContainerSync {
                 INSTANCE.UUID, uuid);
         if (existing == null) {
             sendRemove(instance);
+        } else if (objectMetaDataManager.isTransitioningState(Instance.class, existing.getState())) {
+            // ignore if existing container is still transitioning
+            return;
         } else if (isNewer(instance, existing)) {
             instanceLifecycleManager.moveInstance(existing, instance.getExternalId(), instance.getHostId(), inspect);
         } else {

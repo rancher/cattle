@@ -51,12 +51,20 @@ public interface BasicStateUnit extends Unit {
             wrapper.create();
             return new Result(UnitState.WAITING, this, String.format("Creating %s", getDisplayName()));
         } else {
+            Result result = preActivate(context);
+            if (!result.isGood()) {
+                return result;
+            }
             wrapper.activate();
             return new Result(UnitState.WAITING, this, String.format("Activating %s", getDisplayName()));
         }
     }
 
     Result removeBad(InatorContext context, RemoveReason reason);
+
+    default Result preActivate(InatorContext context) {
+        return Result.good();
+    }
 
     default Result deactivate(InatorContext context) {
         BasicStateWrapper wrapper = getWrapper();

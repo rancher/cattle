@@ -97,7 +97,7 @@ public class DeploymentUnitInator implements Inator {
         Map<UnitRef, Unit> units = new HashMap<>();
 
         getDesiredLaunchConfigs().forEach((name, lc) -> {
-            InstanceUnit instanceUnit = new InstanceUnit(name, lc, stack, unit);
+            InstanceUnit instanceUnit = new InstanceUnit(name, lc, stack, unit, svc);
             units.put(instanceUnit.getRef(), instanceUnit);
         });
 
@@ -144,7 +144,7 @@ public class DeploymentUnitInator implements Inator {
         }
 
         InstanceWrapper instanceWrapper = new InstanceWrapper(instance, svc);
-        return new InstanceUnit(instanceWrapper, revisionWrapper.getLaunchConfig(instanceWrapper.getLaunchConfigName()));
+        return new InstanceUnit(instanceWrapper, revisionWrapper.getLaunchConfig(instanceWrapper.getLaunchConfigName()), stack, unit, svc);
     }
 
     @Override

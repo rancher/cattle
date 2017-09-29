@@ -1,5 +1,6 @@
 package io.cattle.platform.inator.unit;
 
+import io.cattle.platform.core.addon.DependsOn;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.inator.Inator;
 import io.cattle.platform.inator.Inator.DesiredState;
@@ -8,6 +9,7 @@ import io.cattle.platform.inator.Result;
 import io.cattle.platform.inator.Unit;
 import io.cattle.platform.inator.UnitRef;
 import io.cattle.platform.inator.deploy.DeploymentUnitInator;
+import io.cattle.platform.inator.factory.InatorServices;
 import io.cattle.platform.inator.launchconfig.LaunchConfig;
 import io.cattle.platform.inator.wrapper.BasicStateWrapper;
 import io.cattle.platform.inator.wrapper.DeploymentUnitWrapper;
@@ -25,24 +27,29 @@ public class InstanceUnit implements Unit, BasicStateUnit {
     LaunchConfig lc;
     InstanceWrapper instance;
     UnitRef ref;
+    InatorServices svc;
 
     // Needed for create only
     StackWrapper stack;
     DeploymentUnitWrapper unit;
 
-    public InstanceUnit(InstanceWrapper instance, LaunchConfig lc) {
+    public InstanceUnit(InstanceWrapper instance, LaunchConfig lc, StackWrapper stack, DeploymentUnitWrapper unit, InatorServices svc) {
         super();
         this.instance = instance;
         this.lc = lc;
         this.name = this.lc.getName();
+        this.svc = svc;
+        this.unit = unit;
+        this.stack = stack;
         this.ref = new UnitRef("instance/" + lc.getRevision() + "/" + name);
     }
 
-    public InstanceUnit(String name, LaunchConfig lc, StackWrapper stack, DeploymentUnitWrapper unit) {
+    public InstanceUnit(String name, LaunchConfig lc, StackWrapper stack, DeploymentUnitWrapper unit, InatorServices svc) {
         this.name = name;
         this.lc = lc;
         this.stack = stack;
         this.unit = unit;
+        this.svc = svc;
         this.ref = new UnitRef("instance/" + lc.getRevision() + "/" + name);
     }
 
@@ -239,6 +246,27 @@ public class InstanceUnit implements Unit, BasicStateUnit {
                 instance.deactivate();
                 return new Result(UnitState.WAITING, this,
                         String.format("Stopping %s because dependency restarted", getDisplayName()));
+            }
+        }
+
+        return result;
+    }
+
+    @Override
+    public Result preActivate(InatorContext context) {
+        Result result = Result.good();
+
+        Runnable callback = () -> svc.triggerDeploymentUnitReconcile(unit.getId());
+        for (DependsOn dep : lc.getDependsOn()) {
+            if (dep.getCondition() == DependsOn.DependsOnCondition.healthylocal && unit.getHostId() == null) {
+                // Can't evaluate now, have to do it in instance.start
+                continue;
+            }
+
+            if (!svc.deploymentConditions.serviceDependency.satified(stack.getAccountId(), stack.getId(),
+                    unit.getHostId(), dep, callback)) {
+                result.aggregate(new Result(UnitState.WAITING, this,
+                        String.format("Waiting on dependency: %s", dep.getDisplayName())));
             }
         }
 

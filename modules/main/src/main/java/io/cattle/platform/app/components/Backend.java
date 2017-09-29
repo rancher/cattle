@@ -28,6 +28,7 @@ import io.cattle.platform.backpopulate.BackPopulater;
 import io.cattle.platform.backpopulate.impl.BackPopulaterImpl;
 import io.cattle.platform.condition.deployment.DeploymentConditions;
 import io.cattle.platform.condition.deployment.impl.HealthyHostsImpl;
+import io.cattle.platform.condition.deployment.impl.ServiceDependencyImpl;
 import io.cattle.platform.containersync.PingInstancesMonitor;
 import io.cattle.platform.containersync.impl.ContainerSyncImpl;
 import io.cattle.platform.containersync.impl.PingInstancesMonitorImpl;
@@ -217,6 +218,7 @@ public class Backend {
     private void setupConditions() {
         deploymentConditions = new DeploymentConditions();
         deploymentConditions.healthHosts = new HealthyHostsImpl(f.executorService);
+        deploymentConditions.serviceDependency = new ServiceDependencyImpl(f.executorService);
     }
 
     private void setupBackendService() {
@@ -252,10 +254,10 @@ public class Backend {
         allocationLifecycleManager = new AllocationLifecycleManagerImpl(allocatorService, d.volumeDao, f.objectManager, metadataManager);
         pingInstancesMonitor = new PingInstancesMonitorImpl(f.objectManager, metadataManager, f.eventService, c.agentLocator);
         agentResourcesMonitor = new AgentResourcesMonitor(d.agentDao, d.storagePoolDao, d.resourceDao, f.objectManager, f.lockManager, f.eventService, metadataManager);
-        instanceLifecycleManager = new InstanceLifecycleManagerImpl(k8sLifecycleManager, virtualMachineLifecycleManager, volumeLifecycleManager, f.objectManager, imageCredentialLookup, d.serviceDao, f.transaction, networkLifecycleManager, agentLifecycleManager, backPopulater, restartLifecycleManager, secretsLifecycleManager, allocationLifecycleManager, serviceLifecycleManager, metadataManager);
+        instanceLifecycleManager = new InstanceLifecycleManagerImpl(k8sLifecycleManager, virtualMachineLifecycleManager, volumeLifecycleManager, f.objectManager, imageCredentialLookup, d.serviceDao, f.transaction, networkLifecycleManager, agentLifecycleManager, backPopulater, restartLifecycleManager, secretsLifecycleManager, allocationLifecycleManager, serviceLifecycleManager, metadataManager, deploymentConditions);
         pingMonitor = new PingMonitor(agentResourcesMonitor, pingInstancesMonitor, f.processManager, f.objectManager, d.agentDao, c.agentLocator, f.cluster);
         deploymentSyncFactory = new DeploymentSyncFactory(d.instanceDao, d.volumeDao, d.networkDao, f.objectManager, c.serviceAccountCreateStartup, f.jsonMapper);
-        containerSync = new ContainerSyncImpl(f.objectManager, f.processManager, d.instanceDao, f.lockManager, d.resourceDao, f.scheduledExecutorService, f.cluster, d.clusterDao, instanceLifecycleManager, c.agentLocator, c.objectSerializer);
+        containerSync = new ContainerSyncImpl(f.objectManager, f.processManager, d.instanceDao, f.lockManager, d.resourceDao, f.scheduledExecutorService, f.cluster, d.clusterDao, instanceLifecycleManager, c.agentLocator, c.objectSerializer, f.metaDataManager);
     }
 
     private void addTriggers() {

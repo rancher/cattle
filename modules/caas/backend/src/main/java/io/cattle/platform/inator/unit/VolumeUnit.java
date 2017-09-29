@@ -1,7 +1,5 @@
 package io.cattle.platform.inator.unit;
 
-import static io.cattle.platform.core.model.tables.VolumeTable.*;
-
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.VolumeConstants;
 import io.cattle.platform.core.model.Stack;
@@ -31,6 +29,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import static io.cattle.platform.core.model.tables.VolumeTable.*;
 
 public class VolumeUnit implements Unit, BasicStateUnit, InstanceBindable {
 
@@ -101,6 +101,7 @@ public class VolumeUnit implements Unit, BasicStateUnit, InstanceBindable {
                 ObjectMetaDataManager.NAME_FIELD, name,
                 ObjectMetaDataManager.ACCOUNT_FIELD, volumeTemplate.getAccountId(),
                 VOLUME.STACK_ID, stack.getId(),
+                VOLUME.CLUSTER_ID, stack.getClusterId(),
                 VOLUME.VOLUME_TEMPLATE_ID, volumeTemplate.getId(),
                 VolumeConstants.FIELD_VOLUME_DRIVER_OPTS, DataAccessor.fieldMap(volumeTemplate, VolumeConstants.FIELD_VOLUME_DRIVER_OPTS),
                 VolumeConstants.FIELD_VOLUME_DRIVER, volumeTemplate.getDriver());
