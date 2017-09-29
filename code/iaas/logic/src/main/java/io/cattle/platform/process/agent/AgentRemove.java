@@ -59,11 +59,17 @@ public class AgentRemove extends AbstractObjectProcessHandler {
             }
         }
 
-        deactivateThenScheduleRemove(objectManager.loadResource(Account.class, agent.getAccountId()), state.getData());
+        Account account = objectManager.loadResource(Account.class, agent.getAccountId());
+        if (account != null && account.getRemoved() == null) {
+            deactivateThenScheduleRemove(account, state.getData());
+        }
 
         List<Long> authedRoleAccountIds = DataAccessor.fieldLongList(agent, AgentConstants.FIELD_AUTHORIZED_ROLE_ACCOUNTS);
         for (Long accountId : authedRoleAccountIds) {
-            deactivateThenScheduleRemove(objectManager.loadResource(Account.class, accountId), state.getData());
+            account = objectManager.loadResource(Account.class, accountId);
+            if (account != null && account.getRemoved() == null) {
+                deactivateThenScheduleRemove(account, state.getData());
+            }
         }
 
         return null;
