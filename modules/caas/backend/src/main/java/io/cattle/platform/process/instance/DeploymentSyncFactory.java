@@ -26,6 +26,10 @@ import io.cattle.platform.service.launcher.ServiceAccountCreateStartup;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -62,19 +66,6 @@ public class DeploymentSyncFactory {
                 DeploymentSyncResponse.class);
     }
 
-    public DeploymentSyncRequest construct(DeploymentUnit unit) {
-        Account account = objectManager.loadResource(Account.class, unit.getAccountId());
-        
-        return new DeploymentSyncRequest(unit,
-                null,
-                StringUtils.isBlank(account.getExternalId()) ? account.getName().toLowerCase() : account.getExternalId(),
-                        getRevision(unit, new TreeMap<>()),
-                new ArrayList<>(),
-                new ArrayList<>(),
-                new ArrayList<>(),
-                new ArrayList<>(), account.getClusterId());
-    }
-
     public DeploymentSyncRequest construct(Instance resource) {
         List<Instance> instances = new ArrayList<>();
         Map<Long, Instance> instanceById = new TreeMap<>();
@@ -84,6 +75,7 @@ public class DeploymentSyncFactory {
 
         instances.add(resource);
         instances.addAll(instanceDao.getOtherDeploymentInstances(resource));
+
 
         for (Instance instance : instances) {
             instanceById.put(instance.getId(), instance);
@@ -133,7 +125,7 @@ public class DeploymentSyncFactory {
                 instances,
                 volumes,
                 credentials,
-                networks, account.getClusterId());
+                networks);
     }
 
     private String getRevision(DeploymentUnit unit, Map<Long, Instance> instances) {

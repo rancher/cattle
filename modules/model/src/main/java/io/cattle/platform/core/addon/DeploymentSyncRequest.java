@@ -30,7 +30,7 @@ public class DeploymentSyncRequest {
     }
 
     public DeploymentSyncRequest(DeploymentUnit unit, String nodeName, String namespace, String revision, List<Instance> containers, List<Volume> volumes,
-                                 List<Credential> registryCredentials, List<Network> networks, Long clusterId) {
+                                 List<Credential> registryCredentials, List<Network> networks) {
         this.deploymentUnitUuid = unit == null ? null : unit.getUuid();
         this.externalId = unit == null ? null : unit.getExternalId();
         this.namespace = namespace;
@@ -40,7 +40,13 @@ public class DeploymentSyncRequest {
         this.volumes = volumes;
         this.registryCredentials = registryCredentials;
         this.networks = networks;
-        this.clusterId = clusterId;
+
+        for (Instance instance : containers) {
+            this.clusterId = instance.getClusterId();
+            if (this.clusterId != null) {
+                break;
+            }
+        }
     }
 
     public String getNamespace() {

@@ -336,7 +336,7 @@ public class Backend {
         r.handle("credential.create", credentialProcessManager::create);
 
         r.handle("deploymentunit.*", inatorReconcileHandler);
-        r.handle("deploymentunit.remove", podRemove, deploymentUnitRemove);
+        r.handle("deploymentunit.remove", deploymentUnitRemove);
 
         r.handle("dynamicschema.*", clearCacheHandler);
         r.handle("dynamicschema.create", dynamicSchemaProcessManager::create);
@@ -357,7 +357,7 @@ public class Backend {
         r.handle("instance.start", instanceProcessManager::preStart, podCreate, instanceStart, instanceProcessManager::postStart);//, k8sProviderLabels);
         r.handle("instance.stop", instanceStop, instanceProcessManager::postStop);
         r.handle("instance.restart", instanceProcessManager::restart);
-        r.handle("instance.remove", instanceProcessManager::preRemove, instanceRemove, instanceProcessManager::postRemove);
+        r.handle("instance.remove", instanceProcessManager::preRemove, podRemove, instanceRemove, instanceProcessManager::postRemove);
 
         r.handle("machinedriver.reactivate", goMachineService);
         r.handle("machinedriver.activate", goMachineService);
