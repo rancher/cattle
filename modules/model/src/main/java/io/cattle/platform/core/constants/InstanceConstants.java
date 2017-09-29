@@ -1,6 +1,7 @@
 
 package io.cattle.platform.core.constants;
 
+import io.cattle.platform.core.addon.metadata.InstanceInfo;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.core.util.SystemLabels;
@@ -199,11 +200,12 @@ public class InstanceConstants {
         return result;
     }
 
-    public static boolean isNativeKubernetesPOD(Instance instance) {
-        return instance.getHidden() &&
-                instance.getNativeContainer() &&
-                "POD".equals(DataAccessor.getLabel(instance, SystemLabels.LABEL_K8S_CONTAINER_NAME)) &&
-                StringUtils.isBlank(DataAccessor.getLabel(instance, "annotation." + SystemLabels.LABEL_RANCHER_UUID));
+    public static boolean isNativeKubernetesPOD(InstanceInfo instance) {
+        return instance.isHidden() &&
+                instance.isNativeContainer() &&
+                instance.getLabels() != null &&
+                "POD".equals(instance.getLabels().get(SystemLabels.LABEL_K8S_CONTAINER_NAME)) &&
+                StringUtils.isBlank(instance.getLabels().get("annotation." + SystemLabels.LABEL_RANCHER_UUID));
     }
 
     public static boolean isKubernetes(Instance instance) {

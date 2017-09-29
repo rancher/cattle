@@ -1,6 +1,8 @@
 package io.cattle.platform.core.addon;
 
+import io.cattle.platform.core.addon.metadata.InstanceInfo;
 import io.cattle.platform.core.addon.metadata.MetadataObject;
+import io.cattle.platform.core.constants.InstanceConstants;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,10 +39,19 @@ public class MetadataSyncRequest {
     }
 
     public void putAllUpdates(Map<String, MetadataObject> objects) {
-        this.updates.putAll(objects);
+        for (MetadataObject object : objects.values()) {
+            add(object);
+        }
     }
 
     public void add(Object obj) {
+        if (obj instanceof InstanceInfo) {
+            InstanceInfo instance = (InstanceInfo)obj;
+            if (instance.isHidden() && !InstanceConstants.isNativeKubernetesPOD(instance)) {
+                return;
+            }
+        }
+
         if (obj instanceof MetadataObject) {
             updates.put(((MetadataObject) obj).getUuid(), (MetadataObject) obj);
         } else if (obj instanceof Removed) {
