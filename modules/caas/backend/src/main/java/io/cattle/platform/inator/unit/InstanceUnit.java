@@ -15,6 +15,7 @@ import io.cattle.platform.inator.wrapper.BasicStateWrapper;
 import io.cattle.platform.inator.wrapper.DeploymentUnitWrapper;
 import io.cattle.platform.inator.wrapper.InstanceWrapper;
 import io.cattle.platform.inator.wrapper.StackWrapper;
+import io.github.ibuildthecloud.gdapi.util.DateUtils;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -119,8 +120,15 @@ public class InstanceUnit implements Unit, BasicStateUnit {
         return deps;
     }
 
-    public String getServiceName() {
-        return lc.getServiceName();
+    @Override
+    public Result preRemove(InatorContext context) {
+        boolean shouldRemove = svc.deploymentConditions.removeBackoff.check(unit.getId(),
+                lc.getName(),
+                () -> svc.triggerDeploymentUnitReconcile(unit.getId()));
+        if (!shouldRemove) {
+            return new Result(UnitState.WAITING, this, "Remove backoff");
+        }
+        return Result.good();
     }
 
     @Override
@@ -267,6 +275,14 @@ public class InstanceUnit implements Unit, BasicStateUnit {
                     unit.getHostId(), dep, callback)) {
                 result.aggregate(new Result(UnitState.WAITING, this,
                         String.format("Waiting on dependency: %s", dep.getDisplayName())));
+            }
+        }
+
+        if (result.isGood()) {
+            Long runAfter = instance.startBackoff();
+            if (runAfter != null) {
+                return new Result(UnitState.WAITING, this, String.format("Start backoff, retry %s",
+                        DateUtils.toString(new Date(runAfter))));
             }
         }
 

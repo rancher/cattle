@@ -27,6 +27,7 @@ import io.cattle.platform.archaius.eventing.ArchaiusEventListener;
 import io.cattle.platform.backpopulate.BackPopulater;
 import io.cattle.platform.backpopulate.impl.BackPopulaterImpl;
 import io.cattle.platform.condition.deployment.DeploymentConditions;
+import io.cattle.platform.condition.deployment.RemoveBackoff;
 import io.cattle.platform.condition.deployment.impl.HealthyHostsImpl;
 import io.cattle.platform.condition.deployment.impl.ServiceDependencyImpl;
 import io.cattle.platform.containersync.PingInstancesMonitor;
@@ -219,6 +220,7 @@ public class Backend {
         deploymentConditions = new DeploymentConditions();
         deploymentConditions.healthHosts = new HealthyHostsImpl(f.executorService);
         deploymentConditions.serviceDependency = new ServiceDependencyImpl(f.executorService);
+        deploymentConditions.removeBackoff = new RemoveBackoff(f.executorService);
     }
 
     private void setupBackendService() {

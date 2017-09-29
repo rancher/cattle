@@ -63,8 +63,7 @@ public class InstanceWrapper implements BasicStateWrapper {
         svc.processManager.create(instance, obj);
     }
 
-    @Override
-    public void activate() {
+    public Long startBackoff() {
         Long restartCount = DataAccessor.fieldLong(instance, InstanceConstants.FIELD_START_RETRY_COUNT);
         Date lastStop = DataAccessor.fieldDate(instance, InstanceConstants.FIELD_STOPPED);
         if (restartCount != null &&
@@ -81,9 +80,15 @@ public class InstanceWrapper implements BasicStateWrapper {
                 svc.scheduledExecutorService.schedule((NoException)() -> {
                     svc.triggerDeploymentUnitReconcile(instance.getDeploymentUnitId());
                 }, runAfter - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
-                return;
+                return runAfter;
             }
         }
+
+        return null;
+    }
+
+    @Override
+    public void activate() {
         svc.processManager.start(instance, null);
     }
 
