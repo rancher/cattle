@@ -8,7 +8,6 @@ import io.cattle.platform.core.addon.metadata.NetworkInfo;
 import io.cattle.platform.core.addon.metadata.ServiceInfo;
 import io.cattle.platform.core.addon.metadata.StackInfo;
 import io.cattle.platform.core.constants.AccountConstants;
-import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ProjectConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Host;
@@ -37,9 +36,6 @@ public class MetadataObjectFactory {
         if (obj instanceof Host) {
             return new HostInfo((Host) obj);
         } else if (obj instanceof Instance) {
-            if (((Instance) obj).getHidden() && !InstanceConstants.isNativeKubernetesPOD((Instance) obj)) {
-                return null;
-            }
             return new InstanceInfo((Instance) obj);
         } else if (obj instanceof Stack) {
             return new StackInfo(((Stack)obj));

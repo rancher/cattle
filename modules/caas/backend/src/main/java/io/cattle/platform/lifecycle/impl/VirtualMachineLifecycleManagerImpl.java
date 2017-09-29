@@ -216,6 +216,7 @@ public class VirtualMachineLifecycleManagerImpl implements VirtualMachineLifecyc
                     objectManager.create(Volume.class,
                             VOLUME.NAME, name,
                             VOLUME.ACCOUNT_ID, instance.getAccountId(),
+                            VOLUME.CLUSTER_ID, instance.getClusterId(),
                             VOLUME.ACCESS_MODE, VolumeConstants.ACCESS_MODE_SINGLE_INSTANCE_RW,
                             VolumeConstants.FIELD_VOLUME_DRIVER, localDriver,
                             VolumeConstants.FIELD_VOLUME_DRIVER_OPTS, opts);

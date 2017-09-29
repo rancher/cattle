@@ -1,5 +1,6 @@
 package io.cattle.platform.process.service;
 
+import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.ServiceDao;
 import io.cattle.platform.core.model.Instance;
@@ -11,6 +12,8 @@ import io.cattle.platform.lifecycle.ServiceLifecycleManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
+
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
 
 public class ServiceProcessManager {
 
@@ -37,7 +40,13 @@ public class ServiceProcessManager {
                     .withChainProcessName(ServiceConstants.PROCESS_SERVICE_ACTIVATE);
         }
 
-        return null;
+        return new HandlerResult(SERVICE.HEALTH_STATE,
+                HealthcheckConstants.HEALTH_STATE_DEGRADED);
+    }
+
+    public HandlerResult activate(ProcessState state, ProcessInstance process) {
+        return new HandlerResult(SERVICE.HEALTH_STATE,
+                HealthcheckConstants.HEALTH_STATE_DEGRADED);
     }
 
     public HandlerResult remove(ProcessState state, ProcessInstance process) {
@@ -54,6 +63,5 @@ public class ServiceProcessManager {
 
         return null;
     }
-
 
 }

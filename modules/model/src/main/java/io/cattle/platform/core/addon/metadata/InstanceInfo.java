@@ -34,6 +34,7 @@ public class InstanceInfo implements MetadataObject {
     boolean shouldRestart;
     boolean nativeContainer;
     boolean desired;
+    boolean hidden;
 
     long accountId;
     Long agentId;
@@ -97,6 +98,7 @@ public class InstanceInfo implements MetadataObject {
             this.healthCheck = new HealthcheckInfo(hc);
         }
         this.desired = instance.getDesired();
+        this.hidden = instance.getHidden();
         this.deploymentUnitId = instance.getDeploymentUnitId();
     }
 
@@ -276,6 +278,11 @@ public class InstanceInfo implements MetadataObject {
         return deploymentUnitId;
     }
 
+    @Field(include = false)
+    public boolean isHidden() {
+        return hidden;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -289,6 +296,7 @@ public class InstanceInfo implements MetadataObject {
                 .append(shouldRestart, that.shouldRestart)
                 .append(nativeContainer, that.nativeContainer)
                 .append(desired, that.desired)
+                .append(hidden, that.hidden)
                 .append(accountId, that.accountId)
                 .append(uuid, that.uuid)
                 .append(environmentUuid, that.environmentUuid)
@@ -342,6 +350,7 @@ public class InstanceInfo implements MetadataObject {
                 .append(shouldRestart)
                 .append(nativeContainer)
                 .append(desired)
+                .append(hidden)
                 .append(accountId)
                 .append(agentId)
                 .append(serviceId)

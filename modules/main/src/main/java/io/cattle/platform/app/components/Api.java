@@ -88,8 +88,6 @@ import io.cattle.platform.api.service.ServiceCreateValidationFilter;
 import io.cattle.platform.api.service.ServiceGarbageCollectActionHandler;
 import io.cattle.platform.api.service.ServiceRestartValidationFilter;
 import io.cattle.platform.api.service.ServiceRollbackValidationFilter;
-import io.cattle.platform.api.service.ServiceStackNetworkDriverFilter;
-import io.cattle.platform.api.service.ServiceStackStorageDriverFilter;
 import io.cattle.platform.api.service.ServiceUpgradeValidationFilter;
 import io.cattle.platform.api.service.VolumeTemplateCreateValidationFilter;
 import io.cattle.platform.api.serviceevent.ServiceEventFilter;
@@ -283,8 +281,6 @@ public class Api {
         ServiceCreateValidationFilter serviceCreateValidationFilter = new ServiceCreateValidationFilter(f.objectManager, f.processManager, c.storageService, f.jsonMapper, c.revisionManager);
         ServiceRestartValidationFilter serviceRestartValidationFilter = new ServiceRestartValidationFilter(f.objectManager);
         ServiceRollbackValidationFilter serviceRollbackValidationFilter = new ServiceRollbackValidationFilter(f.objectManager, c.revisionManager);
-        ServiceStackNetworkDriverFilter serviceStackNetworkDriverFilter = new ServiceStackNetworkDriverFilter(d.networkDao, f.objectManager);
-        ServiceStackStorageDriverFilter serviceStackStorageDriverFilter = new ServiceStackStorageDriverFilter(d.storagePoolDao, f.objectManager);
         ServiceUpgradeValidationFilter serviceUpgradeValidationFilter = new ServiceUpgradeValidationFilter(f.objectManager, f.jsonMapper, c.revisionManager);
 
         // Assign clusterId first
@@ -315,12 +311,8 @@ public class Api {
         c.router.validationFilter(Service.class, serviceCreateValidationFilter);
         c.router.validationFilter(Service.class, serviceRestartValidationFilter);
         c.router.validationFilter(Service.class, serviceRollbackValidationFilter);
-        c.router.validationFilter(Service.class, serviceStackNetworkDriverFilter);
-        c.router.validationFilter(Service.class, serviceStackStorageDriverFilter);
         c.router.validationFilter(Service.class, serviceUpgradeValidationFilter);
         c.router.validationFilter(ServiceEvent.class, new ServiceEventFilter(f.objectManager, d.agentDao, d.serviceDao));
-        c.router.validationFilter(Stack.class, serviceStackNetworkDriverFilter);
-        c.router.validationFilter(Stack.class, serviceStackStorageDriverFilter);
         c.router.validationFilter(Volume.class, new VolumeCreateValidationFilter(f.objectManager));
         c.router.validationFilter(VolumeTemplate.class, new VolumeTemplateCreateValidationFilter(f.objectManager));
 

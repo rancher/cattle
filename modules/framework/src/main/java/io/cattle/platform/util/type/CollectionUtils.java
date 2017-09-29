@@ -1,5 +1,6 @@
 package io.cattle.platform.util.type;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -107,6 +108,11 @@ public class CollectionUtils {
 
     public static <T, R> List<R> map(List<T> list, Function<T, R> fun) {
         return list.stream().map(fun::apply).collect(Collectors.toList());
+    }
+
+    public static <T, R> Map<T, R> mapBy(Collection<R> list, Function<R, T> fun) {
+        return list.stream()
+                .collect(Collectors.toMap(fun, Function.identity()));
     }
 
     @SafeVarargs

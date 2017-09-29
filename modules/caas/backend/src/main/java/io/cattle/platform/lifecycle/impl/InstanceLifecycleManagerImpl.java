@@ -2,6 +2,8 @@ package io.cattle.platform.lifecycle.impl;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import io.cattle.platform.backpopulate.BackPopulater;
+import io.cattle.platform.condition.deployment.DeploymentConditions;
+import io.cattle.platform.core.addon.DependsOn;
 import io.cattle.platform.core.addon.LogConfig;
 import io.cattle.platform.core.constants.ClusterConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -11,6 +13,7 @@ import io.cattle.platform.core.model.Credential;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.SystemLabels;
+import io.cattle.platform.engine.process.impl.ProcessDelayException;
 import io.cattle.platform.lifecycle.AgentLifecycleManager;
 import io.cattle.platform.lifecycle.AllocationLifecycleManager;
 import io.cattle.platform.lifecycle.InstanceLifecycleManager;
@@ -24,6 +27,7 @@ import io.cattle.platform.lifecycle.VolumeLifecycleManager;
 import io.cattle.platform.lifecycle.util.LifecycleException;
 import io.cattle.platform.metadata.MetadataManager;
 import io.cattle.platform.object.ObjectManager;
+import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.storage.ImageCredentialLookup;
 import io.github.ibuildthecloud.gdapi.util.TransactionDelegate;
@@ -41,6 +45,7 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
     VolumeLifecycleManager volumeLifecycle;
     ObjectManager objectManager;
     ImageCredentialLookup credLookup;
+    DeploymentConditions deploymentConditions;
     ServiceDao svcDao;
     TransactionDelegate transaction;
     NetworkLifecycleManager networkLifecycle;
@@ -56,7 +61,7 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
             ObjectManager objectManager, ImageCredentialLookup credLookup, ServiceDao svcDao, TransactionDelegate transaction,
             NetworkLifecycleManager networkLifecycle, AgentLifecycleManager agentLifecycle, BackPopulater backPopulator,
             RestartLifecycleManager restartLifecycle, SecretsLifecycleManager secretsLifecycle, AllocationLifecycleManager allocationLifecycle,
-            ServiceLifecycleManager serviceLifecycle, MetadataManager metadataManager) {
+            ServiceLifecycleManager serviceLifecycle, MetadataManager metadataManager, DeploymentConditions deploymentConditions) {
         super();
         this.k8sLifecycle = k8sLifecycle;
         this.vmLifecycle = vmLifecycle;
@@ -73,6 +78,7 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
         this.allocationLifecycle = allocationLifecycle;
         this.serviceLifecycle = serviceLifecycle;
         this.metadataManager = metadataManager;
+        this.deploymentConditions = deploymentConditions;
     }
 
     @Override
@@ -129,6 +135,8 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
         allocationLifecycle.preStart(instance);
 
         networkLifecycle.assignNetworkResources(instance);
+
+        checkDependencies(instance);
 
         objectManager.persist(instance);
     }
@@ -189,6 +197,25 @@ public class InstanceLifecycleManagerImpl implements InstanceLifecycleManager {
                 secretsLifecycle.persistCreate(instance, secretsOpaque);
                 objectManager.persist(instance);
             });
+        }
+    }
+
+    private void checkDependencies(Instance instance) {
+        if (instance.getHostId() == null) {
+            return;
+        }
+
+        for (DependsOn dep : DataAccessor.fieldObjectList(instance, InstanceConstants.FIELD_DEPENDS_ON, DependsOn.class)) {
+            if (dep.getCondition() != DependsOn.DependsOnCondition.healthylocal) {
+                continue;
+            }
+
+            boolean good = deploymentConditions.serviceDependency.satified(instance.getAccountId(), instance.getStackId(), instance.getHostId(), dep, null);
+            if (!good) {
+                objectManager.setFields(instance,
+                        ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD,  "Waiting on " + dep.getDisplayName());
+                throw new ProcessDelayException(null);
+            }
         }
     }
 

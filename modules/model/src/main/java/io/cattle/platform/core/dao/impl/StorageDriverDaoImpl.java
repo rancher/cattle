@@ -65,6 +65,7 @@ public class StorageDriverDaoImpl extends AbstractJooqDao implements StorageDriv
             return objectManager.create(Volume.class,
                     VOLUME.NAME, name,
                     VOLUME.ACCOUNT_ID, instance.getAccountId(),
+                    VOLUME.CLUSTER_ID, instance.getClusterId(),
                     VOLUME.STORAGE_DRIVER_ID, storageDriver.getId(),
                     VolumeConstants.FIELD_VOLUME_DRIVER, storageDriver.getName(),
                     VolumeConstants.FIELD_VOLUME_DRIVER_OPTS, CollectionUtils.asMap(
