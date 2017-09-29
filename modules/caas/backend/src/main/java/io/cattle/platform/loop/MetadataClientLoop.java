@@ -9,6 +9,7 @@ import io.cattle.platform.core.addon.MetadataSyncRequest;
 import io.cattle.platform.core.addon.metadata.EnvironmentInfo;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.engine.model.Loop;
+import io.cattle.platform.eventing.EventCallOptions;
 import io.cattle.platform.eventing.exception.AgentRemovedException;
 import io.cattle.platform.eventing.model.Event;
 import io.cattle.platform.eventing.model.EventVO;
@@ -40,6 +41,7 @@ public class MetadataClientLoop implements Loop {
     MetadataManager metadataManager;
     AgentLocator agentLocator;
     boolean inFlight;
+    boolean connected;
     ObjectSerializer objectSerializer;
 
     public MetadataClientLoop(long agentId,
@@ -108,6 +110,7 @@ public class MetadataClientLoop implements Loop {
     }
 
     private synchronized void response(Event event) {
+        connected = true;
         Map<String, Object> data = CollectionUtils.toMap(event.getData());
         Object reload = data.get("reload");
         if (reload instanceof Boolean && (Boolean)reload) {
@@ -117,13 +120,21 @@ public class MetadataClientLoop implements Loop {
     }
 
     private synchronized void send() {
-        MetadataSyncRequest inFlightRequest = toSend;
-        toSend = new MetadataSyncRequest();
-        inFlight = true;
-
-        if (inFlightRequest.size() == 0) {
+        if (toSend.size() == 0) {
             inFlight = false;
             return;
+        }
+
+        MetadataSyncRequest inFlightRequest;
+        EventCallOptions option = new EventCallOptions();
+        inFlight = true;
+
+        if (connected) {
+            inFlightRequest = toSend;
+            toSend = new MetadataSyncRequest();
+        } else {
+            inFlightRequest = new MetadataSyncRequest();
+            option = new EventCallOptions(20, 2000L);
         }
 
         inFlightRequest.setGeneration(generation);
@@ -133,7 +144,7 @@ public class MetadataClientLoop implements Loop {
                 .withData(objectSerializer.serialize(inFlightRequest));
 
         // I swear I hate futures.
-        Futures.addCallback(agent.call(event), new FutureCallback<Event>() {
+        Futures.addCallback(agent.call(event, option), new FutureCallback<Event>() {
             @Override
             public void onSuccess(@Nullable Event result) {
                 response(result);
