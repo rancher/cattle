@@ -488,7 +488,7 @@
     },
     "prePullOnUpgrade": {
       "type": "enum",
-      "default": "all",
+      "default": "existing",
       "options": [
         "all",
         "existing",
