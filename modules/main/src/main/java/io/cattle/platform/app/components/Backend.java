@@ -383,6 +383,8 @@ public class Backend {
 
         r.handle("secret.remove", secretRemove);
 
+        // Assign before inatorReconcileHandler.  Notice service.activate is twice in the block
+        r.handle("service.activate", serviceProcessManager::activate);
         r.handle("service.*", inatorReconcileHandler);
         r.handle("service.create", driverProcessManager::activate, serviceProcessManager::create);
         r.handle("service.update", driverProcessManager::activate);
