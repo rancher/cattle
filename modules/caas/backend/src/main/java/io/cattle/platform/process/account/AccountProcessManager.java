@@ -120,10 +120,14 @@ public class AccountProcessManager {
             }
         }
 
-        createOwnerAccess(state, account);
-        createDefaultStack(account);
+        if (ProjectConstants.TYPE.equals(account.getKind())) {
+            createOwnerAccess(state, account);
+            createDefaultStack(account);
 
-        return setupNetworking(account);
+            return setupNetworking(account);
+        }
+
+        return null;
     }
 
     public HandlerResult update(ProcessState state, ProcessInstance process) {
@@ -135,17 +139,17 @@ public class AccountProcessManager {
         return null;
     }
 
-    private void createDefaultStack(Account account) {
-        if (account.getClusterId() != null) {
-            serviceDao.getOrCreateDefaultStack(account.getId());
-        }
-    }
-
     private void disconnectClients(Account account) {
         /* Since the clusterId may have changed, we disconnect all clients because the cluster ID may have been
          * cached in the connection as null
          */
         disconnectClients(this.eventService, account);
+    }
+
+    private void createDefaultStack(Account account) {
+        if (account.getClusterId() != null) {
+            serviceDao.getOrCreateDefaultStack(account.getId());
+        }
     }
 
     public static void disconnectClients(EventService eventService, Account account) {
