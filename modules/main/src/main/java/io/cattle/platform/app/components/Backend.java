@@ -274,9 +274,6 @@ public class Backend {
 
         ExternalProcessHandler composeExecutor = externalFactory.handler("rancher-compose-executor");
         ExternalProcessHandler goMachineService = externalFactory.handler("machine-service", "machine.execute");
-        // TODO: remove and figure out why GMS isn't idempotent
-        goMachineService.setRetry(1);
-        goMachineService.setTimeoutMillis(120000L);
         ExternalProcessHandler k8sClusterService = externalFactory.handler("k8s-cluster-service", "netes.agent.execute");
 
         PodCreate podCreate = new PodCreate(f.eventService, f.objectManager, f.processManager, f.metaDataManager, deploymentSyncFactory, c.objectSerializer, metadataManager);
