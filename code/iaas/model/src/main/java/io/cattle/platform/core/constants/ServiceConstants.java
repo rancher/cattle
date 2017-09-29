@@ -94,7 +94,7 @@ public class ServiceConstants {
 
     public static final String FIELD_SECRETS = "secrets";
 
-    public static final String FIELD_DRAIN_TIMEOUT = "drainTimeoutMS";
+    public static final String FIELD_DRAIN_TIMEOUT = "drainTimeoutMs";
 
     public static final String ACTION_SERVICE_ACTIVATE = "activate";
     public static final String ACTION_SERVICE_CREATE = "create";

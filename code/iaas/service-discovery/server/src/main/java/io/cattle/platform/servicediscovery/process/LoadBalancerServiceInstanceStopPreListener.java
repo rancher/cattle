@@ -74,6 +74,15 @@ public class LoadBalancerServiceInstanceStopPreListener extends AgentBasedProces
             return null;
         }
 
+        // read the launchConfigLabel on the container
+        Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
+        String launchConfigName = labels.get(LABEL_SERVICE_LAUNCH_CONFIG) != null ? labels.get(LABEL_SERVICE_LAUNCH_CONFIG).toString() : null;
+        Integer drainTimeout = (Integer) ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
+                ServiceConstants.FIELD_DRAIN_TIMEOUT);
+        if (drainTimeout == null || (drainTimeout == 0)) {
+            return null;
+        }
+
         List<Service> activeLbServices = lookupAllActiveLBServices(service);
         List<? extends Instance> lbInstances = getLBServiceInstances(activeLbServices);
         // send drain event to each lbInstance and wait for reply upto timeout.
@@ -82,16 +91,11 @@ public class LoadBalancerServiceInstanceStopPreListener extends AgentBasedProces
         }
 
         String targetIpAddress = DataAccessor.fieldString(instance, InstanceConstants.FIELD_PRIMARY_IP_ADDRESS);
-        // read the launchConfigLabel on the container
-        Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
-        String launchConfigName = labels.get(LABEL_SERVICE_LAUNCH_CONFIG) != null ? labels.get(LABEL_SERVICE_LAUNCH_CONFIG).toString() : null;
-        Object drainTimeout = ServiceDiscoveryUtil.getLaunchConfigObject(service, launchConfigName,
-                ServiceConstants.FIELD_DRAIN_TIMEOUT);
 
         Map<Instance, ListenableFuture<? extends Event>> drainFutures = new HashMap<>();
 
         for (Instance lbInstance : lbInstances) {
-            ListenableFuture<? extends Event> future = drainBackend(lbInstance, instance, targetIpAddress, drainTimeout);
+            ListenableFuture<? extends Event> future = drainBackend(lbInstance, instance, targetIpAddress, drainTimeout.toString());
             if (future != null) {
                 drainFutures.put(lbInstance, future);
             }
@@ -112,7 +116,7 @@ public class LoadBalancerServiceInstanceStopPreListener extends AgentBasedProces
         return null;
     }
 
-    protected ListenableFuture<? extends Event> drainBackend(Instance lbInstance, Instance targetInstance, String targetIpAddress, Object drainTimeout) {
+    protected ListenableFuture<? extends Event> drainBackend(Instance lbInstance, Instance targetInstance, String targetIpAddress, String drainTimeout) {
         RemoteAgent agent = agentLocator.lookupAgent(lbInstance);
         if (agent == null) {
             return null;
@@ -120,7 +124,7 @@ public class LoadBalancerServiceInstanceStopPreListener extends AgentBasedProces
         Map<String, Object> drainInfo = new HashMap<>();
         drainInfo.put("targetIPaddress", targetIpAddress);
         if (drainTimeout != null)
-            drainInfo.put("drainTimeout", drainTimeout.toString());
+            drainInfo.put("drainTimeout", drainTimeout);
 
         Event event = new EventVO<>("target.drain").withData(drainInfo).withResourceType(getObjectManager().getType(targetInstance))
                 .withResourceId(ObjectUtils.getId(targetInstance).toString());

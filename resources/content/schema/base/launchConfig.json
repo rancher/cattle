@@ -31,9 +31,9 @@
             "create" : true,
             "default": "container"
         },
-        "drainTimeoutMS" : {
+        "drainTimeoutMs" : {
             "type" : "int",
-            "default": "15000"
+            "default": 0
         }
     }
 }

@@ -2030,7 +2030,7 @@ def test_export_config(client, context):
                      "tmpfs": {"/run": "rw"},
                      "sysctls": {"net.ipv4.ip_forward": "1"},
                      "runInit": True,
-                     "drainTimeoutMS": 15000,
+                     "drainTimeoutMs": 15000,
                      "ulimits": [{"name": "cpu", "soft": 1234, "hard": 1234},
                                  {"name": "nporc", "soft": 1234}]
                      }
@@ -3811,5 +3811,5 @@ def test_drain_timeout_launch_config(client, context, super_client):
                                     secondaryLaunchConfigs=[secondary_lc])
     service = client.wait_success(service)
     assert len(service.secondaryLaunchConfigs) == 1
-    assert service.launchConfig.drainTimeoutMS is not None
-    assert service.secondaryLaunchConfigs[0].drainTimeoutMS is not None
+    assert service.launchConfig.drainTimeoutMs is not None
+    assert service.secondaryLaunchConfigs[0].drainTimeoutMs is not None
