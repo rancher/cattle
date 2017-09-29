@@ -190,6 +190,7 @@ public class VolumeDaoImpl extends AbstractJooqDao implements VolumeDao {
         return DeferredUtils.nest(() -> resourceDao.createAndSchedule(Volume.class,
                 VOLUME.NAME, volumeName,
                 VOLUME.ACCOUNT_ID, accountId,
+                VOLUME.CLUSTER_ID, clusterId,
                 VOLUME.STORAGE_DRIVER_ID, driverId,
                 VolumeConstants.FIELD_VOLUME_DRIVER, driverName));
     }
