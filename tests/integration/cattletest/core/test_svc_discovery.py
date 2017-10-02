@@ -2093,7 +2093,6 @@ def test_export_config(client, context):
                               "nporc": 1234}
     assert svc["sysctls"] == {"net.ipv4.ip_forward": "1"}
     assert svc["init"] is True
-    assert svc["drain_timeout_ms"] == 15000
 
     rancher_yml = yaml.load(compose_config.rancherComposeConfig)
     svc = rancher_yml['services'][service.name]
@@ -2105,6 +2104,7 @@ def test_export_config(client, context):
     assert svc['start_on_create']
     assert svc['retain_ip'] is True
     assert svc["milli_cpu_reservation"] == 1000
+    assert svc["drain_timeout_ms"] == 15000
 
     launch_config_without_log = {"imageUuid": image_uuid,
                                  "cpuSet": "0,1", "labels": labels,
