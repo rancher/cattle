@@ -90,6 +90,7 @@ public class ServiceConstants {
 
     public static final String IMAGE_NONE = "rancher/none";
     public final static String IMAGE_DNS = "rancher/dns-service";
+    public final static String IMAGE_EXTERNAL = "rancher/external-service";
 
     public static final List<String> SERVICE_INSTANCE_NAME_DIVIDORS = Arrays.asList("-", "_");
     public static final List<String> skipStatesForDeactivate = Arrays.asList(CommonStatesConstants.REMOVED,
