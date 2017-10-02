@@ -136,7 +136,7 @@ public class EnvironmentUpgrade extends AbstractObjectProcessHandler {
         if (labelsObj != null) {
             labels = (Map<String, String>) labelsObj;
         }
-        labels.put(SystemLabels.LABEL_AGENT_ROLE, AgentConstants.ENVIRONMENT_ADMIN_ROLE);
+        labels.put(SystemLabels.LABEL_AGENT_ROLE, AgentConstants.ENVIRONMENT_ADMIN_ROLE + ",agent");
         labels.put(SystemLabels.LABEL_AGENT_CREATE, "true");
         newLaunchConfig.put(InstanceConstants.FIELD_LABELS, labels);
         // generate version

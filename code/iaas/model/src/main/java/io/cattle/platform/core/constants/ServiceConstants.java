@@ -91,8 +91,10 @@ public class ServiceConstants {
     public static final String FIELD_VOLUME_TEMPLATE_ID = "volumeTemplateId";
     public static final String FIELD_DEPLOYMENT_UNIT_ID = "deploymentUnitId";
     public static final String FIELD_SERVICE_INDEX_STRATEGY = "serviceIndexStrategy";
-    
+
     public static final String FIELD_SECRETS = "secrets";
+
+    public static final String FIELD_DRAIN_TIMEOUT = "drainTimeoutMs";
 
     public static final String ACTION_SERVICE_ACTIVATE = "activate";
     public static final String ACTION_SERVICE_CREATE = "create";

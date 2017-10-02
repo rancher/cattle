@@ -2030,6 +2030,7 @@ def test_export_config(client, context):
                      "tmpfs": {"/run": "rw"},
                      "sysctls": {"net.ipv4.ip_forward": "1"},
                      "runInit": True,
+                     "drainTimeoutMs": 15000,
                      "ulimits": [{"name": "cpu", "soft": 1234, "hard": 1234},
                                  {"name": "nporc", "soft": 1234}]
                      }
@@ -2092,6 +2093,7 @@ def test_export_config(client, context):
                               "nporc": 1234}
     assert svc["sysctls"] == {"net.ipv4.ip_forward": "1"}
     assert svc["init"] is True
+    assert svc["drain_timeout_ms"] == 15000
 
     rancher_yml = yaml.load(compose_config.rancherComposeConfig)
     svc = rancher_yml['services'][service.name]
@@ -3791,3 +3793,23 @@ def test_dns_priority_label(client, context):
     dns.append("169.254.169.250")
     assert all(item in dns for item in container.dns) is True
     assert set(search) == set(container.dnsSearch)
+
+
+def test_drain_timeout_launch_config(client, context, super_client):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid,
+                     "labels": {
+                         "io.rancher.sidekicks": "secondary"}}
+    secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
+
+    service = client.create_service(name=random_str(),
+                                    stackId=env.id,
+                                    launchConfig=launch_config,
+                                    scale=1,
+                                    secondaryLaunchConfigs=[secondary_lc])
+    service = client.wait_success(service)
+    assert len(service.secondaryLaunchConfigs) == 1
+    assert service.launchConfig.drainTimeoutMs is not None
+    assert service.secondaryLaunchConfigs[0].drainTimeoutMs is not None

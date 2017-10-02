@@ -400,7 +400,7 @@ public class ServiceDiscoveryUtil {
             labels = (Map<String, String>) labelsObj;
         }
         if (!labels.containsKey(SystemLabels.LABEL_AGENT_ROLE)) {
-            labels.put(SystemLabels.LABEL_AGENT_ROLE, AgentConstants.ENVIRONMENT_ADMIN_ROLE);
+            labels.put(SystemLabels.LABEL_AGENT_ROLE, AgentConstants.ENVIRONMENT_ADMIN_ROLE + ",agent");
             labels.put(SystemLabels.LABEL_AGENT_CREATE, "true");
         }
 
