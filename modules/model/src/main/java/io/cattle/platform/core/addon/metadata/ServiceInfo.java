@@ -49,6 +49,7 @@ public class ServiceInfo implements MetadataObject {
     HealthcheckInfo healthCheck;
     LbConfig lbConfig;
     boolean global;
+    List<String> expose;
 
     @SuppressWarnings("unchecked")
     public ServiceInfo(Service service) {
@@ -91,6 +92,9 @@ public class ServiceInfo implements MetadataObject {
         }
         this.state = service.getState();
         this.vip = service.getVip();
+        if (lcData.containsKey(InstanceConstants.FIELD_EXPOSE)) {
+            this.expose = (List<String>) lcData.get(InstanceConstants.FIELD_EXPOSE);
+        }
     }
 
     @Field(nullable = true)
@@ -210,6 +214,10 @@ public class ServiceInfo implements MetadataObject {
         return instanceIds;
     }
 
+    public List<String> getExpose() {
+        return expose;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -241,6 +249,8 @@ public class ServiceInfo implements MetadataObject {
         if (labels != null ? !labels.equals(that.labels) : that.labels != null) return false;
         if (metadata != null ? !metadata.equals(that.metadata) : that.metadata != null) return false;
         if (healthCheck != null ? !healthCheck.equals(that.healthCheck) : that.healthCheck != null) return false;
+        if (expose != null ? !expose.equals(that.expose) : that.expose != null)
+            return false;
         return lbConfig != null ? lbConfig.equals(that.lbConfig) : that.lbConfig == null;
     }
 
@@ -270,6 +280,7 @@ public class ServiceInfo implements MetadataObject {
         result = 31 * result + (healthCheck != null ? healthCheck.hashCode() : 0);
         result = 31 * result + (lbConfig != null ? lbConfig.hashCode() : 0);
         result = 31 * result + (global ? 1 : 0);
+        result = 31 * result + (expose != null ? expose.hashCode() : 0);
         return result;
     }
 }
