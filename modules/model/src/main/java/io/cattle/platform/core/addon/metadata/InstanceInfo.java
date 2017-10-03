@@ -7,14 +7,16 @@ import io.cattle.platform.core.addon.PortInstance;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.object.util.DataAccessor;
+
 import io.github.ibuildthecloud.gdapi.annotation.Field;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class InstanceInfo implements MetadataObject {
     long id;
@@ -58,6 +60,7 @@ public class InstanceInfo implements MetadataObject {
     List<Link> links;
     List<HealthcheckState> healthCheckHosts;
     HealthcheckInfo healthCheck;
+    List<String> expose;
 
     public InstanceInfo(Instance instance) {
         this.accountId = instance.getAccountId();
@@ -100,6 +103,7 @@ public class InstanceInfo implements MetadataObject {
         this.desired = instance.getDesired();
         this.hidden = instance.getHidden();
         this.deploymentUnitId = instance.getDeploymentUnitId();
+        this.expose = DataAccessor.fieldStringList(instance, InstanceConstants.FIELD_EXPOSE);
     }
 
     @Override
@@ -283,6 +287,10 @@ public class InstanceInfo implements MetadataObject {
         return hidden;
     }
 
+    public List<String> getExpose() {
+        return expose;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -329,6 +337,7 @@ public class InstanceInfo implements MetadataObject {
                 .append(links, that.links)
                 .append(healthCheckHosts, that.healthCheckHosts)
                 .append(healthCheck, that.healthCheck)
+                .append(expose, that.expose)
                 .isEquals();
     }
 
@@ -372,6 +381,7 @@ public class InstanceInfo implements MetadataObject {
                 .append(links)
                 .append(healthCheckHosts)
                 .append(healthCheck)
+                .append(expose)
                 .toHashCode();
     }
 }
