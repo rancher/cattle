@@ -10,7 +10,11 @@ import io.cattle.platform.util.type.CollectionUtils;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class InstanceConstants {
 
@@ -140,8 +144,6 @@ public class InstanceConstants {
     public static final String PULL_EXISTING = "existing";
 
     public static final String PROCESS_DATA_NO_OP = "containerNoOpEvent";
-
-    public static final String PROCESS_DATA_ERROR = "errorState";
 
     public static final String REMOVE_OPTION = "remove";
 

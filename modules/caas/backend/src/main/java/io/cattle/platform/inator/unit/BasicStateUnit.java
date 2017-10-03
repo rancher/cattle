@@ -56,13 +56,17 @@ public interface BasicStateUnit extends Unit {
                 return result;
             }
             wrapper.activate();
-            return new Result(UnitState.WAITING, this, String.format("Activating %s", getDisplayName()));
+            return new Result(UnitState.WAITING, this, String.format("Starting %s", getDisplayName()));
         }
     }
 
     Result removeBad(InatorContext context, RemoveReason reason);
 
     default Result preActivate(InatorContext context) {
+        return Result.good();
+    }
+
+    default Result preRemove(InatorContext context) {
         return Result.good();
     }
 
@@ -85,6 +89,10 @@ public interface BasicStateUnit extends Unit {
     default Result remove(InatorContext context) {
         BasicStateWrapper wrapper = getWrapper();
         if (wrapper != null) {
+            Result result = preRemove(context);
+            if (!result.isGood()) {
+                return result;
+            }
             if (wrapper.remove()) {
                 return Result.good();
             } else {

@@ -71,7 +71,7 @@ public class ExternalProcessHandler implements ProcessHandler, CompletableLogic 
             idString = id.toString();
         }
 
-        Event request = EventVO.newEvent(process.getName() + ";handler=" + handler)
+        Event request = EventVO.newEvent(getEventName(process) + ";handler=" + handler)
                 .withResourceId(idString)
                 .withResourceType(type)
                 .withData(getData(state, process));
@@ -83,6 +83,10 @@ public class ExternalProcessHandler implements ProcessHandler, CompletableLogic 
         });
 
         return new HandlerResult().withFuture(eventService.call(request, options));
+    }
+
+    protected String getEventName(ProcessInstance process) {
+        return process.getName();
     }
 
     protected Object getData(ProcessState state, ProcessInstance process) {

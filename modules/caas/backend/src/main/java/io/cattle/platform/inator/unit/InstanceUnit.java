@@ -15,6 +15,7 @@ import io.cattle.platform.inator.wrapper.BasicStateWrapper;
 import io.cattle.platform.inator.wrapper.DeploymentUnitWrapper;
 import io.cattle.platform.inator.wrapper.InstanceWrapper;
 import io.cattle.platform.inator.wrapper.StackWrapper;
+import io.github.ibuildthecloud.gdapi.util.DateUtils;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -119,8 +120,15 @@ public class InstanceUnit implements Unit, BasicStateUnit {
         return deps;
     }
 
-    public String getServiceName() {
-        return lc.getServiceName();
+    @Override
+    public Result preRemove(InatorContext context) {
+        boolean shouldRemove = svc.deploymentConditions.removeBackoff.check(unit.getId(),
+                lc.getName(),
+                () -> svc.triggerDeploymentUnitReconcile(unit.getId()));
+        if (!shouldRemove) {
+            return new Result(UnitState.WAITING, this, "Remove backoff");
+        }
+        return Result.good();
     }
 
     @Override
@@ -221,9 +229,11 @@ public class InstanceUnit implements Unit, BasicStateUnit {
     @Override
     public Result activate(InatorContext context) {
         // Make sure our dependencies haven't been rebuilt
-        if (!lc.validateDeps(context, instance)) {
-            // TODO: This really shouldn't force delete
-            return removeBad(context, "Missing or mismatched dependency", RemoveReason.OTHER);
+        if (!instance.isKubernetes()) {
+            if (!lc.validateDeps(context, instance)) {
+                // TODO: This really shouldn't force delete
+                return removeBad(context, "Missing or mismatched dependency", RemoveReason.OTHER);
+            }
         }
 
         // Do actual start
@@ -232,20 +242,22 @@ public class InstanceUnit implements Unit, BasicStateUnit {
             return result;
         }
 
-        // Restart self if dependency is started after self
-        Date selfStart = instance.getStartTime();
-        Map<UnitRef, Unit> units = context.getUnits();
-        for (UnitRef dep : dependencies(context)) {
-            Unit unit = units.get(dep);
-            if (!(unit instanceof InstanceUnit)) {
-                continue;
-            }
+        if (!instance.isKubernetes()) {
+            // Restart self if dependency is started after self
+            Date selfStart = instance.getStartTime();
+            Map<UnitRef, Unit> units = context.getUnits();
+            for (UnitRef dep : dependencies(context)) {
+                Unit unit = units.get(dep);
+                if (!(unit instanceof InstanceUnit)) {
+                    continue;
+                }
 
-            Date startTime = ((InstanceUnit) unit).getStartTime();
-            if (selfStart != null && startTime != null && selfStart.before(startTime)) {
-                instance.deactivate();
-                return new Result(UnitState.WAITING, this,
-                        String.format("Stopping %s because dependency restarted", getDisplayName()));
+                Date startTime = ((InstanceUnit) unit).getStartTime();
+                if (selfStart != null && startTime != null && selfStart.before(startTime)) {
+                    instance.deactivate();
+                    return new Result(UnitState.WAITING, this,
+                            String.format("Stopping %s because dependency restarted", getDisplayName()));
+                }
             }
         }
 
@@ -267,6 +279,14 @@ public class InstanceUnit implements Unit, BasicStateUnit {
                     unit.getHostId(), dep, callback)) {
                 result.aggregate(new Result(UnitState.WAITING, this,
                         String.format("Waiting on dependency: %s", dep.getDisplayName())));
+            }
+        }
+
+        if (result.isGood()) {
+            Long runAfter = instance.startBackoff();
+            if (runAfter != null) {
+                return new Result(UnitState.WAITING, this, String.format("Start backoff, retry %s",
+                        DateUtils.toString(new Date(runAfter))));
             }
         }
 

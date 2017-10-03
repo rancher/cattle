@@ -12,8 +12,6 @@ import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.util.exception.ExecutionException;
 
-import java.util.HashMap;
-
 public class InstanceProcessManager {
 
     private static final String START = "start";
@@ -112,10 +110,10 @@ public class InstanceProcessManager {
     public static HandlerResult handleStartError(ObjectProcessManager objectProcessManager, ProcessState state, Instance instance, ExecutionException e) {
         if (isNativeDockerStart(state)) {
             objectProcessManager.stop(instance, null);
+        } else if (isCreateStart(state)){
+            objectProcessManager.scheduleStandardChainedProcess(StandardProcess.STOP, StandardProcess.ERROR, instance, null);
         } else {
-            HashMap<String, Object> data = new HashMap<>();
-            data.put(InstanceConstants.PROCESS_DATA_ERROR, true);
-            objectProcessManager.scheduleStandardChainedProcess(StandardProcess.STOP, StandardProcess.ERROR, instance, data);
+            objectProcessManager.stop(instance, null);
         }
 
         e.setResources(state.getResource());

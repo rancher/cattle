@@ -23,12 +23,12 @@ import java.util.Map;
 
 import static io.cattle.platform.core.model.Tables.*;
 
-public class PodCreate extends ExternalProcessHandler
+public class PodSync extends ExternalProcessHandler
 {
     DeploymentSyncFactory syncFactory;
     MetadataManager metadataManager;
 
-    public PodCreate(EventService eventService, ObjectManager objectManager, ObjectProcessManager objectProcessManager, ObjectMetaDataManager objectMetaDataManager, DeploymentSyncFactory syncFactory, ObjectSerializer objectSerializer, MetadataManager metadataManager) {
+    public PodSync(EventService eventService, ObjectManager objectManager, ObjectProcessManager objectProcessManager, ObjectMetaDataManager objectMetaDataManager, DeploymentSyncFactory syncFactory, ObjectSerializer objectSerializer, MetadataManager metadataManager) {
         super("k8s-cluster-service", eventService, objectManager, objectProcessManager, objectMetaDataManager, objectSerializer);
         this.metadataManager = metadataManager;
         this.syncFactory = syncFactory;
@@ -36,8 +36,13 @@ public class PodCreate extends ExternalProcessHandler
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
+        Object noOp = state.getData().get(InstanceConstants.PROCESS_DATA_NO_OP);
+        if (noOp instanceof Boolean && (Boolean) noOp) {
+            return null;
+        }
+
         Instance instance = (Instance)state.getResource();
-        if (instance.getNativeContainer() || StringUtils.isNotBlank(instance.getExternalId())) {
+        if (instance.getNativeContainer() || !instance.getDesired()) {
             return null;
         }
 
@@ -45,15 +50,22 @@ public class PodCreate extends ExternalProcessHandler
             return null;
         }
 
+        if (instance.getExternalId() == null) {
+            state.getData().put(InstanceConstants.PROCESS_DATA_NO_OP, true);
+        }
+
         return super.handle(state, process);
+    }
+
+    @Override
+    protected String getEventName(ProcessInstance process) {
+        return "deploymentunit.sync";
     }
 
     @Override
     public HandlerResult complete(ListenableFuture<?> future, ProcessState state, ProcessInstance process) {
         try {
             AsyncUtils.get(future);
-            // This ensure that InstancStart handler doesn't actually do anything but collect the docker inspect
-            state.getData().put(InstanceConstants.PROCESS_DATA_NO_OP, true);
             return super.complete(future, state, process);
         } catch (ExecutionException e) {
             return InstanceProcessManager.handleStartError(processManager, state, (Instance)state.getResource(), e);

@@ -13,5 +13,7 @@ public interface DockerTransformer {
 
     void setLabels(Instance instance, Map<String, Object> fromInspect);
 
+    void setExposed(Instance instance, Map<String, Object> fromInspect);
+
     int getExitCode(Instance instance);
 }

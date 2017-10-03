@@ -69,7 +69,17 @@ public class BackPopulaterImpl implements BackPopulater {
 
         processLabels(instance);
 
+        processExpose(instance);
+
         processRemainingFields(instance);
+    }
+
+    private void processExpose(Instance instance) {
+        Map<String, Object> inspect = DataAccessor.fieldMapRO(instance, FIELD_DOCKER_INSPECT);
+        if (inspect == null) {
+            return;
+        }
+        transformer.setExposed(instance, inspect);
     }
 
     @SuppressWarnings("unchecked")
