@@ -229,9 +229,11 @@ public class InstanceUnit implements Unit, BasicStateUnit {
     @Override
     public Result activate(InatorContext context) {
         // Make sure our dependencies haven't been rebuilt
-        if (!lc.validateDeps(context, instance)) {
-            // TODO: This really shouldn't force delete
-            return removeBad(context, "Missing or mismatched dependency", RemoveReason.OTHER);
+        if (!instance.isKubernetes()) {
+            if (!lc.validateDeps(context, instance)) {
+                // TODO: This really shouldn't force delete
+                return removeBad(context, "Missing or mismatched dependency", RemoveReason.OTHER);
+            }
         }
 
         // Do actual start
@@ -240,20 +242,22 @@ public class InstanceUnit implements Unit, BasicStateUnit {
             return result;
         }
 
-        // Restart self if dependency is started after self
-        Date selfStart = instance.getStartTime();
-        Map<UnitRef, Unit> units = context.getUnits();
-        for (UnitRef dep : dependencies(context)) {
-            Unit unit = units.get(dep);
-            if (!(unit instanceof InstanceUnit)) {
-                continue;
-            }
+        if (!instance.isKubernetes()) {
+            // Restart self if dependency is started after self
+            Date selfStart = instance.getStartTime();
+            Map<UnitRef, Unit> units = context.getUnits();
+            for (UnitRef dep : dependencies(context)) {
+                Unit unit = units.get(dep);
+                if (!(unit instanceof InstanceUnit)) {
+                    continue;
+                }
 
-            Date startTime = ((InstanceUnit) unit).getStartTime();
-            if (selfStart != null && startTime != null && selfStart.before(startTime)) {
-                instance.deactivate();
-                return new Result(UnitState.WAITING, this,
-                        String.format("Stopping %s because dependency restarted", getDisplayName()));
+                Date startTime = ((InstanceUnit) unit).getStartTime();
+                if (selfStart != null && startTime != null && selfStart.before(startTime)) {
+                    instance.deactivate();
+                    return new Result(UnitState.WAITING, this,
+                            String.format("Stopping %s because dependency restarted", getDisplayName()));
+                }
             }
         }
 

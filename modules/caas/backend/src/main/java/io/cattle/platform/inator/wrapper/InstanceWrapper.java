@@ -201,8 +201,8 @@ public class InstanceWrapper implements BasicStateWrapper {
         return DataAccessor.fieldStringList(instance, InstanceConstants.FIELD_PORTS);
     }
 
-    public String getRevision() {
-        return instance.getVersion();
+    public boolean isKubernetes() {
+        return InstanceConstants.isKubernetes(instance);
     }
 
     public String getLaunchConfigName() {
