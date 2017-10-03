@@ -19,6 +19,7 @@ public class DeploymentSyncRequest {
     Long clusterId;
     String namespace;
     String nodeName;
+    boolean inspectIp;
 
     String externalId;
     List<Instance> containers;
@@ -30,7 +31,7 @@ public class DeploymentSyncRequest {
     }
 
     public DeploymentSyncRequest(DeploymentUnit unit, String nodeName, String namespace, String revision, List<Instance> containers, List<Volume> volumes,
-                                 List<Credential> registryCredentials, List<Network> networks) {
+                                 List<Credential> registryCredentials, List<Network> networks, boolean inspectIp) {
         this.deploymentUnitUuid = unit == null ? null : unit.getUuid();
         this.externalId = unit == null ? null : unit.getExternalId();
         this.namespace = namespace;
@@ -40,6 +41,7 @@ public class DeploymentSyncRequest {
         this.volumes = volumes;
         this.registryCredentials = registryCredentials;
         this.networks = networks;
+        this.inspectIp = inspectIp;
 
         for (Instance instance : containers) {
             this.clusterId = instance.getClusterId();
@@ -116,4 +118,11 @@ public class DeploymentSyncRequest {
         return nodeName;
     }
 
+    public boolean isInspectIp() {
+        return inspectIp;
+    }
+
+    public void setInspectIp(boolean inspectIp) {
+        this.inspectIp = inspectIp;
+    }
 }

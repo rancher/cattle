@@ -26,10 +26,6 @@ import io.cattle.platform.service.launcher.ServiceAccountCreateStartup;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -125,7 +121,8 @@ public class DeploymentSyncFactory {
                 instances,
                 volumes,
                 credentials,
-                networks);
+                networks,
+                resource.getNativeContainer() || !InstanceConstants.isKubernetes(resource));
     }
 
     private String getRevision(DeploymentUnit unit, Map<Long, Instance> instances) {

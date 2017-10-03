@@ -106,8 +106,7 @@ import io.cattle.platform.process.instance.InstanceProcessManager;
 import io.cattle.platform.process.instance.InstanceRemove;
 import io.cattle.platform.process.instance.InstanceStart;
 import io.cattle.platform.process.instance.InstanceStop;
-import io.cattle.platform.process.instance.PodCreate;
-import io.cattle.platform.process.instance.PodRemove;
+import io.cattle.platform.process.instance.PodSync;
 import io.cattle.platform.process.mount.MountProcessManager;
 import io.cattle.platform.process.mount.MountRemove;
 import io.cattle.platform.process.network.NetworkProcessManager;
@@ -278,8 +277,7 @@ public class Backend {
         ExternalProcessHandler goMachineService = externalFactory.handler("machine-service", "machine.execute");
         ExternalProcessHandler k8sClusterService = externalFactory.handler("k8s-cluster-service", "netes.agent.execute");
 
-        PodCreate podCreate = new PodCreate(f.eventService, f.objectManager, f.processManager, f.metaDataManager, deploymentSyncFactory, c.objectSerializer, metadataManager);
-        PodRemove podRemove = new PodRemove(f.eventService, f.objectManager, f.processManager, f.metaDataManager, deploymentSyncFactory, c.objectSerializer);
+        PodSync podSync = new PodSync(f.eventService, f.objectManager, f.processManager, f.metaDataManager, deploymentSyncFactory, c.objectSerializer, metadataManager);
 
         AccountProcessManager account = new AccountProcessManager(d.networkDao, d.resourceDao, f.processManager, f.objectManager, d.instanceDao, d.accountDao, d.serviceDao, f.eventService);
         AgentActivateReconnect agentActivateReconnect = new AgentActivateReconnect(f.objectManager, c.agentLocator, pingMonitor, f.jsonMapper);
@@ -354,10 +352,10 @@ public class Backend {
         r.handle("hosttemplate.remove", hosttemplateRemove);
 
         r.handle("instance.create", instanceProcessManager::preCreate, instanceProcessManager::create);
-        r.handle("instance.start", instanceProcessManager::preStart, podCreate, instanceStart, instanceProcessManager::postStart);//, k8sProviderLabels);
-        r.handle("instance.stop", instanceStop, instanceProcessManager::postStop);
+        r.handle("instance.start", instanceProcessManager::preStart, podSync, instanceStart, instanceProcessManager::postStart);//, k8sProviderLabels);
+        r.handle("instance.stop", podSync, instanceStop, instanceProcessManager::postStop);
         r.handle("instance.restart", instanceProcessManager::restart);
-        r.handle("instance.remove", instanceProcessManager::preRemove, podRemove, instanceRemove, instanceProcessManager::postRemove);
+        r.handle("instance.remove", instanceProcessManager::preRemove, podSync, instanceRemove, instanceProcessManager::postRemove);
 
         r.handle("machinedriver.reactivate", goMachineService);
         r.handle("machinedriver.activate", goMachineService);
