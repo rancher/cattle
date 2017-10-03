@@ -1,5 +1,6 @@
 package io.cattle.platform.trigger;
 
+import io.cattle.platform.core.addon.metadata.ServiceInfo;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.DeploymentUnit;
@@ -87,6 +88,10 @@ public class ServiceReconcileTrigger implements Trigger {
 
         if (obj instanceof Service) {
             return Collections.singletonList(((Service) obj).getId());
+        }
+
+        if (obj instanceof ServiceInfo) {
+            return Collections.singletonList(((ServiceInfo) obj).getId());
         }
 
         return Collections.emptyList();

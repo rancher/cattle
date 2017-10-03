@@ -59,7 +59,7 @@ public class ConditionsLoop implements Loop {
     private void checkHealthyHosts() {
         Metadata metadata = metadataManager.getMetadataForAccount(accountId);
         if (!metadata.isClusterOwner()) {
-            return;
+            metadata = metadataManager.getMetadataForCluster(metadata.getClusterId());
         }
 
         boolean oneGood = false;
