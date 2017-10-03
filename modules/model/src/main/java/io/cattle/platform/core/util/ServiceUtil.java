@@ -271,7 +271,9 @@ public class ServiceUtil {
         } else {
             Map<String, Object> data = CollectionUtils.toMap(config);
             Object image = data.get(InstanceConstants.FIELD_IMAGE);
-            if (image == null || StringUtils.equals(image.toString(), ServiceConstants.IMAGE_DNS)|| StringUtils.equals(image.toString(), ServiceConstants.IMAGE_NONE) ) {
+            if (image == null || StringUtils.equals(image.toString(), ServiceConstants.IMAGE_DNS)
+                    || StringUtils.equals(image.toString(), ServiceConstants.IMAGE_EXTERNAL)
+                    || StringUtils.equals(image.toString(), ServiceConstants.IMAGE_NONE)) {
                 noOp = true;
             }
         }
