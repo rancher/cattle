@@ -72,10 +72,12 @@ public class AzureIdentityProvider extends AzureConfigurable implements Identity
         }
         String accessToken = (String) DataAccessor.fields(account).withKey(AzureConstants.AZURE_ACCESS_TOKEN).get();
         String refreshToken = (String) DataAccessor.fields(account).withKey(AzureConstants.AZURE_REFRESH_TOKEN).get();
+
+        ApiRequest request = ApiContext.getContext().getApiRequest();
+        request.setAttribute(AzureConstants.AZURE_ACCESS_TOKEN, accessToken);
+        request.setAttribute(AzureConstants.AZURE_REFRESH_TOKEN, refreshToken);
+
         if (azureTokenUtils.findAndSetJWT()){
-            ApiRequest request = ApiContext.getContext().getApiRequest();
-            request.setAttribute(AzureConstants.AZURE_ACCESS_TOKEN, accessToken);
-            request.setAttribute(AzureConstants.AZURE_REFRESH_TOKEN, refreshToken);
             return azureTokenUtils.getIdentities();
         }
         String jwt = null;
@@ -96,15 +98,11 @@ public class AzureIdentityProvider extends AzureConfigurable implements Identity
             } else {
                 jwt = authToken.getKey();
             }
-
         }
         if (StringUtils.isBlank(jwt)){
             return Collections.emptySet();
         }
-        ApiRequest request = ApiContext.getContext().getApiRequest();
         request.setAttribute(AzureConstants.AZURE_JWT, jwt);
-        request.setAttribute(AzureConstants.AZURE_ACCESS_TOKEN, accessToken);
-        request.setAttribute(AzureConstants.AZURE_REFRESH_TOKEN, refreshToken);
         return azureTokenUtils.getIdentities();
     }
 
