@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 import static io.cattle.platform.core.constants.InstanceConstants.*;
+import static io.cattle.platform.object.util.DataAccessor.*;
 
 public class DockerTransformerImpl implements DockerTransformer {
 
@@ -388,6 +389,18 @@ public class DockerTransformerImpl implements DockerTransformer {
         setField(instance, FIELD_LABELS, labels);
     }
 
+    @Override
+    public void setExposed(Instance instance, Map<String, Object> fromInspect) {
+        InspectContainerResponse inspect = transformInspect(fromInspect);
+        ContainerConfig containerConfig = inspect.getConfig();
+        HostConfig hostConfig = inspect.getHostConfig();
+
+        if (containerConfig != null && hostConfig != null) {
+            setExposed(instance, safeGetExposedPorts(containerConfig));
+        }
+
+    }
+
     private void setImage(Instance instance, String image) {
         setField(instance, FIELD_IMAGE, image);
     }
@@ -475,13 +488,32 @@ public class DockerTransformerImpl implements DockerTransformer {
         setField(instance, FIELD_LXC_CONF, instanceLxcConf);
     }
 
+    private void setExposed(Instance instance, ExposedPort[] exposedPorts) {
+        if (exposedPorts == null || exposedPorts.length == 0) {
+            return;
+        }
+
+        List<String> expose = fieldStringList(instance, InstanceConstants.FIELD_EXPOSE);
+        boolean modified = false;
+        for (ExposedPort ep : exposedPorts) {
+            String key = ep.getPort() + "/" + (ep.getProtocol() == null ? "tcp" : ep.getProtocol().toString());
+            if (!expose.contains(key)) {
+                expose.add(key);
+                modified = true;
+            }
+        }
+
+        if (modified) {
+            setField(instance, FIELD_EXPOSE, expose);
+        }
+    }
+
     private void setPorts(Instance instance, ExposedPort[] exposedPorts, Ports portBindings) {
         if (exposedPorts == null || exposedPorts.length == 0) {
             return;
         }
 
         List<PortInstance> containerPortInstances = new ArrayList<>();
-        List<String> ports = new ArrayList<>();
         for (ExposedPort ep : exposedPorts) {
             Binding[] bindings = portBindings == null || portBindings.getBindings() == null ? null : portBindings.getBindings().get(ep);
             if (bindings != null && bindings.length > 0) {
