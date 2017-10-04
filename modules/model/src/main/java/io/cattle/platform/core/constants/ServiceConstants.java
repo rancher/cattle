@@ -37,7 +37,6 @@ public class ServiceConstants {
     public static final String FIELD_LOG_CONFIG = "logConfig";
     public static final String FIELD_METADATA = "metadata";
     public static final String FIELD_NETWORK_DRIVER = "networkDriver";
-    public static final String FIELD_OUTPUTS = "outputs";
     public static final String FIELD_PORT_RULES = "portRules";
     public static final String FIELD_PUBLIC_ENDPOINTS = "publicEndpoints";
     public static final String FIELD_RESTART_TRIGGER = "restartTrigger";

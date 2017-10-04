@@ -171,7 +171,7 @@ public class Model {
                 .type("register")
                 .type("secret")
                 .type("serviceevent")
-                .type("stack").processes("error", "pause", "rollback", "update")
+                .type("stack").processes("error", "rollback", "update")
                 .type("storageDriver")
                 .type("storagePool").processes("activate", "deactivate")
                 .type("subnet")
@@ -370,7 +370,6 @@ public class Model {
 
     private TypeSet named() {
         return TypeSet.ofNames(
-                "addOutputsInput",
                 "apiKey,parent=credential",
                 "changeSecretInput",
                 "composeConfigInput",

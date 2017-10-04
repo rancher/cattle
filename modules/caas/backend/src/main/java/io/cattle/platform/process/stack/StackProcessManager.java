@@ -1,7 +1,6 @@
 package io.cattle.platform.process.stack;
 
 import io.cattle.platform.core.addon.StackConfiguration;
-import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.StackConstants;
 import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Host;
@@ -14,7 +13,6 @@ import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.object.ObjectManager;
-import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.systemstack.catalog.CatalogService;
@@ -27,7 +25,6 @@ import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
-import static io.github.ibuildthecloud.gdapi.condition.Condition.*;
 
 public class StackProcessManager {
 
@@ -52,19 +49,6 @@ public class StackProcessManager {
 
     public HandlerResult postRollback(ProcessState state, ProcessInstance process) {
         return postSuccess(state, process);
-    }
-
-    public HandlerResult pause(ProcessState state, ProcessInstance process) {
-        Stack stack = (Stack)state.getResource();
-
-        for (Service service : objectManager.find(Service.class,
-                SERVICE.STACK_ID, stack.getId(),
-                ObjectMetaDataManager.REMOVED_FIELD, null,
-                ObjectMetaDataManager.STATE_FIELD, ne(CommonStatesConstants.REMOVING))) {
-            processManager.pause(service, null);
-        }
-
-        return null;
     }
 
     private HandlerResult postSuccess(ProcessState state, ProcessInstance process) {

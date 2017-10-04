@@ -392,7 +392,6 @@ public class Backend {
         r.handle("serviceevent.create", serviceEventCreate);
 
         r.handle("stack.create", composeExecutor, stackProcessManager::postCreate);
-        r.handle("stack.pause", stackProcessManager::pause);
         r.handle("stack.remove", composeExecutor, stackProcessManager::remove);
         r.handle("stack.rollback", stackProcessManager::preRollback, composeExecutor, stackProcessManager::postRollback);
         r.handle("stack.update", composeExecutor, stackProcessManager::postUpdate);
