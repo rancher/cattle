@@ -46,6 +46,7 @@ public class ServiceLifecycleManagerImpl implements ServiceLifecycleManager {
     @Override
     public void preStart(Instance instance) {
         InstanceHealthCheck hc = DataAccessor.field(instance, InstanceConstants.FIELD_HEALTH_CHECK, InstanceHealthCheck.class);
+        DataAccessor.setField(instance, InstanceConstants.FIELD_HEALTHCHECK_STATES, null);
         if (hc == null) {
             instance.setHealthState(null);
         } else {
