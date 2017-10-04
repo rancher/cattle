@@ -23,10 +23,6 @@
       "type": "map[string]",
       "nullable": true
     },
-    "outputs": {
-      "type": "map[string]",
-      "nullable": true
-    },
     "workingConfiguration": {
       "type": "stackConfiguration",
       "nullabled": true
@@ -41,21 +37,14 @@
     }
   },
   "resourceActions": {
-    "addoutputs": {
-      "input": "addOutputsInput",
-      "output": "stack"
-    },
     "exportconfig": {
       "input": "composeConfigInput",
       "output": "composeConfig"
     },
-    "activateservices": {
-      "output": "stack"
-    },
-    "deactivateservices": {
-      "output": "stack"
-    },
     "startall": {
+      "output": "stack"
+    },
+    "pauseall": {
       "output": "stack"
     },
     "stopall": {

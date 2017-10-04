@@ -1,6 +1,5 @@
 package io.cattle.platform.api.stack;
 
-import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.model.Instance;
@@ -13,11 +12,10 @@ import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ActionHandler;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
-import java.util.Arrays;
 import java.util.List;
 
-import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
-import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
+import static io.cattle.platform.core.model.tables.InstanceTable.*;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
 
 public class StackStopAllActionHandler implements ActionHandler {
 
@@ -25,7 +23,6 @@ public class StackStopAllActionHandler implements ActionHandler {
     ObjectManager objectManager;
 
     public StackStopAllActionHandler(ObjectProcessManager objectProcessManager, ObjectManager objectManager) {
-        super();
         this.objectProcessManager = objectProcessManager;
         this.objectManager = objectManager;
     }

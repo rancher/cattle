@@ -579,7 +579,6 @@
         "stack.externalId": "cru",
         "stack.group": "cru",
         "stack.labels": "cru",
-        "stack.outputs": "cru",
         "stack.parentStackId": "cr",
         "stack.serviceIds": "r",
         "stack.system": "r",
@@ -828,9 +827,6 @@
         "serviceLink" : "cr",
         "serviceLink.serviceId" : "cr",
         "serviceLink.name" : "cr",
-
-        "addOutputsInput" : "r",
-        "addOutputsInput.outputs" : "cr",
 
         "serviceUpgrade" : "r",
         "serviceUpgrade.inServiceStrategy" : "cr",

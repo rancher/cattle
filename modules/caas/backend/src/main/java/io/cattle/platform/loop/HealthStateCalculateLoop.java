@@ -1,12 +1,10 @@
 package io.cattle.platform.loop;
 
-import static io.cattle.platform.core.constants.HealthcheckConstants.*;
-import static java.util.stream.Collectors.*;
-
 import io.cattle.platform.core.addon.HealthcheckState;
 import io.cattle.platform.core.addon.metadata.InstanceInfo;
 import io.cattle.platform.core.addon.metadata.ServiceInfo;
 import io.cattle.platform.core.addon.metadata.StackInfo;
+import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
@@ -18,30 +16,33 @@ import io.cattle.platform.metadata.Metadata;
 import io.cattle.platform.metadata.MetadataManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.util.type.CollectionUtils;
+import org.apache.commons.collections4.ListValuedMap;
+import org.apache.commons.collections4.MultiValuedMap;
+import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
+import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.apache.commons.collections4.ListValuedMap;
-import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
+import static io.cattle.platform.core.constants.HealthcheckConstants.*;
+import static java.util.stream.Collectors.*;
 
 public class HealthStateCalculateLoop implements Loop {
-    private static final Set<String> SUPPORTED_SERVICE_KINDS = CollectionUtils.set(ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
-            ServiceConstants.KIND_SCALING_GROUP_SERVICE, ServiceConstants.KIND_SELECTOR_SERVICE);
-    private static final Set<String> RUNNING_STATES = CollectionUtils.set(InstanceConstants.STATE_RUNNING);
-    private static final Set<String> STOP_STATES = CollectionUtils.set(InstanceConstants.STATE_STOPPING, InstanceConstants.STATE_STOPPED);
-    private static final Map<String, List<String>> STATE_TRANSITIONS;
+
+    private static final Set<String> SUPPORTED_SERVICE_KINDS = CollectionUtils.set(
+            ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
+            ServiceConstants.KIND_SCALING_GROUP_SERVICE,
+            ServiceConstants.KIND_SELECTOR_SERVICE);
+
+    private static final MultiValuedMap<String, String> STATE_TRANSITIONS = new HashSetValuedHashMap<>();
     static {
-        STATE_TRANSITIONS = new HashMap<String, List<String>>();
-        STATE_TRANSITIONS.put(HealthcheckConstants.HEALTH_STATE_INITIALIZING, Arrays.asList(HealthcheckConstants.HEALTH_STATE_HEALTHY));
-        STATE_TRANSITIONS.put(HealthcheckConstants.HEALTH_STATE_HEALTHY, Arrays.asList(HealthcheckConstants.HEALTH_STATE_UNHEALTHY));
-        STATE_TRANSITIONS.put(HealthcheckConstants.HEALTH_STATE_UNHEALTHY, Arrays.asList(HealthcheckConstants.HEALTH_STATE_HEALTHY));
+        STATE_TRANSITIONS.put(HealthcheckConstants.HEALTH_STATE_INITIALIZING, HealthcheckConstants.HEALTH_STATE_HEALTHY);
+        STATE_TRANSITIONS.put(HealthcheckConstants.HEALTH_STATE_HEALTHY, HealthcheckConstants.HEALTH_STATE_UNHEALTHY);
+        STATE_TRANSITIONS.put(HealthcheckConstants.HEALTH_STATE_UNHEALTHY, HealthcheckConstants.HEALTH_STATE_HEALTHY);
     }
 
     long accountId;
@@ -87,10 +88,10 @@ public class HealthStateCalculateLoop implements Loop {
                 boolean scaleNotMet = !serviceInfo.isGlobal() && serviceInfo.getScale() != null &&
                         healthStates.size() != (serviceInfo.getScale() * (1 + serviceInfo.getSidekicks().size()));
                 if (healthStates.isEmpty() || scaleNotMet) {
-                    healthStates.add(HEALTH_STATE_DEGRADED);
+                    healthStates = Collections.singletonList(HEALTH_STATE_DEGRADED);
                 }
             } else {
-                healthStates.add(HEALTH_STATE_HEALTHY);
+                healthStates = Collections.singletonList(null);
             }
 
             String serviceState = aggregate(healthStates);
@@ -109,39 +110,37 @@ public class HealthStateCalculateLoop implements Loop {
 
         for (InstanceInfo instanceInfo : metadata.getInstances()) {
             String instanceState = instanceInfo.getHealthState();
-            boolean updateHealth = false;
-            if (RUNNING_STATES.contains(instanceInfo.getState())) {
-                instanceState = aggregate(healthStates(instanceInfo));
-                // update health state only for running/starting instances
-                // having not null health check set
-                if (instanceInfo.getHealthState() != null) {
-                    updateHealth = true;
-                }
-            } else if (STOP_STATES.contains(instanceInfo.getState())) {
-                if (instanceInfo.isShouldRestart()) {
-                    instanceState = HEALTH_STATE_DEGRADED;
-                } else if (instanceInfo.getExitCode() != null && !instanceInfo.getExitCode().equals(0)) {
-                    instanceState = HEALTH_STATE_DEGRADED;
-                }
-            } else if (instanceInfo.getState().equalsIgnoreCase(InstanceConstants.STATE_STARTING)) {
-                instanceState = HEALTH_STATE_DEGRADED;
-            } else {
-                continue;
+            switch(instanceInfo.getState()) {
+                case InstanceConstants.STATE_RUNNING:
+                    if (instanceInfo.getHealthCheck() != null) {
+                        String newInstanceState = aggregate(healthStates(instanceInfo));
+                        if (STATE_TRANSITIONS.get(instanceInfo.getHealthState()).contains(newInstanceState)) {
+                            instanceState = newInstanceState;
+                        }
+                    }
+                    break;
+                case InstanceConstants.STATE_STOPPED:
+                    if (instanceInfo.isShouldRestart()) {
+                        instanceState = HEALTH_STATE_UNHEALTHY;
+                    } else {
+                        instanceState = HEALTH_STATE_HEALTHY;
+                    }
+                    break;
+                case CommonStatesConstants.ERROR:
+                    instanceState = HEALTH_STATE_UNHEALTHY;
+                    break;
+                default:
+                    continue;
             }
 
             Set<Long> serviceIds = instanceInfo.getServiceIds();
             for (Long serviceId : serviceIds) {
                 if (instanceInfo.getDesired()) {
-                    if (instanceState == null) {
-                        serviceState.put(serviceId, HEALTH_STATE_HEALTHY);
-                    } else {
-                        serviceState.put(serviceId, instanceState);
-                    }
+                    serviceState.put(serviceId, instanceState);
                 }
             }
 
-            if (updateHealth && !Objects.equals(instanceState, instanceInfo.getHealthState())
-                    && STATE_TRANSITIONS.get(instanceInfo.getHealthState()).contains(instanceState)) {
+            if (!Objects.equals(instanceState, instanceInfo.getHealthState())) {
                 writeInstanceHealthState(metadata, instanceInfo.getId(), instanceState);
             }
         }

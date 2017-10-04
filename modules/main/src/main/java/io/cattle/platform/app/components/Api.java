@@ -93,7 +93,13 @@ import io.cattle.platform.api.service.VolumeTemplateCreateValidationFilter;
 import io.cattle.platform.api.serviceevent.ServiceEventFilter;
 import io.cattle.platform.api.serviceproxy.ServiceProxyManager;
 import io.cattle.platform.api.setting.SettingManager;
-import io.cattle.platform.api.stack.*;
+import io.cattle.platform.api.stack.ServiceDiscoveryStackOutputFilter;
+import io.cattle.platform.api.stack.StackComposeLinkHandler;
+import io.cattle.platform.api.stack.StackExportConfigActionHandler;
+import io.cattle.platform.api.stack.StackOutputFilter;
+import io.cattle.platform.api.stack.StackPauseAllActionHandler;
+import io.cattle.platform.api.stack.StackStartAllActionHandler;
+import io.cattle.platform.api.stack.StackStopAllActionHandler;
 import io.cattle.platform.api.stats.ContainerStatsLinkHandler;
 import io.cattle.platform.api.stats.HostStatsLinkHandler;
 import io.cattle.platform.api.stats.ServiceContainerStatsLinkHandler;
@@ -209,12 +215,10 @@ public class Api {
         c.router.action(Service.class, "cancelupgrade", new CancelUpgradeActionHandler(f.processManager, f.objectManager));
         c.router.action(Service.class,"certificate", new ServiceCertificateActionHandler(c.certService));
         c.router.action(Service.class,"garbagecollect", new ServiceGarbageCollectActionHandler(d.serviceDao, f.processManager));
-        c.router.action(Stack.class,"activateservices", new StackActivateServicesActionHandler(f.processManager, f.objectManager));
-        c.router.action(Stack.class,"addoutputs", new AddOutputsActionHandler(f.objectManager));
-        c.router.action(Stack.class,"deactivateservices", new StackDeactivateServicesActionHandler(f.processManager, f.objectManager));
         c.router.action(Stack.class,"exportconfig", new StackExportConfigActionHandler(f.objectManager, c.composeExportService));
+        c.router.action(Stack.class, "pauseall", new StackPauseAllActionHandler(f.processManager, f.objectManager));
+        c.router.action(Stack.class, "startall", new StackStartAllActionHandler(f.processManager, f.objectManager));
         c.router.action(Stack.class,"stopall", new StackStopAllActionHandler(f.processManager, f.objectManager));
-        c.router.action(Stack.class,"startall", new StackStartAllActionHandler(f.processManager, f.objectManager));
 
 
         c.router.action("container","converttoservice", new ContainerConvertToServiceActionHandler(f.objectManager, f.jsonMapper, c.revisionManager));
