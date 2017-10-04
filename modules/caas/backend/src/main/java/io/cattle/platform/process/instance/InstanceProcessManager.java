@@ -110,7 +110,7 @@ public class InstanceProcessManager {
     public static HandlerResult handleStartError(ObjectProcessManager objectProcessManager, ProcessState state, Instance instance, ExecutionException e) {
         if (isNativeDockerStart(state)) {
             objectProcessManager.stop(instance, null);
-        } else if (isCreateStart(state)){
+        } else if (isCreateStart(state) || instance.getServiceId() != null){
             objectProcessManager.scheduleStandardChainedProcess(StandardProcess.STOP, StandardProcess.ERROR, instance, null);
         } else {
             objectProcessManager.stop(instance, null);
