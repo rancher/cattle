@@ -27,7 +27,6 @@ import io.cattle.platform.api.handler.DeferredActionsHandler;
 import io.cattle.platform.api.handler.EventNotificationHandler;
 import io.cattle.platform.api.handler.LinkRequestHandler;
 import io.cattle.platform.api.handler.ResponseObjectConverter;
-import io.cattle.platform.api.host.HostEvacuateActionHandler;
 import io.cattle.platform.api.host.HostStoragePoolsLinkHandler;
 import io.cattle.platform.api.host.HostsOutputFilter;
 import io.cattle.platform.api.host.MachineConfigLinkHandler;
@@ -209,7 +208,6 @@ public class Api {
     private void addActionHandlers() {
         c.router.action(Account.class, "deactivate", new AccountDeactivateActionHandler(f.processManager, f.objectManager, d.accountDao));
         c.router.action(Host.class, "dockersocket", new DockerSocketProxyActionHandler(c.hostApiService, f.objectManager));
-        c.router.action(Host.class,"evacuate", new HostEvacuateActionHandler(d.resourceDao));
         c.router.action(Instance.class,"console", new InstanceConsoleActionHandler(c.hostApiService, f.objectManager));
         c.router.action(ProcessInstance.class, "replay", new ProcessInstanceReplayHandler(f.objectManager, f.eventService));
         c.router.action(Service.class, "cancelupgrade", new CancelUpgradeActionHandler(f.processManager, f.objectManager));

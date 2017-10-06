@@ -216,7 +216,10 @@ public class Model {
                         .from("creating")
                         .transitioning("provisioning")
                         .to("inactive")
-
+                    .process("evacuate")
+                        .from("active")
+                        .transitioning("evacuating")
+                        .to("inactive")
                 .type("mount")
                     .process("create")
                         .transitioning("activating")

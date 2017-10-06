@@ -27,6 +27,7 @@ public class HostConstants {
 
     public static final String PROCESS_ACTIVATE = "host.activate";
     public static final String PROCESS_PROVISION = "host.provision";
+    public static final String PROCESS_EVACUATE = "host.evacuate";
 
     public static final String STATE_PROVISIONING = "provisioning";
 

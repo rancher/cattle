@@ -114,11 +114,6 @@ public class ExternalEventProcessManager {
         case ExternalEventConstants.KIND_EXTERNAL_DNS_EVENT:
             handleExternalDnsEvent(event, process);
             break;
-        case ExternalEventConstants.KIND_EXTERNAL_HOST_EVENT:
-            if (ExternalEventConstants.TYPE_HOST_EVACUATE.equals(event.getEventType())) {
-                return handleHostEvacuate(event);
-            }
-            break;
         case ExternalEventConstants.KIND_SERVICE_EVENT:
             return handleServiceEvent(event);
         }
@@ -158,31 +153,6 @@ public class ExternalEventProcessManager {
                 ExternalEventConstants.FIELD_FQDN, fqdn);
     }
 
-    private HandlerResult handleHostEvacuate(ExternalEvent event) {
-        boolean delete = DataAccessor.fieldBool(event, ExternalEventConstants.FIELD_DELETE_HOST);
-        List<Long> hosts = getHosts(event);
-        List<ListenableFuture<Host>> hostTasks = new ArrayList<>();
-
-        for (long hostId : hosts) {
-            ListenableFuture<Host> hostTask = deactivateHost(objectManager.loadResource(Host.class, hostId));
-
-            if (delete) {
-                hostTask = AsyncUtils.andThen(hostTask, (host) -> {
-                    host = objectManager.reload(host);
-                    try {
-                        processManager.remove(host, null);
-                    } catch (ProcessCancelException ignored) {
-                    }
-                    return host;
-                });
-            }
-
-            hostTasks.add(hostTask);
-        }
-
-        return new HandlerResult(AsyncUtils.afterAll(hostTasks));
-    }
-
     private List<Long> getHosts(ExternalEvent event) {
         List<Long> hosts = new ArrayList<>();
 
@@ -199,35 +169,6 @@ public class ExternalEventProcessManager {
         }
 
         return hosts;
-    }
-
-    private ListenableFuture<Host> deactivateHost(Host host) {
-        if (host == null) {
-            return AsyncUtils.done(null);
-        }
-
-        processManager.executeDeactivate(host, null);
-
-        List<? extends Instance> instances = instanceDao.getNonRemovedInstanceOn(host.getId());
-        List<Instance> removed = new ArrayList<>();
-        for (Instance instance : instances ) {
-            if (InstanceConstants.isRancherAgent(instance)) {
-                continue;
-            }
-            try {
-                processManager.stopThenRemove(instance, null);
-            } catch (ProcessCancelException ignored) {
-            }
-
-            removed.add(instance);
-        }
-
-        List<ListenableFuture<Instance>> futures = new ArrayList<>();
-        for (Instance instance : removed) {
-            futures.add(resourceMonitor.waitRemoved(instance));
-        }
-
-        return AsyncUtils.andThen(AsyncUtils.afterAll(futures), (input) -> host);
     }
 
     private HandlerResult handleServiceEvent(ExternalEvent event) {

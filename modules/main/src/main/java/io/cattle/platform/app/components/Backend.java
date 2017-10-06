@@ -352,6 +352,7 @@ public class Backend {
         r.handle("host.activate", nodeHandler, driverProcessManager::setupPools);
         r.handle("host.remove", goMachineService, hostProcessManager::remove, agentResourceRemove);
         r.handle("host.deactivate", nodeHandler);
+        r.handle("host.evacuate", nodeHandler);
 
         r.handle("hosttemplate.remove", hosttemplateRemove);
 
