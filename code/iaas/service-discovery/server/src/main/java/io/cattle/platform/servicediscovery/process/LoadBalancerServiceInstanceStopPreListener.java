@@ -141,7 +141,7 @@ public class LoadBalancerServiceInstanceStopPreListener extends AgentBasedProces
             return null;
         }
         Service service = getObjectManager().loadResource(Service.class, smap.getServiceId());
-        if (service == null) {
+        if (service == null || !sdService.isActiveService(service)) {
             return null;
         }
         return service;
