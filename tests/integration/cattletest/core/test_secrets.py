@@ -196,6 +196,15 @@ def test_service_secrets_fields(context, secret_context):
     secret2 = sclient.reload(secret2)
     assert secret2.value is None
 
+    secret3 = sclient.create_secret(name=random_str(),
+                                    value='bar')
+    assert secret3.state == 'creating'
+    assert secret3.value == 'bar'
+    secret3 = sclient.wait_success(secret3)
+
+    secret3 = sclient.reload(secret3)
+    assert secret3.value is None
+
     secrets = [
         {
            "name": "my_secret1",
@@ -207,7 +216,13 @@ def test_service_secrets_fields(context, secret_context):
             "mode": "444",
             "uid": "0",
             "gid": "0",
+        },
+        {
+            "name": "my_secret3",
+            "secretId": secret3.id,
+            "mode": "0777",
         }
+
     ]
     launch_config = {"imageUuid": image_uuid,
                      "secrets": secrets,
@@ -225,16 +240,20 @@ def test_service_secrets_fields(context, secret_context):
     assert "version" in docker_yml
     assert docker_yml["version"] == "2"
     svc = docker_yml['services'][service.name]
-    assert len(docker_yml["secrets"]) == 2
+    assert len(docker_yml["secrets"]) == 3
     assert secret1.name in docker_yml["secrets"].keys()
     assert secret2.name in docker_yml["secrets"].keys()
-    assert len(svc['secrets']) == 2
+    assert secret3.name in docker_yml["secrets"].keys()
+    assert len(svc['secrets']) == 3
     assert svc['secrets'][0] == secret1.name
     assert svc['secrets'][1]['uid'] == '0'
     assert svc['secrets'][1]['gid'] == '0'
-    assert svc['secrets'][1]['mode'] == 444
+    assert svc['secrets'][1]['mode'] == '0444'
     assert svc['secrets'][1]['source'] == secret2.name
     assert svc['secrets'][1]['target'] == 'my_secret2'
+    assert svc['secrets'][2]['source'] == secret3.name
+    assert svc['secrets'][2]['target'] == 'my_secret3'
+    assert svc['secrets'][2]['mode'] == '0777'
 
 
 def _create_stack(client):
