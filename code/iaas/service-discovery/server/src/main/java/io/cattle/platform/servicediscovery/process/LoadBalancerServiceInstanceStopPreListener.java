@@ -174,7 +174,7 @@ public class LoadBalancerServiceInstanceStopPreListener extends AgentBasedProces
     }
 
     private List<Service> lookupAllActiveLBServices(Service targetService) {
-        List<Service> lbServices = new ArrayList<>();
+        Map<Long, Service> lbServices = new HashMap<>();
 
         List<Service> lbServicesForAccount = objectManager.find(Service.class, SERVICE.ACCOUNT_ID, targetService.getAccountId(),
                 SERVICE.REMOVED, null, SERVICE.KIND, ServiceConstants.KIND_LOAD_BALANCER_SERVICE);
@@ -188,20 +188,20 @@ public class LoadBalancerServiceInstanceStopPreListener extends AgentBasedProces
                 if (lbConfig != null && lbConfig.getPortRules() != null) {
                     for (PortRule rule : lbConfig.getPortRules()) {
                         if (!StringUtils.isEmpty(rule.getServiceId()) && Long.valueOf(rule.getServiceId()).equals(targetService.getId())) {
-                            lbServices.add(lbService);
+                            lbServices.put(lbService.getId(), lbService);
                         } else {
                             if (sdService.isSelectorLinkMatch(rule.getSelector(), targetService)) {
-                                lbServices.add(lbService);
+                                lbServices.put(lbService.getId(), lbService);
                             }
                             if (sdService.isSelectorLinkMatch(targetService.getSelectorLink(), lbService)) {
-                                lbServices.add(lbService);
+                                lbServices.put(lbService.getId(), lbService);
                             }
                         }
                     }
                 }
             }
         }
-        return lbServices;
+        return new ArrayList<Service>(lbServices.values());
     }
 
     private List<? extends Instance> getLBServiceInstances(List<Service> activeLbServices) {
