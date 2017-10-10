@@ -399,11 +399,8 @@ public class ServiceDiscoveryUtil {
         if (labelsObj != null) {
             labels = (Map<String, String>) labelsObj;
         }
-        if (!labels.containsKey(SystemLabels.LABEL_AGENT_ROLE)) {
-            labels.put(SystemLabels.LABEL_AGENT_ROLE, AgentConstants.ENVIRONMENT_ADMIN_ROLE + ",agent");
-            labels.put(SystemLabels.LABEL_AGENT_CREATE, "true");
-        }
-
+        labels.put(SystemLabels.LABEL_AGENT_ROLE, AgentConstants.ENVIRONMENT_ADMIN_ROLE + ",agent");
+        labels.put(SystemLabels.LABEL_AGENT_CREATE, "true");
         launchConfig.put(InstanceConstants.FIELD_LABELS, labels);
 
         // set health check
