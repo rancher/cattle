@@ -315,9 +315,9 @@ public class TableCleanup extends AbstractJooqDao implements Task {
                 }
                 if (idsToFix.size() > 0) {
                     ids = create().select(id).from(table.table).where(remove.lt(cutoffTime)).orderBy(id)
-                        .limit(QUERY_LIMIT_ROWS.getValue()).offset(idsToFix.size());
-                    toDelete = ids.fetch();
+                    .limit(QUERY_LIMIT_ROWS.getValue()).offset(idsToFix.size());
                 }
+                toDelete = ids.fetch();
             }
             if (idsToFix.size() > 0) {
                 table.addRowsSkipped(idsToFix.size());
