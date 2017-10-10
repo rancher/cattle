@@ -22,6 +22,11 @@ def test_generic_object(client):
     assert len(
         client.list_generic_object(kind="webhookReceiver", key=uuid)) == 1
 
+    url += "updated"
+    resource_data["url"] = url
+    updated = client.update(generic_obj, resourceData=resource_data)
+    assert updated.resourceData["url"].endswith("updated")
+
     client.wait_success(client.delete(generic_obj))
     generic_objs = client.list_generic_object(key=uuid)
     assert len(generic_objs.data) == 0
