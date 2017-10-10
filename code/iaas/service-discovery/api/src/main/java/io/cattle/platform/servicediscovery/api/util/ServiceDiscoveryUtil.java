@@ -404,12 +404,16 @@ public class ServiceDiscoveryUtil {
         if (labelsObj != null) {
             labels = (Map<String, String>) labelsObj;
         }
-        labels.put(SystemLabels.LABEL_AGENT_ROLE, AgentConstants.ENVIRONMENT_ADMIN_ROLE + ",agent");
-        labels.put(SystemLabels.LABEL_AGENT_CREATE, "true");
+        if (!labels.containsKey(SystemLabels.LABEL_AGENT_ROLE)) {
+            labels.put(SystemLabels.LABEL_AGENT_ROLE, AgentConstants.ENVIRONMENT_ADMIN_ROLE);
+            labels.put(SystemLabels.LABEL_AGENT_CREATE, "true");
+        }
 
         //check if the LB service is a drainProvider from lb image
         if(doesLBHaveDrainSupport(launchConfig)){
             labels.put(SystemLabels.LABEL_AGENT_SERVICE_DRAIN_PROVIDER, "true");
+            labels.put(SystemLabels.LABEL_AGENT_ROLE, AgentConstants.ENVIRONMENT_ADMIN_ROLE + ",agent");
+            labels.put(SystemLabels.LABEL_AGENT_CREATE, "true");
         }
 
         launchConfig.put(InstanceConstants.FIELD_LABELS, labels);
