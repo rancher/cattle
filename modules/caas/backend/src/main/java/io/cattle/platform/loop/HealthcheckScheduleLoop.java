@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class HealthcheckScheduleLoop implements Loop {
-
     long accountId;
     MetadataManager metadataManager;
     ObjectManager objectManager;
@@ -128,7 +127,8 @@ public class HealthcheckScheduleLoop implements Loop {
         Set<Long> hosts = new HashSet<>();
 
         for (HostInfo hostInfo : metadata.getHosts()) {
-            if (CommonStatesConstants.ACTIVE.equals(hostInfo.getAgentState())) {
+            if (CommonStatesConstants.ACTIVE.equals(hostInfo.getAgentState())
+                    && CommonStatesConstants.ACTIVE.equals(hostInfo.getState())) {
                 hosts.add(hostInfo.getId());
             }
         }
