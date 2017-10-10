@@ -42,8 +42,10 @@ import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.core.model.tables.records.PortRecord;
 import io.cattle.platform.core.model.tables.records.StoragePoolRecord;
 import io.cattle.platform.db.jooq.dao.impl.AbstractJooqDao;
+import io.cattle.platform.eventing.EventService;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
+
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
 import java.util.ArrayList;
@@ -98,7 +100,9 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     ObjectManager objectManager;
     @Inject
     GenericMapDao mapDao;
-
+    @Inject
+    EventService eventService;
+    
     @Override
     public boolean isInstanceImageKind(long instanceId, String kind) {
         return create().select(STORAGE_POOL.fields())
@@ -533,7 +537,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
         }
         return instances;
     }
-    
+
     /* (non-Java doc)
      * @see io.cattle.platform.allocator.dao.AllocatorDao#updateInstancePorts(java.util.Map)
      * Scheduler will return a list of map showing the allocated result in the following format:
@@ -559,7 +563,9 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
      * Port Table. Binding address field in port table and public port field in port table if public port is allocated by external scheduler (for agent)  
      */
     @SuppressWarnings("unchecked")
-    private void updateInstancePorts(List<Map<String, Object>> dataList) {
+    @Override
+    public void updateInstancePorts(List<Map<String, Object>> dataList) {
+    		
         for (Map<String, Object> data: dataList) {
             if (data.get(INSTANCE_ID) == null) {
                 continue;
@@ -576,7 +582,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
                 String protocol = (String) allocatedIp.get(PROTOCOL);
                 Integer publicPort = (Integer) allocatedIp.get(PUBLIC_PORT);
                 Integer privatePort = (Integer) allocatedIp.get(PRIVATE_PORT);
-                for (Port port: objectManager.children(instance, Port.class)) {
+                for (Port port : objectManager.children(instance, Port.class)) {
                     if (port.getPrivatePort().equals(privatePort) 
                             && StringUtils.equals(port.getProtocol(), protocol) 
                             && (port.getPublicPort() == null || port.getPublicPort().equals(publicPort))) { 
@@ -590,7 +596,6 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
         }
         return;
     }
-    
 
     @Override
     public Iterator<AllocationCandidate> iteratorHosts(List<String> orderedHostUuids, List<Long> volumes, QueryOptions options) {

@@ -3476,6 +3476,109 @@ def test_svc_ports_update(client, context):
     assert ep.port == 8684
 
 
+def test_lb_ports_update(client, context):
+    env = _create_stack(client)
+
+    # test group 1: update lb service with same ports
+    #  case 1-1  ip_address + publicPort : privatePort
+
+    image_uuid = context.image_uuid
+    ip_address = '192.168.10.10'
+    launch_config = {'imageUuid': image_uuid, 'ports': [ip_address +
+                                                        ':5555:5555']}
+
+    lb_config = {}
+    lbSvc = client. \
+        create_loadBalancerService(name=random_str(),
+                                   stackId=env.id,
+                                   launchConfig=launch_config,
+                                   lbConfig=lb_config)
+    lbSvc = client.wait_success(lbSvc)
+    assert lbSvc.state == 'inactive'
+
+    lbSvc = client.wait_success(lbSvc.activate())
+    assert lbSvc.state == 'active'
+    instances = _get_instance_for_service(client, lbSvc.id)
+
+    assert len(instances) == 1
+    instance = instances[0]
+    assert instance.ports == ['192.168.10.10:5555:5555/tcp']
+
+    wait_for(lambda: client.reload(lbSvc).publicEndpoints is not None and
+             len(client.reload(lbSvc).publicEndpoints) == 1)
+    endpoints = client.reload(lbSvc).publicEndpoints
+    ep = endpoints[0]
+    assert ep.port == 5555
+    assert ep.ipAddress == ip_address
+
+    # case 1-1
+
+    new_launch_config_1 = {'imageUuid': image_uuid,
+                           'ports': [ip_address + ':5555:5555']}
+
+    lbSvc = client.update(lbSvc, launchConfig=new_launch_config_1)
+    lbSvc = client.wait_success(lbSvc)
+    assert lbSvc.launchConfig.ports == ['192.168.10.10:5555:5555/tcp']
+    instances = _get_instance_for_service(client, lbSvc.id)
+
+    assert len(instances) == 1
+    instance = instances[0]
+    assert instance.ports == ['192.168.10.10:5555:5555/tcp']
+
+    wait_for(lambda: client.reload(lbSvc).publicEndpoints is not None and
+             len(client.reload(lbSvc).publicEndpoints) == 1)
+    endpoints = client.reload(lbSvc).publicEndpoints
+    ep = endpoints[0]
+    assert ep.port == 5555
+    assert ep.ipAddress == ip_address
+
+    # test group 2: update lb service with publicPort and privatePort change
+    # case 2-1  ip_address + new_publicPort : new_privatePort
+
+    new_launch_config_3 = {'imageUuid': image_uuid,
+                           'ports': [ip_address + ':6666:6666']}
+
+    lbSvc = client.update(lbSvc, launchConfig=new_launch_config_3)
+    lbSvc = client.wait_success(lbSvc)
+    assert lbSvc.launchConfig.ports == ['192.168.10.10:6666:6666/tcp']
+    instances = _get_instance_for_service(client, lbSvc.id)
+
+    assert len(instances) == 1
+    instance = instances[0]
+    assert instance.ports == ['192.168.10.10:6666:6666/tcp']
+
+    wait_for(lambda: client.reload(lbSvc).publicEndpoints is not None and
+             len(client.reload(lbSvc).publicEndpoints) == 1)
+    endpoints = client.reload(lbSvc).publicEndpoints
+    ep = endpoints[0]
+    assert ep.port == 6666
+    assert ep.ipAddress == ip_address
+
+    # test group 3: update ipAddress for lb ports
+    # case 3-1: [ip_address_1 + publicPort : privatePort]
+    # update to [ip_address_2 + publicPort : privatePort]
+
+    new_ip_address = '192.168.20.20'
+    new_launch_config_4 = {'imageUuid': image_uuid,
+                           'ports': [new_ip_address + ':6666:6666']}
+
+    lbSvc = client.update(lbSvc, launchConfig=new_launch_config_4)
+    lbSvc = client.wait_success(lbSvc)
+    assert lbSvc.launchConfig.ports == ['192.168.20.20:6666:6666/tcp']
+    instances = _get_instance_for_service(client, lbSvc.id)
+
+    assert len(instances) == 1
+    instance = instances[0]
+    assert instance.ports == ['192.168.10.10:6666:6666/tcp']
+
+    wait_for(lambda: client.reload(lbSvc).publicEndpoints is not None and
+             len(client.reload(lbSvc).publicEndpoints) == 1)
+    endpoints = client.reload(lbSvc).publicEndpoints
+    ep = endpoints[0]
+    assert ep.port == 6666
+    assert ep.ipAddress == ip_address
+
+
 def test_upgrade_scale_to_global(client, context, super_client):
     env = _create_stack(client)
 

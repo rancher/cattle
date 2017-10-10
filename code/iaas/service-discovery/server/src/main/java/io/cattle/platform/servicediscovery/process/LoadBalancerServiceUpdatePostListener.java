@@ -1,11 +1,15 @@
 package io.cattle.platform.servicediscovery.process;
 
+import static io.cattle.platform.core.model.tables.PortTable.*;
+
+import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Port;
 import io.cattle.platform.core.model.Service;
+import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -37,13 +41,12 @@ public class LoadBalancerServiceUpdatePostListener extends AbstractObjectProcess
     ServiceDiscoveryService sdService;
     @Inject
     JsonMapper jsonMapper;
-
     @Inject
     ServiceExposeMapDao expMapDao;
-
     @Inject
     NetworkDao ntwkDao;
-
+    @Inject
+    AllocatorService allocatorService;
     @Inject
     EventService eventService;
 
@@ -103,13 +106,8 @@ public class LoadBalancerServiceUpdatePostListener extends AbstractObjectProcess
                 port = objectManager.create(port);
             }
 
-            // trigger instance/metadata update
-            instance = objectManager.setFields(instance, InstanceConstants.FIELD_PORTS, newPortDefs);
-            Event event = EventVO.newEvent(IaasEvents.INVALIDATE_INSTANCE_DATA_CACHE)
-                    .withResourceType(instance.getKind())
-                    .withResourceId(instance.getId().toString());
-            eventService.publish(event);
-
+            allocatorService.allocatePortsForInstanceUpdate(instance, toCreate);
+            
             for (Port port : toRetain.values()) {
                 createThenActivate(port, new HashMap<String, Object>());
             }
@@ -117,7 +115,28 @@ public class LoadBalancerServiceUpdatePostListener extends AbstractObjectProcess
             for (Port port : toRemove) {
                 deactivateThenRemove(port, new HashMap<String, Object>());
             }
+            
+            allocatorService.releasePortsForInstanceUpdate(instance, toRemove);
+            updateInstanceWithNewPorts(instance);
         }
+    }
+    
+    private void updateInstanceWithNewPorts(Instance instance) {
+        List<Port> toUpdate = objectManager.find(Port.class, PORT.INSTANCE_ID, instance.getId(), PORT.REMOVED, null);
+        List<String> toUpdatePortDefs = new ArrayList<>();
+
+        for (Port port : toUpdate) {
+            PortSpec portSpec = new PortSpec(port);
+            toUpdatePortDefs.add(portSpec.toSpec());
+        }
+
+        instance = objectManager.setFields(instance, InstanceConstants.FIELD_PORTS, toUpdatePortDefs);
+        // trigger instance/metadata update
+        Event event = EventVO.newEvent(IaasEvents.INVALIDATE_INSTANCE_DATA_CACHE)
+                .withResourceType(instance.getKind())
+                .withResourceId(instance.getId().toString());
+        eventService.publish(event);
+        return;
     }
 
     @Override
