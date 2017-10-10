@@ -3,6 +3,7 @@ package io.cattle.platform.servicediscovery.process;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import io.cattle.platform.agent.RemoteAgent;
+import io.cattle.platform.agent.instance.dao.AgentInstanceDao;
 import io.cattle.platform.async.utils.AsyncUtils;
 import io.cattle.platform.core.addon.LbConfig;
 import io.cattle.platform.core.addon.PortRule;
@@ -13,6 +14,7 @@ import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
+import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPreListener;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -58,6 +60,9 @@ public class LoadBalancerServiceInstanceStopPreListener extends AgentBasedProces
     @Inject
     GenericMapDao mapDao;
 
+    @Inject
+    AgentInstanceDao agentInstanceDao;
+
     private static final Logger log = LoggerFactory.getLogger(LoadBalancerServiceInstanceStopPreListener.class);
     private static final String LABEL_SERVICE_LAUNCH_CONFIG = "io.rancher.service.launch.config";
 
@@ -86,24 +91,30 @@ public class LoadBalancerServiceInstanceStopPreListener extends AgentBasedProces
         List<Service> activeLbServices = lookupAllActiveLBServices(service);
         List<? extends Instance> lbInstances = getLBServiceInstances(activeLbServices);
         // send drain event to each lbInstance and wait for reply upto timeout.
-        if (!lbInstances.isEmpty()) {
-            objectManager.setFields(instance, ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD, "Draining...");
-        }
-
         String targetIpAddress = DataAccessor.fieldString(instance, InstanceConstants.FIELD_PRIMARY_IP_ADDRESS);
 
-        Map<Instance, ListenableFuture<? extends Event>> drainFutures = new HashMap<>();
+        Map<RemoteAgent, ListenableFuture<? extends Event>> drainFutures = new HashMap<>();
+
+        Long accountId = service.getAccountId();
+        List<Long> drainAgentIds = agentInstanceDao.getAgentProvider(SystemLabels.LABEL_AGENT_SERVICE_DRAIN_PROVIDER, accountId);
 
         for (Instance lbInstance : lbInstances) {
-            ListenableFuture<? extends Event> future = drainBackend(lbInstance, instance, targetIpAddress, drainTimeout.toString());
+            RemoteAgent agent = agentLocator.lookupAgent(lbInstance);
+            if (agent == null || !drainAgentIds.contains(agent.getAgentId())) {
+                continue;
+            }
+            ListenableFuture<? extends Event> future = drainBackend(agent, instance, targetIpAddress, drainTimeout.toString());
             if (future != null) {
-                drainFutures.put(lbInstance, future);
+                drainFutures.put(agent, future);
             }
         }
 
-        for (Map.Entry<Instance, ListenableFuture<? extends Event>> entry : drainFutures.entrySet()) {
-            Instance lbInstance = entry.getKey();
-            RemoteAgent agent = agentLocator.lookupAgent(lbInstance);
+        if (!drainFutures.isEmpty()) {
+            objectManager.setFields(instance, ObjectMetaDataManager.TRANSITIONING_MESSAGE_FIELD, "Draining...");
+        }
+
+        for (Map.Entry<RemoteAgent, ListenableFuture<? extends Event>> entry : drainFutures.entrySet()) {
+            RemoteAgent agent = entry.getKey();
             ListenableFuture<? extends Event> future = entry.getValue();
             try {
                 AsyncUtils.get(future);
@@ -116,8 +127,7 @@ public class LoadBalancerServiceInstanceStopPreListener extends AgentBasedProces
         return null;
     }
 
-    protected ListenableFuture<? extends Event> drainBackend(Instance lbInstance, Instance targetInstance, String targetIpAddress, String drainTimeout) {
-        RemoteAgent agent = agentLocator.lookupAgent(lbInstance);
+    protected ListenableFuture<? extends Event> drainBackend(RemoteAgent agent, Instance targetInstance, String targetIpAddress, String drainTimeout) {
         if (agent == null) {
             return null;
         }
