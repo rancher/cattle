@@ -26,7 +26,7 @@
         "externalHostEvent" : "cr",
         "externalService" : "crud",
         "fieldDocumentation": "r",
-        "genericObject" : "crd",
+        "genericObject" : "crud",
         "inServiceUpgradeStrategy" : "cr",
         "instanceLink" : "ru",
         "instanceRemove" : "cr",

@@ -258,7 +258,7 @@
 
         "task" : "r",
 
-        "genericObject" : "crd",
+        "genericObject" : "crud",
 
         "register.key" : "cr",
         "register.k8sClientConfig" : "cr",
