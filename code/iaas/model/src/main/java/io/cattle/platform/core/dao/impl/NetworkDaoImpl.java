@@ -7,6 +7,7 @@ import static io.cattle.platform.core.model.tables.NetworkTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.SubnetTable.*;
+
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.PortConstants;
@@ -165,19 +166,32 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
     public void updateInstancePorts(Instance instance, List<String> newPortDefs, List<Port> toCreate,
             List<Port> toRemove, Map<String, Port> toRetain) {
 
-        Map<String, Port> existingPorts = new HashMap<>();
+        Map<String, Port> existingInstancePorts = new HashMap<>();
         for (Port port : objectManager.children(instance, Port.class)) {
             if (port.getRemoved() != null || port.getState().equalsIgnoreCase(CommonStatesConstants.REMOVING)) {
                 continue;
             }
-            existingPorts.put(toKey(port), port);
+            existingInstancePorts.put(toKey(port), port);
         }
 
         for (String port : newPortDefs) {
-            PortSpec spec = new PortSpec(port);
+            PortSpec newPortSpec = new PortSpec(port);
+            boolean needRetain = false;
+            for (Port instancePort : existingInstancePorts.values()) {
+                PortSpec instancePortSpec = new PortSpec(instancePort);
+                boolean privatePortsEquals = instancePortSpec.getPrivatePort() == newPortSpec.getPrivatePort();
+                boolean newSpecNull = newPortSpec.getPublicPort() == null;
+                boolean instancePortSpecNull = instancePortSpec.getPublicPort() == null;
+                boolean publicPortsEquals = newSpecNull || (!newSpecNull && !instancePortSpecNull &&
+                        instancePortSpec.getPublicPort().equals(newPortSpec.getPublicPort()));
+                if (privatePortsEquals && publicPortsEquals) {
+                    needRetain = true;
+                    toRetain.put(toKey(instancePort), instancePort);
+                    break;
+                }
+            }
 
-            if (existingPorts.containsKey(toKey(spec))) {
-                toRetain.put(toKey(spec), existingPorts.get(toKey(spec)));
+            if (needRetain) {
                 continue;
             }
 
@@ -185,20 +199,20 @@ public class NetworkDaoImpl extends AbstractJooqDao implements NetworkDao {
             portObj.setAccountId(instance.getAccountId());
             portObj.setKind(PortConstants.KIND_USER);
             portObj.setInstanceId(instance.getId());
-            portObj.setPublicPort(spec.getPublicPort());
-            portObj.setPrivatePort(spec.getPrivatePort());
-            portObj.setProtocol(spec.getProtocol());
-            if (StringUtils.isNotEmpty(spec.getIpAddress())) {
-                DataAccessor.fields(portObj).withKey(PortConstants.FIELD_BIND_ADDR).set(spec.getIpAddress());
+            portObj.setPublicPort(newPortSpec.getPublicPort());
+            portObj.setPrivatePort(newPortSpec.getPrivatePort());
+            portObj.setProtocol(newPortSpec.getProtocol());
+            if (StringUtils.isNotEmpty(newPortSpec.getIpAddress())) {
+                DataAccessor.fields(portObj).withKey(PortConstants.FIELD_BIND_ADDR).set(newPortSpec.getIpAddress());
             }
             toCreate.add(portObj);
             toRetain.put(toKey(portObj), portObj);
         }
 
         // remove extra ports
-        for (String existing : existingPorts.keySet()) {
+        for (String existing : existingInstancePorts.keySet()) {
             if (!toRetain.containsKey(existing)) {
-                toRemove.add(existingPorts.get(existing));
+                toRemove.add(existingInstancePorts.get(existing));
             }
         }
     }

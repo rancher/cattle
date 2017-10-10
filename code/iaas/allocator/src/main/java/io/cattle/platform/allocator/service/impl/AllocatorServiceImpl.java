@@ -56,6 +56,7 @@ import io.cattle.platform.util.type.CollectionUtils;
 import io.cattle.platform.util.type.Named;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -202,6 +203,16 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
             callExternalSchedulerToRelease(volume);
         }
         log.info("Handled request for volume [{}]", volume.getId());
+    }
+
+    @Override
+    public void allocatePortsForInstanceUpdate(Instance instance, List<Port> newPorts) {
+        callExternalSchedulerToAllocatePorts(instance, newPorts);
+    }
+
+    @Override
+    public void releasePortsForInstanceUpdate(Instance instance, List<Port> removedPorts) {
+        callExternalSchedulerToRemovePorts(instance, removedPorts);
     }
 
     @Override
@@ -774,6 +785,115 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
             }
         }
         return hosts;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void callExternalSchedulerToAllocatePorts(Instance instance, List<Port> newPorts) {
+        List<Long> agentIds = getAgentResource(instance.getAccountId(), Arrays.asList(instance));
+        for (Long agentId : agentIds) {
+            EventVO<Map<String, Object>> schedulerEvent = buildEventForPort(SCHEDULER_RESERVE_EVENT,
+                    InstanceConstants.PROCESS_ALLOCATE, Arrays.asList(instance), agentId, newPorts);
+            if (schedulerEvent != null) {
+                Map<String, Object> reqData = CollectionUtils
+                        .toMap(schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME));
+                reqData.put(HOST_ID, getHostUuid(instance));
+
+                Long rhid = DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_REQUESTED_HOST_ID)
+                        .as(Long.class);
+                if (rhid != null) {
+                    reqData.put(FORCE_RESERVE, true);
+                }
+
+                RemoteAgent agent = agentLocator.lookupAgent(agentId);
+                Event eventResult = callScheduler("Error reserving resources: %s", schedulerEvent, agent);
+                if (eventResult.getData() == null) {
+                    return;
+                }
+                List<Map<String, Object>> allocatedDataList = (List<Map<String, Object>>) CollectionUtils
+                        .getNestedValue(eventResult.getData(), PORT_RESERVATION);
+                allocatorDao.updateInstancePorts(allocatedDataList);
+                
+            }
+        }
+    }
+
+    private void callExternalSchedulerToRemovePorts(Instance instance, List<Port> removedPorts) {
+        List<Long> agentIds = getAgentResource(instance.getAccountId(), Arrays.asList(instance));
+        for (Long agentId : agentIds) {
+            EventVO<Map<String, Object>> schedulerEvent = buildEventForPort(SCHEDULER_RELEASE_EVENT,
+                    InstanceConstants.PROCESS_DEALLOCATE, Arrays.asList(instance), agentId, removedPorts);
+            if (schedulerEvent != null) {
+                Map<String, Object> reqData = CollectionUtils
+                     .toMap(schedulerEvent.getData().get(SCHEDULER_REQUEST_DATA_NAME));
+                reqData.put(HOST_ID, getHostUuid(instance));
+
+                RemoteAgent agent = agentLocator.lookupAgent(agentId);
+                Event eventResult = callScheduler("Error reserving resources: %s", schedulerEvent, agent);
+                if (eventResult.getData() == null) {
+                     return;
+                }
+            }
+        }
+    }
+
+    private EventVO<Map<String, Object>> buildEventForPort(String eventName, String phase, List<Instance> instances,
+            Long agentId, List<Port> newPorts) {
+        List<ResourceRequest> resourceRequests = gatherResourceRequestsForPort(instances, agentId, newPorts);
+        if (resourceRequests.isEmpty()) {
+            return null;
+        }
+
+        return newEvent(eventName, resourceRequests, "instance", phase, instances.get(0).getId(), instances);
+    }
+
+    private List<ResourceRequest> gatherResourceRequestsForPort(List<Instance> instances, Long agentId, List<Port> newPorts) {
+        List<ResourceRequest> requests = new ArrayList<>();
+        String schedulerVersion = getSchedulerVersion(agentId);
+        for (Instance instance : instances) {
+            addInstanceResourceRequestsForPort(requests, instance, schedulerVersion, newPorts);
+        }
+        return requests;
+    }
+
+    private void addInstanceResourceRequestsForPort(List<ResourceRequest> requests, Instance instance, String schedulerVersion,
+            List<Port> newPorts) {
+        ResourceRequest portRequests = populateResourceRequestFromInstanceForPort(instance, PORT_RESERVATION, PORT_POOL,
+                schedulerVersion, newPorts);
+        if (portRequests != null) {
+            requests.add(portRequests);
+        }
+    }
+
+    private ResourceRequest populateResourceRequestFromInstanceForPort(Instance instance, String resourceType, String poolType,
+            String schedulerVersion, List<Port> newPorts) {
+        PortBindingResourceRequest request = new PortBindingResourceRequest();
+
+        if (useLegacyPortAllocation(schedulerVersion)) {
+            return null;
+        }
+
+        request.setResource(resourceType);
+        request.setInstanceId(instance.getId().toString());
+        request.setResourceUuid(instance.getUuid());
+        List<PortSpec> portReservation = new ArrayList<>();
+        for (Port port : newPorts) {
+            PortSpec spec = new PortSpec();
+            String bindAddress = DataAccessor.fieldString(port, BIND_ADDRESS);
+            if (bindAddress != null) {
+                spec.setIpAddress(bindAddress);
+            }
+            spec.setPrivatePort(port.getPrivatePort());
+            spec.setPublicPort(port.getPublicPort());
+            String proto = StringUtils.isEmpty(port.getProtocol()) ? "tcp" : port.getProtocol();
+            spec.setProtocol(proto);
+            portReservation.add(spec);
+        }
+        if (portReservation.isEmpty()) {
+            return null;
+        }
+        request.setPortRequests(portReservation);
+        request.setType(poolType);
+        return request;
     }
 
     Event callScheduler(String message, EventVO<Map<String, Object>> schedulerEvent, RemoteAgent agent) {
