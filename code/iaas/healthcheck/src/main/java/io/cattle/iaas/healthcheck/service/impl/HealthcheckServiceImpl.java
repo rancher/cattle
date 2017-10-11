@@ -147,18 +147,23 @@ public class HealthcheckServiceImpl implements HealthcheckService {
                 return null;
             }
 
-            boolean allUnHealthy = true;
+            boolean seenUnhealthy = HEALTH_STATE_UNHEALTHY.equals(healthState);
+            boolean seenHealthy = HEALTH_STATE_HEALTHY.equals(healthState);
             int i = 0;
             for (HealthcheckInstanceHostMap map : others) {
                 if (map.getId().equals(hcihm.getId())) {
                     continue;
                 }
                 i++;
-                if (!HEALTH_STATE_UNHEALTHY.equals(map.getHealthState())) {
-                    allUnHealthy = false;
+                if (HEALTH_STATE_UNHEALTHY.equals(map.getHealthState())) {
+                    seenUnhealthy = true;
+                } else if (HEALTH_STATE_HEALTHY.equals(map.getHealthState())) {
+                    seenHealthy = true;
                     break;
                 }
             }
+
+            boolean allUnhealthy = seenUnhealthy && !seenHealthy;
 
             if (healthState.equalsIgnoreCase(HealthcheckConstants.HEALTH_STATE_RECONCILE)) {
                 // if no other hosts are present, don't change the state;
@@ -166,12 +171,12 @@ public class HealthcheckServiceImpl implements HealthcheckService {
                 if (i == 0) {
                     return null;
                 } else {
-                    return allUnHealthy ? HealthcheckConstants.HEALTH_STATE_UNHEALTHY
+                    return allUnhealthy ? HealthcheckConstants.HEALTH_STATE_UNHEALTHY
                             : null;
                 }
             }
 
-            return allUnHealthy ? healthState : null;
+            return allUnhealthy ? healthState : null;
         }
     }
 
