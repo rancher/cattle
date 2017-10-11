@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.netflix.config.DynamicStringProperty;
 
@@ -37,6 +38,7 @@ public class ServiceDiscoveryUtil {
     public static final List<String> SERVICE_INSTANCE_NAME_DIVIDORS = Arrays.asList("-", "_");
     private static final int LB_HEALTH_CHECK_PORT = 42;
     private static final DynamicStringProperty LB_DRAIN_IMAGE_VERSION = ArchaiusUtil.getString("loadbalancher.drain.image.version");
+    private static final DynamicStringProperty LB_IMAGE_UUID = ArchaiusUtil.getString("lb.instance.image.uuid");
 
     public static String getInstanceName(Instance instance) {
         if (instance != null && instance.getRemoved() == null) {
@@ -434,19 +436,30 @@ public class ServiceDiscoveryUtil {
     }
 
     private static boolean doesLBHaveDrainSupport(Map<Object, Object> launchConfig) {
-        if(launchConfig.get(InstanceConstants.FIELD_IMAGE_UUID) != null) {
-            String imageUuid = (String)launchConfig.get(InstanceConstants.FIELD_IMAGE_UUID);
-            DockerImage img = DockerImage.parse(imageUuid);
-            String[] imageParts = img.getFullName().split(":");
-            if (imageParts.length <= 1) {
-                return false;
-            }
-            if (!imageParts[0].equals("rancher/lb-service-haproxy")) {
-                return false;
-            }
-            return isDrainProvider(imageParts[imageParts.length - 1]);
+        if(launchConfig.get(InstanceConstants.FIELD_IMAGE_UUID) == null) {
+            return false;
         }
-        return false;
+        String imageUuid = (String)launchConfig.get(InstanceConstants.FIELD_IMAGE_UUID);
+        Pair<String, String> instanceImage = getImageAndVersion(imageUuid.toLowerCase());
+        if (instanceImage.getLeft().isEmpty() || instanceImage.getRight().isEmpty()) {
+            return false;
+        }
+        Pair<String, String> defaultImage = getImageAndVersion(LB_IMAGE_UUID.get().toLowerCase());
+        if (!defaultImage.getLeft().equals(instanceImage.getLeft())) {
+            return false;
+        }
+        return isDrainProvider(instanceImage.getRight());
+    }
+
+    private static Pair<String, String> getImageAndVersion(String imageUUID) {
+        DockerImage dockerImage = DockerImage.parse(imageUUID);
+        String[] splitted = dockerImage.getFullName().split(":");
+        if (splitted.length <= 1) {
+            return Pair.of("", "");
+        }
+        String repoAndImage = splitted[0];
+        String imageVersion = splitted[1];
+        return Pair.of(repoAndImage, imageVersion);
     }
 
     private static boolean isDrainProvider(String actualVersion) {
@@ -490,7 +503,9 @@ public class ServiceDiscoveryUtil {
 
         if (actualMajor > requiredMajor) {
             return true;
-        } else if (actualMajor == requiredMajor && actualMinor >= requiredMinor && actualPatch >= requiredPatch) {
+        } else if (actualMajor == requiredMajor && actualMinor > requiredMinor) {
+            return true;
+        } else if (actualMinor == requiredMinor && actualPatch >= requiredPatch) {
             return true;
         }
         return false;
