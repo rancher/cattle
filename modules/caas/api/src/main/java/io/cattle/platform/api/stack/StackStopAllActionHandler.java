@@ -47,6 +47,7 @@ public class StackStopAllActionHandler implements ActionHandler {
     private void stopInstances(List<? extends Instance> instances) {
         for (Instance instance : instances) {
             if (InstanceConstants.validStatesForStop.contains(instance.getState())) {
+                objectManager.setFields(instance, InstanceConstants.FIELD_STOP_SOURCE, InstanceConstants.ACTION_SOURCE_USER);
                 objectProcessManager.scheduleProcessInstanceAsync(InstanceConstants.PROCESS_STOP, instance, null);
             } else if (InstanceConstants.skipStatesForStop.contains(instance.getState())) {
                 continue;
