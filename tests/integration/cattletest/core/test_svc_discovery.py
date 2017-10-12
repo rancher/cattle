@@ -3915,4 +3915,3 @@ def test_drain_timeout_launch_config(client, context, super_client):
     service = client.wait_success(service)
     assert len(service.secondaryLaunchConfigs) == 1
     assert service.launchConfig.drainTimeoutMs is not None
-    assert service.secondaryLaunchConfigs[0].drainTimeoutMs is not None
