@@ -236,7 +236,7 @@ public class Backend {
         agentLifecycleManager = new AgentLifecycleManagerImpl(agentInstanceFactory, f.resourceMonitor);
         secretsLifecycleManager = new SecretsLifecycleManagerImpl(c.tokenService, d.storageDriverDao);
         loadBalancerService = new LoadBalancerServiceImpl(f.jsonMapper, f.lockManager, f.objectManager);
-        serviceLifecycleManager = new ServiceLifecycleManagerImpl(f.objectManager, f.resourcePoolManager, networkService, d.serviceDao, c.revisionManager, loadBalancerService, f.processManager);
+        serviceLifecycleManager = new ServiceLifecycleManagerImpl(f.objectManager, f.resourcePoolManager, networkService, d.serviceDao, c.revisionManager, loadBalancerService, f.processManager,f.lockManager);
         upgradeManager = new UpgradeManager(c.catalogService, d.stackDao, d.resourceDao, f.lockManager, f.processManager);
 
         Reconcile reconcile = new Reconcile(f, d, c, this);
