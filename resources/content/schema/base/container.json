@@ -346,6 +346,7 @@
         },
         "stopTimeout": {
             "type": "int",
+            "default": 10,
             "nullable": true
         },
          "sysctls" : {

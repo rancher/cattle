@@ -7,7 +7,9 @@
         },
         "timeout" : {
             "type" : "int",
-            "create" : true
+            "create" : true,
+            "default" : 10,
+            "nullable": true
         }
     }
 }
