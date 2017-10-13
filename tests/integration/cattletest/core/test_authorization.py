@@ -513,7 +513,8 @@ def test_token_auth(token_client):
         'userIdentity': 'r',
         'authProvider': 'r',
         'redirectUrl': 'r',
-        'enabled': 'r'
+        'enabled': 'r',
+        'originalLogin': 'r',
     })
 
 

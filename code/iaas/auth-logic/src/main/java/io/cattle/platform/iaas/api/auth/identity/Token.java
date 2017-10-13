@@ -18,6 +18,7 @@ public class Token {
     private  Boolean security = SecurityConstants.SECURITY.get();
     private  String userType;
     private  String authProvider = SecurityConstants.AUTH_PROVIDER.get();
+    private String originalLogin;
 
     private  String accountId;
     private  Identity userIdentity;
@@ -124,5 +125,13 @@ public class Token {
 
     public void setAuthenticatedAsAccountId(Long authenticatedAsAccountId) {
         this.authenticatedAsAccountId = authenticatedAsAccountId;
+    }
+
+    public String getOriginalLogin() {
+        return originalLogin;
+    }
+
+    public void setOriginalLogin(String originalLogin) {
+        this.originalLogin = originalLogin;
     }
 }
