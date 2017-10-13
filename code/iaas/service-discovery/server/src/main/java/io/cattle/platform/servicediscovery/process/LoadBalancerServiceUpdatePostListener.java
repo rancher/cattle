@@ -2,6 +2,7 @@ package io.cattle.platform.servicediscovery.process;
 
 import static io.cattle.platform.core.model.tables.PortTable.*;
 
+import io.cattle.platform.allocator.exception.FailedToAllocate;
 import io.cattle.platform.allocator.service.AllocatorService;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
@@ -106,8 +107,15 @@ public class LoadBalancerServiceUpdatePostListener extends AbstractObjectProcess
                 port = objectManager.create(port);
             }
 
-            allocatorService.allocatePortsForInstanceUpdate(instance, toCreate);
-            
+            try {
+                allocatorService.allocatePortsForInstanceUpdate(instance, toCreate);
+            } catch (FailedToAllocate e) {
+                for(Port p: toCreate) {
+                    objectManager.delete(p);
+                }
+                e.setResources(service);
+                throw e;
+            }
             for (Port port : toRetain.values()) {
                 createThenActivate(port, new HashMap<String, Object>());
             }
