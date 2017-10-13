@@ -304,7 +304,7 @@ public abstract class AbstractTokenUtil implements TokenUtil {
             }
             Object hasLoggedIn = DataAccessor.fields(account).withKey(SecurityConstants.HAS_LOGGED_IN).get();
             if (((hasLoggedIn == null || !((Boolean) hasLoggedIn)) &&
-                    !authDao.hasAccessToAnyProject(identities, false, null)) && 
+                    !authDao.hasAccessToAnyProject(identities, false, null)) &&
                     (CREATE_PROJECT.get())) {
                 projectResourceManager.createProjectForUser(user);
             }
@@ -331,6 +331,11 @@ public abstract class AbstractTokenUtil implements TokenUtil {
 
     @Override
     public Token createToken(Set<Identity> identities, Account account) {
+        return createToken(identities, account, null);
+    }
+
+    @Override
+    public Token createToken(Set<Identity> identities, Account account, String originalLogin) {
 
         Identity user = getUser(identities);
 
@@ -355,6 +360,7 @@ public abstract class AbstractTokenUtil implements TokenUtil {
         jsonData.put(AbstractTokenUtil.ID_LIST, identitiesToIdList(identities));
         jsonData.put(AbstractTokenUtil.USER_IDENTITY, user);
         jsonData.put(AbstractTokenUtil.USER_TYPE, account.getKind());
+        jsonData.put("originalLogin", originalLogin);
 
         String accountId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), account.getId());
         Date expiry = new Date(System.currentTimeMillis() + SecurityConstants.TOKEN_EXPIRY_MILLIS.get());
@@ -422,8 +428,10 @@ public abstract class AbstractTokenUtil implements TokenUtil {
             Map<String, Object> idMap = CollectionUtils.toMap(idObject);
             Identity userIdentity = jsonToIdentity(idMap);
             String userType = ObjectUtils.toString(jsonData.get(USER_TYPE), null);
+            String originalLogin = ObjectUtils.toString(jsonData.get("originalLogin"), null);
             token.setUserIdentity(userIdentity);
             token.setUserType(userType);
+            token.setOriginalLogin(originalLogin);
         }
         return token;
     }
@@ -437,6 +445,7 @@ public abstract class AbstractTokenUtil implements TokenUtil {
                 token.setUserIdentity(userToken.getUserIdentity());
                 token.setUserType(userToken.getUserType());
                 token.setJwt(getJWT());
+                token.setOriginalLogin(userToken.getOriginalLogin());
             }
         }
         log.debug("retrieveCurrentToken returning {}", token);

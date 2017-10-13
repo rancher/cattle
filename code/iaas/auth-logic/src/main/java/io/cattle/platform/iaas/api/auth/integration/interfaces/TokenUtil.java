@@ -30,6 +30,8 @@ public interface TokenUtil extends Named, Configurable {
 
     Token createToken(Set<Identity> identities, Account account);
 
+    Token createToken(Set<Identity> identities, Account account, String originalLogin);
+
     String userType();
 
     boolean createAccount();
