@@ -97,6 +97,9 @@ public class UpgradeManagerImpl implements UpgradeManager {
     public boolean doInServiceUpgrade(Service service, InServiceUpgradeStrategy strategy, boolean isUpgrade, String currentProcess) {
         long batchSize = strategy.getBatchSize();
         boolean startFirst = strategy.getStartFirst();
+        if (service.getSystem()) {
+            strategy.setBatchSize(1L);
+        }
 
         Map<String, List<Instance>> deploymentUnitInstancesToUpgrade = formDeploymentUnitsForUpgrade(service,
                 Type.ToUpgrade, isUpgrade, strategy);
