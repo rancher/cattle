@@ -1023,11 +1023,20 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
             request.setInstanceId(instance.getId().toString());
             request.setResourceUuid(instance.getUuid());
             List<PortSpec> portReservation = new ArrayList<>();
+            String imageName = DataAccessor.fieldString(instance, InstanceConstants.FIELD_IMAGE_UUID);
             for(Port port: objectManager.children(instance, Port.class)) {
                 PortSpec spec = new PortSpec();
                 String bindAddress = DataAccessor.fieldString(port, BIND_ADDRESS);
                 if (bindAddress != null) {
                     spec.setIpAddress(bindAddress);
+                }
+                //TODO: we might need to solve this hack by changing something in the templates and that is eazy to maintain
+                // hack for ipsec, if imageName == "docker:rancher/net:holder" then set binding address to 0.0.0.0
+                // if the binding was set, we repsect the original value and don't set overridden ip
+                if (bindAddress == null) {
+                    if ("docker:rancher/net:holder".equals(imageName)) {
+                        spec.setIpAddress("0.0.0.0");
+                    }
                 }
                 spec.setPrivatePort(port.getPrivatePort());
                 spec.setPublicPort(port.getPublicPort());
