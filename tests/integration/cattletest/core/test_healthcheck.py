@@ -1628,3 +1628,74 @@ def test_balancer_svc_upgrade(client, context, super_client):
     lb_svc = client.wait_success(lb_svc)
     assert lb_svc.launchConfig.healthCheck is not None
     assert len(lb_svc.launchConfig.labels) == 3
+
+
+def test_health_check_unhealthy_init(super_client, new_context):
+    super_client.reload(register_simulated_host(new_context))
+    super_client.reload(register_simulated_host(new_context))
+    client = new_context.client
+
+    env = client.create_stack(name='env-' + random_str())
+    service = client.create_service(name='test', launchConfig={
+        'imageUuid': new_context.image_uuid,
+        'healthCheck': {
+            'port': 80,
+        }
+    }, stackId=env.id)
+
+    service = client.wait_success(client.wait_success(service).activate())
+    assert service.state == 'active'
+
+    maps = _wait_until_active_map_count(service, 1, client)
+    expose_map = maps[0]
+    c = super_client.reload(expose_map.instance())
+    initial_len = len(c.healthcheckInstanceHostMaps())
+    assert initial_len == 2
+
+    for h in c.healthcheckInstanceHostMaps():
+        assert h.healthState == c.healthState
+
+    hcihm1 = c.healthcheckInstanceHostMaps()[0]
+    hosts = super_client.list_host(uuid=hcihm1.host().uuid)
+    assert len(hosts) == 1
+
+    hcihm2 = c.healthcheckInstanceHostMaps()[1]
+    hosts = super_client.list_host(uuid=hcihm2.host().uuid)
+    assert len(hosts) == 1
+
+    agent = _get_agent_for_container(new_context, c)
+
+    assert hcihm1.healthState == 'initializing'
+    assert hcihm2.healthState == 'initializing'
+    assert c.healthState == 'initializing'
+
+    # one host reports UP
+    ts = int(time.time())
+    client = _get_agent_client(agent)
+    se = client.create_service_event(externalTimestamp=ts,
+                                     reportedHealth='UP',
+                                     healthcheckUuid=hcihm1.uuid)
+    super_client.wait_success(se)
+    hcihm1 = super_client.wait_success(super_client.reload(hcihm1))
+    wait_for(lambda: super_client.reload(c).healthState == 'healthy')
+
+    # one host reports INIT, another DOWN
+    se = client.create_service_event(externalTimestamp=ts,
+                                     reportedHealth='Something bad',
+                                     healthcheckUuid=hcihm1.uuid)
+    super_client.wait_success(se)
+
+    se = client.create_service_event(externalTimestamp=ts,
+                                     reportedHealth='INIT',
+                                     healthcheckUuid=hcihm2.uuid)
+    super_client.wait_success(se)
+
+    ts = int(time.time())
+    client = _get_agent_client(agent)
+    se = client.create_service_event(externalTimestamp=ts,
+                                     reportedHealth='Something Bad',
+                                     healthcheckUuid=hcihm1.uuid)
+    super_client.wait_success(se)
+
+    # should be unheatlhy
+    wait_for(lambda: super_client.reload(c).healthState == 'unhealthy')
