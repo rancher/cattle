@@ -283,6 +283,14 @@
       "type": "int",
       "nullable": true
     },
+    "cpuRealtimePeriod" : {
+      "type" : "int",
+      "nullable" : true
+    },
+    "cpuRealtimeRuntime" : {
+      "type" : "int",
+      "nullable" : true
+    },
     "ioMaximumIOps": {
       "type": "int",
       "nullable": true
@@ -423,6 +431,10 @@
     },
     "healthInterval": {
       "type": "int",
+      "nullable": true
+    },
+    "runInit": {
+      "type": "bool",
       "nullable": true
     },
     "healthTimeout": {

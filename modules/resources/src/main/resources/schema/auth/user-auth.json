@@ -179,6 +179,9 @@
         "container.version" : "r",
         "container.volumeDriver" : "cr",
         "container.workingDir" : "cr",
+        "container.runInit": "cr",
+        "container.cpuRealtimePeriod": "cr",
+        "container.cpuRealtimeRuntime": "cr",
 
         "dependsOn" : "r",
         "dependsOn.service" : "cr",
