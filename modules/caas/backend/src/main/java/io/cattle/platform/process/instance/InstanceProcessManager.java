@@ -7,6 +7,7 @@ import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.lifecycle.InstanceLifecycleManager;
 import io.cattle.platform.lifecycle.util.LifecycleException;
+import io.cattle.platform.loadbalancer.LoadBalancerService;
 import io.cattle.platform.object.process.ObjectProcessManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.object.util.DataAccessor;
@@ -19,11 +20,14 @@ public class InstanceProcessManager {
 
     InstanceLifecycleManager instanceLifecycle;
     ObjectProcessManager processManager;
+    LoadBalancerService loadBalancerService;
 
-    public InstanceProcessManager(InstanceLifecycleManager instanceLifecycle, ObjectProcessManager processManager) {
+    public InstanceProcessManager(InstanceLifecycleManager instanceLifecycle, ObjectProcessManager processManager,
+                                  LoadBalancerService loadBalancerService) {
         super();
         this.instanceLifecycle = instanceLifecycle;
         this.processManager = processManager;
+        this.loadBalancerService = loadBalancerService;
     }
 
     public HandlerResult preCreate(ProcessState state, ProcessInstance process) {
@@ -48,6 +52,11 @@ public class InstanceProcessManager {
         }
 
         return result;
+    }
+
+    public HandlerResult postCreate(ProcessState state, ProcessInstance process) {
+        loadBalancerService.registerToLoadBalanceSevices((Instance)state.getResource());
+        return null;
     }
 
     public HandlerResult postStart(ProcessState state, ProcessInstance process) {

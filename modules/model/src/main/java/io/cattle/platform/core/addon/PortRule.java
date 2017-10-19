@@ -16,6 +16,7 @@ public class PortRule {
     String backendName;
     String selector;
     Long instanceId;
+    Long deploymentUnitId;
 
     public enum Protocol {
         http,
@@ -40,22 +41,7 @@ public class PortRule {
         this.backendName = other.backendName;
         this.selector = other.selector;
         this.instanceId = other.instanceId;
-    }
-
-    public PortRule(String hostname, String path, Integer sourcePort, Integer priority, Protocol protocol,
-            Long serviceId,
-            Integer targetPort, String backendName, String selector, Long instanceId) {
-        super();
-        this.hostname = hostname;
-        this.path = path;
-        this.sourcePort = sourcePort;
-        this.priority = priority;
-        this.protocol = protocol;
-        this.serviceId = serviceId;
-        this.targetPort = targetPort;
-        this.backendName = backendName;
-        this.selector = selector;
-        this.instanceId = instanceId;
+        this.deploymentUnitId = other.deploymentUnitId;
     }
 
     @Field(nullable = true)
@@ -148,6 +134,15 @@ public class PortRule {
         this.instanceId = instanceId;
     }
 
+    @Field(typeString = "reference[deploymentUnit]", nullable = true)
+    public Long getDeploymentUnitId() {
+        return deploymentUnitId;
+    }
+
+    public void setDeploymentUnitId(Long deploymentUnitId) {
+        this.deploymentUnitId = deploymentUnitId;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -162,6 +157,7 @@ public class PortRule {
         result = prime * result + ((serviceId == null) ? 0 : serviceId.hashCode());
         result = prime * result + ((sourcePort == null) ? 0 : sourcePort.hashCode());
         result = prime * result + ((targetPort == null) ? 0 : targetPort.hashCode());
+        result = prime * result + ((deploymentUnitId == null) ? 0 : deploymentUnitId.hashCode());
         return result;
     }
 
@@ -220,6 +216,11 @@ public class PortRule {
             if (other.targetPort != null)
                 return false;
         } else if (!targetPort.equals(other.targetPort))
+            return false;
+        if (deploymentUnitId == null) {
+            if (other.deploymentUnitId != null)
+                return false;
+        } else if (!deploymentUnitId.equals(other.deploymentUnitId))
             return false;
         return true;
     }

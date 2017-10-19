@@ -54,26 +54,8 @@ import io.cattle.platform.launcher.SecretsApiLauncher;
 import io.cattle.platform.launcher.TelemetryLauncher;
 import io.cattle.platform.launcher.WebhookServiceLauncher;
 import io.cattle.platform.launcher.WebsocketProxyLauncher;
-import io.cattle.platform.lifecycle.AgentLifecycleManager;
-import io.cattle.platform.lifecycle.AllocationLifecycleManager;
-import io.cattle.platform.lifecycle.InstanceLifecycleManager;
-import io.cattle.platform.lifecycle.K8sLifecycleManager;
-import io.cattle.platform.lifecycle.NetworkLifecycleManager;
-import io.cattle.platform.lifecycle.RestartLifecycleManager;
-import io.cattle.platform.lifecycle.SecretsLifecycleManager;
-import io.cattle.platform.lifecycle.ServiceLifecycleManager;
-import io.cattle.platform.lifecycle.VirtualMachineLifecycleManager;
-import io.cattle.platform.lifecycle.VolumeLifecycleManager;
-import io.cattle.platform.lifecycle.impl.AgentLifecycleManagerImpl;
-import io.cattle.platform.lifecycle.impl.AllocationLifecycleManagerImpl;
-import io.cattle.platform.lifecycle.impl.InstanceLifecycleManagerImpl;
-import io.cattle.platform.lifecycle.impl.K8sLifecycleManagerImpl;
-import io.cattle.platform.lifecycle.impl.NetworkLifecycleManagerImpl;
-import io.cattle.platform.lifecycle.impl.RestartLifecycleManagerImpl;
-import io.cattle.platform.lifecycle.impl.SecretsLifecycleManagerImpl;
-import io.cattle.platform.lifecycle.impl.ServiceLifecycleManagerImpl;
-import io.cattle.platform.lifecycle.impl.VirtualMachineLifecycleManagerImpl;
-import io.cattle.platform.lifecycle.impl.VolumeLifecycleManagerImpl;
+import io.cattle.platform.lifecycle.*;
+import io.cattle.platform.lifecycle.impl.*;
 import io.cattle.platform.loadbalancer.LoadBalancerService;
 import io.cattle.platform.loadbalancer.impl.LoadBalancerServiceImpl;
 import io.cattle.platform.metadata.MetadataManager;
@@ -289,7 +271,7 @@ public class Backend {
         ExternalEventProcessManager externalEventProcessManager = new ExternalEventProcessManager(allocationHelper, d.instanceDao, f.processManager, f.objectManager, d.serviceDao, f.lockManager, f.resourceMonitor, d.resourceDao, f.coreSchemaFactory, d.stackDao);
         HostProcessManager hostProcessManager = new HostProcessManager(d.instanceDao, f.resourceMonitor, f.eventService, d.hostDao, f.metaDataManager, f.objectManager, f.processManager);
         InatorReconcileHandler inatorReconcileHandler = new InatorReconcileHandler(f.objectManager, loopManager);
-        InstanceProcessManager instanceProcessManager = new InstanceProcessManager(instanceLifecycleManager, f.processManager);
+        InstanceProcessManager instanceProcessManager = new InstanceProcessManager(instanceLifecycleManager, f.processManager, loadBalancerService);
         NetworkProcessManager networkProcessManager = new NetworkProcessManager(d.resourceDao, f.objectManager, f.processManager, d.networkDao, f.lockManager, f.jsonMapper, f.resourcePoolManager, f.resourceMonitor, metadataManager);
 
         MountProcessManager mountProcessManager = new MountProcessManager(f.lockManager, f.objectManager, f.processManager);
@@ -302,7 +284,7 @@ public class Backend {
         AgentHostStateUpdate agentHostStateUpdate = new AgentHostStateUpdate(f.coreSchemaFactory, f.processDefinitions, f.eventService, f.objectManager);
         AgentResourceRemove agentResourceRemove = new AgentResourceRemove(f.objectManager, f.processManager);
         ClearCacheHandler clearCacheHandler = new ClearCacheHandler(f.eventService, d.dbCacheManager);
-        DeploymentUnitRemove deploymentUnitRemove = new DeploymentUnitRemove(f.resourcePoolManager);
+        DeploymentUnitRemove deploymentUnitRemove = new DeploymentUnitRemove(f.resourcePoolManager, loadBalancerService);
         HosttemplateRemove hosttemplateRemove = new HosttemplateRemove(c.secretsService);
         InstanceRemove instanceRemove = new InstanceRemove(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager, deploymentSyncFactory, metadataManager, f.eventService);
         InstanceStart instanceStart = new InstanceStart(c.agentLocator, c.objectSerializer, f.objectManager, f.processManager, deploymentSyncFactory, metadataManager, f.eventService);
@@ -351,7 +333,7 @@ public class Backend {
 
         r.handle("hosttemplate.remove", hosttemplateRemove);
 
-        r.handle("instance.create", instanceProcessManager::preCreate, instanceProcessManager::create);
+        r.handle("instance.create", instanceProcessManager::preCreate, instanceProcessManager::create, instanceProcessManager::postCreate);
         r.handle("instance.start", instanceProcessManager::preStart, podSync, instanceStart, instanceProcessManager::postStart);//, k8sProviderLabels);
         r.handle("instance.stop", podSync, instanceStop, instanceProcessManager::postStop);
         r.handle("instance.restart", instanceProcessManager::restart);

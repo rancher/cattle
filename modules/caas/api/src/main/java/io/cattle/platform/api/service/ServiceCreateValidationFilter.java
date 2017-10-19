@@ -7,6 +7,8 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.NetworkConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
+import io.cattle.platform.core.model.DeploymentUnit;
+import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.PortSpec;
@@ -84,7 +86,7 @@ public class ServiceCreateValidationFilter extends AbstractValidationFilter {
 
         request = setLBServiceEnvVarsAndHealthcheck(type, service, request);
 
-        validateLbConfig(request, type);
+        validateAndUpdateLbConfig(request, type);
 
         Object svcObj = super.create(type, request, next);
         if (!(svcObj instanceof Service)) {
@@ -103,7 +105,7 @@ public class ServiceCreateValidationFilter extends AbstractValidationFilter {
         validateLaunchConfigs(service, request);
         validateNetworMode(service, request);
         validateSelector(request);
-        validateLbConfig(request, type);
+        validateAndUpdateLbConfig(request, type);
         validatePorts(service, type, request);
 
         RevisionDiffomatic diff = revisionManager.createNewRevision(request.getSchemaFactory(),
@@ -164,16 +166,19 @@ public class ServiceCreateValidationFilter extends AbstractValidationFilter {
     }
 
     @SuppressWarnings("unchecked")
-    public void validateLbConfig(ApiRequest request, String type) {
+    public void validateAndUpdateLbConfig(ApiRequest request, String type) {
         // add lb information to the metadata
         if (!type.equalsIgnoreCase(ServiceConstants.KIND_LOAD_BALANCER_SERVICE)) {
             return;
         }
+
         Map<String, Object> lbConfig = DataAccessor.getFieldFromRequest(request, ServiceConstants.FIELD_LB_CONFIG,
                 Map.class);
         if (lbConfig != null && lbConfig.containsKey(ServiceConstants.FIELD_PORT_RULES)) {
             List<PortRule> portRules = jsonMapper.convertCollectionValue(
                     lbConfig.get(ServiceConstants.FIELD_PORT_RULES), List.class, PortRule.class);
+            Map<Long, Long> instanceIdToDU = new HashMap<>();
+            boolean changed = false;
             for (PortRule rule : portRules) {
                 // either serviceId or instanceId or selector are required
                 boolean emptyService = rule.getServiceId() == null;
@@ -196,6 +201,23 @@ public class ServiceCreateValidationFilter extends AbstractValidationFilter {
                 if (emptySelector && rule.getTargetPort() == null) {
                     throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED, "targetPort");
                 }
+
+                if (!emptyInstance && rule.getDeploymentUnitId() == null) {
+                    Long duId = instanceIdToDU.get(rule.getInstanceId());
+                    if (duId == null) {
+                        Instance instance = objectManager.loadResource(Instance.class, rule.getInstanceId());
+                        duId = instance.getDeploymentUnitId();
+                        instanceIdToDU.put(instance.getId(), duId);
+                    }
+                    rule.setDeploymentUnitId(duId);
+                    changed = true;
+                }
+            }
+            if (changed) {
+                lbConfig.put(ServiceConstants.FIELD_PORT_RULES, portRules);
+                Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
+                data.put(ServiceConstants.FIELD_LB_CONFIG, lbConfig);
+                request.setRequestObject(data);
             }
         }
     }

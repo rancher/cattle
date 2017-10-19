@@ -6,6 +6,7 @@ import io.cattle.platform.core.addon.LbConfig;
 import io.cattle.platform.core.addon.PortRule;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
+import io.cattle.platform.core.model.DeploymentUnit;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.json.JsonMapper;
@@ -16,9 +17,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.function.BiFunction;
 
 public class LoadBalancerServiceImpl implements LoadBalancerService {
@@ -36,7 +35,7 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
 
     @Override
     public void removeFromLoadBalancerServices(Service service) {
-        removeFromLoadBalancer(service.getAccountId(), (rule, balancer) -> {
+        reconcileLoadBalancers(service.getAccountId(), (rule, balancer) -> {
             if (service.getId().equals(rule.getServiceId())) {
                 return null;
             }
@@ -45,35 +44,45 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
     }
 
     @Override
-    public void removeFromLoadBalancerServices(Instance instance) {
-        removeFromLoadBalancer(instance.getAccountId(), (rule, balancer) -> {
-            if (instance.getId().equals(rule.getInstanceId())) {
-                if (instance.getServiceId() == null) {
-                    Map<String, Object> portRules = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LB_RULES_ON_REMOVE);
-                    PortRule newRule = new PortRule(rule);
-                    newRule.setInstanceId(null);
+    public void registerToLoadBalanceSevices(Instance instance) {
+        if (instance.getDeploymentUnitId() == null) {
+            return;
+        }
+        if (instance.getServiceId() != null) {
+            return;
+        }
+        String lcName = DataAccessor.fieldString(instance, InstanceConstants.FIELD_LAUNCH_CONFIG_NAME);
+        if (!ServiceConstants.PRIMARY_LAUNCH_CONFIG_NAME.equals(lcName)) {
+            return;
+        }
 
-                    Object list = portRules.get(balancer.getId().toString());
-                    if (list == null) {
-                        list = Arrays.asList(newRule);
-                    } else {
-                        List<PortRule> ruleList = jsonMapper.convertCollectionValue(list, List.class, PortRule.class);
-                        if (!ruleList.contains(newRule)) {
-                            ruleList.add(newRule);
-                        }
-                        list = ruleList;
-                    }
-                    portRules.put(balancer.getId().toString(), list);
-                    objectManager.setFields(instance,
-                            InstanceConstants.FIELD_LB_RULES_ON_REMOVE, portRules);
-                }
+        reconcileLoadBalancers(instance.getAccountId(), (rule, balancer) -> {
+            boolean sameUnit = instance.getDeploymentUnitId().equals(rule.getDeploymentUnitId());
+            boolean sameInstance = instance.getId().equals(rule.getInstanceId());
+
+            if (sameUnit && !sameInstance) {
+                PortRule newRule = new PortRule(rule);
+                newRule.setInstanceId(instance.getId());
+                return newRule;
+            }
+            return rule;
+        });
+    }
+
+    @Override
+    public void removeFromLoadBalancerServices(DeploymentUnit unit) {
+        if (unit.getServiceId() != null) {
+            return;
+        }
+        reconcileLoadBalancers(unit.getAccountId(), (rule, balancer) -> {
+            if (unit.getId().equals(rule.getDeploymentUnitId())) {
                 return null;
             }
             return rule;
         });
     }
 
-    protected void removeFromLoadBalancer(long accountId, BiFunction<PortRule, Service, PortRule> fun) {
+    protected void reconcileLoadBalancers(long accountId, BiFunction<PortRule, Service, PortRule> fun) {
         List<? extends Service> balancers = objectManager.find(Service.class,
                 SERVICE.KIND, ServiceConstants.KIND_LOAD_BALANCER_SERVICE,
                 SERVICE.REMOVED, null,
@@ -92,7 +101,7 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
                     PortRule newRule = fun.apply(rule, balancer);
                     if (newRule == null) {
                         changed = true;
-                    } else if (newRule != rule) {
+                    } else if (!newRule.equals(rule)) {
                         newRules.add(newRule);
                         changed = true;
                     } else {

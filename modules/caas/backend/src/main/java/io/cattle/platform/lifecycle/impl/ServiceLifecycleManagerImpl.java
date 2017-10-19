@@ -56,7 +56,6 @@ public class ServiceLifecycleManagerImpl implements ServiceLifecycleManager {
 
     @Override
     public void postRemove(Instance instance) {
-        loadbalancerService.removeFromLoadBalancerServices(instance);
         revisionManager.leaveDeploymentUnit(instance);
     }
 
