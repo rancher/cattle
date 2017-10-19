@@ -88,11 +88,14 @@ public class LoadBalancerServiceInstanceStopPreListener extends AgentBasedProces
             return null;
         }
 
+        String targetIpAddress = DataAccessor.fieldString(instance, InstanceConstants.FIELD_PRIMARY_IP_ADDRESS);
+        if (StringUtils.isBlank(targetIpAddress)) {
+            return null;
+        }
+
         List<Service> activeLbServices = lookupAllActiveLBServices(service);
         List<? extends Instance> lbInstances = getLBServiceInstances(activeLbServices);
         // send drain event to each lbInstance and wait for reply upto timeout.
-        String targetIpAddress = DataAccessor.fieldString(instance, InstanceConstants.FIELD_PRIMARY_IP_ADDRESS);
-
         Map<RemoteAgent, ListenableFuture<? extends Event>> drainFutures = new HashMap<>();
 
         Long accountId = service.getAccountId();
