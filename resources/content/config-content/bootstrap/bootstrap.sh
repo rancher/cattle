@@ -114,7 +114,7 @@ upgrade()
             sleep 1
         done
 
-        docker run -d --privileged --name rancher-agent-upgrade -v /var/run/docker.sock:/var/run/docker.sock ${REQUIRED_IMAGE} upgrade
+        timeout 60 docker run --privileged --name rancher-agent-upgrade -v /var/run/docker.sock:/var/run/docker.sock ${REQUIRED_IMAGE} upgrade
         exit 0
     elif [ -n "${REQUIRED_IMAGE}" ]; then
         info Using image ${REQUIRED_IMAGE}
