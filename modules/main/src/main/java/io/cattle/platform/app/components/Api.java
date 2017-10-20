@@ -93,13 +93,7 @@ import io.cattle.platform.api.service.VolumeTemplateCreateValidationFilter;
 import io.cattle.platform.api.serviceevent.ServiceEventFilter;
 import io.cattle.platform.api.serviceproxy.ServiceProxyManager;
 import io.cattle.platform.api.setting.SettingManager;
-import io.cattle.platform.api.stack.ServiceDiscoveryStackOutputFilter;
-import io.cattle.platform.api.stack.StackComposeLinkHandler;
-import io.cattle.platform.api.stack.StackExportConfigActionHandler;
-import io.cattle.platform.api.stack.StackOutputFilter;
-import io.cattle.platform.api.stack.StackPauseAllActionHandler;
-import io.cattle.platform.api.stack.StackStartAllActionHandler;
-import io.cattle.platform.api.stack.StackStopAllActionHandler;
+import io.cattle.platform.api.stack.*;
 import io.cattle.platform.api.stats.ContainerStatsLinkHandler;
 import io.cattle.platform.api.stats.HostStatsLinkHandler;
 import io.cattle.platform.api.stats.ServiceContainerStatsLinkHandler;
@@ -286,6 +280,7 @@ public class Api {
         ServiceRestartValidationFilter serviceRestartValidationFilter = new ServiceRestartValidationFilter(f.objectManager);
         ServiceRollbackValidationFilter serviceRollbackValidationFilter = new ServiceRollbackValidationFilter(f.objectManager, c.revisionManager);
         ServiceUpgradeValidationFilter serviceUpgradeValidationFilter = new ServiceUpgradeValidationFilter(f.objectManager, f.jsonMapper, c.revisionManager);
+        StackValidationFilter stackValidationFilter = new StackValidationFilter(f.objectManager);
 
         // Assign clusterId first
         f.coreSchemaFactory.listSchemas().stream()
@@ -311,6 +306,7 @@ public class Api {
         c.router.validationFilter(Instance.class, new InstanceVolumeCleanupStrategyValidationFilter());
         c.router.validationFilter(Instance.class, new InstancePortsValidationFilter());
         c.router.validationFilter(ProcessInstance.class, resourceIdInputFilter);
+        c.router.validationFilter(Stack.class, stackValidationFilter);
         c.router.validationFilter(Secret.class, new SecretValidationFilter());
         c.router.validationFilter(Service.class, serviceCreateValidationFilter);
         c.router.validationFilter(Service.class, serviceRestartValidationFilter);
