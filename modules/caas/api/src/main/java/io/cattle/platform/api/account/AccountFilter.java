@@ -15,14 +15,28 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import java.util.Map;
 import java.util.Objects;
 
+import static io.cattle.platform.core.model.Tables.ACCOUNT;
+
 public class AccountFilter extends AbstractValidationFilter {
 
+    private static final String NAME_NOT_UNIQUE = "NameNotUnique";
     AccountDao accountDao;
     ObjectManager objectManager;
 
     public AccountFilter(AccountDao accountDao, ObjectManager objectManager) {
         this.accountDao = accountDao;
         this.objectManager = objectManager;
+    }
+
+    @Override
+    public Object create(String type, ApiRequest request, ResourceManager next) {
+        String accountName = request.proxyRequestObject(Account.class).getName();
+        Long clusterId = request.proxyRequestObject(Account.class).getClusterId();
+        Account account = objectManager.findOne(Account.class, ACCOUNT.NAME, accountName, ACCOUNT.CLUSTER_ID, clusterId, ACCOUNT.REMOVED, null);
+        if (account != null) {
+            throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, NAME_NOT_UNIQUE);
+        }
+        return super.create(type, request, next);
     }
 
     @Override

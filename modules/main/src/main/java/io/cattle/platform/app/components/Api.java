@@ -10,6 +10,7 @@ import io.cattle.platform.api.certificate.CertificateCreateValidationFilter;
 import io.cattle.platform.api.certificate.LoadBalancerServiceCertificateRemoveFilter;
 import io.cattle.platform.api.change.impl.ResourceChangeEventProcessor;
 import io.cattle.platform.api.cluster.ClusterIdCommonFilter;
+import io.cattle.platform.api.cluster.ClusterNameFilter;
 import io.cattle.platform.api.cluster.ClusterOutputFilter;
 import io.cattle.platform.api.common.CommonActionsOutputFilter;
 import io.cattle.platform.api.containerevent.ContainerEventFilter;
@@ -275,6 +276,7 @@ public class Api {
     private void addValidationFilters() {
         ResourceIdInputFilter resourceIdInputFilter = new ResourceIdInputFilter(f.idFormatter);
         CertificateCreateValidationFilter certificateCreateValidationFilter = new CertificateCreateValidationFilter();
+        ClusterNameFilter clusterNameFilter = new ClusterNameFilter(f.objectManager);
         ClusterIdCommonFilter clusterIdCommonFilter = new ClusterIdCommonFilter(f.objectManager);
         ServiceCreateValidationFilter serviceCreateValidationFilter = new ServiceCreateValidationFilter(f.objectManager, f.processManager, c.storageService, f.jsonMapper, c.revisionManager);
         ServiceRestartValidationFilter serviceRestartValidationFilter = new ServiceRestartValidationFilter(f.objectManager);
@@ -290,6 +292,7 @@ public class Api {
         c.router.validationFilter(Account.class, new AccountFilter(d.accountDao, f.objectManager));
         c.router.validationFilter(Agent.class, new AgentFilter(c.locator, d.agentDao));
         c.router.validationFilter(AuditLog.class, resourceIdInputFilter);
+        c.router.validationFilter(Cluster.class, clusterNameFilter);
         c.router.validationFilter(Certificate.class, certificateCreateValidationFilter);
         c.router.validationFilter(Certificate.class, new LoadBalancerServiceCertificateRemoveFilter(f.objectManager, d.serviceDao));
         c.router.validationFilter(ContainerEvent.class, new ContainerEventFilter(d.agentDao, f.objectManager, f.jsonMapper, f.eventService));
