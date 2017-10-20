@@ -77,6 +77,10 @@ public class ProjectResourceManager extends DefaultResourceManager {
             }
             projectsFiltered.add(giveProjectAccess(project, policy));
         }
+        Object projectsByCriteria = super.listSupport(schemaFactory, type, criteria, options);
+        if (projectsByCriteria != null) {
+            projectsFiltered.retainAll((List<Account>) projectsByCriteria);
+        }
         return projectsFiltered;
     }
 
