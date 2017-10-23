@@ -92,10 +92,6 @@ public class LoadBalancerServiceUpdatePostListener extends AbstractObjectProcess
             newPortDefs = (List<String>) launchConfigData.get(InstanceConstants.FIELD_PORTS);
         }
 
-        if (newPortDefs.containsAll(oldPortDefs) && oldPortDefs.containsAll(newPortDefs)) {
-            return;
-        }
-
         List<? extends Instance> serviceContainers = expMapDao.listServiceManagedInstancesAll(service);
         for (Instance instance : serviceContainers) {
             List<Port> toCreate = new ArrayList<>();
