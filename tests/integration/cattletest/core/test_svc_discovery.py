@@ -2125,6 +2125,7 @@ def test_export_config(client, context):
     docker_yml = yaml.load(compose_config.dockerComposeConfig)
     svc = docker_yml['services'][service_nolog.name]
     assert "logging" not in svc
+    assert "drain_timeout_ms" not in svc
 
 
 def test_malform_export_config(client, context):
