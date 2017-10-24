@@ -186,6 +186,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                         service, launchConfigName);
                 Map<String, Object> composeServiceData = new HashMap<>();
                 excludeRancherHash(cattleServiceData);
+                excludeZeroDrainTimeout(cattleServiceData);
                 formatScale(service, cattleServiceData);
                 formatLBConfig(service, cattleServiceData);
                 setupServiceType(service, cattleServiceData);
@@ -304,6 +305,14 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                             lbConfig.getDefaultCertificateId(),
                             lbConfig.getConfig(), lbConfig.getStickinessPolicy(), serviceIdsToService,
                             stackIdsToStack, certIdsToCert, service.getStackId(), true));
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void excludeZeroDrainTimeout(Map<String, Object> composeServiceData) {
+        Integer drainTimeout = (Integer) composeServiceData.get(ServiceConstants.FIELD_DRAIN_TIMEOUT);
+        if (drainTimeout == null || (drainTimeout == 0)) {
+            composeServiceData.remove(ServiceConstants.FIELD_DRAIN_TIMEOUT);
         }
     }
 
