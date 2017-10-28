@@ -169,7 +169,7 @@ def test_container_special_labels(client, context):
 
     assert container.state == 'stopped'
     assert container.name == 'from-label'
-    assert container.networkMode == 'managed'
+    assert container.networkMode == 'none'
 
 
 def test_container_create_then_start(super_client, client, context):
