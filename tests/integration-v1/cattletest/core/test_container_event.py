@@ -275,6 +275,7 @@ def test_requested_ip_address_with_managed(super_client, client, host,
     container = super_client.reload(container)
     assert container['data']['fields']['requestedIpAddress'] == '10.42.0.240'
     assert container.nics()[0].network().kind == 'network'
+    assert container.networkMode == 'managed'
     assert container.primaryIpAddress == '10.42.0.240'
 
 

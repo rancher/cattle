@@ -21,7 +21,6 @@ import io.cattle.platform.core.dao.NetworkDao;
 import io.cattle.platform.core.model.ContainerEvent;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.Instance;
-import io.cattle.platform.core.util.SystemLabels;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
@@ -228,11 +227,7 @@ public class ContainerEventCreate extends AbstractDefaultProcessHandler {
     }
 
     private void setLabels(Map<String, Object> inspect, Map<String, Object> data, Instance instance) {
-        Map<String, Object> labels = DataAccessor.fieldMap(instance, InstanceConstants.FIELD_LABELS);
-        if ("true".equals(labels.get(SystemLabels.LABEL_RANCHER_NETWORK))) {
-            labels.put(SystemLabels.LABEL_CNI_NETWORK, NetworkConstants.NETWORK_MODE_MANAGED);
-        }
-        labels.putAll(getLabels(inspect, data));
+        Map<String, Object> labels = getLabels(inspect, data);
         DataAccessor.setField(instance, InstanceConstants.FIELD_LABELS, labels);
     }
 
