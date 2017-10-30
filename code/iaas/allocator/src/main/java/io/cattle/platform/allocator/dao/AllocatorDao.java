@@ -67,5 +67,5 @@ public interface AllocatorDao {
 
     boolean isScheulderIpsEnabled(long accountId);
 
-    boolean schedulerServiceEnabled(Long accountId);
+    boolean isSchedulerServiceEnabled(Long accountId);
  }

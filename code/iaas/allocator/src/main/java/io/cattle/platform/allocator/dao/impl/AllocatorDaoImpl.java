@@ -767,7 +767,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
     }
 
     @Override
-    public boolean schedulerServiceEnabled(Long accountId) {
+    public boolean isSchedulerServiceEnabled(Long accountId) {
         return create()
                 .select(SERVICE.ID)
                 .from(SERVICE)

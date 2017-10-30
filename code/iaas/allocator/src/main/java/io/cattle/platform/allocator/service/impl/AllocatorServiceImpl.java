@@ -704,14 +704,14 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
     @SuppressWarnings("unchecked")
     private void callExternalSchedulerToReserve(AllocationAttempt attempt, AllocationCandidate candidate) {
         List<Long> agentIds = getAgentResource(attempt.getAccountId(), attempt.getInstances());
-        if (agentIds.isEmpty() && !attempt.getInstances().get(0).getSystem() && allocatorDao.schedulerServiceEnabled(attempt.getAccountId())
+        if (agentIds.isEmpty() && !attempt.getInstances().get(0).getSystem() && allocatorDao.isSchedulerServiceEnabled(attempt.getAccountId())
                 && allocatorDao.isScheulderIpsEnabled(attempt.getAccountId())) {
             List<ResourceRequest> resourceRequests = gatherResourceRequests(attempt.getInstances(), attempt.getVolumes(), null);
             for (ResourceRequest r : resourceRequests) {
                 if (r instanceof PortBindingResourceRequest) {
                     PortBindingResourceRequest pr = (PortBindingResourceRequest)r;
                     for (PortSpec ps : pr.getPortRequests()) {
-                        if (StringUtils.isEmpty(ps.getIpAddress()) || !"0.0.0.0".equals(ps.getIpAddress())) {
+                        if (!"0.0.0.0".equals(ps.getIpAddress())) {
                             throw new FailedToAllocate("Cannot perform IP scheduling because external scheduler is unavailable");
                         }
                     }
