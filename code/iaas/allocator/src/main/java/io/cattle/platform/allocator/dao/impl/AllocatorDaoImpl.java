@@ -11,6 +11,7 @@ import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.LabelTable.*;
 import static io.cattle.platform.core.model.tables.MountTable.*;
 import static io.cattle.platform.core.model.tables.PortTable.*;
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.StorageDriverTable.*;
 import static io.cattle.platform.core.model.tables.StoragePoolHostMapTable.*;
@@ -95,6 +96,9 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
 
     static final List<String> IHM_STATES = Arrays.asList(new String[] { CommonStatesConstants.INACTIVE, CommonStatesConstants.DEACTIVATING,
             CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING, CommonStatesConstants.PURGING, CommonStatesConstants.PURGED });
+
+    static final List<String> INACTIVE_STATES = Arrays.asList(new String[] { CommonStatesConstants.INACTIVE, CommonStatesConstants.DEACTIVATING,
+            CommonStatesConstants.UPDATING_INACTIVE, CommonStatesConstants.REMOVING });
 
     @Inject
     ObjectManager objectManager;
@@ -702,6 +706,12 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
         return HOST.UUID.in(hostUUIDs);
     }
 
+    protected Condition elligibleHostCondition() {
+        return AGENT.ID.isNull().or(AGENT.STATE.eq(CommonStatesConstants.ACTIVE))
+                .and(HOST.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE))
+                .and(STORAGE_POOL.STATE.eq(CommonStatesConstants.ACTIVE));
+    }
+
     protected Condition getQueryOptionCondition(QueryOptions options, List<String> orderedHostUUIDs) {
         Condition condition = null;
 
@@ -714,10 +724,7 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
             return condition;
         }
 
-        condition = append(condition, AGENT.ID.isNull().or(AGENT.STATE.eq(CommonStatesConstants.ACTIVE))
-        .and(HOST.STATE.in(CommonStatesConstants.ACTIVE, CommonStatesConstants.UPDATING_ACTIVE))
-        .and(STORAGE_POOL.STATE.eq(CommonStatesConstants.ACTIVE))
-        .and(inHostList(orderedHostUUIDs)));
+        condition = append(condition, elligibleHostCondition().and(inHostList(orderedHostUUIDs)));
 
         if ( options.getHosts().size() > 0 ) {
             condition = append(condition, HOST.ID.in(options.getHosts()));
@@ -737,5 +744,37 @@ public class AllocatorDaoImpl extends AbstractJooqDao implements AllocatorDao {
         } else {
             return base.and(next);
         }
+    }
+
+    @Override
+    public boolean isScheulderIpsEnabled(long accountId) {
+        return create()
+                .select(HOST_LABEL_MAP.ID)
+                .from(HOST_LABEL_MAP)
+                .join(LABEL).on(HOST_LABEL_MAP.LABEL_ID.eq(LABEL.ID))
+                .join(HOST).on(HOST_LABEL_MAP.HOST_ID.eq(HOST.ID))
+                .leftOuterJoin(AGENT)
+                .on(AGENT.ID.eq(HOST.AGENT_ID))
+                .leftOuterJoin(STORAGE_POOL_HOST_MAP)
+                .on(STORAGE_POOL_HOST_MAP.HOST_ID.eq(HOST.ID)
+                .and(STORAGE_POOL_HOST_MAP.REMOVED.isNull()))
+                .join(STORAGE_POOL)
+                .on(STORAGE_POOL.ID.eq(STORAGE_POOL_HOST_MAP.STORAGE_POOL_ID))
+                .where(elligibleHostCondition()
+                .and(HOST_LABEL_MAP.ACCOUNT_ID.equal(accountId))
+                .and(HOST_LABEL_MAP.REMOVED.isNull())
+                .and(LABEL.KEY.equalIgnoreCase("io.rancher.scheduler.ips"))).fetch().size() > 0;
+    }
+
+    @Override
+    public boolean schedulerServiceEnabled(Long accountId) {
+        return create()
+                .select(SERVICE.ID)
+                .from(SERVICE)
+                .where(SERVICE.ACCOUNT_ID.equal(accountId)
+                .and(SERVICE.SYSTEM.isTrue())
+                .and(SERVICE.REMOVED.isNull())
+                .and(SERVICE.STATE.notIn(INACTIVE_STATES))
+                .and(SERVICE.DATA.like("%io.rancher.container.agent_service.scheduling%"))).fetch().size() > 0;
     }
 }
