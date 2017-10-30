@@ -438,8 +438,9 @@ public class ServiceValidationFilter extends AbstractDefaultResourceManagerFilte
         alreadySeenReferences.add(launchConfigName);
         for (String myRef : myRefs) {
             if (!launchConfigRefs.containsKey(myRef)) {
+                String msg = String.format("From LaunchConfig %s to LaunchConfig %s", launchConfigName, myRef);
                 ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_REFERENCE,
-                        "LaunchConfigName");
+                        msg);
             }
 
             if (alreadySeenReferences.contains(myRef)) {
