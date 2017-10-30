@@ -704,6 +704,21 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
     @SuppressWarnings("unchecked")
     private void callExternalSchedulerToReserve(AllocationAttempt attempt, AllocationCandidate candidate) {
         List<Long> agentIds = getAgentResource(attempt.getAccountId(), attempt.getInstances());
+        if (agentIds.isEmpty() && !attempt.getInstances().get(0).getSystem() && allocatorDao.isSchedulerServiceEnabled(attempt.getAccountId())
+                && allocatorDao.isScheulderIpsEnabled(attempt.getAccountId())) {
+            List<ResourceRequest> resourceRequests = gatherResourceRequests(attempt.getInstances(), attempt.getVolumes(), null);
+            for (ResourceRequest r : resourceRequests) {
+                if (r instanceof PortBindingResourceRequest) {
+                    PortBindingResourceRequest pr = (PortBindingResourceRequest)r;
+                    for (PortSpec ps : pr.getPortRequests()) {
+                        if (!"0.0.0.0".equals(ps.getIpAddress())) {
+                            throw new FailedToAllocate("Cannot perform IP scheduling because external scheduler is unavailable");
+                        }
+                    }
+                }
+            }
+        }
+
         for (Long agentId : agentIds) {
             EventVO<Map<String, Object>> schedulerEvent = buildEvent(SCHEDULER_RESERVE_EVENT, InstanceConstants.PROCESS_ALLOCATE, attempt.getInstances(),
                     attempt.getVolumes(), agentId);
@@ -1078,6 +1093,9 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
     }
 
     protected String getSchedulerVersion(Long agentId) {
+        if (agentId == null) {
+            return "NotApplicable";
+        }
         Instance instance = agentInstanceDao.getInstanceByAgent(agentId);
         String imageUuid = (String) DataAccessor.fields(instance).withKey(InstanceConstants.FIELD_IMAGE_UUID).get();
         DockerImage img = DockerImage.parse(imageUuid);

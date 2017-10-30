@@ -64,4 +64,8 @@ public interface AllocatorDao {
     Iterator<AllocationCandidate> iteratorHosts(List<String> orderedHostUuids, List<Long> volumes, QueryOptions options);
 
     void updateInstancePorts(List<Map<String, Object>> dataList);
+
+    boolean isScheulderIpsEnabled(long accountId);
+
+    boolean isSchedulerServiceEnabled(Long accountId);
  }
