@@ -145,6 +145,9 @@
         },
         "executionPeriodStart": {
             "type": "date"
+        },
+        "lastActiveTime": {
+            "type": "date"
         }
     },
     "resourceActions" : {
