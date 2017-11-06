@@ -40,7 +40,7 @@ public class LabelsServiceImpl implements LabelsService {
         // DB query ignores leading/trailing whitesapce, so we need to check that keys and values are truly equal
         Label label = null;
         for (Label l : labels) {
-            if (StringUtils.equals(key, l.getKey()) && StringUtils.equals(value, l.getValue())) {
+            if (StringUtils.equals(StringUtils.trim(key), l.getKey()) && StringUtils.equals(StringUtils.trim(value), l.getValue())) {
                 label = l;
                 break;
             }
