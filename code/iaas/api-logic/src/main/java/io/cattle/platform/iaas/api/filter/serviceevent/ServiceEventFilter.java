@@ -3,7 +3,6 @@ package io.cattle.platform.iaas.api.filter.serviceevent;
 
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.utils.ApiUtils;
-import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
@@ -25,14 +24,12 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 
-import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
 
 public class ServiceEventFilter extends AbstractDefaultResourceManagerFilter {
 
-    private static final long STAY_ACTIVE_MILLISECONDS = ArchaiusUtil.getLong("stay_active.milliseconds").getValue();
 
     public static final String VERIFY_AGENT = "CantVerifyHealthcheck";
 
@@ -119,15 +116,6 @@ public class ServiceEventFilter extends AbstractDefaultResourceManagerFilter {
         for (Service service : services) {
             if (!service.getState().equals(CommonStatesConstants.ACTIVE)) {
                 return false;
-            }
-            Object obj = DataAccessor.fields(service).withKey(ServiceConstants.LAST_ACTIVE).get();
-            if(obj != null) {
-                long lastActiveTime = (long) obj;
-                long currentTime = new Date().getTime();
-                // networkUp only if service has been active for STAY_ACTIVE_SECONDS
-                if (lastActiveTime + STAY_ACTIVE_MILLISECONDS > currentTime) {
-                    return false;
-                }
             }
         }
         return true;

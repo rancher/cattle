@@ -170,7 +170,6 @@ public class ServiceConstants {
     public static final String STATE_RESTARTING = "restarting";
 
     public static final String IMAGE_NONE = "rancher/none";
-    public static final String LAST_ACTIVE = "lastActiveTime";
 
     public static final String AUDIT_LOG_REMOVE_EXTRA = "Removing extra service instance";
     public static final String AUDIT_LOG_REMOVE_UNHEATLHY = "Removing unhealthy service instance";
