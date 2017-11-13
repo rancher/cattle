@@ -68,6 +68,7 @@ import io.cattle.platform.iaas.api.filter.compat.CompatibilityOutputFilter;
 import io.cattle.platform.iaas.api.filter.containerevent.ContainerEventFilter;
 import io.cattle.platform.iaas.api.filter.dynamic.schema.DynamicSchemaFilter;
 import io.cattle.platform.iaas.api.filter.externalevent.ExternalEventFilter;
+import io.cattle.platform.iaas.api.filter.genericobject.EnvAdminGenericObjectFilter;
 import io.cattle.platform.iaas.api.filter.hosts.HostsFilter;
 import io.cattle.platform.iaas.api.filter.instance.InstanceImageValidationFilter;
 import io.cattle.platform.iaas.api.filter.instance.InstanceOutputFilter;
@@ -429,6 +430,11 @@ public class IaasApiConfig {
     @Bean
     DynamicSchemaFilter DynamicSchemaFilter() {
         return new DynamicSchemaFilter();
+    }
+
+    @Bean
+    EnvAdminGenericObjectFilter EnvAdminGenericObjectFilter() {
+        return new EnvAdminGenericObjectFilter();
     }
 
     @Bean
