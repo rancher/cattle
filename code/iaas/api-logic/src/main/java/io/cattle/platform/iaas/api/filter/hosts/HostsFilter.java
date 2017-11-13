@@ -1,5 +1,6 @@
 package io.cattle.platform.iaas.api.filter.hosts;
 
+import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HostConstants;
 import io.cattle.platform.core.constants.MachineConstants;
@@ -7,6 +8,7 @@ import io.cattle.platform.core.dao.HostDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.PhysicalHost;
 import io.cattle.platform.iaas.api.filter.common.CachedOutputFilter;
+import io.cattle.platform.iaas.api.infrastructure.InfrastructureAccessManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataUtils;
 import io.cattle.platform.util.type.Priority;
@@ -25,6 +27,8 @@ public class HostsFilter extends CachedOutputFilter<HostsFilter.Data> implements
 
     @Inject
     HostDao hostDao;
+    @Inject
+    InfrastructureAccessManager infraAccess;
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -54,12 +58,16 @@ public class HostsFilter extends CachedOutputFilter<HostsFilter.Data> implements
 
             if (physicalHost != null) {
                 Map<String, Object> phFields = DataUtils.getFields(physicalHost);
+                boolean add = infraAccess.canModifyInfrastructure(ApiUtils.getPolicy());
                 for (Map.Entry<String, Object> entry : phFields.entrySet()) {
                     if (entry.getValue() == null || MachineConstants.EXTRACTED_CONFIG_FIELD.equals(entry.getKey())) {
                         continue;
                     }
                     String key = entry.getKey();
-                    if (key.equals(MachineConstants.FIELD_DRIVER) || key.endsWith(MachineConstants.CONFIG_FIELD_SUFFIX)) {
+                    if (key.equals(MachineConstants.FIELD_DRIVER)) {
+                        fields.put(key, entry.getValue());
+                    }
+                    if (add && key.endsWith(MachineConstants.CONFIG_FIELD_SUFFIX)) {
                         fields.put(key, entry.getValue());
                     }
                 }
