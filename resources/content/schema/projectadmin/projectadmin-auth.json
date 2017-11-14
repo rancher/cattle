@@ -5,6 +5,8 @@
         "service.resourceActions.certificate": "c",
         "registryCredential.secretValue": "cur",
         "certificate.key": "cur",
+        "envAdminGenericObject" : "crud",
+        "envAdminGenericObject.kind" : "r",
         "end" : ""
     }
 }

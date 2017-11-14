@@ -8,4 +8,6 @@ public class GenericObjectConstants {
 
     public static final String PROCESS_CREATE = "genericobject.create";
 
+    public static final String ENV_ADMIN_TYPE = "envAdminGenericObject";
+
 }

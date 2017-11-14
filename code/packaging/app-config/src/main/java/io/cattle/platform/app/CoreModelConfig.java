@@ -129,6 +129,7 @@ public class CoreModelConfig {
                 "launchConfig,parent=container",
                 "secondaryLaunchConfig,parent=launchConfig",
                 "pullTask,parent=genericObject",
+                "envAdminGenericObject,parent=genericObject",
                 "externalVolumeEvent,parent=externalEvent",
                 "externalStoragePoolEvent,parent=externalEvent",
                 "externalServiceEvent,parent=externalEvent",
