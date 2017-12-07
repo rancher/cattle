@@ -263,8 +263,8 @@ public class HealthcheckServiceImpl implements HealthcheckService {
         // skip hosts labeled accordingly
         Iterator<? extends Host> it = availableActiveHosts.iterator();
         while (it.hasNext()) {
-            String deploy = (String) CollectionUtils.getNestedValue(it.next().getData(), "fields", "labels", LABEL_HEALTHCHECK_DEPLOY);
-            if (deploy != null && "never".equals(deploy)) {
+            String deployStrategy = (String) CollectionUtils.getNestedValue(it.next().getData(), "fields", "labels", LABEL_HEALTHCHECK_DEPLOY_STRATEGY);
+            if (deployStrategy != null && "skip".equals(deployStrategy)) {
                it.remove();
             }
         }
