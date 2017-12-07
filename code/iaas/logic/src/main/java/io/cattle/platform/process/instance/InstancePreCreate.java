@@ -94,7 +94,7 @@ public class InstancePreCreate extends AbstractObjectProcessLogic implements Pro
         if (!"true".equals(labels.get(SystemLabels.LABEL_AGENT_CREATE))) {
             return;
         }
-        if ("true".equals(labels.get(SystemLabels.LABEL_AGENT_SKIP_VOLUMES))) {
+        if ("skip".equals(labels.get(SystemLabels.LABEL_AGENT_VOLUMES_STRATEGY))) {
             return;
         }
 

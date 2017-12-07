@@ -27,6 +27,8 @@ public class RegistrationTokenOutputFilter implements ResourceOutputFilter {
 
     private static final DynamicStringProperty DOCKER_CMD = ArchaiusUtil.getString("docker.register.command");
     private static final DynamicStringProperty REQUIRED_IMAGE = ArchaiusUtil.getString("bootstrap.required.image");
+    private static final DynamicStringProperty DOCKER_WINDOWS_CMD = ArchaiusUtil.getString("docker.register.windows.command");
+    private static final DynamicStringProperty REQUIRED_WINDOWS_IMAGE = ArchaiusUtil.getString("bootstrap.required.windows.image");
 
     @Inject
     CertificateDao certDao;
@@ -68,6 +70,7 @@ public class RegistrationTokenOutputFilter implements ResourceOutputFilter {
             Map<String, URL> links = converted.getLinks();
 
             fields.put("command", String.format(DOCKER_CMD.get(), getOptions(), REQUIRED_IMAGE.get(), url.toExternalForm()));
+            fields.put("windowsCommand", String.format(DOCKER_WINDOWS_CMD.get(), REQUIRED_WINDOWS_IMAGE.get()));
             fields.put("image", REQUIRED_IMAGE.get());
             fields.put("token", token);
             fields.put("registrationUrl", url.toExternalForm());
