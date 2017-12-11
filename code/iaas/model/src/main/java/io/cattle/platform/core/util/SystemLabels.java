@@ -6,6 +6,7 @@ public class SystemLabels {
     public static final String LABEL_AGENT_VOLUMES_STRATEGY = "io.rancher.container.agent.volumes_strategy";
     public static final String LABEL_CATTLE_URL = "io.rancher.container.cattle_url";
     public static final String LABEL_USE_RANCHER_DNS = "io.rancher.container.dns";
+    public static final String LABEL_RANCHER_CONTAINER_DNS_PRIORITY = "io.rancher.container.dns.priority";
     public static final String LABEL_REQUESTED_IP = "io.rancher.container.requested_ip";
     public static final String LABEL_AGENT_URI_PREFIX = "io.rancher.container.agent.uri.prefix";
     public static final String LABEL_VOLUME_CLEANUP_STRATEGY = "io.rancher.container.volume_cleanup_strategy";
@@ -28,6 +29,7 @@ public class SystemLabels {
     public static final String LABEL_AGENT_SERVICE_IPSEC = "io.rancher.container.agent_service.ipsec";
     public static final String LABEL_AGENT_SERVICE_COMPOSE_PROVIDER = "io.rancher.container.agent_service.docker_compose";
     public static final String LABEL_AGENT_SERVICE_SCHEDULING_PROVIDER = "io.rancher.container.agent_service.scheduling";
+    public static final String LABEL_AGENT_SERVICE_DRAIN_PROVIDER = "io.rancher.container.agent_service.drain_provider";
 
     public static final String LABEL_VM = "io.rancher.vm";
     public static final String LABEL_VM_USERDATA = "io.rancher.vm.userdata";

@@ -186,6 +186,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                         service, launchConfigName);
                 Map<String, Object> composeServiceData = new HashMap<>();
                 excludeRancherHash(cattleServiceData);
+                excludeZeroDrainTimeout(cattleServiceData);
                 formatScale(service, cattleServiceData);
                 formatLBConfig(service, cattleServiceData);
                 setupServiceType(service, cattleServiceData);
@@ -307,6 +308,14 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
         }
     }
 
+    @SuppressWarnings("unchecked")
+    protected void excludeZeroDrainTimeout(Map<String, Object> composeServiceData) {
+        Integer drainTimeout = (Integer) composeServiceData.get(ServiceConstants.FIELD_DRAIN_TIMEOUT);
+        if (drainTimeout == null || (drainTimeout == 0)) {
+            composeServiceData.remove(ServiceConstants.FIELD_DRAIN_TIMEOUT);
+        }
+    }
+
     protected void setupServiceType(Service service, Map<String, Object> composeServiceData) {
         Object type = composeServiceData.get(ServiceDiscoveryConfigItem.SERVICE_TYPE.getCattleName());
         if (type == null) {
@@ -400,22 +409,33 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                 for (Object secret : list) {
                     if (secret instanceof Map) {
                         Map<String, Object> secretOpts = (Map<String, Object>) secret;
-                        String secretId = secretOpts.get(SECRET_ID).toString();
+                        String secretId = ObjectUtils.toString(secretOpts.get(SECRET_ID));
                         Secret secretObj = objectManager.loadResource(Secret.class, secretId);
                         String secretName = secretObj.getName(); 
                         if (isShortSyntax(secretOpts)) {
                             secretEntries.add(secretName);
                         } else {
-                            String uid = secretOpts.get(UID).toString();
-                            String gid = secretOpts.get(GID).toString();
-                            Integer mode = Integer.parseInt(secretOpts.get(MODE).toString());
-                            String filename = secretOpts.get(NAME).toString();
+                            String uid = ObjectUtils.toString(secretOpts.get(UID));
+                            String gid = ObjectUtils.toString(secretOpts.get(GID));
+                            String mode = ObjectUtils.toString(secretOpts.get(MODE));
+                            String filename = ObjectUtils.toString(secretOpts.get(NAME));
                             Map<String, Object> secretMap = new HashMap<>();
                             secretMap.put(SOURCE, secretName);
-                            secretMap.put(TARGET, filename);
-                            secretMap.put(UID, uid);
-                            secretMap.put(GID, gid);
-                            secretMap.put(MODE, mode);
+                            if (filename != null) {
+                                secretMap.put(TARGET, filename);
+                            }
+                            if (uid != null) {
+                                secretMap.put(UID, uid);
+                            }
+                            if (gid != null) {
+                                secretMap.put(GID, gid);
+                            }
+                            if (mode != null) {
+                                if (mode.length() == 3) {
+                                    mode = "0" + mode;
+                                }
+                                secretMap.put(MODE, mode);
+                            }
                             secretEntries.add(secretMap);
                         }
                         

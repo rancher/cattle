@@ -80,6 +80,10 @@
         <name>logback.max.history</name>
     </define>
 
+    <define name="maxFileSize" class="io.cattle.platform.logback.ArchaiusProperty" >
+        <name>logback.max.file.size</name>
+    </define>
+
     <define name="logDir" class="io.cattle.platform.logback.ArchaiusProperty" >
         <name>logback.log.dir</name>
     </define>

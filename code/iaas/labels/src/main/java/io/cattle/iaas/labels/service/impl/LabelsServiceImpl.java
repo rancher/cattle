@@ -12,9 +12,12 @@ import io.cattle.platform.core.model.Label;
 import io.cattle.platform.object.ObjectManager;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class LabelsServiceImpl implements LabelsService {
 
@@ -28,16 +31,26 @@ public class LabelsServiceImpl implements LabelsService {
     public Label getOrCreateLabel(long accountId, String key, String value,
             String type) {
         // best effort for not duplicating
-        Label label = objectManager.findAny(Label.class,
+        List<Label> labels = objectManager.find(Label.class,
                 LABEL.KEY, key,
                 LABEL.VALUE, value,
                 LABEL.ACCOUNT_ID, accountId,
                 LABEL.REMOVED, null);
+
+        // DB query ignores leading/trailing whitesapce, so we need to check that keys and values are truly equal
+        Label label = null;
+        for (Label l : labels) {
+            if (StringUtils.equals(StringUtils.trim(key), l.getKey()) && StringUtils.equals(StringUtils.trim(value), l.getValue())) {
+                label = l;
+                break;
+            }
+        }
+
         if (label == null) {
             Map<Object, Object> labelData = new HashMap<>();
             labelData.put(LABEL.STATE, CommonStatesConstants.CREATED);
-            labelData.put(LABEL.KEY, truncate(key, 1024));
-            labelData.put(LABEL.VALUE, truncate(value, 4096));
+            labelData.put(LABEL.KEY, truncate(StringUtils.trim(key), 1024));
+            labelData.put(LABEL.VALUE, truncate(StringUtils.trim(value), 4096));
             labelData.put(LABEL.ACCOUNT_ID, accountId);
 
             labelData.put(LABEL.TYPE, type);

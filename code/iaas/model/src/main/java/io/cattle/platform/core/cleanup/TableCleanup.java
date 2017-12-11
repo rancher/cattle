@@ -82,6 +82,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.HashSet;
 
 import org.jooq.Field;
 import org.jooq.ForeignKey;
@@ -262,43 +263,46 @@ public class TableCleanup extends AbstractJooqDao implements Task {
 
             table.clearRowCounts();
             Result<Record1<Long>> toDelete;
-            List<Long> idsToFix = new ArrayList<>();
-            while ((toDelete = ids.fetch()).size() > 0) {
-                List<Long> idsToDelete = new ArrayList<>();
+            HashSet<Long> idsToFix = new HashSet<Long>();
+            HashSet<Long> idsToFilter = new HashSet<Long>();
+            ResultQuery<Record1<Long>> filterIds;
+            Result<Record1<Long>> toFilter;
 
-                for (Record1<Long> record : toDelete) {
-                    if (!idsToFix.contains(record.value1())) {
-                        idsToDelete.add(record.value1());
-                    }
-                }
-
-                if (idsToDelete.size() == 0) {
-                    break;
-                }
-
+            if ((toDelete = ids.fetch()).size() > 0) {
                 List<ForeignKey<?, ?>> keys = getReferencesFrom(table, tables);
                 for (ForeignKey<?, ?> key : keys) {
-                    Table<?> referencingTable = key.getTable();
                     if (key.getFields().size() > 1) {
                         log.error("Composite foreign key filtering unsupported");
                     }
+                }
+                for (ForeignKey<?, ?> key : keys) {
+                    Table<?> referencingTable = key.getTable();
                     Field<Long> foreignKeyField = (Field<Long>) key.getFields().get(0);
 
-                    ResultQuery<Record1<Long>> filterIds = create()
-                        .selectDistinct(foreignKeyField)
-                        .from(referencingTable)
-                        .where(foreignKeyField.in(idsToDelete));
+                    filterIds = create().selectDistinct(foreignKeyField).from(referencingTable);
 
-                    Result<Record1<Long>> toFilter = filterIds.fetch();
-                    if (toFilter.size() > 0) {
+                    if ((toFilter = filterIds.fetch()).size() > 0) {
                         for (Record1<Long> record : toFilter) {
-                            if (idsToDelete.remove(record.value1())) {
-                                idsToFix.add(record.value1());
-                            }
+                            idsToFilter.add(record.value1());
                         }
                     }
                 }
+            }
 
+            while (toDelete.size() > 0) {
+                HashSet<Long> idsToDelete = new HashSet<Long>();
+                for (Record1<Long> record : toDelete) {
+                    if (idsToFilter.contains(record.value1())) {
+                        idsToFix.add(record.value1());
+                        idsToFilter.remove(record.value1());
+                    }
+                    if ((!idsToFix.contains(record.value1()))) {
+                        idsToDelete.add(record.value1());
+                    }
+                }
+                if (idsToDelete.size() == 0) {
+                    break;
+                }
                 try {
                     table.addRowsDeleted(create()
                             .delete(table.table)
@@ -309,6 +313,11 @@ public class TableCleanup extends AbstractJooqDao implements Task {
                     log.info(e.getMessage());
                     break;
                 }
+                if (idsToFix.size() > 0) {
+                    ids = create().select(id).from(table.table).where(remove.lt(cutoffTime)).orderBy(id)
+                    .limit(QUERY_LIMIT_ROWS.getValue()).offset(idsToFix.size());
+                }
+                toDelete = ids.fetch();
             }
             if (idsToFix.size() > 0) {
                 table.addRowsSkipped(idsToFix.size());

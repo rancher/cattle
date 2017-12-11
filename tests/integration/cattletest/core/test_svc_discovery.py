@@ -2030,6 +2030,7 @@ def test_export_config(client, context):
                      "tmpfs": {"/run": "rw"},
                      "sysctls": {"net.ipv4.ip_forward": "1"},
                      "runInit": True,
+                     "drainTimeoutMs": 15000,
                      "ulimits": [{"name": "cpu", "soft": 1234, "hard": 1234},
                                  {"name": "nporc", "soft": 1234}]
                      }
@@ -2103,6 +2104,7 @@ def test_export_config(client, context):
     assert svc['start_on_create']
     assert svc['retain_ip'] is True
     assert svc["milli_cpu_reservation"] == 1000
+    assert svc["drain_timeout_ms"] == 15000
 
     launch_config_without_log = {"imageUuid": image_uuid,
                                  "cpuSet": "0,1", "labels": labels,
@@ -2123,6 +2125,7 @@ def test_export_config(client, context):
     docker_yml = yaml.load(compose_config.dockerComposeConfig)
     svc = docker_yml['services'][service_nolog.name]
     assert "logging" not in svc
+    assert "drain_timeout_ms" not in svc
 
 
 def test_malform_export_config(client, context):
@@ -3476,6 +3479,109 @@ def test_svc_ports_update(client, context):
     assert ep.port == 8684
 
 
+def test_lb_ports_update(client, context):
+    env = _create_stack(client)
+
+    # test group 1: update lb service with same ports
+    #  case 1-1  ip_address + publicPort : privatePort
+
+    image_uuid = context.image_uuid
+    ip_address = '192.168.10.10'
+    launch_config = {'imageUuid': image_uuid, 'ports': [ip_address +
+                                                        ':5555:5555']}
+
+    lb_config = {}
+    lbSvc = client. \
+        create_loadBalancerService(name=random_str(),
+                                   stackId=env.id,
+                                   launchConfig=launch_config,
+                                   lbConfig=lb_config)
+    lbSvc = client.wait_success(lbSvc)
+    assert lbSvc.state == 'inactive'
+
+    lbSvc = client.wait_success(lbSvc.activate())
+    assert lbSvc.state == 'active'
+    instances = _get_instance_for_service(client, lbSvc.id)
+
+    assert len(instances) == 1
+    instance = instances[0]
+    assert instance.ports == ['192.168.10.10:5555:5555/tcp']
+
+    wait_for(lambda: client.reload(lbSvc).publicEndpoints is not None and
+             len(client.reload(lbSvc).publicEndpoints) == 1)
+    endpoints = client.reload(lbSvc).publicEndpoints
+    ep = endpoints[0]
+    assert ep.port == 5555
+    assert ep.ipAddress == ip_address
+
+    # case 1-1
+
+    new_launch_config_1 = {'imageUuid': image_uuid,
+                           'ports': [ip_address + ':5555:5555']}
+
+    lbSvc = client.update(lbSvc, launchConfig=new_launch_config_1)
+    lbSvc = client.wait_success(lbSvc)
+    assert lbSvc.launchConfig.ports == ['192.168.10.10:5555:5555/tcp']
+    instances = _get_instance_for_service(client, lbSvc.id)
+
+    assert len(instances) == 1
+    instance = instances[0]
+    assert instance.ports == ['192.168.10.10:5555:5555/tcp']
+
+    wait_for(lambda: client.reload(lbSvc).publicEndpoints is not None and
+             len(client.reload(lbSvc).publicEndpoints) == 1)
+    endpoints = client.reload(lbSvc).publicEndpoints
+    ep = endpoints[0]
+    assert ep.port == 5555
+    assert ep.ipAddress == ip_address
+
+    # test group 2: update lb service with publicPort and privatePort change
+    # case 2-1  ip_address + new_publicPort : new_privatePort
+
+    new_launch_config_3 = {'imageUuid': image_uuid,
+                           'ports': [ip_address + ':6666:6666']}
+
+    lbSvc = client.update(lbSvc, launchConfig=new_launch_config_3)
+    lbSvc = client.wait_success(lbSvc)
+    assert lbSvc.launchConfig.ports == ['192.168.10.10:6666:6666/tcp']
+    instances = _get_instance_for_service(client, lbSvc.id)
+
+    assert len(instances) == 1
+    instance = instances[0]
+    assert instance.ports == ['192.168.10.10:6666:6666/tcp']
+
+    wait_for(lambda: client.reload(lbSvc).publicEndpoints is not None and
+             len(client.reload(lbSvc).publicEndpoints) == 1)
+    endpoints = client.reload(lbSvc).publicEndpoints
+    ep = endpoints[0]
+    assert ep.port == 6666
+    assert ep.ipAddress == ip_address
+
+    # test group 3: update ipAddress for lb ports
+    # case 3-1: [ip_address_1 + publicPort : privatePort]
+    # update to [ip_address_2 + publicPort : privatePort]
+
+    new_ip_address = '192.168.20.20'
+    new_launch_config_4 = {'imageUuid': image_uuid,
+                           'ports': [new_ip_address + ':6666:6666']}
+
+    lbSvc = client.update(lbSvc, launchConfig=new_launch_config_4)
+    lbSvc = client.wait_success(lbSvc)
+    assert lbSvc.launchConfig.ports == ['192.168.20.20:6666:6666/tcp']
+    instances = _get_instance_for_service(client, lbSvc.id)
+
+    assert len(instances) == 1
+    instance = instances[0]
+    assert instance.ports == ['192.168.10.10:6666:6666/tcp']
+
+    wait_for(lambda: client.reload(lbSvc).publicEndpoints is not None and
+             len(client.reload(lbSvc).publicEndpoints) == 1)
+    endpoints = client.reload(lbSvc).publicEndpoints
+    ep = endpoints[0]
+    assert ep.port == 6666
+    assert ep.ipAddress == ip_address
+
+
 def test_upgrade_scale_to_global(client, context, super_client):
     env = _create_stack(client)
 
@@ -3748,3 +3854,65 @@ def test_requested_ip_address_by_labels(client, context, super_client):
     assert instances[1].primaryIpAddress not in ["10.42.100.100",
                                                  "10.42.100.101",
                                                  "10.42.100.102"]
+
+
+def test_dns_priority_label(client, context):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    labels = {'io.rancher.container.dns.priority': 'None'}
+
+    dns = ['8.8.8.8', '1.2.3.4']
+    search = ['foo', 'bar']
+
+    launch_config = {"imageUuid": image_uuid,
+                     "labels": labels,
+                     "dnsSearch": search,
+                     "dns": dns,
+                     }
+
+    svc = client.create_service(name=random_str(),
+                                stackId=env.id,
+                                launchConfig=launch_config)
+    svc = client.wait_success(svc)
+
+    assert svc.launchConfig.dns == dns
+    assert svc.launchConfig.dnsSearch == search
+
+    service = client.wait_success(svc.activate())
+    assert service.state == "active"
+    instance_service_map = client \
+        .list_serviceExposeMap(serviceId=service.id)
+
+    assert len(instance_service_map) == 1
+    wait_for_condition(
+        client, instance_service_map[0], _resource_is_active,
+        lambda x: 'State is: ' + x.state)
+
+    instances = client. \
+        list_container(name=env.name + "-" + service.name + "-" + "1")
+    assert len(instances) == 1
+    container = instances[0]
+    assert container.imageUuid == image_uuid
+    dns.append("169.254.169.250")
+    assert all(item in dns for item in container.dns) is True
+    assert set(search) == set(container.dnsSearch)
+
+
+def test_drain_timeout_launch_config(client, context, super_client):
+    env = _create_stack(client)
+
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid,
+                     "labels": {
+                         "io.rancher.sidekicks": "secondary"}}
+    secondary_lc = {"imageUuid": image_uuid, "name": "secondary"}
+
+    service = client.create_service(name=random_str(),
+                                    stackId=env.id,
+                                    launchConfig=launch_config,
+                                    scale=1,
+                                    secondaryLaunchConfigs=[secondary_lc])
+    service = client.wait_success(service)
+    assert len(service.secondaryLaunchConfigs) == 1
+    assert service.launchConfig.drainTimeoutMs is not None

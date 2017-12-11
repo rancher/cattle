@@ -21,6 +21,7 @@ import javax.annotation.PostConstruct;
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
@@ -237,7 +238,12 @@ public abstract class LDAPIdentityProvider implements IdentityProvider{
     protected boolean isType(Attributes search, String type) {
         NamingEnumeration<?> objectClass;
         try {
-            objectClass = search.get(getConstantsConfig().objectClass()).getAll();
+            Attribute attr = search.get(getConstantsConfig().objectClass());
+            if (attr == null) {
+                getLogger().info("Object class attribute [{}] not found. Object does not match type [{}]", getConstantsConfig().objectClass(), type);
+                return false;
+            }
+            objectClass = attr.getAll();
             while (objectClass.hasMoreElements()) {
                 Object object = objectClass.next();
                 if ((object.toString()).equalsIgnoreCase(type)){

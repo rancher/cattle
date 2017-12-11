@@ -1,5 +1,7 @@
 package io.cattle.iaas.healthcheck.process;
 
+import static io.cattle.platform.core.model.tables.ServiceTable.*;
+
 import io.cattle.iaas.healthcheck.service.HealthcheckService;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.dao.ServiceDao;
@@ -14,6 +16,8 @@ import io.cattle.platform.util.type.Priority;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+
+
 
 @Named
 public class ServiceEventCreate extends AbstractObjectProcessHandler implements ProcessHandler, Priority {
@@ -36,6 +40,8 @@ public class ServiceEventCreate extends AbstractObjectProcessHandler implements 
             return null;
         }
 
+
+
         // don't process init event as its being set by cattle on instance restart
         // that is done to avoid the scenario when init state is reported on healthcheck process restart inside the
         // agent happening around the time when instance becomes unheatlhy
@@ -44,7 +50,12 @@ public class ServiceEventCreate extends AbstractObjectProcessHandler implements 
         if ("INIT".equals(event.getReportedHealth())) {
             return null;
         }
+        processHealthcheck(event);
 
+        return null;
+    }
+
+    private void processHealthcheck(ServiceEvent event) {
         String[] splitted = event.getHealthcheckUuid().split("_");
         // find host map uuid
         HealthcheckInstanceHostMap hostMap = null;
@@ -61,13 +72,10 @@ public class ServiceEventCreate extends AbstractObjectProcessHandler implements 
             healthcheckService.updateHealthcheck(uuid, event.getExternalTimestamp(),
                     getHealthState(event.getReportedHealth()));
         }
-
-        return null;
     }
 
     protected String getHealthState(String reportedHealth) {
         String healthState = "";
-
 
         if (reportedHealth.equals("UP")) {
             healthState = HealthcheckConstants.HEALTH_STATE_HEALTHY;

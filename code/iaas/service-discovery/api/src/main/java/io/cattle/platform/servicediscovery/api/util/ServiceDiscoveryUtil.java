@@ -1,6 +1,7 @@
 package io.cattle.platform.servicediscovery.api.util;
 
 import io.cattle.platform.allocator.service.AllocationHelper;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.addon.InServiceUpgradeStrategy;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.constants.AgentConstants;
@@ -11,6 +12,7 @@ import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.Stack;
 import io.cattle.platform.core.util.PortSpec;
 import io.cattle.platform.core.util.SystemLabels;
+import io.cattle.platform.docker.client.DockerImage;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.object.util.DataUtils;
@@ -27,11 +29,16 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+
+import com.netflix.config.DynamicStringProperty;
 
 public class ServiceDiscoveryUtil {
 
     public static final List<String> SERVICE_INSTANCE_NAME_DIVIDORS = Arrays.asList("-", "_");
     private static final int LB_HEALTH_CHECK_PORT = 42;
+    private static final DynamicStringProperty LB_DRAIN_IMAGE_VERSION = ArchaiusUtil.getString("loadbalancher.drain.image.version");
+    private static final DynamicStringProperty LB_IMAGE_UUID = ArchaiusUtil.getString("lb.instance.image.uuid");
 
     public static String getInstanceName(Instance instance) {
         if (instance != null && instance.getRemoved() == null) {
@@ -404,6 +411,13 @@ public class ServiceDiscoveryUtil {
             labels.put(SystemLabels.LABEL_AGENT_CREATE, "true");
         }
 
+        //check if the LB service is a drainProvider from lb image
+        if(doesLBHaveDrainSupport(launchConfig)){
+            labels.put(SystemLabels.LABEL_AGENT_SERVICE_DRAIN_PROVIDER, "true");
+            labels.put(SystemLabels.LABEL_AGENT_ROLE, AgentConstants.ENVIRONMENT_ADMIN_ROLE + ",agent");
+            labels.put(SystemLabels.LABEL_AGENT_CREATE, "true");
+        }
+
         launchConfig.put(InstanceConstants.FIELD_LABELS, labels);
 
         // set health check
@@ -420,6 +434,83 @@ public class ServiceDiscoveryUtil {
             launchConfig.put(InstanceConstants.FIELD_HEALTH_CHECK, healthCheck);
         }
     }
+
+    private static boolean doesLBHaveDrainSupport(Map<Object, Object> launchConfig) {
+        if(launchConfig.get(InstanceConstants.FIELD_IMAGE_UUID) == null) {
+            return false;
+        }
+        String imageUuid = (String)launchConfig.get(InstanceConstants.FIELD_IMAGE_UUID);
+        Pair<String, String> instanceImage = getImageAndVersion(imageUuid.toLowerCase());
+        if (instanceImage.getLeft().isEmpty() || instanceImage.getRight().isEmpty()) {
+            return false;
+        }
+        Pair<String, String> defaultImage = getImageAndVersion(LB_IMAGE_UUID.get().toLowerCase());
+        if (!defaultImage.getLeft().equals(instanceImage.getLeft())) {
+            return false;
+        }
+        return isDrainProvider(instanceImage.getRight());
+    }
+
+    private static Pair<String, String> getImageAndVersion(String imageUUID) {
+        DockerImage dockerImage = DockerImage.parse(imageUUID);
+        String[] splitted = dockerImage.getFullName().split(":");
+        if (splitted.length <= 1) {
+            return Pair.of("", "");
+        }
+        String repoAndImage = splitted[0];
+        String imageVersion = splitted[1];
+        return Pair.of(repoAndImage, imageVersion);
+    }
+
+    private static boolean isDrainProvider(String actualVersion) {
+        String requiredVersion = LB_DRAIN_IMAGE_VERSION.get();
+        if (StringUtils.isEmpty(requiredVersion)) {
+            return false;
+        }
+        String[] requiredParts = requiredVersion.split("\\.");
+        if (requiredParts.length < 3) {
+            // Required image is not following semantic versioning.
+            return false;
+        }
+        int requiredMajor, requiredMinor, requiredPatch = 0;
+        try {
+            String majorTemp = requiredParts[0].startsWith("v") ? requiredParts[0].substring(1, requiredParts[0].length()) : requiredParts[0];
+            requiredMajor = Integer.valueOf(majorTemp);
+            requiredMinor = Integer.valueOf(requiredParts[1]);
+            requiredPatch = Integer.valueOf(requiredParts[2]);
+        } catch (NumberFormatException e) {
+            // Require image is not following semantic versioning.
+            return false;
+        }
+
+        String[] actualParts = actualVersion.split("\\.");
+        if (actualParts.length < 3) {
+            // Image is not following semantic versioning.
+            return false;
+        }
+
+        int actualMajor, actualMinor, actualPatch = 0;
+        try {
+            String majorTemp = actualParts[0].startsWith("v") ? actualParts[0].substring(1, actualParts[0].length()) : actualParts[0];
+            actualMajor = Integer.valueOf(majorTemp).intValue();
+            actualMinor = Integer.valueOf(actualParts[1]).intValue();
+            String[] patchParts = actualParts[2].split("\\-");
+            actualPatch = Integer.valueOf(patchParts[0]);
+        } catch (NumberFormatException e) {
+            // Image is not following semantic versioning.
+            return false;
+        }
+
+        if (actualMajor > requiredMajor) {
+            return true;
+        } else if (actualMajor == requiredMajor && actualMinor > requiredMinor) {
+            return true;
+        } else if (actualMinor == requiredMinor && actualPatch >= requiredPatch) {
+            return true;
+        }
+        return false;
+    }
+
 
     @SuppressWarnings("unchecked")
     public static void validateScaleSwitch(Object newLaunchConfig, Object currentLaunchConfig) {

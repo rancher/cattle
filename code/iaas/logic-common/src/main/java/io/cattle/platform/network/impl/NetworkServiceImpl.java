@@ -103,20 +103,21 @@ public class NetworkServiceImpl implements NetworkService {
     public String getNetworkMode(Map<String, Object> instanceData) {
         Map<String, Object> labels = CollectionUtils.toMap(instanceData.get(InstanceConstants.FIELD_LABELS));
         String mode = ObjectUtils.toString(labels.get(SystemLabels.LABEL_CNI_NETWORK));
-
-        if (mode == null && "true".equals(labels.get(SystemLabels.LABEL_RANCHER_NETWORK))) {
-            mode = NetworkConstants.NETWORK_MODE_MANAGED;
-        }
-
-        if (mode == null) {
-            if (instanceData.containsKey(DockerInstanceConstants.FIELD_NETWORK_MODE)) {
-                mode = ObjectUtils.toString(instanceData.get(DockerInstanceConstants.FIELD_NETWORK_MODE));
-            } else {
+        
+        if(mode == null) {
+            String dataMode = ObjectUtils.toString(instanceData.get(DockerInstanceConstants.FIELD_NETWORK_MODE));
+            if (inAllowedModesForManaged(dataMode) && "true".equals(labels.get(SystemLabels.LABEL_RANCHER_NETWORK))) {
                 mode = NetworkConstants.NETWORK_MODE_MANAGED;
+            } else {
+                mode = dataMode;
             }
         }
 
         return mode;
     }
-
+    
+    private boolean inAllowedModesForManaged(String dataMode) {
+        return dataMode==null || dataMode.equals(NetworkConstants.NETWORK_MODE_NONE) 
+        || dataMode.equals(NetworkConstants.NETWORK_MODE_DEFAULT) || dataMode.equals(NetworkConstants.NETWORK_MODE_BRIDGE);
+    }
 }

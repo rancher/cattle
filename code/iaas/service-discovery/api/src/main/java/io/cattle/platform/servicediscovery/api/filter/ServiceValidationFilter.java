@@ -61,6 +61,10 @@ public class ServiceValidationFilter extends AbstractDefaultResourceManagerFilte
 
     private static final int LB_HEALTH_CHECK_PORT = 42;
 
+    private static final String VOLUMES_FROM = "volumes_from";
+
+    private static final String NETWORK_FROM = "network_from";
+
     @Override
     public Class<?>[] getTypeClasses() {
         return new Class<?>[] { Service.class };
@@ -425,21 +429,25 @@ public class ServiceValidationFilter extends AbstractDefaultResourceManagerFilte
 
     protected void validateLaunchConfigsCircularRefs(Service service, String serviceName,
             List<Map<String, Object>> launchConfigs) {
-        Map<String, Set<String>> launchConfigRefs = populateLaunchConfigRefs(service, serviceName, launchConfigs);
+        Map<String, Map<String, String>> launchConfigRefs = populateLaunchConfigRefs(service, serviceName,
+                launchConfigs);
         for (String launchConfigName : launchConfigRefs.keySet()) {
             validateLaunchConfigCircularRef(launchConfigName, launchConfigRefs, new HashSet<String>());
         }
     }
 
     protected void validateLaunchConfigCircularRef(String launchConfigName,
-            Map<String, Set<String>> launchConfigRefs,
+            Map<String, Map<String, String>> launchConfigRefs,
             Set<String> alreadySeenReferences) {
-        Set<String> myRefs = launchConfigRefs.get(launchConfigName);
+        Map<String, String> myRefs = launchConfigRefs.get(launchConfigName);
         alreadySeenReferences.add(launchConfigName);
-        for (String myRef : myRefs) {
+        for (String myRef : myRefs.keySet()) {
             if (!launchConfigRefs.containsKey(myRef)) {
+                String msg = String.format(
+                        "%s of service %s is referencing a service %s that either does not exist or is not properly labeled as a sidekick",
+                        myRefs.get(myRef), launchConfigName, myRef);
                 ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_REFERENCE,
-                        "LaunchConfigName");
+                        msg);
             }
 
             if (alreadySeenReferences.contains(myRef)) {
@@ -454,26 +462,31 @@ public class ServiceValidationFilter extends AbstractDefaultResourceManagerFilte
     }
 
     @SuppressWarnings("unchecked")
-    protected Map<String, Set<String>> populateLaunchConfigRefs(Service service, String serviceName,
+    protected Map<String, Map<String, String>> populateLaunchConfigRefs(Service service, String serviceName,
             List<Map<String, Object>> launchConfigs) {
-        Map<String, Set<String>> launchConfigRefs = new HashMap<>();
+        Map<String, Map<String, String>> launchConfigRefs = new HashMap<>();
         for (Map<String, Object> launchConfig : launchConfigs) {
             Object launchConfigName = launchConfig.get("name");
             if (launchConfigName == null) {
                 launchConfigName = serviceName;
             }
-            Set<String> refs = new HashSet<>();
+            Map<String, String> refs = new HashMap<>();
             Object networkFromLaunchConfig = launchConfig
                     .get(ServiceConstants.FIELD_NETWORK_LAUNCH_CONFIG);
             if (networkFromLaunchConfig != null) {
-                refs.add((String) networkFromLaunchConfig);
+                if (!refs.containsKey((String) networkFromLaunchConfig)) {
+                    refs.put((String) networkFromLaunchConfig, NETWORK_FROM);
+                }
             }
             Object volumesFromLaunchConfigs = launchConfig
                     .get(ServiceConstants.FIELD_DATA_VOLUMES_LAUNCH_CONFIG);
             if (volumesFromLaunchConfigs != null) {
-                refs.addAll((List<String>) volumesFromLaunchConfigs);
+                for (String volumesFromLaunchConfig : (List<String>) volumesFromLaunchConfigs) {
+                    if (!refs.containsKey(volumesFromLaunchConfig)) {
+                        refs.put(volumesFromLaunchConfig, VOLUMES_FROM);
+                    }
+                }
             }
-
             launchConfigRefs.put(launchConfigName.toString(), refs);
         }
         return launchConfigRefs;

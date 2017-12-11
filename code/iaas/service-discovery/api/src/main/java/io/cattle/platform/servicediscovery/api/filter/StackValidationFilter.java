@@ -14,6 +14,7 @@ import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManagerLocator;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
+import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -40,21 +41,7 @@ public class StackValidationFilter extends AbstractDefaultResourceManagerFilter 
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
         Stack env = request.proxyRequestObject(Stack.class);
-
-        if (env.getName().startsWith("-") || env.getName().endsWith("-")) {
-            ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_CHARACTERS,
-                    "name");
-        }
-
-        ResourceManager rm = locator.getResourceManagerByType(type);
-
-        Map<Object, Object> criteria = new HashMap<>();
-        criteria.put(ObjectMetaDataManager.NAME_FIELD, env.getName());
-        criteria.put(ObjectMetaDataManager.REMOVED_FIELD, new Condition(ConditionType.NULL));
-        List<?> existingEnv = rm.list(type, criteria, null);
-        if (!existingEnv.isEmpty()) {
-            ValidationErrorCodes.throwValidationError(ValidationErrorCodes.NOT_UNIQUE, "name");
-        }
+        validateStackName(type, request, env.getName());
         return super.create(type, request, next);
     }
 
@@ -62,6 +49,15 @@ public class StackValidationFilter extends AbstractDefaultResourceManagerFilter 
     public Object update(String type, String id, ApiRequest request, ResourceManager next) {
         Stack stack = objMgr.loadResource(Stack.class, id);
         validateInfraAccess(request, stack, "update");
+
+        Map<String, Object> data = CollectionUtils.toMap(request.getRequestObject());
+        Object newName = data.get("name");
+        if(newName != null) {
+            String stackName = newName.toString();
+            if(!stackName.equalsIgnoreCase(stack.getName())) {
+                validateStackName(type, request, stackName);
+            }
+        }
 
         return super.update(type, id, request, next);
     }
@@ -79,6 +75,21 @@ public class StackValidationFilter extends AbstractDefaultResourceManagerFilter 
         if (stack.getSystem() && !infraAccess.canModifyInfrastructure(ApiUtils.getPolicy())) {
             String message = String.format("Cannot %s system stack", action);
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN, "Forbidden", message, null);
+        }
+    }
+
+    private void validateStackName(String type, ApiRequest request, String stackName) {
+        if (stackName.startsWith("-") || stackName.endsWith("-")) {
+            ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_CHARACTERS,
+                    "name");
+        }
+        ResourceManager rm = locator.getResourceManagerByType(type);
+        Map<Object, Object> criteria = new HashMap<>();
+        criteria.put(ObjectMetaDataManager.NAME_FIELD, stackName);
+        criteria.put(ObjectMetaDataManager.REMOVED_FIELD, new Condition(ConditionType.NULL));
+        List<?> existingEnv = rm.list(type, criteria, null);
+        if (!existingEnv.isEmpty()) {
+                ValidationErrorCodes.throwValidationError(ValidationErrorCodes.NOT_UNIQUE, "name");
         }
     }
 }

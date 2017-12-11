@@ -112,6 +112,7 @@ public class ExternalServiceAuthProvider {
 
             String encryptedToken = (String)jsonData.get(ServiceAuthConstants.JWT_KEY);
             Map<String, Object> decryptedToken = tokenService.getJsonPayload(encryptedToken, false);
+            String originalLogin = (String)jsonData.get("originalLogin");
             String accessToken = (String)decryptedToken.get("access_token");
             request.setAttribute(ServiceAuthConstants.ACCESS_TOKEN, accessToken);
             List<?> identityList = CollectionUtils.toList(jsonData.get("identities"));
@@ -124,8 +125,7 @@ public class ExternalServiceAuthProvider {
                 }
             }
 
-            Token token = tokenUtil.createToken(identities, null);
-
+            Token token = tokenUtil.createToken(identities, null, originalLogin);
             return token;
         } catch(HttpHostConnectException ex) {
             log.error("Auth Service not reachable at [{}]", ServiceAuthConstants.AUTH_SERVICE_URL);
@@ -192,7 +192,7 @@ public class ExternalServiceAuthProvider {
                     identities.add(tokenUtil.jsonToIdentity(jsonIdentity));
                 }
             }
-            Token token = tokenUtil.createToken(identities, null);
+            Token token = tokenUtil.createToken(identities, null, null);
             return token;
         } catch(HttpHostConnectException ex) {
             log.error("Auth Service not reachable at [{}]", ServiceAuthConstants.AUTH_SERVICE_URL);

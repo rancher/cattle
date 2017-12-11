@@ -157,6 +157,8 @@ public class ServiceDiscoveryConfigItem {
     public static final ServiceDiscoveryConfigItem STORAGE_DRIVER = new ServiceDiscoveryConfigItem(
             ServiceConstants.FIELD_STORAGE_DRIVER,
             NamedUtils.toUnderscoreSeparated(ServiceConstants.FIELD_STORAGE_DRIVER), false, false, false);
+    public static final ServiceDiscoveryConfigItem DRAINTIMEOUT = new ServiceDiscoveryConfigItem(ServiceConstants.FIELD_DRAIN_TIMEOUT,
+            NamedUtils.toUnderscoreSeparated(ServiceConstants.FIELD_DRAIN_TIMEOUT), true, false, false);
 
     // VOLUME parameter
     private static List<ServiceDiscoveryConfigItem> supportedVolumeConfigItems = new ArrayList<>();
@@ -173,6 +175,7 @@ public class ServiceDiscoveryConfigItem {
     public static final ServiceDiscoveryConfigItem PER_CONTAINER = new ServiceDiscoveryConfigItem(
             ServiceConstants.FIELD_VOLUME_PER_CONTAINER,
             NamedUtils.toUnderscoreSeparated(ServiceConstants.FIELD_VOLUME_PER_CONTAINER), true);
+
 
     /**
      * Name as it appears in docker-compose file
