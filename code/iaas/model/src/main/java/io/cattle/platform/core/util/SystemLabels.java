@@ -3,6 +3,7 @@ package io.cattle.platform.core.util;
 public class SystemLabels {
     public static final String LABEL_AGENT_CREATE = "io.rancher.container.create_agent";
     public static final String LABEL_AGENT_ROLE = "io.rancher.container.agent.role";
+    public static final String LABEL_AGENT_VOLUMES_STRATEGY = "io.rancher.container.agent.volumes_strategy";
     public static final String LABEL_CATTLE_URL = "io.rancher.container.cattle_url";
     public static final String LABEL_USE_RANCHER_DNS = "io.rancher.container.dns";
     public static final String LABEL_RANCHER_CONTAINER_DNS_PRIORITY = "io.rancher.container.dns.priority";
@@ -15,7 +16,7 @@ public class SystemLabels {
     public static final String LABEL_RANCHER_UUID = "io.rancher.container.uuid";
     public static final String LABEL_RANCHER_NETWORK = "io.rancher.container.network";
     public static final String LABEL_DISPLAY_NAME = "io.rancher.container.display_name";
-    public static final String LABEL_HEALTHCHECK_SKIP = "io.rancher.host.healthcheck.skip";
+    public static final String LABEL_HEALTHCHECK_DEPLOY_STRATEGY = "io.rancher.host.healthcheck.deploy_strategy";
     public static final String LABEL_CONTAINER_SYSTEM = "io.rancher.container.system";
     public static final String LABEL_PROXY_PORT = "io.rancher.websocket.proxy.port";
     public static final String LABEL_PROXY_SCHEME = "io.rancher.websocket.proxy.scheme";
