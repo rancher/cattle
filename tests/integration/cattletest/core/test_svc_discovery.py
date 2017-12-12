@@ -1403,7 +1403,7 @@ def test_global_service(new_context):
     service.deactivate()
 
 
-def test_global_service_update_label(new_context):
+def test_global_service_update_label(super_client, new_context):
     client = new_context.client
     host1 = new_context.host
     host2 = register_simulated_host(new_context)
@@ -1468,6 +1468,11 @@ def test_global_service_update_label(new_context):
     instance1_host = instance1.hosts()[0].id
     assert instance1_host == host1.id or instance1_host == host2.id
     assert instance1.hosts()[0].id != instance2.hosts()[0].id
+
+    # stop agent on one host
+    agent = super_client.reload(host1).agent()
+    agent = super_client.wait_success(agent.deactivate())
+    wait_for(lambda: client.reload(service).state == 'active')
     service.deactivate()
 
 
