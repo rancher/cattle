@@ -17,6 +17,8 @@ public class HostMetaData {
     Long hostId;
     String uuid;
     String hostname;
+    String state;
+    String agent_state;
     Long milli_cpu;
     Long memory;
     Long local_storage_mb;
@@ -47,6 +49,8 @@ public class HostMetaData {
         String hostname = DataAccessor.fieldString(host, "hostname");
         this.name = StringUtils.isEmpty(host.getName()) ?  hostname: host.getName();
         this.hostname = hostname;
+        this.state = host.getState();
+        this.agent_state = host.getAgentState();
         this.labels = (Map<String, String>) DataAccessor.fields(host)
                 .withKey(InstanceConstants.FIELD_LABELS)
                 .withDefault(Collections.EMPTY_MAP).as(Map.class);
@@ -93,6 +97,22 @@ public class HostMetaData {
 
     public void setHostname(String hostname) {
         this.hostname = hostname;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public String getAgent_state() {
+        return agent_state;
+    }
+
+    public void setAgent_state(String agent_state) {
+        this.agent_state = agent_state;
     }
 
     public Long getMilli_cpu() {
