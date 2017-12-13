@@ -5,9 +5,11 @@ import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.AgentDao;
 import io.cattle.platform.core.dao.ServiceDao;
+import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.HealthcheckInstance;
 import io.cattle.platform.core.model.HealthcheckInstanceHostMap;
@@ -25,7 +27,6 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 
 import java.util.List;
-
 import javax.inject.Inject;
 
 public class ServiceEventFilter extends AbstractDefaultResourceManagerFilter {
@@ -41,6 +42,9 @@ public class ServiceEventFilter extends AbstractDefaultResourceManagerFilter {
 
     @Inject
     ServiceDao serviceDao;
+
+    @Inject
+    InstanceDao instanceDao;
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -93,9 +97,10 @@ public class ServiceEventFilter extends AbstractDefaultResourceManagerFilter {
         if (!healthcheckInstanceHostMap.getAccountId().equals(resourceAccId)) {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN, VERIFY_AGENT);
         }
-
-        if (!isNetworkUp(resourceAccId)) {
-            throw new ClientVisibleException(ResponseCodes.CONFLICT);
+        if(!isNetworkStack(resourceAccId, healthcheckInstance.getInstanceId())) {
+            if (!isNetworkUp(resourceAccId)) {
+                throw new ClientVisibleException(ResponseCodes.CONFLICT);
+            }
         }
 
         event.setInstanceId(healthcheckInstance.getInstanceId());
@@ -114,10 +119,25 @@ public class ServiceEventFilter extends AbstractDefaultResourceManagerFilter {
         List<Service> services = objectManager.find(Service.class, SERVICE.ACCOUNT_ID, accountId, SERVICE.REMOVED, null, SERVICE.STACK_ID,
                 networkDriverService.getStackId());
         for (Service service : services) {
-            if (!service.getState().equals(CommonStatesConstants.ACTIVE)) {
+            if (!(service.getState().equals(CommonStatesConstants.ACTIVE) && service.getHealthState().equals(HealthcheckConstants.HEALTH_STATE_HEALTHY))) {
                 return false;
             }
         }
         return true;
+    }
+
+    private boolean isNetworkStack(long accountId, long instanceId) {
+        List<? extends Service> services = instanceDao.findServicesForInstanceId(instanceId);
+        if(services.size() > 0) {
+            if(services.get(0).getKind().equals(ServiceConstants.KIND_NETWORK_DRIVER_SERVICE)) {
+                return true;
+            }
+            List<Service> network_services = objectManager.find(Service.class, SERVICE.ACCOUNT_ID, accountId, SERVICE.REMOVED, null, SERVICE.STACK_ID,
+                    services.get(0).getStackId(), SERVICE.KIND, ServiceConstants.KIND_NETWORK_DRIVER_SERVICE);
+            if(network_services.size() > 0) {
+                return true;
+            }
+        }
+        return false;
     }
 }

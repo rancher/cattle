@@ -34,6 +34,8 @@ public interface InstanceDao {
      */
     List<? extends Service> findServicesFor(Instance instance);
 
+    List<? extends Service> findServicesForInstanceId(long instanceId);
+
     List<? extends Instance> listNonRemovedInstances(Account account, boolean forService);
 
     List<? extends Instance> findInstancesFor(Service service);

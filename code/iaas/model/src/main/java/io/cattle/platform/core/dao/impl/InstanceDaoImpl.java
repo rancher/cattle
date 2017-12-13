@@ -178,6 +178,18 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao, Ann
     }
 
     @Override
+    public List<? extends Service> findServicesForInstanceId(long instanceId){
+        return create().select(SERVICE.fields())
+                .from(SERVICE)
+                .join(SERVICE_EXPOSE_MAP)
+                .on(SERVICE_EXPOSE_MAP.SERVICE_ID.eq(SERVICE.ID))
+                .where(SERVICE_EXPOSE_MAP.INSTANCE_ID.eq(instanceId))
+                    .and(SERVICE_EXPOSE_MAP.REMOVED.isNull())
+                    .and(SERVICE.REMOVED.isNull())
+                .fetchInto(ServiceRecord.class);
+    }
+
+    @Override
     public List<? extends Service> findServicesNonRemovedLinksOnly(Instance instance) {
         return create().select(SERVICE.fields())
                 .from(SERVICE)
