@@ -376,3 +376,20 @@ def test_invalid_ports(client, context):
                            launchConfig=launch_config)
     assert e.value.error.status == 422
     assert e.value.error.code == 'PortWrongFormat'
+
+
+def test_region_links(client, context):
+    env = _create_stack(client)
+
+    launch_config = {"imageUuid": context.image_uuid}
+    svc = client.create_service(name=random_str(),
+                                stackId=env.id,
+                                launchConfig=launch_config)
+
+    link = {"service": 'foo', "name": ''}
+    with pytest.raises(ApiError) as e:
+        svc. \
+            setservicelinks(serviceLinks=[link])
+    assert e.value.error.status == 422
+    assert e.value.error.code == 'MissingRequired'
+    assert e.value.error.fieldName == "name"

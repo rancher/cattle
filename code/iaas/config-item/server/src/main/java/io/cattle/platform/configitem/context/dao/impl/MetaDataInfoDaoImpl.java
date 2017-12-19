@@ -656,7 +656,8 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
             regionsMap.put(region.getName(), region);
         }
         regionService.reconcileAgentExternalCredentials(agent, helperInfo.getAccount());
-        List<ExternalCredential> creds = DataAccessor.fieldObjectList(agent, AccountConstants.FIELD_EXTERNAL_CREDENTIALS, ExternalCredential.class, jsonMapper);
+        List<ExternalCredential> creds = DataAccessor.fieldObjectList(objectMgr.reload(agent), AccountConstants.FIELD_EXTERNAL_CREDENTIALS,
+                ExternalCredential.class, jsonMapper);
         for (ExternalCredential cred : creds) {
             Region region = regionsMap.get(cred.getRegionName());
             CredentialMetaData meta = new CredentialMetaData(region.getUrl(), cred.getPublicValue(), cred.getSecretValue());
