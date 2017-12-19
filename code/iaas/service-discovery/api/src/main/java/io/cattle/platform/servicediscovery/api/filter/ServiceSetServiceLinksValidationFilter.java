@@ -7,6 +7,7 @@ import io.cattle.platform.iaas.api.filter.common.AbstractDefaultResourceManagerF
 import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
+
 import io.github.ibuildthecloud.gdapi.request.ApiRequest;
 import io.github.ibuildthecloud.gdapi.request.resource.ResourceManager;
 import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
@@ -16,6 +17,8 @@ import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import org.apache.commons.lang3.StringUtils;
 
 @Named
 public class ServiceSetServiceLinksValidationFilter extends AbstractDefaultResourceManagerFilter {
@@ -70,7 +73,7 @@ public class ServiceSetServiceLinksValidationFilter extends AbstractDefaultResou
                                 ServiceConstants.FIELD_SERVICE_ID);
                     }
                     // external service link should be aliased
-                    if (serviceLink.getName() == null) {
+                    if (StringUtils.isEmpty(serviceLink.getName())) {
                         ValidationErrorCodes.throwValidationError(ValidationErrorCodes.MISSING_REQUIRED,
                                 ServiceConstants.FIELD_SERVICE_LINK_NAME);
                     }

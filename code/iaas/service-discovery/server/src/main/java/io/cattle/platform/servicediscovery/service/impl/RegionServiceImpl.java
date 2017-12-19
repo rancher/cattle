@@ -146,7 +146,7 @@ public class RegionServiceImpl implements RegionService {
                 continue;
             }
             String[] splitted = link.getConsumedService().split("/");
-            if (splitted.length < 4) {
+            if (splitted.length < 3) {
                 continue;
             }
             if (splitted.length == 4) {
@@ -295,6 +295,10 @@ public class RegionServiceImpl implements RegionService {
     }
 
     @Override
+    /**
+     * This method creates an external account link in the target environment as ipsec service
+     * would need two way links
+     */
     public void createExternalAccountLink(AccountLink link) {
         if (link.getExternal()) {
             return;
