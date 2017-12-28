@@ -11,6 +11,7 @@ import io.github.ibuildthecloud.gdapi.util.RequestUtils;
 import io.github.ibuildthecloud.gdapi.version.Versions;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -27,6 +28,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.cloudstack.managed.context.ManagedContextRunnable;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.Timer;
 import com.netflix.config.DynamicStringListProperty;
@@ -34,6 +37,7 @@ import com.netflix.config.DynamicStringProperty;
 
 public class ApiRequestFilter extends SpringFilter {
 
+    private static final Logger log = LoggerFactory.getLogger(ApiRequestFilter.class);
     private static final DynamicStringListProperty IGNORE = ArchaiusUtil.getList("api.ignore.paths");
     private static final DynamicStringProperty PL_SETTING = ArchaiusUtil.getString("ui.pl");
     private static final String PL = "PL";
@@ -200,7 +204,14 @@ public class ApiRequestFilter extends SpringFilter {
         }
 
         if (plCookie == null || !PL_SETTING.getValue().equalsIgnoreCase(plCookie.getValue())) {
-            plCookie = new Cookie(PL, PL_SETTING.getValue());
+            String plValue = PL_SETTING.getValue();
+            try {
+              plValue = URLEncoder.encode(PL_SETTING.getValue(), "UTF-8");
+            } catch (IOException e) {
+              log.error("Failed to encode PL value with UTF-8.", e);
+              return;
+            }
+            plCookie = new Cookie(PL, plValue);
             plCookie.setPath("/");
             response.addCookie(plCookie);
         }
