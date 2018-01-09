@@ -29,9 +29,9 @@ public class LBMetadataUtil {
         public String selector;
         public String region;
         public String environment;
-        public Integer weight = 1;
+        public Integer weight;
 
-        public MetadataPortRule(PortRule portRule, Service service, Stack stack) {
+        public MetadataPortRule(PortRule portRule, Service service, Stack stack, boolean defaultWeight) {
             this.source_port = portRule.getSourcePort();
             if (portRule.getProtocol() != null) {
                 this.protocol = portRule.getProtocol().name();
@@ -51,8 +51,9 @@ public class LBMetadataUtil {
             this.selector = portRule.getSelector();
             this.region = portRule.getRegion();
             this.environment = portRule.getEnvironment();
-            if (portRule.getWeight() != null) {
-                this.weight = portRule.getWeight();
+            this.weight = portRule.getWeight();
+            if (this.weight == null && defaultWeight) {
+                this.weight = 1;
             }
         }
 
@@ -167,7 +168,7 @@ public class LBMetadataUtil {
 
         public LBConfigMetadataStyle(List<? extends PortRule> portRules, List<Long> certIds, Long defaultCertId,
                 String config, LoadBalancerCookieStickinessPolicy stickinessPolicy, Map<Long, Service> services,
-                Map<Long, Stack> stacks, Map<Long, Certificate> certificates, Long serviceStackId, boolean dropStackName) {
+                Map<Long, Stack> stacks, Map<Long, Certificate> certificates, Long serviceStackId, boolean dropStackName, boolean defaultWeight) {
             super();
             if (certIds != null) {
                 for (Long certId : certIds) {
@@ -197,13 +198,13 @@ public class LBMetadataUtil {
                         }
                         if (dropStackName && targetStack.getId().equals(serviceStackId)) {
                             this.port_rules.add(new MetadataPortRule(portRule, targetService,
-                                    null));
+                                    null, defaultWeight));
                         } else {
                             this.port_rules.add(new MetadataPortRule(portRule, targetService,
-                                    targetStack));
+                                    targetStack, defaultWeight));
                         }
                     } else {
-                        this.port_rules.add(new MetadataPortRule(portRule, null, null));
+                        this.port_rules.add(new MetadataPortRule(portRule, null, null, defaultWeight));
                     }
                 }
             }
