@@ -5,6 +5,7 @@ import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
 import static io.cattle.platform.core.model.tables.StackTable.*;
 import static io.cattle.platform.core.model.tables.VolumeTemplateTable.*;
+
 import io.cattle.platform.core.addon.LbConfig;
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -309,7 +310,7 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                     new LBConfigMetadataStyle(lbConfig.getPortRules(), lbConfig.getCertificateIds(),
                             lbConfig.getDefaultCertificateId(),
                             lbConfig.getConfig(), lbConfig.getStickinessPolicy(), serviceIdsToService,
-                            stackIdsToStack, certIdsToCert, service.getStackId(), true));
+                            stackIdsToStack, certIdsToCert, service.getStackId(), true, false));
         }
     }
 

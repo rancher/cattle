@@ -209,7 +209,7 @@ public class LoadBalancerInfoDaoImpl implements LoadBalancerInfoDao {
         return new LBConfigMetadataStyle(lbConfig.getPortRules(), lbConfig.getCertificateIds(),
                 lbConfig.getDefaultCertificateId(),
                 lbConfig.getConfig(), lbConfig.getStickinessPolicy(), serviceIdsToService,
-                stackIdsToStack, certIdsToCert, lbService.getStackId(), false);
+                stackIdsToStack, certIdsToCert, lbService.getStackId(), false, true);
     }
 
     private static String getUuid(PortRule rule) {

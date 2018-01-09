@@ -145,7 +145,7 @@ public class PortRule {
         this.region = region;
     }
 
-    @Field(nullable = true, defaultValue = "1", min = 0, max = 256)
+    @Field(nullable = true, min = 0, max = 256)
     public Integer getWeight() {
         return weight;
     }
