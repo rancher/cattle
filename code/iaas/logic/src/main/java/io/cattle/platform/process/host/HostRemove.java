@@ -1,12 +1,14 @@
 package io.cattle.platform.process.host;
 
 import io.cattle.platform.core.constants.InstanceConstants;
+import io.cattle.platform.core.constants.StorageDriverConstants;
 import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Host;
 import io.cattle.platform.core.model.HostIpAddressMap;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.IpAddress;
 import io.cattle.platform.core.model.PhysicalHost;
+import io.cattle.platform.core.model.StorageDriver;
 import io.cattle.platform.core.model.StoragePool;
 import io.cattle.platform.core.model.StoragePoolHostMap;
 import io.cattle.platform.docker.constants.DockerHostConstants;
@@ -15,11 +17,14 @@ import io.cattle.platform.engine.process.ProcessInstance;
 import io.cattle.platform.engine.process.ProcessState;
 import io.cattle.platform.engine.process.impl.ProcessCancelException;
 import io.cattle.platform.object.process.StandardProcess;
+import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.base.AbstractDefaultProcessHandler;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import org.apache.commons.lang3.StringUtils;
 
 @Named
 public class HostRemove extends AbstractDefaultProcessHandler {
@@ -48,6 +53,13 @@ public class HostRemove extends AbstractDefaultProcessHandler {
             StoragePool pool = objectManager.loadResource(StoragePool.class, map.getStoragePoolId());
             if (DockerHostConstants.KIND_DOCKER.equals(pool.getKind())) {
                 deactivateThenRemove(pool, null);
+            }
+            StorageDriver driver = objectManager.loadResource(StorageDriver.class, pool.getStorageDriverId());
+            if (driver != null) {
+                String scope = DataAccessor.fieldString(driver, StorageDriverConstants.FIELD_SCOPE);
+                if (StringUtils.equals(scope, StorageDriverConstants.SCOPE_LOCAL)) {
+                    deactivateThenRemove(pool, null);
+                }
             }
             deactivateThenRemove(map, null);
         }
