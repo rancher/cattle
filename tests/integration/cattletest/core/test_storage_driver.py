@@ -219,3 +219,46 @@ def test_volume_create_from_user(storage_driver_context):
     volume = client.wait_success(volume)
     assert volume.state == 'detached'
     assert volume.hostId == host.id
+
+
+def test_rm_sp_after_host_remove_if_local(new_context, super_client):
+    client = new_context.client
+    host = new_context.host
+
+    assert len(host.storagePools()) == 1
+
+    driver_name = 'test' + random_str()
+    stack = client.create_stack(name=random_str())
+    super_client.update(stack, system=True)
+    s = client.create_storage_driver_service(
+        name=random_str(),
+        stackId=stack.id,
+        storageDriver={
+            'name': driver_name,
+            'scope': 'local',
+            'volumeAccessMode': 'singleHostRW',
+            'blockDevicePath': 'some path',
+            'volumeCapabilities': [
+                'superAwesome',
+            ],
+        })
+    s = client.wait_success(s)
+    assert s.state == 'inactive'
+
+    sds = client.list_storage_driver(serviceId=s.id,
+                                     name=driver_name)
+    assert len(sds) == 1
+
+    s = client.wait_success(s.activate())
+    assert s.state == 'active'
+
+    sd = find_one(client.list_storage_driver, serviceId=s.id, name=driver_name)
+    sd = client.wait_success(sd)
+
+    sps = host.storagePools()
+    for sp in sps:
+        if sp.storageDriverId == sd.id:
+            host = client.wait_success(host.deactivate())
+            client.wait_success(host.remove())
+            sp = client.wait_success(sp)
+            assert sp.state == 'removed'
