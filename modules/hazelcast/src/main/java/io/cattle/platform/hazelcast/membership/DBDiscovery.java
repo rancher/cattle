@@ -105,7 +105,7 @@ public class DBDiscovery extends NoExceptionRunnable implements DiscoveryStrateg
                 uuid = IOUtils.toString(fis, StandardCharsets.UTF_8).trim();
             }
         } else {
-            if (!f.getParentFile().mkdirs()) {
+            if (!f.getParentFile.exists() && !f.getParentFile().mkdirs()) {
                 throw new IOException("Failed to mkdirs [" + f.getParentFile() + "]");
             }
             try (FileOutputStream fos = new FileOutputStream(f)) {
