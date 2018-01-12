@@ -64,7 +64,7 @@ public class DockerTransformerImpl implements DockerTransformer {
     private static final String WRITE_BPS= "BlkioDeviceWriteBps";
     private static final String WEIGHT = "BlkioWeightDevice";
     
-    private static final String RANCHER_VOLUME_PREFIX = "/var/lib/rancher/volumes";
+    private static final String RANCHER_VOLUME_PREFIX = "/var/lib/rancher/volumes/";
 
     @Inject
     JsonMapper jsonMapper;
