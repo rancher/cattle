@@ -126,6 +126,7 @@ import io.cattle.platform.servicediscovery.service.impl.RegionServiceImpl;
 import io.cattle.platform.servicediscovery.service.impl.ServiceDiscoveryServiceImpl;
 import io.cattle.platform.servicediscovery.service.impl.SkipServiceLookup;
 import io.cattle.platform.servicediscovery.upgrade.impl.UpgradeManagerImpl;
+import io.cattle.platform.servicediscovery.process.RegionMonitor;
 import io.cattle.platform.spring.resource.SpringUrlListFactory;
 import io.cattle.platform.storage.ImageCredentialLookup;
 import io.cattle.platform.storage.service.dao.impl.ImageDaoImpl;
@@ -880,5 +881,10 @@ public class SystemServicesConfig {
     @Bean
     SecretsService SecretsService() {
         return new SecretsServiceImpl();
+    }
+    
+    @Bean 
+    RegionMonitor RegionMonitor() {
+        return new RegionMonitor();
     }
 }
