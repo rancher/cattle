@@ -330,11 +330,13 @@ public class RegionServiceImpl implements RegionService {
             data.put("linkedRegion", externalRegion.getName());
             data.put("linkedRegionId", externalRegion.getId());
             externalLink = RegionUtil.createExternalAccountLink(targetRegion, data, jsonMapper);
+            DataAccessor.setField(link, "uuid", targetResourceAccount.getUuid());
+            objectManager.persist(link);
         } catch (Exception ex) {
             throw new RuntimeException(String.format("Failed to create external account link for accountLink [%d]", link.getId()), ex);
         }
     }
-
+    
     @Override
     public void deleteExternalAccountLink(AccountLink link) {
         if (link.getExternal()) {
@@ -342,6 +344,9 @@ public class RegionServiceImpl implements RegionService {
         }
         try {
             Region targetRegion = objectManager.loadResource(Region.class, link.getLinkedRegionId());
+            if(targetRegion == null) {
+                return;
+            }
             Region localRegion = objectManager.findAny(Region.class, REGION.LOCAL, true, REGION.REMOVED, null);
             ExternalRegion externalRegion = RegionUtil.getExternalRegion(targetRegion, localRegion.getName(), jsonMapper);
             if (externalRegion == null) {
