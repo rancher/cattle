@@ -88,7 +88,7 @@ public class RegionMonitor extends AbstractJooqDao implements Task {
                     objectManager.delete(link);
                     continue;
                 }
-                // environment not present or its uuid changed 
+                // environment not present or its uuid changed ..
                 ExternalProject externalProject = null;
                 String externalProjectKey = String.format("%s$%s", targetRegion, link.getLinkedAccount());
                 if(externalProjectMap.containsKey(externalProjectKey)) {
