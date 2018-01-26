@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <property name="mediumtext" value="TEXT" dbms="postgresql" />
+    <property name="mediumtext" value="MEDIUMTEXT" />
+    <property name="mediumtext" value="varchar" dbms="H2" />
+    <changeSet author="kinara (generated)" id="dump1">
+        <createIndex indexName="idx_container_event_host_id_state" tableName="container_event" unique="false">
+            <column name="host_id"/>
+            <column name="state"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="kinara (generated)" id="dump2">
+        <createIndex indexName="idx_host_physical_host_id_id" tableName="host" unique="false">
+            <column name="physical_host_id"/>
+            <column name="id"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>
