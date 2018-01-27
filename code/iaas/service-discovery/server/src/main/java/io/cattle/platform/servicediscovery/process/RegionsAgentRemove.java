@@ -21,8 +21,6 @@ public class RegionsAgentRemove extends AbstractObjectProcessLogic implements Pr
     @Inject
     JsonMapper jsonMapper;
 
-    @Inject
-
     @Override
     public String[] getProcessNames() {
         return new String[] { "agent.remove" };
