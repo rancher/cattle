@@ -20,6 +20,7 @@ import io.cattle.platform.servicediscovery.service.impl.RegionUtil;
 import io.cattle.platform.servicediscovery.service.impl.RegionUtil.ExternalProject;
 import io.cattle.platform.servicediscovery.service.impl.RegionUtil.ExternalRegion;
 import io.cattle.platform.task.Task;
+import io.cattle.platform.object.process.StandardProcess;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
 import io.github.ibuildthecloud.gdapi.condition.ConditionType;
 
@@ -71,7 +72,7 @@ public class RegionMonitor extends AbstractJooqDao implements Task {
             // targetRegion not present
             Region targetRegion = regionMap.get(link.getLinkedRegionId());
             if(targetRegion == null) {
-                objectManager.delete(link);
+                objectProcessManager.executeStandardProcess(StandardProcess.REMOVE, link, null);
                 continue;
             }
             try {
@@ -85,7 +86,7 @@ public class RegionMonitor extends AbstractJooqDao implements Task {
                     externalRegionMap.put(externalRegionKey, externalRegion); 
                 }
                 if(externalRegion == null) {
-                    objectManager.delete(link);
+                    objectProcessManager.executeStandardProcess(StandardProcess.REMOVE, link, null);
                     continue;
                 }
                 // environment not present or its uuid changed 
@@ -99,7 +100,7 @@ public class RegionMonitor extends AbstractJooqDao implements Task {
                 }
                 String storedUUID = DataAccessor.fieldString(link, "uuid");
                 if(externalProject == null || (storedUUID!=null && !externalProject.getUuid().equals(storedUUID))) {
-                    objectManager.delete(link);
+                    objectProcessManager.executeStandardProcess(StandardProcess.REMOVE, link, null);
                 }
             } catch (Exception ex) {
                 log.warn("Failed to monitor account link for %s - %s", link.getId(), ex);
