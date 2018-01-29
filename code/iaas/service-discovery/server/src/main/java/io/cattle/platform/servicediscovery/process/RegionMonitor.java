@@ -18,6 +18,7 @@ import io.cattle.platform.servicediscovery.service.RegionService;
 import io.cattle.platform.servicediscovery.service.impl.RegionServiceImpl;
 import io.cattle.platform.servicediscovery.service.impl.RegionUtil;
 import io.cattle.platform.servicediscovery.service.impl.RegionUtil.ExternalProject;
+import io.cattle.platform.servicediscovery.service.impl.RegionUtil.ExternalProjectResponse;
 import io.cattle.platform.servicediscovery.service.impl.RegionUtil.ExternalRegion;
 import io.cattle.platform.task.Task;
 import io.cattle.platform.object.process.StandardProcess;
@@ -64,7 +65,7 @@ public class RegionMonitor extends AbstractJooqDao implements Task {
         List<AccountLink> accountLinks = objectManager.find(AccountLink.class, ACCOUNT_LINK.REMOVED, null, ACCOUNT_LINK.LINKED_REGION_ID, 
             new Condition(ConditionType.NOTNULL));
         Map<String, ExternalRegion> externalRegionMap = new HashMap<String, ExternalRegion>();
-        Map<String, ExternalProject> externalProjectMap = new HashMap<String, ExternalProject>();
+        Map<String, ExternalProjectResponse> externalProjectMap = new HashMap<String, ExternalProjectResponse>();
         for(AccountLink link : accountLinks) {
             if (invalidStates.contains(link.getState())) {
                 continue;
@@ -78,7 +79,7 @@ public class RegionMonitor extends AbstractJooqDao implements Task {
             try {
                 // localRegion in targetRegion not present
                 ExternalRegion externalRegion = null;
-                String externalRegionKey = String.format("%s$%s", targetRegion, localRegion.getName());
+                String externalRegionKey = String.format("%s:%s", targetRegion.getName(), localRegion.getName());
                 if(externalRegionMap.containsKey(externalRegionKey)) {
                     externalRegion = externalRegionMap.get(externalRegionKey);
                 } else {
@@ -90,16 +91,20 @@ public class RegionMonitor extends AbstractJooqDao implements Task {
                     continue;
                 }
                 // environment not present or its uuid changed 
-                ExternalProject externalProject = null;
-                String externalProjectKey = String.format("%s$%s", targetRegion, link.getLinkedAccount());
+                ExternalProjectResponse externalProjectResponse = null;
+                String externalProjectKey = String.format("%s:%s", targetRegion.getName(), link.getLinkedAccount());
                 if(externalProjectMap.containsKey(externalProjectKey)) {
-                    externalProject = externalProjectMap.get(externalProjectKey);
+                    externalProjectResponse = externalProjectMap.get(externalProjectKey);
                 } else {
-                    externalProject = RegionUtil.getTargetProjectByName(targetRegion, link.getLinkedAccount(), jsonMapper);
-                    externalProjectMap.put(externalProjectKey, externalProject);
+                    externalProjectResponse = RegionUtil.getTargetProjectByName(targetRegion, link.getLinkedAccount(), jsonMapper);
+                    externalProjectMap.put(externalProjectKey, externalProjectResponse);
                 }
-                String storedUUID = DataAccessor.fieldString(link, "uuid");
-                if(externalProject == null || (storedUUID!=null && !externalProject.getUuid().equals(storedUUID))) {
+
+                String storedUUID = DataAccessor.fieldString(link, "linkedAccountUuid");
+                ExternalProject externalProject = externalProjectResponse.getExternalProject();
+                boolean notFound = (externalProject == null && externalProjectResponse.getStatusCode()==200);
+                boolean uuidsDoNotMatch = (storedUUID!=null && !externalProject.getUuid().equals(storedUUID));
+                if(notFound || uuidsDoNotMatch) {
                     objectProcessManager.executeStandardProcess(StandardProcess.REMOVE, link, null);
                 }
             } catch (Exception ex) {

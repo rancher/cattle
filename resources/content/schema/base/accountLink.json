@@ -1,0 +1,7 @@
+{
+	"linkedAccountUuid" : {
+		"type": "string",
+		"create": true
+	}
+}
+

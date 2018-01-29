@@ -5,6 +5,7 @@ import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Region;
 import io.cattle.platform.json.JsonMapper;
+import io.cattle.platform.servicediscovery.service.impl.RegionUtil.ExternalProject;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -101,10 +102,35 @@ public class RegionUtil {
         return String.format("%s%s_%s_%s_%s", EXTERNAL_AGENT_URI_PREFIX, localRegionName, localEnvironmentName, agentUuid, targetResourceAccountUuid);
     }
 
-    public static ExternalProject getTargetProjectByName(Region targetRegion, String accountName, JsonMapper jsonMapper) throws IOException {
+    public static ExternalProjectResponse getTargetProjectByName(Region targetRegion, String accountName, JsonMapper jsonMapper) throws IOException {
         String uri = String.format("%s/v2-beta/projects?name=%s&all=true",
                 getUrl(targetRegion),
                 accountName);
+        Request req = Request.Get(uri);
+        setHeaders(req, targetRegion);
+        return req.execute().handleResponse(new ResponseHandler<ExternalProjectResponse>() {
+            @Override
+            public ExternalProjectResponse handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
+                ExternalProjectResponse externalProjectResponse = new ExternalProjectResponse();
+                externalProjectResponse.statusCode = response.getStatusLine().getStatusCode();
+                externalProjectResponse.externalProject = null;
+                if (externalProjectResponse.statusCode != 200) {
+                    return externalProjectResponse;
+                }
+
+                ExternalProjectData data = jsonMapper.readValue(response.getEntity().getContent(), ExternalProjectData.class);
+                if(data.data.size() > 0) {
+                    externalProjectResponse.externalProject = data.data.get(0);
+                }
+                return externalProjectResponse;
+            }
+        });
+    }
+    
+    public static ExternalProject getTargetProjectByUUID(Region targetRegion, String UUID, JsonMapper jsonMapper) throws IOException {
+        String uri = String.format("%s/v2-beta/projects?uuid=%s&all=true",
+                getUrl(targetRegion),
+                UUID);
         Request req = Request.Get(uri);
         setHeaders(req, targetRegion);
         return req.execute().handleResponse(new ResponseHandler<ExternalProject>() {
@@ -115,9 +141,10 @@ public class RegionUtil {
                 }
 
                 ExternalProjectData data = jsonMapper.readValue(response.getEntity().getContent(), ExternalProjectData.class);
-                return data.data.size() == 0 ? null : data.data.get(0);
+                return data.data.size() == 0 ? null : data.data.get(0); 
             }
         });
+        
     }
 
     public static ExternalAgent createExternalAgent(Region targetRegion, String targetEnvName, Map<String, Object> params,
@@ -383,6 +410,19 @@ public class RegionUtil {
 
         public void setData(List<ExternalRegion> data) {
             this.data = data;
+        }
+    }
+    
+    public static class ExternalProjectResponse {
+        ExternalProject externalProject; 
+        int statusCode;
+
+        public ExternalProject getExternalProject() {
+            return this.externalProject;
+        }
+
+        public int getStatusCode() {
+            return this.statusCode;
         }
     }
 
