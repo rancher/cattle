@@ -74,6 +74,7 @@ public class DeploymentUnit {
     List<String> launchConfigNames = new ArrayList<>();
     Map<String, List<String>> sidekickUsedByMap = new HashMap<>();
     io.cattle.platform.core.model.DeploymentUnit unit;
+    List<Long> hostIdsToDeploy;
 
     private static List<String> supportedUnitLabels = Arrays
             .asList(ServiceConstants.LABEL_SERVICE_REQUESTED_HOST_ID);
@@ -110,6 +111,12 @@ public class DeploymentUnit {
                 sidekickUsedByMap.put(sidekick, usedBy);
             }
         }
+        Map<String, String> labels = ServiceDiscoveryUtil.getMergedServiceLabels(service, context.allocationHelper);
+        if (service.getSystem()) {
+            labels.put(SystemLabels.LABEL_CONTAINER_SYSTEM, "true");
+        }
+        this.hostIdsToDeploy =
+                context.allocationHelper.getHostsSatisfyingHostAffinity(service.getAccountId(), labels);
     }
 
 
@@ -439,6 +446,9 @@ public class DeploymentUnit {
                                 context.objectManager.loadResource(io.cattle.platform.core.model.DeploymentUnit.class, testVolume.getDeploymentUnitId());
                         if (unit.getServiceIndex().equals(testUnit.getServiceIndex()) &&
                                 testUnit.getServiceId() != null && testUnit.getServiceId().equals(unit.getServiceId())) {
+                            boolean shared = testVolume.getHostId() == null;
+                            boolean validHost = testVolume.getHostId() != null && hostIdsToDeploy.contains(testVolume.getHostId());
+                            if (shared || validHost)
                             // reassign orphaned volume to current unit
                             volume = context.objectManager.setFields(testVolume, VOLUME.DEPLOYMENT_UNIT_ID, unit.getId());
                             break;
