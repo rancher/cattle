@@ -560,8 +560,7 @@ def test_null_driver_export(client, context):
     image_uuid = context.image_uuid
     data_volumes = ["foo:/bar"]
     launch_config = {"imageUuid": image_uuid,
-                     "dataVolumes": data_volumes,
-                     }
+                     "dataVolumes": data_volumes}
     svc = client.create_service(name=random_str(),
                                 stackId=stack.id,
                                 launchConfig=launch_config,
@@ -586,8 +585,7 @@ def test_volume_template_without_driver_fields(client, context):
     image_uuid = context.image_uuid
     data_volumes = ["foo:/bar"]
     launch_config = {"imageUuid": image_uuid,
-                     "dataVolumes": data_volumes,
-                     }
+                     "dataVolumes": data_volumes}
     svc = client.create_service(name=random_str(),
                                 stackId=stack.id,
                                 launchConfig=launch_config,
@@ -604,3 +602,64 @@ def test_volume_template_without_driver_fields(client, context):
     assert t.name in volumes
     vol = volumes[t.name]
     assert len(vol) == 0
+
+
+def test_du_volume_recreate_disabled_host(new_context, super_client):
+    context = new_context
+    client = context.client
+    register_simulated_host(new_context)
+    opts = {'foo': 'true', 'bar': 'true'}
+    stack = client.create_stack(name=random_str())
+    stack = client.wait_success(stack)
+
+    client.create_volumeTemplate(name="foo", driver="nfs",
+                                 driverOpts=opts,
+                                 stackId=stack.id,
+                                 perContainer=True)
+
+    # create service
+    image_uuid = context.image_uuid
+    launch_config = {"imageUuid": image_uuid, "dataVolumes": "foo:/bar"}
+    svc = client.create_service(name=random_str(),
+                                stackId=stack.id,
+                                launchConfig=launch_config,
+                                scale=1)
+    svc = client.wait_success(svc)
+    client.wait_success(svc.activate())
+
+    c11 = _validate_compose_instance_start(client, svc, stack, "1")
+    path_to_mount = c11.dataVolumeMounts
+    assert len(path_to_mount) == 1
+    for key, value in path_to_mount.iteritems():
+        assert key == '/bar'
+        assert value is not None
+
+    c11 = super_client.reload(c11)
+
+    du = c11.deploymentUnitUuid
+    name = stack.name + "_foo_1_" + du
+    volumes = client.list_volume(name_like=name + "_%", stack_id=stack.id)
+    assert len(volumes) == 1
+    v11 = volumes[0]
+
+    # disable the host, remove container
+    # verify that the new container got different volume
+    instance_host = c11.instanceHostMaps()[0].host()
+    assert instance_host is not None
+    client.wait_success(instance_host.deactivate())
+    client.wait_success(c11.stop(remove=True))
+
+    c12 = _validate_compose_instance_start(client, svc, stack, "1")
+    path_to_mount = c12.dataVolumeMounts
+    assert len(path_to_mount) == 1
+    for key, value in path_to_mount.iteritems():
+        assert key == '/bar'
+        assert value is not None
+
+    c12 = super_client.reload(c12)
+    assert c12.hostId != c11.hostId
+    du = c12.deploymentUnitUuid
+    name = stack.name + "_foo_1_" + du
+    volumes = client.list_volume(name_like=name + "_%", stack_id=stack.id)
+    assert len(volumes) == 1
+    assert volumes[0].id != v11.id
