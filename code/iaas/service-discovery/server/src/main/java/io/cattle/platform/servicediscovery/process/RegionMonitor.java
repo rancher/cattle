@@ -103,9 +103,14 @@ public class RegionMonitor extends AbstractJooqDao implements Task {
                 String storedUUID = DataAccessor.fieldString(link, "linkedAccountUuid");
                 ExternalProject externalProject = externalProjectResponse.getExternalProject();
                 boolean notFound = (externalProject == null && externalProjectResponse.getStatusCode()==200);
-                boolean uuidsDoNotMatch = (storedUUID!=null && !externalProject.getUuid().equals(storedUUID));
-                if(notFound || uuidsDoNotMatch) {
-                    objectProcessManager.executeStandardProcess(StandardProcess.REMOVE, link, null);
+                if(notFound) {
+                        objectProcessManager.executeStandardProcess(StandardProcess.REMOVE, link, null);
+                } else {
+                    boolean uuidsDoNotMatch = (externalProject!=null &&
+                            storedUUID!=null && !storedUUID.equals(externalProject.getUuid()));
+                    if(uuidsDoNotMatch) {
+                            objectProcessManager.executeStandardProcess(StandardProcess.REMOVE, link, null);
+                    }
                 }
             } catch (Exception ex) {
                 log.warn("Failed to monitor account link for %s - %s", link.getId(), ex);
