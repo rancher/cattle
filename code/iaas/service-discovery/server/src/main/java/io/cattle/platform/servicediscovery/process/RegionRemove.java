@@ -12,6 +12,9 @@ import io.cattle.platform.json.JsonMapper;
 import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
+import io.cattle.platform.util.type.CollectionUtils;
+
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -25,20 +28,56 @@ public class RegionRemove extends AbstractObjectProcessHandler {
 
     @Override
     public String[] getProcessNames() {
-        return new String[] { "region.remove" };
+        return new String[] { "region.remove", "region.update" };
     }
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         Region region = (Region) state.getResource();
-        cleanupExternalLinks(region);
+        Object oldObj = state.getData().get("old");
+        if(oldObj == null || regionUpdated(oldObj, region)) {
+            cleanupExternalLinks(region);
+        }
         return null;
     }
 
+    private boolean regionUpdated(Object oldObj, Region region) {
+        Map<String, Object> old = CollectionUtils.toMap(oldObj);
+        if(old.containsKey("url")) {
+            String oldURL = (String) old.get("url");
+            if(isChanged(oldURL, region.getUrl())) {
+                return true;
+            }
+        }
+        if(old.containsKey("publicValue")) {
+            String oldPublicValue = (String) old.get("publicValue");
+            if(isChanged(oldPublicValue, region.getPublicValue())) {
+                return true;
+            }
+        }
+        if(old.containsKey("secretValue")) {
+            String oldSecretValue = (String) old.get("secretValue");
+            if(isChanged(oldSecretValue, region.getSecretValue())) {
+                return true;
+            }
+        }
+        return false; 
+    }
+    
+    private boolean isChanged(String oldString, String newString) {
+            if(oldString == null && newString == null) {
+                return false;
+            }
+            if(oldString == null || newString == null) {
+                return true;
+            }
+            return !oldString.equals(newString);
+    }
+    
     private void cleanupExternalLinks(Region region) {
         for (AccountLink link : objectManager.find(AccountLink.class, ACCOUNT_LINK.REMOVED, null, ACCOUNT_LINK.LINKED_REGION_ID, region.getId())) {
             if (!link.getState().equalsIgnoreCase(CommonStatesConstants.REMOVING)) {
-                objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, link, null);
+                objectProcessManager.executeStandardProcess(StandardProcess.REMOVE, link, null);
             }
         }
     }

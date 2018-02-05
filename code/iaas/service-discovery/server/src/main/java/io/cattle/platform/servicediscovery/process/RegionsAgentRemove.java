@@ -32,7 +32,7 @@ public class RegionsAgentRemove extends AbstractObjectProcessLogic implements Pr
         if (agent.getExternalId() != null) {
             return null;
         }
-        regionService.deactivateAndRemoveExtenralAgent(agent);
+        regionService.deactivateAndRemoveExternalAgent(agent);
 
         return null;
     }

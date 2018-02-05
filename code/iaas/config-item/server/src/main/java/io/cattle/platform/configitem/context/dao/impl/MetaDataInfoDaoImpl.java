@@ -63,6 +63,7 @@ import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.servicediscovery.api.util.ServiceDiscoveryUtil;
 import io.cattle.platform.servicediscovery.service.RegionService;
+import io.cattle.platform.servicediscovery.service.impl.RegionUtil.ExternalProject;
 import io.cattle.platform.util.exception.ExceptionUtils;
 
 import java.io.OutputStream;
@@ -644,22 +645,20 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
 
     @Override
     public void fetchCredentials(MetaHelperInfo helperInfo, Agent agent, OutputStream os) {
-        List<Region> regions = objectMgr.find(Region.class, REGION.REMOVED, (Object) null);
-        if (regions.isEmpty()) {
-            return;
-        }
-        Map<String, Region> regionsMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        for (Region region : regions) {
-            if (region.getRemoved() != null) {
-                continue;
-            }
-            regionsMap.put(region.getName(), region);
-        }
-        regionService.reconcileAgentExternalCredentials(agent, helperInfo.getAccount());
+    		Map<Long, Region> regionsIds = new HashMap<>();
+    		Map<String, Region> regionNameToRegion = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        Map<String, Long> externalLinks = new HashMap<>();
+        Map<String, ExternalProject> projects = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    		
+        if(regionService.isRegionsEmpty(agent, helperInfo.getAccount(), externalLinks, projects, regionsIds, regionNameToRegion)) {
+    			return;
+    		}
+    		
+        regionService.reconcileAgentExternalCredentials(agent, helperInfo.getAccount(), externalLinks, projects, regionsIds, regionNameToRegion);
         List<ExternalCredential> creds = DataAccessor.fieldObjectList(objectMgr.reload(agent), AccountConstants.FIELD_EXTERNAL_CREDENTIALS,
                 ExternalCredential.class, jsonMapper);
         for (ExternalCredential cred : creds) {
-            Region region = regionsMap.get(cred.getRegionName());
+            Region region = regionNameToRegion.get(cred.getRegionName());
             CredentialMetaData meta = new CredentialMetaData(region.getUrl(), cred.getPublicValue(), cred.getSecretValue());
             writeToJson(os, meta);
         }

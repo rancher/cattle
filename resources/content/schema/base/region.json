@@ -4,23 +4,35 @@
             "type": "string",
             "required": true,
             "nullable": false,
-            "unique": true
+            "unique": true,
+            "attributes" : {
+                "scheduleUpdate" : true
+            }
         },
         "publicValue":{
             "type": "string",
             "required": true,
-            "nullable": false
+            "nullable": false,
+            "attributes" : {
+                "scheduleUpdate" : true
+            }
         },
         "secretValue":{
             "type": "string",
             "required": true,
-            "nullable": false
+            "nullable": false,
+            "attributes" : {
+                "scheduleUpdate" : true
+            }
         },
         "local":{
             "type": "boolean",
             "required": false,
             "nullable": true,
-            "default": false
+            "default": false,
+            "attributes" : {
+                "scheduleUpdate" : true
+            }
         }
     }
 }
