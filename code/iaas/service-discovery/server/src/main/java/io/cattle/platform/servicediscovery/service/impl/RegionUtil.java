@@ -2,10 +2,10 @@ package io.cattle.platform.servicediscovery.service.impl;
 
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
+import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Agent;
 import io.cattle.platform.core.model.Region;
 import io.cattle.platform.json.JsonMapper;
-import io.cattle.platform.servicediscovery.service.impl.RegionUtil.ExternalProject;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -21,7 +21,7 @@ import org.apache.http.entity.ContentType;
 
 public class RegionUtil {
     public static final String EXTERNAL_AGENT_URI_PREFIX = "event:///external=";
-
+    
     public static ExternalAccountLink createExternalAccountLink(Region targetRegion, Map<String, Object> params, JsonMapper jsonMapper) throws IOException {
         String uri = String.format("%s/v2-beta/accountLinks", getUrl(targetRegion));
         Request req = Request.Post(uri);
@@ -51,13 +51,12 @@ public class RegionUtil {
         return req;
     }
 
-    public static ExternalAccountLink getExternalAccountLink(Region targetRegion, ExternalProject targetResourceAccount, ExternalRegion externalRegion,
-            String accountName, JsonMapper jsonMapper) throws IOException {
-        String uri = String.format("%s/v2-beta/accountLinks?accountId=%s&linkedAccount=%s&linkedRegionId=%s&external=true",
+    public static ExternalAccountLink getExternalAccountLink(Region targetRegion, ExternalProject targetResourceAccount, Account localAccount,
+            JsonMapper jsonMapper) throws IOException {
+        String uri = String.format("%s/v2-beta/accountLinks?accountId=%s&linkedAccount=%s&external=true",
                 getUrl(targetRegion),
                 targetResourceAccount.getId(),
-                accountName,
-                externalRegion.getId());
+                localAccount.getName());
         Request req = Request.Get(uri);
         setHeaders(req, targetRegion);
         return req.execute().handleResponse(new ResponseHandler<ExternalAccountLink>() {
@@ -71,7 +70,39 @@ public class RegionUtil {
                     if (invalidStates.contains(link.getState())) {
                         continue;
                     }
-                    return link;
+
+                    if (link.getLinkedAccountUuid().equalsIgnoreCase(localAccount.getUuid())) {
+                        return link;
+                    }
+                }
+                return null;
+            }
+        });
+    }
+    
+    public static ExternalAccountLink getAccountLinkForExternal(Region targetRegion, ExternalProject targetResourceAccount, Account localAccount,
+            JsonMapper jsonMapper) throws IOException {
+        String uri = String.format("%s/v2-beta/accountLinks?accountId=%s&linkedAccount=%s&external=false",
+                getUrl(targetRegion),
+                targetResourceAccount.getId(),
+                localAccount.getName());
+        Request req = Request.Get(uri);
+        setHeaders(req, targetRegion);
+        return req.execute().handleResponse(new ResponseHandler<ExternalAccountLink>() {
+            @Override
+            public ExternalAccountLink handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
+                if (response.getStatusLine().getStatusCode() != 200) {
+                    return null;
+                }
+                for (ExternalAccountLink link : jsonMapper.readValue(response.getEntity().getContent(), ExternalAccountLinkData.class).data) {
+                    List<String> invalidStates = Arrays.asList(CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING);
+                    if (invalidStates.contains(link.getState())) {
+                        continue;
+                    }
+
+                    if (link.getLinkedAccountUuid().equalsIgnoreCase(localAccount.getUuid())) {
+                        return link;
+                    }
                 }
                 return null;
             }
@@ -149,6 +180,10 @@ public class RegionUtil {
 
     public static ExternalAgent createExternalAgent(Region targetRegion, String targetEnvName, Map<String, Object> params,
             JsonMapper jsonMapper) throws IOException {
+            ExternalAgent externalAgent = RegionUtil.getExternalAgentByURI(targetRegion, params.get(AgentConstants.FIELD_URI).toString(), jsonMapper);
+            if(externalAgent != null) {
+                RegionUtil.deleteExternalAgent(null, targetRegion, externalAgent);
+            }
         String uri = String.format("%s/v2-beta/agents", getUrl(targetRegion));
         Request req = Request.Post(uri);
         setHeaders(req, targetRegion);
@@ -292,6 +327,7 @@ public class RegionUtil {
         boolean external;
         String state;
         String id;
+        String linkedAccountUuid;
 
         public String getAccountId() {
             return accountId;
@@ -348,6 +384,15 @@ public class RegionUtil {
         public void setId(String id) {
             this.id = id;
         }
+
+        public String getLinkedAccountUuid() {
+            return linkedAccountUuid;
+        }
+
+        public void setLinkedAccountUuid(String linkedAccountUuid) {
+            this.linkedAccountUuid = linkedAccountUuid;
+        }
+
     }
 
     public static class ExternalProjectData {
@@ -452,6 +497,31 @@ public class RegionUtil {
         String uri = String.format("%s/v2-beta/agents?uuid=%s",
                 getUrl(targetRegion),
                 uuid);
+        Request req = Request.Get(uri);
+        setHeaders(req, targetRegion);
+        return req.execute().handleResponse(new ResponseHandler<ExternalAgent>() {
+            @Override
+            public ExternalAgent handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
+                if (response.getStatusLine().getStatusCode() != 200) {
+                    return null;
+                }
+                for (ExternalAgent agent : jsonMapper.readValue(response.getEntity().getContent(), ExternalAgentData.class).data) {
+                    List<String> invalidStates = Arrays.asList(CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING);
+                    if (invalidStates.contains(agent.getState())) {
+                        continue;
+                    }
+                    return agent;
+                }
+                return null;
+            }
+        });
+    }
+    
+    public static ExternalAgent getExternalAgentByURI(Region targetRegion, String urii, JsonMapper jsonMapper)
+            throws IOException {
+        String uri = String.format("%s/v2-beta/agents?uri=%s",
+                getUrl(targetRegion),
+                urii);
         Request req = Request.Get(uri);
         setHeaders(req, targetRegion);
         return req.execute().handleResponse(new ResponseHandler<ExternalAgent>() {

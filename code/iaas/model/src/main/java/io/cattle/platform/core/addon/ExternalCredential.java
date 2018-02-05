@@ -7,17 +7,18 @@ public class ExternalCredential {
     String secretValue;
     String environment;
     String region;
+    Long regionId;
     
     public ExternalCredential() {
-        
     }
 
-    public ExternalCredential(String environmentName, String regionName, String publicValue, String secretValue) {
+    public ExternalCredential(String environmentName, String regionName, String publicValue, String secretValue, Long regionId) {
         super();
         this.publicValue = publicValue;
         this.secretValue = secretValue;
         this.environment = environmentName;
         this.region = regionName;
+        this.regionId = regionId;
     }
 
     public String getPublicValue() {
@@ -59,4 +60,9 @@ public class ExternalCredential {
     public void setAgentUuid(String agentUuid) {
         this.agentUuid = agentUuid;
     }
+
+    public Long getRegionId() {
+        return regionId;
+    }
+
 }

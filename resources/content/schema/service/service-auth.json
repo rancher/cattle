@@ -29,6 +29,7 @@
         "accountLink.linkedRegion" : "cr",
         "accountLink.accountId" : "cr",
         "accountLink.external" : "cr",
+        "accountLink.linkedAccountUuid" : "cr",
         "end" : ""
     }
 }

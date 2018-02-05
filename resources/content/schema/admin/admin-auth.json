@@ -52,6 +52,7 @@
         "accountLink.linkedRegion" : "r",
         "accountLink.linkedAccount" : "r",
         "accountLink.external": "r",
+        "accountLink.linkedAccountUuid" : "r",
 
         "activeSetting" : "rud",
         "activeSetting.activeValue" : "r",

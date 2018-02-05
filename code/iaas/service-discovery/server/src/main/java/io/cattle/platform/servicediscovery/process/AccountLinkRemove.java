@@ -52,7 +52,7 @@ public class AccountLinkRemove extends AbstractObjectProcessLogic implements Pro
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
         AccountLink accountLink = (AccountLink) state.getResource();
         if (accountLink.getLinkedAccountId() == null) {
-            regionSvc.deleteExternalAccountLink(accountLink);
+          regionSvc.deleteExternalAccountLink(accountLink);
         } else {
             updateServices(accountLink);
             Account account = objectManager.loadResource(Account.class, accountLink.getAccountId());
