@@ -434,6 +434,7 @@ public class DeploymentUnit {
                     }
                 }
                 if (volume == null) {
+                    // check if there is an orphaned volume, and if it can be reassigned to the current unit
                     volumes = context.objectManager
                             .find(Volume.class, VOLUME.ACCOUNT_ID, service.getAccountId(),
                                     VOLUME.REMOVED, null, VOLUME.VOLUME_TEMPLATE_ID, template.getId(), VOLUME.STACK_ID,
@@ -442,13 +443,17 @@ public class DeploymentUnit {
                         if (testVolume.getDeploymentUnitId() == null) {
                             continue;
                         }
+                        // when local volume, and when on Down host, do not reassign
+                        boolean invalidHost = VolumeConstants.ACCESS_MODE_SINGLE_HOST_RW.equalsIgnoreCase(testVolume.getAccessMode())
+                                && testVolume.getHostId() != null
+                                && !hostIdsToDeploy.contains(testVolume.getHostId());
+                        if (invalidHost) {
+                            continue;
+                        }
                         io.cattle.platform.core.model.DeploymentUnit testUnit =
                                 context.objectManager.loadResource(io.cattle.platform.core.model.DeploymentUnit.class, testVolume.getDeploymentUnitId());
                         if (unit.getServiceIndex().equals(testUnit.getServiceIndex()) &&
                                 testUnit.getServiceId() != null && testUnit.getServiceId().equals(unit.getServiceId())) {
-                            boolean shared = testVolume.getHostId() == null;
-                            boolean validHost = testVolume.getHostId() != null && hostIdsToDeploy.contains(testVolume.getHostId());
-                            if (shared || validHost)
                             // reassign orphaned volume to current unit
                             volume = context.objectManager.setFields(testVolume, VOLUME.DEPLOYMENT_UNIT_ID, unit.getId());
                             break;
