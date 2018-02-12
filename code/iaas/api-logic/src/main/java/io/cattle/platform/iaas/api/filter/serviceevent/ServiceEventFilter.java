@@ -26,12 +26,13 @@ import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
 
 import static io.cattle.platform.core.model.tables.ServiceTable.SERVICE;
 
+import java.util.Arrays;
 import java.util.List;
 import javax.inject.Inject;
 
 public class ServiceEventFilter extends AbstractDefaultResourceManagerFilter {
 
-
+    private static List<String> invalidStates = Arrays.asList(CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING);
     public static final String VERIFY_AGENT = "CantVerifyHealthcheck";
 
     @Inject
@@ -111,8 +112,15 @@ public class ServiceEventFilter extends AbstractDefaultResourceManagerFilter {
     }
 
     private boolean isNetworkUp(long accountId) {
-        Service networkDriverService = objectManager.findAny(Service.class, SERVICE.ACCOUNT_ID, accountId, SERVICE.REMOVED, null, SERVICE.KIND,
+            Service networkDriverService = null;
+        List<Service> networkDriverServices = objectManager.find(Service.class, SERVICE.ACCOUNT_ID, accountId, SERVICE.REMOVED, null, SERVICE.KIND,
                 ServiceConstants.KIND_NETWORK_DRIVER_SERVICE);
+        for(Service service : networkDriverServices) {
+                if(invalidStates.contains(service.getState())) {
+                    continue;
+                }
+                networkDriverService = service;
+        }
         if (networkDriverService == null) {
             return true;
         }
