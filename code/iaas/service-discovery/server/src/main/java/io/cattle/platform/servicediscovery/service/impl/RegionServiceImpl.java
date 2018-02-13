@@ -287,7 +287,7 @@ public class RegionServiceImpl implements RegionService {
 
     private ExternalAgent createExternalAgent(Agent agent, Account account, Region localRegion, Region targetRegion,
             ExternalCredential cred, Map<String, ExternalProject> externalProjects) {
-        // Create external agent with local credentials
+        // Create external agent with local credentials  
         try {
             String UUID = getUUID(targetRegion.getName(), cred.getEnvironmentName());
             ExternalProject targetResourceAccount = null;
