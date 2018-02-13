@@ -64,6 +64,9 @@ public class MetadataProcessHandler extends AbstractObjectProcessLogic implement
         } else if (obj instanceof Agent) {
             Agent agent = (Agent) obj;
             accountId = DataAccessor.fieldLong(agent, AgentConstants.DATA_AGENT_RESOURCES_ACCOUNT_ID);
+            if (accountId == null) {
+                return null;
+            }
         } else {
             accountId = ObjectUtils.getAccountId(obj);
         }
