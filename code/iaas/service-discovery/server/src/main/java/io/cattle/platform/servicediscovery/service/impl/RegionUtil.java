@@ -46,6 +46,7 @@ public class RegionUtil {
         String encodedKeys = Base64.encodeBase64String(String.format("%s:%s", publicKey, secretKey).getBytes());
         String auth = String.format("Basic %s", encodedKeys);
         req.addHeader("Authorization", auth);
+        req.addHeader("X-ENFORCE-AUTHENTICATION", "true");
         req.addHeader("Content-Type", "application/json");
         req.addHeader("Accept", "application/json");
         return req;
