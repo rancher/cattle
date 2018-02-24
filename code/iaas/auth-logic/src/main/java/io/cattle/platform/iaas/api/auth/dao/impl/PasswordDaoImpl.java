@@ -44,7 +44,9 @@ public class PasswordDaoImpl extends AbstractJooqDao implements PasswordDao {
 
     @Override
     public Credential changePassword(Credential password, ChangePassword changePassword, Policy policy) {
-
+        if (StringUtils.isBlank(changePassword.getNewSecret())) {
+            throw new ClientVisibleException(ResponseCodes.BAD_REQUEST, "UserCredentialCreation", "Cannot have blank password.", null);
+        }
         if (policy.isOption(Policy.AUTHORIZED_FOR_ALL_ACCOUNTS) || transformationService.compare(changePassword.getOldSecret(), password.getSecretValue())){
             password.setSecretValue(transformationService.transform(changePassword.getNewSecret(), EncryptionConstants.HASH));
             password = objectManager.persist(password);
