@@ -140,14 +140,14 @@ public class UpgradeManagerImpl implements UpgradeManager {
         lockManager.lock(new ServiceLock(service), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
-                // make sure that all instances that were meant to be stopped
-                // by the previous batch upgrade, are stopped before proceeding
-                stopInstances(service, deploymentUnitInstancesToCleanup);
                 // wait for healthy only for upgrade
                 // should be skipped for rollback
                 if (isUpgrade) {
                     deploymentMgr.activate(service);
                     waitForHealthyState(service, currentProcess, strategy);
+                    // make sure that all instances that were meant to be stopped
+                    // by the previous batch upgrade, are stopped before proceeding
+                    stopInstances(service, deploymentUnitInstancesToCleanup);
                 }
                 // mark for upgrade
                 markForUpgrade(batchSize);
