@@ -1,5 +1,7 @@
 package io.cattle.platform.configitem.context.data.metadata.common;
 
+import io.cattle.platform.configitem.context.data.metadata.common.ServiceMetaData.HealthCheck;
+import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.model.Account;
 import io.cattle.platform.core.model.Instance;
@@ -48,6 +50,7 @@ public class ContainerMetaData {
     String host_ip;
     // helper field needed by metadata service to process object
     String metadata_kind;
+    HealthCheck health_check;
 
     public ContainerMetaData() {
     }
@@ -85,7 +88,7 @@ public class ContainerMetaData {
 
     @SuppressWarnings("unchecked")
     public void setInstanceAndHostMetadata(Instance instance, HostMetaData host, List<String> healthcheckHosts,
-            Account account) {
+            Account account, InstanceHealthCheck healthCheck) {
         this.name = instance.getName();
         this.uuid = instance.getUuid();
         this.external_id = instance.getExternalId();
@@ -119,6 +122,11 @@ public class ContainerMetaData {
             this.health_check_hosts = healthcheckHosts;
         }
         this.environment_uuid = account.getUuid();
+
+        if (healthCheck != null) {
+            this.health_check = new HealthCheck(healthCheck);
+        }
+
         this.metadata_kind = "container";
     }
 
@@ -329,4 +337,13 @@ public class ContainerMetaData {
     public void setStack_uuid(String stack_uuid) {
         this.stack_uuid = stack_uuid;
     }
+
+    public HealthCheck getHealth_check() {
+        return health_check;
+    }
+
+    public void setHealth_check(HealthCheck health_check) {
+        this.health_check = health_check;
+    }
+
 }
