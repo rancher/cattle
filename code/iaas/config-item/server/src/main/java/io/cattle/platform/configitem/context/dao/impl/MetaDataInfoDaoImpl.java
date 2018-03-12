@@ -10,7 +10,6 @@ import static io.cattle.platform.core.model.tables.IpAddressNicMapTable.*;
 import static io.cattle.platform.core.model.tables.IpAddressTable.*;
 import static io.cattle.platform.core.model.tables.NetworkTable.*;
 import static io.cattle.platform.core.model.tables.NicTable.*;
-import static io.cattle.platform.core.model.tables.RegionTable.*;
 import static io.cattle.platform.core.model.tables.ServiceConsumeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceExposeMapTable.*;
 import static io.cattle.platform.core.model.tables.ServiceTable.*;
@@ -190,8 +189,14 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
                                         healthCheckers.add(h.getUuid());
                                     }
                                 }
+
+                                Object hcO = DataAccessor.field(instance, InstanceConstants.FIELD_HEALTH_CHECK, Object.class);
+                                InstanceHealthCheck hc = null;
+                                if (hcO != null) {
+                                    hc = jsonMapper.convertValue(hcO, InstanceHealthCheck.class);
+                                }
                                 data.setInstanceAndHostMetadata(instance, hostMetaData, healthCheckers,
-                                        helperInfo.getAccounts().get(instance.getAccountId()));
+                                        helperInfo.getAccounts().get(instance.getAccountId()), hc);
 
                                 data.setService_index(serviceIndex);
                                 if (networkKind.equalsIgnoreCase(NetworkConstants.KIND_DOCKER_HOST)
