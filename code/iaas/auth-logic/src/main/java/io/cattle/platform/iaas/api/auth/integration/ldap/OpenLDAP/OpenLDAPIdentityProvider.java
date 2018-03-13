@@ -91,7 +91,8 @@ public class OpenLDAPIdentityProvider extends LDAPIdentityProvider implements Id
             }
             logger.trace("getIdentities: user attributes: " + userAttributes);
             try {
-                String[] operationalAttrList = {"1.1", "+", "*"};
+                String[] operationalAttrList = {"1.1", "+", "*",
+                        getConstantsConfig().getUserMemberAttribute(), getConstantsConfig().getGroupMemberUserAttribute()};
                 opAttributes = context.getAttributes(dn, operationalAttrList);
                 logger.trace("getIdentities: operational attributes: " + opAttributes);
             } catch (NamingException e) {
