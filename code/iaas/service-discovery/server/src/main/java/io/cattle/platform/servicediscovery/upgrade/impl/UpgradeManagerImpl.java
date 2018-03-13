@@ -140,8 +140,11 @@ public class UpgradeManagerImpl implements UpgradeManager {
         lockManager.lock(new ServiceLock(service), new LockCallbackNoReturn() {
             @Override
             public void doWithLockNoResult() {
-                // wait for healthy only for upgrade
-                // should be skipped for rollback
+                // wait for healthy only for upgrade; should be skipped for rollback
+                // wait for healthy happens 3 times in this block:
+                // 1. Before performing an upgrade on the batch
+                // 2. If startFirst=true, after the upgrade is done, but before stop
+                // 3. After the batch upgrade is completed
                 if (isUpgrade) {
                     deploymentMgr.activate(service);
                     waitForHealthyState(service, currentProcess, strategy);
@@ -166,6 +169,9 @@ public class UpgradeManagerImpl implements UpgradeManager {
                     stopInstances(service, deploymentUnitInstancesToCleanup);
                     // 2. wait for reconcile (new instances will be started along)
                     activate(service);
+                }
+                if (isUpgrade) {
+                    waitForHealthyState(service, currentProcess, strategy);
                 }
             }
 
