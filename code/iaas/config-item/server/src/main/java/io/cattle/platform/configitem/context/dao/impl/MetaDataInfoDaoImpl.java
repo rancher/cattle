@@ -516,7 +516,7 @@ public class MetaDataInfoDaoImpl extends AbstractJooqDao implements MetaDataInfo
     @Override
     public void fetchEnvironment(final MetaHelperInfo helperInfo, final OutputStream os) {
         Account env = helperInfo.getAccount();
-        EnvironmentMetaData data = new EnvironmentMetaData(env.getName().toLowerCase(), env.getUuid(), helperInfo.getRegionName().toLowerCase());
+        EnvironmentMetaData data = new EnvironmentMetaData(StringUtils.lowerCase(env.getName()), env.getUuid(), StringUtils.lowerCase(helperInfo.getRegionName()));
         writeToJson(os, data);
     }
 
