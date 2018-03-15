@@ -49,8 +49,8 @@ public class LBMetadataUtil {
             this.backend_name = portRule.getBackendName();
             this.priority = portRule.getPriority();
             this.selector = portRule.getSelector();
-            this.region = portRule.getRegion();
-            this.environment = portRule.getEnvironment();
+            this.region = StringUtils.lowerCase(portRule.getRegion());
+            this.environment = StringUtils.lowerCase(portRule.getEnvironment());
             this.weight = portRule.getWeight();
             if (this.weight == null && defaultWeight) {
                 this.weight = 1;
