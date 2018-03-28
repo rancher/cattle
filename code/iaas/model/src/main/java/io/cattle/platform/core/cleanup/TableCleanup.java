@@ -8,6 +8,8 @@ import static io.cattle.platform.core.model.tables.InstanceLabelMapTable.*;
 import static io.cattle.platform.core.model.tables.InstanceTable.*;
 import static io.cattle.platform.core.model.tables.LabelTable.*;
 import static io.cattle.platform.core.model.tables.ServiceEventTable.*;
+import static io.cattle.platform.core.model.tables.MountTable.*;
+import static io.cattle.platform.core.model.tables.VolumeTable.*;
 
 import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.CommonStatesConstants;
@@ -147,6 +149,7 @@ public class TableCleanup extends AbstractJooqDao implements Task {
         Date serviceLogCutoff = new Date(current - SERVICE_LOG_AGE_LIMIT_SECONDS.get() * SECOND_MILLIS);
         cleanup("service_log", serviceLogTables, serviceLogCutoff);
 
+        cleanupMountTable(otherCutoff);
         cleanup("other", otherTables, otherCutoff);
     }
 
@@ -168,6 +171,38 @@ public class TableCleanup extends AbstractJooqDao implements Task {
         if (rowsDeleted > 0) {
             log.info("[Rows Deleted] service_event={}", rowsDeleted);
         }
+    }
+    
+    private void cleanupMountTable(Date cutoff) {
+        List<Long> purgeInstanceIds = create()
+                .select(INSTANCE.ID)
+                .from(INSTANCE)
+                .where(INSTANCE.STATE.eq(CommonStatesConstants.PURGED))
+                .fetch().into(Long.class);
+        List<Long> localOrHostBindMountVolumeIds = create()
+                .select(VOLUME.ID)
+                .from(VOLUME)
+                .where(VOLUME.DATA.like("%\"isHostPath\":true%"))
+                .or(VOLUME.DATA.like("%\"driver\":\"local\"%"))
+                .fetch().into(Long.class);
+        ResultQuery<Record1<Long>> ids = create()
+                .select(MOUNT.ID)
+                .from(MOUNT)
+                .where(MOUNT.INSTANCE_ID.in(purgeInstanceIds))
+                .and(MOUNT.VOLUME_ID.in(localOrHostBindMountVolumeIds))
+                .and(MOUNT.STATE.eq("inactive"))
+                .limit(QUERY_LIMIT_ROWS.getValue());
+        List<Long> toDelete = null;
+        int rowsDeleted = 0;
+        while ((toDelete = ids.fetch().into(Long.class)).size() > 0) {
+            rowsDeleted += create().delete(MOUNT)
+            .where(MOUNT.ID.in(toDelete)).execute();
+        }
+
+        if (rowsDeleted > 0) {
+            log.info("[Rows Deleted] mount={}", rowsDeleted);
+        }
+        
     }
 
     private void cleanupExternalHandlerExternalHandlerProcessMapTables(Date cutoff) {
