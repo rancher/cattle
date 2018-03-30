@@ -304,7 +304,7 @@ public class DeploymentManagerImpl implements DeploymentManager {
         Service reloaded = objectMgr.reload(service);
         planner = getPlanner(reloaded);
         if (needToReconcile(reloaded, planner)) {
-            throw new ServiceReconcileException("Need to restart service reconcile");
+            throw new ServiceReconcileException("reconciling service state");
         }
 
         actvtyService.info("Service reconciled: " + planner.getStatus());
