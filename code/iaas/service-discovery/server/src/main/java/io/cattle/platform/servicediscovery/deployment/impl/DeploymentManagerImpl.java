@@ -495,10 +495,11 @@ public class DeploymentManagerImpl implements DeploymentManager {
     @Override
     public void serviceUpdate(ConfigUpdate update) {
         final Client client = new Client(Service.class, new Long(update.getResourceId()));
+        final Service service = objectMgr.loadResource(Service.class, client.getResourceId());
+        incrementExecutionCount(service);
         itemManager.runUpdateForEvent(RECONCILE, update, client, new Runnable() {
             @Override
             public void run() {
-                final Service service = objectMgr.loadResource(Service.class, client.getResourceId());
                 if (service != null
                         && (service.getState().equalsIgnoreCase(CommonStatesConstants.ACTIVE) || service.getState()
                                 .equalsIgnoreCase(CommonStatesConstants.UPDATING_ACTIVE))) {
