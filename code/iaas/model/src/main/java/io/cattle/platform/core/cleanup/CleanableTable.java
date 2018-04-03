@@ -19,18 +19,20 @@ public class CleanableTable {
     public final Table<?> table;
     public final Field<Long> idField;
     public final Field<Date> removeField;
+    public final boolean referenceCheckOnly;
 
     private Integer rowsDeleted = 0;
     private Integer rowsSkipped = 0;
 
-    private CleanableTable(Table<?> table) {
-        this(table, null);
+    private CleanableTable(Table<?> table, boolean refCheckOnly) {
+        this(table, null, refCheckOnly);
     }
 
-    private CleanableTable(Table<?> table, Field<Date> removedField) {
+    private CleanableTable(Table<?> table, Field<Date> removedField, boolean refCheckOnly) {
         this.table = table;
         this.idField = getIdField(table);
         this.removeField = removedField == null ? getRemoveField(table) : removedField;
+        this.referenceCheckOnly = refCheckOnly;
     }
 
     @SuppressWarnings("unchecked")
@@ -82,10 +84,14 @@ public class CleanableTable {
     }
 
     public static CleanableTable from(Table<?> table) {
-        return new CleanableTable(table);
+        return new CleanableTable(table, false);
     }
 
     public static CleanableTable from(Table<?> table, Field<Date> removedField) {
-        return new CleanableTable(table, removedField);
+        return new CleanableTable(table, removedField, false);
+    }
+
+    public static CleanableTable forReference(Table<?> table) {
+        return new CleanableTable(table, true);
     }
 }
