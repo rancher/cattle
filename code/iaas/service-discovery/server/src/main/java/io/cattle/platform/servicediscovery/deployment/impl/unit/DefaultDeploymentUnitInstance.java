@@ -198,7 +198,7 @@ public class DefaultDeploymentUnitInstance extends DeploymentUnitInstance implem
         instance = context.resourceMonitor.waitForNotTransitioning(instance);
         if (!((startOnce && isStartedOnce()) || (InstanceConstants.STATE_RUNNING.equals(instance.getState())))) {
             String error = TransitioningUtils.getTransitioningError(instance);
-            String message = String.format("Expected state running but got %s", instance.getState());
+            String message = String.format("Container should have been running but is in %s state. Check logs for more information.", instance.getState());
             if (org.apache.commons.lang3.StringUtils.isNotBlank(error)) {
                 message = message + ": " + error;
             }
