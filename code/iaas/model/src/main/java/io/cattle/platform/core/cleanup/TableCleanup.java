@@ -88,6 +88,7 @@ import java.util.List;
 import org.jooq.Field;
 import org.jooq.ForeignKey;
 import org.jooq.Param;
+import org.jooq.Query;
 import org.jooq.Record1;
 import org.jooq.Result;
 import org.jooq.ResultQuery;
@@ -117,6 +118,18 @@ public class TableCleanup extends AbstractJooqDao implements Task {
     public static final DynamicLongProperty EVENT_AGE_LIMIT_SECONDS = ArchaiusUtil.getLong("events.purge.after.seconds");
     public static final DynamicLongProperty AUDIT_LOG_AGE_LIMIT_SECONDS = ArchaiusUtil.getLong("audit_log.purge.after.seconds");
     public static final DynamicLongProperty SERVICE_LOG_AGE_LIMIT_SECONDS = ArchaiusUtil.getLong("service_log.purge.after.seconds");
+    public static final String MOUNT_DELETE_QUERY = "delete m " +
+        " from mount as m " +
+        " join ( " +
+        "    select mm.id " +
+        "    from mount as mm " +
+        "    join instance as i on mm.instance_id = i.id " +
+        "    join volume as v on mm.volume_id = v.id " +
+        "    where i.state = 'purged' " +
+        "    and i.removed < ? " +
+        "    and (v.data like '%\"isHostPath\":true%' or v.data like '%\"driver\":\"local\"%')" +
+        "    limit ? " +
+        " ) mx on m.id = mx.id";
 
     private List<CleanableTable> processInstanceTables;
     private List<CleanableTable> eventTables;
@@ -139,6 +152,7 @@ public class TableCleanup extends AbstractJooqDao implements Task {
         Date otherCutoff = new Date(current - MAIN_TABLES_AGE_LIMIT_SECONDS.getValue() * SECOND_MILLIS);
         cleanupLabelTables(otherCutoff);
         cleanupExternalHandlerExternalHandlerProcessMapTables(otherCutoff);
+        cleanupMountTable(otherCutoff);
 
         Date processInstanceCutoff = new Date(current - PROCESS_INSTANCE_AGE_LIMIT_SECONDS.get() * SECOND_MILLIS);
         cleanup("process_instance", processInstanceTables, processInstanceCutoff);
@@ -252,6 +266,25 @@ public class TableCleanup extends AbstractJooqDao implements Task {
         }
         if (ilmRowsDeleted > 0 || labelRowsDeleted > 0 || hlmRowsDeleted > 0) {
             log.info(lg.toString());
+        }
+    }
+
+    private void cleanupMountTable(Date cutoff) {
+        log.debug("Cleaning up mount table [cutoff={}]", cutoff);
+        Query q = create().query(MOUNT_DELETE_QUERY, cutoff, QUERY_LIMIT_ROWS.getValue());
+        int rowsAffected = 0;
+        int total = 0;
+
+        do {
+            rowsAffected = q.execute();
+            if (rowsAffected > 0) {
+                log.debug("Deleted {} unneeded rows from mount table", rowsAffected);
+            }
+            total += rowsAffected;
+        } while (rowsAffected > 0);
+
+        if (total > 0) {
+            log.debug("[Rows Deleted] mount={}", total);
         }
     }
 
