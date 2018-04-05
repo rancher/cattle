@@ -47,7 +47,8 @@ public class InstanceImageValidationFilter extends AbstractDefaultResourceManage
             String imageUuid = DataUtils.getFieldFromRequest(request, InstanceConstants.FIELD_IMAGE_UUID, String.class);
 
             if (imageId == null && imageUuid == null) {
-                throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED, InstanceConstants.FIELD_IMAGE_UUID);
+                throw new ValidationErrorException(ValidationErrorCodes.MISSING_REQUIRED, InstanceConstants.FIELD_IMAGE_UUID,
+                    "image is required, but not specified");
             }
         }
 
