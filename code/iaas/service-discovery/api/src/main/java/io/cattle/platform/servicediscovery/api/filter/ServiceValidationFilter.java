@@ -295,7 +295,8 @@ public class ServiceValidationFilter extends AbstractDefaultResourceManagerFilte
         List<String> invalidStates = Arrays.asList(InstanceConstants.STATE_ERROR, CommonStatesConstants.REMOVED,
                 CommonStatesConstants.REMOVING);
         if (env == null || invalidStates.contains(env.getState())) {
-            throw new ValidationErrorException(ValidationErrorCodes.INVALID_STATE, ServiceConstants.FIELD_STACK_ID);
+            ValidationErrorCodes.throwValidationError(ValidationErrorCodes.INVALID_STATE,
+                    ServiceConstants.FIELD_STACK_ID, "stack is not in a valid state", null);
         }
     }
 
