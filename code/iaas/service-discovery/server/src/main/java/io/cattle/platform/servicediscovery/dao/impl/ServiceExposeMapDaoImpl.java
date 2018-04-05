@@ -201,18 +201,20 @@ public class ServiceExposeMapDaoImpl extends AbstractJooqDao implements ServiceE
     }
 
     @Override
-    public ServiceExposeMap findInstanceExposeMap(Instance instance) {
+    public ServiceExposeMap findInstanceExposeMap(Instance instance, Service service) {
         if (instance == null) {
             return null;
         }
-        List<? extends ServiceExposeMap> instanceServiceMap = mapDao.findNonRemoved(ServiceExposeMap.class,
+        List<? extends ServiceExposeMap> maps = mapDao.findNonRemoved(ServiceExposeMap.class,
                 Instance.class,
                 instance.getId());
-        if (instanceServiceMap.isEmpty()) {
-            // not a service instance
-            return null;
+
+        for (ServiceExposeMap entry : maps) {
+            if (entry.getServiceId().equals(service.getId())) {
+                return entry;
+            }
         }
-        return instanceServiceMap.get(0);
+        return null;
     }
 
     @Override
