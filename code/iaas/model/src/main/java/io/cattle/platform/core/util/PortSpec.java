@@ -47,7 +47,7 @@ public class PortSpec {
         if (parts.length == 2) {
             // IPv6, right?
             if (!parts[0].startsWith("[")) {
-                throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, WRONG_FORMAT);
+                throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, WRONG_FORMAT, "the specified port spec format is wrong", null);
             }
             ipAddr = parts[0].replace("[", "");
             spec = StringUtils.removeStart(parts[1], ":");
@@ -60,7 +60,7 @@ public class PortSpec {
         Matcher m = PATTERN.matcher(spec);
 
         if (!m.matches()) {
-            throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, WRONG_FORMAT);
+            throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, WRONG_FORMAT, "the specified port spec format is wrong", null);
         }
 
         int privatePort = Integer.parseInt(m.group(3));
@@ -68,18 +68,18 @@ public class PortSpec {
         String protocol = m.group(5);
 
         if (privatePort <= 0 || privatePort > 65535) {
-            throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, INVALID_PRIVATE_PORT);
+            throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, INVALID_PRIVATE_PORT, "incorrect private port, valid range is 0-65535", null);
         }
 
         if (publicPort != null && (publicPort <= 0 || publicPort > 65535)) {
-            throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, INVALID_PUBLIC_PORT);
+            throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, INVALID_PUBLIC_PORT, "incorrect public port, valid range is 0-65535", null);
         }
 
         if (protocol == null) {
             protocol = "tcp";
         } else {
             if (!PROTOCOLS.contains(protocol)) {
-                throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, INVALID_PROTOCOL);
+                throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, INVALID_PROTOCOL, "invalid protocol, only tcp/udp is allowed", null);
             }
         }
 

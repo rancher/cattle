@@ -12,6 +12,11 @@ public class ValidationErrorImpl extends ErrorImpl implements ValidationError {
         this.fieldName = fieldName;
     }
 
+    public ValidationErrorImpl(String code, String fieldName, String message, String detail) {
+        super(ResponseCodes.UNPROCESSABLE_ENTITY, code, message, detail);
+        this.fieldName = fieldName;
+    }
+
     @Override
     public String getFieldName() {
         return fieldName;

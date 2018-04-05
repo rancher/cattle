@@ -38,4 +38,8 @@ public class ValidationErrorCodes implements ErrorCodes {
     public static final void throwValidationError(String code, String fieldName) {
         throw new ClientVisibleException(new ValidationErrorImpl(code, fieldName));
     }
+
+    public static final void throwValidationError(String code, String fieldName, String message, String detail) {
+        throw new ClientVisibleException(new ValidationErrorImpl(code, fieldName, message, detail));
+    }
 }
