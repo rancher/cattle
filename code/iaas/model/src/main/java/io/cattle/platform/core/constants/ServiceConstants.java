@@ -16,6 +16,7 @@ public class ServiceConstants {
     public static final String KIND_DNS_SERVICE = "dnsService";
     public static final String KIND_STORAGE_DRIVER_SERVICE = "storageDriverService";
     public static final String KIND_NETWORK_DRIVER_SERVICE = "networkDriverService";
+    public static final String KIND_KUBERNETES_SERVICE = "kubernetesService";
     public static final Set<String> SERVICE_LIKE = new HashSet<>(Arrays.asList(
             KIND_SERVICE,
             KIND_LOAD_BALANCER_SERVICE,
