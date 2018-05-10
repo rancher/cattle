@@ -22,6 +22,7 @@ import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.process.externalevent.ExternalServiceEventCreate;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
@@ -32,8 +33,12 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.apache.commons.collections.TransformerUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HealthcheckServiceImpl implements HealthcheckService {
+    
+    private static final Logger log = LoggerFactory.getLogger(ExternalServiceEventCreate.class);
     
     @Inject
     GenericMapDao mapDao;
@@ -288,7 +293,7 @@ public class HealthcheckServiceImpl implements HealthcheckService {
             }
         }
 
-        // return if allocated active hosts is >= required number of hosts for healtcheck
+        // return if allocated active hosts is >= required number of hosts for health check
         if (allocatedActiveHostIds.size() >= requiredNumber) {
             return new ArrayList<>();
         }
@@ -298,20 +303,23 @@ public class HealthcheckServiceImpl implements HealthcheckService {
         requiredNumber = requiredNumber - allocatedActiveHostIds.size();
         Collections.shuffle(availableActiveHostIds);
 
-        // place inferiorHostId to the end of the list
         if (inferiorHostId != null) {
             if (availableActiveHostIds.contains(inferiorHostId)) {
-                availableActiveHostIds.remove(inferiorHostId);
-                if (availableActiveHostIds.isEmpty() && allocatedActiveHostIds.isEmpty()) {
-                    availableActiveHostIds.add(inferiorHostId);
-                }
+                    availableActiveHostIds.remove(inferiorHostId);
             }
         }
 
         // Figure out the final number of hosts
         int returnedNumber = requiredNumber > availableActiveHostIds.size() ? availableActiveHostIds.size() : requiredNumber;
+        
+        List<Long> toReturnActiveHostIds = new ArrayList<Long>();
+        returnedNumber = returnedNumber == 0 ? 1 : returnedNumber;
+        
+        // place inferiorHostId to the end of the list);
+        toReturnActiveHostIds = availableActiveHostIds.subList(0, returnedNumber - 1);
+        toReturnActiveHostIds.add(inferiorHostId);
 
-        return availableActiveHostIds.subList(0, returnedNumber);
+        return toReturnActiveHostIds ;
     }
 
     private Long getInstanceHostId(HealthcheckInstanceType type, long instanceId) {

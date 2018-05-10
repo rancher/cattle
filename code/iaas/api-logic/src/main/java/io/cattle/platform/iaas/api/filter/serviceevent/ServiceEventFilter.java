@@ -99,7 +99,7 @@ public class ServiceEventFilter extends AbstractDefaultResourceManagerFilter {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN, VERIFY_AGENT);
         }
         if(!isNetworkStack(resourceAccId, healthcheckInstance.getInstanceId())) {
-            if (!isNetworkUp(resourceAccId)) {
+            if (!event.getReportedHealth().equals("UP") && !isNetworkUp(resourceAccId)) {
                 throw new ClientVisibleException(ResponseCodes.CONFLICT);
             }
         }
