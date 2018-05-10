@@ -3,6 +3,7 @@ package io.cattle.iaas.healthcheck.service.impl;
 import static io.cattle.platform.core.model.tables.HealthcheckInstanceTable.HEALTHCHECK_INSTANCE;
 import static io.cattle.platform.core.model.tables.InstanceTable.INSTANCE;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
+import io.cattle.platform.core.addon.InstanceHealthCheck.Strategy;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -76,6 +77,9 @@ public class HealthcheckCleanupMonitorImpl extends AbstractJooqDao implements Ta
         boolean remove = false;
         InstanceHealthCheck healthCheck = DataAccessor.field(instance,
                 InstanceConstants.FIELD_HEALTH_CHECK, jsonMapper, InstanceHealthCheck.class);
+        if(healthCheck.getStrategy() == Strategy.none) {
+                return remove;
+        }
         Integer timeout;
         if (instance.getHealthState().equalsIgnoreCase(HealthcheckConstants.HEALTH_STATE_INITIALIZING)) {
             timeout = healthCheck.getInitializingTimeout();

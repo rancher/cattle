@@ -1,7 +1,5 @@
 package io.cattle.iaas.healthcheck.process;
 
-import static io.cattle.platform.core.model.tables.ServiceTable.*;
-
 import io.cattle.iaas.healthcheck.service.HealthcheckService;
 import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.dao.ServiceDao;
