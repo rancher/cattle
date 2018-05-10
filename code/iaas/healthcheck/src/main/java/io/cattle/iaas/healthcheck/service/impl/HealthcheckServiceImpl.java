@@ -302,24 +302,19 @@ public class HealthcheckServiceImpl implements HealthcheckService {
         availableActiveHostIds.removeAll(allocatedActiveHostIds);
         requiredNumber = requiredNumber - allocatedActiveHostIds.size();
         Collections.shuffle(availableActiveHostIds);
-
-        if (inferiorHostId != null) {
-            if (availableActiveHostIds.contains(inferiorHostId)) {
-                    availableActiveHostIds.remove(inferiorHostId);
-            }
+            
+        // place inferiorHostId to the end of the list
+        if(inferiorHostId != null && availableActiveHostIds.contains(inferiorHostId)) {
+                availableActiveHostIds.remove(inferiorHostId);
+                availableActiveHostIds.add(inferiorHostId);
         }
-
+        
         // Figure out the final number of hosts
         int returnedNumber = requiredNumber > availableActiveHostIds.size() ? availableActiveHostIds.size() : requiredNumber;
         
-        List<Long> toReturnActiveHostIds = new ArrayList<Long>();
-        returnedNumber = returnedNumber == 0 ? 1 : returnedNumber;
-        
-        // place inferiorHostId to the end of the list);
-        toReturnActiveHostIds = availableActiveHostIds.subList(0, returnedNumber - 1);
-        toReturnActiveHostIds.add(inferiorHostId);
-
-        return toReturnActiveHostIds ;
+        // always include inferiorHostId
+        int start_index = availableActiveHostIds.size() - returnedNumber; 
+        return availableActiveHostIds.subList(start_index, availableActiveHostIds.size());
     }
 
     private Long getInstanceHostId(HealthcheckInstanceType type, long instanceId) {
