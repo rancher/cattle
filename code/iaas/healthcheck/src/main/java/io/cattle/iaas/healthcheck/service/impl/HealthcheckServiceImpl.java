@@ -299,8 +299,10 @@ public class HealthcheckServiceImpl implements HealthcheckService {
         Collections.shuffle(availableActiveHostIds);
             
         // place inferiorHostId to the end of the list
-        if (inferiorHostId != null && availableActiveHostIds.contains(inferiorHostId)) {
+        if (inferiorHostId != null) {
+                if (availableActiveHostIds.contains(inferiorHostId)) {
                 availableActiveHostIds.remove(inferiorHostId);
+                }
                 availableActiveHostIds.add(inferiorHostId);
         }
         
