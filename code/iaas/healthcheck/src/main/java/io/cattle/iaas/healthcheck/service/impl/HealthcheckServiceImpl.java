@@ -22,7 +22,6 @@ import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
-import io.cattle.platform.process.externalevent.ExternalServiceEventCreate;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
@@ -33,12 +32,8 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.apache.commons.collections.TransformerUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class HealthcheckServiceImpl implements HealthcheckService {
-    
-    private static final Logger log = LoggerFactory.getLogger(ExternalServiceEventCreate.class);
     
     @Inject
     GenericMapDao mapDao;
@@ -304,7 +299,7 @@ public class HealthcheckServiceImpl implements HealthcheckService {
         Collections.shuffle(availableActiveHostIds);
             
         // place inferiorHostId to the end of the list
-        if(inferiorHostId != null && availableActiveHostIds.contains(inferiorHostId)) {
+        if (inferiorHostId != null && availableActiveHostIds.contains(inferiorHostId)) {
                 availableActiveHostIds.remove(inferiorHostId);
                 availableActiveHostIds.add(inferiorHostId);
         }

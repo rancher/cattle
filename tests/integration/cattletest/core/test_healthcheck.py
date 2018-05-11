@@ -1185,7 +1185,7 @@ def test_hosts_removed_reconcile_when_init(super_client, new_context):
     expose_map = maps[0]
     c = super_client.reload(expose_map.instance())
     initial_len = len(c.healthcheckInstanceHostMaps())
-    assert initial_len == 1
+    assert initial_len == 2
 
     for h in c.healthcheckInstanceHostMaps():
         assert h.healthState == c.healthState
@@ -1311,8 +1311,8 @@ def test_healtcheck(new_context, super_client):
                 externalPresent = True
             else:
                 selfPresent = True
-        assert selfPresent == True
-        assert externalPresent == True
+        assert selfPresent is True
+        assert externalPresent is True
 
     host_maps = _wait_health_host_count(super_client, health_id, 3)
     validate_container_host(host_maps)
@@ -1351,6 +1351,7 @@ def test_healtcheck(new_context, super_client):
     assert len(host_maps) == 3
     validate_container_host(host_maps)
     remove_service(service)
+
 
 def _wait_health_host_count(super_client, health_id, count):
     def active_len():
