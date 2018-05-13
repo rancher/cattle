@@ -1147,7 +1147,7 @@ def test_health_check_host_disconnected_reconcile(super_client, new_context):
 
     # Add a new host which causes the old instance to get a new hcihm
     register_simulated_host(new_context)
-    assert len(c.healthcheckInstanceHostMaps()) == 1
+    assert len(c.healthcheckInstanceHostMaps()) == 2
 
     # Send an event for the new healthcheck to say the instance is unhealthy
     # This should cause the container to be removed
