@@ -5,7 +5,6 @@ import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.utils.ApiUtils;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
-import io.cattle.platform.core.constants.HealthcheckConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
 import io.cattle.platform.core.dao.AgentDao;
 import io.cattle.platform.core.dao.ServiceDao;
@@ -33,6 +32,10 @@ import javax.inject.Inject;
 public class ServiceEventFilter extends AbstractDefaultResourceManagerFilter {
 
     private static List<String> invalidStates = Arrays.asList(CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING);
+    private static List<String> upgradingStates = Arrays.asList(
+            ServiceConstants.STATE_UPGRADING,
+            ServiceConstants.STATE_ROLLINGBACK,
+            ServiceConstants.STATE_CANCELING_UPGRADE);
     public static final String VERIFY_AGENT = "CantVerifyHealthcheck";
 
     @Inject
@@ -99,7 +102,7 @@ public class ServiceEventFilter extends AbstractDefaultResourceManagerFilter {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN, VERIFY_AGENT);
         }
         if(!isNetworkStack(resourceAccId, healthcheckInstance.getInstanceId())) {
-            if (!event.getReportedHealth().equals("UP") && !isNetworkUp(resourceAccId)) {
+            if (event.getReportedHealth().startsWith("DOWN") && isNetworkUpgrading(resourceAccId)) {
                 throw new ClientVisibleException(ResponseCodes.CONFLICT);
             }
         }
@@ -111,7 +114,7 @@ public class ServiceEventFilter extends AbstractDefaultResourceManagerFilter {
         return super.create(type, request, next);
     }
 
-    private boolean isNetworkUp(long accountId) {
+    private boolean isNetworkUpgrading(long accountId) {
             Service networkDriverService = null;
         List<Service> networkDriverServices = objectManager.find(Service.class, SERVICE.ACCOUNT_ID, accountId, SERVICE.REMOVED, null, SERVICE.KIND,
                 ServiceConstants.KIND_NETWORK_DRIVER_SERVICE);
@@ -122,16 +125,16 @@ public class ServiceEventFilter extends AbstractDefaultResourceManagerFilter {
                 networkDriverService = service;
         }
         if (networkDriverService == null) {
-            return true;
+            return false;
         }
         List<Service> services = objectManager.find(Service.class, SERVICE.ACCOUNT_ID, accountId, SERVICE.REMOVED, null, SERVICE.STACK_ID,
                 networkDriverService.getStackId());
         for (Service service : services) {
-            if (!(service.getState().equals(CommonStatesConstants.ACTIVE) && service.getHealthState().equals(HealthcheckConstants.HEALTH_STATE_HEALTHY))) {
-                return false;
-            }
+                if (upgradingStates.contains(service.getState())) {
+                    return true;
+                }
         }
-        return true;
+        return false;
     }
 
     private boolean isNetworkStack(long accountId, long instanceId) {
