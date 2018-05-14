@@ -1254,19 +1254,8 @@ def test_health_check_host_remove(super_client, new_context):
     host = super_client.wait_success(super_client.delete(host))
     assert host.state == 'removed'
 
-    maps = _wait_until_active_map_count(service, 4, client)
-    expose_map = maps[0]
-    c = super_client.reload(expose_map.instance())
-    initial_len = len(c.healthcheckInstanceHostMaps())
-    assert initial_len == 3
-    # c_host_id = super_client.reload(c).instanceHostMaps()[0].hostId
-
-    for h in c.healthcheckInstanceHostMaps():
-        assert h.healthState == c.healthState
-        assert h.hostId != host.id
-
-    # # verify that new hostmap was created for the instance
-    # wait_for(lambda: len(c.healthcheckInstanceHostMaps()) == initial_len)
+    # verify that new hostmap was created for the instance
+    wait_for(lambda: len(c.healthcheckInstanceHostMaps()) == initial_len)
 
     hcim = None
     for h in c.healthcheckInstanceHostMaps():
