@@ -288,7 +288,7 @@ public class HealthcheckServiceImpl implements HealthcheckService {
             }
         }
 
-        // return if allocated active hosts is >= required number of hosts for healtcheck
+        // return if allocated active hosts is >= required number of hosts for health check
         if (allocatedActiveHostIds.size() >= requiredNumber) {
             return new ArrayList<>();
         }
@@ -297,21 +297,23 @@ public class HealthcheckServiceImpl implements HealthcheckService {
         availableActiveHostIds.removeAll(allocatedActiveHostIds);
         requiredNumber = requiredNumber - allocatedActiveHostIds.size();
         Collections.shuffle(availableActiveHostIds);
-
+            
         // place inferiorHostId to the end of the list
         if (inferiorHostId != null) {
-            if (availableActiveHostIds.contains(inferiorHostId)) {
-                availableActiveHostIds.remove(inferiorHostId);
-                if (availableActiveHostIds.isEmpty() && allocatedActiveHostIds.isEmpty()) {
+                if (availableActiveHostIds.contains(inferiorHostId)) {
+                    availableActiveHostIds.remove(inferiorHostId);
+                }
+                if(!allocatedActiveHostIds.contains(inferiorHostId)) {
                     availableActiveHostIds.add(inferiorHostId);
                 }
-            }
         }
-
+        
         // Figure out the final number of hosts
         int returnedNumber = requiredNumber > availableActiveHostIds.size() ? availableActiveHostIds.size() : requiredNumber;
-
-        return availableActiveHostIds.subList(0, returnedNumber);
+        
+        // always include inferiorHostId
+        int start_index = availableActiveHostIds.size() - returnedNumber; 
+        return availableActiveHostIds.subList(start_index, availableActiveHostIds.size());
     }
 
     private Long getInstanceHostId(HealthcheckInstanceType type, long instanceId) {

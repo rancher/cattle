@@ -984,7 +984,7 @@ def test_health_check_reconcile(super_client, new_context):
     expose_map = maps[0]
     c = super_client.reload(expose_map.instance())
     initial_len = len(c.healthcheckInstanceHostMaps())
-    assert initial_len == 2
+    assert initial_len == 3
 
     for h in c.healthcheckInstanceHostMaps():
         assert h.healthState == c.healthState
@@ -1057,7 +1057,7 @@ def test_health_check_all_hosts_removed_reconcile(super_client, new_context):
     expose_map = maps[0]
     c = super_client.reload(expose_map.instance())
     initial_len = len(c.healthcheckInstanceHostMaps())
-    assert initial_len == 1
+    assert initial_len == 2
 
     for h in c.healthcheckInstanceHostMaps():
         assert h.healthState == c.healthState
@@ -1116,7 +1116,7 @@ def test_hosts_removed_reconcile_when_init(super_client, new_context):
     expose_map = maps[0]
     c = super_client.reload(expose_map.instance())
     initial_len = len(c.healthcheckInstanceHostMaps())
-    assert initial_len == 1
+    assert initial_len == 2
 
     for h in c.healthcheckInstanceHostMaps():
         assert h.healthState == c.healthState
@@ -1235,8 +1235,14 @@ def test_healtcheck(new_context, super_client):
     health_id = health_c[0].id
 
     def validate_container_host(host_maps):
+        selfPresent, externalPresent = False, False
         for host_map in host_maps:
-            assert host_map.hostId != c_host_id
+            if host_map.hostId != c_host_id:
+                externalPresent = True
+            else:
+                selfPresent = True
+        assert selfPresent is True
+        assert externalPresent is True
 
     host_maps = _wait_health_host_count(super_client, health_id, 3)
     validate_container_host(host_maps)
@@ -1250,10 +1256,11 @@ def test_healtcheck(new_context, super_client):
     service = client.reload(service)
 
     host_maps = _wait_health_host_count(super_client, health_id, 3)
+    assert len(host_maps) < 3
     validate_container_host(host_maps)
 
     # reactivate the service, add 3 more hosts and verify
-    # that healthcheckers number was completed to 3, excluding
+    # that healthcheckers number was completed to 3, including
     # container's host
     service = client.wait_success(service.deactivate(), 120)
     for i in range(0, 3):
@@ -1271,6 +1278,7 @@ def test_healtcheck(new_context, super_client):
     client.wait_success(service.activate(), 120)
 
     host_maps = _wait_health_host_count(super_client, health_id, 3)
+    assert len(host_maps) == 3
     validate_container_host(host_maps)
     remove_service(service)
 
