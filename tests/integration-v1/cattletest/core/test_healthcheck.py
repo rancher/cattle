@@ -1278,7 +1278,7 @@ def test_healtcheck(new_context, super_client):
     client.wait_success(service.activate(), 120)
 
     host_maps = _wait_health_host_count(super_client, health_id, 3)
-    # assert len(host_maps) == 3
+    assert len(host_maps) == 3
     validate_container_host(host_maps)
     remove_service(service)
 
