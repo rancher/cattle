@@ -289,7 +289,7 @@ public class HealthcheckServiceImpl implements HealthcheckService {
         }
 
         // return if allocated active hosts is >= required number of hosts for healtcheck
-        if (allocatedActiveHostIds.size() >= requiredNumber) {
+        if (allocatedActiveHostIds.size() >= requiredNumber && allocatedActiveHostIds.contains(inferiorHostId)) {
             return new ArrayList<>();
         }
 
