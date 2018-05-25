@@ -1,5 +1,6 @@
 package io.cattle.platform.agent.server.ping.impl;
 
+import static io.cattle.platform.core.model.tables.HostTable.*;
 import static com.google.common.util.concurrent.Futures.*;
 
 import io.cattle.platform.agent.AgentLocator;
@@ -13,6 +14,7 @@ import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.model.Agent;
+import io.cattle.platform.core.model.Host;
 import io.cattle.platform.engine.process.ExitReason;
 import io.cattle.platform.engine.process.ProcessInstanceException;
 import io.cattle.platform.engine.process.util.ProcessEngineUtils;
@@ -90,7 +92,6 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
         if (isInterval(PING_INSTANCES_EVERY.get())) {
             ping.setOption(Ping.INSTANCES, true);
         }
-
         doPing(agent, ping);
     }
 
@@ -141,7 +142,12 @@ public class PingMonitorImpl implements PingMonitor, Task, TaskOptions {
             try {
                 agent = objectManager.reload(agent);
                 if (CommonStatesConstants.ACTIVE.equals(agent.getState())) {
-                    log.error("Scheduling reconnect for [{}]", agent.getId());
+                    Host host = objectManager.findAny(Host.class, HOST.AGENT_ID, agent.getId());
+                    if (host != null) {
+                        log.error("Scheduling reconnect for agent [{}] host [{}] count [{}]", agent.getId(), host.getId(), count);
+                    } else {
+                        log.error("Scheduling reconnect for agent [{}] count [{}]", agent.getId(), count);
+                    }
                     processManager.scheduleProcessInstance(AgentConstants.PROCESS_RECONNECT, agent, null);
                 }
             } catch (ProcessInstanceException e) {
