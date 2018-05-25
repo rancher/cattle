@@ -25,6 +25,15 @@ public class WebSocketMessageWriter extends WebSocketAdapter implements MessageW
     private boolean connectionClosed = false;
     private AtomicInteger queuedMessageCount = new AtomicInteger();
 
+    private String identifier;
+
+    public WebSocketMessageWriter(String identifier) {
+        this.identifier = identifier;
+        if (identifier != null) {
+            log.info("Creating websocket message writer for {}", identifier);
+        }
+    }
+
     @Override
     public void onWebSocketConnect(Session session) {
         this.session = session;
@@ -33,7 +42,18 @@ public class WebSocketMessageWriter extends WebSocketAdapter implements MessageW
     @Override
     public void onWebSocketClose(int closeCode, String message) {
         connectionClosed = true;
-        log.debug("Websocket connection closed. Code: [{}], message: [{}].", closeCode, message);
+        if (identifier != null) {
+            log.info("Websocket connection closed for {}. Code: [{}], message: [{}].", identifier, closeCode, message);
+        } else {
+            log.debug("Websocket connection closed. Code: [{}], message: [{}].", closeCode, message);
+        }
+    }
+
+    @Override
+    public void onWebSocketError(Throwable cause) {
+        if (identifier != null) {
+            log.warn("Unexpected websocket error for {}", identifier);
+        }
     }
 
     @Override
