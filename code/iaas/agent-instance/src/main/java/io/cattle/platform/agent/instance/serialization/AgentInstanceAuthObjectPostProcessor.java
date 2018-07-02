@@ -17,7 +17,12 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class AgentInstanceAuthObjectPostProcessor implements ObjectTypeSerializerPostProcessor {
+
+    private static final Logger log = LoggerFactory.getLogger(AgentInstanceAuthObjectPostProcessor.class);
 
     ObjectManager objectManager;
 
@@ -52,6 +57,10 @@ public class AgentInstanceAuthObjectPostProcessor implements ObjectTypeSerialize
             // Secondary authed roles
             for (Long accountId : authedRoleAccountIds) {
                 account = objectManager.loadResource(Account.class, accountId);
+                if (account == null) {
+                    log.warn("Failed to find account by id [{}]", accountId);
+                    continue;
+                }
                 String scope = null;
                 if (DataAccessor.fromDataFieldOf(account).withKey(AccountConstants.DATA_ACT_AS_RESOURCE_ACCOUNT).withDefault(false).as(Boolean.class)) {
                     scope = "ENVIRONMENT";
