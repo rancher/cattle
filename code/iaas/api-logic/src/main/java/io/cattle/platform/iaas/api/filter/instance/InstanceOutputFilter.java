@@ -1,6 +1,7 @@
 package io.cattle.platform.iaas.api.filter.instance;
 
 import io.cattle.platform.api.utils.ApiUtils;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.addon.HealthcheckState;
 import io.cattle.platform.core.addon.MountEntry;
 import io.cattle.platform.core.constants.InstanceConstants;
@@ -31,7 +32,12 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import com.netflix.config.DynamicBooleanProperty;
+
 public class InstanceOutputFilter extends CachedOutputFilter<Map<Long, Map<String, Object>>> {
+
+    private static final DynamicBooleanProperty ALLOW_RESTRICTED_USER_EXEC = ArchaiusUtil.getBoolean("allow.restricted.user.exec");
+
     @Inject
     ServiceDao serviceDao;
     @Inject
@@ -91,7 +97,7 @@ public class InstanceOutputFilter extends CachedOutputFilter<Map<Long, Map<Strin
         }
 
         List<?> capAdd = DataAccessor.fromMap(converted.getFields()).withKey(DockerInstanceConstants.FIELD_CAP_ADD).asList(jsonMapper, String.class);
-        if (infraRestricted && (labels.containsKey(SystemLabels.LABEL_AGENT_CREATE)
+        if (infraRestricted && !ALLOW_RESTRICTED_USER_EXEC.get() && (labels.containsKey(SystemLabels.LABEL_AGENT_CREATE)
                 || DataAccessor.fromMap(converted.getFields()).withKey(InstanceConstants.FIELD_PRIVILEGED).as(Boolean.class)
                 || (capAdd != null && !capAdd.isEmpty()))) {
             actions.remove(InstanceConstants.ACTION_EXEC);
