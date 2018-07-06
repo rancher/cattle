@@ -26,7 +26,7 @@ public interface ServiceExposeMapDao {
 
     List<? extends Instance> listServiceManagedInstances(Service service, String launchConfigName);
 
-    ServiceExposeMap findInstanceExposeMap(Instance instance);
+    ServiceExposeMap findInstanceExposeMap(Instance instance, Service service);
 
     ServiceExposeMap createServiceInstanceMap(Service service, Instance instance, boolean managed);
 
