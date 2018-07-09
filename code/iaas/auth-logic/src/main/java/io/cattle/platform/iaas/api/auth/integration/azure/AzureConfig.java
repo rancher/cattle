@@ -11,6 +11,7 @@ public class AzureConfig {
     private String clientId;
     private String accessMode;  
     private String domain;  
+    //Admin credential fields are not really used for any functionality by Azure provider, keeping it as 'optional'
     private String adminAccountUsername;
     private String adminAccountPassword;
 
@@ -54,14 +55,15 @@ public class AzureConfig {
         return domain;
     }   
     
-    @Field(nullable = true, required = true, minLength = 1)
+    //this field is not really used for any functionality by Azure provider, keeping it as 'optional'
+    @Field(nullable = true, required = false, minLength = 1)
     public String getAdminAccountUsername() {
         return adminAccountUsername;
     }
-
-    @Field(nullable = true, required = true, minLength = 1)
+    //this field is not really used for any functionality by Azure provider, keeping it as 'optional'
+    @Field(nullable = true, required = false, minLength = 1)
     public String getAdminAccountPassword() {
         return adminAccountPassword;
-    }    
+    }
 
 }
