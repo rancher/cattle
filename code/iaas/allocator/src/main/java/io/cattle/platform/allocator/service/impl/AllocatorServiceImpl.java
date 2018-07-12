@@ -368,9 +368,7 @@ public class AllocatorServiceImpl implements AllocatorService, Named {
             if (driver != null) {
                 String accessMode = DataAccessor.fieldString(driver, StorageDriverConstants.FIELD_VOLUME_ACCESS_MODE);
                 if (VolumeConstants.ACCESS_MODE_SINGLE_HOST_RW.equals(accessMode) || VolumeConstants.ACCESS_MODE_SINGLE_INSTANCE_RW.equals(accessMode)) {
-                    if (!CommonStatesConstants.ACTIVE.equals(volume.getAllocationState()) || VolumeConstants.STATE_DETACHED.equals(volume.getState())) {
-                        locks.add(new AllocateConstraintLock(AllocateConstraintLock.Type.VOLUME, volume.getId().toString()));
-                    }
+                    locks.add(new AllocateConstraintLock(AllocateConstraintLock.Type.VOLUME, volume.getId().toString()));
                 }
             }
         }
