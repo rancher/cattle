@@ -24,6 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
+import org.apache.http.util.EntityUtils;
 
 public class AzureRESTClient extends AzureConfigurable{
 
@@ -269,10 +270,11 @@ public class AzureRESTClient extends AzureConfigurable{
 
     public HttpResponse getFromAzure(String azureAccessToken, String url) throws IOException {
 
+        logger.trace("URL for Azure API call: "+ url);
         HttpResponse response = Request.Get(url).addHeader(AzureConstants.AUTHORIZATION, "Bearer " +
                 "" + azureAccessToken).addHeader(AzureConstants.ACCEPT, AzureConstants.APPLICATION_JSON).execute().returnResponse();
-        
         logger.debug("Response from Azure API: "+ response.getStatusLine());
+        logger.trace("Complete Response from Azure: "+ EntityUtils.toString(response.getEntity()));
 
         return response;
     }    
