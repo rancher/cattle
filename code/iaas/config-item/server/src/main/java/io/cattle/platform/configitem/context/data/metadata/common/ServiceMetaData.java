@@ -17,6 +17,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.netflix.config.DynamicBooleanProperty;
 
 public class ServiceMetaData {
@@ -113,6 +116,7 @@ public class ServiceMetaData {
     String token;
     // helper field needed by metadata service to process object
     String metadata_kind;
+    private static final Log logger = LogFactory.getLog(ServiceMetaData.class);
 
     public ServiceMetaData(Service service, String serviceName, String stackName, String stackUUID,
             List<String> sidekicks,
@@ -144,6 +148,7 @@ public class ServiceMetaData {
         Map<String, Object> service_metadata = DataAccessor.fieldMap(service, ServiceConstants.FIELD_METADATA);
         DynamicBooleanProperty enableHealthcheck = ArchaiusUtil.getBoolean("ipsec.service.enable.healthcheck");
         service_metadata.put("ipsec.service.enable.healthcheck", enableHealthcheck.get());
+        logger.info("KINARA enableHealthcheck  "+enableHealthcheck.get());
         this.metadata = service_metadata;
         this.lb_config = lbConfig;
         this.primary_service_name = service.getName();
