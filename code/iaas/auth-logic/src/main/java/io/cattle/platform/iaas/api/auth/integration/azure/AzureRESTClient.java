@@ -158,7 +158,15 @@ public class AzureRESTClient extends AzureConfigurable{
             Map<String, Object> jsonData = jsonMapper.readValue(response.getEntity().getContent());
             accessToken = ObjectUtils.toString(jsonData.get("access_token"));
             refreshToken = ObjectUtils.toString(jsonData.get("refresh_token"));
-            
+
+            //Also validate tenantID by issuing a search request for the user, if it errors we error out else login is successful
+            String filter = "$filter=userPrincipalName%20eq%20'" + URLEncoder.encode(username, "UTF-8") + "'";
+            HttpResponse newResponse = getFromAzure(accessToken, getURL(AzureClientEndpoints.USERS, "") + "&"+ filter);
+            statusCode = newResponse.getStatusLine().getStatusCode();
+            if(statusCode >= 300) {
+                noAzure(newResponse);
+            }
+
             ApiContext.getContext().getApiRequest().setAttribute(AzureConstants.AZURE_ACCESS_TOKEN, accessToken);
             ApiContext.getContext().getApiRequest().setAttribute(AzureConstants.AZURE_REFRESH_TOKEN, refreshToken);
 
