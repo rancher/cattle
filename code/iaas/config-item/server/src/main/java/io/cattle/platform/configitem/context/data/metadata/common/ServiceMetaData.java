@@ -1,5 +1,6 @@
 package io.cattle.platform.configitem.context.data.metadata.common;
 
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.addon.InstanceHealthCheck;
 import io.cattle.platform.core.constants.InstanceConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
@@ -15,6 +16,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.netflix.config.DynamicBooleanProperty;
 
 public class ServiceMetaData {
 
@@ -138,7 +141,10 @@ public class ServiceMetaData {
             this.health_check = new HealthCheck(healthCheck);
         }
         this.system = service.getSystem();
-        this.metadata = DataAccessor.fieldMap(service, ServiceConstants.FIELD_METADATA);
+        Map<String, Object> service_metadata = DataAccessor.fieldMap(service, ServiceConstants.FIELD_METADATA);
+        DynamicBooleanProperty enableHealthcheck = ArchaiusUtil.getBoolean("ipsec.service.enable.healthcheck");
+        service_metadata.put("ipsec.service.enable.healthcheck", enableHealthcheck.get());
+        this.metadata = service_metadata;
         this.lb_config = lbConfig;
         this.primary_service_name = service.getName();
         this.environment_uuid = account.getUuid();
