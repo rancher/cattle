@@ -125,6 +125,7 @@ import io.cattle.platform.servicediscovery.service.impl.InstanceServiceLookup;
 import io.cattle.platform.servicediscovery.service.impl.RegionServiceImpl;
 import io.cattle.platform.servicediscovery.service.impl.ServiceDiscoveryServiceImpl;
 import io.cattle.platform.servicediscovery.service.impl.SkipServiceLookup;
+import io.cattle.platform.servicediscovery.service.impl.IpsecHealthcheckEnabledListener;
 import io.cattle.platform.servicediscovery.upgrade.impl.UpgradeManagerImpl;
 import io.cattle.platform.servicediscovery.process.RegionMonitor;
 import io.cattle.platform.spring.resource.SpringUrlListFactory;
@@ -886,5 +887,10 @@ public class SystemServicesConfig {
     @Bean 
     RegionMonitor RegionMonitor() {
         return new RegionMonitor();
+    }
+    
+    @Bean 
+    IpsecHealthcheckEnabledListener HealthcheckMonitor() {
+            return new IpsecHealthcheckEnabledListener();
     }
 }
