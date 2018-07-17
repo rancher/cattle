@@ -142,9 +142,7 @@ public class ServiceMetaData {
             this.health_check = new HealthCheck(healthCheck);
         }
         this.system = service.getSystem();
-        Map<String, Object> service_metadata = DataAccessor.fieldMap(service, ServiceConstants.FIELD_METADATA);
-        service_metadata.put("ipsec.service.enable.healthcheck", ENABLE_HEALTHCHECK.get());
-        this.metadata = service_metadata;
+        setServiceMetadata(service, serviceName);
         this.lb_config = lbConfig;
         this.primary_service_name = service.getName();
         this.environment_uuid = account.getUuid();
@@ -181,6 +179,16 @@ public class ServiceMetaData {
                 InstanceConstants.FIELD_EXPOSE);
         if (exposeObj != null) {
             this.expose.addAll((List<String>) exposeObj);
+        }
+    }
+    
+    void setServiceMetadata(Service service, String serviceName) {
+        if (serviceName.equals("ipsec")) {
+            Map<String, Object> service_metadata = DataAccessor.fieldMap(service, ServiceConstants.FIELD_METADATA);
+            service_metadata.put("ipsec.service.enable.healthcheck", ENABLE_HEALTHCHECK.get());
+            this.metadata = service_metadata;
+        } else {
+            this.metadata = DataAccessor.fieldMap(service, ServiceConstants.FIELD_METADATA);
         }
     }
 
