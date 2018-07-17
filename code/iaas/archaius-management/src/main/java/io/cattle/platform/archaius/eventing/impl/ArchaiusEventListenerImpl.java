@@ -20,6 +20,7 @@ public class ArchaiusEventListenerImpl implements ArchaiusEventListener {
         if ("setting".equals(data.get("type"))) {
             log.info("Refreshing settings");
             ArchaiusUtil.refresh();
+            log.info("KINARA "+ data);
         }
     }
 
