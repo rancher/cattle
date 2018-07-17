@@ -147,7 +147,6 @@ public class ServiceMetaData {
         }
         this.system = service.getSystem();
         Map<String, Object> service_metadata = DataAccessor.fieldMap(service, ServiceConstants.FIELD_METADATA);
-//        DynamicBooleanProperty enableHealthcheck = ArchaiusUtil.getBoolean("ipsec.service.enable.healthcheck");
         service_metadata.put("ipsec.service.enable.healthcheck", ENABLE_HEALTHCHECK.get());
         logger.info("KINARA enableHealthcheck  "+ENABLE_HEALTHCHECK.get());
         this.metadata = service_metadata;
@@ -157,12 +156,6 @@ public class ServiceMetaData {
         this.state = service.getState();
         this.metadata_kind = "service";
         this.token = DataAccessor.fieldString(service, ServiceConstants.FIELD_TOKEN);
-        
-        ENABLE_HEALTHCHECK.addCallback(new Runnable() {
-        		public void run() {
-        			logger.info("NAIYA changed!");
-        		}
-        });
     }
 
     public static String getVip(Service service) {
