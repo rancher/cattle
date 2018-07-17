@@ -117,7 +117,8 @@ public class ServiceMetaData {
     // helper field needed by metadata service to process object
     String metadata_kind;
     private static final Log logger = LogFactory.getLog(ServiceMetaData.class);
-
+    private static final DynamicBooleanProperty ENABLE_HEALTHCHECK = ArchaiusUtil.getBoolean("ipsec.service.enable.healthcheck");
+    
     public ServiceMetaData(Service service, String serviceName, String stackName, String stackUUID,
             List<String> sidekicks,
             InstanceHealthCheck healthCheck, LBConfigMetadataStyle lbConfig, Account account) {
@@ -146,9 +147,9 @@ public class ServiceMetaData {
         }
         this.system = service.getSystem();
         Map<String, Object> service_metadata = DataAccessor.fieldMap(service, ServiceConstants.FIELD_METADATA);
-        DynamicBooleanProperty enableHealthcheck = ArchaiusUtil.getBoolean("ipsec.service.enable.healthcheck");
-        service_metadata.put("ipsec.service.enable.healthcheck", enableHealthcheck.get());
-        logger.info("KINARA enableHealthcheck  "+enableHealthcheck.get());
+//        DynamicBooleanProperty enableHealthcheck = ArchaiusUtil.getBoolean("ipsec.service.enable.healthcheck");
+        service_metadata.put("ipsec.service.enable.healthcheck", ENABLE_HEALTHCHECK.get());
+        logger.info("KINARA enableHealthcheck  "+ENABLE_HEALTHCHECK.get());
         this.metadata = service_metadata;
         this.lb_config = lbConfig;
         this.primary_service_name = service.getName();
@@ -156,6 +157,12 @@ public class ServiceMetaData {
         this.state = service.getState();
         this.metadata_kind = "service";
         this.token = DataAccessor.fieldString(service, ServiceConstants.FIELD_TOKEN);
+        
+        ENABLE_HEALTHCHECK.addCallback(new Runnable() {
+        		public void run() {
+        			logger.info("NAIYA changed!");
+        		}
+        });
     }
 
     public static String getVip(Service service) {
