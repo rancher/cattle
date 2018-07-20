@@ -3,6 +3,7 @@ package io.cattle.platform.iaas.api.filter.serviceevent;
 
 import io.cattle.platform.api.auth.Policy;
 import io.cattle.platform.api.utils.ApiUtils;
+import io.cattle.platform.archaius.util.ArchaiusUtil;
 import io.cattle.platform.core.constants.AgentConstants;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
@@ -29,9 +30,12 @@ import java.util.Arrays;
 import java.util.List;
 import javax.inject.Inject;
 
+import com.netflix.config.DynamicBooleanProperty;
+
 public class ServiceEventFilter extends AbstractDefaultResourceManagerFilter {
 
     private static List<String> invalidStates = Arrays.asList(CommonStatesConstants.REMOVED, CommonStatesConstants.REMOVING);
+    private static final DynamicBooleanProperty ENABLE_HEALTHCHECK = ArchaiusUtil.getBoolean("ipsec.service.enable.healthcheck");
     private static List<String> upgradingStates = Arrays.asList(
             ServiceConstants.STATE_UPGRADING,
             ServiceConstants.STATE_UPGRADED,
@@ -104,7 +108,11 @@ public class ServiceEventFilter extends AbstractDefaultResourceManagerFilter {
         if (!healthcheckInstanceHostMap.getAccountId().equals(resourceAccId)) {
             throw new ClientVisibleException(ResponseCodes.FORBIDDEN, VERIFY_AGENT);
         }
-        if(!isNetworkStack(resourceAccId, healthcheckInstance.getInstanceId())) {
+        if(isNetworkStack(resourceAccId, healthcheckInstance.getInstanceId())) {
+                if(!ENABLE_HEALTHCHECK.get()) {
+                    event.setReportedHealth("UP");
+                }
+        } else {
             if (event.getReportedHealth().startsWith("DOWN") && isNetworkUpgrading(resourceAccId)) {
                 throw new ClientVisibleException(ResponseCodes.CONFLICT);
             }
