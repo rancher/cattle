@@ -103,6 +103,7 @@ public class Main {
             ServerConnector http = new ServerConnector(s, new HttpConnectionFactory(httpConfig));
             http.setPort(Integer.parseInt(getHttpPort()));
             s.setConnectors(new Connector[] {http});
+            s.setAttribute("org.eclipse.jetty.server.Request.maxFormContentSize", -1);
 
             MBeanContainer mbContainer = new MBeanContainer(ManagementFactory.getPlatformMBeanServer());
             s.addEventListener(mbContainer);
