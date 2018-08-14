@@ -6,6 +6,8 @@ import io.cattle.platform.core.constants.IdentityConstants;
 import io.cattle.platform.core.model.ProjectMember;
 import io.cattle.platform.iaas.api.auth.integration.IdentityNotFoundException;
 import io.cattle.platform.iaas.api.auth.integration.external.ExternalServiceAuthProvider;
+import io.cattle.platform.iaas.api.auth.integration.external.ExternalServiceTokenUtil;
+import io.cattle.platform.iaas.api.auth.integration.external.ServiceAuthConstants;
 import io.cattle.platform.iaas.api.auth.integration.interfaces.IdentityProvider;
 import io.cattle.platform.util.exception.ExceptionUtils;
 import io.github.ibuildthecloud.gdapi.condition.Condition;
@@ -32,6 +34,7 @@ import javax.inject.Inject;
 
 import org.apache.cloudstack.managed.context.ManagedContext;
 import org.apache.cloudstack.managed.context.impl.DefaultManagedContext;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -45,6 +48,9 @@ public class IdentityManager extends AbstractNoOpResourceManager {
 
     @Inject
     ExternalServiceAuthProvider externalAuthProvider;
+    
+    @Inject
+    ExternalServiceTokenUtil tokenUtil;
 
     @Override
     public Class<?>[] getTypeClasses() {
@@ -65,6 +71,20 @@ public class IdentityManager extends AbstractNoOpResourceManager {
         if (criteria.containsKey("all")) {
             Condition search = ((List<Condition>) criteria.get("all")).get(0);
             return searchIdentites((String)search.getValue(), false);
+        }
+        // Only for SAML
+        if(externalAuthProvider.isConfigured() && ServiceAuthConstants.NO_IDENTITY_LOOKUP_SUPPORTED.get()) {
+            if (tokenUtil.findAndSetJWT()) {
+                Set<Identity> identitiesInToken = tokenUtil.getIdentities();
+                for (Identity identity : identitiesInToken) {
+                    if (StringUtils.equals(identity.getExternalIdType(), ServiceAuthConstants.USER_TYPE.get())) {
+                       identity.setUser(true);
+                       break;
+                    }
+                }
+                List<Identity> idlist = new ArrayList<Identity>(identitiesInToken);
+                return idlist;
+            }
         }
         Policy policy = (Policy) ApiContext.getContext().getPolicy();
         return refreshIdentities(policy.getIdentities());
