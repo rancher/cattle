@@ -22,6 +22,7 @@ import io.cattle.platform.lock.LockManager;
 import io.cattle.platform.object.ObjectManager;
 import io.cattle.platform.object.meta.ObjectMetaDataManager;
 import io.cattle.platform.object.process.ObjectProcessManager;
+import io.cattle.platform.object.process.StandardProcess;
 import io.cattle.platform.util.type.CollectionUtils;
 
 import java.util.ArrayList;
@@ -109,7 +110,6 @@ public class HealthcheckServiceImpl implements HealthcheckService {
         Instance instance = objectManager.loadResource(Instance.class, hcInstance.getInstanceId());
         updateInstanceHealthState(instance, updateWithState);
     }
-
 
     protected boolean shouldUpdate(HealthcheckInstanceHostMap hcihm, long externalTimestamp, String healthState) {
         HealthcheckInstance hcInstance = objectManager.loadResource(HealthcheckInstance.class,
@@ -239,10 +239,21 @@ public class HealthcheckServiceImpl implements HealthcheckService {
             HealthcheckInstance healthInstance) {
         Long inferiorHostId = getInstanceHostId(instanceType, id);
         List<Long> healthCheckHostIds = getHealthCheckHostIds(healthInstance, inferiorHostId);
+        List<HealthcheckInstanceHostMap> healthHostMaps = objectManager.find(HealthcheckInstanceHostMap.class,
+                HEALTHCHECK_INSTANCE_HOST_MAP.HEALTHCHECK_INSTANCE_ID, healthInstance.getId(),
+                HEALTHCHECK_INSTANCE_HOST_MAP.REMOVED, null);
         for (Long healthCheckHostId : healthCheckHostIds) {
-            HealthcheckInstanceHostMap healthHostMap = mapDao.findNonRemoved(HealthcheckInstanceHostMap.class,
-                    Host.class, healthCheckHostId, HealthcheckInstance.class,
-                    healthInstance.getId());
+            HealthcheckInstanceHostMap healthHostMap = null;
+                for(HealthcheckInstanceHostMap hostMap : healthHostMaps) {
+                    if(!hostMap.getHostId().equals(healthCheckHostId)) {
+                            continue;
+                    }
+                    if (healthHostMap == null) {
+                            healthHostMap = hostMap;
+                    } else if (!hostMap.getState().equals(CommonStatesConstants.REMOVING)) {
+                            objectProcessManager.scheduleStandardProcess(StandardProcess.REMOVE, hostMap, null);
+                        }
+            }
             Long instanceId = (instanceType == HealthcheckInstanceType.INSTANCE ? id : null);
             if (healthHostMap == null) {
                 resourceDao.createAndSchedule(HealthcheckInstanceHostMap.class, HEALTHCHECK_INSTANCE_HOST_MAP.HOST_ID,
