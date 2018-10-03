@@ -100,6 +100,7 @@ public class Main {
             HttpConfiguration httpConfig = new HttpConfiguration();
             httpConfig.setRequestHeaderSize(16 * 1024);
             httpConfig.setOutputBufferSize(512);
+            httpConfig.setSendServerVersion(false);
             ServerConnector http = new ServerConnector(s, new HttpConnectionFactory(httpConfig));
             http.setPort(Integer.parseInt(getHttpPort()));
             s.setConnectors(new Connector[] {http});
