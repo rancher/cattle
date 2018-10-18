@@ -51,7 +51,7 @@ public class ContainerLogsActionHandler implements ActionHandler {
 
         String dockerId = DockerUtils.getDockerIdentifier(container);
         Map<String, Object> data = CollectionUtils.asMap(DockerInstanceConstants.DOCKER_CONTAINER, dockerId, "Lines", logs.getLines(), "Follow",
-                logs.getFollow());
+                logs.getFollow(), "Timestamps", logs.getTimestamps(), "Since", logs.getSince());
 
         HostApiAccess apiAccess = apiService.getAccess(request, host.getId(), CollectionUtils.asMap("logs", data), HOST_LOGS_PATH.get());
 

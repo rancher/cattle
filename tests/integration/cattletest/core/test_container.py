@@ -493,7 +493,7 @@ def test_container_logs(context):
 
     assert callable(c.logs)
 
-    resp = c.logs(follow=True, lines=300)
+    resp = c.logs(follow=True, lines=300, timestamps=True, since="2017-05-03")
 
     assert resp.url is not None
     assert resp.token is not None
@@ -503,6 +503,8 @@ def test_container_logs(context):
     assert jwt['logs']['Container'] == c.externalId
     assert jwt['logs']['Lines'] == 300
     assert jwt['logs']['Follow'] is True
+    assert jwt['logs']['Timestamps'] is True
+    assert jwt['logs']['Since'] == "2017-05-03"
     assert jwt['exp'] is not None
 
     resp = c.logs()
@@ -515,6 +517,7 @@ def test_container_logs(context):
     assert jwt['logs']['Container'] == c.externalId
     assert jwt['logs']['Lines'] == 100
     assert jwt['logs']['Follow'] is True
+    assert jwt['logs']['Timestamps'] is True
     assert jwt['exp'] is not None
 
     context.delete(c)
