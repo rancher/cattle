@@ -11,4 +11,10 @@ public interface ContainerLogs {
 
     @Field(defaultValue = "100", min = 0)
     Integer getLines();
+
+    @Field(defaultValue = "true")
+    Boolean getTimestamps();
+
+    @Field(defaultValue = "")
+    String getSince();
 }

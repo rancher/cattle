@@ -205,6 +205,8 @@
         "containerLogs":"r",
         "containerLogs.follow":"cr",
         "containerLogs.lines":"cr",
+        "containerLogs.timestamps":"cr",
+        "containerLogs.since":"cr",
 
         "containerProxy":"r",
         "containerProxy.port":"cr",
