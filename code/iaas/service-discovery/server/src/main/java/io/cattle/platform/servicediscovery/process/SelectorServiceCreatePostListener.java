@@ -1,14 +1,14 @@
 package io.cattle.platform.servicediscovery.process;
 
 
-import static io.cattle.platform.core.model.tables.InstanceTable.*;
-
 import io.cattle.platform.core.addon.ServiceLink;
 import io.cattle.platform.core.constants.CommonStatesConstants;
 import io.cattle.platform.core.constants.ServiceConstants;
+import io.cattle.platform.core.dao.InstanceDao;
 import io.cattle.platform.core.model.Instance;
 import io.cattle.platform.core.model.Service;
 import io.cattle.platform.core.model.ServiceExposeMap;
+import io.cattle.platform.core.model.tables.records.InstanceRecord;
 import io.cattle.platform.engine.handler.HandlerResult;
 import io.cattle.platform.engine.handler.ProcessPostListener;
 import io.cattle.platform.engine.process.ProcessInstance;
@@ -23,6 +23,7 @@ import io.cattle.platform.servicediscovery.deployment.impl.lock.ServiceInstanceL
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
 import io.cattle.platform.util.type.Priority;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +50,9 @@ public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogi
 
     @Inject
     ServiceConsumeMapDao consumeMapDao;
+
+    @Inject
+    InstanceDao instanceDao;
 
     @Override
     public String[] getProcessNames() {
@@ -107,8 +111,14 @@ public class SelectorServiceCreatePostListener extends AbstractObjectProcessLogi
         if (Strings.isNullOrEmpty(service.getSelectorContainer())) {
             return;
         }
-        List<Instance> instances = objectManager.find(Instance.class, INSTANCE.ACCOUNT_ID, service.getAccountId(),
-                INSTANCE.REMOVED, null);
+        List<Long> instanceIds = instanceDao.getInstanceIdsForAccount(service.getAccountId());
+        List<InstanceRecord> instances = new ArrayList<>();
+        for (Long instanceId : instanceIds) {
+            InstanceRecord i = new InstanceRecord();
+            i.setId(instanceId);
+            i.setData(instanceDao.getCacheInstanceData(instanceId));
+            instances.add(i);
+        }
 
         List<? extends ServiceExposeMap> current = exposeMapDao.getUnmanagedServiceInstanceMapsToRemove(service.getId());
         final Map<Long, ServiceExposeMap> currentMappedInstances = new HashMap<>();

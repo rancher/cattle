@@ -505,4 +505,14 @@ public class InstanceDaoImpl extends AbstractJooqDao implements InstanceDao, Ann
                 .limit(count)
                 .fetchInto(InstanceLinkRecord.class);
     }
+
+    @Override
+    public List<Long> getInstanceIdsForAccount(long accountId) {
+        return create()
+                .select(INSTANCE.ID)
+                .from(INSTANCE)
+                .where(INSTANCE.REMOVED.isNull()
+                        .and(INSTANCE.ACCOUNT_ID.eq(accountId)))
+                .fetchInto(Long.class);
+    }
 }
