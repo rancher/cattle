@@ -59,6 +59,7 @@ public class AuthServiceLauncher extends GenericServiceLauncher implements Initi
     public static final DynamicStringProperty NO_IDENTITY_LOOKUP_SETTING = ArchaiusUtil.getString("api.auth.external.provider.no.identity.lookup");
     private static final DynamicStringProperty AUTH_SERVICE_LOG_LEVEL = ArchaiusUtil.getString("auth.service.log.level");
     private static final DynamicStringProperty AUTH_SERVICE_CONFIG_UPDATE_TIMESTAMP = ArchaiusUtil.getString("auth.service.config.update.timestamp");
+    public static final DynamicStringProperty API_AUTH_SHIBBOLETH_REDIRECT_WHITELIST_SETTING = ArchaiusUtil.getString("api.auth.shibboleth.redirect.whitelist");
 
     @Override
     protected boolean shouldRun() {
@@ -154,6 +155,7 @@ public class AuthServiceLauncher extends GenericServiceLauncher implements Initi
         list.add(SECURITY_SETTING);
         list.add(AUTH_SERVICE_LOG_LEVEL);
         list.add(AUTH_SERVICE_CONFIG_UPDATE_TIMESTAMP);
+        list.add(API_AUTH_SHIBBOLETH_REDIRECT_WHITELIST_SETTING);
         return list;
     }
 
