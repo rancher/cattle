@@ -39,6 +39,7 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
 
     private static final String ACCOUNT_ID_HEADER = "X-API-ACCOUNT-ID";
     private static final String USER_ID_HEADER = "X-API-USER-ID";
+    private static final String ACCOUNT_KIND_HEADER = "X-API-ACCOUNT-KIND";
 
     AuthDao authDao;
     List<AccountLookup> accountLookups;
@@ -97,14 +98,14 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
                 request.setType(singleType);
             }
         }
-        saveInContext(request, policy, schemaFactory);
+        saveInContext(request, policy, schemaFactory, authenticatedAsAccount);
     }
 
     protected void throwUnauthorized() {
         throw new ClientVisibleException(ResponseCodes.UNAUTHORIZED);
     }
 
-    protected void saveInContext(ApiRequest request, Policy policy, SchemaFactory schemaFactory) {
+    protected void saveInContext(ApiRequest request, Policy policy, SchemaFactory schemaFactory, Account authorizedAccount) {
         if (schemaFactory != null) {
             request.setSchemaFactory(schemaFactory);
         }
@@ -112,6 +113,7 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         request.getServletContext().getResponse().addHeader(ACCOUNT_ID_HEADER, accountId);
         String userId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), policy.getAuthenticatedAsAccountId());
         request.getServletContext().getResponse().addHeader(USER_ID_HEADER, userId);
+        request.getServletContext().getResponse().addHeader(ACCOUNT_KIND_HEADER, authorizedAccount.getName());
         ApiContext.getContext().setPolicy(policy);
     }
 
