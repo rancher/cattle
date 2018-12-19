@@ -417,6 +417,9 @@ public class ServiceDiscoveryApiServiceImpl implements ServiceDiscoveryApiServic
                         Map<String, Object> secretOpts = (Map<String, Object>) secret;
                         String secretId = ObjectUtils.toString(secretOpts.get(SECRET_ID));
                         Secret secretObj = objectManager.loadResource(Secret.class, secretId);
+                        if (secretObj == null) {
+                            continue;
+                        }
                         String secretName = secretObj.getName(); 
                         if (isShortSyntax(secretOpts)) {
                             secretEntries.add(secretName);
