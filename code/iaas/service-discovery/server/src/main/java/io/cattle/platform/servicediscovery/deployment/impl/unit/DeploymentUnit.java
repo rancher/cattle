@@ -246,7 +246,7 @@ public class DeploymentUnit {
         }
 
         if (unit != null) {
-            clenaupVolumes();
+            cleanupVolumes();
             Map<String, Object> params = new HashMap<>();
             params.put(ObjectMetaDataManager.REMOVED_FIELD, new Date());
             params.put(ObjectMetaDataManager.REMOVE_TIME_FIELD, new Date());
@@ -255,7 +255,7 @@ public class DeploymentUnit {
         }
     }
 
-    public void clenaupVolumes() {
+    public void cleanupVolumes() {
         if (unit == null) {
             return;
         }
@@ -763,12 +763,12 @@ public class DeploymentUnit {
             if (usedByInstance == null) {
                 continue;
             }
-            clenaupDeploymentInstance(usedByInstance);
+            cleanupDeploymentInstance(usedByInstance);
             cleanupInstanceWithMissingDep(usedInLaunchConfig);
         }
     }
 
-    protected void clenaupDeploymentInstance(DeploymentUnitInstance instance) {
+    protected void cleanupDeploymentInstance(DeploymentUnitInstance instance) {
         instance.remove();
         launchConfigToInstance.remove(instance.getLaunchConfigName());
 
