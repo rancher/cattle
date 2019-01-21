@@ -11,6 +11,7 @@ import io.cattle.platform.iaas.api.auditing.AuditService;
 import io.cattle.platform.object.resource.ResourceMonitor;
 import io.cattle.platform.object.util.DataAccessor;
 import io.cattle.platform.process.common.handler.AbstractObjectProcessHandler;
+import io.cattle.platform.servicediscovery.api.dao.ServiceConsumeMapDao;
 import io.cattle.platform.servicediscovery.api.dao.ServiceExposeMapDao;
 import io.cattle.platform.servicediscovery.deployment.DeploymentManager;
 import io.cattle.platform.servicediscovery.service.ServiceDiscoveryService;
@@ -21,6 +22,9 @@ import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.TransformerUtils;
 
 /**
  * This handler is responsible for activating the service as well as restoring the active service to its scale
@@ -41,7 +45,6 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
 
     @Inject
     ResourceMonitor resourceMonitor;
-
     @Inject
     IdFormatter idFormatter;
 
@@ -50,6 +53,9 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
 
     @Inject
     ServiceExposeMapDao exposeDao;
+
+    @Inject
+    ServiceConsumeMapDao consumeMapDao;
 
     @Override
     public String[] getProcessNames() {
@@ -70,7 +76,7 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
         activity.run(service, process.getName(), getMessage(process.getName()), new Runnable() {
             @Override
             public void run() {
-                waitForConsumedServicesActivate(state);
+                waitForConsumedServicesActivate(state, service);
                 deploymentMgr.activate(service);
             }
         });
@@ -92,14 +98,32 @@ public class ServiceUpdateActivate extends AbstractObjectProcessHandler {
     }
 
     @SuppressWarnings("unchecked")
-    protected void waitForConsumedServicesActivate(ProcessState state) {
+    protected void waitForConsumedServicesActivate(ProcessState state, Service service) {
         List<Integer> consumedServicesIds = DataAccessor.fromMap(state.getData())
                 .withKey(ServiceConstants.FIELD_WAIT_FOR_CONSUMED_SERVICES_IDS)
                 .withDefault(Collections.EMPTY_LIST).as(List.class);
 
-        for (Integer consumedServiceId : consumedServicesIds) {
-            Service consumedService = objectManager.loadResource(Service.class, consumedServiceId.longValue());
-            resourceMonitor.waitForState(consumedService, CommonStatesConstants.ACTIVE);
+        if (consumedServicesIds.isEmpty()) {
+            // 1. Wait for the consumed services to reach a finite state
+            List<Long> servicesViaLinkIds = (List<Long>) CollectionUtils.collect(
+                    consumeMapDao.findConsumedServices(service.getId()),
+                    TransformerUtils.invokerTransformer("getConsumedServiceId"));
+            for (Long serviceViaLinkId : servicesViaLinkIds) {
+                Service consumedService = objectManager.loadResource(Service.class, serviceViaLinkId);
+                if (consumedService == null) {
+                    continue;
+                }
+                resourceMonitor.waitForNotTransitioning(consumedService);
+            }
+        } else {
+            // 2. Wait for the services passed by an explicit directive, to activate
+            for (Integer consumedServiceId : consumedServicesIds) {
+                Service consumedService = objectManager.loadResource(Service.class, consumedServiceId.longValue());
+                if (consumedService == null) {
+                    continue;
+                }
+                resourceMonitor.waitForState(consumedService, CommonStatesConstants.ACTIVE);
+            }
         }
     }
 }

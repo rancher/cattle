@@ -64,7 +64,6 @@ public class StackActivateServicesActionHandler implements ActionHandler {
         }
 
         for (Service service : services) {
-
             activateService(service, servicesToActivate, alreadySeenServices, alreadyActivatedServices);
         }
     }
