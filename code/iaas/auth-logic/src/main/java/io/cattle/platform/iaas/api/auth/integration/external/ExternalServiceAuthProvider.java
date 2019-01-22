@@ -322,6 +322,12 @@ public class ExternalServiceAuthProvider {
             ApiRequest request = ApiContext.getContext().getApiRequest();
             request.setAttribute(ServiceAuthConstants.ACCESS_TOKEN, accessToken);
             return tokenUtil.getIdentities();
+        } else if(ServiceAuthConstants.NO_IDENTITY_LOOKUP_SUPPORTED.get()) {
+            Set<Identity> identities = new HashSet<>();
+            if (StringUtils.equals(account.getExternalIdType(), ServiceAuthConstants.USER_TYPE.get())) {
+                identities.add(new Identity(account.getExternalIdType(), account.getExternalId(), null, null, null, null, true));
+            }
+            return identities;
         }
         String jwt = null;
         if (SecurityConstants.SECURITY.get() && !StringUtils.isBlank(accessToken)) {
