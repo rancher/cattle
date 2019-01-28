@@ -40,6 +40,7 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
     private static final String ACCOUNT_ID_HEADER = "X-API-ACCOUNT-ID";
     private static final String USER_ID_HEADER = "X-API-USER-ID";
     private static final String ACCOUNT_KIND_HEADER = "X-API-ACCOUNT-KIND";
+    private static final String ACCOUNT_NAME_HEADER = "X-API-ACCOUNT-NAME";
 
     AuthDao authDao;
     List<AccountLookup> accountLookups;
@@ -113,7 +114,8 @@ public class ApiAuthenticator extends AbstractApiRequestHandler {
         request.getServletContext().getResponse().addHeader(ACCOUNT_ID_HEADER, accountId);
         String userId = (String) ApiContext.getContext().getIdFormatter().formatId(objectManager.getType(Account.class), policy.getAuthenticatedAsAccountId());
         request.getServletContext().getResponse().addHeader(USER_ID_HEADER, userId);
-        request.getServletContext().getResponse().addHeader(ACCOUNT_KIND_HEADER, authorizedAccount.getName());
+        request.getServletContext().getResponse().addHeader(ACCOUNT_KIND_HEADER, authorizedAccount.getKind());
+        request.getServletContext().getResponse().addHeader(ACCOUNT_NAME_HEADER, authorizedAccount.getName());
         ApiContext.getContext().setPolicy(policy);
     }
 
