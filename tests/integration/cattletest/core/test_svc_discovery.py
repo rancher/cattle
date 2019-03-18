@@ -2022,7 +2022,7 @@ def test_export_config(client, context):
                      "dnsSearch": ["192.168.1.1"],
                      "cpuShares": 100,
                      "blkioDeviceOptions": {
-                         '/dev/sda': {
+                         '/dev/nvme0n1': {
                              'readIops': 1000,
                              'writeIops': 2000,
                          },
@@ -2088,8 +2088,8 @@ def test_export_config(client, context):
     assert svc["dns_opt"] == ["opt"]
     assert svc["dns_search"] == ["192.168.1.1"]
     assert svc["cpu_shares"] == 100
-    assert svc["device_read_iops"] == {"/dev/sda": 1000}
-    assert svc["device_write_iops"] == {"/dev/sda": 2000}
+    assert svc["device_read_iops"] == {"/dev/nvme0n1": 1000}
+    assert svc["device_write_iops"] == {"/dev/nvme0n1": 2000}
     assert svc["device_read_bps"] == {"/dev/null": 3000}
     assert svc["device_write_bps"] == {"/dev/null": 3000}
     assert svc["blkio_weight_device"] == {"/dev/null": 3000}
@@ -2144,7 +2144,7 @@ def test_malform_export_config(client, context):
                 "$bar": {"metadata": [{"$id$$foo$bar$$": "${HOSTNAME}"}]}}
     launch_config = {"imageUuid": image_uuid,
                      "blkioDeviceOptions": {
-                         '/dev/sda': {
+                         '/dev/nvme0n1': {
                              'readIops': 1000,
                              'writeIops': 2000,
                          },
@@ -2166,7 +2166,7 @@ def test_malform_export_config(client, context):
     assert compose_config is not None
     docker_yml = yaml.load(compose_config.dockerComposeConfig)
     svc = docker_yml['services'][service.name]
-    assert svc["device_write_iops"] == {"/dev/sda": 2000}
+    assert svc["device_write_iops"] == {"/dev/nvme0n1": 2000}
     assert svc["tmpfs"] == ["/run"]
     assert "device_read_bps" not in svc
     assert "device_write_bps" not in svc
