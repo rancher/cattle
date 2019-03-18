@@ -938,7 +938,7 @@ def test_service_links_with_no_ports(docker_client):
 @if_docker
 def test_blkio_device_options(super_client, docker_client):
     dev_opts = {
-        '/dev/sda': {
+        '/dev/nvme0n1': {
             'readIops': 1000,
             'writeIops': 2000,
         },
@@ -955,8 +955,14 @@ def test_blkio_device_options(super_client, docker_client):
 
     super_c = super_client.reload(c)
     hc = super_c.data.dockerInspect['HostConfig']
-    assert hc['BlkioDeviceReadIOps'] == [{'Path': '/dev/sda', 'Rate': 1000}]
-    assert hc['BlkioDeviceWriteIOps'] == [{'Path': '/dev/sda', 'Rate': 2000}]
+    assert hc['BlkioDeviceReadIOps'] == [{
+                                          'Path': '/dev/nvme0n1',
+                                          'Rate': 1000
+                                          }]
+    assert hc['BlkioDeviceWriteIOps'] == [{
+                                          'Path': '/dev/nvme0n1',
+                                          'Rate': 2000
+                                          }]
     assert hc['BlkioDeviceReadBps'] == [{'Path': '/dev/null', 'Rate': 3000}]
 
 

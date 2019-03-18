@@ -92,7 +92,7 @@ def test_transform_inspect_host_config(transform_url, client, super_client):
     assert container['cpuShares'] == 2
     assert container['cpuSet'] == '2,3'
     assert len(container['blkioDeviceOptions']) == 3
-    assert container['blkioDeviceOptions']['/dev/sda'] == {
+    assert container['blkioDeviceOptions']['/dev/nvme0n1'] == {
         'readBps': 10000,
         'writeBps': 20000,
         'readIops': 30000,

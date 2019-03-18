@@ -18,25 +18,25 @@
         "MemorySwap": 43,
         "BlkioDeviceReadBps": [
           {
-            "Path": "/dev/sda",
+            "Path": "/dev/nvme0n1",
             "Rate": 10000
           }
         ],
         "BlkioDeviceWriteBps": [
           {
-            "Path": "/dev/sda",
+            "Path": "/dev/nvme0n1",
             "Rate": 20000
           }
         ],
         "BlkioDeviceReadIOps": [
           {
-            "Path": "/dev/sda",
+            "Path": "/dev/nvme0n1",
             "Rate": 30000
           }
         ],
         "BlkioDeviceWriteIOps": [
           {
-            "Path": "/dev/sda",
+            "Path": "/dev/nvme0n1",
             "Rate": 40000
           },
           {

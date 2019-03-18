@@ -1,21 +1,127 @@
 ---
-matrix:
-  DOCKER_VERSION:
-  - 17.03.1-ce
-  API_VERSION:
-  - v1
-  - v2
-  ENVIRONMENTS:
-  - ( [mysql]=full [h2]=lite )
-  - ( [pgsql]=full )
+kind: pipeline
+name: v1-mysql-h2
 
-pipeline:
-  build:
-    privileged: true
-    image: rancher/dapper:1.11.2
-    volumes:
-    - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      DOCKER_VERSION: ${DOCKER_VERSION}
-    commands:
-    - dapper ci
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: build
+  pull: default
+  image: rancher/dapper:1.11.2
+  commands:
+  - dapper ci
+  environment:
+    API_VERSION: v1
+    DOCKER_VERSION: 17.03.1-ce
+    ENVIRONMENTS: "( [mysql]=full [h2]=lite )"
+  privileged: true
+  volumes:
+  - name: socket
+    path: /var/run/docker.sock
+
+volumes:
+- name: socket
+  host:
+    path: /var/run/docker.sock
+
+---
+kind: pipeline
+name: v2-mysql-h2
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: build
+  pull: default
+  image: rancher/dapper:1.11.2
+  commands:
+  - dapper ci
+  environment:
+    API_VERSION: v2
+    DOCKER_VERSION: 17.03.1-ce
+    ENVIRONMENTS: "( [mysql]=full [h2]=lite )"
+  privileged: true
+  volumes:
+  - name: socket
+    path: /var/run/docker.sock
+
+volumes:
+- name: socket
+  host:
+    path: /var/run/docker.sock
+
+trigger:
+  status:
+  - success
+  - failure
+
+depends_on:
+- v1-mysql-h2
+
+---
+kind: pipeline
+name: v1-psql
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: build
+  pull: default
+  image: rancher/dapper:1.11.2
+  commands:
+  - dapper ci
+  environment:
+    API_VERSION: v1
+    DOCKER_VERSION: 17.03.1-ce
+    ENVIRONMENTS: "( [pgsql]=full )"
+  privileged: true
+  volumes:
+  - name: socket
+    path: /var/run/docker.sock
+
+volumes:
+- name: socket
+  host:
+    path: /var/run/docker.sock
+
+---
+kind: pipeline
+name: v2-psql
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: build
+  pull: default
+  image: rancher/dapper:1.11.2
+  commands:
+  - dapper ci
+  environment:
+    API_VERSION: v2
+    DOCKER_VERSION: 17.03.1-ce
+    ENVIRONMENTS: "( [pgsql]=full )"
+  privileged: true
+  volumes:
+  - name: socket
+    path: /var/run/docker.sock
+
+volumes:
+- name: socket
+  host:
+    path: /var/run/docker.sock
+
+trigger:
+  status:
+  - success
+  - failure
+
+depends_on:
+- v1-psql
