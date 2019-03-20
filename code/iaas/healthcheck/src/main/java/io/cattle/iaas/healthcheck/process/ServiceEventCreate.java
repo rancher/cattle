@@ -15,6 +15,9 @@ import io.cattle.platform.util.type.Priority;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 
 @Named
@@ -25,6 +28,8 @@ public class ServiceEventCreate extends AbstractObjectProcessHandler implements 
 
     @Inject
     ServiceDao serviceDao;
+    
+    private static final Logger log = LoggerFactory.getLogger(ServiceEventCreate.class);
 
     @Override
     public String[] getProcessNames() {
@@ -67,6 +72,10 @@ public class ServiceEventCreate extends AbstractObjectProcessHandler implements 
             uuid = splitted[0];
         }
         if (uuid != null) {
+            if(event.getExternalTimestamp() == null) {
+                log.warn("ExternalTimestamp null for event {} hostMapUUID {}", event.getId(), uuid);
+                return;
+            }
             healthcheckService.updateHealthcheck(uuid, event.getExternalTimestamp(),
                     getHealthState(event.getReportedHealth()));
         }
