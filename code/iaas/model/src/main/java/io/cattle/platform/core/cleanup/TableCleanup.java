@@ -130,6 +130,32 @@ public class TableCleanup extends AbstractJooqDao implements Task {
         "    and (v.data like '%\"isHostPath\":true%' or v.data like '%\"driver\":\"local\"%')" +
         "    limit ? " +
         " ) mx on m.id = mx.id";
+    public static final String SECRET_CLEANUP_VSPM_QUERY = "delete s " + 
+        " from volume_storage_pool_map as s " + 
+        " join ( " +
+        "   select vv.id " + 
+        "   from volume as vv " + 
+        "   where vv.data like '%\\\"driver\\\":\\\"rancher-secrets\\\"%' " + 
+        "   and created < date_sub(utc_timestamp(), INTERVAL 1 HOUR) " + 
+        "   and vv.state = \"inactive\" " + 
+        "   and vv.instance_id is NULL " + 
+        "   and id not in(" + 
+        "       select volume_id from mount as m where m.state != \"removed\" or m.state != \"purged\"" + 
+        "       )" + 
+        "   )vx on vx.id = s.volume_id";
+    
+    public static final String SECRET_CLEAUP_VOLUME_QUERY = "delete v " + 
+        " from volume as v " + 
+        " join (" + 
+        "   select vv.id from volume as vv " + 
+        "   where vv.data like '%\\\"driver\\\":\\\"rancher-secrets\\\"%' " + 
+        "   and created < date_sub(utc_timestamp(), INTERVAL 1 HOUR) and " + 
+        "   vv.state = \"inactive\" and " + 
+        "   vv.instance_id is NULL and " + 
+        "   id not in(" + 
+        "       select volume_id from mount as m where m.state != \"removed\" or m.state != \"purged\"" + 
+        "       )" + 
+        " ) vx on vx.id = v.id";
 
     private List<CleanableTable> processInstanceTables;
     private List<CleanableTable> eventTables;
@@ -152,7 +178,7 @@ public class TableCleanup extends AbstractJooqDao implements Task {
         Date otherCutoff = new Date(current - MAIN_TABLES_AGE_LIMIT_SECONDS.getValue() * SECOND_MILLIS);
         cleanupLabelTables(otherCutoff);
         cleanupExternalHandlerExternalHandlerProcessMapTables(otherCutoff);
-        cleanupMountTable(otherCutoff);
+        cleanupTableByQuery(MOUNT_DELETE_QUERY, "mount", otherCutoff);
 
         Date processInstanceCutoff = new Date(current - PROCESS_INSTANCE_AGE_LIMIT_SECONDS.get() * SECOND_MILLIS);
         cleanup("process_instance", processInstanceTables, processInstanceCutoff);
@@ -168,6 +194,9 @@ public class TableCleanup extends AbstractJooqDao implements Task {
         cleanup("service_log", serviceLogTables, serviceLogCutoff);
 
         cleanup("main", otherTables, otherCutoff);
+        
+        cleanupTableByQuery(SECRET_CLEANUP_VSPM_QUERY, "volume_storage_pool_map", otherCutoff);
+        cleanupTableByQuery(SECRET_CLEAUP_VOLUME_QUERY, "volume", otherCutoff);
     }
 
     private void cleanupServiceEventTable(Date cutoff) {
@@ -269,22 +298,22 @@ public class TableCleanup extends AbstractJooqDao implements Task {
         }
     }
 
-    private void cleanupMountTable(Date cutoff) {
-        log.debug("Cleaning up mount table [cutoff={}]", cutoff);
-        Query q = create().query(MOUNT_DELETE_QUERY, cutoff, QUERY_LIMIT_ROWS.getValue());
+    private void cleanupTableByQuery(String query, String tableKind, Date cutoff) {
+        log.debug("Cleaning up {} table [cutoff={}]", tableKind, cutoff);
+        Query q = create().query(query, cutoff, QUERY_LIMIT_ROWS.getValue());
         int rowsAffected = 0;
         int total = 0;
 
         do {
             rowsAffected = q.execute();
             if (rowsAffected > 0) {
-                log.debug("Deleted {} unneeded rows from mount table", rowsAffected);
+                log.debug("Deleted {} unneeded rows from {} table", rowsAffected, tableKind);
             }
             total += rowsAffected;
         } while (rowsAffected > 0);
 
         if (total > 0) {
-            log.debug("[Rows Deleted] mount={}", total);
+            log.debug("[Rows Deleted] {}={}", tableKind, total);
         }
     }
 
