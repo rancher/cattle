@@ -12,6 +12,7 @@ import java.io.IOException;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,13 +26,15 @@ public class SecretRemove extends AbstractDefaultProcessHandler {
 
     @Override
     public HandlerResult handle(ProcessState state, ProcessInstance process) {
-        Secret secret = (Secret)state.getResource();
-        try {
-            secretsService.delete(secret.getAccountId(), secret.getValue());
-        } catch (IOException e) {
-            log.error("Failed to delete secret from storage [{}]",
-                    secret.getId(), e);
-            throw new IllegalStateException(e);
+        Secret secret = (Secret) state.getResource();
+        String secretValue = secret.getValue();
+        if (StringUtils.isNotBlank(secretValue)) {
+            try {
+                secretsService.delete(secret.getAccountId(), secret.getValue());
+            } catch (IOException e) {
+                log.error("Failed to delete secret from storage [{}]", secret.getId(), e);
+                throw new IllegalStateException(e);
+            }
         }
         return null;
     }

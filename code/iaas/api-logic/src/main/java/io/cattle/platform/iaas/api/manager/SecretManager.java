@@ -7,6 +7,7 @@ import io.cattle.platform.framework.secret.SecretsService;
 import io.cattle.platform.object.util.DataAccessor;
 import io.github.ibuildthecloud.gdapi.exception.ClientVisibleException;
 import io.github.ibuildthecloud.gdapi.util.ResponseCodes;
+import io.github.ibuildthecloud.gdapi.validation.ValidationErrorCodes;
 
 import java.io.IOException;
 import java.util.Map;
@@ -45,6 +46,8 @@ public class SecretManager extends AbstractJooqResourceManager {
                 log.error("Failed to secret", e);
                 throw new ClientVisibleException(ResponseCodes.SERVICE_UNAVAILABLE);
             }
+        } else {
+            throw new ClientVisibleException(ResponseCodes.UNPROCESSABLE_ENTITY, ValidationErrorCodes.NOT_NULLABLE, "Secret value cannot be null/empty", "");
         }
         T result = super.createAndScheduleObject(clz, properties);
         if (result instanceof Secret) {
