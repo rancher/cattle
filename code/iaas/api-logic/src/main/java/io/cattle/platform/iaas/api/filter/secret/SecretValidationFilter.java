@@ -14,7 +14,11 @@ public class SecretValidationFilter extends AbstractDefaultResourceManagerFilter
     @Override
     public Object create(String type, ApiRequest request, ResourceManager next) {
         Secret s = request.proxyRequestObject(Secret.class);
-        if (!Base64.isBase64(s.getValue())) {
+        String secretValue = s.getValue();
+        if (secretValue == null) {
+            throw new ValidationErrorException("EmptySecret", "value", "Secret cannot be empty");
+        }
+        if (!Base64.isBase64(secretValue)) {
             throw new ValidationErrorException("InvalidBase64", "value", "Invalid base64 content");
 
         };
