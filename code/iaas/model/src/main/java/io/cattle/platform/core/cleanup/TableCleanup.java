@@ -118,6 +118,7 @@ public class TableCleanup extends AbstractJooqDao implements Task {
     public static final DynamicLongProperty EVENT_AGE_LIMIT_SECONDS = ArchaiusUtil.getLong("events.purge.after.seconds");
     public static final DynamicLongProperty AUDIT_LOG_AGE_LIMIT_SECONDS = ArchaiusUtil.getLong("audit_log.purge.after.seconds");
     public static final DynamicLongProperty SERVICE_LOG_AGE_LIMIT_SECONDS = ArchaiusUtil.getLong("service_log.purge.after.seconds");
+    public static final DynamicLongProperty MOUNT_DELETE_AGE_LIMIT_SECONDS = ArchaiusUtil.getLong("mount_delete.purge.after.seconds");
     public static final String MOUNT_DELETE_QUERY = "delete m " +
         " from mount as m " +
         " join ( " +
@@ -127,7 +128,7 @@ public class TableCleanup extends AbstractJooqDao implements Task {
         "    join volume as v on mm.volume_id = v.id " +
         "    where i.state = 'purged' " +
         "    and i.removed < ? " +
-        "    and (v.data like '%\"isHostPath\":true%' or v.data like '%\"driver\":\"local\"%')" +
+        "    and (v.data like '%%\"isHostPath\":true%%' or v.data like '%%\"driver\":\"local\"%%')" +
         "    limit ? " +
         " ) mx on m.id = mx.id";
     public static final String SECRET_CLEANUP_VSPM_QUERY = "delete s " + 
@@ -135,8 +136,8 @@ public class TableCleanup extends AbstractJooqDao implements Task {
         " join ( " +
         "   select vv.id " + 
         "   from volume as vv " + 
-        "   where vv.data like '%\\\"driver\\\":\\\"rancher-secrets\\\"%' " + 
-        "   and created < date_sub(utc_timestamp(), INTERVAL 1 HOUR) " + 
+        "   where vv.data like '%%\\\"driver\\\":\\\"rancher-secrets\\\"%%' " + 
+        "   and created < date_sub(utc_timestamp(), INTERVAL %s SECOND) " + 
         "   and vv.state = \"inactive\" " + 
         "   and vv.instance_id is NULL " + 
         "   and id not in(" + 
@@ -148,8 +149,8 @@ public class TableCleanup extends AbstractJooqDao implements Task {
         " from volume as v " + 
         " join (" + 
         "   select vv.id from volume as vv " + 
-        "   where vv.data like '%\\\"driver\\\":\\\"rancher-secrets\\\"%' " + 
-        "   and created < date_sub(utc_timestamp(), INTERVAL 1 HOUR) and " + 
+        "   where vv.data like '%%\\\"driver\\\":\\\"rancher-secrets\\\"%%' " + 
+        "   and created < date_sub(utc_timestamp(), INTERVAL %s SECOND) and " + 
         "   vv.state = \"inactive\" and " + 
         "   vv.instance_id is NULL and " + 
         "   id not in(" + 
@@ -300,7 +301,7 @@ public class TableCleanup extends AbstractJooqDao implements Task {
 
     private void cleanupTableByQuery(String query, String tableKind, Date cutoff) {
         log.debug("Cleaning up {} table [cutoff={}]", tableKind, cutoff);
-        Query q = create().query(query, cutoff, QUERY_LIMIT_ROWS.getValue());
+        Query q = create().query(String.format(query, MOUNT_DELETE_AGE_LIMIT_SECONDS.getValue().toString()), cutoff, QUERY_LIMIT_ROWS.getValue());
         int rowsAffected = 0;
         int total = 0;
 
