@@ -1,5 +1,7 @@
 package io.cattle.platform.core.cleanup;
 
+import static io.cattle.platform.core.model.tables.AgentTable.*;
+import static io.cattle.platform.core.model.tables.ConfigItemStatusTable.*;
 import static io.cattle.platform.core.model.tables.ExternalHandlerExternalHandlerProcessMapTable.*;
 import static io.cattle.platform.core.model.tables.ExternalHandlerTable.*;
 import static io.cattle.platform.core.model.tables.HostLabelMapTable.*;
@@ -19,7 +21,6 @@ import io.cattle.platform.core.model.tables.BackupTable;
 import io.cattle.platform.core.model.tables.BackupTargetTable;
 import io.cattle.platform.core.model.tables.CertificateTable;
 import io.cattle.platform.core.model.tables.ClusterHostMapTable;
-import io.cattle.platform.core.model.tables.ConfigItemStatusTable;
 import io.cattle.platform.core.model.tables.ContainerEventTable;
 import io.cattle.platform.core.model.tables.CredentialInstanceMapTable;
 import io.cattle.platform.core.model.tables.CredentialTable;
@@ -194,6 +195,7 @@ public class TableCleanup extends AbstractJooqDao implements Task {
         Date serviceLogCutoff = new Date(current - SERVICE_LOG_AGE_LIMIT_SECONDS.get() * SECOND_MILLIS);
         cleanup("service_log", serviceLogTables, serviceLogCutoff);
 
+        cleanupConfigItemStatusTable(otherCutoff);
         cleanup("main", otherTables, otherCutoff);
         
         cleanupTableByQuery(SECRET_CLEANUP_VSPM_QUERY, "volume_storage_pool_map", otherCutoff);
@@ -217,6 +219,28 @@ public class TableCleanup extends AbstractJooqDao implements Task {
 
         if (rowsDeleted > 0) {
             log.info("[Rows Deleted] service_event={}", rowsDeleted);
+        }
+    }
+    
+    private void cleanupConfigItemStatusTable(Date cutoff) {
+        ResultQuery<Record1<Long>> ids = create()
+                .select(CONFIG_ITEM_STATUS.ID)
+                .from(CONFIG_ITEM_STATUS)
+                .join(AGENT)
+                    .on(CONFIG_ITEM_STATUS.AGENT_ID.eq(AGENT.ID))
+                    .and(AGENT.STATE.eq(CommonStatesConstants.REMOVED))
+                .where(CONFIG_ITEM_STATUS.APPLIED_UPDATED.lt(cutoff))
+                .limit(QUERY_LIMIT_ROWS.getValue());
+        
+        List<Long> toDelete = null;
+        int rowsDeleted = 0;
+        while ((toDelete = ids.fetch().into(Long.class)).size() > 0) {
+            rowsDeleted += create().delete(CONFIG_ITEM_STATUS)
+            .where(CONFIG_ITEM_STATUS.ID.in(toDelete)).execute();
+        }
+
+        if (rowsDeleted > 0) {
+            log.info("[Rows Deleted] config_item_status={}", rowsDeleted);
         }
     }
 
@@ -531,7 +555,6 @@ public class TableCleanup extends AbstractJooqDao implements Task {
                 CleanableTable.from(BackupTargetTable.BACKUP_TARGET),
                 CleanableTable.from(CertificateTable.CERTIFICATE),
                 CleanableTable.from(ClusterHostMapTable.CLUSTER_HOST_MAP),
-                CleanableTable.from(ConfigItemStatusTable.CONFIG_ITEM_STATUS),
                 CleanableTable.from(CredentialTable.CREDENTIAL),
                 CleanableTable.from(CredentialInstanceMapTable.CREDENTIAL_INSTANCE_MAP),
                 CleanableTable.from(DeploymentUnitTable.DEPLOYMENT_UNIT),
