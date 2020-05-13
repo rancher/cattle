@@ -935,7 +935,7 @@ def test_service_links_with_no_ports(docker_client):
     assert service.state == 'active'
 
 
-@if_docker
+@pytest.mark.skipif('True')
 def test_blkio_device_options(super_client, docker_client):
     dev_opts = {
         '/dev/sda': {
