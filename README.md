@@ -8,7 +8,7 @@ You probably just want to run [Rancher](http://github.com/rancher/rancher) and n
 
 # Developing
 
-If you are a brave soul and want to hack on Cattle instructions for setting up a development environment and understanding how it works are at the [Rancher Wiki](https://github.com/rancher/rancher/wiki)
+If you are a brave soul and want to hack on Cattle, instructions for setting up a development environment and understanding how it works are at the [Rancher Wiki](https://github.com/rancher/rancher/wiki)
 
 # License
 Copyright (c) 2014-2015 [Rancher Labs, Inc.](http://rancher.com)
