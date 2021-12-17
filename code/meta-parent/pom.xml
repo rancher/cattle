@@ -97,7 +97,7 @@
             <dependency>
                 <groupId>me.moocar</groupId>
                 <artifactId>logback-gelf</artifactId>
-                <version>0.10p2</version>
+                <version>0.12</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
