@@ -42,7 +42,7 @@
     </developers>
     <properties>
         <jetty.version>9.2.26.v20180806</jetty.version>
-        <jooq.version>3.3.0</jooq.version>
+        <jooq.version>3.15.4</jooq.version>
         <jackson.version>2.5.3</jackson.version>
         <spring.version>4.3.2.RELEASE</spring.version>
         <metrics.version>3.0.1</metrics.version>
